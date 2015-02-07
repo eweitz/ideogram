@@ -1,5 +1,7 @@
 (function() {
 
+var chromosome = "1";
+
 var stainColorMap = {
   "gneg": "#FFFFFF",
   "gpos25": "#BBBBBB",
@@ -10,7 +12,7 @@ var stainColorMap = {
   "gvar": "#DDDDFF"
 };
 
-function getBands(content) {
+function getBands(content, chromosomeName) {
   // Gets chromosome band data from a TSV file
 
   var tsvLines = content.split(/\r\n|\n/);
@@ -28,7 +30,7 @@ function getBands(content) {
 
     columns = tsvLines[i].split("\t");
 
-    if (columns[0] !== "1") {
+    if (columns[0] !== chromosomeName) {
       continue;
     }
 
@@ -54,11 +56,12 @@ function getBands(content) {
   return lines;
 }
 
-function getChromosomeModel(bands) {
+function getChromosomeModel(bands, chromosomeName) {
 
   var chr = {};
   var band;
 
+  chr["id"] = "chr" + chromosomeName;
   chr["length"] = bands[bands.length - 1]["stop"];
 
   var pxLeft = 0;
@@ -76,42 +79,99 @@ function getChromosomeModel(bands) {
   return chr;
 }
 
+
+function drawBandLabels(svg, model) {
+  // Draws labels for cytogenetic band , e.g. "p31.2"
+
+  var t0 = new Date().getTime();
+  
+  svg.selectAll("text")
+      .data(model.bands)
+      .enter()
+      .append("text")
+      .attr("x", function(d) { return d.pxLeft; })
+      .attr("y", function(d) { return "30"; })
+      .text(function(d) { return d.name; })
+
+  var overlappingLabelXRight = 0;
+
+  $.each($("text"), function(index, element) {
+    
+    var text = $(this),
+        prevText = text.prev();
+
+    xLeft = text.offset().left;
+    prevLabelXRight = prevText.offset().left + prevText.width();
+
+    if (
+      index == 0 || 
+      xLeft < overlappingLabelXRight + 5 || 
+      xLeft < prevLabelXRight + 5
+    ) {
+
+      if (index != 0) {
+        text.hide();
+      }
+
+      overlappingLabelXRight = prevText.offset().left + prevText.width();
+
+    }
+
+  });
+  
+  var t1 = new Date().getTime();
+  console.log("Time in drawBandLabels: " + (t1 - t0));
+
+}
+
+
 function drawChromosome(model) {
   // Create SVG container
   var svg = d3.select("body").append("svg")
-  .attr("width", "100%")
-  .attr("height", 120)
-  .style("fill", "#D0D0D0")
-  .attr("style", "padding-top: 10px");
+    .attr("id", model.id)
+    .attr("width", "100%")
+    .attr("height", 120)
+    .style("fill", "#D0D0D0")
+    .attr("style", "padding-top: 10px");
 
-  svg.selectAll("path")   // create virtual circles
-    .data(model.bands)    // bind data
-    .enter()              // for each row...
-    .append("path")       // bind circle & data row such that...
-    .attr("id", function(d) { return d.name })
-    .attr("class", function(d) { if (d.stain == "acen") {return d.stain;} })
-    .attr("px-width", function(d) { return d.pxWidth })
-    .attr("px-left", function(d) { return d.pxLeft })
-    .attr("d", function(d, i) {
-      var x = d.pxWidth;
-
-      if (d.stain == "acen") {
-        x -= 4;
-        if (d.name[0] == "p") {
-          d = "M " + (d.pxLeft) + " 0 l " + x + " 0 q 8 7.5 0 16 l -" + x + ' 0 z'
+  svg.selectAll("path")   
+    .data(model.bands)    
+    .enter()
+    .append("path")       
+      .attr("id", function(d) { return d.name })
+      .attr("class", function(d) { 
+        if (d.stain == "acen") {
+          return d.stain;
         } else {
-          d = "M " + (d.pxLeft + x + 4) + " 0 l -" + x + " 0 q -9 7.5 0 16 l " + x + ' 0 z'
+          //return "band";
+        }
+      })
+      .attr("px-width", function(d) { return d.pxWidth })
+      .attr("px-left", function(d) { return d.pxLeft })
+      .attr("d", function(d, i) {
+        var x = d.pxWidth;
+
+        if (d.stain == "acen") {
+          x -= 4;
+          if (d.name[0] == "p") {
+            d = "M " + (d.pxLeft) + " 0 l " + x + " 0 q 8 7.5 0 16 l -" + x + ' 0 z'
+          } else {
+            d = "M " + (d.pxLeft + x + 4) + " 0 l -" + x + " 0 q -9 7.5 0 16 l " + x + ' 0 z'
+          }
+
+        } else {
+
+          d = "M " + d.pxLeft + " 0 l " + x + ' 0 l 0 16 l -' + x + ' 0 z';
         }
 
-      } else {
+        return d;
+      })
+      .attr("fill", function(d){ return d.color })
 
-        d = "M " + d.pxLeft + " 0 l " + x + ' 0 l 0 16 l -' + x + ' 0 z';
-      }
-
-      return d;
-    })
-    .attr("fill", function(d){ return d.color });         // set the circle's color according to country's color
-
+  
+  drawBandLabels(svg, model)
+  
+  
   svg.append('path')
     .attr("d", "M " + model.pxWidth + " 0 Q " + (model.pxWidth + 8) + " 7.5 "  + (model.pxWidth) + " 16")
     .style("fill", "#FFFFFF")
@@ -157,13 +217,14 @@ function drawChromosome(model) {
 
 }
 
+
 $.ajax({
   //url: 'data/chr1_bands.tsv',
   url: 'data/ideogram_9606_GCF_000001305.14_550_V1',
   success: function(response) {
-    var bands = getBands(response);
-    var chromosome = getChromosomeModel(bands);
-    drawChromosome(chromosome);
+    var bands = getBands(response, chromosome);
+    var chromosomeModel = getChromosomeModel(bands, chromosome);
+    drawChromosome(chromosomeModel);
   }
 });
 
