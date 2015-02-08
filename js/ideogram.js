@@ -52,7 +52,6 @@ function getBands(content, chromosomeName) {
 
   }
 
-  //console.log(lines)
   return lines;
 }
 
@@ -89,31 +88,48 @@ function drawBandLabels(svg, model) {
       .data(model.bands)
       .enter()
       .append("text")
-      .attr("x", function(d) { return d.pxLeft; })
-      .attr("y", function(d) { return "30"; })
-      .text(function(d) { return d.name; })
+        .attr("class", function(d) { return "bandLabel " + d.name.replace(".", "-")  })
+        .attr("x", function(d) { return -8 + d.pxLeft + d.pxWidth/2; })
+        .attr("y", "10")
+        .text(function(d) { return d.name; })
+  
+  svg.selectAll("line")
+    .data(model.bands)
+    .enter()
+    .append("line")
+      .attr("class", function(d) { return "bandLabelStalk " + d.name.replace(".", "-")  })
+      .attr("x1", function(d) { return d.pxLeft + d.pxWidth/2; })
+      .attr("y1", "20")
+      .attr("x2", function(d) { return d.pxLeft + d.pxWidth/2; })
+      .attr("y2", "12")
 
   var overlappingLabelXRight = 0;
 
-  $.each($("text"), function(index, element) {
-    
+  $.each($("text:gt(0)"), function(index, element) {
+    // Ensures band labels don't overlap
+
     var text = $(this),
-        prevText = text.prev();
+        prevText = text.prev(),
+        padding = 5;
 
     xLeft = text.offset().left;
-    prevLabelXRight = prevText.offset().left + prevText.width();
+
+    if (prevText.css("display") != "none") {
+      prevLabelXRight = prevText.offset().left + prevText[0].getBBox().width;
+    } 
 
     if (
       index == 0 || 
-      xLeft < overlappingLabelXRight + 5 || 
-      xLeft < prevLabelXRight + 5
+      xLeft < overlappingLabelXRight + padding || 
+      xLeft < prevLabelXRight + padding
     ) {
 
       if (index != 0) {
         text.hide();
+        $("line").eq(index + 1).hide();
       }
 
-      overlappingLabelXRight = prevText.offset().left + prevText.width();
+      overlappingLabelXRight = prevLabelXRight;
 
     }
 
@@ -131,14 +147,12 @@ function drawChromosome(model) {
     .attr("id", model.id)
     .attr("width", "100%")
     .attr("height", 120)
-    .style("fill", "#D0D0D0")
-    .attr("style", "padding-top: 10px");
 
   svg.selectAll("path")   
     .data(model.bands)    
     .enter()
     .append("path")       
-      .attr("id", function(d) { return d.name })
+      .attr("id", function(d) { return d.name.replace(".", "-"); })
       .attr("class", function(d) { 
         if (d.stain == "acen") {
           return d.stain;
@@ -154,64 +168,61 @@ function drawChromosome(model) {
         if (d.stain == "acen") {
           x -= 4;
           if (d.name[0] == "p") {
-            d = "M " + (d.pxLeft) + " 0 l " + x + " 0 q 8 7.5 0 16 l -" + x + ' 0 z'
+            d = "M " + (d.pxLeft) + " 20 l " + x + " 0 q 8 7.5 0 16 l -" + x + ' 0 z'
           } else {
-            d = "M " + (d.pxLeft + x + 4) + " 0 l -" + x + " 0 q -9 7.5 0 16 l " + x + ' 0 z'
+            d = "M " + (d.pxLeft + x + 4) + " 20 l -" + x + " 0 q -9 7.5 0 16 l " + x + ' 0 z'
           }
 
         } else {
 
-          d = "M " + d.pxLeft + " 0 l " + x + ' 0 l 0 16 l -' + x + ' 0 z';
+          d = "M " + d.pxLeft + " 20 l " + x + ' 0 l 0 16 l -' + x + ' 0 z';
         }
 
         return d;
       })
       .attr("fill", function(d){ return d.color })
 
-  
   drawBandLabels(svg, model)
-  
-  
+    
   svg.append('path')
-    .attr("d", "M " + model.pxWidth + " 0 Q " + (model.pxWidth + 8) + " 7.5 "  + (model.pxWidth) + " 16")
-    .style("fill", "#FFFFFF")
-    .attr("style", "stroke: #000; stroke-width:0.5; fill: #FFFFFF");
+    .attr("class", "chromosomeBorder")
+    .attr("d", "M " + model.pxWidth + " 20 Q " + (model.pxWidth + 8) + " 27.5 "  + (model.pxWidth) + " 36")
 
   svg.append('path')
-    .attr("d", "M 8 0 Q 0 7.5 8 16")
-    .attr("style", "stroke: #000; stroke-width:0.5; fill: #FFFFFF");
+    .attr("class", "chromosomeBorder")
+    .attr("d", "M 8 20 Q 0 27.5 8 36")
 
   var pArmWidth = parseInt($(".acen:eq(0)").attr("px-left"), 10);
   var qArmStart = parseInt($(".acen:eq(1)").next().attr("px-left"), 10);
   var qArmWidth = model.pxWidth - qArmStart;
 
   svg.append('line')
+    .attr("class", "chromosomeBorder")
     .attr('x1', "8")
-    .attr('y1', "0")
+    .attr('y1', "20")
     .attr('x2', pArmWidth)
-    .attr("y2", "0")
-    .attr("style", "stroke:#000;stroke-width:0.5");
+    .attr("y2", "20")
 
   svg.append('line')
+    .attr("class", "chromosomeBorder")
     .attr('x1', "8")
-    .attr('y1', "16")
+    .attr('y1', "36")
     .attr('x2', pArmWidth)
-    .attr("y2", "16")
-    .attr("style", "stroke:#000; stroke-width:0.5");
+    .attr("y2", "36")
 
   svg.append('line')
+    .attr("class", "chromosomeBorder")
     .attr('x1', qArmStart)
-    .attr('y1', "0")
+    .attr('y1', "20")
     .attr('x2', qArmStart + qArmWidth)
-    .attr("y2", "0")
-    .attr("style", "stroke:#000;stroke-width:0.5");
+    .attr("y2", "20")
 
   svg.append('line')
+    .attr("class", "chromosomeBorder")
     .attr('x1', qArmStart)
-    .attr('y1', "16")
+    .attr('y1', "36")
     .attr('x2', qArmStart + qArmWidth)
-    .attr("y2", "16")
-    .attr("style", "stroke:#000; stroke-width:0.5");
+    .attr("y2", "36")
 
   $(".acen").attr("stroke", "#000").attr("stroke-width", "0.5");
 

@@ -1,0 +1,20 @@
+text {
+	/* 
+	Tahoma has excellent readability and 
+	space utilization at small sizes.
+	More: http://ux.stackexchange.com/a/3334 
+	*/
+	font: 9px Tahoma;
+	fill: #000;
+}
+
+line.bandLabelStalk {
+	stroke: #AAA;
+	stroke-width: 1;
+}
+
+.chromosomeBorder {
+	fill: #FFFFFF;
+    stroke: #000; 
+    stroke-width:0.5;
+}
