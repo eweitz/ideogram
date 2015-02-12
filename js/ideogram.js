@@ -4,7 +4,8 @@ var options = {
   chromosome: "1",
   chrWidth: 15,
   chrHeight: 600,
-  showBandLabels: true
+  showBandLabels: true,
+  orientation: "vertical"
 };
 
 var stainColorMap = {
@@ -23,12 +24,12 @@ function getBands(content, chromosomeName) {
   var tsvLines = content.split(/\r\n|\n/);
   var lines = [];
   var columns, line, stain;
-  // UCSC: #chrom	chromStart	chromEnd	name	gieStain
+  // UCSC: #chrom chromStart  chromEnd  name  gieStain
   // http://genome.ucsc.edu/cgi-bin/hgTables
   //  - group: Mapping and Sequencing
   //  - track: Chromosome Band (Ideogram)
   //
-  // NCBI: #chromosome	arm	band	iscn_start	iscn_stop	bp_start	bp_stop	stain	density
+  // NCBI: #chromosome  arm band  iscn_start  iscn_stop bp_start  bp_stop stain density
   // ftp://ftp.ncbi.nlm.nih.gov/pub/gdp/ideogram_9606_GCF_000001305.14_550_V1
 
   for (var i = 1; i < tsvLines.length - 1; i++) {
@@ -93,7 +94,7 @@ function drawBandLabels(svg, model) {
       .data(model.bands)
       .enter()
       .append("text")
-        .attr("class", function(d) { return "bandLabel " + d.name.replace(".", "-")  })
+        .attr("class", "bandLabel")
         .attr("x", function(d) { return -8 + d.pxLeft + d.pxWidth/2; })
         .attr("y", "10")
         .text(function(d) { return d.name; })
@@ -149,6 +150,7 @@ function drawChromosome(model) {
     .append("svg")
       .attr("id", "ideogram")
       .attr("width", "100%")
+      .attr("height", options.chrHeight + 20)
     .append("g")
       .attr("id", model.id)
 
@@ -204,8 +206,7 @@ function drawChromosome(model) {
     .attr("d", "M 8 20 q -8 " + (chrWidth/2) + " 0 " + chrWidth)
 
   var pArmWidth = $(".acen:eq(0)")[0].getBBox().x;
-  var bBox = $(".acen:eq(1)")[0].getBBox();
-  var qArmStart = bBox.x + bBox.width;
+  var qArmStart = $(".acen:eq(1)").position().left;
   var qArmWidth = model.pxWidth - qArmStart;
 
   svg.append('line')
@@ -237,6 +238,16 @@ function drawChromosome(model) {
     .attr("y2", 20 + chrWidth)
 
   $(".acen").attr("stroke", "#000").attr("stroke-width", "0.5");
+
+  if (options.orientation == "vertical") {
+    svg.attr("transform", "rotate(90, " + (chrWidth + 5) + ", " + (chrWidth + 5) + ")")
+  
+    svg.selectAll("text.bandLabel")
+      .attr("transform", "rotate(-90)")
+      .attr("x", -8)
+      .attr("y", function(d) { return 2 + d.pxLeft + d.pxWidth/2; }) 
+
+  }
 
 }
 
