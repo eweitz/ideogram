@@ -1,12 +1,19 @@
 (function() {
 
 var options = {
-  chromosome: "1",
+  //chromosomes: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y"],
+  chromosomes: ["1", "2", "3"],
+  //chromosomes: ["1"],
   chrWidth: 15,
   chrHeight: 600,
+  chrMargin: 25,
   showBandLabels: true,
   orientation: "vertical"
 };
+
+if (options.showBandLabels) {
+  options.chrMargin += 20;
+}
 
 var stainColorMap = {
   "gneg": "#FFFFFF",
@@ -85,38 +92,40 @@ function getChromosomeModel(bands, chromosomeName) {
 }
 
 
-function drawBandLabels(svg, model) {
+function drawBandLabels(chr, model, chrIndex) {
   // Draws labels for cytogenetic band , e.g. "p31.2"
 
   var t0 = new Date().getTime();
   
-  svg.selectAll("text")
+  var chrMargin = options.chrMargin * chrIndex;
+
+  chr.selectAll("text")
       .data(model.bands)
       .enter()
       .append("text")
         .attr("class", "bandLabel")
         .attr("x", function(d) { return -8 + d.pxLeft + d.pxWidth/2; })
-        .attr("y", "10")
+        .attr("y", chrMargin - 10)
         .text(function(d) { return d.name; })
   
-  svg.selectAll("line")
+  chr.selectAll("line")
     .data(model.bands)
     .enter()
     .append("line")
       .attr("class", function(d) { return "bandLabelStalk " + d.name.replace(".", "-")  })
       .attr("x1", function(d) { return d.pxLeft + d.pxWidth/2; })
-      .attr("y1", "20")
+      .attr("y1", chrMargin)
       .attr("x2", function(d) { return d.pxLeft + d.pxWidth/2; })
-      .attr("y2", "12")
+      .attr("y2", chrMargin - 8)
 
   var overlappingLabelXRight = 0;
 
-  $.each($("text:gt(0)"), function(index, element) {
+  $.each($("#" + model.id + " text:gt(0)"), function(index, element) {
     // Ensures band labels don't overlap
 
     var text = $(this),
         prevText = text.prev(),
-        padding = 5;
+        textPadding = 5;
 
     xLeft = text.offset().left;
 
@@ -125,12 +134,12 @@ function drawBandLabels(svg, model) {
     } 
 
     if (
-      xLeft < overlappingLabelXRight + padding || 
-      xLeft < prevLabelXRight + padding
+      xLeft < overlappingLabelXRight + textPadding || 
+      xLeft < prevLabelXRight + textPadding
     ) {
 
       text.hide();
-      $("line").eq(index + 1).hide();
+      $("#" + model.id + " line.bandLabelStalk").eq(index + 1).hide();
 
       overlappingLabelXRight = prevLabelXRight;
 
@@ -144,20 +153,21 @@ function drawBandLabels(svg, model) {
 }
 
 
-function drawChromosome(model) {
+function drawChromosome(model, chrIndex) {
   // Create SVG container
-  svg = d3.select("body")
-    .append("svg")
-      .attr("id", "ideogram")
-      .attr("width", "100%")
-      .attr("height", options.chrHeight + 20)
+
+  var chr, chrWidth, pxWidth;
+
+  chr = d3.select("svg")
     .append("g")
-      .attr("id", model.id)
+      .attr("id", model.id);
 
-  var chrWidth = options.chrWidth,
-      pxWidth = model.pxWidth;
+  chrWidth = options.chrWidth;
+  pxWidth = model.pxWidth;
 
-  svg.selectAll("path")   
+  var chrMargin = options.chrMargin * chrIndex;
+
+  chr.selectAll("path")   
     .data(model.bands)    
     .enter()
     .append("path")       
@@ -174,19 +184,23 @@ function drawChromosome(model) {
           x -= 4;
           if (d.name[0] == "p") {
             d = 
-              "M " + (d.pxLeft) + " 20 " + 
+              "M " + (d.pxLeft) + " " + chrMargin + " " + 
               "l " + x + " 0 " + 
               "q 8 " + chrWidth/2 + " 0 " + chrWidth + " " + 
               "l -" + x + " 0 z";
           } else {
             d = 
-              "M " + (d.pxLeft + x + 4) + " 20 " + 
+              "M " + (d.pxLeft + x + 4) + " " + chrMargin + " " + 
               "l -" + x + " 0 " + 
               "q -8.5 " + chrWidth/2 + " 0 " + chrWidth + " " + 
               "l " + x + " 0 z";
           }
         } else {  
-          d = "M " + d.pxLeft + " 20 l " + x + " 0 l 0 " + chrWidth + " l -" + x + " 0 z";
+          d = 
+            "M " + d.pxLeft + " " + chrMargin + " " + 
+            "l " + x + " 0 " + 
+            "l 0 " + chrWidth + " " + 
+            "l -" + x + " 0 z";
         }
 
         return d;
@@ -194,73 +208,85 @@ function drawChromosome(model) {
       .attr("fill", function(d){ return d.color })
 
   if (options.showBandLabels === true) {
-    drawBandLabels(svg, model);
+    drawBandLabels(chr, model, chrIndex);
   }
     
-  svg.append('path')
+  chr.append('path')
     .attr("class", "chromosomeBorder")
-    .attr("d", "M " + pxWidth + " 20 q 8 " +  chrWidth/2 + " 0 " + chrWidth)
+    .attr("d", "M " + pxWidth + " " + chrMargin + " q 8 " +  chrWidth/2 + " 0 " + chrWidth)
 
-  svg.append('path')
+  chr.append('path')
     .attr("class", "chromosomeBorder")
-    .attr("d", "M 8 20 q -8 " + (chrWidth/2) + " 0 " + chrWidth)
+    .attr("d", "M 8 " + chrMargin + " q -8 " + (chrWidth/2) + " 0 " + chrWidth)
 
-  var pArmWidth = $(".acen:eq(0)")[0].getBBox().x;
-  var qArmStart = $(".acen:eq(1)").position().left;
+  var pArmWidth = $("#" + model.id + " .acen:eq(0)")[0].getBBox().x;
+  var qArmStart = $("#" + model.id + " .acen:eq(1)").next()[0].getBBox().x;
   var qArmWidth = model.pxWidth - qArmStart;
 
-  svg.append('line')
+  chr.append('line')
     .attr("class", "chromosomeBorder")
     .attr('x1', "8")
-    .attr('y1', "20")
+    .attr('y1', chrMargin)
     .attr('x2', pArmWidth)
-    .attr("y2", "20")
+    .attr("y2", chrMargin)
 
-  svg.append('line')
+  chr.append('line')
     .attr("class", "chromosomeBorder")
     .attr('x1', "8")
-    .attr('y1', 20 + chrWidth)
+    .attr('y1', chrWidth + chrMargin)
     .attr('x2', pArmWidth)
-    .attr("y2", 20 + chrWidth)
+    .attr("y2", chrWidth + chrMargin)
 
-  svg.append('line')
+  chr.append('line')
     .attr("class", "chromosomeBorder")
     .attr('x1', qArmStart)
-    .attr('y1', "20")
+    .attr('y1', chrMargin)
     .attr('x2', qArmStart + qArmWidth)
-    .attr("y2", "20")
+    .attr("y2", chrMargin)
 
-  svg.append('line')
+  chr.append('line')
     .attr("class", "chromosomeBorder")
     .attr('x1', qArmStart)
-    .attr('y1', 20 + chrWidth)
+    .attr('y1', chrWidth + chrMargin)
     .attr('x2', qArmStart + qArmWidth)
-    .attr("y2", 20 + chrWidth)
+    .attr("y2", chrWidth + chrMargin)
 
   $(".acen").attr("stroke", "#000").attr("stroke-width", "0.5");
 
   if (options.orientation == "vertical") {
-    svg.attr("transform", "rotate(90, " + (chrWidth + 5) + ", " + (chrWidth + 5) + ")")
+    var tPadding = chrMargin + 15*(chrIndex-1);
+    chr.attr("transform", "rotate(90, " + tPadding + ", " + tPadding + ")")
   
-    svg.selectAll("text.bandLabel")
+    chr.selectAll("text.bandLabel")
       .attr("transform", "rotate(-90)")
-      .attr("x", -8)
-      .attr("y", function(d) { return 2 + d.pxLeft + d.pxWidth/2; }) 
-
+      .attr("x", 8 - chrMargin)
+      .attr("y", function(d) { return 2 + d.pxLeft + d.pxWidth/2; });
   }
 
 }
-
 
 $.ajax({
   //url: 'data/chr1_bands.tsv',
   url: 'data/ideogram_9606_GCF_000001305.14_550_V1',
   success: function(response) {
     var t0 = new Date().getTime();
-    var chromosome = options.chromosome;
-    var bands = getBands(response, chromosome);
-    var chromosomeModel = getChromosomeModel(bands, chromosome);
-    drawChromosome(chromosomeModel);
+
+    var chrs = options.chromosomes,
+        i, chromosome, bands, chromosomeModel;
+
+    var svg = d3.select("body")
+      .append("svg")
+        .attr("id", "ideogram")
+        .attr("width", "100%")
+        .attr("height", chrs.length * options.chrHeight + 20)
+
+    for (i = 0; i < chrs.length; i++) {
+      chromosome = chrs[i];
+      bands = getBands(response, chromosome);
+      chromosomeModel = getChromosomeModel(bands, chromosome);
+      drawChromosome(chromosomeModel, i + 1);
+    }
+
     var t1 = new Date().getTime();
     console.log("Time constructing ideogram: " + (t1 - t0) + " ms")
   }
