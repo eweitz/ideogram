@@ -1,29 +1,19 @@
 (function() {
 
 var options = {
-  //chromosomes: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y"],
-  chromosomes: ["1", "2", "3"],
-  //chromosomes: ["1"],
-  chrWidth: 15,
+  chromosomes: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y"],
+  //chromosomes: ["1", "2", "3"],
+  //chromosomes: ["Y"],
+  chrWidth: 10,
   chrHeight: 600,
-  chrMargin: 25,
+  chrMargin: 10,
   showBandLabels: true,
-  orientation: "vertical"
+  orientation: "horizontal"
 };
 
 if (options.showBandLabels) {
   options.chrMargin += 20;
 }
-
-var stainColorMap = {
-  "gneg": "#FFFFFF",
-  "gpos25": "#BBBBBB",
-  "gpos50": "#888888",
-  "gpos75": "#444444",
-  "gpos100": "#000000",
-  "acen": "#FFDDDD",
-  "gvar": "#DDDDFF"
-};
 
 function getBands(content, chromosomeName) {
   // Gets chromosome band data from a TSV file
@@ -80,7 +70,6 @@ function getChromosomeModel(bands, chromosomeName) {
 
   for (var i = 0; i < bands.length; i++) {
     band = bands[i];
-    bands[i]["color"] = stainColorMap[band.stain];
     bands[i]["pxWidth"] = options.chrHeight * (band.stop - band.start)/chr.length;
     bands[i]["pxLeft"] = pxLeft;
     pxLeft += bands[i]["pxWidth"];
@@ -97,7 +86,7 @@ function drawBandLabels(chr, model, chrIndex) {
 
   var t0 = new Date().getTime();
   
-  var chrMargin = options.chrMargin * chrIndex;
+  var chrMargin = (options.chrMargin + options.chrWidth) * chrIndex;
 
   chr.selectAll("text")
       .data(model.bands)
@@ -137,10 +126,10 @@ function drawBandLabels(chr, model, chrIndex) {
       xLeft < overlappingLabelXRight + textPadding || 
       xLeft < prevLabelXRight + textPadding
     ) {
-
+      
       text.hide();
       $("#" + model.id + " line.bandLabelStalk").eq(index + 1).hide();
-
+      
       overlappingLabelXRight = prevLabelXRight;
 
     }
@@ -156,7 +145,8 @@ function drawBandLabels(chr, model, chrIndex) {
 function drawChromosome(model, chrIndex) {
   // Create SVG container
 
-  var chr, chrWidth, pxWidth;
+  var chr, chrWidth, pxWidth,
+      pArmWidth, selector, qArmStart, qArmWidth;
 
   chr = d3.select("svg")
     .append("g")
@@ -165,7 +155,7 @@ function drawChromosome(model, chrIndex) {
   chrWidth = options.chrWidth;
   pxWidth = model.pxWidth;
 
-  var chrMargin = options.chrMargin * chrIndex;
+  var chrMargin = (options.chrMargin + chrWidth) * chrIndex;
 
   chr.selectAll("path")   
     .data(model.bands)    
@@ -173,31 +163,40 @@ function drawChromosome(model, chrIndex) {
     .append("path")       
       .attr("id", function(d) { return d.name.replace(".", "-"); })
       .attr("class", function(d) { 
+        var cls = d.stain;
         if (d.stain == "acen") {
-          return d.stain;
+          var arm = d.name[0]; // e.g. p in p11
+          cls += " " + arm + "-cen";
         } 
+        return cls;
       })
       .attr("d", function(d, i) {
-        var x = d.pxWidth;
+        var x = d.pxWidth,
+            left = d.pxLeft;
 
         if (d.stain == "acen") {
           x -= 4;
           if (d.name[0] == "p") {
             d = 
-              "M " + (d.pxLeft) + " " + chrMargin + " " + 
+              "M " + (left) + " " + chrMargin + " " + 
               "l " + x + " 0 " + 
               "q 8 " + chrWidth/2 + " 0 " + chrWidth + " " + 
               "l -" + x + " 0 z";
           } else {
             d = 
-              "M " + (d.pxLeft + x + 4) + " " + chrMargin + " " + 
+              "M " + (left + x + 4) + " " + chrMargin + " " + 
               "l -" + x + " 0 " + 
               "q -8.5 " + chrWidth/2 + " 0 " + chrWidth + " " + 
               "l " + x + " 0 z";
           }
         } else {  
+
+          if (i == 0) {
+            left += 8;
+          }
+
           d = 
-            "M " + d.pxLeft + " " + chrMargin + " " + 
+            "M " + left + " " + chrMargin + " " + 
             "l " + x + " 0 " + 
             "l 0 " + chrWidth + " " + 
             "l -" + x + " 0 z";
@@ -205,57 +204,61 @@ function drawChromosome(model, chrIndex) {
 
         return d;
       })
-      .attr("fill", function(d){ return d.color })
 
   if (options.showBandLabels === true) {
     drawBandLabels(chr, model, chrIndex);
   }
     
   chr.append('path')
-    .attr("class", "chromosomeBorder")
-    .attr("d", "M " + pxWidth + " " + chrMargin + " q 8 " +  chrWidth/2 + " 0 " + chrWidth)
-
-  chr.append('path')
-    .attr("class", "chromosomeBorder")
+    .attr("class", "p-ter chromosomeBorder " + model.bands[0].stain)
     .attr("d", "M 8 " + chrMargin + " q -8 " + (chrWidth/2) + " 0 " + chrWidth)
 
-  var pArmWidth = $("#" + model.id + " .acen:eq(0)")[0].getBBox().x;
-  var qArmStart = $("#" + model.id + " .acen:eq(1)").next()[0].getBBox().x;
-  var qArmWidth = model.pxWidth - qArmStart;
+  chr.append('path')
+    .attr("class", "q-ter chromosomeBorder " + model.bands[model.bands.length - 1].stain)
+    .attr("d", "M " + pxWidth + " " + chrMargin + " q 8 " +  chrWidth/2 + " 0 " + chrWidth)
+
+  // Why does human chromosome 11 lack a centromeric p-arm band?
+  if ($("#" + model.id + " .p-cen").length > 0) {
+    pArmWidth = $("#" + model.id + " .p-cen")[0].getBBox().x;
+  } else {
+    pArmWidth = $("#" + model.id + " .q-cen").prev()[0].getBBox().x;
+  }
+  
+  qArmStart = $("#" + model.id + " .q-cen").next()[0].getBBox().x;
+  qArmWidth = model.pxWidth - qArmStart;
 
   chr.append('line')
-    .attr("class", "chromosomeBorder")
+    .attr("class", "cb-p-arm-top chromosomeBorder")
     .attr('x1', "8")
     .attr('y1', chrMargin)
     .attr('x2', pArmWidth)
     .attr("y2", chrMargin)
 
   chr.append('line')
-    .attr("class", "chromosomeBorder")
+    .attr("class", "cb-p-arm-bottom chromosomeBorder")
     .attr('x1', "8")
     .attr('y1', chrWidth + chrMargin)
     .attr('x2', pArmWidth)
     .attr("y2", chrWidth + chrMargin)
 
   chr.append('line')
-    .attr("class", "chromosomeBorder")
+    .attr("class", "cb-q-arm-top chromosomeBorder")
     .attr('x1', qArmStart)
     .attr('y1', chrMargin)
     .attr('x2', qArmStart + qArmWidth)
     .attr("y2", chrMargin)
 
   chr.append('line')
-    .attr("class", "chromosomeBorder")
+    .attr("class", "cb-q-arm-bottom chromosomeBorder")
     .attr('x1', qArmStart)
     .attr('y1', chrWidth + chrMargin)
     .attr('x2', qArmStart + qArmWidth)
     .attr("y2", chrWidth + chrMargin)
 
-  $(".acen").attr("stroke", "#000").attr("stroke-width", "0.5");
 
   if (options.orientation == "vertical") {
-    var tPadding = chrMargin + 15*(chrIndex-1);
-    chr.attr("transform", "rotate(90, " + tPadding + ", " + tPadding + ")")
+    var tPadding = chrMargin + (chrWidth-4)*(chrIndex-2);
+    chr.attr("transform", "rotate(90, " + tPadding + ", " + (tPadding + 5) + ")")
   
     chr.selectAll("text.bandLabel")
       .attr("transform", "rotate(-90)")

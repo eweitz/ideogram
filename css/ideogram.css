@@ -13,8 +13,17 @@ line.bandLabelStalk {
 	stroke-width: 1;
 }
 
-.chromosomeBorder {
-	fill: #FFFFFF;
+.chromosomeBorder, .acen {
     stroke: #000; 
     stroke-width:0.5;
 }
+
+/* NCBI stain density colors */ 
+.gneg {fill: #FFF}
+.gpos25 {fill: #BBB}
+.gpos50 {fill: #888}
+.gpos75 {fill: #444}
+.gpos100 {fill: #000}
+.acen {fill: #FDD}
+.stalk {fill: #CCE;}
+.gvar {fill: #DDF}
