@@ -2,7 +2,7 @@
 
 var options = {
   chromosomes: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y"],
-  //chromosomes: ["1", "2", "3"],
+  //chromosomes: ["1", "2"],
   //chromosomes: ["Y"],
   chrWidth: 10,
   chrHeight: 600,
@@ -47,6 +47,8 @@ function getBands(content, chromosomeName) {
       "chr": columns[0],
       "start": columns[5],
       "stop": columns[6],
+      "iscnStart": columns[3],
+      "iscnStop": columns[4],
       "name": columns[1] + columns[2],
       "stain": stain
     };
@@ -58,25 +60,28 @@ function getBands(content, chromosomeName) {
   return lines;
 }
 
-function getChromosomeModel(bands, chromosomeName) {
+function getChromosomeModel(bands, chromosomeName, scale) {
 
   var chr = {};
   var band;
 
   chr["id"] = "chr" + chromosomeName;
-  chr["length"] = bands[bands.length - 1]["stop"];
+  chr["length"] = bands[bands.length - 1]["iscnStop"];
 
   var pxLeft = 0;
 
   for (var i = 0; i < bands.length; i++) {
     band = bands[i];
-    bands[i]["pxWidth"] = options.chrHeight * (band.stop - band.start)/chr.length;
+    bands[i]["pxWidth"] = scale * (band.iscnStop - band.iscnStart)/chr.length;
     bands[i]["pxLeft"] = pxLeft;
     pxLeft += bands[i]["pxWidth"];
   }
 
   chr["pxWidth"] = pxLeft;
+  chr["scale"] = scale;
+
   chr["bands"] = bands;
+
   return chr;
 }
 
@@ -268,6 +273,7 @@ function drawChromosome(model, chrIndex) {
 
 }
 
+
 $.ajax({
   //url: 'data/chr1_bands.tsv',
   url: 'data/ideogram_9606_GCF_000001305.14_550_V1',
@@ -275,7 +281,8 @@ $.ajax({
     var t0 = new Date().getTime();
 
     var chrs = options.chromosomes,
-        i, chromosome, bands, chromosomeModel;
+        i, chromosome, bands, chromosomeModel,
+        bandArray, maxLength, scale, scales, chrLength;
 
     var svg = d3.select("body")
       .append("svg")
@@ -283,10 +290,31 @@ $.ajax({
         .attr("width", "100%")
         .attr("height", chrs.length * options.chrHeight + 20)
 
+    bandsArray = [];
+    maxLength = 0;
+    scales = [];
+
     for (i = 0; i < chrs.length; i++) {
+      
       chromosome = chrs[i];
       bands = getBands(response, chromosome);
-      chromosomeModel = getChromosomeModel(bands, chromosome);
+      bandsArray.push(bands);
+      
+      chrLength = bands[bands.length - 1]["iscnStop"];
+
+      if (parseInt(chrLength, 10) > parseInt(maxLength, 10)) {
+        maxLength = chrLength;
+      }
+
+      scale = options.chrHeight * chrLength/maxLength;
+      scales.push(scale);
+    }
+
+    for (i = 0; i < chrs.length; i++) {
+      bands = bandsArray[i];
+      scale = scales[i];
+      chromosome = chrs[i];
+      chromosomeModel = getChromosomeModel(bands, chromosome, scale);
       drawChromosome(chromosomeModel, i + 1);
     }
 
