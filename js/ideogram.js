@@ -5,10 +5,10 @@ var options = {
   //chromosomes: ["1", "2"],
   //chromosomes: ["Y"],
   chrWidth: 10,
-  chrHeight: 600,
+  chrHeight: 1000,
   chrMargin: 10,
   showBandLabels: true,
-  orientation: "horizontal"
+  orientation: "vertical"
 };
 
 if (options.showBandLabels) {
@@ -147,6 +147,23 @@ function drawBandLabels(chr, model, chrIndex) {
 }
 
 
+function rotateBandLabels(chr, chrIndex) {
+
+  console.log("Entered rotateBandLabels")
+
+  var chrMargin, chrWidth;
+
+  chrWidth = options.chrWidth;
+  chrMargin = (options.chrMargin + chrWidth) * chrIndex;
+  
+  chr.selectAll("text.bandLabel")
+    .attr("transform", "rotate(-90)")
+    .attr("x", 8 - chrMargin)
+    .attr("y", function(d) { return 2 + d.pxLeft + d.pxWidth/2; });
+
+}
+
+
 function drawChromosome(model, chrIndex) {
   // Create SVG container
 
@@ -262,13 +279,20 @@ function drawChromosome(model, chrIndex) {
 
 
   if (options.orientation == "vertical") {
-    var tPadding = chrMargin + (chrWidth-4)*(chrIndex-2);
-    chr.attr("transform", "rotate(90, " + tPadding + ", " + (tPadding + 5) + ")")
-  
-    chr.selectAll("text.bandLabel")
-      .attr("transform", "rotate(-90)")
-      .attr("x", 8 - chrMargin)
-      .attr("y", function(d) { return 2 + d.pxLeft + d.pxWidth/2; });
+
+    var chrMargin, chrWidth, tPadding;
+
+    chrWidth = options.chrWidth;
+    chrMargin = (options.chrMargin + chrWidth) * chrIndex;
+
+    tPadding = chrMargin + (chrWidth-4)*(chrIndex-1);
+
+    chr
+      .attr("data-orientation", "vertical")
+      .attr("transform", "rotate(90, " + (tPadding - 30) + ", " + (tPadding) + ")")
+    rotateBandLabels(chr, chrIndex);
+  } else {
+    chr.attr("data-orientation", "horizontal")
   }
 
 }
@@ -321,6 +345,91 @@ $.ajax({
     var t1 = new Date().getTime();
     console.log("Time constructing ideogram: " + (t1 - t0) + " ms")
   }
+});
+
+$(document).on("click", "g", function() {
+
+  var id, chr, chrIndex, chrMargin, tPadding;
+
+  id = $(this).attr("id");
+  
+  chr = d3.select("#" + id);
+  jqChr = $("#" + id);
+  
+  jqOtherChrs = $("g[id!='" + id + "']");
+
+  chrIndex = jqChr.index() + 1;
+  chrMargin = (options.chrMargin + options.chrWidth) * chrIndex;
+
+  if (options.orientation == "vertical") {
+
+    cx = chrMargin + (options.chrWidth-4)*(chrIndex-1) - 30;
+    cy = cx + 30;
+    verticalTransform = "rotate(90, " + cx + ", " + cy + ")";
+    horizontalTransform = "rotate(0)translate(0, -" + (chrMargin - options.chrMargin) + ")";
+
+  } else {
+
+    var bandPad = 0;
+    if (!options.showBandLabels) {
+      bandPad += 10;
+    }
+
+    cx = 6 + chrMargin + (options.chrWidth - options.chrMargin - bandPad)*(chrIndex);
+    cy = cx;
+    verticalTransform = "rotate(90, " + cx + ", " + cy + ")";
+    horizontalTransform = "";
+    
+  }
+
+  if (jqChr.attr("data-orientation") != "vertical") {
+
+    if (options.orientation == "horizontal") {
+      jqOtherChrs.hide();
+    }
+
+    chr
+      .attr("data-orientation", "vertical")
+      .transition()
+      .attr("transform", verticalTransform)
+      .each("end", function() {
+        
+        rotateBandLabels(chr, chrIndex) 
+
+        if (options.orientation == "vertical") {
+          jqOtherChrs.show();
+        }
+
+      });
+
+  } else {
+
+    jqChr.attr("data-orientation", "");
+
+    if (options.orientation == "vertical") {
+      jqOtherChrs.hide();
+    } 
+
+    chr
+      .transition()
+      .attr("transform", horizontalTransform)
+      .each("end", function() {
+        
+        chr.selectAll("text")
+          .attr("transform", "")
+          .attr("x", function(d) { return -8 + d.pxLeft + d.pxWidth/2; })
+          .attr("y", chrMargin - 10)
+
+        if (options.orientation == "horizontal") {
+          jqOtherChrs.show();
+        }
+      
+      });    
+
+  }
+
+  console.log("Exiting g click handler")
+
 });
 
 })();

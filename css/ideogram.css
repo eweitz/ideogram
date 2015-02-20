@@ -1,3 +1,7 @@
+svg { 
+	padding-left: 5px;
+}
+
 text {
 	/* 
 	Tahoma has excellent readability and 
@@ -6,6 +10,10 @@ text {
 	*/
 	font: 9px Tahoma;
 	fill: #000;
+}
+
+g {
+	cursor: pointer;
 }
 
 line.bandLabelStalk {
