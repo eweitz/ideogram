@@ -1,21 +1,21 @@
-(function() {
+var Ideogram = function(config) {
 
-var options = {
-  chromosomes: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y"],
-  //chromosomes: ["1", "2"],
-  //chromosomes: ["Y"],
-  chrWidth: 10,
-  chrHeight: 1000,
-  chrMargin: 10,
-  showBandLabels: true,
-  orientation: "vertical"
-};
+  this.chromosomes = config.chromosomes;
+  this.chrWidth = config.chrWidth;
+  this.chrHeight = config.chrHeight;
+  this.chrMargin = config.chrMargin;
+  this.showBandLabels = config.showBandLabels;
+  this.orientation = config.orientation;
 
-if (options.showBandLabels) {
-  options.chrMargin += 20;
+  if (config.showBandLabels) {
+    this.chrMargin += 20;
+  }
+
+  this.init();
+
 }
 
-function getBands(content, chromosomeName) {
+Ideogram.prototype.getBands = function(content, chromosomeName) {
   // Gets chromosome band data from a TSV file
 
   var tsvLines = content.split(/\r\n|\n/);
@@ -58,9 +58,11 @@ function getBands(content, chromosomeName) {
   }
 
   return lines;
-}
 
-function getChromosomeModel(bands, chromosomeName, scale) {
+};
+
+
+Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, scale) {
 
   var chr = {};
   var band;
@@ -86,12 +88,12 @@ function getChromosomeModel(bands, chromosomeName, scale) {
 }
 
 
-function drawBandLabels(chr, model, chrIndex) {
+Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
   // Draws labels for cytogenetic band , e.g. "p31.2"
 
   var t0 = new Date().getTime();
   
-  var chrMargin = (options.chrMargin + options.chrWidth) * chrIndex;
+  var chrMargin = (this.chrMargin + this.chrWidth) * chrIndex;
 
   chr.selectAll("text")
       .data(model.bands)
@@ -140,21 +142,21 @@ function drawBandLabels(chr, model, chrIndex) {
     }
 
   });
-  
+
   var t1 = new Date().getTime();
   console.log("Time in drawBandLabels: " + (t1 - t0) + " ms");
 
 }
 
 
-function rotateBandLabels(chr, chrIndex) {
+Ideogram.prototype.rotateBandLabels = function(chr, chrIndex) {
 
   console.log("Entered rotateBandLabels")
 
   var chrMargin, chrWidth;
 
-  chrWidth = options.chrWidth;
-  chrMargin = (options.chrMargin + chrWidth) * chrIndex;
+  chrWidth = this.chrWidth;
+  chrMargin = (this.chrMargin + chrWidth) * chrIndex;
   
   chr.selectAll("text.bandLabel")
     .attr("transform", "rotate(-90)")
@@ -164,7 +166,7 @@ function rotateBandLabels(chr, chrIndex) {
 }
 
 
-function drawChromosome(model, chrIndex) {
+Ideogram.prototype.drawChromosome = function(model, chrIndex) {
   // Create SVG container
 
   var chr, chrWidth, pxWidth,
@@ -174,10 +176,10 @@ function drawChromosome(model, chrIndex) {
     .append("g")
       .attr("id", model.id);
 
-  chrWidth = options.chrWidth;
+  chrWidth = this.chrWidth;
   pxWidth = model.pxWidth;
 
-  var chrMargin = (options.chrMargin + chrWidth) * chrIndex;
+  var chrMargin = (this.chrMargin + chrWidth) * chrIndex;
 
   chr.selectAll("path")   
     .data(model.bands)    
@@ -227,8 +229,8 @@ function drawChromosome(model, chrIndex) {
         return d;
       })
 
-  if (options.showBandLabels === true) {
-    drawBandLabels(chr, model, chrIndex);
+  if (this.showBandLabels === true) {
+    this.drawBandLabels(chr, model, chrIndex);
   }
     
   chr.append('path')
@@ -278,19 +280,21 @@ function drawChromosome(model, chrIndex) {
     .attr("y2", chrWidth + chrMargin)
 
 
-  if (options.orientation == "vertical") {
+  if (this.orientation == "vertical") {
 
     var chrMargin, chrWidth, tPadding;
 
-    chrWidth = options.chrWidth;
-    chrMargin = (options.chrMargin + chrWidth) * chrIndex;
+    chrWidth = this.chrWidth;
+    chrMargin = (this.chrMargin + chrWidth) * chrIndex;
 
     tPadding = chrMargin + (chrWidth-4)*(chrIndex-1);
 
     chr
       .attr("data-orientation", "vertical")
       .attr("transform", "rotate(90, " + (tPadding - 30) + ", " + (tPadding) + ")")
-    rotateBandLabels(chr, chrIndex);
+
+    this.rotateBandLabels(chr, chrIndex);
+
   } else {
     chr.attr("data-orientation", "horizontal")
   }
@@ -298,60 +302,15 @@ function drawChromosome(model, chrIndex) {
 }
 
 
-$.ajax({
-  //url: 'data/chr1_bands.tsv',
-  url: 'data/ideogram_9606_GCF_000001305.14_550_V1',
-  success: function(response) {
-    var t0 = new Date().getTime();
+Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
+  // Rotates a chromosome 90 degrees and shows or hides all other chromosomes
+  // Useful for focusing or defocusing a particular chromosome
+  // TODO: Scale chromosome to better fill available SVG height and width
 
-    var chrs = options.chromosomes,
-        i, chromosome, bands, chromosomeModel,
-        bandArray, maxLength, scale, scales, chrLength;
+  var id, chr, chrIndex, chrMargin, tPadding,
+      that = this;
 
-    var svg = d3.select("body")
-      .append("svg")
-        .attr("id", "ideogram")
-        .attr("width", "100%")
-        .attr("height", chrs.length * options.chrHeight + 20)
-
-    bandsArray = [];
-    maxLength = 0;
-    scales = [];
-
-    for (i = 0; i < chrs.length; i++) {
-      
-      chromosome = chrs[i];
-      bands = getBands(response, chromosome);
-      bandsArray.push(bands);
-      
-      chrLength = bands[bands.length - 1]["iscnStop"];
-
-      if (parseInt(chrLength, 10) > parseInt(maxLength, 10)) {
-        maxLength = chrLength;
-      }
-
-      scale = options.chrHeight * chrLength/maxLength;
-      scales.push(scale);
-    }
-
-    for (i = 0; i < chrs.length; i++) {
-      bands = bandsArray[i];
-      scale = scales[i];
-      chromosome = chrs[i];
-      chromosomeModel = getChromosomeModel(bands, chromosome, scale);
-      drawChromosome(chromosomeModel, i + 1);
-    }
-
-    var t1 = new Date().getTime();
-    console.log("Time constructing ideogram: " + (t1 - t0) + " ms")
-  }
-});
-
-$(document).on("click", "g", function() {
-
-  var id, chr, chrIndex, chrMargin, tPadding;
-
-  id = $(this).attr("id");
+  id = chromosomeID;
   
   chr = d3.select("#" + id);
   jqChr = $("#" + id);
@@ -359,23 +318,23 @@ $(document).on("click", "g", function() {
   jqOtherChrs = $("g[id!='" + id + "']");
 
   chrIndex = jqChr.index() + 1;
-  chrMargin = (options.chrMargin + options.chrWidth) * chrIndex;
+  chrMargin = (this.chrMargin + this.chrWidth) * chrIndex;
 
-  if (options.orientation == "vertical") {
+  if (this.orientation == "vertical") {
 
-    cx = chrMargin + (options.chrWidth-4)*(chrIndex-1) - 30;
+    cx = chrMargin + (this.chrWidth-4)*(chrIndex-1) - 30;
     cy = cx + 30;
     verticalTransform = "rotate(90, " + cx + ", " + cy + ")";
-    horizontalTransform = "rotate(0)translate(0, -" + (chrMargin - options.chrMargin) + ")";
+    horizontalTransform = "rotate(0)translate(0, -" + (chrMargin - this.chrMargin) + ")";
 
   } else {
 
     var bandPad = 0;
-    if (!options.showBandLabels) {
+    if (!this.showBandLabels) {
       bandPad += 10;
     }
 
-    cx = 6 + chrMargin + (options.chrWidth - options.chrMargin - bandPad)*(chrIndex);
+    cx = 6 + chrMargin + (this.chrWidth - this.chrMargin - bandPad)*(chrIndex);
     cy = cx;
     verticalTransform = "rotate(90, " + cx + ", " + cy + ")";
     horizontalTransform = "";
@@ -384,7 +343,7 @@ $(document).on("click", "g", function() {
 
   if (jqChr.attr("data-orientation") != "vertical") {
 
-    if (options.orientation == "horizontal") {
+    if (this.orientation == "horizontal") {
       jqOtherChrs.hide();
     }
 
@@ -394,9 +353,9 @@ $(document).on("click", "g", function() {
       .attr("transform", verticalTransform)
       .each("end", function() {
         
-        rotateBandLabels(chr, chrIndex) 
+        that.rotateBandLabels(chr, chrIndex) 
 
-        if (options.orientation == "vertical") {
+        if (that.orientation == "vertical") {
           jqOtherChrs.show();
         }
 
@@ -406,7 +365,7 @@ $(document).on("click", "g", function() {
 
     jqChr.attr("data-orientation", "");
 
-    if (options.orientation == "vertical") {
+    if (this.orientation == "vertical") {
       jqOtherChrs.hide();
     } 
 
@@ -420,7 +379,7 @@ $(document).on("click", "g", function() {
           .attr("x", function(d) { return -8 + d.pxLeft + d.pxWidth/2; })
           .attr("y", chrMargin - 10)
 
-        if (options.orientation == "horizontal") {
+        if (that.orientation == "horizontal") {
           jqOtherChrs.show();
         }
       
@@ -428,8 +387,60 @@ $(document).on("click", "g", function() {
 
   }
 
-  console.log("Exiting g click handler")
 
+}
+
+
+Ideogram.prototype.init = function() {
+
+  $.ajax({
+  //url: 'data/chr1_bands.tsv',
+  url: 'data/ideogram_9606_GCF_000001305.14_550_V1',
+  context: this,
+  success: function(response) {
+    var t0 = new Date().getTime();
+
+    var chrs = this.chromosomes,
+        i, chromosome, bands, chromosomeModel,
+        bandArray, maxLength, scale, scales, chrLength;
+
+    var svg = d3.select("body")
+      .append("svg")
+        .attr("id", "ideogram")
+        .attr("width", "100%")
+        .attr("height", chrs.length * this.chrHeight + 20)
+
+    bandsArray = [];
+    maxLength = 0;
+    scales = [];
+
+    for (i = 0; i < chrs.length; i++) {
+      
+      chromosome = chrs[i];
+      bands = this.getBands(response, chromosome);
+      bandsArray.push(bands);
+      
+      chrLength = bands[bands.length - 1]["iscnStop"];
+
+      if (parseInt(chrLength, 10) > parseInt(maxLength, 10)) {
+        maxLength = chrLength;
+      }
+
+      scale = this.chrHeight * chrLength/maxLength;
+      scales.push(scale);
+    }
+
+    for (i = 0; i < chrs.length; i++) {
+      bands = bandsArray[i];
+      scale = scales[i];
+      chromosome = chrs[i];
+      chromosomeModel = this.getChromosomeModel(bands, chromosome, scale);
+      this.drawChromosome(chromosomeModel, i + 1);
+    }
+
+    var t1 = new Date().getTime();
+    console.log("Time constructing ideogram: " + (t1 - t0) + " ms")
+  }
 });
 
-})();
+}
