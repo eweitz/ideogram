@@ -2,15 +2,6 @@ var Ideogram = function(config) {
 
   this.config = config;
 
-  /*
-  this.config.chromosomes = config.chromosomes;
-  this.config.chrWidth = config.chrWidth;
-  this.config.chrHeight = config.chrHeight;
-  this.config.chrMargin = config.chrMargin;
-  this.config.showBandLabels = config.showBandLabels;
-  this.config.orientation = config.orientation;
-  */
-
   if (config.showBandLabels) {
     this.config.chrMargin += 20;
   }
@@ -80,17 +71,17 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, scale) {
   chr["id"] = "chr" + chromosomeName;
   chr["length"] = bands[bands.length - 1]["iscnStop"];
 
-  var pxLeft = 0;
+  var offset = 0;
 
   for (var i = 0; i < bands.length; i++) {
     band = bands[i];
-    bands[i]["pxWidth"] = scale * (band.iscnStop - band.iscnStart)/chr["length"];
-    bands[i]["pxLeft"] = pxLeft;
-    pxLeft += bands[i]["pxWidth"];
+    bands[i]["width"] = scale * (band.iscnStop - band.iscnStart)/chr["length"];
+    bands[i]["offset"] = offset;
+    offset += bands[i]["width"];
   }
 
-  chr["pxWidth"] = pxLeft;
-  chr["scale"] = scale;
+  chr["width"] = offset;
+  chr["scale"] = band.iscnStop / band.stop;
 
   chr["bands"] = bands;
 
@@ -110,7 +101,7 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
       .enter()
       .append("text")
         .attr("class", "bandLabel")
-        .attr("x", function(d) { return -8 + d.pxLeft + d.pxWidth/2; })
+        .attr("x", function(d) { return -8 + d.offset + d.width/2; })
         .attr("y", chrMargin - 10)
         .text(function(d) { return d.name; })
   
@@ -119,9 +110,9 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
     .enter()
     .append("line")
       .attr("class", function(d) { return "bandLabelStalk " + d.name.replace(".", "-")  })
-      .attr("x1", function(d) { return d.pxLeft + d.pxWidth/2; })
+      .attr("x1", function(d) { return d.offset + d.width/2; })
       .attr("y1", chrMargin)
-      .attr("x2", function(d) { return d.pxLeft + d.pxWidth/2; })
+      .attr("x2", function(d) { return d.offset + d.width/2; })
       .attr("y2", chrMargin - 8)
 
   var overlappingLabelXRight = 0;
@@ -171,7 +162,7 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex) {
   chr.selectAll("text.bandLabel")
     .attr("transform", "rotate(-90)")
     .attr("x", 8 - chrMargin)
-    .attr("y", function(d) { return 2 + d.pxLeft + d.pxWidth/2; });
+    .attr("y", function(d) { return 2 + d.offset + d.width/2; });
 
 }
 
@@ -179,7 +170,7 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex) {
 Ideogram.prototype.drawChromosome = function(model, chrIndex) {
   // Create SVG container
 
-  var chr, chrWidth, pxWidth,
+  var chr, chrWidth, width,
       pArmWidth, selector, qArmStart, qArmWidth;
 
   chr = d3.select("svg")
@@ -187,7 +178,7 @@ Ideogram.prototype.drawChromosome = function(model, chrIndex) {
       .attr("id", model.id);
 
   chrWidth = this.config.chrWidth;
-  pxWidth = model.pxWidth;
+  width = model.width;
 
   var chrMargin = (this.config.chrMargin + chrWidth) * chrIndex;
 
@@ -205,8 +196,8 @@ Ideogram.prototype.drawChromosome = function(model, chrIndex) {
         return cls;
       })
       .attr("d", function(d, i) {
-        var x = d.pxWidth,
-            left = d.pxLeft;
+        var x = d.width,
+            left = d.offset;
 
         if (d.stain == "acen") {
           x -= 4;
@@ -249,7 +240,7 @@ Ideogram.prototype.drawChromosome = function(model, chrIndex) {
 
   chr.append('path')
     .attr("class", "q-ter chromosomeBorder " + model.bands[model.bands.length - 1].stain)
-    .attr("d", "M " + pxWidth + " " + chrMargin + " q 8 " +  chrWidth/2 + " 0 " + chrWidth)
+    .attr("d", "M " + width + " " + chrMargin + " q 8 " +  chrWidth/2 + " 0 " + chrWidth)
 
   // Why does human chromosome 11 lack a centromeric p-arm band?
   if ($("#" + model.id + " .p-cen").length > 0) {
@@ -259,7 +250,7 @@ Ideogram.prototype.drawChromosome = function(model, chrIndex) {
   }
   
   qArmStart = $("#" + model.id + " .q-cen").next()[0].getBBox().x;
-  qArmWidth = model.pxWidth - qArmStart;
+  qArmWidth = model.width - qArmStart;
 
   chr.append('line')
     .attr("class", "cb-p-arm-top chromosomeBorder")
@@ -386,7 +377,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
         
         chr.selectAll("text")
           .attr("transform", "")
-          .attr("x", function(d) { return -8 + d.pxLeft + d.pxWidth/2; })
+          .attr("x", function(d) { return -8 + d.offset + d.width/2; })
           .attr("y", chrMargin - 10)
 
         if (that.orientation == "horizontal") {
@@ -401,57 +392,65 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 }
 
 
-Ideogram.prototype.convertBaseToOffset = function() {
-
+Ideogram.prototype.convertBaseToOffset = function(chr, bp) {
+  return chr["scale"] * bp;
 }
 
 
-Ideogram.prototype.drawSynteny = function(range1, range2) {
+Ideogram.prototype.drawSynteny = function(syntenicRegions) {
   // Draws a trapezoid connecting a genomic range on 
   // one chromosome to a genomic range on another chromosome;
   // a syntenic region
 
-  
-  var r1 = range1,
-      r2 = range2,
+  var r1, r2,
       c1Box, c2Box,
       chr1Plane, chr2Plane, 
       polygon, 
-      svg;
-
-  c1Box = $("#" + r1.chr.id + " path")[0].getBBox();
-  c2Box = $("#" + r2.chr.id + " path")[0].getBBox();
-  
-  chr1Plane = c1Box.y - 30
-  chr2Plane = c2Box.y - 29;
+      i, svg;
 
   svg = d3.select("svg");
 
-  svg.append("polygon")
-    .attr("points",
-      chr1Plane + ', ' + r1.start + ' ' + 
-      chr1Plane + ', ' + r1.stop + ' ' + 
-      chr2Plane + ', ' + r2.stop + ' ' +  
-      chr2Plane + ', ' + r2.start 
-      
-    )
-    .attr('style', "fill:#CFC")
-  
-  svg.append("line")
-    .attr("x1", chr1Plane)
-    .attr("x2", chr2Plane)
-    .attr("y1", r1.start)
-    .attr("y2", r2.start)
-    .attr("style", "stroke:#AAA;stroke-width:1;")
+  for (i = 0; i < syntenicRegions.length; i++) {
+
+    r1 = syntenicRegions[i][0];
+    r2 = syntenicRegions[i][1];
+
+    r1.start += 30;
+    r1.stop += 30;
+    r2.start += 30;
+    r2.stop += 30;
+
+    c1Box = $("#" + r1.chr.id + " path")[0].getBBox();
+    c2Box = $("#" + r2.chr.id + " path")[0].getBBox();
     
-  svg.append("line")
-    .attr("x1", chr1Plane)
-    .attr("x2", chr2Plane)
-    .attr("y1", r1.stop)
-    .attr("y2", r2.stop)
-    .attr("style", "stroke:#AAA;stroke-width:1;")
-  
+    chr1Plane = c1Box.y - 30
+    chr2Plane = c2Box.y - 29;
+
+    svg.append("polygon")
+      .attr("points",
+        chr1Plane + ', ' + r1.start + ' ' + 
+        chr1Plane + ', ' + r1.stop + ' ' + 
+        chr2Plane + ', ' + r2.stop + ' ' +  
+        chr2Plane + ', ' + r2.start
+      )
+      .attr('style', "fill:#CFC")
+    
+    svg.append("line")
+      .attr("x1", chr1Plane)
+      .attr("x2", chr2Plane)
+      .attr("y1", r1.start)
+      .attr("y2", r2.start)
+      .attr("style", "stroke:#AAA;stroke-width:1;")
+      
+    svg.append("line")
+      .attr("x1", chr1Plane)
+      .attr("x2", chr2Plane)
+      .attr("y1", r1.stop)
+      .attr("y2", r2.stop)
+      .attr("style", "stroke:#AAA;stroke-width:1;")
+  }
 }
+
 
 Ideogram.prototype.onLoad = function() {
   // Called when Ideogram has finished initializing.
