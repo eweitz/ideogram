@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Synteny - Ideogram</title>
+  <link type="text/css" rel="stylesheet" href="css/ideogram.css"/>
+  <script type="text/javascript" src="js/d3.min.js"></script>
+  <script type="text/javascript" src="js/jquery.min.js"></script>
+  <script type="text/javascript" src="js/ideogram.js"></script>
+</head>
+<body>
+  <p>Synteny - Ideogram</p>
+</body>
+<script type="text/javascript">
+
+function onIdeogramLoad() {
+
+	var chrs = ideogram.chromosomes,
+		r1Band = chrs["1"]["bands"][7],
+		r2Band = chrs["2"]["bands"][9],
+		r2aBand = chrs["2"]["bands"][11],
+		r2Stop;
+
+	r2Stop = r2aBand["pxLeft"] + r2aBand["pxWidth"];
+
+	var range1 = {
+		chr: chrs["1"],
+		start: r1Band["pxLeft"] + 30,
+		stop: r1Band["pxLeft"] + r1Band["pxWidth"] + 30
+	};
+
+	var range2 = {
+		chr: chrs["2"],
+		start: r2Band["pxLeft"] + 30,
+		stop: r2Stop + 30
+	};
+	
+	ideogram.drawSynteny(range1, range2);
+	
+}
+
+var config = {
+  
+  chromosomes: ["1", "2"],
+  //chromosomes: ["Y"],
+  chrWidth: 10,
+  chrHeight: 500,
+  chrMargin: 400,
+  showBandLabels: true,
+  orientation: "vertical",
+  onLoad: onIdeogramLoad
+};
+
+var ideogram = new Ideogram(config);
+
+</script>
+</html>

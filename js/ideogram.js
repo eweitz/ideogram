@@ -1,15 +1,25 @@
 var Ideogram = function(config) {
 
-  this.chromosomes = config.chromosomes;
-  this.chrWidth = config.chrWidth;
-  this.chrHeight = config.chrHeight;
-  this.chrMargin = config.chrMargin;
-  this.showBandLabels = config.showBandLabels;
-  this.orientation = config.orientation;
+  this.config = config;
+
+  /*
+  this.config.chromosomes = config.chromosomes;
+  this.config.chrWidth = config.chrWidth;
+  this.config.chrHeight = config.chrHeight;
+  this.config.chrMargin = config.chrMargin;
+  this.config.showBandLabels = config.showBandLabels;
+  this.config.orientation = config.orientation;
+  */
 
   if (config.showBandLabels) {
-    this.chrMargin += 20;
+    this.config.chrMargin += 20;
   }
+
+  if (config.onLoad) {
+    this.onLoadCallback = config.onLoad;
+  }
+
+  this.chromosomes = {};
 
   this.init();
 
@@ -74,7 +84,7 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, scale) {
 
   for (var i = 0; i < bands.length; i++) {
     band = bands[i];
-    bands[i]["pxWidth"] = scale * (band.iscnStop - band.iscnStart)/chr.length;
+    bands[i]["pxWidth"] = scale * (band.iscnStop - band.iscnStart)/chr["length"];
     bands[i]["pxLeft"] = pxLeft;
     pxLeft += bands[i]["pxWidth"];
   }
@@ -93,7 +103,7 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
 
   var t0 = new Date().getTime();
   
-  var chrMargin = (this.chrMargin + this.chrWidth) * chrIndex;
+  var chrMargin = (this.config.chrMargin + this.config.chrWidth) * chrIndex;
 
   chr.selectAll("text")
       .data(model.bands)
@@ -155,8 +165,8 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex) {
 
   var chrMargin, chrWidth;
 
-  chrWidth = this.chrWidth;
-  chrMargin = (this.chrMargin + chrWidth) * chrIndex;
+  chrWidth = this.config.chrWidth;
+  chrMargin = (this.config.chrMargin + chrWidth) * chrIndex;
   
   chr.selectAll("text.bandLabel")
     .attr("transform", "rotate(-90)")
@@ -176,10 +186,10 @@ Ideogram.prototype.drawChromosome = function(model, chrIndex) {
     .append("g")
       .attr("id", model.id);
 
-  chrWidth = this.chrWidth;
+  chrWidth = this.config.chrWidth;
   pxWidth = model.pxWidth;
 
-  var chrMargin = (this.chrMargin + chrWidth) * chrIndex;
+  var chrMargin = (this.config.chrMargin + chrWidth) * chrIndex;
 
   chr.selectAll("path")   
     .data(model.bands)    
@@ -229,7 +239,7 @@ Ideogram.prototype.drawChromosome = function(model, chrIndex) {
         return d;
       })
 
-  if (this.showBandLabels === true) {
+  if (this.config.showBandLabels === true) {
     this.drawBandLabels(chr, model, chrIndex);
   }
     
@@ -280,12 +290,12 @@ Ideogram.prototype.drawChromosome = function(model, chrIndex) {
     .attr("y2", chrWidth + chrMargin)
 
 
-  if (this.orientation == "vertical") {
+  if (this.config.orientation == "vertical") {
 
     var chrMargin, chrWidth, tPadding;
 
-    chrWidth = this.chrWidth;
-    chrMargin = (this.chrMargin + chrWidth) * chrIndex;
+    chrWidth = this.config.chrWidth;
+    chrMargin = (this.config.chrMargin + chrWidth) * chrIndex;
 
     tPadding = chrMargin + (chrWidth-4)*(chrIndex-1);
 
@@ -318,23 +328,23 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
   jqOtherChrs = $("g[id!='" + id + "']");
 
   chrIndex = jqChr.index() + 1;
-  chrMargin = (this.chrMargin + this.chrWidth) * chrIndex;
+  chrMargin = (this.config.chrMargin + this.config.chrWidth) * chrIndex;
 
-  if (this.orientation == "vertical") {
+  if (this.config.orientation == "vertical") {
 
-    cx = chrMargin + (this.chrWidth-4)*(chrIndex-1) - 30;
+    cx = chrMargin + (this.config.chrWidth-4)*(chrIndex-1) - 30;
     cy = cx + 30;
     verticalTransform = "rotate(90, " + cx + ", " + cy + ")";
-    horizontalTransform = "rotate(0)translate(0, -" + (chrMargin - this.chrMargin) + ")";
+    horizontalTransform = "rotate(0)translate(0, -" + (chrMargin - this.config.chrMargin) + ")";
 
   } else {
 
     var bandPad = 0;
-    if (!this.showBandLabels) {
+    if (!this.config.showBandLabels) {
       bandPad += 10;
     }
 
-    cx = 6 + chrMargin + (this.chrWidth - this.chrMargin - bandPad)*(chrIndex);
+    cx = 6 + chrMargin + (this.config.chrWidth - this.config.chrMargin - bandPad)*(chrIndex);
     cy = cx;
     verticalTransform = "rotate(90, " + cx + ", " + cy + ")";
     horizontalTransform = "";
@@ -343,7 +353,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 
   if (jqChr.attr("data-orientation") != "vertical") {
 
-    if (this.orientation == "horizontal") {
+    if (this.config.orientation == "horizontal") {
       jqOtherChrs.hide();
     }
 
@@ -365,7 +375,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 
     jqChr.attr("data-orientation", "");
 
-    if (this.orientation == "vertical") {
+    if (this.config.orientation == "vertical") {
       jqOtherChrs.hide();
     } 
 
@@ -391,6 +401,67 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 }
 
 
+Ideogram.prototype.convertBaseToOffset = function() {
+
+}
+
+
+Ideogram.prototype.drawSynteny = function(range1, range2) {
+  // Draws a trapezoid connecting a genomic range on 
+  // one chromosome to a genomic range on another chromosome;
+  // a syntenic region
+
+  
+  var r1 = range1,
+      r2 = range2,
+      c1Box, c2Box,
+      chr1Plane, chr2Plane, 
+      polygon, 
+      svg;
+
+  c1Box = $("#" + r1.chr.id + " path")[0].getBBox();
+  c2Box = $("#" + r2.chr.id + " path")[0].getBBox();
+  
+  chr1Plane = c1Box.y - 30
+  chr2Plane = c2Box.y - 29;
+
+  svg = d3.select("svg");
+
+  svg.append("polygon")
+    .attr("points",
+      chr1Plane + ', ' + r1.start + ' ' + 
+      chr1Plane + ', ' + r1.stop + ' ' + 
+      chr2Plane + ', ' + r2.stop + ' ' +  
+      chr2Plane + ', ' + r2.start 
+      
+    )
+    .attr('style', "fill:#CFC")
+  
+  svg.append("line")
+    .attr("x1", chr1Plane)
+    .attr("x2", chr2Plane)
+    .attr("y1", r1.start)
+    .attr("y2", r2.start)
+    .attr("style", "stroke:#AAA;stroke-width:1;")
+    
+  svg.append("line")
+    .attr("x1", chr1Plane)
+    .attr("x2", chr2Plane)
+    .attr("y1", r1.stop)
+    .attr("y2", r2.stop)
+    .attr("style", "stroke:#AAA;stroke-width:1;")
+  
+}
+
+Ideogram.prototype.onLoad = function() {
+  // Called when Ideogram has finished initializing.
+  // Accounts for certain ideogram properties not being set until 
+  // asynchronous requests succeed, etc.
+
+  call(this.onLoadCallback);
+
+}
+
 Ideogram.prototype.init = function() {
 
   $.ajax({
@@ -400,7 +471,7 @@ Ideogram.prototype.init = function() {
   success: function(response) {
     var t0 = new Date().getTime();
 
-    var chrs = this.chromosomes,
+    var chrs = this.config.chromosomes,
         i, chromosome, bands, chromosomeModel,
         bandArray, maxLength, scale, scales, chrLength;
 
@@ -408,7 +479,7 @@ Ideogram.prototype.init = function() {
       .append("svg")
         .attr("id", "ideogram")
         .attr("width", "100%")
-        .attr("height", chrs.length * this.chrHeight + 20)
+        .attr("height", chrs.length * this.config.chrHeight + 20)
 
     bandsArray = [];
     maxLength = 0;
@@ -420,13 +491,13 @@ Ideogram.prototype.init = function() {
       bands = this.getBands(response, chromosome);
       bandsArray.push(bands);
       
-      chrLength = bands[bands.length - 1]["iscnStop"];
+      chrLength = parseInt(bands[bands.length - 1]["iscnStop"], 10);
 
-      if (parseInt(chrLength, 10) > parseInt(maxLength, 10)) {
+      if (chrLength > maxLength) {
         maxLength = chrLength;
       }
 
-      scale = this.chrHeight * chrLength/maxLength;
+      scale = this.config.chrHeight * chrLength/maxLength;
       scales.push(scale);
     }
 
@@ -435,11 +506,18 @@ Ideogram.prototype.init = function() {
       scale = scales[i];
       chromosome = chrs[i];
       chromosomeModel = this.getChromosomeModel(bands, chromosome, scale);
+      
+      this.chromosomes[chromosome] = chromosomeModel;
+
       this.drawChromosome(chromosomeModel, i + 1);
     }
 
     var t1 = new Date().getTime();
     console.log("Time constructing ideogram: " + (t1 - t0) + " ms")
+
+    if (this.onLoadCallback) {
+      this.onLoadCallback();
+    }
   }
 });
 
