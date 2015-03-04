@@ -21,25 +21,39 @@ function onIdeogramLoad() {
 		r1Band = chr1["bands"][7],
 		r2Band = chr2["bands"][9],
 		r2aBand = chr2["bands"][11],
-		r2Stop,
 		range1, range2, 
 		syntenicRegions = [];
 
-	r2Stop = r2aBand["offset"] + r2aBand["width"];
+
+	console.log(r1Band);
+	console.log(r2Band);
 
 	range1 = {
 		chr: chr1,
-		start: r1Band["offset"],
-		stop: r1Band["offset"] + r1Band["width"]
+		start: r1Band["start"],
+		stop: r1Band["stop"]
 	};
 
 	range2 = {
 		chr: chr2,
-		start: r2Band["offset"],
-		stop: r2Stop
+		start: r2Band["start"],
+		stop: r2Band["stop"]
 	};
 	
-	syntenicRegions.push([range1, range2]);
+	
+	var range3 = {
+		chr: chr1,
+		start: 125000000,
+		stop: 126000000
+	}
+	
+	var range4 = {
+		chr: chr2,
+		start: 15000000,
+		stop: 36000000
+	} 
+
+	syntenicRegions.push([range1, range2], [range3, range4]);
 
 	ideogram.drawSynteny(syntenicRegions);
 	

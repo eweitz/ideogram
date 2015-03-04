@@ -10,6 +10,7 @@ var Ideogram = function(config) {
     this.onLoadCallback = config.onLoad;
   }
 
+  this.maxLength = 0;
   this.chromosomes = {};
 
   this.init();
@@ -46,10 +47,10 @@ Ideogram.prototype.getBands = function(content, chromosomeName) {
 
     line = {
       "chr": columns[0],
-      "start": columns[5],
-      "stop": columns[6],
-      "iscnStart": columns[3],
-      "iscnStop": columns[4],
+      "start": parseInt(columns[5], 10),
+      "stop": parseInt(columns[6], 10),
+      "iscnStart": parseInt(columns[3], 10),
+      "iscnStop": parseInt(columns[4], 10),
       "name": columns[1] + columns[2],
       "stain": stain
     };
@@ -66,22 +67,25 @@ Ideogram.prototype.getBands = function(content, chromosomeName) {
 Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, scale) {
 
   var chr = {};
-  var band;
+  var band, scale;
 
   chr["id"] = "chr" + chromosomeName;
   chr["length"] = bands[bands.length - 1]["iscnStop"];
 
   var offset = 0;
-
+  
   for (var i = 0; i < bands.length; i++) {
     band = bands[i];
-    bands[i]["width"] = scale * (band.iscnStop - band.iscnStart)/chr["length"];
+    bands[i]["width"] = this.config.chrHeight * chr["length"]/this.maxLength * (band.iscnStop - band.iscnStart)/chr["length"];
     bands[i]["offset"] = offset;
     offset += bands[i]["width"];
   }
 
   chr["width"] = offset;
-  chr["scale"] = band.iscnStop / band.stop;
+
+  scale = band.iscnStop / band.stop;
+  chr["scale"] = scale;
+  chr["baseScale"] = this.config.chrHeight * scale;
 
   chr["bands"] = bands;
 
@@ -392,8 +396,8 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 }
 
 
-Ideogram.prototype.convertBaseToOffset = function(chr, bp) {
-  return chr["scale"] * bp;
+Ideogram.prototype.convertBpToOffset = function(chr, bp) {
+  return (chr["scale"] * chr["baseScale"] * bp) + 30;
 }
 
 
@@ -415,10 +419,13 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
     r1 = syntenicRegions[i][0];
     r2 = syntenicRegions[i][1];
 
-    r1.start += 30;
-    r1.stop += 30;
-    r2.start += 30;
-    r2.stop += 30;
+    r1.start = this.convertBpToOffset(r1.chr, r1.start);
+    r1.stop = this.convertBpToOffset(r1.chr, r1.stop);
+    r2.start = this.convertBpToOffset(r2.chr, r2.start);
+    r2.stop = this.convertBpToOffset(r2.chr, r2.stop);
+
+    console.log("r1.start")
+    console.log(r1.start)
 
     c1Box = $("#" + r1.chr.id + " path")[0].getBBox();
     c2Box = $("#" + r2.chr.id + " path")[0].getBBox();
@@ -472,7 +479,9 @@ Ideogram.prototype.init = function() {
 
     var chrs = this.config.chromosomes,
         i, chromosome, bands, chromosomeModel,
-        bandArray, maxLength, scale, scales, chrLength;
+        bandArray, maxLength, chrLength,
+        scale, scales,
+        baseScale, baseScales;
 
     var svg = d3.select("body")
       .append("svg")
@@ -490,21 +499,20 @@ Ideogram.prototype.init = function() {
       bands = this.getBands(response, chromosome);
       bandsArray.push(bands);
       
-      chrLength = parseInt(bands[bands.length - 1]["iscnStop"], 10);
+      chrLength = bands[bands.length - 1]["iscnStop"];
 
-      if (chrLength > maxLength) {
-        maxLength = chrLength;
+      if (chrLength > this.maxLength) {
+        this.maxLength = chrLength;
       }
-
-      scale = this.config.chrHeight * chrLength/maxLength;
-      scales.push(scale);
     }
 
     for (i = 0; i < chrs.length; i++) {
       bands = bandsArray[i];
-      scale = scales[i];
+      
+      chrLength = bands[bands.length - 1]["iscnStop"];
+      
       chromosome = chrs[i];
-      chromosomeModel = this.getChromosomeModel(bands, chromosome, scale);
+      chromosomeModel = this.getChromosomeModel(bands, chromosome);
       
       this.chromosomes[chromosome] = chromosomeModel;
 
