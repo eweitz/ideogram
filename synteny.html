@@ -24,10 +24,6 @@ function onIdeogramLoad() {
 		range1, range2, 
 		syntenicRegions = [];
 
-
-	console.log(r1Band);
-	console.log(r2Band);
-
 	range1 = {
 		chr: chr1,
 		start: r1Band["start"],
@@ -40,18 +36,17 @@ function onIdeogramLoad() {
 		stop: r2Band["stop"]
 	};
 	
-	
 	var range3 = {
 		chr: chr1,
 		start: 125000000,
 		stop: 126000000
-	}
+	};
 	
 	var range4 = {
 		chr: chr2,
 		start: 15000000,
 		stop: 36000000
-	} 
+	};
 
 	syntenicRegions.push([range1, range2], [range3, range4]);
 
@@ -60,12 +55,12 @@ function onIdeogramLoad() {
 }
 
 var config = {
-  
+  taxid: 10090,
   chromosomes: ["1", "2"],
   //chromosomes: ["Y"],
   chrWidth: 10,
   chrHeight: 500,
-  chrMargin: 400,
+  chrMargin: 200,
   showBandLabels: true,
   orientation: "vertical",
   onLoad: onIdeogramLoad

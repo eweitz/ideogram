@@ -246,14 +246,30 @@ Ideogram.prototype.drawChromosome = function(model, chrIndex) {
     .attr("class", "q-ter chromosomeBorder " + model.bands[model.bands.length - 1].stain)
     .attr("d", "M " + width + " " + chrMargin + " q 8 " +  chrWidth/2 + " 0 " + chrWidth)
 
+  var pcen = $("#" + model.id + " .p-cen"),
+      qcen = $("#" + model.id + " .q-cen");
+
   // Why does human chromosome 11 lack a centromeric p-arm band?
-  if ($("#" + model.id + " .p-cen").length > 0) {
-    pArmWidth = $("#" + model.id + " .p-cen")[0].getBBox().x;
+  if (pcen.length > 0) {
+    pArmWidth = pcen[0].getBBox().x;
   } else {
-    pArmWidth = $("#" + model.id + " .q-cen").prev()[0].getBBox().x;
+    if (qcen.length > 0) {
+      pArmWidth = qcen.prev()[0].getBBox().x;
+    } else {
+      // For telocentric centromeres, as in many mouse chromosomes
+      pArmWidth = 5;
+    }
   }
   
-  qArmStart = $("#" + model.id + " .q-cen").next()[0].getBBox().x;
+  if (qcen.length > 0) {
+    qArmStart = qcen.next()[0].getBBox().x;
+  } else {
+    // TODO: Generalize
+    // For mouse only; presumably other organisms with telocentric centromeres
+    // don't have their first q-arm band named 'qA1'.
+    qArmStart = $("#" + model.id + " .pter").next()[0].getBBox().x;
+  }
+
   qArmWidth = model.width - qArmStart;
 
   chr.append('line')
@@ -468,11 +484,26 @@ Ideogram.prototype.onLoad = function() {
 
 }
 
+
+
 Ideogram.prototype.init = function() {
+
+  var bandDataFile,
+      taxid = this.config.taxid;
+
+  if (typeof this.config.taxid == "undefined") {
+    taxid = 9606;
+  }
+
+  if (taxid == 9606) {
+    bandDataFile = "ideogram_9606_GCF_000001305.14_550_V1";
+  } else if (taxid == 10090) {
+    bandDataFile = "ideogram_10090_GCF_000000055.19_NA_V2";
+  }
 
   $.ajax({
   //url: 'data/chr1_bands.tsv',
-  url: 'data/ideogram_9606_GCF_000001305.14_550_V1',
+  url: 'data/' + bandDataFile,
   context: this,
   success: function(response) {
     var t0 = new Date().getTime();
