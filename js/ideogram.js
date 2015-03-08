@@ -89,6 +89,16 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, scale) {
 
   chr["bands"] = bands;
 
+  chr["centromerePosition"] = "";
+  if (bands[0].stop - bands[0].start == 1) {
+    // As with mouse
+    chr["centromerePosition"] = "telocentric";
+
+    // Remove placeholder pter band
+    chr["bands"] = chr["bands"].slice(1);
+  }
+
+
   return chr;
 }
 
@@ -171,28 +181,40 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex) {
 }
 
 
-Ideogram.prototype.drawChromosome = function(model, chrIndex) {
+Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
   // Create SVG container
 
   var chr, chrWidth, width,
-      pArmWidth, selector, qArmStart, qArmWidth;
+      pArmWidth, selector, qArmStart, qArmWidth,
+      pTerPad; 
+
+  // p-terminal band padding
+  if (chrModel.centromerePosition != "telocentric") {
+    pTerPad = 8;
+  } else {
+    pTerPad = 2;
+  }
 
   chr = d3.select("svg")
     .append("g")
-      .attr("id", model.id);
+      .attr("id", chrModel.id);
 
   chrWidth = this.config.chrWidth;
-  width = model.width;
+  width = chrModel.width;
 
   var chrMargin = (this.config.chrMargin + chrWidth) * chrIndex;
 
   chr.selectAll("path")   
-    .data(model.bands)    
+    .data(chrModel.bands)    
     .enter()
     .append("path")       
-      .attr("id", function(d) { return d.name.replace(".", "-"); })
+      .attr("id", function(d) { 
+        // e.g. 1q31
+        var band = d.name.replace(".", "-"); 
+        return chrModel.id + "-" + band; 
+      })
       .attr("class", function(d) { 
-        var cls = d.stain;
+        var cls = "band " + d.stain;
         if (d.stain == "acen") {
           var arm = d.name[0]; // e.g. p in p11
           cls += " " + arm + "-cen";
@@ -221,7 +243,7 @@ Ideogram.prototype.drawChromosome = function(model, chrIndex) {
         } else {  
 
           if (i == 0) {
-            left += 8;
+            left += pTerPad;
           }
 
           d = 
@@ -235,19 +257,43 @@ Ideogram.prototype.drawChromosome = function(model, chrIndex) {
       })
 
   if (this.config.showBandLabels === true) {
-    this.drawBandLabels(chr, model, chrIndex);
+    this.drawBandLabels(chr, chrModel, chrIndex);
   }
-    
-  chr.append('path')
-    .attr("class", "p-ter chromosomeBorder " + model.bands[0].stain)
-    .attr("d", "M 8 " + chrMargin + " q -8 " + (chrWidth/2) + " 0 " + chrWidth)
+  
+  if (chrModel.centromerePosition != "telocentric") {
+    // As in human
+    chr.append('path')
+      .attr("class", "p-ter chromosomeBorder " + chrModel.bands[0].stain)
+      .attr("d", 
+        "M " + pTerPad + " " + chrMargin + " " + 
+        "q -" + pTerPad + " " + (chrWidth/2) + " 0 " + chrWidth)
+  } else {
+    // As in mouse
+    chr.append('path')
+      .attr("class", "p-ter chromosomeBorder " + chrModel.bands[0].stain)
+      //4 40 l -4 0 l 0 10 l 4 0 z
+      .attr("d", 
+        "M " + pTerPad + " " + chrMargin + " " + 
+        "l -" + pTerPad + " 0 " + 
+        "l 0 " + chrWidth + " " + 
+        "l " + pTerPad + " 0 z")  
+
+    chr.append('line')
+      .attr("x1", pTerPad - 1)
+      .attr("y1", chrMargin + (chrWidth/2)
+      .attr("x2", pTerPad + 9)  
+      .attr("y2", chrMargin + chrWidth/2)
+      .style("stroke", "#000")
+
+  }
+  
 
   chr.append('path')
-    .attr("class", "q-ter chromosomeBorder " + model.bands[model.bands.length - 1].stain)
+    .attr("class", "q-ter chromosomeBorder " + chrModel.bands[chrModel.bands.length - 1].stain)
     .attr("d", "M " + width + " " + chrMargin + " q 8 " +  chrWidth/2 + " 0 " + chrWidth)
 
-  var pcen = $("#" + model.id + " .p-cen"),
-      qcen = $("#" + model.id + " .q-cen");
+  var pcen = $("#" + chrModel.id + " .p-cen"),
+      qcen = $("#" + chrModel.id + " .q-cen");
 
   // Why does human chromosome 11 lack a centromeric p-arm band?
   if (pcen.length > 0) {
@@ -267,10 +313,10 @@ Ideogram.prototype.drawChromosome = function(model, chrIndex) {
     // TODO: Generalize
     // For mouse only; presumably other organisms with telocentric centromeres
     // don't have their first q-arm band named 'qA1'.
-    qArmStart = $("#" + model.id + " .pter").next()[0].getBBox().x;
+    qArmStart = $("#" + chrModel.id + " .band")[0].getBBox().x;
   }
 
-  qArmWidth = model.width - qArmStart;
+  qArmWidth = chrModel.width - qArmStart;
 
   chr.append('line')
     .attr("class", "cb-p-arm-top chromosomeBorder")
