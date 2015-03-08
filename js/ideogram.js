@@ -271,22 +271,21 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
     // As in mouse
     chr.append('path')
       .attr("class", "p-ter chromosomeBorder " + chrModel.bands[0].stain)
-      //4 40 l -4 0 l 0 10 l 4 0 z
       .attr("d", 
         "M " + pTerPad + " " + chrMargin + " " + 
         "l -" + pTerPad + " 0 " + 
         "l 0 " + chrWidth + " " + 
         "l " + pTerPad + " 0 z")  
 
-    chr.append('line')
-      .attr("x1", pTerPad - 1)
-      .attr("y1", chrMargin + (chrWidth/2)
-      .attr("x2", pTerPad + 9)  
-      .attr("y2", chrMargin + chrWidth/2)
-      .style("stroke", "#000")
-
+    chr.insert('path', ':first-child')
+      .attr("class", "acen")
+      .attr("d",
+        "M " + (pTerPad - 1) + " " + (chrMargin + chrWidth * 0.1) + " " +
+        "l " + (pTerPad + 9) + " 0 " + 
+        "l 0 " + chrWidth * 0.8 + " " + 
+        "l -" + (pTerPad + 9) + " 0 z")
+      
   }
-  
 
   chr.append('path')
     .attr("class", "q-ter chromosomeBorder " + chrModel.bands[chrModel.bands.length - 1].stain)
@@ -422,7 +421,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
         
         that.rotateBandLabels(chr, chrIndex) 
 
-        if (that.orientation == "vertical") {
+        if (that.config.orientation == "vertical") {
           jqOtherChrs.show();
         }
 
@@ -446,7 +445,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
           .attr("x", function(d) { return -8 + d.offset + d.width/2; })
           .attr("y", chrMargin - 10)
 
-        if (that.orientation == "horizontal") {
+        if (that.config.orientation == "horizontal") {
           jqOtherChrs.show();
         }
       
@@ -485,9 +484,6 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
     r1.stop = this.convertBpToOffset(r1.chr, r1.stop);
     r2.start = this.convertBpToOffset(r2.chr, r2.start);
     r2.stop = this.convertBpToOffset(r2.chr, r2.stop);
-
-    console.log("r1.start")
-    console.log(r1.start)
 
     c1Box = $("#" + r1.chr.id + " path")[0].getBBox();
     c2Box = $("#" + r2.chr.id + " path")[0].getBBox();
