@@ -29,7 +29,9 @@ line.bandLabelStalk {
 /* NCBI stain density colors */ 
 .gneg {fill: #FFF}
 .gpos25 {fill: #BBB}
+.gpos33 {fill: #AAA}
 .gpos50 {fill: #888}
+.gpos66 {fill: #666}
 .gpos75 {fill: #444}
 .gpos100 {fill: #000}
 .acen {fill: #FDD}

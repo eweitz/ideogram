@@ -1,21 +1,30 @@
 var Ideogram = function(config) {
 
-  this.chromosomes = config.chromosomes;
-  this.chrWidth = config.chrWidth;
-  this.chrHeight = config.chrHeight;
-  this.chrMargin = config.chrMargin;
-  this.showBandLabels = config.showBandLabels;
-  this.orientation = config.orientation;
+  this.config = config;
 
   if (config.showBandLabels) {
-    this.chrMargin += 20;
+    this.config.chrMargin += 20;
   }
+
+  if (config.onLoad) {
+    this.onLoadCallback = config.onLoad;
+  }
+
+  this.coordinateSystem = "iscn";
+
+  this.maxLength = {
+    "bp": 0,
+    "iscn": 0
+  }
+
+  this.chromosomes = {};
+  this.bandData = {};
 
   this.init();
 
 }
 
-Ideogram.prototype.getBands = function(content, chromosomeName) {
+Ideogram.prototype.getBands = function(content, chromosomeName, taxid) {
   // Gets chromosome band data from a TSV file
 
   var tsvLines = content.split(/\r\n|\n/);
@@ -45,12 +54,17 @@ Ideogram.prototype.getBands = function(content, chromosomeName) {
 
     line = {
       "chr": columns[0],
-      "start": columns[5],
-      "stop": columns[6],
-      "iscnStart": columns[3],
-      "iscnStop": columns[4],
+      "bp": {
+        "start": parseInt(columns[5], 10),
+        "stop": parseInt(columns[6], 10)
+      },
+      "iscn": {
+        "start": parseInt(columns[3], 10),
+        "stop": parseInt(columns[4], 10)
+      },
       "name": columns[1] + columns[2],
-      "stain": stain
+      "stain": stain,
+      "taxid": taxid
     };
 
     lines.push(line);
@@ -62,27 +76,50 @@ Ideogram.prototype.getBands = function(content, chromosomeName) {
 };
 
 
-Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, scale) {
+Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid) {
 
   var chr = {};
-  var band;
+  var band, scale, 
+      startType, stopType,
+      cs;
 
-  chr["id"] = "chr" + chromosomeName;
-  chr["length"] = bands[bands.length - 1]["iscnStop"];
+  cs = this.coordinateSystem;
 
-  var pxLeft = 0;
+  chr["id"] = "chr" + chromosomeName + "-" + taxid;
 
+  chr["length"] = bands[bands.length - 1][cs].stop;
+
+  var offset = 0;
+  
   for (var i = 0; i < bands.length; i++) {
     band = bands[i];
-    bands[i]["pxWidth"] = scale * (band.iscnStop - band.iscnStart)/chr.length;
-    bands[i]["pxLeft"] = pxLeft;
-    pxLeft += bands[i]["pxWidth"];
+    bands[i]["width"] = this.config.chrHeight * chr["length"]/this.maxLength[cs] * (band[cs].stop - band[cs].start)/chr["length"];
+    bands[i]["offset"] = offset;
+    offset += bands[i]["width"];
   }
 
-  chr["pxWidth"] = pxLeft;
-  chr["scale"] = scale;
+  chr["width"] = offset;
 
+  chr["scale"] = {}
+
+  if (this.config.multiorganism === true) {
+    chr["scale"].bp = 1;
+    chr["scale"].iscn = this.config.chrHeight * chr["length"]/this.maxLength.bp;
+  } else {
+    scale = band.iscn.stop / band.bp.stop;
+    chr["scale"].bp = scale;
+    chr["scale"].iscn = this.config.chrHeight * scale;
+  }
   chr["bands"] = bands;
+
+  chr["centromerePosition"] = "";
+  if (bands[0].bp.stop - bands[0].bp.start == 1) {
+    // As with mouse
+    chr["centromerePosition"] = "telocentric";
+
+    // Remove placeholder pter band
+    chr["bands"] = chr["bands"].slice(1);
+  }
 
   return chr;
 }
@@ -93,14 +130,14 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
 
   var t0 = new Date().getTime();
   
-  var chrMargin = (this.chrMargin + this.chrWidth) * chrIndex;
+  var chrMargin = (this.config.chrMargin + this.config.chrWidth) * chrIndex;
 
   chr.selectAll("text")
       .data(model.bands)
       .enter()
       .append("text")
         .attr("class", "bandLabel")
-        .attr("x", function(d) { return -8 + d.pxLeft + d.pxWidth/2; })
+        .attr("x", function(d) { return -8 + d.offset + d.width/2; })
         .attr("y", chrMargin - 10)
         .text(function(d) { return d.name; })
   
@@ -109,9 +146,9 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
     .enter()
     .append("line")
       .attr("class", function(d) { return "bandLabelStalk " + d.name.replace(".", "-")  })
-      .attr("x1", function(d) { return d.pxLeft + d.pxWidth/2; })
+      .attr("x1", function(d) { return d.offset + d.width/2; })
       .attr("y1", chrMargin)
-      .attr("x2", function(d) { return d.pxLeft + d.pxWidth/2; })
+      .attr("x2", function(d) { return d.offset + d.width/2; })
       .attr("y2", chrMargin - 8)
 
   var overlappingLabelXRight = 0;
@@ -155,39 +192,51 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex) {
 
   var chrMargin, chrWidth;
 
-  chrWidth = this.chrWidth;
-  chrMargin = (this.chrMargin + chrWidth) * chrIndex;
+  chrWidth = this.config.chrWidth;
+  chrMargin = (this.config.chrMargin + chrWidth) * chrIndex;
   
   chr.selectAll("text.bandLabel")
     .attr("transform", "rotate(-90)")
     .attr("x", 8 - chrMargin)
-    .attr("y", function(d) { return 2 + d.pxLeft + d.pxWidth/2; });
+    .attr("y", function(d) { return 2 + d.offset + d.width/2; });
 
 }
 
 
-Ideogram.prototype.drawChromosome = function(model, chrIndex) {
+Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
   // Create SVG container
 
-  var chr, chrWidth, pxWidth,
-      pArmWidth, selector, qArmStart, qArmWidth;
+  var chr, chrWidth, width,
+      pArmWidth, selector, qArmStart, qArmWidth,
+      pTerPad; 
+
+  // p-terminal band padding
+  if (chrModel.centromerePosition != "telocentric") {
+    pTerPad = 8;
+  } else {
+    pTerPad = 2;
+  }
 
   chr = d3.select("svg")
     .append("g")
-      .attr("id", model.id);
+      .attr("id", chrModel.id);
 
-  chrWidth = this.chrWidth;
-  pxWidth = model.pxWidth;
+  chrWidth = this.config.chrWidth;
+  width = chrModel.width;
 
-  var chrMargin = (this.chrMargin + chrWidth) * chrIndex;
+  var chrMargin = (this.config.chrMargin + chrWidth) * chrIndex;
 
   chr.selectAll("path")   
-    .data(model.bands)    
+    .data(chrModel.bands)    
     .enter()
     .append("path")       
-      .attr("id", function(d) { return d.name.replace(".", "-"); })
+      .attr("id", function(d) { 
+        // e.g. 1q31
+        var band = d.name.replace(".", "-"); 
+        return chrModel.id + "-" + band; 
+      })
       .attr("class", function(d) { 
-        var cls = d.stain;
+        var cls = "band " + d.stain;
         if (d.stain == "acen") {
           var arm = d.name[0]; // e.g. p in p11
           cls += " " + arm + "-cen";
@@ -195,8 +244,8 @@ Ideogram.prototype.drawChromosome = function(model, chrIndex) {
         return cls;
       })
       .attr("d", function(d, i) {
-        var x = d.pxWidth,
-            left = d.pxLeft;
+        var x = d.width,
+            left = d.offset;
 
         if (d.stain == "acen") {
           x -= 4;
@@ -216,7 +265,15 @@ Ideogram.prototype.drawChromosome = function(model, chrIndex) {
         } else {  
 
           if (i == 0) {
-            left += 8;
+            left += pTerPad;
+
+            // TODO: this is a minor kludge to preserve visible
+            // centromeres in mouse, when viewing mouse and
+            // human chromosomes for e.g. orthology analysis
+            if (ideogram.config.multiorganism === true) {
+              left += pTerPad;
+            }
+
           }
 
           d = 
@@ -229,27 +286,66 @@ Ideogram.prototype.drawChromosome = function(model, chrIndex) {
         return d;
       })
 
-  if (this.showBandLabels === true) {
-    this.drawBandLabels(chr, model, chrIndex);
-  }
-    
-  chr.append('path')
-    .attr("class", "p-ter chromosomeBorder " + model.bands[0].stain)
-    .attr("d", "M 8 " + chrMargin + " q -8 " + (chrWidth/2) + " 0 " + chrWidth)
-
-  chr.append('path')
-    .attr("class", "q-ter chromosomeBorder " + model.bands[model.bands.length - 1].stain)
-    .attr("d", "M " + pxWidth + " " + chrMargin + " q 8 " +  chrWidth/2 + " 0 " + chrWidth)
-
-  // Why does human chromosome 11 lack a centromeric p-arm band?
-  if ($("#" + model.id + " .p-cen").length > 0) {
-    pArmWidth = $("#" + model.id + " .p-cen")[0].getBBox().x;
-  } else {
-    pArmWidth = $("#" + model.id + " .q-cen").prev()[0].getBBox().x;
+  if (this.config.showBandLabels === true) {
+    this.drawBandLabels(chr, chrModel, chrIndex);
   }
   
-  qArmStart = $("#" + model.id + " .q-cen").next()[0].getBBox().x;
-  qArmWidth = model.pxWidth - qArmStart;
+  if (chrModel.centromerePosition != "telocentric") {
+    // As in human
+    chr.append('path')
+      .attr("class", "p-ter chromosomeBorder " + chrModel.bands[0].stain)
+      .attr("d", 
+        "M " + pTerPad + " " + chrMargin + " " + 
+        "q -" + pTerPad + " " + (chrWidth/2) + " 0 " + chrWidth)
+  } else {
+    // As in mouse
+    chr.append('path')
+      .attr("class", "p-ter chromosomeBorder " + chrModel.bands[0].stain)
+      .attr("d", 
+        "M " + pTerPad + " " + chrMargin + " " + 
+        "l -" + pTerPad + " 0 " + 
+        "l 0 " + chrWidth + " " + 
+        "l " + pTerPad + " 0 z")  
+
+    chr.insert('path', ':first-child')
+      .attr("class", "acen")
+      .attr("d",
+        "M " + (pTerPad - 1) + " " + (chrMargin + chrWidth * 0.1) + " " +
+        "l " + (pTerPad + 9) + " 0 " + 
+        "l 0 " + chrWidth * 0.8 + " " + 
+        "l -" + (pTerPad + 9) + " 0 z")
+      
+  }
+
+  chr.append('path')
+    .attr("class", "q-ter chromosomeBorder " + chrModel.bands[chrModel.bands.length - 1].stain)
+    .attr("d", "M " + width + " " + chrMargin + " q 8 " +  chrWidth/2 + " 0 " + chrWidth)
+
+  var pcen = $("#" + chrModel.id + " .p-cen"),
+      qcen = $("#" + chrModel.id + " .q-cen");
+
+  // Why does human chromosome 11 lack a centromeric p-arm band?
+  if (pcen.length > 0) {
+    pArmWidth = pcen[0].getBBox().x;
+  } else {
+    if (qcen.length > 0) {
+      pArmWidth = qcen.prev()[0].getBBox().x;
+    } else {
+      // For telocentric centromeres, as in many mouse chromosomes
+      pArmWidth = 5;
+    }
+  }
+  
+  if (qcen.length > 0) {
+    qArmStart = qcen.next()[0].getBBox().x;
+  } else {
+    // TODO: Generalize
+    // For mouse only; presumably other organisms with telocentric centromeres
+    // don't have their first q-arm band named 'qA1'.
+    qArmStart = $("#" + chrModel.id + " .band")[0].getBBox().x;
+  }
+
+  qArmWidth = chrModel.width - qArmStart;
 
   chr.append('line')
     .attr("class", "cb-p-arm-top chromosomeBorder")
@@ -280,12 +376,12 @@ Ideogram.prototype.drawChromosome = function(model, chrIndex) {
     .attr("y2", chrWidth + chrMargin)
 
 
-  if (this.orientation == "vertical") {
+  if (this.config.orientation == "vertical") {
 
     var chrMargin, chrWidth, tPadding;
 
-    chrWidth = this.chrWidth;
-    chrMargin = (this.chrMargin + chrWidth) * chrIndex;
+    chrWidth = this.config.chrWidth;
+    chrMargin = (this.config.chrMargin + chrWidth) * chrIndex;
 
     tPadding = chrMargin + (chrWidth-4)*(chrIndex-1);
 
@@ -318,23 +414,23 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
   jqOtherChrs = $("g[id!='" + id + "']");
 
   chrIndex = jqChr.index() + 1;
-  chrMargin = (this.chrMargin + this.chrWidth) * chrIndex;
+  chrMargin = (this.config.chrMargin + this.config.chrWidth) * chrIndex;
 
-  if (this.orientation == "vertical") {
+  if (this.config.orientation == "vertical") {
 
-    cx = chrMargin + (this.chrWidth-4)*(chrIndex-1) - 30;
+    cx = chrMargin + (this.config.chrWidth-4)*(chrIndex-1) - 30;
     cy = cx + 30;
     verticalTransform = "rotate(90, " + cx + ", " + cy + ")";
-    horizontalTransform = "rotate(0)translate(0, -" + (chrMargin - this.chrMargin) + ")";
+    horizontalTransform = "rotate(0)translate(0, -" + (chrMargin - this.config.chrMargin) + ")";
 
   } else {
 
     var bandPad = 0;
-    if (!this.showBandLabels) {
+    if (!this.config.showBandLabels) {
       bandPad += 10;
     }
 
-    cx = 6 + chrMargin + (this.chrWidth - this.chrMargin - bandPad)*(chrIndex);
+    cx = 6 + chrMargin + (this.config.chrWidth - this.config.chrMargin - bandPad)*(chrIndex);
     cy = cx;
     verticalTransform = "rotate(90, " + cx + ", " + cy + ")";
     horizontalTransform = "";
@@ -343,7 +439,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 
   if (jqChr.attr("data-orientation") != "vertical") {
 
-    if (this.orientation == "horizontal") {
+    if (this.config.orientation == "horizontal") {
       jqOtherChrs.hide();
     }
 
@@ -355,7 +451,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
         
         that.rotateBandLabels(chr, chrIndex) 
 
-        if (that.orientation == "vertical") {
+        if (that.config.orientation == "vertical") {
           jqOtherChrs.show();
         }
 
@@ -365,7 +461,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 
     jqChr.attr("data-orientation", "");
 
-    if (this.orientation == "vertical") {
+    if (this.config.orientation == "vertical") {
       jqOtherChrs.hide();
     } 
 
@@ -376,10 +472,10 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
         
         chr.selectAll("text")
           .attr("transform", "")
-          .attr("x", function(d) { return -8 + d.pxLeft + d.pxWidth/2; })
+          .attr("x", function(d) { return -8 + d.offset + d.width/2; })
           .attr("y", chrMargin - 10)
 
-        if (that.orientation == "horizontal") {
+        if (that.config.orientation == "horizontal") {
           jqOtherChrs.show();
         }
       
@@ -391,56 +487,226 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 }
 
 
+Ideogram.prototype.convertBpToOffset = function(chr, bp) {
+  //return (chr.scale.iscn * chr.scale.bp * bp) + 30;
+  return (chr.scale.bp * bp) + 30;
+}
+
+
+Ideogram.prototype.drawSynteny = function(syntenicRegions) {
+  // Draws a trapezoid connecting a genomic range on 
+  // one chromosome to a genomic range on another chromosome;
+  // a syntenic region
+
+  var r1, r2,
+      c1Box, c2Box,
+      chr1Plane, chr2Plane, 
+      polygon, 
+      i, svg;
+
+  svg = d3.select("svg");
+
+  for (i = 0; i < syntenicRegions.length; i++) {
+
+    r1 = syntenicRegions[i][0];
+    r2 = syntenicRegions[i][1];
+
+    r1.start = this.convertBpToOffset(r1.chr, r1.start);
+    r1.stop = this.convertBpToOffset(r1.chr, r1.stop);
+    r2.start = this.convertBpToOffset(r2.chr, r2.start);
+    r2.stop = this.convertBpToOffset(r2.chr, r2.stop);
+
+    c1Box = $("#" + r1.chr.id + " path")[0].getBBox();
+    c2Box = $("#" + r2.chr.id + " path")[0].getBBox();
+    
+    chr1Plane = c1Box.y - 30
+    chr2Plane = c2Box.y - 29;
+
+    svg.append("polygon")
+      .attr("points",
+        chr1Plane + ', ' + r1.start + ' ' + 
+        chr1Plane + ', ' + r1.stop + ' ' + 
+        chr2Plane + ', ' + r2.stop + ' ' +  
+        chr2Plane + ', ' + r2.start
+      )
+      .attr('style', "fill:#CFC")
+    
+    svg.append("line")
+      .attr("x1", chr1Plane)
+      .attr("x2", chr2Plane)
+      .attr("y1", r1.start)
+      .attr("y2", r2.start)
+      .attr("style", "stroke:#AAA;stroke-width:1;")
+      
+    svg.append("line")
+      .attr("x1", chr1Plane)
+      .attr("x2", chr2Plane)
+      .attr("y1", r1.stop)
+      .attr("y2", r2.stop)
+      .attr("style", "stroke:#AAA;stroke-width:1;")
+  }
+}
+
+
+Ideogram.prototype.onLoad = function() {
+  // Called when Ideogram has finished initializing.
+  // Accounts for certain ideogram properties not being set until 
+  // asynchronous requests succeed, etc.
+
+  call(this.onLoadCallback);
+
+}
+
+
 Ideogram.prototype.init = function() {
 
-  $.ajax({
-  //url: 'data/chr1_bands.tsv',
-  url: 'data/ideogram_9606_GCF_000001305.14_550_V1',
-  context: this,
-  success: function(response) {
-    var t0 = new Date().getTime();
+  var bandDataFile,
+      isMultiOrganism = (this.config.multiorganism === true),
+      taxid, taxids, i,
+      chrs, numChromosomes;
 
-    var chrs = this.chromosomes,
-        i, chromosome, bands, chromosomeModel,
-        bandArray, maxLength, scale, scales, chrLength;
+  var t0 = new Date().getTime();
 
-    var svg = d3.select("body")
-      .append("svg")
-        .attr("id", "ideogram")
-        .attr("width", "100%")
-        .attr("height", chrs.length * this.chrHeight + 20)
+  if (isMultiOrganism == false) {
+    if (typeof this.config.taxid == "undefined") {
+      this.config.taxid = "9606";
+    }
+    taxid = this.config.taxid;
+    taxids = [taxid];
+    this.config.taxids = taxids;
+    chrs = this.config.chromosomes.slice();
+    this.config.chromosomes = {};
+    this.config.chromosomes[taxid] = chrs;
+    numChromosomes = this.config.chromosomes[taxid].length;
+  } else {
+    this.coordinateSystem = "bp";
+    taxids = this.config.taxids;
+    numChromosomes = 0;
+    for (i = 0; i < taxids.length; i++) {
+      taxid = taxids[i];
+      numChromosomes += this.config.chromosomes[taxid].length;
+    }
+  }
+
+   var svg = d3.select("body")
+    .append("svg")
+    .attr("id", "ideogram")
+    .attr("width", "100%")
+    .attr("height", numChromosomes * this.config.chrHeight + 20)
+
+  var bandsArray = [],
+      maxLength = 0,
+      numBandDataResponses = 0;
+
+
+  var that = this;
+
+  for (i = 0; i < taxids.length; i++) {
+    taxid = taxids[i];
+
+    if (taxid == "9606") {
+      bandDataFileName = "ideogram_9606_GCF_000001305.14_550_V1";
+    } else if (taxid == "10090") {
+      bandDataFileName = "ideogram_10090_GCF_000000055.19_NA_V2";
+    }
+
+
+    var deferred = $.Deferred(function(deferred) {
+      $.ajax({
+        //url: 'data/chr1_bands.tsv',
+        url: 'data/' + bandDataFileName,
+        beforeSend: function(jqXHR) {
+          // Ensures correct taxid is handled in 'success' callback
+          // Using 'taxid' instead of jqXHR['taxid'] gives the last
+          // taxid among the taxids, not the one for which data was 
+          // requested
+          jqXHR["taxid"] = taxid;
+        },
+        success: function(response, textStatus, jqXHR) {
+
+          that.bandData[jqXHR["taxid"]] = response;
+          numBandDataResponses += 1;
+
+          if (numBandDataResponses == taxids.length) {
+            deferred.resolve();
+          }
+
+        }
+      });
+    });
+
+  }
+
+  deferred.done(function() {
+
+    var j, k, chromosome, bands, chromosomeModel,
+        chrLength,
+        bandData, 
+        stopType,
+        taxids = that.config.taxids;
 
     bandsArray = [];
     maxLength = 0;
-    scales = [];
 
-    for (i = 0; i < chrs.length; i++) {
+    for (j = 0; j < taxids.length; j++) {
       
-      chromosome = chrs[i];
-      bands = this.getBands(response, chromosome);
-      bandsArray.push(bands);
-      
-      chrLength = bands[bands.length - 1]["iscnStop"];
+      taxid = taxids[j];
+      bandData = that.bandData[taxid];
 
-      if (parseInt(chrLength, 10) > parseInt(maxLength, 10)) {
-        maxLength = chrLength;
+      chrs = that.config.chromosomes[taxid];
+
+      for (k = 0; k < chrs.length; k++) {
+        
+        chromosome = chrs[k];
+        bands = that.getBands(bandData, chromosome, taxid);
+        bandsArray.push(bands);
+
+        chrLength = {
+          "iscn": bands[bands.length - 1].iscn.stop,
+          "bp": bands[bands.length - 1].bp.stop
+        }
+
+        if (chrLength.iscn > that.maxLength.iscn) {
+          that.maxLength.iscn = chrLength.iscn;
+        }
+
+        if (chrLength.bp > that.maxLength.bp) {
+          that.maxLength.bp = chrLength.bp;
+        }
       }
-
-      scale = this.chrHeight * chrLength/maxLength;
-      scales.push(scale);
     }
 
-    for (i = 0; i < chrs.length; i++) {
-      bands = bandsArray[i];
-      scale = scales[i];
-      chromosome = chrs[i];
-      chromosomeModel = this.getChromosomeModel(bands, chromosome, scale);
-      this.drawChromosome(chromosomeModel, i + 1);
+    var chrIndex = 0;
+
+    for (j = 0; j < taxids.length; j++) {
+      
+      taxid = taxids[j];
+      chrs = that.config.chromosomes[taxid];
+
+      that.chromosomes[taxid] = {}
+      
+      for (k = 0; k < chrs.length; k++) {
+
+        bands = bandsArray[chrIndex];
+        
+        chrIndex += 1;
+        
+        chromosome = chrs[k];
+        chromosomeModel = that.getChromosomeModel(bands, chromosome, taxid);
+        
+        that.chromosomes[taxid][chromosome] = chromosomeModel;
+
+        that.drawChromosome(chromosomeModel, chrIndex);
+      }
     }
 
     var t1 = new Date().getTime();
     console.log("Time constructing ideogram: " + (t1 - t0) + " ms")
-  }
-});
+
+    if (that.onLoadCallback) {
+      that.onLoadCallback();
+    }
+
+  });
 
 }
