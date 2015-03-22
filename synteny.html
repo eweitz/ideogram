@@ -2,22 +2,22 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>Synteny - Ideogram</title>
+  <title>Synteny | Ideogram</title>
   <link type="text/css" rel="stylesheet" href="css/ideogram.css"/>
   <script type="text/javascript" src="js/d3.min.js"></script>
   <script type="text/javascript" src="js/jquery.min.js"></script>
   <script type="text/javascript" src="js/ideogram.js"></script>
 </head>
 <body>
-  <p>Synteny - Ideogram</p>
+  <p>Synteny | Ideogram</p>
 </body>
 <script type="text/javascript">
 
 function onIdeogramLoad() {
 
 	var chrs = ideogram.chromosomes,
-		chr1 = chrs["1"], 
-		chr2 = chrs["2"],
+		chr1 = chrs["10090"]["1"], 
+		chr2 = chrs["10090"]["2"],
 		r1Band = chr1["bands"][7],
 		r2Band = chr2["bands"][9],
 		r2aBand = chr2["bands"][11],
@@ -26,14 +26,14 @@ function onIdeogramLoad() {
 
 	range1 = {
 		chr: chr1,
-		start: r1Band["start"],
-		stop: r1Band["stop"]
+		start: r1Band.bp.start,
+		stop: r1Band.bp.stop
 	};
 
 	range2 = {
 		chr: chr2,
-		start: r2Band["start"],
-		stop: r2Band["stop"]
+		start: r2Band.bp.start,
+		stop: r2Band.bp.stop
 	};
 	
 	var range3 = {
@@ -57,7 +57,6 @@ function onIdeogramLoad() {
 var config = {
   taxid: 10090,
   chromosomes: ["1", "2"],
-  //chromosomes: ["Y"],
   chrWidth: 10,
   chrHeight: 500,
   chrMargin: 200,
