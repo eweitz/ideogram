@@ -153,32 +153,46 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
 
   var overlappingLabelXRight = 0;
 
-  $.each($("#" + model.id + " text:gt(0)"), function(index, element) {
+  var texts = $("#" + model.id + " text:gt(0)"),
+      textsLength = texts.length - 1,
+      index;
+
+  for (index = 0; index < textsLength; index++) {
     // Ensures band labels don't overlap
 
-    var text = $(this),
+    var textDom = texts[index],
+        text = $(textDom),
         prevText = text.prev(),
+        prevBox,
         textPadding = 5;
 
-    xLeft = text.offset().left;
+    xLeft = textDom.getBoundingClientRect().left;
+
+    if (xLeft < overlappingLabelXRight + textPadding) {
+      // .hide() has performance issues, so go with native JS DOM API
+      textDom.style.display = "none";
+      $("#" + model.id + " line.bandLabelStalk").eq(index + 1)[0].style.display = "none";
+      overlappingLabelXRight = prevLabelXRight;
+      continue;
+    }
 
     if (prevText.css("display") != "none") {
-      prevLabelXRight = prevText.offset().left + prevText[0].getBBox().width;
+      prevBox = prevText[0].getBoundingClientRect();
+      prevLabelXRight = prevBox.left + prevBox.width;
     } 
 
     if (
-      xLeft < overlappingLabelXRight + textPadding || 
       xLeft < prevLabelXRight + textPadding
     ) {
       
-      text.hide();
-      $("#" + model.id + " line.bandLabelStalk").eq(index + 1).hide();
-      
+      // .hide() has performance issues, so go with native JS DOM API
+      textDom.style.display = "none";
+      $("#" + model.id + " line.bandLabelStalk").eq(index + 1)[0].style.display = "none";
       overlappingLabelXRight = prevLabelXRight;
 
     }
 
-  });
+  }
 
   var t1 = new Date().getTime();
   console.log("Time in drawBandLabels: " + (t1 - t0) + " ms");
@@ -676,6 +690,8 @@ Ideogram.prototype.init = function() {
 
     var chrIndex = 0;
 
+    var t0_a = new Date().getTime();
+
     for (j = 0; j < taxids.length; j++) {
       
       taxid = taxids[j];
@@ -697,6 +713,9 @@ Ideogram.prototype.init = function() {
         that.drawChromosome(chromosomeModel, chrIndex);
       }
     }
+
+    var t1_a = new Date().getTime();
+    console.log("Time in drawChromosome: " + (t1_a - t0_a) + " ms")
 
     var t1 = new Date().getTime();
     console.log("Time constructing ideogram: " + (t1 - t0) + " ms")
