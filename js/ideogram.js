@@ -609,35 +609,33 @@ Ideogram.prototype.init = function() {
     } else if (taxid == "10090") {
       bandDataFileName = "ideogram_10090_GCF_000000055.19_NA_V2";
     }
+  
+    $.ajax({
+      //url: 'data/chr1_bands.tsv',
+      url: 'data/' + bandDataFileName,
+      beforeSend: function(jqXHR) {
+        // Ensures correct taxid is handled in 'success' callback
+        // Using 'taxid' instead of jqXHR['taxid'] gives the last
+        // taxid among the taxids, not the one for which data was 
+        // requested
+        jqXHR["taxid"] = taxid;
+      },
+      success: function(response, textStatus, jqXHR) {
 
+        that.bandData[jqXHR["taxid"]] = response;
+        numBandDataResponses += 1;
 
-    var deferred = $.Deferred(function(deferred) {
-      $.ajax({
-        //url: 'data/chr1_bands.tsv',
-        url: 'data/' + bandDataFileName,
-        beforeSend: function(jqXHR) {
-          // Ensures correct taxid is handled in 'success' callback
-          // Using 'taxid' instead of jqXHR['taxid'] gives the last
-          // taxid among the taxids, not the one for which data was 
-          // requested
-          jqXHR["taxid"] = taxid;
-        },
-        success: function(response, textStatus, jqXHR) {
-
-          that.bandData[jqXHR["taxid"]] = response;
-          numBandDataResponses += 1;
-
-          if (numBandDataResponses == taxids.length) {
-            deferred.resolve();
-          }
-
+        if (numBandDataResponses == taxids.length) {
+          processBandData();
         }
-      });
+
+      }
+
     });
 
   }
 
-  deferred.done(function() {
+  function processBandData() {
 
     var j, k, chromosome, bands, chromosomeModel,
         chrLength,
@@ -707,6 +705,6 @@ Ideogram.prototype.init = function() {
       that.onLoadCallback();
     }
 
-  });
+  };
 
 }
