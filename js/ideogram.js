@@ -17,6 +17,8 @@ var Ideogram = function(config) {
     "iscn": 0
   }
 
+  this.bandsToHide = [];
+
   this.chromosomes = {};
   this.bandData = {};
 
@@ -136,7 +138,7 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
       .data(model.bands)
       .enter()
       .append("text")
-        .attr("class", "bandLabel")
+        .attr("class", function(d, i) { return "bandLabel bsbsl-" + i  })
         .attr("x", function(d) { return -8 + d.offset + d.width/2; })
         .attr("y", chrMargin - 10)
         .text(function(d) { return d.name; })
@@ -145,7 +147,7 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
     .data(model.bands)
     .enter()
     .append("line")
-      .attr("class", function(d) { return "bandLabelStalk " + d.name.replace(".", "-")  })
+      .attr("class", function(d, i) { return "bandLabelStalk bsbsl-" + i  })
       .attr("x1", function(d) { return d.offset + d.width/2; })
       .attr("y1", chrMargin)
       .attr("x2", function(d) { return d.offset + d.width/2; })
@@ -153,11 +155,14 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
 
   var overlappingLabelXRight = 0;
 
-  var texts = $("#" + model.id + " text:gt(0)"),
+  var texts = $("#" + model.id + " text"),
       textsLength = texts.length - 1,
       index;
 
-  for (index = 0; index < textsLength; index++) {
+  var indexesToHide = [],
+      prevHiddenBoxIndex;
+
+  for (index = 1; index < textsLength; index++) {
     // Ensures band labels don't overlap
 
     var textDom = texts[index],
@@ -169,14 +174,13 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
     xLeft = textDom.getBoundingClientRect().left;
 
     if (xLeft < overlappingLabelXRight + textPadding) {
-      // .hide() has performance issues, so go with native JS DOM API
-      textDom.style.display = "none";
-      $("#" + model.id + " line.bandLabelStalk").eq(index + 1)[0].style.display = "none";
+      indexesToHide.push(index);
+      prevHiddenBoxIndex = index;
       overlappingLabelXRight = prevLabelXRight;
       continue;
     }
 
-    if (prevText.css("display") != "none") {
+    if (prevHiddenBoxIndex !== texts.index(prevText)) {
       prevBox = prevText[0].getBoundingClientRect();
       prevLabelXRight = prevBox.left + prevBox.width;
     } 
@@ -184,15 +188,22 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
     if (
       xLeft < prevLabelXRight + textPadding
     ) {
-      
-      // .hide() has performance issues, so go with native JS DOM API
-      textDom.style.display = "none";
-      $("#" + model.id + " line.bandLabelStalk").eq(index + 1)[0].style.display = "none";
+      indexesToHide.push(index);
+      prevHiddenBoxIndex = index;
       overlappingLabelXRight = prevLabelXRight;
-
     }
 
   }
+
+  var selectorsToHide = [],
+      chr = model.id;
+
+  for (var i = 0; i < indexesToHide.length; i++) {
+    var index = indexesToHide[i];
+    selectorsToHide.push("#" + chr + " .bsbsl-" + index);
+  }
+  
+  $.merge(this.bandsToHide, selectorsToHide);
 
   var t1 = new Date().getTime();
   console.log("Time in drawBandLabels: " + (t1 - t0) + " ms");
@@ -712,6 +723,11 @@ Ideogram.prototype.init = function() {
 
         that.drawChromosome(chromosomeModel, chrIndex);
       }
+    }
+
+    if (that.config.showBandLabels === true) {
+      var bandsToHide = that.bandsToHide.join(", ");
+      d3.selectAll(bandsToHide).style("display", "none");
     }
 
     var t1_a = new Date().getTime();
