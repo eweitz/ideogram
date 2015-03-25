@@ -160,18 +160,16 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
       index;
 
   var indexesToHide = [],
-      prevHiddenBoxIndex;
+      prevHiddenBoxIndex,
+      text, prevText, textPadding;
 
   for (index = 1; index < textsLength; index++) {
     // Ensures band labels don't overlap
 
-    var textDom = texts[index],
-        text = $(textDom),
-        prevText = text.prev(),
-        prevBox,
-        textPadding = 5;
+    text = texts[index];
+    textPadding = 5;
 
-    xLeft = textDom.getBoundingClientRect().left;
+    xLeft = text.getBoundingClientRect().left;
 
     if (xLeft < overlappingLabelXRight + textPadding) {
       indexesToHide.push(index);
@@ -180,9 +178,9 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
       continue;
     }
 
-    if (prevHiddenBoxIndex !== texts.index(prevText)) {
-      prevBox = prevText[0].getBoundingClientRect();
-      prevLabelXRight = prevBox.left + prevBox.width;
+    if (prevHiddenBoxIndex !== index - 1) {
+      prevText = texts[index - 1].getBoundingClientRect();
+      prevLabelXRight = prevText.left + prevText.width;
     } 
 
     if (
@@ -196,10 +194,12 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
   }
 
   var selectorsToHide = [],
-      chr = model.id;
+      chr = model.id,
+      ithLength = indexesToHide.length,
+      i;
 
-  for (var i = 0; i < indexesToHide.length; i++) {
-    var index = indexesToHide[i];
+  for (i = 0; i < ithLength; i++) {
+    index = indexesToHide[i];
     selectorsToHide.push("#" + chr + " .bsbsl-" + index);
   }
   
