@@ -40,7 +40,9 @@ Ideogram.prototype.getBands = function(content, chromosomeName, taxid) {
   // NCBI: #chromosome  arm band  iscn_start  iscn_stop bp_start  bp_stop stain density
   // ftp://ftp.ncbi.nlm.nih.gov/pub/gdp/ideogram_9606_GCF_000001305.14_550_V1
 
-  for (var i = 1; i < tsvLines.length - 1; i++) {
+  var tsvLinesLength = tsvLines.length - 1;
+
+  for (var i = 1; i < tsvLinesLength; i++) {
 
     columns = tsvLines[i].split("\t");
 
@@ -129,8 +131,16 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid) {
 
 Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
   // Draws labels for cytogenetic band , e.g. "p31.2"
+  //
+  // Performance note:
+  // This function takes up the majority of the time in drawChromosomes,
+  // which is about 90 ms out of about 130 ms in drawChromosomes on Chrome 41
+  // for the the full human ideogram of 23 band-labeled chromosomes.
+  // drawChromosomes balloons to ~220 ms on FF 36 and ~340 ms on IE 11.
+  // Mobile performance is currently unknown.
 
-  var t0 = new Date().getTime();
+
+  //var t0 = new Date().getTime();
   
   var chrMargin = (this.config.chrMargin + this.config.chrWidth) * chrIndex;
 
@@ -161,7 +171,10 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
 
   var indexesToHide = [],
       prevHiddenBoxIndex,
+      textBox, prevTextBox,
       text, prevText, textPadding;
+
+  prevTextBox = texts[0].getBoundingClientRect();
 
   for (index = 1; index < textsLength; index++) {
     // Ensures band labels don't overlap
@@ -169,18 +182,20 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
     text = texts[index];
     textPadding = 5;
 
-    xLeft = text.getBoundingClientRect().left;
+    textBox = text.getBoundingClientRect();
+
+    xLeft = textBox.left;
 
     if (xLeft < overlappingLabelXRight + textPadding) {
       indexesToHide.push(index);
       prevHiddenBoxIndex = index;
       overlappingLabelXRight = prevLabelXRight;
+      prevTextBox = textBox;
       continue;
     }
 
     if (prevHiddenBoxIndex !== index - 1) {
-      prevText = texts[index - 1].getBoundingClientRect();
-      prevLabelXRight = prevText.left + prevText.width;
+      prevLabelXRight = prevTextBox.left + prevTextBox.width;
     } 
 
     if (
@@ -190,6 +205,8 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
       prevHiddenBoxIndex = index;
       overlappingLabelXRight = prevLabelXRight;
     }
+
+    prevTextBox = textBox;
 
   }
 
@@ -205,8 +222,8 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
   
   $.merge(this.bandsToHide, selectorsToHide);
 
-  var t1 = new Date().getTime();
-  console.log("Time in drawBandLabels: " + (t1 - t0) + " ms");
+  //var t1 = new Date().getTime();
+  //console.log("Time in drawBandLabels: " + (t1 - t0) + " ms");
 
 }
 
