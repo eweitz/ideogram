@@ -36,7 +36,7 @@
 				start: 8000000 * i,
 				stop: 8500000 * i
 			};
-			syntenicRegions.push([range1, range2, "#F55"]);
+			syntenicRegions.push({"r1": range1, "r2": range2, "color": "#F55"});
 		}
 
 		var range3 = {
@@ -51,7 +51,7 @@
 				start: 1500000 * i,
 				stop: 3600000 * i
 			};
-			syntenicRegions.push([range3, range4]);
+			syntenicRegions.push({"r1": range3, "r2": range4});
 		}
 		
 		var range5 = {
@@ -70,7 +70,7 @@
 			if (i == 5) {
 				color = "#DDD";
 			}
-			syntenicRegions.push([range5, range6, color]);
+			syntenicRegions.push({"r1": range5, "r2": range6, "color": color});
 		}
 
 		ideogram.drawSynteny(syntenicRegions);

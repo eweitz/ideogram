@@ -552,12 +552,12 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
 
     regions = syntenicRegions[i];
 
-    r1 = regions[0];
-    r2 = regions[1];
+    r1 = regions.r1;
+    r2 = regions.r2;
 
     color = "#CFC";
-    if (regions.length > 2) {
-      color = regions[2];
+    if ("color" in regions) {
+      color = regions.color;
     }
 
     r1.startPx = this.convertBpToOffset(r1.chr, r1.start);
