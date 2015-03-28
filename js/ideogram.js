@@ -139,20 +139,25 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
   // drawChromosomes balloons to ~220 ms on FF 36 and ~340 ms on IE 11.
   // Mobile performance is currently unknown.
 
-
   //var t0 = new Date().getTime();
   
   var chrMargin = (this.config.chrMargin + this.config.chrWidth) * chrIndex;
 
+  var textOffsets = [];
+
   chr.selectAll("text")
-      .data(model.bands)
-      .enter()
-      .append("text")
-        .attr("class", function(d, i) { return "bandLabel bsbsl-" + i  })
-        .attr("x", function(d) { return -8 + d.offset + d.width/2; })
-        .attr("y", chrMargin - 10)
-        .text(function(d) { return d.name; })
-  
+    .data(model.bands)
+    .enter()
+    .append("text")
+      .attr("class", function(d, i) { return "bandLabel bsbsl-" + i  })
+      .attr("x", function(d) { 
+        var textOffset = -8 + d.offset + d.width/2;
+        textOffsets.push(textOffset + 13);
+        return textOffset; 
+      })
+    .attr("y", chrMargin - 10)
+    .text(function(d) { return d.name; })
+
   chr.selectAll("line")
     .data(model.bands)
     .enter()
@@ -163,38 +168,34 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
       .attr("x2", function(d) { return d.offset + d.width/2; })
       .attr("y2", chrMargin - 8)
 
-  var overlappingLabelXRight = 0;
-
   var texts = $("#" + model.id + " text"),
       textsLength = texts.length - 1,
-      index;
-
-  var indexesToHide = [],
+      overlappingLabelXRight,
+      index,
+      indexesToHide = [],
       prevHiddenBoxIndex,
-      textBox, prevTextBox,
-      text, prevText, textPadding;
+      prevTextBox,
+      xLeft,
+      textPadding;
 
-  prevTextBox = texts[0].getBoundingClientRect();
+  overlappingLabelXRight = 0;
 
   for (index = 1; index < textsLength; index++) {
     // Ensures band labels don't overlap
 
-    text = texts[index];
     textPadding = 5;
 
-    textBox = text.getBoundingClientRect();
-
-    xLeft = textBox.left;
+    xLeft = textOffsets[index];
 
     if (xLeft < overlappingLabelXRight + textPadding) {
       indexesToHide.push(index);
       prevHiddenBoxIndex = index;
       overlappingLabelXRight = prevLabelXRight;
-      prevTextBox = textBox;
       continue;
     }
 
     if (prevHiddenBoxIndex !== index - 1) {
+      prevTextBox = texts[index - 1].getBoundingClientRect();
       prevLabelXRight = prevTextBox.left + prevTextBox.width;
     } 
 
@@ -205,8 +206,6 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
       prevHiddenBoxIndex = index;
       overlappingLabelXRight = prevLabelXRight;
     }
-
-    prevTextBox = textBox;
 
   }
 
@@ -329,7 +328,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
       })
 
   if (this.config.showBandLabels === true) {
-    this.drawBandLabels(chr, chrModel, chrIndex);
+      this.drawBandLabels(chr, chrModel, chrIndex);
   }
   
   if (chrModel.centromerePosition != "telocentric") {
@@ -524,8 +523,6 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
       });    
 
   }
-
-
 }
 
 
@@ -739,14 +736,15 @@ Ideogram.prototype.init = function() {
         that.chromosomes[taxid][chromosome] = chromosomeModel;
 
         that.drawChromosome(chromosomeModel, chrIndex);
+        
       }
     }
-
+    
     if (that.config.showBandLabels === true) {
       var bandsToHide = that.bandsToHide.join(", ");
       d3.selectAll(bandsToHide).style("display", "none");
     }
-
+    
     var t1_a = new Date().getTime();
     console.log("Time in drawChromosome: " + (t1_a - t0_a) + " ms")
 
