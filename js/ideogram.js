@@ -17,6 +17,8 @@ var Ideogram = function(config) {
     "iscn": 0
   }
 
+  this.bandsToHide = [];
+
   this.chromosomes = {};
   this.bandData = {};
 
@@ -38,7 +40,9 @@ Ideogram.prototype.getBands = function(content, chromosomeName, taxid) {
   // NCBI: #chromosome  arm band  iscn_start  iscn_stop bp_start  bp_stop stain density
   // ftp://ftp.ncbi.nlm.nih.gov/pub/gdp/ideogram_9606_GCF_000001305.14_550_V1
 
-  for (var i = 1; i < tsvLines.length - 1; i++) {
+  var tsvLinesLength = tsvLines.length - 1;
+
+  for (var i = 1; i < tsvLinesLength; i++) {
 
     columns = tsvLines[i].split("\t");
 
@@ -127,75 +131,98 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid) {
 
 Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
   // Draws labels for cytogenetic band , e.g. "p31.2"
+  //
+  // Performance note:
+  // This function takes up the majority of the time in drawChromosomes,
+  // which is about 90 ms out of about 130 ms in drawChromosomes on Chrome 41
+  // for the the full human ideogram of 23 band-labeled chromosomes.
+  // drawChromosomes balloons to ~220 ms on FF 36 and ~340 ms on IE 11.
+  // Mobile performance is currently unknown.
 
-  var t0 = new Date().getTime();
+  //var t0 = new Date().getTime();
   
   var chrMargin = (this.config.chrMargin + this.config.chrWidth) * chrIndex;
 
+  var textOffsets = [];
+
   chr.selectAll("text")
-      .data(model.bands)
-      .enter()
-      .append("text")
-        .attr("class", "bandLabel")
-        .attr("x", function(d) { return -8 + d.offset + d.width/2; })
-        .attr("y", chrMargin - 10)
-        .text(function(d) { return d.name; })
-  
+    .data(model.bands)
+    .enter()
+    .append("text")
+      .attr("class", function(d, i) { return "bandLabel bsbsl-" + i  })
+      .attr("x", function(d) { 
+        var textOffset = -8 + d.offset + d.width/2;
+        textOffsets.push(textOffset + 13);
+        return textOffset; 
+      })
+    .attr("y", chrMargin - 10)
+    .text(function(d) { return d.name; })
+
   chr.selectAll("line")
     .data(model.bands)
     .enter()
     .append("line")
-      .attr("class", function(d) { return "bandLabelStalk " + d.name.replace(".", "-")  })
+      .attr("class", function(d, i) { return "bandLabelStalk bsbsl-" + i  })
       .attr("x1", function(d) { return d.offset + d.width/2; })
       .attr("y1", chrMargin)
       .attr("x2", function(d) { return d.offset + d.width/2; })
       .attr("y2", chrMargin - 8)
 
-  var overlappingLabelXRight = 0;
-
-  var texts = $("#" + model.id + " text:gt(0)"),
+  var texts = $("#" + model.id + " text"),
       textsLength = texts.length - 1,
-      index;
+      overlappingLabelXRight,
+      index,
+      indexesToHide = [],
+      prevHiddenBoxIndex,
+      prevTextBox,
+      xLeft,
+      textPadding;
 
-  for (index = 0; index < textsLength; index++) {
+  overlappingLabelXRight = 0;
+
+  for (index = 1; index < textsLength; index++) {
     // Ensures band labels don't overlap
 
-    var textDom = texts[index],
-        text = $(textDom),
-        prevText = text.prev(),
-        prevBox,
-        textPadding = 5;
+    textPadding = 5;
 
-    xLeft = textDom.getBoundingClientRect().left;
+    xLeft = textOffsets[index];
 
     if (xLeft < overlappingLabelXRight + textPadding) {
-      // .hide() has performance issues, so go with native JS DOM API
-      textDom.style.display = "none";
-      $("#" + model.id + " line.bandLabelStalk").eq(index + 1)[0].style.display = "none";
+      indexesToHide.push(index);
+      prevHiddenBoxIndex = index;
       overlappingLabelXRight = prevLabelXRight;
       continue;
     }
 
-    if (prevText.css("display") != "none") {
-      prevBox = prevText[0].getBoundingClientRect();
-      prevLabelXRight = prevBox.left + prevBox.width;
+    if (prevHiddenBoxIndex !== index - 1) {
+      prevTextBox = texts[index - 1].getBoundingClientRect();
+      prevLabelXRight = prevTextBox.left + prevTextBox.width;
     } 
 
     if (
       xLeft < prevLabelXRight + textPadding
     ) {
-      
-      // .hide() has performance issues, so go with native JS DOM API
-      textDom.style.display = "none";
-      $("#" + model.id + " line.bandLabelStalk").eq(index + 1)[0].style.display = "none";
+      indexesToHide.push(index);
+      prevHiddenBoxIndex = index;
       overlappingLabelXRight = prevLabelXRight;
-
     }
 
   }
 
-  var t1 = new Date().getTime();
-  console.log("Time in drawBandLabels: " + (t1 - t0) + " ms");
+  var selectorsToHide = [],
+      chr = model.id,
+      ithLength = indexesToHide.length,
+      i;
+
+  for (i = 0; i < ithLength; i++) {
+    index = indexesToHide[i];
+    selectorsToHide.push("#" + chr + " .bsbsl-" + index);
+  }
+  
+  $.merge(this.bandsToHide, selectorsToHide);
+
+  //var t1 = new Date().getTime();
+  //console.log("Time in drawBandLabels: " + (t1 - t0) + " ms");
 
 }
 
@@ -301,7 +328,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
       })
 
   if (this.config.showBandLabels === true) {
-    this.drawBandLabels(chr, chrModel, chrIndex);
+      this.drawBandLabels(chr, chrModel, chrIndex);
   }
   
   if (chrModel.centromerePosition != "telocentric") {
@@ -496,8 +523,6 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
       });    
 
   }
-
-
 }
 
 
@@ -711,9 +736,15 @@ Ideogram.prototype.init = function() {
         that.chromosomes[taxid][chromosome] = chromosomeModel;
 
         that.drawChromosome(chromosomeModel, chrIndex);
+        
       }
     }
-
+    
+    if (that.config.showBandLabels === true) {
+      var bandsToHide = that.bandsToHide.join(", ");
+      d3.selectAll(bandsToHide).style("display", "none");
+    }
+    
     var t1_a = new Date().getTime();
     console.log("Time in drawChromosome: " + (t1_a - t0_a) + " ms")
 

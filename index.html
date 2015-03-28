@@ -10,29 +10,29 @@
 </head>
 <body>
   <p>Human-mouse homology | Ideogram</p>
+  <script type="text/javascript">
+
+  var config = {
+    multiorganism: true,
+    taxids: ["9606", "10090"],
+    chromosomes: {
+      "9606": ["1"],
+      "10090": ["4"]
+    },
+    chrWidth: 10,
+    chrHeight: 1000,
+    chrMargin: 10,
+    showBandLabels: true,
+    orientation: "vertical"
+  };
+
+  var ideogram = new Ideogram(config);
+
+  $(document).on("click", "g", function() {
+    var chrID = $(this).attr("id");
+    ideogram.rotateAndToggleDisplay(chrID);
+  });
+
+  </script>
 </body>
-<script type="text/javascript">
-
-var config = {
-  multiorganism: true,
-  taxids: ["9606", "10090"],
-  chromosomes: {
-    "9606": ["1"],
-    "10090": ["4"]
-  },
-  chrWidth: 10,
-  chrHeight: 1000,
-  chrMargin: 10,
-  showBandLabels: true,
-  orientation: "vertical"
-};
-
-var ideogram = new Ideogram(config);
-
-$(document).on("click", "g", function() {
-  var chrID = $(this).attr("id");
-  ideogram.rotateAndToggleDisplay(chrID);
-});
-
-</script>
 </html>
