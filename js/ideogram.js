@@ -537,23 +537,33 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
   // one chromosome to a genomic range on another chromosome;
   // a syntenic region
 
+  var t0 = new Date().getTime();
+
   var r1, r2,
       c1Box, c2Box,
       chr1Plane, chr2Plane, 
       polygon, 
-      i, svg;
+      region,
+      i, svg, color;
 
   svg = d3.select("svg");
 
   for (i = 0; i < syntenicRegions.length; i++) {
 
-    r1 = syntenicRegions[i][0];
-    r2 = syntenicRegions[i][1];
+    regions = syntenicRegions[i];
 
-    r1.start = this.convertBpToOffset(r1.chr, r1.start);
-    r1.stop = this.convertBpToOffset(r1.chr, r1.stop);
-    r2.start = this.convertBpToOffset(r2.chr, r2.start);
-    r2.stop = this.convertBpToOffset(r2.chr, r2.stop);
+    r1 = regions[0];
+    r2 = regions[1];
+
+    color = "#CFC";
+    if (regions.length > 2) {
+      color = regions[2];
+    }
+
+    r1.startPx = this.convertBpToOffset(r1.chr, r1.start);
+    r1.stopPx = this.convertBpToOffset(r1.chr, r1.stop);
+    r2.startPx = this.convertBpToOffset(r2.chr, r2.start);
+    r2.stopPx = this.convertBpToOffset(r2.chr, r2.stop);
 
     c1Box = $("#" + r1.chr.id + " path")[0].getBBox();
     c2Box = $("#" + r2.chr.id + " path")[0].getBBox();
@@ -563,27 +573,31 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
 
     svg.append("polygon")
       .attr("points",
-        chr1Plane + ', ' + r1.start + ' ' + 
-        chr1Plane + ', ' + r1.stop + ' ' + 
-        chr2Plane + ', ' + r2.stop + ' ' +  
-        chr2Plane + ', ' + r2.start
+        chr1Plane + ', ' + r1.startPx + ' ' + 
+        chr1Plane + ', ' + r1.stopPx + ' ' + 
+        chr2Plane + ', ' + r2.stopPx + ' ' +  
+        chr2Plane + ', ' + r2.startPx
       )
-      .attr('style', "fill:#CFC")
+      .attr('style', "fill:" + color)
     
     svg.append("line")
       .attr("x1", chr1Plane)
       .attr("x2", chr2Plane)
-      .attr("y1", r1.start)
-      .attr("y2", r2.start)
+      .attr("y1", r1.startPx)
+      .attr("y2", r2.startPx)
       .attr("style", "stroke:#AAA;stroke-width:1;")
       
     svg.append("line")
       .attr("x1", chr1Plane)
       .attr("x2", chr2Plane)
-      .attr("y1", r1.stop)
-      .attr("y2", r2.stop)
+      .attr("y1", r1.stopPx)
+      .attr("y2", r2.stopPx)
       .attr("style", "stroke:#AAA;stroke-width:1;")
   }
+
+  var t1 = new Date().getTime();
+  console.log("Time in drawSyntenicRegions: " + (t1 - t0) + " ms");
+
 }
 
 

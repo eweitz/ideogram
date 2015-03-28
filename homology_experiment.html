@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Homology experiment | Ideogram</title>
+  <link type="text/css" rel="stylesheet" href="css/ideogram.css"/>
+  <script type="text/javascript" src="js/d3.min.js"></script>
+  <script type="text/javascript" src="js/jquery.min.js"></script>
+  <script type="text/javascript" src="js/ideogram.js"></script>
+</head>
+<body>
+  <p>Homology experiment | Ideogram</p>
+	<script type="text/javascript">
+
+	function onIdeogramLoad() {
+
+		var chrs = ideogram.chromosomes,
+			chr1 = chrs["10090"]["1"], 
+			chr2 = chrs["10090"]["2"],
+			r1Band = chr1["bands"][7],
+			r2Band = chr2["bands"][17],
+			range1, range2, range3, range4, range5, range6,
+			syntenicRegions = [];
+
+		console.log(r1Band.bp.start)
+
+		range1 = {
+			chr: chr1,
+			start: r1Band.bp.start,
+			stop: r1Band.bp.stop
+		};
+
+		for (var i = 1; i < 20; i++) {
+			range2 = {
+				chr: chr2,
+				start: 8000000 * i,
+				stop: 8500000 * i
+			};
+			syntenicRegions.push([range1, range2, "#F55"]);
+		}
+
+		var range3 = {
+			chr: chr1,
+			start: 125000000,
+			stop: 126000000
+		};
+
+		for (var i = 1; i < 20; i++) {
+			range4 = {
+				chr: chr2,
+				start: 1500000 * i,
+				stop: 3600000 * i
+			};
+			syntenicRegions.push([range3, range4]);
+		}
+		
+		var range5 = {
+			chr: chr2,
+			start: r2Band.bp.start,
+			stop: r2Band.bp.stop
+		};
+
+		for (var i = 1; i < 6; i++) {
+			range6 = {
+				chr: chr1,
+				start: 150000000 + (13000000 * i),
+				stop: 150000000 + (15000000 * i)
+			};
+			color = "#AAF";
+			if (i == 5) {
+				color = "#DDD";
+			}
+			syntenicRegions.push([range5, range6, color]);
+		}
+
+		ideogram.drawSynteny(syntenicRegions);
+		
+	}
+
+	var config = {
+	  taxid: 10090,
+	  chromosomes: ["1", "2"],
+	  chrWidth: 10,
+	  chrHeight: 500,
+	  chrMargin: 200,
+	  showBandLabels: true,
+	  orientation: "vertical",
+	  onLoad: onIdeogramLoad
+	};
+
+	var ideogram = new Ideogram(config);
+
+	</script>
+</body>
+</html>
