@@ -544,7 +544,7 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
       chr1Plane, chr2Plane, 
       polygon, 
       region,
-      i, svg, color;
+      i, svg, color, opacity;
 
   svg = d3.select("svg");
 
@@ -558,6 +558,11 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
     color = "#CFC";
     if ("color" in regions) {
       color = regions.color;
+    }
+
+    opacity = 1;
+    if ("opacity" in regions) {
+      opacity = regions.opacity;
     }
 
     r1.startPx = this.convertBpToOffset(r1.chr, r1.start);
@@ -578,21 +583,21 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
         chr2Plane + ', ' + r2.stopPx + ' ' +  
         chr2Plane + ', ' + r2.startPx
       )
-      .attr('style', "fill:" + color)
+      .attr('style', "fill: " + color + "; fill-opacity: " + opacity)
     
     svg.append("line")
+      .attr("class", "syntenyBorder")
       .attr("x1", chr1Plane)
       .attr("x2", chr2Plane)
       .attr("y1", r1.startPx)
       .attr("y2", r2.startPx)
-      .attr("style", "stroke:#AAA;stroke-width:1;")
       
     svg.append("line")
+      .attr("class", "syntenyBorder")
       .attr("x1", chr1Plane)
       .attr("x2", chr2Plane)
       .attr("y1", r1.stopPx)
       .attr("y2", r2.stopPx)
-      .attr("style", "stroke:#AAA;stroke-width:1;")
   }
 
   var t1 = new Date().getTime();

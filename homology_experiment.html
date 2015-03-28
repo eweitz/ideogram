@@ -45,14 +45,13 @@
 			stop: 126000000
 		};
 
-		for (var i = 1; i < 20; i++) {
-			range4 = {
-				chr: chr2,
-				start: 1500000 * i,
-				stop: 3600000 * i
-			};
-			syntenicRegions.push({"r1": range3, "r2": range4});
-		}
+		range4 = {
+			chr: chr2,
+			start: 1500000 * i,
+			stop: 3600000 * i
+		};
+		syntenicRegions.push({"r1": range3, "r2": range4, "opacity": 0.7});
+	
 		
 		var range5 = {
 			chr: chr2,
@@ -63,8 +62,8 @@
 		for (var i = 1; i < 6; i++) {
 			range6 = {
 				chr: chr1,
-				start: 150000000 + (13000000 * i),
-				stop: 150000000 + (15000000 * i)
+				start: 150000000 + (16000000 * i),
+				stop: 150000000 + (12000000 * i)
 			};
 			color = "#AAF";
 			if (i == 5) {

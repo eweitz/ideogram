@@ -26,6 +26,11 @@ line.bandLabelStalk {
     stroke-width:0.5;
 }
 
+.syntenyBorder {
+	stroke:#AAA;
+	stroke-width:1;
+}
+
 /* NCBI stain density colors */ 
 .gneg {fill: #FFF}
 .gpos25 {fill: #BBB}
