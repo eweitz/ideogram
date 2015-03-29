@@ -141,7 +141,19 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
 
   //var t0 = new Date().getTime();
   
-  var chrMargin = (this.config.chrMargin + this.config.chrWidth) * chrIndex;
+  var chrMargin = (this.config.chrMargin + this.config.chrWidth) * chrIndex,
+      lineY1, lineY2;
+
+  lineY1 = chrMargin;
+  lineY2 = chrMargin - 8;
+
+  if (
+    chrIndex == 1 &&
+    "perspective" in this.config && this.config.perspective == "comparative"
+  ) {
+    lineY1 += 18;
+    lineY2 += 18;
+  } 
 
   var textOffsets = [];
 
@@ -153,7 +165,7 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
       .attr("x", function(d) { 
         var textOffset = -8 + d.offset + d.width/2;
         textOffsets.push(textOffset + 13);
-        return textOffset; 
+        return textOffset;
       })
     .attr("y", chrMargin - 10)
     .text(function(d) { return d.name; })
@@ -164,9 +176,9 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
     .append("line")
       .attr("class", function(d, i) { return "bandLabelStalk bsbsl-" + i  })
       .attr("x1", function(d) { return d.offset + d.width/2; })
-      .attr("y1", chrMargin)
+      .attr("y1", lineY1)
       .attr("x2", function(d) { return d.offset + d.width/2; })
-      .attr("y2", chrMargin - 8)
+      .attr("y2", lineY2)
 
   var texts = $("#" + model.id + " text"),
       textsLength = texts.length - 1,
@@ -236,10 +248,22 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex) {
   chrWidth = this.config.chrWidth;
   chrMargin = (this.config.chrMargin + chrWidth) * chrIndex;
   
-  chr.selectAll("text.bandLabel")
-    .attr("transform", "rotate(-90)")
-    .attr("x", 8 - chrMargin)
-    .attr("y", function(d) { return 2 + d.offset + d.width/2; });
+
+  if (
+    chrIndex == 1 &&
+    "perspective" in this.config && this.config.perspective == "comparative"
+  ) {
+    chr.selectAll("text.bandLabel")
+      .attr("transform", "rotate(-90)")
+      .attr("x", (8 - chrMargin) - 26)
+      .attr("y", function(d) { return 2 + d.offset + d.width/2; })
+      .attr("text-anchor", "end");
+  } else {
+    chr.selectAll("text.bandLabel")
+      .attr("transform", "rotate(-90)")
+      .attr("x", 8 - chrMargin)
+      .attr("y", function(d) { return 2 + d.offset + d.width/2; });
+  }
 
 }
 
@@ -260,7 +284,8 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
 
   chr = d3.select("svg")
     .append("g")
-      .attr("id", chrModel.id);
+      .attr("id", chrModel.id)
+      .attr("class", "chromosome");
 
   chrWidth = this.config.chrWidth;
   width = chrModel.width;
@@ -546,7 +571,9 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
       region,
       i, svg, color, opacity;
 
-  svg = d3.select("svg");
+  synteny = d3.select("svg")
+    .append("g")
+    .attr("class", "synteny");
 
   for (i = 0; i < syntenicRegions.length; i++) {
 
@@ -576,7 +603,7 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
     chr1Plane = c1Box.y - 30
     chr2Plane = c2Box.y - 29;
 
-    svg.append("polygon")
+    synteny.append("polygon")
       .attr("points",
         chr1Plane + ', ' + r1.startPx + ' ' + 
         chr1Plane + ', ' + r1.stopPx + ' ' + 
@@ -585,14 +612,14 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
       )
       .attr('style', "fill: " + color + "; fill-opacity: " + opacity)
     
-    svg.append("line")
+    synteny.append("line")
       .attr("class", "syntenyBorder")
       .attr("x1", chr1Plane)
       .attr("x2", chr2Plane)
       .attr("y1", r1.startPx)
       .attr("y2", r2.startPx)
       
-    svg.append("line")
+    synteny.append("line")
       .attr("class", "syntenyBorder")
       .attr("x1", chr1Plane)
       .attr("x2", chr2Plane)
