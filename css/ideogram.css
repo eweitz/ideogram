@@ -16,6 +16,14 @@ g {
 	cursor: pointer;
 }
 
+.ghost {
+	opacity: 0.2;
+}
+
+.hidden {
+	display: none;
+}
+
 line.bandLabelStalk {
 	stroke: #AAA;
 	stroke-width: 1;

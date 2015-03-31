@@ -569,9 +569,11 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
       chr1Plane, chr2Plane, 
       polygon, 
       region,
-      i, svg, color, opacity;
+      syntenies, synteny,
+      i, svg, color, opacity,
+      regionID;
 
-  synteny = d3.select("svg")
+  syntenies = d3.select("svg")
     .append("g")
     .attr("class", "synteny");
 
@@ -603,7 +605,40 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
     chr1Plane = c1Box.y - 30
     chr2Plane = c2Box.y - 29;
 
-    synteny.append("polygon")
+    regionID = (
+      r1.chr.id + "_" + r1.start + "_" + r1.stop + "_" + 
+      "__" + 
+      r2.chr.id + "_" + r2.start + "_" + r2.stop
+    )
+
+    syntenicRegion = syntenies.append("g")
+      .attr("class", "syntenicRegion")
+      .attr("id", regionID)
+      .on("click", function() {
+
+        var activeRegion = this;
+        var others = d3.selectAll(".syntenicRegion")
+          .filter(function(d, i) {
+            return (this !== activeRegion);
+          })
+
+        others.classed("hidden", !others.classed("hidden"))
+      
+      })
+      .on("mouseover", function() {
+        var activeRegion = this;
+        d3.selectAll(".syntenicRegion")
+          .filter(function(d, i) {
+            return (this !== activeRegion);
+          })
+          .classed("ghost", true)
+      })  
+      .on("mouseout", function() {
+        d3.selectAll(".syntenicRegion").classed("ghost", false)
+      })
+      
+
+    syntenicRegion.append("polygon")
       .attr("points",
         chr1Plane + ', ' + r1.startPx + ' ' + 
         chr1Plane + ', ' + r1.stopPx + ' ' + 
@@ -611,15 +646,17 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
         chr2Plane + ', ' + r2.startPx
       )
       .attr('style', "fill: " + color + "; fill-opacity: " + opacity)
+      
+      
     
-    synteny.append("line")
+    syntenicRegion.append("line")
       .attr("class", "syntenyBorder")
       .attr("x1", chr1Plane)
       .attr("x2", chr2Plane)
       .attr("y1", r1.startPx)
       .attr("y2", r2.startPx)
       
-    synteny.append("line")
+    syntenicRegion.append("line")
       .attr("class", "syntenyBorder")
       .attr("x1", chr1Plane)
       .attr("x2", chr2Plane)
