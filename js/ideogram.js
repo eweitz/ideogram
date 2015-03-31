@@ -1,3 +1,5 @@
+// Developed by Eric Weitz (https://github.com/eweitz)
+
 var Ideogram = function(config) {
 
   this.config = config;
@@ -727,9 +729,9 @@ Ideogram.prototype.init = function() {
     taxid = taxids[i];
 
     if (taxid == "9606") {
-      bandDataFileName = "ideogram_9606_GCF_000001305.14_550_V1";
+      bandDataFileName = "ncbi/ideogram_9606_GCF_000001305.14_550_V1";
     } else if (taxid == "10090") {
-      bandDataFileName = "ideogram_10090_GCF_000000055.19_NA_V2";
+      bandDataFileName = "ncbi/ideogram_10090_GCF_000000055.19_NA_V2";
     }
   
     $.ajax({

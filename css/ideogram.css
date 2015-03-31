@@ -1,3 +1,12 @@
+/* 
+Developed by Eric Weitz (https://github.com/eweitz)
+*/
+
+body {
+	font: 12px Arial;
+	line-height: 19.6px;
+}
+
 svg { 
 	padding-left: 5px;
 }

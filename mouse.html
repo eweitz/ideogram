@@ -9,17 +9,18 @@
   <script type="text/javascript" src="js/ideogram.js"></script>
 </head>
 <body>
-  <p>Mouse | Ideogram</p>
+  <h1>Mouse | Ideogram</h1>
+  <a href="/ideogram">Back to overview</a>
   <script type="text/javascript">
 
   var config = {
     taxid: 10090,
     chromosomes: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "X", "Y"],
     chrWidth: 10,
-    chrHeight: 1000,
+    chrHeight: 500,
     chrMargin: 10,
-    showBandLabels: true,
-    orientation: "vertical"
+    showBandLabels: false,
+    orientation: "horizontal"
   };
 
   var ideogram = new Ideogram(config);
