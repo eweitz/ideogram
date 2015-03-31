@@ -16,6 +16,14 @@ g {
 	cursor: pointer;
 }
 
+.ghost {
+	opacity: 0.2;
+}
+
+.hidden {
+	display: none;
+}
+
 line.bandLabelStalk {
 	stroke: #AAA;
 	stroke-width: 1;
@@ -24,6 +32,11 @@ line.bandLabelStalk {
 .chromosomeBorder, .acen {
     stroke: #000; 
     stroke-width:0.5;
+}
+
+.syntenyBorder {
+	stroke:#AAA;
+	stroke-width:1;
 }
 
 /* NCBI stain density colors */ 

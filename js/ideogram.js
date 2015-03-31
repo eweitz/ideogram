@@ -141,7 +141,19 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
 
   //var t0 = new Date().getTime();
   
-  var chrMargin = (this.config.chrMargin + this.config.chrWidth) * chrIndex;
+  var chrMargin = (this.config.chrMargin + this.config.chrWidth) * chrIndex,
+      lineY1, lineY2;
+
+  lineY1 = chrMargin;
+  lineY2 = chrMargin - 8;
+
+  if (
+    chrIndex == 1 &&
+    "perspective" in this.config && this.config.perspective == "comparative"
+  ) {
+    lineY1 += 18;
+    lineY2 += 18;
+  } 
 
   var textOffsets = [];
 
@@ -153,7 +165,7 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
       .attr("x", function(d) { 
         var textOffset = -8 + d.offset + d.width/2;
         textOffsets.push(textOffset + 13);
-        return textOffset; 
+        return textOffset;
       })
     .attr("y", chrMargin - 10)
     .text(function(d) { return d.name; })
@@ -164,9 +176,9 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
     .append("line")
       .attr("class", function(d, i) { return "bandLabelStalk bsbsl-" + i  })
       .attr("x1", function(d) { return d.offset + d.width/2; })
-      .attr("y1", chrMargin)
+      .attr("y1", lineY1)
       .attr("x2", function(d) { return d.offset + d.width/2; })
-      .attr("y2", chrMargin - 8)
+      .attr("y2", lineY2)
 
   var texts = $("#" + model.id + " text"),
       textsLength = texts.length - 1,
@@ -236,10 +248,22 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex) {
   chrWidth = this.config.chrWidth;
   chrMargin = (this.config.chrMargin + chrWidth) * chrIndex;
   
-  chr.selectAll("text.bandLabel")
-    .attr("transform", "rotate(-90)")
-    .attr("x", 8 - chrMargin)
-    .attr("y", function(d) { return 2 + d.offset + d.width/2; });
+
+  if (
+    chrIndex == 1 &&
+    "perspective" in this.config && this.config.perspective == "comparative"
+  ) {
+    chr.selectAll("text.bandLabel")
+      .attr("transform", "rotate(-90)")
+      .attr("x", (8 - chrMargin) - 26)
+      .attr("y", function(d) { return 2 + d.offset + d.width/2; })
+      .attr("text-anchor", "end");
+  } else {
+    chr.selectAll("text.bandLabel")
+      .attr("transform", "rotate(-90)")
+      .attr("x", 8 - chrMargin)
+      .attr("y", function(d) { return 2 + d.offset + d.width/2; });
+  }
 
 }
 
@@ -260,7 +284,8 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
 
   chr = d3.select("svg")
     .append("g")
-      .attr("id", chrModel.id);
+      .attr("id", chrModel.id)
+      .attr("class", "chromosome");
 
   chrWidth = this.config.chrWidth;
   width = chrModel.width;
@@ -537,23 +562,42 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
   // one chromosome to a genomic range on another chromosome;
   // a syntenic region
 
+  var t0 = new Date().getTime();
+
   var r1, r2,
       c1Box, c2Box,
       chr1Plane, chr2Plane, 
       polygon, 
-      i, svg;
+      region,
+      syntenies, synteny,
+      i, svg, color, opacity,
+      regionID;
 
-  svg = d3.select("svg");
+  syntenies = d3.select("svg")
+    .append("g")
+    .attr("class", "synteny");
 
   for (i = 0; i < syntenicRegions.length; i++) {
 
-    r1 = syntenicRegions[i][0];
-    r2 = syntenicRegions[i][1];
+    regions = syntenicRegions[i];
 
-    r1.start = this.convertBpToOffset(r1.chr, r1.start);
-    r1.stop = this.convertBpToOffset(r1.chr, r1.stop);
-    r2.start = this.convertBpToOffset(r2.chr, r2.start);
-    r2.stop = this.convertBpToOffset(r2.chr, r2.stop);
+    r1 = regions.r1;
+    r2 = regions.r2;
+
+    color = "#CFC";
+    if ("color" in regions) {
+      color = regions.color;
+    }
+
+    opacity = 1;
+    if ("opacity" in regions) {
+      opacity = regions.opacity;
+    }
+
+    r1.startPx = this.convertBpToOffset(r1.chr, r1.start);
+    r1.stopPx = this.convertBpToOffset(r1.chr, r1.stop);
+    r2.startPx = this.convertBpToOffset(r2.chr, r2.start);
+    r2.stopPx = this.convertBpToOffset(r2.chr, r2.stop);
 
     c1Box = $("#" + r1.chr.id + " path")[0].getBBox();
     c2Box = $("#" + r2.chr.id + " path")[0].getBBox();
@@ -561,29 +605,68 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
     chr1Plane = c1Box.y - 30
     chr2Plane = c2Box.y - 29;
 
-    svg.append("polygon")
-      .attr("points",
-        chr1Plane + ', ' + r1.start + ' ' + 
-        chr1Plane + ', ' + r1.stop + ' ' + 
-        chr2Plane + ', ' + r2.stop + ' ' +  
-        chr2Plane + ', ' + r2.start
-      )
-      .attr('style', "fill:#CFC")
-    
-    svg.append("line")
-      .attr("x1", chr1Plane)
-      .attr("x2", chr2Plane)
-      .attr("y1", r1.start)
-      .attr("y2", r2.start)
-      .attr("style", "stroke:#AAA;stroke-width:1;")
+    regionID = (
+      r1.chr.id + "_" + r1.start + "_" + r1.stop + "_" + 
+      "__" + 
+      r2.chr.id + "_" + r2.start + "_" + r2.stop
+    )
+
+    syntenicRegion = syntenies.append("g")
+      .attr("class", "syntenicRegion")
+      .attr("id", regionID)
+      .on("click", function() {
+
+        var activeRegion = this;
+        var others = d3.selectAll(".syntenicRegion")
+          .filter(function(d, i) {
+            return (this !== activeRegion);
+          })
+
+        others.classed("hidden", !others.classed("hidden"))
       
-    svg.append("line")
+      })
+      .on("mouseover", function() {
+        var activeRegion = this;
+        d3.selectAll(".syntenicRegion")
+          .filter(function(d, i) {
+            return (this !== activeRegion);
+          })
+          .classed("ghost", true)
+      })  
+      .on("mouseout", function() {
+        d3.selectAll(".syntenicRegion").classed("ghost", false)
+      })
+      
+
+    syntenicRegion.append("polygon")
+      .attr("points",
+        chr1Plane + ', ' + r1.startPx + ' ' + 
+        chr1Plane + ', ' + r1.stopPx + ' ' + 
+        chr2Plane + ', ' + r2.stopPx + ' ' +  
+        chr2Plane + ', ' + r2.startPx
+      )
+      .attr('style', "fill: " + color + "; fill-opacity: " + opacity)
+      
+      
+    
+    syntenicRegion.append("line")
+      .attr("class", "syntenyBorder")
       .attr("x1", chr1Plane)
       .attr("x2", chr2Plane)
-      .attr("y1", r1.stop)
-      .attr("y2", r2.stop)
-      .attr("style", "stroke:#AAA;stroke-width:1;")
+      .attr("y1", r1.startPx)
+      .attr("y2", r2.startPx)
+      
+    syntenicRegion.append("line")
+      .attr("class", "syntenyBorder")
+      .attr("x1", chr1Plane)
+      .attr("x2", chr2Plane)
+      .attr("y1", r1.stopPx)
+      .attr("y2", r2.stopPx)
   }
+
+  var t1 = new Date().getTime();
+  console.log("Time in drawSyntenicRegions: " + (t1 - t0) + " ms");
+
 }
 
 

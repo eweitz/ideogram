@@ -10,7 +10,6 @@
 </head>
 <body>
   <p>Synteny | Ideogram</p>
-</body>
 <script type="text/javascript">
 
 function onIdeogramLoad() {
@@ -48,7 +47,7 @@ function onIdeogramLoad() {
 		stop: 36000000
 	};
 
-	syntenicRegions.push([range1, range2], [range3, range4]);
+	syntenicRegions.push({"r1": range1, "r2": range2}, {"r1": range3, "r2": range4});
 
 	ideogram.drawSynteny(syntenicRegions);
 	
@@ -62,10 +61,12 @@ var config = {
   chrMargin: 200,
   showBandLabels: true,
   orientation: "vertical",
+  perspective: "comparative",
   onLoad: onIdeogramLoad
 };
 
 var ideogram = new Ideogram(config);
 
 </script>
+</body>
 </html>
