@@ -154,7 +154,7 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
       that = this;
 
   lineY1 = chrMargin;
-  lineY2 = chrMargin - this.bump;
+  lineY2 = chrMargin - 8;
 
   if (
     chrIndex == 1 &&
@@ -172,7 +172,7 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
     .append("text")
       .attr("class", function(d, i) { return "bandLabel bsbsl-" + i  })
       .attr("x", function(d) { 
-        var textOffset = -that.bump + d.offset + d.width/2;
+        var textOffset = -8 + d.offset + d.width/2;
         textOffsets.push(textOffset + 13);
         return textOffset;
       })
@@ -190,7 +190,7 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
       .attr("y2", lineY2)
 
   var texts = $("#" + model.id + " text"),
-      textsLength = texts.length - 1,
+      textsLength = texts.length,
       overlappingLabelXRight,
       index,
       indexesToHide = [],
@@ -201,10 +201,10 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
 
   overlappingLabelXRight = 0;
 
+  textPadding = 5;
+
   for (index = 1; index < textsLength; index++) {
     // Ensures band labels don't overlap
-
-    textPadding = 5;
 
     xLeft = textOffsets[index];
 
@@ -264,13 +264,13 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex) {
   ) {
     chr.selectAll("text.bandLabel")
       .attr("transform", "rotate(-90)")
-      .attr("x", (this.bump - chrMargin) - 26)
+      .attr("x", (8 - chrMargin) - 26)
       .attr("y", function(d) { return 2 + d.offset + d.width/2; })
       .attr("text-anchor", "end");
   } else {
     chr.selectAll("text.bandLabel")
       .attr("transform", "rotate(-90)")
-      .attr("x", this.bump - chrMargin)
+      .attr("x", 8 - chrMargin)
       .attr("y", function(d) { return 2 + d.offset + d.width/2; });
   }
 
@@ -551,7 +551,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
         
         chr.selectAll("text")
           .attr("transform", "")
-          .attr("x", function(d) { return -that.bump + d.offset + d.width/2; })
+          .attr("x", function(d) { return -8 + d.offset + d.width/2; })
           .attr("y", chrMargin - 10)
 
         if (that.config.orientation == "horizontal") {
