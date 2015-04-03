@@ -16,49 +16,91 @@
 function onIdeogramLoad() {
 
 	var chrs = ideogram.chromosomes,
-		chr1 = chrs["10090"]["1"], 
-		chr2 = chrs["10090"]["2"],
-		r1Band = chr1["bands"][7],
-		r2Band = chr2["bands"][9],
-		r2aBand = chr2["bands"][11],
-		range1, range2, 
+		chr1 = chrs["9606"]["1"], 
+		chr2 = chrs["9606"]["2"],
+		r1Band, r2Band,
+		r3Band, r4Band,
+		r5Band, r6Band,
+		range1, range2, range3, range4, range5, range6,
 		syntenicRegions = [];
 
+	r1Band = chr1.bands[2];
 	range1 = {
 		chr: chr1,
 		start: r1Band.bp.start,
 		stop: r1Band.bp.stop
 	};
 
+	r2Band = chr2.bands[2];
 	range2 = {
 		chr: chr2,
 		start: r2Band.bp.start,
 		stop: r2Band.bp.stop
 	};
 	
-	var range3 = {
+	// 1p11, chromosome 1 centromeric p band
+	r3Band = chr1.bands[22];
+	range3 = {
 		chr: chr1,
-		start: 125000000,
-		stop: 126000000
+		start: r3Band.bp.start,
+		stop: r3Band.bp.stop
 	};
 	
-	var range4 = {
+	// 2p11.1, chromosome 2 centromeric p band
+	r4Band = chr2.bands[13];
+	range4 = {
 		chr: chr2,
-		start: 15000000,
-		stop: 36000000
+		start: r4Band.bp.start,
+		stop: r4Band.bp.stop
 	};
 
-	syntenicRegions.push({"r1": range1, "r2": range2}, {"r1": range3, "r2": range4});
+	// 1q12
+	r5Band = chr1.bands[24]
+	range5 = {
+		chr: chr1,
+		start: r5Band.bp.start,
+		stop: r5Band.bp.stop
+	};
+
+	// 2q22
+	r6Band = chr2.bands[24];
+	range6 = {
+		chr: chr2,
+		start: r6Band.bp.start,
+		stop: r6Band.bp.stop
+	};
+
+	// 1q24
+	r7Band = chr1.bands[29]
+	range7 = {
+		chr: chr1,
+		start: r7Band.bp.start,
+		stop: r7Band.bp.stop
+	};
+
+	// 2q31 - 2q33
+	range8 = {
+		chr: chr2,
+		start: chr2.bands[29].bp.start,
+		stop: chr2.bands[33].bp.stop
+	};
+
+	syntenicRegions.push(
+		{"r1": range1, "r2": range2}, 
+		{"r1": range3, "r2": range4},
+		{"r1": range5, "r2": range6},
+		{"r1": range7, "r2": range8}
+	);
 
 	ideogram.drawSynteny(syntenicRegions);
 	
 }
 
 var config = {
-  taxid: 10090,
+  taxid: 9606,
   chromosomes: ["1", "2"],
   chrWidth: 10,
-  chrHeight: 500,
+  chrHeight: 1000,
   chrMargin: 200,
   showBandLabels: true,
   orientation: "vertical",

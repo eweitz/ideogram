@@ -92,7 +92,11 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid) {
 
   var chr = {};
   var band, scale, 
+      width, offset,
       startType, stopType,
+      chrHeight = this.config.chrHeight,
+      maxLength = this.maxLength,
+      chrLength,
       cs;
 
   cs = this.coordinateSystem;
@@ -100,27 +104,48 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid) {
   chr["id"] = "chr" + chromosomeName + "-" + taxid;
 
   chr["length"] = bands[bands.length - 1][cs].stop;
+  chrLength = chr["length"]
 
-  var offset = 0;
-  
+  offset = 0;
+
   for (var i = 0; i < bands.length; i++) {
     band = bands[i];
-    bands[i]["width"] = this.config.chrHeight * chr["length"]/this.maxLength[cs] * (band[cs].stop - band[cs].start)/chr["length"];
+
+    width = chrHeight * chr["length"]/maxLength[cs] * (band[cs].stop - band[cs].start)/chrLength;
+
+    bands[i]["width"] = width;
     bands[i]["offset"] = offset;
+    bands[i]["scale"] = {
+      "bp": (offset + width)/band.bp.stop,
+      "iscn": (offset + width)/band.iscn.stop
+    }
+
     offset += bands[i]["width"];
+
   }
 
   chr["width"] = offset;
 
   chr["scale"] = {}
 
+  // TODO:
+  //
+  // A chromosome-level scale property is likely 
+  // nonsensical for any chromosomes that have cytogenetic band data.
+  // Different bands tend to have ratios between number of base pairs 
+  // and physical length.
+  //
+  // However, a chromosome-level scale property is likely
+  // necessary for chromosomes that do not have band data.
+  //
+  // This needs further review.
   if (this.config.multiorganism === true) {
     chr["scale"].bp = 1;
-    chr["scale"].iscn = this.config.chrHeight * chr["length"]/this.maxLength.bp;
+    //chr["scale"].bp = band.iscn.stop / band.bp.stop;
+    chr["scale"].iscn = chrHeight * chrLength/maxLength.bp;
   } else {
-    scale = band.iscn.stop / band.bp.stop;
-    chr["scale"].bp = scale;
-    chr["scale"].iscn = this.config.chrHeight * scale;
+    chr["scale"].bp = chrHeight / maxLength.bp;
+    chr["scale"].iscn = chrHeight / maxLength.iscn;
   }
   chr["bands"] = bands;
 
@@ -250,14 +275,11 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
 
 Ideogram.prototype.rotateBandLabels = function(chr, chrIndex) {
 
-  console.log("Entered rotateBandLabels")
-
   var chrMargin, chrWidth;
 
   chrWidth = this.config.chrWidth;
   chrMargin = (this.config.chrMargin + chrWidth) * chrIndex;
   
-
   if (
     chrIndex == 1 &&
     "perspective" in this.config && this.config.perspective == "comparative"
@@ -565,8 +587,16 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 
 
 Ideogram.prototype.convertBpToOffset = function(chr, bp) {
-  //return (chr.scale.iscn * chr.scale.bp * bp) + 30;
-  return (chr.scale.bp * bp) + 30;
+
+  var band, i;
+
+  for (i = 0; i < chr.bands.length; i++) {
+    band = chr.bands[i];
+    if (bp >= band.bp.start && bp <= band.bp.stop) {
+      return (band.scale.bp * bp) + 30;
+    }
+  }
+
 }
 
 

@@ -23,8 +23,6 @@
 			range1, range2, range3, range4, range5, range6,
 			syntenicRegions = [];
 
-		console.log(r1Band.bp.start)
-
 		range1 = {
 			chr: chr1,
 			start: r1Band.bp.start,
@@ -34,8 +32,8 @@
 		for (var i = 1; i < 20; i++) {
 			range2 = {
 				chr: chr2,
-				start: 8000000 * i,
-				stop: 8500000 * i
+				start: 6000000 * i,
+				stop: 6500000 * i
 			};
 			syntenicRegions.push({"r1": range1, "r2": range2, "color": "#F55"});
 		}
@@ -63,8 +61,8 @@
 		for (var i = 1; i < 6; i++) {
 			range6 = {
 				chr: chr1,
-				start: 150000000 + (16000000 * i),
-				stop: 150000000 + (12000000 * i)
+				start: 120000000 + (12000000 * i),
+				stop: 120000000 + (8000000 * i)
 			};
 			color = "#AAF";
 			if (i == 5) {
