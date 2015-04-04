@@ -115,10 +115,6 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid) {
 
     bands[i]["width"] = width;
     bands[i]["offset"] = offset;
-    bands[i]["scale"] = {
-      "bp": (offset + width)/band.bp.stop,
-      "iscn": (offset + width)/band.iscn.stop
-    }
 
     offset += bands[i]["width"];
 
@@ -588,12 +584,18 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 
 Ideogram.prototype.convertBpToOffset = function(chr, bp) {
 
-  var band, i;
+  var i, band, bpToIscnScale, iscn, offset;
 
   for (i = 0; i < chr.bands.length; i++) {
     band = chr.bands[i];
     if (bp >= band.bp.start && bp <= band.bp.stop) {
-      return (band.scale.bp * bp) + 30;
+ 
+      bpToIscnScale = (band.iscn.stop - band.iscn.start)/(band.bp.stop - band.bp.start);
+      iscn = band.iscn.start + (bp - band.bp.start) * bpToIscnScale;
+
+      offset = 30 + band.offset + (band.width * (iscn - band.iscn.start)/(band.iscn.stop - band.iscn.start))
+ 
+      return offset;
     }
   }
 
