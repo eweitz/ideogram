@@ -13,6 +13,38 @@
   <a href="/ideogram">Back to overview</a>
   <script type="text/javascript">
 
+    function onIdeogramLoad() {
+      // See HomoloGene entry for MTOR at 
+      // http://www.ncbi.nlm.nih.gov/homologene/3637
+      // Placements for H. sapiens and M. musculus used below.
+      // Placements from latest annotation release in 
+      // Human: http://www.ncbi.nlm.nih.gov/gene/2475#genomic-context
+      // Mouse: http://www.ncbi.nlm.nih.gov/gene/56717#genomic-context
+
+      var chrs = ideogram.chromosomes,
+        chr1 = chrs["9606"]["1"], 
+        chr4 = chrs["10090"]["4"],
+        syntenicRegions = [];
+
+      range1 = {
+        chr: chr1,
+        start: 11106531,
+        stop: 11262557,
+        orientation: "reverse"
+      };
+
+      range2 = {
+        chr: chr4,
+        start: 148448582,
+        stop: 148557685
+      };
+      
+      syntenicRegions.push({"r1": range1, "r2": range2});
+
+      ideogram.drawSynteny(syntenicRegions);
+      
+    }
+
   var config = {
     multiorganism: true,
     taxids: ["9606", "10090"],
@@ -22,9 +54,11 @@
     },
     chrWidth: 10,
     chrHeight: 500,
-    chrMargin: 10,
+    chrMargin: 50,
     showBandLabels: true,
-    orientation: "vertical"
+    orientation: "vertical",
+    perspective: "comparative",
+    onLoad: onIdeogramLoad
   };
 
   var ideogram = new Ideogram(config);
