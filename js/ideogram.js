@@ -101,6 +101,7 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid) {
 
   cs = this.coordinateSystem;
 
+  chr["name"] = chromosomeName;
   chr["id"] = "chr" + chromosomeName + "-" + taxid;
 
   chr["length"] = bands[bands.length - 1][cs].stop;
@@ -157,6 +158,25 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid) {
   return chr;
 }
 
+Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
+
+  var i, chr, chrs, taxid;
+
+  chrs = [];
+
+  for (taxid in chromosomes) {
+    for (chr in chromosomes[taxid]) {
+      chrs.push(chromosomes[taxid][chr]);
+    }
+  }
+  
+  d3.selectAll(".chromosome")
+    .append("text")
+     .data(chrs)
+     .attr("class", "chrLabel")
+      .text(function(d, i) { return d.name; })
+  
+}
 
 Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
   // Draws labels for cytogenetic band , e.g. "p31.2"
@@ -873,6 +893,8 @@ Ideogram.prototype.init = function() {
       d3.selectAll(bandsToHide).style("display", "none");
     }
     
+    that.drawChromosomeLabels(that.chromosomes);
+
     var t1_a = new Date().getTime();
     console.log("Time in drawChromosome: " + (t1_a - t0_a) + " ms")
 
