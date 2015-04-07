@@ -160,7 +160,7 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid) {
 
 Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
 
-  var i, chr, chrs, taxid;
+  var i, chr, chrs, taxid, ideo;
 
   chrs = [];
 
@@ -170,12 +170,21 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
     }
   }
   
+  ideo = this;
+
   d3.selectAll(".chromosome")
     .append("text")
      .data(chrs)
-     .attr("class", "chrLabel")
+      .attr("class", "chrLabel")
+      .attr("transform", "rotate(-90)")
+      .attr("x", function(d, i) { 
+        var chrMargin = (ideo.config.chrMargin + ideo.config.chrWidth) * i;
+        return 8 - chrMargin - 56;
+      })
+      .attr("y", -5)
       .text(function(d, i) { return d.name; })
-  
+
+      
 }
 
 Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
