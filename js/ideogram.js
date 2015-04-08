@@ -25,6 +25,11 @@ var Ideogram = function(config) {
     "iscn": 0
   }
 
+  // A flat array of chromosomes
+  // (this.chromosomes is an object of 
+  // arrays of chromosomes, keyed by organism)
+  this.chromosomesArray = [];
+
   this.bandsToHide = [];
 
   this.chromosomes = {};
@@ -160,7 +165,8 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid) {
 
 Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
 
-  var i, chr, chrs, taxid, ideo;
+  var i, chr, chrs, taxid, ideo,
+      chrMargin2;
 
   chrs = [];
 
@@ -172,16 +178,22 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
   
   ideo = this;
 
+  chrMargin2 = 0;
+  if (ideo.config.showBandLabels === true) {
+    chrMargin2 = 47;
+  }
+
   d3.selectAll(".chromosome")
     .append("text")
      .data(chrs)
       .attr("class", "chrLabel")
-      .attr("transform", "rotate(-90)")
-      .attr("x", function(d, i) { 
+      .attr("x", -5)
+      .attr("y", function(d, i) { 
         var chrMargin = (ideo.config.chrMargin + ideo.config.chrWidth) * i;
-        return 8 - chrMargin - 56;
+
+        return chrMargin + chrMargin2;
       })
-      .attr("y", -5)
+      .attr("text-anchor", "end")
       .text(function(d, i) { return d.name; })
 
       
@@ -191,10 +203,10 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
   // Draws labels for cytogenetic band , e.g. "p31.2"
   //
   // Performance note:
-  // This function takes up the majority of the time in drawChromosomes,
-  // which is about 90 ms out of about 130 ms in drawChromosomes on Chrome 41
+  // This function takes up the majority of the time in drawChromosome,
+  // which is about 90 ms out of about 130 ms in drawChromosome on Chrome 41
   // for the the full human ideogram of 23 band-labeled chromosomes.
-  // drawChromosomes balloons to ~220 ms on FF 36 and ~340 ms on IE 11.
+  // drawChromosome balloons to ~220 ms on FF 36 and ~340 ms on IE 11.
   // Mobile performance is currently unknown.
 
   //var t0 = new Date().getTime();
@@ -298,6 +310,34 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
 }
 
 
+
+Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex) {
+
+  var chrMargin, chrWidth;
+
+  chrWidth = this.config.chrWidth;
+  chrMargin = (this.config.chrMargin + chrWidth) * chrIndex;
+
+  if (
+    chrIndex == 1 &&
+    "perspective" in this.config && this.config.perspective == "comparative"
+  ) {
+    chr.selectAll("text.chrLabel")
+      .attr("transform", "rotate(-90)")
+      .attr("x", (8 - chrMargin) - 26)
+      .attr("y", function(d) { return 2 + d.offset + d.width/2; })
+      .attr("text-anchor", "end");
+  } else {
+
+    chr.selectAll("text.chrLabel")
+      .attr("transform", "rotate(-90)")
+      .attr("x", -5)
+      //.attr("y", function(d) { return 2 + d.offset + d.width/2; });
+      .attr("y", 247);
+  }
+
+}
+
 Ideogram.prototype.rotateBandLabels = function(chr, chrIndex) {
 
   var chrMargin, chrWidth;
@@ -329,7 +369,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
 
   var chr, chrWidth, width,
       pArmWidth, selector, qArmStart, qArmWidth,
-      pTerPad,
+      pTerPad, chrClass,
       bump = this.bump; 
 
   // p-terminal band padding
@@ -408,11 +448,11 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
 
         return d;
       })
-
+  
   if (this.config.showBandLabels === true) {
       this.drawBandLabels(chr, chrModel, chrIndex);
   }
-  
+
   if (chrModel.centromerePosition != "telocentric") {
     // As in human
     chr.append('path')
@@ -576,6 +616,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
       .each("end", function() {
         
         that.rotateBandLabels(chr, chrIndex) 
+        that.rotateChromosomeLabels(chr, chrIndex) 
 
         if (that.config.orientation == "vertical") {
           jqOtherChrs.show();
@@ -596,7 +637,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
       .attr("transform", horizontalTransform)
       .each("end", function() {
         
-        chr.selectAll("text")
+        chr.selectAll("text.bandLabel")
           .attr("transform", "")
           .attr("x", function(d) { return -8 + d.offset + d.width/2; })
           .attr("y", chrMargin - 10)
@@ -758,7 +799,7 @@ Ideogram.prototype.init = function() {
 
   var bandDataFile,
       isMultiOrganism = (this.config.multiorganism === true),
-      taxid, taxids, i,
+      taxid, taxids, i, svgClass,
       chrs, numChromosomes;
 
   var t0 = new Date().getTime();
@@ -784,9 +825,16 @@ Ideogram.prototype.init = function() {
     }
   }
 
+
+  svgClass = "";
+  if (this.config.showChromosomeLabels) {
+    svgClass += "labeled";
+  }
+
    var svg = d3.select("body")
     .append("svg")
     .attr("id", "ideogram")
+    .attr("class", "labeled")
     .attr("width", "100%")
     .attr("height", numChromosomes * this.config.chrHeight + 20)
 
@@ -891,6 +939,7 @@ Ideogram.prototype.init = function() {
         chromosomeModel = that.getChromosomeModel(bands, chromosome, taxid);
         
         that.chromosomes[taxid][chromosome] = chromosomeModel;
+        that.chromosomesArray.push(chromosomeModel);
 
         that.drawChromosome(chromosomeModel, chrIndex);
         
@@ -900,9 +949,20 @@ Ideogram.prototype.init = function() {
     if (that.config.showBandLabels === true) {
       var bandsToHide = that.bandsToHide.join(", ");
       d3.selectAll(bandsToHide).style("display", "none");
+
+
+      if (that.config.orientation === "vertical") {
+        for (var i = 0; i < that.chromosomesArray.length; i++) {
+          that.rotateChromosomeLabels(d3.select("#" + that.chromosomesArray[i].id), i);
+        }
+      }
+
     }
     
-    that.drawChromosomeLabels(that.chromosomes);
+    if (that.config.showChromosomeLabels === true) {
+
+      that.drawChromosomeLabels(that.chromosomes);
+    }
 
     var t1_a = new Date().getTime();
     console.log("Time in drawChromosome: " + (t1_a - t0_a) + " ms")
