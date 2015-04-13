@@ -206,6 +206,11 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
           .attr("class", "chrLabel")
           .attr("x", -5)
           .attr("y", function(d, i) { 
+
+              if (ideo.config.showBandLabels === true) {
+                i -= 1;
+              }
+
               var chrMargin = (ideo.config.chrMargin + ideo.config.chrWidth) * (i + 1);
               return chrMargin + chrMargin2;
           })
@@ -368,9 +373,10 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation)
         chrMargin2 = ideo.config.chrMargin - 2;
         if (ideo.config.showBandLabels === true) {
           chrMargin2 = ideo.config.chrMargin + ideo.config.chrWidth + 8;
+          chrIndex -= 1;
         }
 
-        var chrMargin = (ideo.config.chrMargin + ideo.config.chrWidth) * (chrIndex - 1);
+        var chrMargin = (ideo.config.chrMargin + ideo.config.chrWidth) * chrIndex;
         return chrMargin + chrMargin2;
       })
   }
@@ -869,13 +875,17 @@ Ideogram.prototype.init = function() {
 
   svgClass = "";
   if (this.config.showChromosomeLabels) {
-    svgClass += "labeled";
+    if (this.config.orientation == "horizontal") {
+      svgClass = "labeledLeft";
+    } else {
+      svgClass += "labeled";
+    }
   }
 
    var svg = d3.select("body")
     .append("svg")
     .attr("id", "ideogram")
-    .attr("class", "labeled")
+    .attr("class", svgClass)
     .attr("width", "100%")
     .attr("height", numChromosomes * this.config.chrHeight + 20)
 
@@ -1001,7 +1011,6 @@ Ideogram.prototype.init = function() {
     }
     
     if (ideo.config.showChromosomeLabels === true) {
-
       ideo.drawChromosomeLabels(ideo.chromosomes);
     }
 
