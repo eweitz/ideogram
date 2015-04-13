@@ -30,6 +30,10 @@ text {
 	fill: #000;
 }
 
+.italic {
+	font-style: italic;
+}
+
 g {
 	cursor: pointer;
 }
