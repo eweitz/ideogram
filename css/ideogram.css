@@ -11,6 +11,10 @@ svg {
 	padding-left: 5px;
 }
 
+svg.labeled {
+	padding-left: 15px;
+}
+
 text {
 	/* 
 	Tahoma has excellent readability and 
