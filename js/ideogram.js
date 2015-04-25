@@ -900,6 +900,46 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
 }
 
 
+
+Ideogram.prototype.processAnnotData = function(rawAnnots) {
+
+  var i, annot, annots, rawAnnot,
+      chr, start, stop,
+      chrModel, 
+      startOffset, stopOffset, offset,
+      ideo = this;
+
+  annots = [];
+
+  for (i = 0; i < rawAnnots.length; i++) {
+    ra = rawAnnots[i];
+
+    chr = ra[1],
+    start = ra[2],
+    stop = ra[3]
+
+    chrModel = ideo.chromosomes["9606"][chr]
+
+    startOffset = ideo.convertBpToOffset(chrModel, start);
+    stopOffset = ideo.convertBpToOffset(chrModel, stop);
+
+    offset = Math.round((startOffset + stopOffset)/2);
+
+    annot = {
+      id: ra[0],
+      chr: chr,
+      start: start,
+      stop: stop,
+      offset: offset
+    }
+    annots.push(annot)
+  }
+
+  return annots;
+
+}
+
+
 Ideogram.prototype.onLoad = function() {
   // Called when Ideogram has finished initializing.
   // Accounts for certain ideogram properties not being set until 
@@ -916,6 +956,8 @@ Ideogram.prototype.init = function() {
       isMultiOrganism = (this.config.multiorganism === true),
       taxid, taxids, i, svgClass,
       chrs, numChromosomes;
+
+  var ideo = this;
 
   var t0 = new Date().getTime();
 
@@ -940,6 +982,15 @@ Ideogram.prototype.init = function() {
     }
   }
 
+  if (this.config.annotationsPath) {
+    $.ajax({
+      url: ideo.config.annotationsPath,
+      dataType: "json",
+      success: function(response, textStatus, jqXHR) {
+        ideo.rawAnnots = response.annots;
+      }
+    })
+  }
 
   svgClass = "";
   if (this.config.showChromosomeLabels) {
@@ -961,8 +1012,6 @@ Ideogram.prototype.init = function() {
       maxLength = 0,
       numBandDataResponses = 0;
 
-
-  var ideo = this;
 
   for (i = 0; i < taxids.length; i++) {
     taxid = taxids[i];
@@ -1063,6 +1112,29 @@ Ideogram.prototype.init = function() {
         ideo.drawChromosome(chromosomeModel, chrIndex);
         
       }
+    }
+
+    if (ideo.config.annotationsPath) {
+
+      function pa() {
+        window.clearTimeout(timeout);
+        ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
+      }
+      
+      (function checkAnnotData() {
+        timeout = setTimeout(function() {
+          if (!ideo.rawAnnots) {
+            checkAnnotData();
+          } else {
+            pa();
+          }
+          },
+          50
+        )
+      })();
+
+      
+      
     }
     
     if (ideo.config.showBandLabels === true) {
