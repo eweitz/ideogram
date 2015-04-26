@@ -223,6 +223,10 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
               lines.push(arr.slice(0, arr.length - 1).join(" "))
               lines.push(arr[arr.length - 1]);
 
+              if (!ideo.config.showBandLabels) {
+                i += 1;
+              }
+
               chrMargin = (ideo.config.chrMargin + ideo.config.chrWidth) * i;
               x = -(chrMargin + chrMargin2) + 3;
 
@@ -662,7 +666,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
     chrWidth = this.config.chrWidth;
     chrMargin = (this.config.chrMargin + chrWidth) * chrIndex;
 
-    tPadding = chrMargin + (chrWidth-4)*(chrIndex-1);
+    tPadding = chrMargin + (chrWidth-4)*chrIndex;
 
     chr
       .attr("data-orientation", "vertical")
@@ -697,7 +701,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 
   if (this.config.orientation == "vertical") {
 
-    cx = chrMargin + (this.config.chrWidth-4)*(chrIndex-1) - 30;
+    cx = chrMargin + (this.config.chrWidth-4)*(chrIndex-1) - 24;
     cy = cx + 30;
     verticalTransform = "rotate(90, " + cx + ", " + cy + ")";
     horizontalTransform = "rotate(0)translate(0, -" + (chrMargin - this.config.chrMargin) + ")";
@@ -877,8 +881,6 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
       )
       .attr('style', "fill: " + color + "; fill-opacity: " + opacity)
       
-      
-    
     syntenicRegion.append("line")
       .attr("class", "syntenyBorder")
       .attr("x1", chr1Plane)
@@ -900,8 +902,12 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
 }
 
 
-
 Ideogram.prototype.processAnnotData = function(rawAnnots) {
+// Processes genome annotation data for .
+// Converts raw annotation data from server, which is structured as 
+// an array of arrays, into a more verbose data structure consisting 
+// of an array of objects.  
+// Also adds pixel offset information.
 
   var i, annot, annots, rawAnnot,
       chr, start, stop,
@@ -1114,6 +1120,8 @@ Ideogram.prototype.init = function() {
       }
     }
 
+    // Waits for potentially large annotation dataset 
+    // to be received by the client, then triggers annotation processing
     if (ideo.config.annotationsPath) {
 
       function pa() {
@@ -1133,8 +1141,6 @@ Ideogram.prototype.init = function() {
         )
       })();
 
-      
-      
     }
     
     if (ideo.config.showBandLabels === true) {
