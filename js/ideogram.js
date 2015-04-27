@@ -204,8 +204,6 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
 
   if (ideo.config.orientation === "vertical") {
 
-
-
     d3.selectAll(".chromosome")
       .append("text")
        .data(chrs)
@@ -909,7 +907,7 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
 // of an array of objects.  
 // Also adds pixel offset information.
 
-  var i, annot, annots, rawAnnot,
+  var i, j, annot, annots, rawAnnot,
       chr, start, stop,
       chrModel, 
       startOffset, stopOffset, offset,
@@ -918,31 +916,64 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
   annots = [];
 
   for (i = 0; i < rawAnnots.length; i++) {
-    ra = rawAnnots[i];
+    annotsByChr = rawAnnots[i]
+    
+    annots.push({"chr": annotsByChr.chr, "annots": []});
 
-    chr = ra[1],
-    start = ra[2],
-    stop = ra[3]
+    for (j = 0; j < annotsByChr.annots.length; j++) {
 
-    chrModel = ideo.chromosomes["9606"][chr]
+      chr = annotsByChr.chr; 
+      ra = annotsByChr.annots[j];
 
-    startOffset = ideo.convertBpToOffset(chrModel, start);
-    stopOffset = ideo.convertBpToOffset(chrModel, stop);
+      start = ra[1],
+      stop = ra[2]
 
-    offset = Math.round((startOffset + stopOffset)/2);
+      chrModel = ideo.chromosomes["9606"][chr]
 
-    annot = {
-      id: ra[0],
-      chr: chr,
-      start: start,
-      stop: stop,
-      offset: offset
+      startOffset = ideo.convertBpToOffset(chrModel, start);
+      stopOffset = ideo.convertBpToOffset(chrModel, stop);
+
+      offset = Math.round((startOffset + stopOffset)/2);
+
+      annot = {
+        id: ra[0],
+        chrIndex: i,
+        start: start,
+        stop: stop,
+        offset: offset
+      }
+      annots[i]["annots"].push(annot)
     }
-    annots.push(annot)
   }
 
   return annots;
 
+}
+
+
+// Draws genome annotations on chromosomes
+Ideogram.prototype.drawAnnots = function(annots) {
+
+  console.log(annots);
+
+  var chrMargin = this.config.chrMargin;
+
+  chrAnnot = d3.selectAll(".chromosome")
+    .data(annots)
+      .selectAll("path.annot")
+      .data(function(d) { return d["annots"]})
+      .enter()
+        .append("path")
+          .attr("id", function(d, i) { return d.id; })
+          .attr("class", "annot")
+          .attr("d", function(d) { 
+
+            return (
+              'M ' + d.offset + ' ' + ((d.chrIndex + 1) * (10 + chrMargin) + 10) + ' ' + 
+              'l -3 6 l 6 0 z'
+            );
+          })
+          .attr("fill", "red")
 }
 
 
@@ -952,7 +983,6 @@ Ideogram.prototype.onLoad = function() {
   // asynchronous requests succeed, etc.
 
   call(this.onLoadCallback);
-
 }
 
 
@@ -1127,6 +1157,7 @@ Ideogram.prototype.init = function() {
       function pa() {
         window.clearTimeout(timeout);
         ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
+        ideo.drawAnnots(ideo.annots);
       }
       
       (function checkAnnotData() {
