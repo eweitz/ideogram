@@ -664,7 +664,11 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
     chrWidth = this.config.chrWidth;
     chrMargin = (this.config.chrMargin + chrWidth) * chrIndex;
 
-    tPadding = chrMargin + (chrWidth-4)*chrIndex;
+    if (!this.config.showBandLabels) {
+      chrIndex += 2;
+    }
+
+    tPadding = chrMargin + (chrWidth-4)*(chrIndex - 1);
 
     chr
       .attr("data-orientation", "vertical")
