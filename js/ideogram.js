@@ -933,7 +933,7 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
       startOffset = ideo.convertBpToOffset(chrModel, start);
       stopOffset = ideo.convertBpToOffset(chrModel, stop);
 
-      offset = Math.round((startOffset + stopOffset)/2);
+      offset = Math.round((startOffset + stopOffset)/2) - 28;
 
       annot = {
         id: ra[0],
@@ -954,11 +954,11 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
 // Draws genome annotations on chromosomes
 Ideogram.prototype.drawAnnots = function(annots) {
 
-  console.log(annots);
+  //console.log(annots);
 
   var chrMargin = this.config.chrMargin;
 
-  chrAnnot = d3.selectAll(".chromosome")
+  var chrAnnot = d3.selectAll(".chromosome")
     .data(annots)
       .selectAll("path.annot")
       .data(function(d) { return d["annots"]})
@@ -1155,23 +1155,28 @@ Ideogram.prototype.init = function() {
     if (ideo.config.annotationsPath) {
 
       function pa() {
-        window.clearTimeout(timeout);
+        if (typeof timeout !== "undefined") {
+          window.clearTimeout(timeout);
+        }
         ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
         ideo.drawAnnots(ideo.annots);
       }
       
-      (function checkAnnotData() {
-        timeout = setTimeout(function() {
-          if (!ideo.rawAnnots) {
-            checkAnnotData();
-          } else {
-            pa();
-          }
-          },
-          50
-        )
-      })();
-
+      if (ideo.rawAnnots) {
+        pa();
+      } else {
+        (function checkAnnotData() {
+          timeout = setTimeout(function() {
+            if (!ideo.rawAnnots) {
+              checkAnnotData();
+            } else {
+              pa();
+            }
+            },
+            50
+          )
+        })();
+      }
     }
     
     if (ideo.config.showBandLabels === true) {
