@@ -1067,10 +1067,17 @@ Ideogram.prototype.init = function() {
   svgClass = "";
   if (this.config.showChromosomeLabels) {
     if (this.config.orientation == "horizontal") {
-      svgClass = "labeledLeft";
+      svgClass += "labeledLeft ";
     } else {
-      svgClass += "labeled";
+      svgClass += "labeled ";
     }
+  }
+
+  if (
+    this.config.annotationsLayout && 
+    this.config.annotationsLayout === "overlay"
+  ) {
+    svgClass += "faint"
   }
 
    var svg = d3.select("body")

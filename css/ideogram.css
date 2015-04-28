@@ -72,3 +72,14 @@ line.bandLabelStalk {
 .acen {fill: #FDD}
 .stalk {fill: #CCE;}
 .gvar {fill: #DDF}
+/* Used when overlaid with annotations */ 
+.faint .gneg {fill: #FFF}
+.faint .gpos25 {fill: #EEE}
+.faint .gpos33 {fill: #EEE}
+.faint .gpos50 {fill: #EEE}
+.faint .gpos66 {fill: #EEE}
+.faint .gpos75 {fill: #EEE}
+.faint .gpos100 {fill: #DDD}
+.faint .acen {fill: #FEE}
+.faint .stalk {fill: #EEF;}
+.faint .gvar {fill: #EEF}
