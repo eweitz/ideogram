@@ -960,24 +960,56 @@ Ideogram.prototype.drawAnnots = function(annots) {
 
   //console.log(annots);
 
-  var chrMargin = this.config.chrMargin;
+  var layout, chrMargin,
+      x1, x2, y1, y2;
+
+  chrMargin = this.config.chrMargin;
+
+
+  layout = this.config.annotationsLayout;
+  if (typeof layout === "undefined") {
+    layout = "tracks";
+  } 
 
   var chrAnnot = d3.selectAll(".chromosome")
     .data(annots)
       .selectAll("path.annot")
       .data(function(d) { return d["annots"]})
       .enter()
-        .append("path")
-          .attr("id", function(d, i) { return d.id; })
-          .attr("class", "annot")
-          .attr("d", function(d) { 
 
-            return (
-              'M ' + d.offset + ' ' + ((d.chrIndex + 1) * (10 + chrMargin) + 10) + ' ' + 
-              'l -3 6 l 6 0 z'
-            );
-          })
-          .attr("fill", "red")
+  if (layout === "tracks") {
+    chrAnnot.append("path")
+      .attr("id", function(d, i) { return d.id; })
+      .attr("class", "annot")
+      .attr("d", function(d) { 
+
+        return (
+          'M ' + d.offset + ' ' + ((d.chrIndex + 1) * (2*chrMargin) + chrMargin) + ' ' + 
+          'l -3 6 l 6 0 z'
+        );
+      })
+      .attr("fill", "red")
+    } else {
+      chrAnnot.append("polygon")
+        .attr("id", function(d, i) { return d.id; })
+        .attr("class", "annot")
+        .attr("points", function(d) { 
+
+          x1 = d.offset - 0.5;
+          x2 = d.offset + 0.5;
+          y1 = (d.chrIndex + 1) * (2*chrMargin) + chrMargin;
+          y2 = (d.chrIndex + 1) * (2*chrMargin)
+          
+          return (
+            x1 + "," + y1 + " " +
+            x2 + "," + y1 + " " +
+            x2 + "," + y2 + " " +
+            x1 + "," + y2
+          );
+
+        })
+        .attr("fill", "red")
+    }
 }
 
 
