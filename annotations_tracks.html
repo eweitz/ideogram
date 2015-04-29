@@ -16,10 +16,10 @@
 
   var annotationTracks = [
     {"id": "pathogenicTrack", "displayName": "Pathogenic", "color": "#F00"},
-    {"id": "likelyPathogenicTrack", "displayName": "Likely pathogenic", "color": "#F35"},
+    {"id": "likelyPathogenicTrack", "displayName": "Likely pathogenic", "color": "#D8A"},
     {"id": "uncertainSignificanceTrack", "displayName": "Uncertain significance", "color": "#CCC"},
-    {"id": "likelyBenignTrack", "displayName": "Likely benign", "color": "#5F3"},
-    {"id": "benignTrack",  "displayName": "Benign", "color": "#5C3"}
+    {"id": "likelyBenignTrack", "displayName": "Likely benign", "color": "#AD8"},
+    {"id": "benignTrack",  "displayName": "Benign", "color": "#4D0"}
   ]
 
   var config = {
@@ -31,6 +31,7 @@
     showChromosomeLabels: true,
     annotationsPath: "/ideogram/data/1000_virtual_snvs.json",
     annotationTracks: annotationTracks,
+    annotationHeight: 4,
     orientation: "horizontal"
   };
 

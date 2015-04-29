@@ -38,6 +38,12 @@ var Ideogram = function(config) {
     }, 
   }
 
+  if (this.config.annotationsPath) {
+    if (!this.config.annotationHeight) {
+      this.config.annotationHeight = 3;
+    }
+  }
+
   // A flat array of chromosomes
   // (this.chromosomes is an object of 
   // arrays of chromosomes, keyed by organism)
@@ -501,6 +507,10 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
 
   chrWidth = this.config.chrWidth;
   width = chrModel.width;
+
+  if (this.config.annotationsPath) {
+
+  }
 
   var chrMargin = (this.config.chrMargin + chrWidth) * chrIndex;
 
@@ -969,16 +979,23 @@ Ideogram.prototype.drawAnnots = function(annots) {
 
   //console.log(annots);
 
-  var layout, chrMargin,
+  var layout, chrMargin, annotHeight,
+      triangle,
       x1, x2, y1, y2;
 
   chrMargin = this.config.chrMargin;
 
 
-  layout = this.config.annotationsLayout;
-  if (typeof layout === "undefined") {
-    layout = "tracks";
+  layout = "tracks";
+  if (this.config.annotationsLayout) {
+    layout = this.config.annotationsLayout;
   } 
+
+  annotHeight = "3";
+  if (this.config.annotationsHeight) {
+    annotHeight = this.config.annotationsHeight;
+  }
+  triangle = 'l -' + annotHeight + ' ' + (2*annotHeight) + ' l ' + (2*annotHeight) + ' 0 z';
 
   var chrAnnot = d3.selectAll(".chromosome")
     .data(annots)
@@ -994,7 +1011,7 @@ Ideogram.prototype.drawAnnots = function(annots) {
 
         return (
           'M ' + d.offset + ' ' + ((d.chrIndex + 1) * (2*chrMargin) + chrMargin) + ' ' + 
-          'l -3 6 l 6 0 z'
+          triangle
         );
       })
       .attr("fill", function(d) { return d.color })
