@@ -915,6 +915,7 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
       chr, start, stop,
       chrModel, 
       startOffset, stopOffset, offset,
+      trackIndex, color,
       ideo = this;
 
   annots = [];
@@ -939,13 +940,21 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
 
       offset = Math.round((startOffset + stopOffset)/2) - 28;
 
+      color = "#F00";
+      if (ideo.config.annotationTracks) {
+        trackIndex = ra[3]
+        color = ideo.config.annotationTracks[trackIndex].color;
+      }
+
       annot = {
         id: ra[0],
         chrIndex: i,
         start: start,
         stop: stop,
-        offset: offset
+        offset: offset,
+        color: color
       }
+
       annots[i]["annots"].push(annot)
     }
   }
@@ -988,7 +997,7 @@ Ideogram.prototype.drawAnnots = function(annots) {
           'l -3 6 l 6 0 z'
         );
       })
-      .attr("fill", "red")
+      .attr("fill", function(d) { return d.color })
     } else {
       chrAnnot.append("polygon")
         .attr("id", function(d, i) { return d.id; })
@@ -1008,7 +1017,7 @@ Ideogram.prototype.drawAnnots = function(annots) {
           );
 
         })
-        .attr("fill", "red")
+        .attr("fill", function(d) { return d.color })
     }
 }
 

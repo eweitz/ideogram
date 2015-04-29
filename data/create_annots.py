@@ -12,7 +12,7 @@ TODO:
 	- HGVS expression
 '''
 
-import json
+import json, random
 
 annots = []
 
@@ -58,7 +58,8 @@ while i < 1000:
 	annot = [
 		"rs" + j,
 		start,
-		stop
+		stop,
+		random.randrange(0, 5)
 	]
 
 	annots[chr]["annots"].append(annot)
