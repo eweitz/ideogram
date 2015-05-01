@@ -253,8 +253,8 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
                 i += 1;
               }
 
-              chrMargin = ideo.config.chrMargin * i;
-              x = -(chrMargin + chrMargin2) + 3;
+              chrMargin = (ideo.config.chrMargin) * i;
+              x = -(chrMargin + chrMargin2) + 3 + ideo.config.annotTracksHeight * 2;
 
               for (var i = 0; i < lines.length; i++) {
 
@@ -468,7 +468,7 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation)
       .attr("x", -8)
       .attr("y", function(d, i) { 
 
-        chrMargin2 = ideo.config.chrMargin - 14;
+        chrMargin2 = -4;
         if (ideo.config.showBandLabels === true) {
           chrMargin2 = ideo.config.chrMargin + ideo.config.chrWidth + 36;
           chrIndex -= 1;
@@ -730,12 +730,17 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
   chrIndex = jqChr.index() + 1;
   chrMargin = this.config.chrMargin * chrIndex;
 
+  chrMargin = this.config.chrMargin * chrIndex + (chrWidth)*(chrIndex-1);
+
   if (this.config.orientation == "vertical") {
 
-    cx = chrMargin + (this.config.chrWidth-4)*(chrIndex-1) - 24;
-    cy = cx + 30;
+    //cx = chrMargin - (this.config.annotTracksHeight)*(chrIndex);
+    //cx = chrMargin
+    cx = chrMargin - (chrWidth - 3)*(chrIndex -1)
+    cy = cx;
     verticalTransform = "rotate(90, " + cx + ", " + cy + ")";
-    horizontalTransform = "rotate(0)translate(0, -" + (chrMargin - this.config.chrMargin) + ")";
+    //horizontalTransform = "rotate(0)translate(0, -" + (chrMargin) + ")";
+    horizontalTransform = "rotate(0)translate(0, -" + (chrMargin - (chrWidth)*(chrIndex-1)) + ")";
 
   } else {
 
@@ -744,7 +749,9 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
       bandPad += 10;
     }
 
-    cx = 6 + chrMargin + (this.config.chrWidth - this.config.chrMargin - bandPad)*(chrIndex);
+    //cx = 6 + chrMargin + ((chrWidth + bandPad) * chrIndex);
+
+    cx = (this.config.chrMargin - this.config.annotTracksHeight - bandPad)*chrIndex + this.config.annotTracksHeight;
     cy = cx;
     verticalTransform = "rotate(90, " + cx + ", " + cy + ")";
     horizontalTransform = "";
@@ -1045,8 +1052,8 @@ Ideogram.prototype.drawAnnots = function(annots) {
 
           x1 = d.offset - 0.5;
           x2 = d.offset + 0.5;
-          y1 = (d.chrIndex + 1) * (2*chrMargin);
-          y2 = (d.chrIndex + 1) * (2*chrMargin)
+          y1 = (d.chrIndex + 1) * (chrMargin) + chrWidth;
+          y2 = (d.chrIndex + 1) * (chrMargin)
           
           return (
             x1 + "," + y1 + " " +
