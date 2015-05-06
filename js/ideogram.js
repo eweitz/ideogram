@@ -448,20 +448,8 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation)
 
   ideo = this;
 
-  if (orientation == "horizontal") {
+  if (orientation == "vertical") {
     
-    chr.selectAll("text.chrLabel")
-      .attr("transform", "rotate(-90)")
-      .selectAll("tspan")
-      .attr("x", function(d, i) { 
-
-        var chrMargin = -(ideo.config.chrMargin) * chrIndex - 6;
-        return chrMargin;
-      })
-      .attr("y", -16)
-
-  } else {
-
     chr.selectAll("text.chrLabel")
       .attr("transform", "")
       .selectAll("tspan")
@@ -477,6 +465,19 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation)
         var chrMargin = ideo.config.chrMargin * chrIndex;
         return chrMargin + chrMargin2;
       })
+
+  } else {
+
+    chr.selectAll("text.chrLabel")
+      .attr("transform", "rotate(-90)")
+      .selectAll("tspan")
+      .attr("x", function(d, i) { 
+
+        var chrMargin = -(ideo.config.chrMargin) * chrIndex - 6;
+        return chrMargin;
+      })
+      .attr("y", -16)
+
   }
 
 }
@@ -717,7 +718,8 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
   // Useful for focusing or defocusing a particular chromosome
   // TODO: Scale chromosome to better fill available SVG height and width
 
-  var id, chr, chrIndex, chrMargin, tPadding,
+  var id, chr, chrIndex, chrMargin, chrWidth,
+      cx, cy, cy2,
       ideo = this;
 
   id = chromosomeID;
@@ -729,20 +731,30 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 
   chrIndex = jqChr.index() + 1;
   chrMargin = this.config.chrMargin * chrIndex;
-
-  chrMargin = this.config.chrMargin * chrIndex + (chrWidth)*(chrIndex-1);
+  chrWidth = this.config.chrWidth;
 
   if (this.config.orientation == "vertical") {
 
-    //cx = chrMargin - (this.config.annotTracksHeight)*(chrIndex);
-    //cx = chrMargin
-    cx = chrMargin - (chrWidth - 3)*(chrIndex -1)
-    cy = cx;
+    if (!this.config.showBandLabels) {
+      chrIndex += 2;
+    }
+
+    cx = chrMargin + (chrWidth-4)*(chrIndex - 1) - 30;
+    cy = cx + 30;
+
     verticalTransform = "rotate(90, " + cx + ", " + cy + ")";
-    //horizontalTransform = "rotate(0)translate(0, -" + (chrMargin) + ")";
-    horizontalTransform = "rotate(0)translate(0, -" + (chrMargin - (chrWidth)*(chrIndex-1)) + ")";
+
+    cy2 = -1*(chrMargin - this.config.annotTracksHeight);
+
+    if (this.config.showBandLabels) {
+      cy2 += 20;
+    }
+
+    horizontalTransform = "rotate(0)translate(0, " + cy2 + ")";
 
   } else {
+
+    console.log("this.config.orientation != 'vertical'")
 
     var bandPad = 0;
     if (!this.config.showBandLabels) {
