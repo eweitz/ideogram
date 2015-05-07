@@ -448,7 +448,7 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation)
 
   ideo = this;
 
-  if (orientation == "vertical") {
+  if (orientation == "vertical" || orientation == "") {
     
     chr.selectAll("text.chrLabel")
       .attr("transform", "")
@@ -456,9 +456,14 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation)
       .attr("x", -8)
       .attr("y", function(d, i) { 
 
+
+        if (ideo.config.numAnnotTracks && ideo.config.numAnnotTracks > 1) {
+          chrIndex -= 1;
+        }
+
         chrMargin2 = -4;
         if (ideo.config.showBandLabels === true) {
-          chrMargin2 = ideo.config.chrMargin + ideo.config.chrWidth + 36;
+          chrMargin2 = ideo.config.chrMargin + ideo.config.chrWidth + 28;
           chrIndex -= 1;
         }
 
@@ -468,13 +473,27 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation)
 
   } else {
 
+    chrIndex -= 1;
+    if (ideo.config.numAnnotTracks && ideo.config.numAnnotTracks > 1) {
+      chrIndex -= 2;
+    }
+
+    chrMargin2 = ideogram.config.chrMargin - ideo.config.chrWidth - 2;
+    if (ideo.config.showBandLabels === true) {
+      chrMargin2 = ideo.config.chrMargin + 8;
+    }
+    if (!ideo.config.showBandLabels) {
+      chrIndex += 1;
+    }
+
     chr.selectAll("text.chrLabel")
       .attr("transform", "rotate(-90)")
       .selectAll("tspan")
       .attr("x", function(d, i) { 
 
-        var chrMargin = -(ideo.config.chrMargin) * chrIndex - 6;
-        return chrMargin;
+        chrMargin = (ideo.config.chrMargin) * chrIndex;
+        x = -(chrMargin + chrMargin2) + 3 + ideo.config.annotTracksHeight * 2;
+        return x;
       })
       .attr("y", -16)
 
@@ -753,8 +772,6 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
     horizontalTransform = "rotate(0)translate(0, " + cy2 + ")";
 
   } else {
-
-    console.log("this.config.orientation != 'vertical'")
 
     var bandPad = 0;
     if (!this.config.showBandLabels) {
