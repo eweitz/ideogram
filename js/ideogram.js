@@ -14,6 +14,28 @@ var Ideogram = function(config) {
     this.config.chrMargin += 20;
   }
 
+  if (this.config.annotationsPath) {
+    
+    if (!this.config.annotationHeight) {
+      this.config.annotationHeight = 3;
+    }
+
+    if (this.config.annotationTracks) {
+      this.config.numAnnotTracks = this.config.annotationTracks.length;
+    } else {
+      this.config.numAnnotTracks = 1;
+    }
+    this.config.annotTracksHeight = this.config.annotationHeight * this.config.numAnnotTracks;
+  } else {
+    this.config.annotTracksHeight = 0;
+  }
+
+  this.config.chrMargin = (
+    this.config.chrMargin + 
+    this.config.chrWidth + 
+    this.config.annotTracksHeight * 2
+  )
+
   if (config.onLoad) {
     this.onLoadCallback = config.onLoad;
   }
@@ -36,6 +58,12 @@ var Ideogram = function(config) {
       "scientificName": "Mus musculus",
       "scientificNameAbbr": "M. musculus",
     }, 
+  }
+
+  if (this.config.annotationsPath) {
+    if (!this.config.annotationHeight) {
+      this.config.annotationHeight = 3;
+    }
   }
 
   // A flat array of chromosomes
@@ -197,14 +225,12 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
   
   ideo = this;
 
-  chrMargin2 = ideogram.config.chrMargin - 2;
+  chrMargin2 = ideogram.config.chrMargin - ideo.config.chrWidth - 2;
   if (ideo.config.showBandLabels === true) {
-    chrMargin2 = ideo.config.chrMargin + ideo.config.chrWidth + 8;
+    chrMargin2 = ideo.config.chrMargin + 8;
   }
 
   if (ideo.config.orientation === "vertical") {
-
-
 
     d3.selectAll(".chromosome")
       .append("text")
@@ -223,8 +249,12 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
               lines.push(arr.slice(0, arr.length - 1).join(" "))
               lines.push(arr[arr.length - 1]);
 
-              chrMargin = (ideo.config.chrMargin + ideo.config.chrWidth) * i;
-              x = -(chrMargin + chrMargin2) + 3;
+              if (!ideo.config.showBandLabels) {
+                i += 1;
+              }
+
+              chrMargin = (ideo.config.chrMargin) * i;
+              x = -(chrMargin + chrMargin2) + 3 + ideo.config.annotTracksHeight * 2;
 
               for (var i = 0; i < lines.length; i++) {
 
@@ -270,7 +300,7 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
                 lines.push(arr.slice(0, arr.length - 1).join(" "))
                 lines.push(arr[arr.length - 1]);
 
-                chrMargin = (ideo.config.chrMargin + ideo.config.chrWidth) * i;
+                chrMargin = ideo.config.chrMargin * i;
                 y = (chrMargin + chrMargin2) + 9;
 
                 for (var i = 0; i < lines.length; i++) {
@@ -309,7 +339,7 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
 
   //var t0 = new Date().getTime();
   
-  var chrMargin = (this.config.chrMargin + this.config.chrWidth) * chrIndex,
+  var chrMargin = this.config.chrMargin * chrIndex,
       lineY1, lineY2,
       ideo = this;
 
@@ -414,39 +444,59 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation)
   var chrMargin, chrWidth, ideo;
 
   chrWidth = this.config.chrWidth;
-  chrMargin = (this.config.chrMargin + chrWidth) * chrIndex;
+  chrMargin = this.config.chrMargin * chrIndex;
 
   ideo = this;
 
-  if (orientation == "horizontal") {
+  if (orientation == "vertical" || orientation == "") {
     
-    chr.selectAll("text.chrLabel")
-      .attr("transform", "rotate(-90)")
-      .selectAll("tspan")
-      .attr("x", function(d, i) { 
-
-        var chrMargin = -(ideo.config.chrMargin + ideo.config.chrWidth) * chrIndex - 6;
-        return chrMargin;
-      })
-      .attr("y", -16)
-
-  } else {
-
     chr.selectAll("text.chrLabel")
       .attr("transform", "")
       .selectAll("tspan")
       .attr("x", -8)
       .attr("y", function(d, i) { 
 
-        chrMargin2 = ideo.config.chrMargin - 14;
-        if (ideo.config.showBandLabels === true) {
-          chrMargin2 = ideo.config.chrMargin + ideo.config.chrWidth + 36;
+
+        if (ideo.config.numAnnotTracks && ideo.config.numAnnotTracks > 1) {
           chrIndex -= 1;
         }
 
-        var chrMargin = (ideo.config.chrMargin + ideo.config.chrWidth) * chrIndex;
+        chrMargin2 = -4;
+        if (ideo.config.showBandLabels === true) {
+          chrMargin2 = ideo.config.chrMargin + ideo.config.chrWidth + 28;
+          chrIndex -= 1;
+        }
+
+        var chrMargin = ideo.config.chrMargin * chrIndex;
         return chrMargin + chrMargin2;
       })
+
+  } else {
+
+    chrIndex -= 1;
+    if (ideo.config.numAnnotTracks && ideo.config.numAnnotTracks > 1) {
+      chrIndex -= 2;
+    }
+
+    chrMargin2 = ideogram.config.chrMargin - ideo.config.chrWidth - 2;
+    if (ideo.config.showBandLabels === true) {
+      chrMargin2 = ideo.config.chrMargin + 8;
+    }
+    if (!ideo.config.showBandLabels) {
+      chrIndex += 1;
+    }
+
+    chr.selectAll("text.chrLabel")
+      .attr("transform", "rotate(-90)")
+      .selectAll("tspan")
+      .attr("x", function(d, i) { 
+
+        chrMargin = (ideo.config.chrMargin) * chrIndex;
+        x = -(chrMargin + chrMargin2) + 3 + ideo.config.annotTracksHeight * 2;
+        return x;
+      })
+      .attr("y", -16)
+
   }
 
 }
@@ -456,7 +506,7 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex) {
   var chrMargin, chrWidth;
 
   chrWidth = this.config.chrWidth;
-  chrMargin = (this.config.chrMargin + chrWidth) * chrIndex;
+  chrMargin = this.config.chrMargin * chrIndex;
   
   if (
     chrIndex == 1 &&
@@ -482,7 +532,8 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
 
   var chr, chrWidth, width,
       pArmWidth, selector, qArmStart, qArmWidth,
-      pTerPad, chrClass,
+      pTerPad, chrClass, 
+      annotHeight, numAnnotTracks, annotTracksHeight,
       bump = this.bump; 
 
   // p-terminal band padding
@@ -500,7 +551,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
   chrWidth = this.config.chrWidth;
   width = chrModel.width;
 
-  var chrMargin = (this.config.chrMargin + chrWidth) * chrIndex;
+  var chrMargin = this.config.chrMargin * chrIndex;
 
   chr.selectAll("path")   
     .data(chrModel.bands)    
@@ -660,9 +711,13 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
     var chrMargin, chrWidth, tPadding;
 
     chrWidth = this.config.chrWidth;
-    chrMargin = (this.config.chrMargin + chrWidth) * chrIndex;
+    chrMargin = this.config.chrMargin * chrIndex;
 
-    tPadding = chrMargin + (chrWidth-4)*(chrIndex-1);
+    if (!this.config.showBandLabels) {
+      chrIndex += 2;
+    }
+
+    tPadding = chrMargin + (chrWidth-4)*(chrIndex - 1);
 
     chr
       .attr("data-orientation", "vertical")
@@ -682,7 +737,8 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
   // Useful for focusing or defocusing a particular chromosome
   // TODO: Scale chromosome to better fill available SVG height and width
 
-  var id, chr, chrIndex, chrMargin, tPadding,
+  var id, chr, chrIndex, chrMargin, chrWidth,
+      cx, cy, cy2,
       ideo = this;
 
   id = chromosomeID;
@@ -693,14 +749,27 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
   jqOtherChrs = $("g[id!='" + id + "']");
 
   chrIndex = jqChr.index() + 1;
-  chrMargin = (this.config.chrMargin + this.config.chrWidth) * chrIndex;
+  chrMargin = this.config.chrMargin * chrIndex;
+  chrWidth = this.config.chrWidth;
 
   if (this.config.orientation == "vertical") {
 
-    cx = chrMargin + (this.config.chrWidth-4)*(chrIndex-1) - 30;
+    if (!this.config.showBandLabels) {
+      chrIndex += 2;
+    }
+
+    cx = chrMargin + (chrWidth-4)*(chrIndex - 1) - 30;
     cy = cx + 30;
+
     verticalTransform = "rotate(90, " + cx + ", " + cy + ")";
-    horizontalTransform = "rotate(0)translate(0, -" + (chrMargin - this.config.chrMargin) + ")";
+
+    cy2 = -1*(chrMargin - this.config.annotTracksHeight);
+
+    if (this.config.showBandLabels) {
+      cy2 += 20;
+    }
+
+    horizontalTransform = "rotate(0)translate(0, " + cy2 + ")";
 
   } else {
 
@@ -709,7 +778,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
       bandPad += 10;
     }
 
-    cx = 6 + chrMargin + (this.config.chrWidth - this.config.chrMargin - bandPad)*(chrIndex);
+    cx = (this.config.chrMargin - this.config.annotTracksHeight - bandPad)*chrIndex + 5;
     cy = cx;
     verticalTransform = "rotate(90, " + cx + ", " + cy + ")";
     horizontalTransform = "";
@@ -877,8 +946,6 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
       )
       .attr('style', "fill: " + color + "; fill-opacity: " + opacity)
       
-      
-    
     syntenicRegion.append("line")
       .attr("class", "syntenyBorder")
       .attr("x1", chr1Plane)
@@ -900,13 +967,140 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
 }
 
 
+Ideogram.prototype.processAnnotData = function(rawAnnots) {
+// Processes genome annotation data for .
+// Converts raw annotation data from server, which is structured as 
+// an array of arrays, into a more verbose data structure consisting 
+// of an array of objects.  
+// Also adds pixel offset information.
+
+  var i, j, annot, annots, rawAnnot,
+      chr, start, stop,
+      chrModel, 
+      startOffset, stopOffset, offset,
+      trackIndex, color,
+      ideo = this;
+
+  annots = [];
+
+  for (i = 0; i < rawAnnots.length; i++) {
+    annotsByChr = rawAnnots[i]
+    
+    annots.push({"chr": annotsByChr.chr, "annots": []});
+
+    for (j = 0; j < annotsByChr.annots.length; j++) {
+
+      chr = annotsByChr.chr; 
+      ra = annotsByChr.annots[j];
+
+      start = ra[1],
+      stop = ra[2]
+
+      chrModel = ideo.chromosomes["9606"][chr]
+
+      startOffset = ideo.convertBpToOffset(chrModel, start);
+      stopOffset = ideo.convertBpToOffset(chrModel, stop);
+
+      offset = Math.round((startOffset + stopOffset)/2) - 28;
+
+      color = "#F00";
+      if (ideo.config.annotationTracks) {
+        trackIndex = ra[3]
+        color = ideo.config.annotationTracks[trackIndex].color;
+      } else {
+        trackIndex = 0;
+      }
+
+      annot = {
+        id: ra[0],
+        chrIndex: i,
+        start: start,
+        stop: stop,
+        offset: offset,
+        color: color,
+        trackIndex: trackIndex
+      }
+
+      annots[i]["annots"].push(annot)
+    }
+  }
+
+  return annots;
+
+}
+
+
+// Draws genome annotations on chromosomes
+Ideogram.prototype.drawAnnots = function(annots) {
+
+  //console.log(annots);
+
+  var layout, chrMargin, annotHeight,
+      triangle,
+      x1, x2, y1, y2;
+
+  chrMargin = this.config.chrMargin;
+  chrWidth = this.config.chrWidth;
+
+
+  layout = "tracks";
+  if (this.config.annotationsLayout) {
+    layout = this.config.annotationsLayout;
+  } 
+
+  annotHeight = this.config.annotationHeight;
+  triangle = 'l -' + annotHeight + ' ' + (2*annotHeight) + ' l ' + (2*annotHeight) + ' 0 z';
+
+  var chrAnnot = d3.selectAll(".chromosome")
+    .data(annots)
+      .selectAll("path.annot")
+      .data(function(d) { return d["annots"]})
+      .enter()
+
+  if (layout === "tracks") {
+    chrAnnot.append("path")
+      .attr("id", function(d, i) { return d.id; })
+      .attr("class", "annot")
+      .attr("d", function(d) { 
+
+        var y = (d.chrIndex + 1) * chrMargin + chrWidth + (d.trackIndex * annotHeight * 2);
+
+        return (
+          'M ' + d.offset + ' ' + y + ' ' + 
+          triangle
+        );
+      })
+      .attr("fill", function(d) { return d.color })
+    } else {
+      chrAnnot.append("polygon")
+        .attr("id", function(d, i) { return d.id; })
+        .attr("class", "annot")
+        .attr("points", function(d) { 
+
+          x1 = d.offset - 0.5;
+          x2 = d.offset + 0.5;
+          y1 = (d.chrIndex + 1) * (chrMargin) + chrWidth;
+          y2 = (d.chrIndex + 1) * (chrMargin)
+          
+          return (
+            x1 + "," + y1 + " " +
+            x2 + "," + y1 + " " +
+            x2 + "," + y2 + " " +
+            x1 + "," + y2
+          );
+
+        })
+        .attr("fill", function(d) { return d.color })
+    }
+}
+
+
 Ideogram.prototype.onLoad = function() {
   // Called when Ideogram has finished initializing.
   // Accounts for certain ideogram properties not being set until 
   // asynchronous requests succeed, etc.
 
   call(this.onLoadCallback);
-
 }
 
 
@@ -916,6 +1110,8 @@ Ideogram.prototype.init = function() {
       isMultiOrganism = (this.config.multiorganism === true),
       taxid, taxids, i, svgClass,
       chrs, numChromosomes;
+
+  var ideo = this;
 
   var t0 = new Date().getTime();
 
@@ -940,14 +1136,30 @@ Ideogram.prototype.init = function() {
     }
   }
 
+  if (this.config.annotationsPath) {
+    $.ajax({
+      url: ideo.config.annotationsPath,
+      dataType: "json",
+      success: function(response, textStatus, jqXHR) {
+        ideo.rawAnnots = response.annots;
+      }
+    })
+  }
 
   svgClass = "";
   if (this.config.showChromosomeLabels) {
     if (this.config.orientation == "horizontal") {
-      svgClass = "labeledLeft";
+      svgClass += "labeledLeft ";
     } else {
-      svgClass += "labeled";
+      svgClass += "labeled ";
     }
+  }
+
+  if (
+    this.config.annotationsLayout && 
+    this.config.annotationsLayout === "overlay"
+  ) {
+    svgClass += "faint"
   }
 
    var svg = d3.select("body")
@@ -961,8 +1173,6 @@ Ideogram.prototype.init = function() {
       maxLength = 0,
       numBandDataResponses = 0;
 
-
-  var ideo = this;
 
   for (i = 0; i < taxids.length; i++) {
     taxid = taxids[i];
@@ -1062,6 +1272,35 @@ Ideogram.prototype.init = function() {
 
         ideo.drawChromosome(chromosomeModel, chrIndex);
         
+      }
+    }
+
+    // Waits for potentially large annotation dataset 
+    // to be received by the client, then triggers annotation processing
+    if (ideo.config.annotationsPath) {
+
+      function pa() {
+        if (typeof timeout !== "undefined") {
+          window.clearTimeout(timeout);
+        }
+        ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
+        ideo.drawAnnots(ideo.annots);
+      }
+      
+      if (ideo.rawAnnots) {
+        pa();
+      } else {
+        (function checkAnnotData() {
+          timeout = setTimeout(function() {
+            if (!ideo.rawAnnots) {
+              checkAnnotData();
+            } else {
+              pa();
+            }
+            },
+            50
+          )
+        })();
       }
     }
     
