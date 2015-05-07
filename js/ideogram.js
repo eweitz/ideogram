@@ -778,9 +778,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
       bandPad += 10;
     }
 
-    //cx = 6 + chrMargin + ((chrWidth + bandPad) * chrIndex);
-
-    cx = (this.config.chrMargin - this.config.annotTracksHeight - bandPad)*chrIndex + this.config.annotTracksHeight;
+    cx = (this.config.chrMargin - this.config.annotTracksHeight - bandPad)*chrIndex + 5;
     cy = cx;
     verticalTransform = "rotate(90, " + cx + ", " + cy + ")";
     horizontalTransform = "";
