@@ -738,21 +738,32 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
   // TODO: Scale chromosome to better fill available SVG height and width
 
   var id, chr, chrIndex, chrMargin, chrWidth,
+      chrHeight, ideoBox, ideoWidth, ideoHeight, scaleX, scaleY,
       cx, cy, cy2,
       ideo = this;
 
   id = chromosomeID;
-  
+
   chr = d3.select("#" + id);
   jqChr = $("#" + id);
-  
+
   jqOtherChrs = $("g[id!='" + id + "']");
 
   chrIndex = jqChr.index() + 1;
   chrMargin = this.config.chrMargin * chrIndex;
   chrWidth = this.config.chrWidth;
 
+  chrHeight = jqChr[0].getBoundingClientRect().height;
+  ideoBox = $("#ideogram")[0].getBoundingClientRect();
+  ideoHeight = ideoBox.height;
+  ideoWidth = ideoBox.width;
+
   if (this.config.orientation == "vertical") {
+
+    scaleX = ideoWidth/chrHeight;
+    scaleY = 1.5;
+
+    console.log(scaleX)
 
     if (!this.config.showBandLabels) {
       chrIndex += 2;
@@ -763,13 +774,18 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 
     verticalTransform = "rotate(90, " + cx + ", " + cy + ")";
 
-    cy2 = -1*(chrMargin - this.config.annotTracksHeight);
+    cy2 = -1*(chrMargin - this.config.annotTracksHeight)*scaleY;
+
+
 
     if (this.config.showBandLabels) {
       cy2 += 20;
     }
 
-    horizontalTransform = "rotate(0)translate(0, " + cy2 + ")";
+    horizontalTransform = 
+      "rotate(0)" + 
+      "translate(0, " + cy2 + ")" + 
+      "scale(" + scaleX + ", " + scaleY + ")";
 
   } else {
 
@@ -1166,8 +1182,8 @@ Ideogram.prototype.init = function() {
     .append("svg")
     .attr("id", "ideogram")
     .attr("class", svgClass)
-    .attr("width", "100%")
-    .attr("height", numChromosomes * this.config.chrHeight + 20)
+    .attr("width", "95%")
+    .attr("height", this.config.chrHeight + 40)
 
   var bandsArray = [],
       maxLength = 0,
