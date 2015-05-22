@@ -747,7 +747,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
   chr = d3.select("#" + id);
   jqChr = $("#" + id);
 
-  jqOtherChrs = $("g[id!='" + id + "']");
+  jqOtherChrs = $("g[id!='" + id + "'].chromosome");
 
   chrIndex = jqChr.index() + 1;
   chrMargin = this.config.chrMargin * chrIndex;
@@ -763,7 +763,8 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
     scaleX = ideoWidth/chrHeight;
     scaleY = 1.5;
 
-    console.log(scaleX)
+    inverseScaleX = 2/scaleX;
+    inverseScaleY = 1;
 
     if (!this.config.showBandLabels) {
       chrIndex += 2;
@@ -776,8 +777,6 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 
     cy2 = -1*(chrMargin - this.config.annotTracksHeight)*scaleY;
 
-
-
     if (this.config.showBandLabels) {
       cy2 += 20;
     }
@@ -788,6 +787,12 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
       "scale(" + scaleX + ", " + scaleY + ")";
 
   } else {
+
+    scaleX = 1.5;
+    scaleY = chrHeight/ideoHeight;
+
+    inverseScaleX = 1;
+    inverseScaleY = 2/scaleY;
 
     var bandPad = 0;
     if (!this.config.showBandLabels) {
@@ -801,10 +806,21 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
     
   }
 
+  inverseScale = "scale(" + inverseScaleX + "," + inverseScaleY + ")";
+
   if (jqChr.attr("data-orientation") != "vertical") {
 
     if (this.config.orientation == "horizontal") {
       jqOtherChrs.hide();
+
+      chr.selectAll(".annot>path")
+        .transition()
+        .attr("transform", inverseScale);  
+    }
+
+    if (ideo.config.orientation == "vertical") {
+      chr.selectAll(".annot>path")
+        .attr("transform", "");   
     }
 
     chr
@@ -820,7 +836,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
           jqOtherChrs.show();
         }
 
-      });
+      })
 
   } else {
 
@@ -828,7 +844,11 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 
     if (this.config.orientation == "vertical") {
       jqOtherChrs.hide();
-    } 
+
+      chr.selectAll(".annot>path")
+        .transition()
+        .attr("transform", inverseScale);   
+    }  
 
     chr
       .transition()
@@ -846,7 +866,8 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
           jqOtherChrs.show();
         }
       
-      });    
+      })
+      
 
   }
 }
@@ -1074,20 +1095,34 @@ Ideogram.prototype.drawAnnots = function(annots) {
       .enter()
 
   if (layout === "tracks") {
-    chrAnnot.append("path")
+
+    // TODO: Wrap annots in <g> element to enable
+    // horizontal-offset-preserving scale upon 
+    // rotation and toggling
+    chrAnnot
+      .append("g")
       .attr("id", function(d, i) { return d.id; })
       .attr("class", "annot")
+      .attr("transform", function(d) {
+        var y = (d.chrIndex + 1) * chrMargin + chrWidth + (d.trackIndex * annotHeight * 2);
+        return "translate(" + d.offset + "," + y + ")";
+      })
+      .append("path")
       .attr("d", function(d) { 
 
         var y = (d.chrIndex + 1) * chrMargin + chrWidth + (d.trackIndex * annotHeight * 2);
 
         return (
-          'M ' + d.offset + ' ' + y + ' ' + 
+          //'m ' + d.offset + ' ' + y + ' ' + 
+          "m0,0" +
           triangle
         );
       })
       .attr("fill", function(d) { return d.color })
+
     } else {
+
+      // Overlaid annotations
       chrAnnot.append("polygon")
         .attr("id", function(d, i) { return d.id; })
         .attr("class", "annot")
