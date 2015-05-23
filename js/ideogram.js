@@ -753,14 +753,15 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
   chrMargin = this.config.chrMargin * chrIndex;
   chrWidth = this.config.chrWidth;
 
-  chrHeight = jqChr[0].getBoundingClientRect().height;
   ideoBox = $("#ideogram")[0].getBoundingClientRect();
   ideoHeight = ideoBox.height;
   ideoWidth = ideoBox.width;
 
   if (this.config.orientation == "vertical") {
 
-    scaleX = ideoWidth/chrHeight;
+    chrLength = jqChr[0].getBoundingClientRect().height;
+
+    scaleX = ideoWidth/chrLength;
     scaleY = 1.5;
 
     inverseScaleX = 2/scaleX;
@@ -788,20 +789,26 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 
   } else {
 
-    scaleX = 1.5;
-    scaleY = chrHeight/ideoHeight;
+    chrLength = jqChr[0].getBoundingClientRect().width;
 
-    inverseScaleX = 1;
-    inverseScaleY = 2/scaleY;
+    scaleX = ideoHeight/chrLength;
+    scaleY = 1.5;
+
+    inverseScaleX = 2/scaleX;
+    inverseScaleY = 1;
 
     var bandPad = 0;
     if (!this.config.showBandLabels) {
       bandPad += 10;
     }
 
-    cx = (this.config.chrMargin - this.config.annotTracksHeight - bandPad)*chrIndex + 5;
+    cx = (this.config.chrMargin - this.config.annotTracksHeight - bandPad)*chrIndex*scaleY + 5;
     cy = cx;
-    verticalTransform = "rotate(90, " + cx + ", " + cy + ")";
+    verticalTransform = (
+      "rotate(90, " + cx + ", " + cy + ")" + 
+      "scale(" + scaleX + ", " + scaleY + ")"
+    );
+
     horizontalTransform = "";
     
   }
