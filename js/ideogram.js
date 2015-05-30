@@ -438,31 +438,35 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
 }
 
 
-
 Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation, scale) {
 
-  var chrMargin, chrWidth, ideo, x;
+  var chrMargin, chrWidth, ideo, x, y,
+      scaleSvg;
 
   chrWidth = this.config.chrWidth;
   chrMargin = this.config.chrMargin * chrIndex;
 
   ideo = this;
 
-  if (typeof(scale) !== "undefined") {
+  console.log("in rotateChromosomeLabels")
+  console.log(scale)
+
+  if (typeof(scale) !== "undefined" && scale.hasOwnProperty("x")) {
+    scaleSvg = "scale(" + scale.x + "," + scale.y + ")";
     x = -2;
-    y = -12;
-    
+    y = (scale === "" ? -16 : -12);
   } else {
     x = -8;
     y = -16;
-    scale = "";
+    scale = {"x": 1, "y": 1};
+    scaleSvg = "";
   }
 
   if (orientation == "vertical" || orientation == "") {
     
     chr.selectAll("text.chrLabel")
       .attr("transform", function(d, i) {
-        return scale;
+        return scaleSvg;
       })
       .selectAll("tspan")
       .attr("x", x)
@@ -498,12 +502,13 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation,
     }
 
     chr.selectAll("text.chrLabel")
-      .attr("transform", "rotate(-90)" + scale)
+      .attr("transform", "rotate(-90)" + scaleSvg)
       .selectAll("tspan")
       .attr("x", function(d, i) { 
 
-        chrMargin = (ideo.config.chrMargin) * chrIndex;
+        chrMargin = ideo.config.chrMargin * chrIndex;
         x = -(chrMargin + chrMargin2) + 3 + ideo.config.annotTracksHeight * 2;
+        x = x/scale.x
         return x;
       })
       .attr("y", y)
@@ -836,6 +841,8 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 
   if (jqChr.attr("data-orientation") != "vertical") {
 
+    console.log("bar")
+
     if (this.config.orientation == "horizontal") {
       jqOtherChrs.hide();
 
@@ -855,12 +862,14 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
       .attr("transform", verticalTransform)
       .each("end", function() {
 
-        if (ideo.config.orientation == "horizontal") {
-          inverseScale = scale;
+        if (ideo.config.orientation == "vertical") {
+          scale = "";
+        } else {
+          scale = {"x": inverseScaleX, "y": inverseScaleY};
         }
 
         ideo.rotateBandLabels(chr, chrIndex, inverseScale);
-        ideo.rotateChromosomeLabels(chr, chrIndex, "horizontal", inverseScale); 
+        ideo.rotateChromosomeLabels(chr, chrIndex, "horizontal", scale); 
 
         if (ideo.config.orientation == "vertical") {
           jqOtherChrs.show();
@@ -891,7 +900,10 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
           .attr("y", chrMargin - 10)
 
         if (ideo.config.orientation == "horizontal") {
-          inverseScale = scale;
+          inverseScale = {"x": scaleX, "y": scaleY};
+        } else {
+          inverseScale = {"x": inverseScaleX, "y": inverseScaleY};
+          
         }
 
         ideo.rotateChromosomeLabels(chr, chrIndex, "", inverseScale);
