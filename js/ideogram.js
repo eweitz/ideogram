@@ -441,10 +441,11 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
 Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation, scale) {
 
   var chrMargin, chrWidth, ideo, x, y,
-      scaleSvg;
+      numAnnotTracks, scaleSvg;
 
   chrWidth = this.config.chrWidth;
   chrMargin = this.config.chrMargin * chrIndex;
+  numAnnotTracks = this.config.numAnnotTracks;
 
   ideo = this;
 
@@ -463,22 +464,20 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation,
   }
 
   if (orientation == "vertical" || orientation == "") {
-    
+
     chr.selectAll("text.chrLabel")
-      .attr("transform", function(d, i) {
-        return scaleSvg;
-      })
+      .attr("transform", scaleSvg)
       .selectAll("tspan")
       .attr("x", x)
       .attr("y", function(d, i) { 
 
-        if (ideo.config.numAnnotTracks && ideo.config.numAnnotTracks > 1) {
+        if (numAnnotTracks > 1) {
           chrIndex -= 1;
         }
 
         chrMargin2 = -4;
         if (ideo.config.showBandLabels === true) {
-          chrMargin2 = ideo.config.chrMargin + ideo.config.chrWidth + 28;
+          chrMargin2 = ideo.config.chrMargin + chrWidth + 28;
           chrIndex -= 1;
         }
 
@@ -488,23 +487,22 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation,
 
   } else {
 
-    chrIndex -= 1;
-    if (ideo.config.numAnnotTracks && ideo.config.numAnnotTracks > 1) {
-      chrIndex -= 2;
-    }
-
-    chrMargin2 = ideogram.config.chrMargin - ideo.config.chrWidth - 2;
-    if (ideo.config.showBandLabels === true) {
-      chrMargin2 = ideo.config.chrMargin + 8;
-    }
-    if (!ideo.config.showBandLabels) {
-      chrIndex += 1;
-    }
-
     chr.selectAll("text.chrLabel")
       .attr("transform", "rotate(-90)" + scaleSvg)
       .selectAll("tspan")
       .attr("x", function(d, i) { 
+
+        chrIndex -= 1;
+        if (numAnnotTracks > 1) {
+          chrIndex -= 2;
+        }
+
+        chrMargin2 = ideo.config.chrMargin - chrWidth - 2;
+        if (ideo.config.showBandLabels === true) {
+          chrMargin2 = ideo.config.chrMargin + 8;
+        } else {
+          chrIndex += 1;
+        }
 
         chrMargin = ideo.config.chrMargin * chrIndex;
         x = -(chrMargin + chrMargin2) + 3 + ideo.config.annotTracksHeight * 2;
