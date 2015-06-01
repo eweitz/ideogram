@@ -859,7 +859,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
         if (ideo.config.orientation == "vertical") {
           scale = "";
         } else {
-          scale = {"x": inverseScaleX, "y": inverseScaleY};
+          scale = {"x": inverseScaleY, "y": inverseScaleX};
         }
 
         ideo.rotateBandLabels(chr, chrIndex, inverseScale);
