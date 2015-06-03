@@ -359,19 +359,25 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
   chr.selectAll("text")
     .data(model.bands)
     .enter()
-    .append("text")
+    .append("g")
       .attr("class", function(d, i) { return "bandLabel bsbsl-" + i  })
-      .attr("x", function(d) { 
-        var textOffset = -8 + d.offset + d.width/2;
-        textOffsets.push(textOffset + 13);
-        return textOffset;
+      .attr("transform", function(d) {
+
+        var x, y;
+
+        x = -8 + d.offset + d.width/2;
+        textOffsets.push(x + 13);
+        y = chrMargin - 10;
+
+        return "translate(" + x + "," + y + ")";
       })
-    .attr("y", chrMargin - 10)
-    .text(function(d) { return d.name; })
+      .append("text")
+      .text(function(d) { return d.name; })
 
   chr.selectAll("line")
     .data(model.bands)
     .enter()
+    .append("g")
     .append("line")
       .attr("class", function(d, i) { return "bandLabelStalk bsbsl-" + i  })
       .attr("x1", function(d) { return d.offset + d.width/2; })
@@ -449,9 +455,6 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation,
 
   ideo = this;
 
-  console.log("in rotateChromosomeLabels")
-  console.log(scale)
-
   if (typeof(scale) !== "undefined" && scale.hasOwnProperty("x")) {
     scaleSvg = "scale(" + scale.x + "," + scale.y + ")";
     x = -2;
@@ -517,31 +520,54 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation,
 
 Ideogram.prototype.rotateBandLabels = function(chr, chrIndex, scale) {
 
-  var chrMargin, chrWidth;
+  var chrMargin, chrWidth, scaleSvg,
+      orientation;
 
   chrWidth = this.config.chrWidth;
   chrMargin = this.config.chrMargin * chrIndex;
   
-  console.log(scale);
+  orientation = $(".chromosome:eq(" + (chrIndex - 1) + ")").attr("data-orientation");
 
   if (typeof(scale) == "undefined") {
     scale = "";
+    scaleSvg = "";
+  } else {
+    scaleSvg = "scale(" + scale.x + "," + scale.y + ")";
   }
 
   if (
     chrIndex == 1 &&
     "perspective" in this.config && this.config.perspective == "comparative"
   ) {
-    chr.selectAll("text.bandLabel")
-      .attr("transform", "rotate(-90)")
-      .attr("x", (8 - chrMargin) - 26)
-      .attr("y", function(d) { return 2 + d.offset + d.width/2; })
-      .attr("text-anchor", "end");
+    chr.selectAll(".bandLabel")
+      .attr("transform", function(d) {
+        var x, y;
+        x = (8 - chrMargin) - 26;
+        y = 2 + d.offset + d.width/2;
+        return "rotate(-90)translate(" + x + "," + y + ")";
+      })
+      .selectAll("text")
+        .attr("text-anchor", "end")
+  } else if (orientation == "vertical")  {
+    chr.selectAll(".bandLabel")
+      .attr("transform", function(d) {
+        var x, y;
+        x = 8 - chrMargin;
+        y = 2 + d.offset + d.width/2;
+        return "rotate(-90)translate(" + x + "," + y + ")";
+      })
+      .selectAll("text")
+        .attr("transform", scaleSvg)
   } else {
-    chr.selectAll("text.bandLabel")
-      .attr("transform", "rotate(-90)" + scale)
-      .attr("x", 8 - chrMargin)
-      .attr("y", function(d) { return 2 + d.offset + d.width/2; });
+    chr.selectAll(".bandLabel")
+      .attr("transform", function(d) {
+        var x, y;
+        x = -8 + d.offset + d.width/2;
+        y = chrMargin - 10;
+        return "translate(" + x + "," + y + ")";
+      })
+      .selectAll("text")
+        .attr("transform", scaleSvg)
   }
 
 }
@@ -803,7 +829,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
     cy2 = -1*(chrMargin - this.config.annotTracksHeight)*scaleY;
 
     if (this.config.showBandLabels) {
-      cy2 += 20;
+      cy2 += 25;
     }
 
     horizontalTransform = 
@@ -824,7 +850,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 
     var bandPad = 0;
     if (!this.config.showBandLabels) {
-      bandPad += 10;
+      bandPad += 15;
     }
 
     cx = (this.config.chrMargin - this.config.annotTracksHeight - bandPad)*chrIndex*scaleY + 5;
@@ -862,7 +888,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
           scale = {"x": inverseScaleY, "y": inverseScaleX};
         }
 
-        ideo.rotateBandLabels(chr, chrIndex, inverseScale);
+        ideo.rotateBandLabels(chr, chrIndex, scale);
         ideo.rotateChromosomeLabels(chr, chrIndex, "horizontal", scale); 
 
         if (ideo.config.orientation == "vertical") {
@@ -887,11 +913,6 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
       .transition()
       .attr("transform", horizontalTransform)
       .each("end", function() {
-        
-        chr.selectAll("text.bandLabel")
-          .attr("transform", "")
-          .attr("x", function(d) { return -8 + d.offset + d.width/2; })
-          .attr("y", chrMargin - 10)
 
         if (ideo.config.orientation == "horizontal") {
           inverseScale = "";
@@ -899,6 +920,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
           inverseScale = {"x": inverseScaleX, "y": inverseScaleY}; 
         }
 
+        ideo.rotateBandLabels(chr, chrIndex, inverseScale);
         ideo.rotateChromosomeLabels(chr, chrIndex, "", inverseScale);
 
         if (ideo.config.orientation == "horizontal") {
