@@ -378,12 +378,16 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
     .data(model.bands)
     .enter()
     .append("g")
-    .append("line")
-      .attr("class", function(d, i) { return "bandLabelStalk bsbsl-" + i  })
-      .attr("x1", function(d) { return d.offset + d.width/2; })
-      .attr("y1", lineY1)
-      .attr("x2", function(d) { return d.offset + d.width/2; })
-      .attr("y2", lineY2)
+    .attr("class", function(d, i) { return "bandLabelStalk bsbsl-" + i  })
+    .attr("transform", function(d) {
+      var x = d.offset + d.width/2;
+      return "translate(" + x + ", " + lineY1 + ")";
+    })
+      .append("line")
+      .attr("x1", 0)
+      .attr("y1", 0)
+      .attr("x2", 0)
+      .attr("y2", -8)
 
   var texts = $("#" + model.id + " text"),
       textsLength = texts.length,
@@ -521,7 +525,9 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation,
 Ideogram.prototype.rotateBandLabels = function(chr, chrIndex, scale) {
 
   var chrMargin, chrWidth, scaleSvg,
-      orientation;
+      orientation, bandLabels;
+
+  bandLabels = chr.selectAll(".bandLabel");
 
   chrWidth = this.config.chrWidth;
   chrMargin = this.config.chrMargin * chrIndex;
@@ -529,7 +535,7 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex, scale) {
   orientation = $(".chromosome:eq(" + (chrIndex - 1) + ")").attr("data-orientation");
 
   if (typeof(scale) == "undefined") {
-    scale = "";
+    scale = {x: 1, y: 1};
     scaleSvg = "";
   } else {
     scaleSvg = "scale(" + scale.x + "," + scale.y + ")";
@@ -539,7 +545,7 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex, scale) {
     chrIndex == 1 &&
     "perspective" in this.config && this.config.perspective == "comparative"
   ) {
-    chr.selectAll(".bandLabel")
+    bandLabels
       .attr("transform", function(d) {
         var x, y;
         x = (8 - chrMargin) - 26;
@@ -549,7 +555,7 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex, scale) {
       .selectAll("text")
         .attr("text-anchor", "end")
   } else if (orientation == "vertical")  {
-    chr.selectAll(".bandLabel")
+    bandLabels
       .attr("transform", function(d) {
         var x, y;
         x = 8 - chrMargin;
@@ -559,15 +565,18 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex, scale) {
       .selectAll("text")
         .attr("transform", scaleSvg)
   } else {
-    chr.selectAll(".bandLabel")
+    bandLabels
       .attr("transform", function(d) {
         var x, y;
-        x = -8 + d.offset + d.width/2;
+        x = -8*scale.x + d.offset + d.width/2;
         y = chrMargin - 10;
         return "translate(" + x + "," + y + ")";
       })
       .selectAll("text")
         .attr("transform", scaleSvg)
+
+    chr.selectAll(".bandLabelStalk line")
+      .attr("transform", scaleSvg)
   }
 
 }
