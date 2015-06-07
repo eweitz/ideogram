@@ -478,10 +478,10 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation,
         .attr("x", x)
         .attr("y", function(d, i) { 
 
-          chrIndex -= 1;
+          var ci = chrIndex - 1;
 
-          if (numAnnotTracks > 1) {
-            chrIndex -= 1;
+          if (numAnnotTracks > 1 || orientation == "") {
+            ci -= 1;
           }
 
           chrMargin2 = -4;
@@ -489,7 +489,12 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation,
             chrMargin2 = ideo.config.chrMargin + chrWidth + 28;
           }
 
-          var chrMargin = ideo.config.chrMargin * chrIndex;
+          var chrMargin = ideo.config.chrMargin * ci;
+
+          if (numAnnotTracks > 1 == false) {
+            chrMargin += 1;
+          }
+
           return chrMargin + chrMargin2;
         })
 
@@ -786,7 +791,6 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
 Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
   // Rotates a chromosome 90 degrees and shows or hides all other chromosomes
   // Useful for focusing or defocusing a particular chromosome
-  // TODO: Scale chromosome to better fill available SVG height and width
 
   var id, chr, chrIndex, chrMargin, chrWidth,
       chrHeight, ideoBox, ideoWidth, ideoHeight, scaleX, scaleY,
@@ -857,10 +861,15 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
     var bandPad = 20;
     if (!this.config.showBandLabels) {
       chrIndex += 2;
-      bandPad = 10;
+      bandPad = 15;
     }
     cx = chrMargin + (chrWidth-bandPad)*(chrIndex - 2);
     cy = cx;
+
+    if (!this.config.showBandLabels) {
+      cx += bandPad;
+      cy += bandPad;
+    }
 
     verticalTransform = (
       "rotate(90, " + cx + ", " + cy + ")" + 
