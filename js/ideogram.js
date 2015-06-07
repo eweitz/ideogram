@@ -816,7 +816,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 
     chrLength = jqChr[0].getBoundingClientRect().height;
 
-    scaleX = ideoWidth/chrLength;
+    scaleX = (ideoWidth/chrLength)*0.99;
     scaleY = 1.5;
     scale = "scale(" + scaleX + ", " + scaleY + ")";
 
@@ -847,18 +847,19 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 
     chrLength = jqChr[0].getBoundingClientRect().width;
 
-    scaleX = ideoHeight/chrLength;
+    scaleX = (ideoHeight/chrLength)*0.99;
     scaleY = 1.5;
     scale = "scale(" + scaleX + ", " + scaleY + ")";
 
     inverseScaleX = 2/scaleX;
     inverseScaleY = 1;
 
-    var bandPad = 15;
+    var bandPad = 20;
     if (!this.config.showBandLabels) {
       chrIndex += 2;
+      bandPad = 10;
     }
-    cx = chrMargin + (chrWidth-bandPad)*(chrIndex - 2) + bandPad;
+    cx = chrMargin + (chrWidth-bandPad)*(chrIndex - 2);
     cy = cx;
 
     verticalTransform = (
