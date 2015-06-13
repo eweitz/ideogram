@@ -960,7 +960,7 @@ Ideogram.prototype.convertBpToOffset = function(chr, bp) {
   for (i = 0; i < chr.bands.length; i++) {
     band = chr.bands[i];
     if (bp >= band.bp.start && bp <= band.bp.stop) {
- 
+      
       bpToIscnScale = (band.iscn.stop - band.iscn.start)/(band.bp.stop - band.bp.start);
       iscn = band.iscn.start + (bp - band.bp.start) * bpToIscnScale;
 
@@ -969,6 +969,11 @@ Ideogram.prototype.convertBpToOffset = function(chr, bp) {
       return offset;
     }
   }
+
+  throw new Error(
+    "Base pair out of range.  " + 
+    "bp: " + bp + "; length of chr" + chr.name + ": " + band.bp.stop
+  );
 
 }
 
@@ -1176,9 +1181,6 @@ Ideogram.prototype.drawAnnots = function(annots) {
 
   if (layout === "tracks") {
 
-    // TODO: Wrap annots in <g> element to enable
-    // horizontal-offset-preserving scale upon 
-    // rotation and toggling
     chrAnnot
       .append("g")
       .attr("id", function(d, i) { return d.id; })
@@ -1188,16 +1190,7 @@ Ideogram.prototype.drawAnnots = function(annots) {
         return "translate(" + d.offset + "," + y + ")";
       })
       .append("path")
-      .attr("d", function(d) { 
-
-        var y = (d.chrIndex + 1) * chrMargin + chrWidth + (d.trackIndex * annotHeight * 2);
-
-        return (
-          //'m ' + d.offset + ' ' + y + ' ' + 
-          "m0,0" +
-          triangle
-        );
-      })
+      .attr("d", "m0,0" + triangle)
       .attr("fill", function(d) { return d.color })
 
     } else {
@@ -1309,7 +1302,7 @@ Ideogram.prototype.init = function() {
     taxid = taxids[i];
 
     if (taxid == "9606") {
-      bandDataFileName = "ncbi/ideogram_9606_GCF_000001305.14_550_V1";
+      bandDataFileName = "ncbi/ideogram_9606_GCF_000001305.14_850_V1";
     } else if (taxid == "10090") {
       bandDataFileName = "ncbi/ideogram_10090_GCF_000000055.19_NA_V2";
     }
