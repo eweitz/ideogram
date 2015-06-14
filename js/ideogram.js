@@ -486,7 +486,7 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation,
 
           chrMargin2 = -4;
           if (ideo.config.showBandLabels === true) {
-            chrMargin2 = ideo.config.chrMargin + chrWidth + 28;
+            chrMargin2 = ideo.config.chrMargin + chrWidth + 26;
           }
 
           var chrMargin = ideo.config.chrMargin * ci;
@@ -584,7 +584,6 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex, scale) {
 
 
 Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
-  // Create SVG container
 
   var chr, chrWidth, width,
       pArmWidth, selector, qArmStart, qArmWidth,
@@ -609,6 +608,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
 
   var chrMargin = this.config.chrMargin * chrIndex;
 
+  // Draw chromosome bands
   chr.selectAll("path")   
     .data(chrModel.bands)    
     .enter()
@@ -631,14 +631,17 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
             left = d.offset;
 
         if (d.stain == "acen") {
+          // Pericentromeric bands get curved 
           x -= bump/2;
           if (d.name[0] == "p") {
+            // p arm
             d = 
               "M " + (left) + " " + chrMargin + " " + 
               "l " + x + " 0 " + 
               "q " + bump + " " + chrWidth/2 + " 0 " + chrWidth + " " + 
               "l -" + x + " 0 z";
           } else {
+            // q arm
             d = 
               "M " + (left + x + bump/2) + " " + chrMargin + " " + 
               "l -" + x + " 0 " + 
@@ -646,6 +649,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
               "l " + x + " 0 z";
           }
         } else {  
+          // Normal bands
 
           if (i == 0) {
             left += pTerPad;
