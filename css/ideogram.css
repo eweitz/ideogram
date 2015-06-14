@@ -46,7 +46,7 @@ g {
 	display: none;
 }
 
-line.bandLabelStalk {
+.bandLabelStalk line {
 	stroke: #AAA;
 	stroke-width: 1;
 }

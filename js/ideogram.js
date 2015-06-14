@@ -226,7 +226,7 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
   ideo = this;
 
   chrMargin2 = ideogram.config.chrMargin - ideo.config.chrWidth - 2;
-  if (ideo.config.showBandLabels === true) {
+  if (ideo.config.orientation === "vertical" && ideo.config.showBandLabels === true) {
     chrMargin2 = ideo.config.chrMargin + 8;
   }
 
@@ -359,25 +359,35 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
   chr.selectAll("text")
     .data(model.bands)
     .enter()
-    .append("text")
+    .append("g")
       .attr("class", function(d, i) { return "bandLabel bsbsl-" + i  })
-      .attr("x", function(d) { 
-        var textOffset = -8 + d.offset + d.width/2;
-        textOffsets.push(textOffset + 13);
-        return textOffset;
+      .attr("transform", function(d) {
+
+        var x, y;
+
+        x = -8 + d.offset + d.width/2;
+        textOffsets.push(x + 13);
+        y = chrMargin - 10;
+
+        return "translate(" + x + "," + y + ")";
       })
-    .attr("y", chrMargin - 10)
-    .text(function(d) { return d.name; })
+      .append("text")
+      .text(function(d) { return d.name; })
 
   chr.selectAll("line")
     .data(model.bands)
     .enter()
-    .append("line")
-      .attr("class", function(d, i) { return "bandLabelStalk bsbsl-" + i  })
-      .attr("x1", function(d) { return d.offset + d.width/2; })
-      .attr("y1", lineY1)
-      .attr("x2", function(d) { return d.offset + d.width/2; })
-      .attr("y2", lineY2)
+    .append("g")
+    .attr("class", function(d, i) { return "bandLabelStalk bsbsl-" + i  })
+    .attr("transform", function(d) {
+      var x = d.offset + d.width/2;
+      return "translate(" + x + ", " + lineY1 + ")";
+    })
+      .append("line")
+      .attr("x1", 0)
+      .attr("y1", 0)
+      .attr("x2", 0)
+      .attr("y2", -8)
 
   var texts = $("#" + model.id + " text"),
       textsLength = texts.length,
@@ -438,97 +448,142 @@ Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
 }
 
 
+Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation, scale) {
 
-Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation) {
-
-  var chrMargin, chrWidth, ideo;
+  var chrMargin, chrWidth, ideo, x, y,
+      numAnnotTracks, scaleSvg;
 
   chrWidth = this.config.chrWidth;
   chrMargin = this.config.chrMargin * chrIndex;
+  numAnnotTracks = this.config.numAnnotTracks;
 
   ideo = this;
 
+  if (typeof(scale) !== "undefined" && scale.hasOwnProperty("x") && !(scale.x == 1 && scale.y == 1)) {
+    scaleSvg = "scale(" + scale.x + "," + scale.y + ")";
+    x = -2;
+    y = (scale === "" ? -16 : -12);
+  } else {
+    x = -8;
+    y = -16;
+    scale = {"x": 1, "y": 1};
+    scaleSvg = "";
+  }
+
   if (orientation == "vertical" || orientation == "") {
-    
+
     chr.selectAll("text.chrLabel")
-      .attr("transform", "")
+      .attr("transform", scaleSvg)
       .selectAll("tspan")
-      .attr("x", -8)
-      .attr("y", function(d, i) { 
+        .attr("x", x)
+        .attr("y", function(d, i) { 
 
+          var ci = chrIndex - 1;
 
-        if (ideo.config.numAnnotTracks && ideo.config.numAnnotTracks > 1) {
-          chrIndex -= 1;
-        }
+          if (numAnnotTracks > 1 || orientation == "") {
+            ci -= 1;
+          }
 
-        chrMargin2 = -4;
-        if (ideo.config.showBandLabels === true) {
-          chrMargin2 = ideo.config.chrMargin + ideo.config.chrWidth + 28;
-          chrIndex -= 1;
-        }
+          chrMargin2 = -4;
+          if (ideo.config.showBandLabels === true) {
+            chrMargin2 = ideo.config.chrMargin + chrWidth + 26;
+          }
 
-        var chrMargin = ideo.config.chrMargin * chrIndex;
-        return chrMargin + chrMargin2;
-      })
+          var chrMargin = ideo.config.chrMargin * ci;
+
+          if (numAnnotTracks > 1 == false) {
+            chrMargin += 1;
+          }
+
+          return chrMargin + chrMargin2;
+        })
 
   } else {
 
     chrIndex -= 1;
-    if (ideo.config.numAnnotTracks && ideo.config.numAnnotTracks > 1) {
-      chrIndex -= 2;
-    }
 
-    chrMargin2 = ideogram.config.chrMargin - ideo.config.chrWidth - 2;
+    chrMargin2 = -chrWidth - 2;
     if (ideo.config.showBandLabels === true) {
       chrMargin2 = ideo.config.chrMargin + 8;
-    }
-    if (!ideo.config.showBandLabels) {
-      chrIndex += 1;
-    }
+    } 
 
     chr.selectAll("text.chrLabel")
-      .attr("transform", "rotate(-90)")
+      .attr("transform", "rotate(-90)" + scaleSvg)
       .selectAll("tspan")
       .attr("x", function(d, i) { 
 
-        chrMargin = (ideo.config.chrMargin) * chrIndex;
+        chrMargin = ideo.config.chrMargin * chrIndex;
         x = -(chrMargin + chrMargin2) + 3 + ideo.config.annotTracksHeight * 2;
+        x = x/scale.x
         return x;
       })
-      .attr("y", -16)
+      .attr("y", y)
 
   }
 
 }
 
-Ideogram.prototype.rotateBandLabels = function(chr, chrIndex) {
+Ideogram.prototype.rotateBandLabels = function(chr, chrIndex, scale) {
 
-  var chrMargin, chrWidth;
+  var chrMargin, chrWidth, scaleSvg,
+      orientation, bandLabels;
+
+  bandLabels = chr.selectAll(".bandLabel");
 
   chrWidth = this.config.chrWidth;
   chrMargin = this.config.chrMargin * chrIndex;
   
+  orientation = $(".chromosome:eq(" + (chrIndex - 1) + ")").attr("data-orientation");
+
+  if (typeof(scale) == "undefined") {
+    scale = {x: 1, y: 1};
+    scaleSvg = "";
+  } else {
+    scaleSvg = "scale(" + scale.x + "," + scale.y + ")";
+  }
+
   if (
     chrIndex == 1 &&
     "perspective" in this.config && this.config.perspective == "comparative"
   ) {
-    chr.selectAll("text.bandLabel")
-      .attr("transform", "rotate(-90)")
-      .attr("x", (8 - chrMargin) - 26)
-      .attr("y", function(d) { return 2 + d.offset + d.width/2; })
-      .attr("text-anchor", "end");
+    bandLabels
+      .attr("transform", function(d) {
+        var x, y;
+        x = (8 - chrMargin) - 26;
+        y = 2 + d.offset + d.width/2;
+        return "rotate(-90)translate(" + x + "," + y + ")";
+      })
+      .selectAll("text")
+        .attr("text-anchor", "end")
+  } else if (orientation == "vertical")  {
+    bandLabels
+      .attr("transform", function(d) {
+        var x, y;
+        x = 8 - chrMargin;
+        y = 2 + d.offset + d.width/2;
+        return "rotate(-90)translate(" + x + "," + y + ")";
+      })
+      .selectAll("text")
+        .attr("transform", scaleSvg)
   } else {
-    chr.selectAll("text.bandLabel")
-      .attr("transform", "rotate(-90)")
-      .attr("x", 8 - chrMargin)
-      .attr("y", function(d) { return 2 + d.offset + d.width/2; });
+    bandLabels
+      .attr("transform", function(d) {
+        var x, y;
+        x = -8*scale.x + d.offset + d.width/2;
+        y = chrMargin - 10;
+        return "translate(" + x + "," + y + ")";
+      })
+      .selectAll("text")
+        .attr("transform", scaleSvg)
+
+    chr.selectAll(".bandLabelStalk line")
+      .attr("transform", scaleSvg)
   }
 
 }
 
 
 Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
-  // Create SVG container
 
   var chr, chrWidth, width,
       pArmWidth, selector, qArmStart, qArmWidth,
@@ -553,6 +608,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
 
   var chrMargin = this.config.chrMargin * chrIndex;
 
+  // Draw chromosome bands
   chr.selectAll("path")   
     .data(chrModel.bands)    
     .enter()
@@ -575,14 +631,17 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
             left = d.offset;
 
         if (d.stain == "acen") {
+          // Pericentromeric bands get curved 
           x -= bump/2;
           if (d.name[0] == "p") {
+            // p arm
             d = 
               "M " + (left) + " " + chrMargin + " " + 
               "l " + x + " 0 " + 
               "q " + bump + " " + chrWidth/2 + " 0 " + chrWidth + " " + 
               "l -" + x + " 0 z";
           } else {
+            // q arm
             d = 
               "M " + (left + x + bump/2) + " " + chrMargin + " " + 
               "l -" + x + " 0 " + 
@@ -590,6 +649,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
               "l " + x + " 0 z";
           }
         } else {  
+          // Normal bands
 
           if (i == 0) {
             left += pTerPad;
@@ -735,102 +795,163 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
 Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
   // Rotates a chromosome 90 degrees and shows or hides all other chromosomes
   // Useful for focusing or defocusing a particular chromosome
-  // TODO: Scale chromosome to better fill available SVG height and width
 
   var id, chr, chrIndex, chrMargin, chrWidth,
+      chrHeight, ideoBox, ideoWidth, ideoHeight, scaleX, scaleY,
+      initOrientation, currentOrientation,
       cx, cy, cy2,
       ideo = this;
 
   id = chromosomeID;
-  
+
   chr = d3.select("#" + id);
   jqChr = $("#" + id);
-  
-  jqOtherChrs = $("g[id!='" + id + "']");
+
+  jqOtherChrs = $("g[id!='" + id + "'].chromosome");
+
+  initOrientation = ideo.config.orientation;
+  currentOrientation = jqChr.attr("data-orientation");
 
   chrIndex = jqChr.index() + 1;
   chrMargin = this.config.chrMargin * chrIndex;
   chrWidth = this.config.chrWidth;
 
-  if (this.config.orientation == "vertical") {
+  ideoBox = $("#ideogram")[0].getBoundingClientRect();
+  ideoHeight = ideoBox.height;
+  ideoWidth = ideoBox.width;
+
+  if (initOrientation == "vertical") {
+
+    chrLength = jqChr[0].getBoundingClientRect().height;
+
+    scaleX = (ideoWidth/chrLength)*0.99;
+    scaleY = 1.5;
+    scale = "scale(" + scaleX + ", " + scaleY + ")";
+
+    inverseScaleX = 2/scaleX;
+    inverseScaleY = 1;
 
     if (!this.config.showBandLabels) {
       chrIndex += 2;
     }
 
     cx = chrMargin + (chrWidth-4)*(chrIndex - 1) - 30;
-    cy = cx + 30;
+    cy = cx + 30; 
 
     verticalTransform = "rotate(90, " + cx + ", " + cy + ")";
 
-    cy2 = -1*(chrMargin - this.config.annotTracksHeight);
+    cy2 = -1*(chrMargin - this.config.annotTracksHeight)*scaleY;
 
     if (this.config.showBandLabels) {
-      cy2 += 20;
+      cy2 += 25;
     }
 
-    horizontalTransform = "rotate(0)translate(0, " + cy2 + ")";
+    horizontalTransform = 
+      "rotate(0)" + 
+      "translate(0, " + cy2 + ")" + 
+      scale;
 
   } else {
 
-    var bandPad = 0;
+    chrLength = jqChr[0].getBoundingClientRect().width;
+
+    scaleX = (ideoHeight/chrLength)*0.99;
+    scaleY = 1.5;
+    scale = "scale(" + scaleX + ", " + scaleY + ")";
+
+    inverseScaleX = 2/scaleX;
+    inverseScaleY = 1;
+
+    var bandPad = 20;
     if (!this.config.showBandLabels) {
-      bandPad += 10;
+      chrIndex += 2;
+      bandPad = 15;
+    }
+    cx = chrMargin + (chrWidth-bandPad)*(chrIndex - 2);
+    cy = cx;
+
+    if (!this.config.showBandLabels) {
+      cx += bandPad;
+      cy += bandPad;
     }
 
-    cx = (this.config.chrMargin - this.config.annotTracksHeight - bandPad)*chrIndex + 5;
-    cy = cx;
-    verticalTransform = "rotate(90, " + cx + ", " + cy + ")";
+    verticalTransform = (
+      "rotate(90, " + cx + ", " + cy + ")" + 
+      scale
+    )
     horizontalTransform = "";
     
   }
 
-  if (jqChr.attr("data-orientation") != "vertical") {
+  inverseScale = "scale(" + inverseScaleX + "," + inverseScaleY + ")";
 
-    if (this.config.orientation == "horizontal") {
+  if (currentOrientation != "vertical") {
+
+    if (initOrientation == "horizontal") {
       jqOtherChrs.hide();
+
     }
+
+    chr.selectAll(".annot>path")
+      .attr("transform", (initOrientation == "vertical" ? "" : inverseScale));   
 
     chr
       .attr("data-orientation", "vertical")
       .transition()
       .attr("transform", verticalTransform)
       .each("end", function() {
-        
-        ideo.rotateBandLabels(chr, chrIndex);
-        ideo.rotateChromosomeLabels(chr, chrIndex, "horizontal"); 
 
-        if (ideo.config.orientation == "vertical") {
+        if (initOrientation == "vertical") {
+          scale = "";
+        } else {
+          scale = {"x": inverseScaleY, "y": inverseScaleX};
+        }
+
+        ideo.rotateBandLabels(chr, chrIndex, scale);
+        ideo.rotateChromosomeLabels(chr, chrIndex, "horizontal", scale); 
+
+        if (initOrientation == "vertical") {
           jqOtherChrs.show();
         }
 
-      });
+      })
 
   } else {
 
     jqChr.attr("data-orientation", "");
 
-    if (this.config.orientation == "vertical") {
+    if (initOrientation == "vertical") {
       jqOtherChrs.hide();
     } 
+
+    chr.selectAll(".annot>path")
+      .transition()
+      .attr("transform", (initOrientation == "vertical" ? inverseScale : ""));   
 
     chr
       .transition()
       .attr("transform", horizontalTransform)
       .each("end", function() {
-        
-        chr.selectAll("text.bandLabel")
-          .attr("transform", "")
-          .attr("x", function(d) { return -8 + d.offset + d.width/2; })
-          .attr("y", chrMargin - 10)
 
-        ideo.rotateChromosomeLabels(chr, chrIndex, "") 
+        if (initOrientation == "horizontal") {
+          if (currentOrientation == "vertical") {
+            inverseScale = {"x": 1, "y": 1}; 
+          } else {
+            inverseScale = "";
+          }
+        } else {
+          inverseScale = {"x": inverseScaleX, "y": inverseScaleY}; 
+        }
 
-        if (ideo.config.orientation == "horizontal") {
+        ideo.rotateBandLabels(chr, chrIndex, inverseScale);
+        ideo.rotateChromosomeLabels(chr, chrIndex, "", inverseScale);
+
+        if (initOrientation == "horizontal") {
           jqOtherChrs.show();
         }
       
-      });    
+      })
+      
 
   }
 }
@@ -843,7 +964,7 @@ Ideogram.prototype.convertBpToOffset = function(chr, bp) {
   for (i = 0; i < chr.bands.length; i++) {
     band = chr.bands[i];
     if (bp >= band.bp.start && bp <= band.bp.stop) {
- 
+      
       bpToIscnScale = (band.iscn.stop - band.iscn.start)/(band.bp.stop - band.bp.start);
       iscn = band.iscn.start + (bp - band.bp.start) * bpToIscnScale;
 
@@ -852,6 +973,11 @@ Ideogram.prototype.convertBpToOffset = function(chr, bp) {
       return offset;
     }
   }
+
+  throw new Error(
+    "Base pair out of range.  " + 
+    "bp: " + bp + "; length of chr" + chr.name + ": " + band.bp.stop
+  );
 
 }
 
@@ -1058,20 +1184,22 @@ Ideogram.prototype.drawAnnots = function(annots) {
       .enter()
 
   if (layout === "tracks") {
-    chrAnnot.append("path")
+
+    chrAnnot
+      .append("g")
       .attr("id", function(d, i) { return d.id; })
       .attr("class", "annot")
-      .attr("d", function(d) { 
-
+      .attr("transform", function(d) {
         var y = (d.chrIndex + 1) * chrMargin + chrWidth + (d.trackIndex * annotHeight * 2);
-
-        return (
-          'M ' + d.offset + ' ' + y + ' ' + 
-          triangle
-        );
+        return "translate(" + d.offset + "," + y + ")";
       })
+      .append("path")
+      .attr("d", "m0,0" + triangle)
       .attr("fill", function(d) { return d.color })
+
     } else {
+
+      // Overlaid annotations
       chrAnnot.append("polygon")
         .attr("id", function(d, i) { return d.id; })
         .attr("class", "annot")
@@ -1166,8 +1294,8 @@ Ideogram.prototype.init = function() {
     .append("svg")
     .attr("id", "ideogram")
     .attr("class", svgClass)
-    .attr("width", "100%")
-    .attr("height", numChromosomes * this.config.chrHeight + 20)
+    .attr("width", "95%")
+    .attr("height", this.config.chrHeight + 40)
 
   var bandsArray = [],
       maxLength = 0,
@@ -1178,7 +1306,7 @@ Ideogram.prototype.init = function() {
     taxid = taxids[i];
 
     if (taxid == "9606") {
-      bandDataFileName = "ncbi/ideogram_9606_GCF_000001305.14_550_V1";
+      bandDataFileName = "ncbi/ideogram_9606_GCF_000001305.14_850_V1";
     } else if (taxid == "10090") {
       bandDataFileName = "ncbi/ideogram_10090_GCF_000000055.19_NA_V2";
     }

@@ -52,8 +52,8 @@ while i < 1000:
 	j = str(i + 1)
 	chr = i % 24
 	
-	start = int((i * lengths_GRCh37[chrs[chr]])/1000 + 1)
-	stop = int((i * lengths_GRCh37[chrs[chr]])/1000 + 1)
+	start = int((i * lengths_GRCh38[chrs[chr]])/1000 + 1)
+	stop = int((i * lengths_GRCh38[chrs[chr]])/1000 + 1)
 
 	annot = [
 		"rs" + j,
