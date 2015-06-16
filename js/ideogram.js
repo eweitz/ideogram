@@ -81,11 +81,12 @@ var Ideogram = function(config) {
 }
 
 Ideogram.prototype.getBands = function(content, chromosomeName, taxid) {
-  // Gets chromosome band data from a TSV file
+  // Gets chromosome band data from a 
+  // TSV file, or, if band data is prefetched, from an array
 
-  var tsvLines = content.split(/\r\n|\n/);
   var lines = [];
-  var columns, line, stain;
+  var tsvLines, columns, line, stain,
+      i, prefetched, init, tsvLinesLength;
   // UCSC: #chrom chromStart  chromEnd  name  gieStain
   // http://genome.ucsc.edu/cgi-bin/hgTables
   //  - group: Mapping and Sequencing
@@ -94,11 +95,21 @@ Ideogram.prototype.getBands = function(content, chromosomeName, taxid) {
   // NCBI: #chromosome  arm band  iscn_start  iscn_stop bp_start  bp_stop stain density
   // ftp://ftp.ncbi.nlm.nih.gov/pub/gdp/ideogram_9606_GCF_000001305.14_550_V1
 
-  var tsvLinesLength = tsvLines.length - 1;
+  if (typeof chrBands === "undefined") {
+    delimiter = /\t/;
+    tsvLines = content.split(/\r\n|\n/);
+    init = 1;
+  } else {
+    delimiter = / /;
+    tsvLines = content;
+    init = 0;
+  }
 
-  for (var i = 1; i < tsvLinesLength; i++) {
+  tsvLinesLength = tsvLines.length - 1;
 
-    columns = tsvLines[i].split("\t");
+  for (i = init; i < tsvLinesLength; i++) {
+
+    columns = tsvLines[i].split(delimiter);
 
     if (columns[0] !== chromosomeName) {
       continue;
@@ -225,7 +236,7 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
   
   ideo = this;
 
-  chrMargin2 = ideogram.config.chrMargin - ideo.config.chrWidth - 2;
+  chrMargin2 = ideo.config.chrMargin - ideo.config.chrWidth - 2;
   if (ideo.config.orientation === "vertical" && ideo.config.showBandLabels === true) {
     chrMargin2 = ideo.config.chrMargin + 8;
   }
@@ -589,13 +600,17 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
       pArmWidth, selector, qArmStart, qArmWidth,
       pTerPad, chrClass, 
       annotHeight, numAnnotTracks, annotTracksHeight,
-      bump = this.bump; 
+      bump, ideo;
+
+  ideo = this;
+
+  bump = ideo.bump;
 
   // p-terminal band padding
   if (chrModel.centromerePosition != "telocentric") {
-    pTerPad = this.bump;
+    pTerPad = bump;
   } else {
-    pTerPad = Math.round(this.bump/4);
+    pTerPad = Math.round(bump/4);
   }
 
   chr = d3.select("svg")
@@ -603,10 +618,10 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
       .attr("id", chrModel.id)
       .attr("class", "chromosome");
 
-  chrWidth = this.config.chrWidth;
+  chrWidth = ideo.config.chrWidth;
   width = chrModel.width;
 
-  var chrMargin = this.config.chrMargin * chrIndex;
+  var chrMargin = ideo.config.chrMargin * chrIndex;
 
   // Draw chromosome bands
   chr.selectAll("path")   
@@ -657,7 +672,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
             // TODO: this is a minor kludge to preserve visible
             // centromeres in mouse, when viewing mouse and
             // human chromosomes for e.g. orthology analysis
-            if (ideogram.config.multiorganism === true) {
+            if (ideo.config.multiorganism === true) {
               left += pTerPad;
             }
 
@@ -673,8 +688,8 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
         return d;
       })
   
-  if (this.config.showBandLabels === true) {
-      this.drawBandLabels(chr, chrModel, chrIndex);
+  if (ideo.config.showBandLabels === true) {
+      ideo.drawBandLabels(chr, chrModel, chrIndex);
   }
 
   if (chrModel.centromerePosition != "telocentric") {
@@ -1311,28 +1326,33 @@ Ideogram.prototype.init = function() {
       bandDataFileName = "ncbi/ideogram_10090_GCF_000000055.19_NA_V2";
     }
   
-    $.ajax({
-      //url: 'data/chr1_bands.tsv',
-      url: 'data/' + bandDataFileName,
-      beforeSend: function(jqXHR) {
-        // Ensures correct taxid is handled in 'success' callback
-        // Using 'taxid' instead of jqXHR['taxid'] gives the last
-        // taxid among the taxids, not the one for which data was 
-        // requested
-        jqXHR["taxid"] = taxid;
-      },
-      success: function(response, textStatus, jqXHR) {
+    if (typeof chrBands === "undefined") {
+      $.ajax({
+        //url: 'data/chr1_bands.tsv',
+        url: 'data/' + bandDataFileName,
+        beforeSend: function(jqXHR) {
+          // Ensures correct taxid is handled in 'success' callback
+          // Using 'taxid' instead of jqXHR['taxid'] gives the last
+          // taxid among the taxids, not the one for which data was 
+          // requested
+          jqXHR["taxid"] = taxid;
+        },
+        success: function(response, textStatus, jqXHR) {
 
-        ideo.bandData[jqXHR["taxid"]] = response;
-        numBandDataResponses += 1;
+          ideo.bandData[jqXHR["taxid"]] = response;
+          numBandDataResponses += 1;
 
-        if (numBandDataResponses == taxids.length) {
-          processBandData();
+          if (numBandDataResponses == taxids.length) {
+            processBandData();
+          }
+
         }
 
-      }
-
-    });
+      });
+    } else {
+      ideo.bandData["9606"] = chrBands;
+      processBandData();
+    }
 
   }
 
