@@ -81,6 +81,7 @@ var Ideogram = function(config) {
 }
 
 Ideogram.prototype.getBands = function(content, chromosomeName, taxid) {
+
   // Gets chromosome band data from a 
   // TSV file, or, if band data is prefetched, from an array
 
@@ -105,7 +106,7 @@ Ideogram.prototype.getBands = function(content, chromosomeName, taxid) {
     init = 0;
   }
 
-  tsvLinesLength = tsvLines.length - 1;
+  tsvLinesLength = tsvLines.length;
 
   for (i = init; i < tsvLinesLength; i++) {
 
@@ -725,28 +726,20 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
       "M " + width + " " + chrMargin + " " + 
       "q " + bump + " " +  chrWidth/2 + " 0 " + chrWidth
     )
-
-  var pcen = $("#" + chrModel.id + " .p-cen"),
-      qcen = $("#" + chrModel.id + " .q-cen");
+  
+  var pcenIndex = $("#" + chrModel.id + " .p-cen").index();
+      pcen = chrModel.bands[pcenIndex];
+      qcen = chrModel.bands[pcenIndex + 1];
 
   // Why does human chromosome 11 lack a centromeric p-arm band?
-  if (pcen.length > 0) {
-    pArmWidth = pcen[0].getBBox().x;
+  // Answer: because of a bug in the data.  Hack removed; won't work
+  // for human 550 resolution until data is fixed.
+  if (pcenIndex > 0) {
+    pArmWidth = pcen.offset;
+    qArmStart = qcen.offset + qcen.width;
   } else {
-    if (qcen.length > 0) {
-      pArmWidth = qcen.prev()[0].getBBox().x;
-    } else {
-      // For telocentric centromeres, as in many mouse chromosomes
-      pArmWidth = 5;
-    }
-  }
-  
-  if (qcen.length > 0) {
-    qArmStart = qcen.next()[0].getBBox().x;
-  } else {
-    // TODO: Generalize
-    // For mouse only; presumably other organisms with telocentric centromeres
-    // don't have their first q-arm band named 'qA1'.
+    // For telocentric centromeres, as in many mouse chromosomes
+    pArmWidth = 5;
     qArmStart = $("#" + chrModel.id + " .band")[0].getBBox().x;
   }
 
@@ -1367,6 +1360,8 @@ Ideogram.prototype.init = function() {
     bandsArray = [];
     maxLength = 0;
 
+
+    var t0_b = new Date().getTime();
     for (j = 0; j < taxids.length; j++) {
       
       taxid = taxids[j];
@@ -1394,6 +1389,8 @@ Ideogram.prototype.init = function() {
         }
       }
     }
+    var t1_b = new Date().getTime();
+    console.log("Time in getBands: " + (t1_b - t0_b) + " ms")
 
     var chrIndex = 0;
 
@@ -1453,9 +1450,12 @@ Ideogram.prototype.init = function() {
     }
     
     if (ideo.config.showBandLabels === true) {
-      var bandsToHide = ideo.bandsToHide.join(", ");
-      d3.selectAll(bandsToHide).style("display", "none");
+      var bandsToHide = ideo.bandsToHide.join(",");
 
+      var t0_c = new Date().getTime();
+      d3.selectAll(bandsToHide).style("display", "none");
+      var t1_c = new Date().getTime();
+      console.log("Time in hiding bands: " + (t1_c - t0_c) + " ms")
 
       if (ideo.config.orientation === "vertical") {
         for (var i = 0; i < ideo.chromosomesArray.length; i++) {
