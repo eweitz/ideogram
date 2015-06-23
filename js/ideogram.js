@@ -1465,7 +1465,7 @@ Ideogram.prototype.init = function() {
         
         chromosome = chrs[k];
 
-        chrModel = ideo.chromosomes[taxid][chromosome] = chromosomeModel;
+        chrModel = ideo.chromosomes[taxid][chromosome];
 
         chr = d3.select("#chr" + chromosome + "-" + taxid);
 
