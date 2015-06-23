@@ -470,7 +470,7 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
         // TODO: Account for number of characters in prevTextBoxWidth,
         // maybe also zoom.
         prevTextBoxLeft = textOffsets[chromosome][index];
-        prevTextBoxWidth = 30;
+        prevTextBoxWidth = 36;
 
         prevLabelXRight = prevTextBoxLeft + prevTextBoxWidth;
       } 
@@ -1342,7 +1342,7 @@ Ideogram.prototype.init = function() {
     .append("svg")
     .attr("id", "ideogram")
     .attr("class", svgClass)
-    .attr("width", "95%")
+    .attr("width", "97%")
     .attr("height", this.config.chrHeight + 40)
 
   var bandsArray = [],

@@ -23,8 +23,8 @@ import json
 
 output = []
 
-input_file = "ncbi/ideogram_9606_GCF_000001305.14_850_V1"
-output_file = "native/ideogram_9606_GCF_000001405.26_850.js"
+input_file = "ncbi/ideogram_9606_GCF_000001305.14_550_V1"
+output_file = "native/ideogram_9606_GCF_000001405.26_550.js"
 
 rows = open(input_file, "r").readlines()[1:]
 for row in rows:
