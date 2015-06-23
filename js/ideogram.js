@@ -460,11 +460,19 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
       }
 
       if (prevHiddenBoxIndex !== index) {
+
         // This getBoundingClientRect() forces Chrome's 
         // 'Recalculate Style' and 'Layout', which takes 30-40 ms on Chrome.  
         // TODO: This forced synchronous layout would be nice to eliminate.
-        prevTextBox = texts[index].getBoundingClientRect();
-        prevLabelXRight = prevTextBox.left + prevTextBox.width;
+        //prevTextBox = texts[index].getBoundingClientRect();
+        //prevLabelXRight = prevTextBox.left + prevTextBox.width;
+
+        // TODO: Account for number of characters in prevTextBoxWidth,
+        // maybe also zoom.
+        prevTextBoxLeft = textOffsets[chromosome][index];
+        prevTextBoxWidth = 30;
+
+        prevLabelXRight = prevTextBoxLeft + prevTextBoxWidth;
       } 
 
       if (
@@ -1517,7 +1525,7 @@ Ideogram.prototype.init = function() {
       d3.selectAll(".bandLabel, .bandLabelStalk").style("display", "none");
       d3.selectAll(bandsToShow).style("display", "")
       var t1_c = new Date().getTime();
-      console.log("Time in hiding bands: " + (t1_c - t0_c) + " ms")
+      console.log("Time in showing bands: " + (t1_c - t0_c) + " ms")
 
       if (ideo.config.orientation === "vertical") {
         for (var i = 0; i < ideo.chromosomesArray.length; i++) {
