@@ -71,7 +71,8 @@ var Ideogram = function(config) {
   // arrays of chromosomes, keyed by organism)
   this.chromosomesArray = [];
 
-  this.bandsToHide = [];
+  //this.bandsToHide = [];
+  this.bandsToShow = [];
 
   this.chromosomes = {};
   this.bandData = {};
@@ -81,6 +82,7 @@ var Ideogram = function(config) {
 }
 
 Ideogram.prototype.getBands = function(content, chromosomeName, taxid) {
+
   // Gets chromosome band data from a 
   // TSV file, or, if band data is prefetched, from an array
 
@@ -105,7 +107,7 @@ Ideogram.prototype.getBands = function(content, chromosomeName, taxid) {
     init = 0;
   }
 
-  tsvLinesLength = tsvLines.length - 1;
+  tsvLinesLength = tsvLines.length;
 
   for (i = init; i < tsvLinesLength; i++) {
 
@@ -338,123 +340,165 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
 }
 
 
-Ideogram.prototype.drawBandLabels = function(chr, model, chrIndex) {
-  // Draws labels for cytogenetic band , e.g. "p31.2"
-  //
-  // Performance note:
-  // This function takes up the majority of the time in drawChromosome,
-  // which is about 90 ms out of about 130 ms in drawChromosome on Chrome 41
-  // for the the full human ideogram of 23 band-labeled chromosomes.
-  // drawChromosome balloons to ~220 ms on FF 36 and ~340 ms on IE 11.
-  // Mobile performance is currently unknown.
+Ideogram.prototype.drawBandLabels = function(chromosomes) {
 
-  //var t0 = new Date().getTime();
-  
-  var chrMargin = this.config.chrMargin * chrIndex,
-      lineY1, lineY2,
-      ideo = this;
+  var i, chr, chrs, taxid, ideo,
+      chrMargin2;
 
-  lineY1 = chrMargin;
-  lineY2 = chrMargin - 8;
+  ideo = this;
 
-  if (
-    chrIndex == 1 &&
-    "perspective" in this.config && this.config.perspective == "comparative"
-  ) {
-    lineY1 += 18;
-    lineY2 += 18;
-  } 
+  chrs = [];
 
-  var textOffsets = [];
-
-  chr.selectAll("text")
-    .data(model.bands)
-    .enter()
-    .append("g")
-      .attr("class", function(d, i) { return "bandLabel bsbsl-" + i  })
-      .attr("transform", function(d) {
-
-        var x, y;
-
-        x = -8 + d.offset + d.width/2;
-        textOffsets.push(x + 13);
-        y = chrMargin - 10;
-
-        return "translate(" + x + "," + y + ")";
-      })
-      .append("text")
-      .text(function(d) { return d.name; })
-
-  chr.selectAll("line")
-    .data(model.bands)
-    .enter()
-    .append("g")
-    .attr("class", function(d, i) { return "bandLabelStalk bsbsl-" + i  })
-    .attr("transform", function(d) {
-      var x = d.offset + d.width/2;
-      return "translate(" + x + ", " + lineY1 + ")";
-    })
-      .append("line")
-      .attr("x1", 0)
-      .attr("y1", 0)
-      .attr("x2", 0)
-      .attr("y2", -8)
-
-  var texts = $("#" + model.id + " text"),
-      textsLength = texts.length,
-      overlappingLabelXRight,
-      index,
-      indexesToHide = [],
-      prevHiddenBoxIndex,
-      prevTextBox,
-      xLeft,
-      textPadding;
-
-  overlappingLabelXRight = 0;
-
-  textPadding = 5;
-
-  for (index = 1; index < textsLength; index++) {
-    // Ensures band labels don't overlap
-
-    xLeft = textOffsets[index];
-
-    if (xLeft < overlappingLabelXRight + textPadding) {
-      indexesToHide.push(index);
-      prevHiddenBoxIndex = index;
-      overlappingLabelXRight = prevLabelXRight;
-      continue;
+  for (taxid in chromosomes) {
+    for (chr in chromosomes[taxid]) {
+      chrs.push(chromosomes[taxid][chr]);
     }
+  }
 
-    if (prevHiddenBoxIndex !== index - 1) {
-      prevTextBox = texts[index - 1].getBoundingClientRect();
-      prevLabelXRight = prevTextBox.left + prevTextBox.width;
-    } 
+  var textOffsets = {};
+
+  chrIndex = 0;
+  for (var i = 0; i < chrs.length; i++) {
+
+    chrIndex += 1;
+    
+    chromosome = chrs[i].name;
+
+    chrModel = ideo.chromosomes[taxid][chromosome];
+
+    chr = d3.select("#chr" + chromosome + "-" + taxid);
+
+    var chrMargin = this.config.chrMargin * chrIndex,
+        lineY1, lineY2,
+        ideo = this;
+
+    lineY1 = chrMargin;
+    lineY2 = chrMargin - 8;
 
     if (
-      xLeft < prevLabelXRight + textPadding
+      chrIndex == 1 &&
+      "perspective" in this.config && this.config.perspective == "comparative"
     ) {
-      indexesToHide.push(index);
-      prevHiddenBoxIndex = index;
-      overlappingLabelXRight = prevLabelXRight;
-    }
+      lineY1 += 18;
+      lineY2 += 18;
+    } 
 
-  }
+    textOffsets[chromosome] = [];
 
-  var selectorsToHide = [],
-      chr = model.id,
-      ithLength = indexesToHide.length,
-      i;
+    chr.selectAll("text")
+      .data(chrModel.bands)
+      .enter()
+      .append("g")
+        .attr("class", function(d, i) { return "bandLabel bsbsl-" + i  })
+        .attr("transform", function(d) {
 
-  for (i = 0; i < ithLength; i++) {
-    index = indexesToHide[i];
-    selectorsToHide.push("#" + chr + " .bsbsl-" + index);
+          var x, y;
+
+          x = -8 + d.offset + d.width/2;
+
+          textOffsets[chromosome].push(x + 13);
+          y = chrMargin - 10;
+
+          return "translate(" + x + "," + y + ")";
+        })
+        .append("text")
+        .text(function(d) { return d.name; })
+
+    chr.selectAll("line.bandLabelStalk")
+      .data(chrModel.bands)
+      .enter()
+      .append("g")
+      .attr("class", function(d, i) { return "bandLabelStalk bsbsl-" + i  })
+      .attr("transform", function(d) {
+        var x = d.offset + d.width/2;
+        return "translate(" + x + ", " + lineY1 + ")";
+      })
+        .append("line")
+        .attr("x1", 0)
+        .attr("y1", 0)
+        .attr("x2", 0)
+        .attr("y2", -8)   
   }
   
-  $.merge(this.bandsToHide, selectorsToHide);
+  chrIndex = 0;
+  for (var i = 0; i < chrs.length; i++) {
 
-  //var t1 = new Date().getTime();
-  //console.log("Time in drawBandLabels: " + (t1 - t0) + " ms");
+    chrIndex += 1;
+    
+    chromosome = chrs[i].name;
+
+    chrModel = ideo.chromosomes[taxid][chromosome];
+
+    chr = d3.select("#chr" + chromosome + "-" + taxid);
+
+    var texts = $("#" + chrModel.id + " text"),
+        textsLength = texts.length,
+        overlappingLabelXRight,
+        index,
+        indexesToShow = [],
+        prevHiddenBoxIndex,
+        prevTextBox,
+        xLeft,
+        prevLabelXRight,
+        textPadding;
+
+    overlappingLabelXRight = 0;
+
+    textPadding = 5;
+
+    for (index = 0; index < textsLength; index++) {
+      // Ensures band labels don't overlap
+
+      xLeft = textOffsets[chromosome][index];
+
+      if (xLeft < overlappingLabelXRight + textPadding === false) {
+        indexesToShow.push(index);
+      } else {
+        prevHiddenBoxIndex = index;
+        overlappingLabelXRight = prevLabelXRight;
+        continue;
+      }
+
+      if (prevHiddenBoxIndex !== index) {
+
+        // This getBoundingClientRect() forces Chrome's 
+        // 'Recalculate Style' and 'Layout', which takes 30-40 ms on Chrome.  
+        // TODO: This forced synchronous layout would be nice to eliminate.
+        //prevTextBox = texts[index].getBoundingClientRect();
+        //prevLabelXRight = prevTextBox.left + prevTextBox.width;
+
+        // TODO: Account for number of characters in prevTextBoxWidth,
+        // maybe also zoom.
+        prevTextBoxLeft = textOffsets[chromosome][index];
+        prevTextBoxWidth = 36;
+
+        prevLabelXRight = prevTextBoxLeft + prevTextBoxWidth;
+      } 
+
+      if (
+        xLeft < prevLabelXRight + textPadding
+      ) {
+        prevHiddenBoxIndex = index;
+        overlappingLabelXRight = prevLabelXRight;
+      } else {
+        indexesToShow.push(index);
+      }
+
+    }
+
+    var selectorsToShow = [],
+        chr = chrModel.id,
+        ithLength = indexesToShow.length,
+        j;
+
+    for (var j = 0; j < ithLength; j++) {
+      index = indexesToShow[j];
+      selectorsToShow.push("#" + chr + " .bsbsl-" + index);
+    }
+    
+    $.merge(this.bandsToShow, selectorsToShow);
+
+  }
 
 }
 
@@ -687,10 +731,6 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
 
         return d;
       })
-  
-  if (ideo.config.showBandLabels === true) {
-      ideo.drawBandLabels(chr, chrModel, chrIndex);
-  }
 
   if (chrModel.centromerePosition != "telocentric") {
     // As in human
@@ -725,28 +765,20 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
       "M " + width + " " + chrMargin + " " + 
       "q " + bump + " " +  chrWidth/2 + " 0 " + chrWidth
     )
-
-  var pcen = $("#" + chrModel.id + " .p-cen"),
-      qcen = $("#" + chrModel.id + " .q-cen");
+  
+  var pcenIndex = $("#" + chrModel.id + " .p-cen").index();
+      pcen = chrModel.bands[pcenIndex];
+      qcen = chrModel.bands[pcenIndex + 1];
 
   // Why does human chromosome 11 lack a centromeric p-arm band?
-  if (pcen.length > 0) {
-    pArmWidth = pcen[0].getBBox().x;
+  // Answer: because of a bug in the data.  Hack removed; won't work
+  // for human 550 resolution until data is fixed.
+  if (pcenIndex > 0) {
+    pArmWidth = pcen.offset;
+    qArmStart = qcen.offset + qcen.width;
   } else {
-    if (qcen.length > 0) {
-      pArmWidth = qcen.prev()[0].getBBox().x;
-    } else {
-      // For telocentric centromeres, as in many mouse chromosomes
-      pArmWidth = 5;
-    }
-  }
-  
-  if (qcen.length > 0) {
-    qArmStart = qcen.next()[0].getBBox().x;
-  } else {
-    // TODO: Generalize
-    // For mouse only; presumably other organisms with telocentric centromeres
-    // don't have their first q-arm band named 'qA1'.
+    // For telocentric centromeres, as in many mouse chromosomes
+    pArmWidth = 5;
     qArmStart = $("#" + chrModel.id + " .band")[0].getBBox().x;
   }
 
@@ -780,7 +812,10 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
     .attr('x2', qArmStart + qArmWidth)
     .attr("y2", chrWidth + chrMargin)
 
+}
 
+Ideogram.prototype.initTransformChromosome = function(chr, chrIndex) {
+  
   if (this.config.orientation == "vertical") {
 
     var chrMargin, chrWidth, tPadding;
@@ -803,9 +838,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
   } else {
     chr.attr("data-orientation", "horizontal")
   }
-
 }
-
 
 Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
   // Rotates a chromosome 90 degrees and shows or hides all other chromosomes
@@ -1309,7 +1342,7 @@ Ideogram.prototype.init = function() {
     .append("svg")
     .attr("id", "ideogram")
     .attr("class", svgClass)
-    .attr("width", "95%")
+    .attr("width", "97%")
     .attr("height", this.config.chrHeight + 40)
 
   var bandsArray = [],
@@ -1367,6 +1400,8 @@ Ideogram.prototype.init = function() {
     bandsArray = [];
     maxLength = 0;
 
+
+    var t0_b = new Date().getTime();
     for (j = 0; j < taxids.length; j++) {
       
       taxid = taxids[j];
@@ -1394,6 +1429,8 @@ Ideogram.prototype.init = function() {
         }
       }
     }
+    var t1_b = new Date().getTime();
+    console.log("Time in getBands: " + (t1_b - t0_b) + " ms")
 
     var chrIndex = 0;
 
@@ -1421,6 +1458,29 @@ Ideogram.prototype.init = function() {
         ideo.drawChromosome(chromosomeModel, chrIndex);
         
       }
+
+
+      if (ideo.config.showBandLabels === true) {
+          ideo.drawBandLabels(ideo.chromosomes);
+      }
+
+
+
+      chrIndex = 0;
+      for (k = 0; k < chrs.length; k++) {
+
+        chrIndex += 1;
+        
+        chromosome = chrs[k];
+
+        chrModel = ideo.chromosomes[taxid][chromosome];
+
+        chr = d3.select("#chr" + chromosome + "-" + taxid);
+
+        ideo.initTransformChromosome(chr, chrIndex);
+        
+      }
+
     }
 
     // Waits for potentially large annotation dataset 
@@ -1453,9 +1513,19 @@ Ideogram.prototype.init = function() {
     }
     
     if (ideo.config.showBandLabels === true) {
-      var bandsToHide = ideo.bandsToHide.join(", ");
-      d3.selectAll(bandsToHide).style("display", "none");
+      var bandsToShow = ideo.bandsToShow.join(",")
 
+      // d3.selectAll resolves to querySelectorAll (QSA).
+      // QSA takes a surprisingly long time to complete,
+      // and scales with the number of selectors.
+      // Most bands are hidden, so we can optimize by
+      // Hiding all bands, then QSA'ing and displaying the 
+      // relatively few bands that are shown.  
+      var t0_c = new Date().getTime();
+      d3.selectAll(".bandLabel, .bandLabelStalk").style("display", "none");
+      d3.selectAll(bandsToShow).style("display", "")
+      var t1_c = new Date().getTime();
+      console.log("Time in showing bands: " + (t1_c - t0_c) + " ms")
 
       if (ideo.config.orientation === "vertical") {
         for (var i = 0; i < ideo.chromosomesArray.length; i++) {
