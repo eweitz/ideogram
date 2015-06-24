@@ -362,11 +362,9 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
 
     chrIndex += 1;
     
-    chromosome = chrs[i].name;
+    chrModel = chrs[i];
 
-    chrModel = ideo.chromosomes[taxid][chromosome];
-
-    chr = d3.select("#chr" + chromosome + "-" + taxid);
+    chr = d3.select("#" + chrModel.id);
 
     var chrMargin = this.config.chrMargin * chrIndex,
         lineY1, lineY2,
@@ -383,7 +381,7 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
       lineY2 += 18;
     } 
 
-    textOffsets[chromosome] = [];
+    textOffsets[chrModel.id] = [];
 
     chr.selectAll("text")
       .data(chrModel.bands)
@@ -396,7 +394,7 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
 
           x = -8 + d.offset + d.width/2;
 
-          textOffsets[chromosome].push(x + 13);
+          textOffsets[chrModel.id].push(x + 13);
           y = chrMargin - 10;
 
           return "translate(" + x + "," + y + ")";
@@ -423,16 +421,9 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
   chrIndex = 0;
   for (var i = 0; i < chrs.length; i++) {
 
-    chrIndex += 1;
-    
-    chromosome = chrs[i].name;
+    chrModel = chrs[i];
 
-    chrModel = ideo.chromosomes[taxid][chromosome];
-
-    chr = d3.select("#chr" + chromosome + "-" + taxid);
-
-    var texts = $("#" + chrModel.id + " text"),
-        textsLength = texts.length,
+    var textsLength = textOffsets[chrModel.id].length,
         overlappingLabelXRight,
         index,
         indexesToShow = [],
@@ -449,7 +440,7 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
     for (index = 0; index < textsLength; index++) {
       // Ensures band labels don't overlap
 
-      xLeft = textOffsets[chromosome][index];
+      xLeft = textOffsets[chrModel.id][index];
 
       if (xLeft < overlappingLabelXRight + textPadding === false) {
         indexesToShow.push(index);
@@ -469,7 +460,7 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
 
         // TODO: Account for number of characters in prevTextBoxWidth,
         // maybe also zoom.
-        prevTextBoxLeft = textOffsets[chromosome][index];
+        prevTextBoxLeft = textOffsets[chrModel.id][index];
         prevTextBoxWidth = 36;
 
         prevLabelXRight = prevTextBoxLeft + prevTextBoxWidth;
@@ -487,13 +478,12 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
     }
 
     var selectorsToShow = [],
-        chr = chrModel.id,
         ithLength = indexesToShow.length,
         j;
 
     for (var j = 0; j < ithLength; j++) {
       index = indexesToShow[j];
-      selectorsToShow.push("#" + chr + " .bsbsl-" + index);
+      selectorsToShow.push("#" + chrModel.id + " .bsbsl-" + index);
     }
     
     $.merge(this.bandsToShow, selectorsToShow);
@@ -1463,10 +1453,13 @@ Ideogram.prototype.init = function() {
       if (ideo.config.showBandLabels === true) {
           ideo.drawBandLabels(ideo.chromosomes);
       }
+    }
 
 
-
-      chrIndex = 0;
+    chrIndex = 0;
+    for (j = 0; j < taxids.length; j++) {
+      taxid = taxids[j];
+      chrs = ideo.config.chromosomes[taxid];
       for (k = 0; k < chrs.length; k++) {
 
         chrIndex += 1;
