@@ -71,7 +71,6 @@ var Ideogram = function(config) {
   // arrays of chromosomes, keyed by organism)
   this.chromosomesArray = [];
 
-  //this.bandsToHide = [];
   this.bandsToShow = [];
 
   this.chromosomes = {};
@@ -81,21 +80,23 @@ var Ideogram = function(config) {
 
 }
 
+/**  
+* Gets chromosome band data from a 
+* TSV file, or, if band data is prefetched, from an array
+* 
+* UCSC: #chrom chromStart  chromEnd  name  gieStain
+* http://genome.ucsc.edu/cgi-bin/hgTables
+*  - group: Mapping and Sequencing
+*  - track: Chromosome Band (Ideogram)
+*  
+* NCBI: #chromosome  arm band  iscn_start  iscn_stop bp_start  bp_stop stain density
+* ftp://ftp.ncbi.nlm.nih.gov/pub/gdp/ideogram_9606_GCF_000001305.14_550_V1
+*/
 Ideogram.prototype.getBands = function(content, chromosomeName, taxid) {
-
-  // Gets chromosome band data from a 
-  // TSV file, or, if band data is prefetched, from an array
 
   var lines = [];
   var tsvLines, columns, line, stain,
       i, prefetched, init, tsvLinesLength;
-  // UCSC: #chrom chromStart  chromEnd  name  gieStain
-  // http://genome.ucsc.edu/cgi-bin/hgTables
-  //  - group: Mapping and Sequencing
-  //  - track: Chromosome Band (Ideogram)
-  //
-  // NCBI: #chromosome  arm band  iscn_start  iscn_stop bp_start  bp_stop stain density
-  // ftp://ftp.ncbi.nlm.nih.gov/pub/gdp/ideogram_9606_GCF_000001305.14_550_V1
 
   if (typeof chrBands === "undefined") {
     delimiter = /\t/;
@@ -223,6 +224,12 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid) {
   return chr;
 }
 
+/**
+* Draws labels for each chromosome, e.g. "1", "2", "X".
+* If ideogram configuration has 'fullChromosomeLabels: True', 
+* then labels includes name of taxon, which can help when
+* depicting orthologs. 
+*/
 Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
 
   var i, chr, chrs, taxid, ideo,
@@ -293,15 +300,6 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
          .data(chrs)
           .attr("class", "chrLabel")
           .attr("x", -5)
-          //.attr("y", function(d, i) { 
-
-          //    if (ideo.config.showBandLabels === true) {
-          //      i -= 1;
-          //    }
-
-          //    var chrMargin = (ideo.config.chrMargin + ideo.config.chrWidth) * (i + 1);
-          //    return chrMargin + chrMargin2;
-          //})
           .each(function (d, i) {
 
             var i, chrMargin, y, cls;
@@ -333,15 +331,20 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
                 }
             }
           })
-          //.text(function(d, i) { return d.name; })
 
   }
    
 }
 
-
+/**
+* Draws labels and stalks for cytogenetic bands.  
+* 
+* Labels are text like "p11.11".  
+* Stalks are small lines that visually connect each label to its 
+* corresponding band.
+*/
 Ideogram.prototype.drawBandLabels = function(chromosomes) {
-
+  
   var i, chr, chrs, taxid, ideo,
       chrMargin2;
 
@@ -424,7 +427,7 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
   for (var i = 0; i < chrs.length; i++) {
 
     chrIndex += 1;
-    
+
     chromosome = chrs[i].name;
 
     chrModel = ideo.chromosomes[taxid][chromosome];
@@ -502,7 +505,9 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
 
 }
 
-
+/**
+* Rotates chromosome labels by 90 degrees, e.g. upon clicking a chromosome to focus.
+*/
 Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation, scale) {
 
   var chrMargin, chrWidth, ideo, x, y,
@@ -578,8 +583,16 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation,
 
 }
 
+/** 
+* Rotates band labels by 90 degrees, e.g. upon clicking a chromosome to focus.
+*
+* This method includes proportional scaling, which ensures that 
+* while the parent chromosome group is scaled strongly in one dimension to fill
+* available space, the text in the chromosome's band labels is 
+* not similarly distorted, and remains readable.
+*/
 Ideogram.prototype.rotateBandLabels = function(chr, chrIndex, scale) {
-
+  
   var chrMargin, chrWidth, scaleSvg,
       orientation, bandLabels;
 
@@ -840,9 +853,11 @@ Ideogram.prototype.initTransformChromosome = function(chr, chrIndex) {
   }
 }
 
+/**
+* Rotates a chromosome 90 degrees and shows or hides all other chromosomes
+* Useful for focusing or defocusing a particular chromosome
+*/
 Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
-  // Rotates a chromosome 90 degrees and shows or hides all other chromosomes
-  // Useful for focusing or defocusing a particular chromosome
 
   var id, chr, chrIndex, chrMargin, chrWidth,
       chrHeight, ideoBox, ideoWidth, ideoHeight, scaleX, scaleY,
@@ -1029,11 +1044,12 @@ Ideogram.prototype.convertBpToOffset = function(chr, bp) {
 
 }
 
-
+/**
+* Draws a trapezoid connecting a genomic range on 
+* one chromosome to a genomic range on another chromosome;
+* a syntenic region.
+*/
 Ideogram.prototype.drawSynteny = function(syntenicRegions) {
-  // Draws a trapezoid connecting a genomic range on 
-  // one chromosome to a genomic range on another chromosome;
-  // a syntenic region
 
   var t0 = new Date().getTime();
 
@@ -1140,13 +1156,14 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
 
 }
 
-
+/**
+* Proccesses genome annotation data.
+* Converts raw annotation data from server, which is structured as 
+* an array of arrays, into a more verbose data structure consisting 
+* of an array of objects.  
+* Also adds pixel offset information.
+*/
 Ideogram.prototype.processAnnotData = function(rawAnnots) {
-// Processes genome annotation data for .
-// Converts raw annotation data from server, which is structured as 
-// an array of arrays, into a more verbose data structure consisting 
-// of an array of objects.  
-// Also adds pixel offset information.
 
   var i, j, annot, annots, rawAnnot,
       chr, start, stop,
@@ -1204,7 +1221,9 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
 }
 
 
-// Draws genome annotations on chromosomes
+/**
+*  Draws genome annotations on chromosomes
+*/
 Ideogram.prototype.drawAnnots = function(annots) {
 
   //console.log(annots);
@@ -1270,12 +1289,12 @@ Ideogram.prototype.drawAnnots = function(annots) {
     }
 }
 
-
+/** 
+* Called when Ideogram has finished initializing.
+* Accounts for certain ideogram properties not being set until 
+* asynchronous requests succeed, etc.
+*/
 Ideogram.prototype.onLoad = function() {
-  // Called when Ideogram has finished initializing.
-  // Accounts for certain ideogram properties not being set until 
-  // asynchronous requests succeed, etc.
-
   call(this.onLoadCallback);
 }
 
