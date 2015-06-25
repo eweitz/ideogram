@@ -1,5 +1,6 @@
 // Developed by Eric Weitz (https://github.com/eweitz)
 
+/* Constructs a prototypal Ideogram class */
 var Ideogram = function(config) {
 
   this.config = config;
@@ -643,7 +644,9 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex, scale) {
 
 }
 
-
+/**
+* Renders all the bands and outlining boundaries of a chromosome.
+*/
 Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
 
   var chr, chrWidth, width,
@@ -820,6 +823,10 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
 
 }
 
+
+/**
+* Rotates and translates chromosomes upon initialization as needed.
+*/
 Ideogram.prototype.initTransformChromosome = function(chr, chrIndex) {
 
   if (this.config.orientation == "vertical") {
@@ -1012,7 +1019,10 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
   }
 }
 
-
+/**
+* Converts base pair coordinates to pixel offsets.
+* Bp-to-pixel scales differ among cytogenetic bands.
+*/
 Ideogram.prototype.convertBpToOffset = function(chr, bp) {
 
   var i, band, bpToIscnScale, iscn, offset;
@@ -1151,6 +1161,8 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
 
 /**
 * Proccesses genome annotation data.
+* Genome annotations represent features like a gene, SNP, etc. as
+* a small graphical object on or beside a chromosome.
 * Converts raw annotation data from server, which is structured as 
 * an array of arrays, into a more verbose data structure consisting 
 * of an array of objects.  
@@ -1187,6 +1199,7 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
 
       offset = Math.round((startOffset + stopOffset)/2) - 28;
 
+      // TODO: Make color configurable
       color = "#F00";
       if (ideo.config.annotationTracks) {
         trackIndex = ra[3]
@@ -1215,19 +1228,19 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
 
 
 /**
-*  Draws genome annotations on chromosomes
+* Draws genome annotations on chromosomes.
+* Annotations can be rendered as either overlaid directly
+* on a chromosome, or along one or more "tracks"
+* running parallel to each chromosome.
 */
 Ideogram.prototype.drawAnnots = function(annots) {
 
-  //console.log(annots);
-
-  var layout, chrMargin, annotHeight,
-      triangle,
+  var chrMargin, chrWidth, layout,
+      annotHeight, triangle, chrAnnot, 
       x1, x2, y1, y2;
 
   chrMargin = this.config.chrMargin;
   chrWidth = this.config.chrWidth;
-
 
   layout = "tracks";
   if (this.config.annotationsLayout) {
@@ -1237,7 +1250,7 @@ Ideogram.prototype.drawAnnots = function(annots) {
   annotHeight = this.config.annotationHeight;
   triangle = 'l -' + annotHeight + ' ' + (2*annotHeight) + ' l ' + (2*annotHeight) + ' 0 z';
 
-  var chrAnnot = d3.selectAll(".chromosome")
+  chrAnnot = d3.selectAll(".chromosome")
     .data(annots)
       .selectAll("path.annot")
       .data(function(d) { return d["annots"]})
@@ -1291,7 +1304,13 @@ Ideogram.prototype.onLoad = function() {
   call(this.onLoadCallback);
 }
 
-
+/**
+* Initializes an ideogram.
+* Sets some high-level properties based on instance configuration, 
+* fetches band and annotation data if needed, and 
+* writes an SVG element to the document to contain the ideogram
+* 
+*/
 Ideogram.prototype.init = function() {
 
   var bandDataFile,
@@ -1350,7 +1369,7 @@ Ideogram.prototype.init = function() {
     svgClass += "faint"
   }
 
-   var svg = d3.select("body")
+  var svg = d3.select("body")
     .append("svg")
     .attr("id", "ideogram")
     .attr("class", svgClass)
@@ -1401,6 +1420,15 @@ Ideogram.prototype.init = function() {
 
   }
 
+  /* 
+  * Completes default ideogram initialization 
+  * by calling downstream functions to 
+  * process raw band data into full JSON objects, 
+  * render chromosome and cytoband figures and labels,
+  * apply initial graphical transformations, 
+  * hide overlapping band labels, and
+  * execute callbacks defined by client code
+  */ 
   function processBandData() {
 
     var j, k, chromosome, bands, chromosomeModel,
