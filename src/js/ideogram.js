@@ -426,11 +426,8 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
         .attr("y2", -8)   
   }
 
-<<<<<<< HEAD:js/ideogram.js
   for (var i = 0; i < chrs.length; i++) {
 
-=======
->>>>>>> 06c6d88b66cd3f527f6b328f430543ccf4b48834:src/js/ideogram.js
     chrModel = chrs[i];
 
     var textsLength = textOffsets[chrModel.id].length,
@@ -1388,9 +1385,9 @@ Ideogram.prototype.init = function() {
     taxid = taxids[i];
 
     if (taxid == "9606") {
-      bandDataFileName = "ncbi/ideogram_9606_GCF_000001305.14_850_V1";
+      bandDataFileName = "../../data/bands/ncbi/ideogram_9606_GCF_000001305.14_850_V1";
     } else if (taxid == "10090") {
-      bandDataFileName = "ncbi/ideogram_10090_GCF_000000055.19_NA_V2";
+      bandDataFileName = "../../data/bands/ncbi/ideogram_10090_GCF_000000055.19_NA_V2";
     }
   
     if (typeof chrBands === "undefined") {
@@ -1506,7 +1503,6 @@ Ideogram.prototype.init = function() {
       if (ideo.config.showBandLabels === true) {
           ideo.drawBandLabels(ideo.chromosomes);
       }
-    }
 
     }
 

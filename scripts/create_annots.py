@@ -69,4 +69,4 @@ while i < 1000:
 annots = json.dumps(annots)
 annots = '{"annots":' + annots + '}'
 
-open("1000_virtual_snvs.json", "w").write(annots)
+open("annotations/1000_virtual_snvs.json", "w").write(annots)
