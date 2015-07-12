@@ -877,11 +877,8 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
   chrModel = ideo.chromosomes[ideo.config.taxid][id.split("-")[0].split("chr")[1]]
 
   chrIndex = chrModel["chrIndex"];
-  console.log(chrIndex)
 
   otherChrs = d3.selectAll("g.chromosome").filter(function(d, i) { return this.id !== id; });
-
-  console.log(otherChrs)
 
   initOrientation = ideo.config.orientation;
   currentOrientation = chr.attr("data-orientation");  
@@ -957,11 +954,6 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
   }
 
   inverseScale = "scale(" + inverseScaleX + "," + inverseScaleY + ")";
-
-  console.log(chrLength)
-  console.log(verticalTransform)
-  console.log(horizontalTransform)
-  console.log(inverseScale)
 
   if (currentOrientation != "vertical") {
 
