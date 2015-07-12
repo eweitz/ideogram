@@ -5,7 +5,6 @@
   <title>Homology, advanced | Ideogram</title>
   <link type="text/css" rel="stylesheet" href="../src/css/ideogram.css"/>
   <script type="text/javascript" src="../src/js/d3.min.js"></script>
-  <script type="text/javascript" src="../src/js/jquery.min.js"></script>
   <script type="text/javascript" src="../src/js/ideogram.js"></script>
 </head>
 <body>
@@ -13,8 +12,12 @@
   <a href=".">Back to overview</a>
 	<script type="text/javascript">
 
-	function onIdeogramLoad() {
+	function onIdeogramLoad() {  
 
+	    d3.selectAll("g").on("click", function() {
+	      ideogram.rotateAndToggleDisplay(this.id);
+	    });
+  
 		var chrs = ideogram.chromosomes,
 			chr1 = chrs["10090"]["1"], 
 			chr2 = chrs["10090"]["2"],

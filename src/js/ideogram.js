@@ -154,7 +154,7 @@ Ideogram.prototype.getBands = function(content, chromosomeName, taxid) {
 * length in base pairs or ISCN coordinates,
 * cytogenetic bands, centromere position, etc.
 */
-Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid) {
+Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid, chrIndex) {
 
   var chr = {};
   var band, scale, 
@@ -167,6 +167,7 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid) {
 
   cs = this.coordinateSystem;
 
+  chr["chrIndex"] = chrIndex;
   chr["name"] = chromosomeName;
 
   if (this.config.fullChromosomeLabels === true) {
@@ -190,6 +191,10 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid) {
     bands[i]["offset"] = offset;
 
     offset += bands[i]["width"];
+
+    if (band.stain === "acen" && band.name[0] === "p") {
+      chr["pcenIndex"] = i;
+    }
 
   }
 
@@ -493,7 +498,7 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
       selectorsToShow.push("#" + chrModel.id + " .bsbsl-" + index);
     }
     
-    $.merge(this.bandsToShow, selectorsToShow);
+    this.bandsToShow = this.bandsToShow.concat(selectorsToShow);
 
   }
 
@@ -594,8 +599,8 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex, scale) {
 
   chrWidth = this.config.chrWidth;
   chrMargin = this.config.chrMargin * chrIndex;
-  
-  orientation = $(".chromosome:eq(" + (chrIndex - 1) + ")").attr("data-orientation");
+
+  orientation = chr.attr("data-orientation");
 
   if (typeof(scale) == "undefined") {
     scale = {x: 1, y: 1};
@@ -775,8 +780,8 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
       "q " + bump + " " +  chrWidth/2 + " 0 " + chrWidth
     )
   
-  var pcenIndex = $("#" + chrModel.id + " .p-cen").index();
-      pcen = chrModel.bands[pcenIndex];
+  var pcenIndex = chrModel["pcenIndex"],
+      pcen = chrModel.bands[pcenIndex],
       qcen = chrModel.bands[pcenIndex + 1];
 
   // Why does human chromosome 11 lack a centromeric p-arm band?
@@ -788,7 +793,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
   } else {
     // For telocentric centromeres, as in many mouse chromosomes
     pArmWidth = 5;
-    qArmStart = $("#" + chrModel.id + " .band")[0].getBBox().x;
+    qArmStart = document.querySelectorAll("#" + chrModel.id + " .band")[0].getBBox().x;
   }
 
   qArmWidth = chrModel.width - qArmStart;
@@ -859,7 +864,7 @@ Ideogram.prototype.initTransformChromosome = function(chr, chrIndex) {
 */
 Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 
-  var id, chr, chrIndex, chrMargin, chrWidth,
+  var id, chr, chrModel, chrIndex, chrMargin, chrWidth,
       chrHeight, ideoBox, ideoWidth, ideoHeight, scaleX, scaleY,
       initOrientation, currentOrientation,
       cx, cy, cy2,
@@ -868,24 +873,26 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
   id = chromosomeID;
 
   chr = d3.select("#" + id);
-  jqChr = $("#" + id);
 
-  jqOtherChrs = $("g[id!='" + id + "'].chromosome");
+  chrModel = ideo.chromosomes[ideo.config.taxid][id.split("-")[0].split("chr")[1]]
+
+  chrIndex = chrModel["chrIndex"];
+
+  otherChrs = d3.selectAll("g.chromosome").filter(function(d, i) { return this.id !== id; });
 
   initOrientation = ideo.config.orientation;
-  currentOrientation = jqChr.attr("data-orientation");
+  currentOrientation = chr.attr("data-orientation");  
 
-  chrIndex = jqChr.index() + 1;
   chrMargin = this.config.chrMargin * chrIndex;
   chrWidth = this.config.chrWidth;
 
-  ideoBox = $("#ideogram")[0].getBoundingClientRect();
+  ideoBox = d3.select("#ideogram")[0][0].getBoundingClientRect();
   ideoHeight = ideoBox.height;
   ideoWidth = ideoBox.width;
 
   if (initOrientation == "vertical") {
 
-    chrLength = jqChr[0].getBoundingClientRect().height;
+    chrLength = chr[0][0].getBoundingClientRect().height;
 
     scaleX = (ideoWidth/chrLength)*0.99;
     scaleY = 1.5;
@@ -916,7 +923,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 
   } else {
 
-    chrLength = jqChr[0].getBoundingClientRect().width;
+    chrLength = chr[0][0].getBoundingClientRect().width;
 
     scaleX = (ideoHeight/chrLength)*0.99;
     scaleY = 1.5;
@@ -951,7 +958,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
   if (currentOrientation != "vertical") {
 
     if (initOrientation == "horizontal") {
-      jqOtherChrs.hide();
+      otherChrs.style("display", "none");
 
     }
 
@@ -974,17 +981,17 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
         ideo.rotateChromosomeLabels(chr, chrIndex, "horizontal", scale); 
 
         if (initOrientation == "vertical") {
-          jqOtherChrs.show();
+          otherChrs.style("display", "");
         }
 
       })
 
   } else {
 
-    jqChr.attr("data-orientation", "");
+    chr.attr("data-orientation", "");
 
     if (initOrientation == "vertical") {
-      jqOtherChrs.hide();
+      otherChrs.style("display", "none");
     } 
 
     chr.selectAll(".annot>path")
@@ -1010,7 +1017,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
         ideo.rotateChromosomeLabels(chr, chrIndex, "", inverseScale);
 
         if (initOrientation == "horizontal") {
-          jqOtherChrs.show();
+          otherChrs.style("display", "");
         }
       
       })
@@ -1091,8 +1098,8 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
     r2.startPx = this.convertBpToOffset(r2.chr, r2.start);
     r2.stopPx = this.convertBpToOffset(r2.chr, r2.stop);
 
-    c1Box = $("#" + r1.chr.id + " path")[0].getBBox();
-    c2Box = $("#" + r2.chr.id + " path")[0].getBBox();
+    c1Box = document.querySelectorAll("#" + r1.chr.id + " path")[0].getBBox();
+    c2Box = document.querySelectorAll("#" + r2.chr.id + " path")[0].getBBox();
     
     chr1Plane = c1Box.y - 30
     chr2Plane = c2Box.y - 29;
@@ -1344,13 +1351,12 @@ Ideogram.prototype.init = function() {
   }
 
   if (this.config.annotationsPath) {
-    $.ajax({
-      url: ideo.config.annotationsPath,
-      dataType: "json",
-      success: function(response, textStatus, jqXHR) {
-        ideo.rawAnnots = response.annots;
+    d3.json(
+      ideo.config.annotationsPath, // URL
+      function(data) { // Callback
+        ideo.rawAnnots = data.annots;
       }
-    })
+    );
   }
 
   svgClass = "";
@@ -1384,35 +1390,38 @@ Ideogram.prototype.init = function() {
   for (i = 0; i < taxids.length; i++) {
     taxid = taxids[i];
 
-    if (taxid == "9606") {
-      bandDataFileName = "../../data/bands/ncbi/ideogram_9606_GCF_000001305.14_850_V1";
-    } else if (taxid == "10090") {
-      bandDataFileName = "../../data/bands/ncbi/ideogram_10090_GCF_000000055.19_NA_V2";
+    
+    bandDataFileNames = {
+      9606: "ideogram_9606_GCF_000001305.14_850_V1",
+      10090: "ideogram_10090_GCF_000000055.19_NA_V2"
     }
-  
-    if (typeof chrBands === "undefined") {
-      $.ajax({
-        //url: 'data/chr1_bands.tsv',
-        url: 'data/' + bandDataFileName,
-        beforeSend: function(jqXHR) {
-          // Ensures correct taxid is handled in 'success' callback
-          // Using 'taxid' instead of jqXHR['taxid'] gives the last
-          // taxid among the taxids, not the one for which data was 
-          // requested
-          jqXHR["taxid"] = taxid;
-        },
-        success: function(response, textStatus, jqXHR) {
 
-          ideo.bandData[jqXHR["taxid"]] = response;
+    if (typeof chrBands === "undefined") {
+
+      var xhrTaxid = taxid;
+
+      d3.xhr(
+        "../data/bands/ncbi/" + bandDataFileNames[taxid], // URL
+        function(data) {
+
+          // Kludge to get taxid.  
+          // Ensures correct taxid is processed in response callback; using 
+          // simply 'taxid' variable gives the last *requested* taxid, which
+          // fails when dealing with multiple taxa.
+          // D3.js provides no way to attach properties to request object as
+          // in jQuery's jqXHR in beforeSend.  For more elegant jQuery solution, see
+          // https://github.com/eweitz/ideogram/blob/18921001c22e3101353301a82c2535cc4ed41648/src/js/ideogram.js#L1397
+          var responseFileName = data.responseURL.split("/")[data.responseURL.split("/").length - 1];
+          var xhrTaxid = responseFileName.split("_")[1]
+
+          ideo.bandData[xhrTaxid] = data.response;
           numBandDataResponses += 1;
 
           if (numBandDataResponses == taxids.length) {
             processBandData();
           }
-
         }
-
-      });
+      )
     } else {
       ideo.bandData["9606"] = chrBands;
       processBandData();
@@ -1490,7 +1499,7 @@ Ideogram.prototype.init = function() {
         chrIndex += 1;
         
         chromosome = chrs[k];
-        chromosomeModel = ideo.getChromosomeModel(bands, chromosome, taxid);
+        chromosomeModel = ideo.getChromosomeModel(bands, chromosome, taxid, chrIndex);
         
         ideo.chromosomes[taxid][chromosome] = chromosomeModel;
         ideo.chromosomesArray.push(chromosomeModel);

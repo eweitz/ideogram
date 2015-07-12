@@ -5,7 +5,6 @@
   <title>Annotations, overlays | Ideogram</title>
   <link type="text/css" rel="stylesheet" href="../src/css/ideogram.css"/>
   <script type="text/javascript" src="../src/js/d3.min.js"></script>
-  <script type="text/javascript" src="../src/js/jquery.min.js"></script>
   <script type="text/javascript" src="../src/js/ideogram.js"></script>
 </head>
 <body>
@@ -14,6 +13,13 @@
 
   <script type="text/javascript">
 
+  function onIdeogramLoad() {
+
+    d3.selectAll("g").on("click", function() {
+      ideogram.rotateAndToggleDisplay(this.id);
+    });
+
+  }
   var config = {
     taxid: 9606,
     chromosomes: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y"],
@@ -23,15 +29,11 @@
     showChromosomeLabels: true,
     annotationsPath: "/ideogram/data/annotations/1000_virtual_snvs.json",
     annotationsLayout: "overlay",
-    orientation: "horizontal"
+    orientation: "horizontal",
+    onLoad: onIdeogramLoad
   };
 
   var ideogram = new Ideogram(config);
-
-  $(document).on("click", "g", function() {
-    var chrID = $(this).attr("id");
-    ideogram.rotateAndToggleDisplay(chrID);
-  });
 
   </script>
 </body>
