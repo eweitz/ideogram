@@ -1398,23 +1398,16 @@ Ideogram.prototype.init = function() {
 
     if (typeof chrBands === "undefined") {
 
-      var xhrTaxid = taxid;
-
-      d3.xhr(
-        "../data/bands/ncbi/" + bandDataFileNames[taxid], // URL
-        function(data) {
-
-          // Kludge to get taxid.  
+      d3.xhr("../data/bands/ncbi/" + bandDataFileNames[taxid])
+        .on("beforesend", function(data) {
           // Ensures correct taxid is processed in response callback; using 
           // simply 'taxid' variable gives the last *requested* taxid, which
           // fails when dealing with multiple taxa.
-          // D3.js provides no way to attach properties to request object as
-          // in jQuery's jqXHR in beforeSend.  For more elegant jQuery solution, see
-          // https://github.com/eweitz/ideogram/blob/18921001c22e3101353301a82c2535cc4ed41648/src/js/ideogram.js#L1397
-          var responseFileName = data.responseURL.split("/")[data.responseURL.split("/").length - 1];
-          var xhrTaxid = responseFileName.split("_")[1]
+          data.taxid = taxid;
+        })
+        .get(function(error, data) {
 
-          ideo.bandData[xhrTaxid] = data.response;
+          ideo.bandData[data.taxid] = data.response;
           numBandDataResponses += 1;
 
           if (numBandDataResponses == taxids.length) {
