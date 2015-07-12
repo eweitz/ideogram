@@ -5,9 +5,8 @@
   <title>Human | Ideogram</title>
   <link type="text/css" rel="stylesheet" href="../src/css/ideogram.css"/>
   <script type="text/javascript" src="../src/js/d3.min.js"></script>
-  <script type="text/javascript" src="../src/js/jquery.min.js"></script>
   <script type="text/javascript" src="../src/js/ideogram.js"></script>
-  <script type="text/javascript" src="../data/native/ideogram_9606_GCF_000001405.26_850.js"></script>
+  <script type="text/javascript" src="../data/bands/native/ideogram_9606_GCF_000001405.26_550.js"></script>
 
 </head>
 <body>
@@ -15,6 +14,14 @@
   <a href=".">Back to overview</a>
 
   <script type="text/javascript">
+
+  function onIdeogramLoad() {
+
+    d3.selectAll("g").on("click", function() {
+      ideogram.rotateAndToggleDisplay(this.id);
+    });
+
+  }
 
   var config = {
     taxid: 9606,
@@ -24,15 +31,11 @@
     chrMargin: 10,
     showBandLabels: true,
     showChromosomeLabels: true,
-    orientation: "vertical"
+    orientation: "vertical",
+    onLoad: onIdeogramLoad
   };
 
   var ideogram = new Ideogram(config);
-
-  $(document).on("click", "g", function() {
-    var chrID = $(this).attr("id");
-    ideogram.rotateAndToggleDisplay(chrID);
-  });
 
   </script>
 </body>

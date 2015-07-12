@@ -5,7 +5,6 @@
   <title>Homology, interspecies | Ideogram</title>
   <link type="text/css" rel="stylesheet" href="../src/css/ideogram.css"/>
   <script type="text/javascript" src="../src/js/d3.min.js"></script>
-  <script type="text/javascript" src="../src/js/jquery.min.js"></script>
   <script type="text/javascript" src="../src/js/ideogram.js"></script>
 </head>
 <body>
@@ -64,11 +63,6 @@
   };
 
   var ideogram = new Ideogram(config);
-
-  $(document).on("click", "g", function() {
-    var chrID = $(this).attr("id");
-    ideogram.rotateAndToggleDisplay(chrID);
-  });
 
   </script>
 </body>
