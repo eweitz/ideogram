@@ -1282,7 +1282,8 @@ Ideogram.prototype.getHistogramBars = function(annots) {
   var i, j, chrs, chr, 
       chrModels, chrPxStop, px,
       chrAnnots, annot, start, stop,
-      bars, bar, barPx, nextBarPx, barIndex, barWidth
+      bars, bar, barPx, nextBarPx, barIndex, barWidth,
+      maxAnnotsPerBar, barHeight,
       ideo = this;
 
   bars = [];
@@ -1296,12 +1297,12 @@ Ideogram.prototype.getHistogramBars = function(annots) {
     chrIndex = chrModel.chrIndex
     lastBand = chrModel["bands"][chrModel["bands"].length - 1]
     chrPxStop = lastBand.px.stop;
-    numBins = Math.round(chrPxStop / barWidth);
+    numBins = Math.floor(chrPxStop / barWidth);
     bar = {"chr": chr, "annots": []}
     for (i = 0; i < numBins; i++) {
       px = i*barWidth;
       bp = ideo.convertPxToBp(chrModel, px);
-      bar["annots"].push({"bp": bp, "px": px, "count": 0, "chrIndex": chrIndex});
+      bar["annots"].push({"bp": bp, "px": px, "count": 0, "chrIndex": chrIndex, "color": "#F00"});
     }
     bars.push(bar);
   }
@@ -1323,6 +1324,29 @@ Ideogram.prototype.getHistogramBars = function(annots) {
           break;
         }
       }
+    }
+  }
+
+  maxAnnotsPerBar = 0;
+  for (i = 0; i < bars.length; i++) {
+    annots = bars[i]["annots"];
+    for (j = 0; j < annots.length; j++) {
+      barCount = annots[j]["count"];
+      if (barCount > maxAnnotsPerBar) {
+        maxAnnotsPerBar = barCount;
+      }
+    }
+  }
+
+  // Set each bar's height to be proportional to 
+  // the height of the bar with the most annotations
+  for (i = 0; i < bars.length; i++) {
+    annots = bars[i]["annots"];
+    for (j = 0; j < annots.length; j++) {
+      barCount = annots[j]["count"];
+      height = (barCount/maxAnnotsPerBar) * ideo.config.chrMargin - 1;
+      //console.log(height)
+      bars[i]["annots"][j]["height"] = height;
     }
   }
 
@@ -1416,10 +1440,12 @@ Ideogram.prototype.drawAnnots = function(annots) {
         .attr("class", "annot")
         .attr("points", function(d) { 
 
+          //console.log(d.height)
+
           x1 = d.px + ideo.bump;
           x2 = d.px + ideo.config.barWidth + ideo.bump;
           y1 = (d.chrIndex) * (chrMargin) + chrWidth;
-          y2 = (d.chrIndex) * (chrMargin) + chrWidth + d.count/10;
+          y2 = (d.chrIndex) * (chrMargin) + chrWidth + d.height;
           
           return (
             x1 + "," + y1 + " " +
