@@ -1409,8 +1409,8 @@ Ideogram.prototype.drawAnnots = function(annots) {
         .attr("class", "annot")
         .attr("points", function(d) { 
 
-          x1 = d.px;
-          x2 = d.px + 10;
+          x1 = d.px + ideo.bump;
+          x2 = d.px + 10 + ideo.bump;
           y1 = (d.chrIndex) * (chrMargin) + chrWidth;
           y2 = (d.chrIndex) * (chrMargin) + chrWidth + d.count/10;
           
