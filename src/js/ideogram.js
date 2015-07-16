@@ -135,6 +135,11 @@ Ideogram.prototype.getBands = function(content, chromosomeName, taxid) {
         "start": parseInt(columns[3], 10),
         "stop": parseInt(columns[4], 10)
       },
+      "px": {
+        "start": -1,
+        "stop": -1,
+        "width": -1
+      },
       "name": columns[1] + columns[2],
       "stain": stain,
       "taxid": taxid
@@ -158,7 +163,7 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid, c
 
   var chr = {};
   var band, scale, 
-      width, offset,
+      width,
       startType, stopType,
       chrHeight = this.config.chrHeight,
       maxLength = this.maxLength,
@@ -180,17 +185,16 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid, c
   chr["length"] = bands[bands.length - 1][cs].stop;
   chrLength = chr["length"]
 
-  offset = 0;
+  pxStop = 0;
 
   for (var i = 0; i < bands.length; i++) {
     band = bands[i];
 
     width = chrHeight * chr["length"]/maxLength[cs] * (band[cs].stop - band[cs].start)/chrLength;
 
-    bands[i]["width"] = width;
-    bands[i]["offset"] = offset;
+    bands[i]["px"] = {"start": pxStop, "stop": pxStop + width, "width": width};
 
-    offset += bands[i]["width"];
+    pxStop = bands[i].px.stop;
 
     if (band.stain === "acen" && band.name[0] === "p") {
       chr["pcenIndex"] = i;
@@ -198,7 +202,7 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid, c
 
   }
 
-  chr["width"] = offset;
+  chr["width"] = pxStop;
 
   chr["scale"] = {}
 
@@ -405,7 +409,7 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
 
           var x, y;
 
-          x = -8 + d.offset + d.width/2;
+          x = -8 + d.px.start + d.px.width/2;
 
           textOffsets[chrModel.id].push(x + 13);
           y = chrMargin - 10;
@@ -421,7 +425,7 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
       .append("g")
       .attr("class", function(d, i) { return "bandLabelStalk bsbsl-" + i  })
       .attr("transform", function(d) {
-        var x = d.offset + d.width/2;
+        var x = d.px.start + d.px.width/2;
         return "translate(" + x + ", " + lineY1 + ")";
       })
         .append("line")
@@ -617,7 +621,7 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex, scale) {
       .attr("transform", function(d) {
         var x, y;
         x = (8 - chrMargin) - 26;
-        y = 2 + d.offset + d.width/2;
+        y = 2 + d.px.start + d.px.width/2;
         return "rotate(-90)translate(" + x + "," + y + ")";
       })
       .selectAll("text")
@@ -627,7 +631,7 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex, scale) {
       .attr("transform", function(d) {
         var x, y;
         x = 8 - chrMargin;
-        y = 2 + d.offset + d.width/2;
+        y = 2 + d.px.start + d.px.width/2;
         return "rotate(-90)translate(" + x + "," + y + ")";
       })
       .selectAll("text")
@@ -636,7 +640,7 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex, scale) {
     bandLabels
       .attr("transform", function(d) {
         var x, y;
-        x = -8*scale.x + d.offset + d.width/2;
+        x = -8*scale.x + d.px.start + d.px.width/2;
         y = chrMargin - 10;
         return "translate(" + x + "," + y + ")";
       })
@@ -700,8 +704,8 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
         return cls;
       })
       .attr("d", function(d, i) {
-        var x = d.width,
-            left = d.offset;
+        var x = d.px.width,
+            left = d.px.start;
 
         if (d.stain == "acen") {
           // Pericentromeric bands get curved 
@@ -788,8 +792,8 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
   // Answer: because of a bug in the data.  Hack removed; won't work
   // for human 550 resolution until data is fixed.
   if (pcenIndex > 0) {
-    pArmWidth = pcen.offset;
-    qArmStart = qcen.offset + qcen.width;
+    pArmWidth = pcen.px.start;
+    qArmStart = qcen.px.stop;
   } else {
     // For telocentric centromeres, as in many mouse chromosomes
     pArmWidth = 5;
@@ -1032,9 +1036,9 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 * Converts base pair coordinates to pixel offsets.
 * Bp-to-pixel scales differ among cytogenetic bands.
 */
-Ideogram.prototype.convertBpToOffset = function(chr, bp) {
+Ideogram.prototype.convertBpToPx = function(chr, bp) {
 
-  var i, band, bpToIscnScale, iscn, offset;
+  var i, band, bpToIscnScale, iscn, px;
 
   for (i = 0; i < chr.bands.length; i++) {
     band = chr.bands[i];
@@ -1043,9 +1047,9 @@ Ideogram.prototype.convertBpToOffset = function(chr, bp) {
       bpToIscnScale = (band.iscn.stop - band.iscn.start)/(band.bp.stop - band.bp.start);
       iscn = band.iscn.start + (bp - band.bp.start) * bpToIscnScale;
 
-      offset = 30 + band.offset + (band.width * (iscn - band.iscn.start)/(band.iscn.stop - band.iscn.start))
+      px = 30 + band.px.start + (band.px.width * (iscn - band.iscn.start)/(band.iscn.stop - band.iscn.start))
  
-      return offset;
+      return px;
     }
   }
 
@@ -1062,23 +1066,15 @@ Ideogram.prototype.convertBpToOffset = function(chr, bp) {
 */
 Ideogram.prototype.convertPxToBp = function(chr, px) {
 
-  var i, band, prevBand, bpToIscnScale, iscn, offset;
+  var i, band, prevBand, bpToIscnScale, iscn;
 
   for (i = 0; i < chr.bands.length; i++) {
     band = chr.bands[i];
-    band.px = {
-      "start": band.offset,
-      "stop":  band.offset + band.width
-    }
-    //if (bp >= band.bp.start && bp <= band.bp.stop) {
     if (px >= band.px.start && px <= band.px.stop) {
       
-      //bpToIscnScale = (band.iscn.stop - band.iscn.start)/(band.bp.stop - band.bp.start);
       pxToIscnScale = (band.iscn.stop - band.iscn.start)/(band.px.stop - band.px.start);
-      //iscn = band.iscn.start + (bp - band.bp.start) * bpToIscnScale;
       iscn = band.iscn.start + (px - band.px.start) * pxToIscnScale;
 
-      //offset = 30 + band.offset + (band.width * (iscn - band.iscn.start)/(band.iscn.stop - band.iscn.start))
       bp = band.bp.start + ((band.bp.stop - band.bp.start) * (iscn - band.iscn.start)/(band.iscn.stop - band.iscn.start))
 
       return Math.round(bp);
@@ -1131,10 +1127,10 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
       opacity = regions.opacity;
     }
 
-    r1.startPx = this.convertBpToOffset(r1.chr, r1.start);
-    r1.stopPx = this.convertBpToOffset(r1.chr, r1.stop);
-    r2.startPx = this.convertBpToOffset(r2.chr, r2.start);
-    r2.stopPx = this.convertBpToOffset(r2.chr, r2.stop);
+    r1.startPx = this.convertBpToPx(r1.chr, r1.start);
+    r1.stopPx = this.convertBpToPx(r1.chr, r1.stop);
+    r2.startPx = this.convertBpToPx(r2.chr, r2.start);
+    r2.stopPx = this.convertBpToPx(r2.chr, r2.stop);
 
     c1Box = document.querySelectorAll("#" + r1.chr.id + " path")[0].getBBox();
     c2Box = document.querySelectorAll("#" + r2.chr.id + " path")[0].getBBox();
@@ -1218,7 +1214,7 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
   var i, j, annot, annots, rawAnnot,
       chr, start, stop,
       chrModel, 
-      startOffset, stopOffset, offset,
+      startPx, stopPx, px,
       trackIndex, color,
       ideo = this;
 
@@ -1239,10 +1235,10 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
 
       chrModel = ideo.chromosomes["9606"][chr]
 
-      startOffset = ideo.convertBpToOffset(chrModel, start);
-      stopOffset = ideo.convertBpToOffset(chrModel, stop);
+      startPx = ideo.convertBpToPx(chrModel, start);
+      stopPx = ideo.convertBpToPx(chrModel, stop);
 
-      offset = Math.round((startOffset + stopOffset)/2) - 28;
+      px = Math.round((startPx + stopPx)/2) - 28;
 
       // TODO: Make color configurable
       color = "#F00";
@@ -1258,7 +1254,7 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
         chrIndex: i,
         start: start,
         stop: stop,
-        offset: offset,
+        px: px,
         color: color,
         trackIndex: trackIndex
       }
@@ -1279,29 +1275,26 @@ Ideogram.prototype.getHistogramBars = function(annots) {
   var t0 = new Date().getTime();
 
   var i, j, chrs, chr, 
-      chrModels, chrStopOffsets, chrStopOffset, chrStopBp, offset,
-      chrAnnots, annot, start, stop, startOffset,
-      bars, bar, prevBarStopOffset, barIndex, 
+      chrModels, chrPxStop, px,
+      chrAnnots, annot, start, stop,
+      bars, bar, barPx, nextBarPx, barIndex, 
       ideo = this;
 
   bars = [];
 
   chrModels = ideo.chromosomes[ideo.config.taxid];
-
-  // TODO: Replace 'offset' and 'width' with 'px.start' and 'px.stop',
-  // for consistency with bp and iscn coordinates
   
   for (chr in chrModels) {
     chrModel = chrModels[chr];
     chrIndex = chrModel.chrIndex
     lastBand = chrModel["bands"][chrModel["bands"].length - 1]
-    chrPxStop = lastBand.offset + lastBand.width;
+    chrPxStop = lastBand.px.stop;
     numBins = Math.floor(chrPxStop / 10);
     bar = {"chr": chr, "annots": []}
     for (i = 0; i < numBins; i++) {
       px = i*10;
       bp = ideo.convertPxToBp(chrModel, px);
-      bar["annots"].push({"bp": bp, "offset": px, "count": 0, "chrIndex": chrIndex});
+      bar["annots"].push({"bp": bp, "px": px, "count": 0, "chrIndex": chrIndex});
     }
     bars.push(bar);
   }
@@ -1314,11 +1307,11 @@ Ideogram.prototype.getHistogramBars = function(annots) {
     barAnnots = bars[chrIndex - 1]["annots"];
     for (i = 0; i < chrAnnots.length; i++) {
       annot = chrAnnots[i];
-      pxStart = annot.offset;
+      px = annot.px;
       for (j = 0; j < barAnnots.length - 1; j++) {
-        barPx = barAnnots[j].offset;
-        nextBarPx = barAnnots[j + 1].offset;
-        if (pxStart > barPx && pxStart < nextBarPx) {
+        barPx = barAnnots[j].px;
+        nextBarPx = barAnnots[j + 1].px;
+        if (px > barPx && px < nextBarPx) {
           bars[chrIndex - 1]["annots"][j]["count"] += 1;
           break;
         }
@@ -1380,7 +1373,7 @@ Ideogram.prototype.drawAnnots = function(annots) {
       .attr("class", "annot")
       .attr("transform", function(d) {
         var y = (d.chrIndex + 1) * chrMargin + chrWidth + (d.trackIndex * annotHeight * 2);
-        return "translate(" + d.offset + "," + y + ")";
+        return "translate(" + d.px + "," + y + ")";
       })
       .append("path")
       .attr("d", "m0,0" + triangle)
@@ -1394,8 +1387,8 @@ Ideogram.prototype.drawAnnots = function(annots) {
         .attr("class", "annot")
         .attr("points", function(d) { 
 
-          x1 = d.offset - 0.5;
-          x2 = d.offset + 0.5;
+          x1 = d.px - 0.5;
+          x2 = d.px + 0.5;
           y1 = (d.chrIndex + 1) * (chrMargin) + chrWidth;
           y2 = (d.chrIndex + 1) * (chrMargin)
           
@@ -1416,8 +1409,8 @@ Ideogram.prototype.drawAnnots = function(annots) {
         .attr("class", "annot")
         .attr("points", function(d) { 
 
-          x1 = d.offset;
-          x2 = d.offset + 10;
+          x1 = d.px;
+          x2 = d.px + 10;
           y1 = (d.chrIndex) * (chrMargin) + chrWidth;
           y2 = (d.chrIndex) * (chrMargin) + chrWidth + d.count/10;
           
