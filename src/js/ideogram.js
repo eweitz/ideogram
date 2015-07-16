@@ -27,6 +27,11 @@ var Ideogram = function(config) {
       this.config.numAnnotTracks = 1;
     }
     this.config.annotTracksHeight = this.config.annotationHeight * this.config.numAnnotTracks;
+
+    if (typeof this.config.barWidth === "undefined") {
+      this.config.barWidth = 10;
+    }
+
   } else {
     this.config.annotTracksHeight = 0;
   }
@@ -1277,10 +1282,12 @@ Ideogram.prototype.getHistogramBars = function(annots) {
   var i, j, chrs, chr, 
       chrModels, chrPxStop, px,
       chrAnnots, annot, start, stop,
-      bars, bar, barPx, nextBarPx, barIndex, 
+      bars, bar, barPx, nextBarPx, barIndex, barWidth
       ideo = this;
 
   bars = [];
+
+  barWidth = ideo.config.barWidth;
 
   chrModels = ideo.chromosomes[ideo.config.taxid];
   
@@ -1289,10 +1296,10 @@ Ideogram.prototype.getHistogramBars = function(annots) {
     chrIndex = chrModel.chrIndex
     lastBand = chrModel["bands"][chrModel["bands"].length - 1]
     chrPxStop = lastBand.px.stop;
-    numBins = Math.floor(chrPxStop / 10);
+    numBins = Math.round(chrPxStop / barWidth);
     bar = {"chr": chr, "annots": []}
     for (i = 0; i < numBins; i++) {
-      px = i*10;
+      px = i*barWidth;
       bp = ideo.convertPxToBp(chrModel, px);
       bar["annots"].push({"bp": bp, "px": px, "count": 0, "chrIndex": chrIndex});
     }
@@ -1410,7 +1417,7 @@ Ideogram.prototype.drawAnnots = function(annots) {
         .attr("points", function(d) { 
 
           x1 = d.px + ideo.bump;
-          x2 = d.px + 10 + ideo.bump;
+          x2 = d.px + ideo.config.barWidth + ideo.bump;
           y1 = (d.chrIndex) * (chrMargin) + chrWidth;
           y2 = (d.chrIndex) * (chrMargin) + chrWidth + d.count/10;
           
