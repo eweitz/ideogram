@@ -1297,7 +1297,7 @@ Ideogram.prototype.getHistogramBars = function(annots) {
     chrIndex = chrModel.chrIndex
     lastBand = chrModel["bands"][chrModel["bands"].length - 1]
     chrPxStop = lastBand.px.stop;
-    numBins = Math.floor(chrPxStop / barWidth);
+    numBins = Math.round(chrPxStop / barWidth);
     bar = {"chr": chr, "annots": []}
     for (i = 0; i < numBins; i++) {
       px = i*barWidth;
@@ -1447,6 +1447,12 @@ Ideogram.prototype.drawAnnots = function(annots) {
           y1 = (d.chrIndex) * (chrMargin) + chrWidth;
           y2 = (d.chrIndex) * (chrMargin) + chrWidth + d.height;
           
+          var thisChrWidth = ideo.chromosomesArray[d.chrIndex - 1].width;
+
+          if (x2 > thisChrWidth) {
+            x2 = thisChrWidth;
+          }
+
           return (
             x1 + "," + y1 + " " +
             x2 + "," + y1 + " " +
