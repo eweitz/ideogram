@@ -27,6 +27,11 @@ var Ideogram = function(config) {
       this.config.numAnnotTracks = 1;
     }
     this.config.annotTracksHeight = this.config.annotationHeight * this.config.numAnnotTracks;
+
+    if (typeof this.config.barWidth === "undefined") {
+      this.config.barWidth = 10;
+    }
+
   } else {
     this.config.annotTracksHeight = 0;
   }
@@ -135,6 +140,11 @@ Ideogram.prototype.getBands = function(content, chromosomeName, taxid) {
         "start": parseInt(columns[3], 10),
         "stop": parseInt(columns[4], 10)
       },
+      "px": {
+        "start": -1,
+        "stop": -1,
+        "width": -1
+      },
       "name": columns[1] + columns[2],
       "stain": stain,
       "taxid": taxid
@@ -158,7 +168,7 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid, c
 
   var chr = {};
   var band, scale, 
-      width, offset,
+      width,
       startType, stopType,
       chrHeight = this.config.chrHeight,
       maxLength = this.maxLength,
@@ -180,17 +190,16 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid, c
   chr["length"] = bands[bands.length - 1][cs].stop;
   chrLength = chr["length"]
 
-  offset = 0;
+  pxStop = 0;
 
   for (var i = 0; i < bands.length; i++) {
     band = bands[i];
 
     width = chrHeight * chr["length"]/maxLength[cs] * (band[cs].stop - band[cs].start)/chrLength;
 
-    bands[i]["width"] = width;
-    bands[i]["offset"] = offset;
+    bands[i]["px"] = {"start": pxStop, "stop": pxStop + width, "width": width};
 
-    offset += bands[i]["width"];
+    pxStop = bands[i].px.stop;
 
     if (band.stain === "acen" && band.name[0] === "p") {
       chr["pcenIndex"] = i;
@@ -198,7 +207,7 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid, c
 
   }
 
-  chr["width"] = offset;
+  chr["width"] = pxStop;
 
   chr["scale"] = {}
 
@@ -405,7 +414,7 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
 
           var x, y;
 
-          x = -8 + d.offset + d.width/2;
+          x = -8 + d.px.start + d.px.width/2;
 
           textOffsets[chrModel.id].push(x + 13);
           y = chrMargin - 10;
@@ -421,7 +430,7 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
       .append("g")
       .attr("class", function(d, i) { return "bandLabelStalk bsbsl-" + i  })
       .attr("transform", function(d) {
-        var x = d.offset + d.width/2;
+        var x = d.px.start + d.px.width/2;
         return "translate(" + x + ", " + lineY1 + ")";
       })
         .append("line")
@@ -617,7 +626,7 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex, scale) {
       .attr("transform", function(d) {
         var x, y;
         x = (8 - chrMargin) - 26;
-        y = 2 + d.offset + d.width/2;
+        y = 2 + d.px.start + d.px.width/2;
         return "rotate(-90)translate(" + x + "," + y + ")";
       })
       .selectAll("text")
@@ -627,7 +636,7 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex, scale) {
       .attr("transform", function(d) {
         var x, y;
         x = 8 - chrMargin;
-        y = 2 + d.offset + d.width/2;
+        y = 2 + d.px.start + d.px.width/2;
         return "rotate(-90)translate(" + x + "," + y + ")";
       })
       .selectAll("text")
@@ -636,7 +645,7 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex, scale) {
     bandLabels
       .attr("transform", function(d) {
         var x, y;
-        x = -8*scale.x + d.offset + d.width/2;
+        x = -8*scale.x + d.px.start + d.px.width/2;
         y = chrMargin - 10;
         return "translate(" + x + "," + y + ")";
       })
@@ -700,8 +709,8 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
         return cls;
       })
       .attr("d", function(d, i) {
-        var x = d.width,
-            left = d.offset;
+        var x = d.px.width,
+            left = d.px.start;
 
         if (d.stain == "acen") {
           // Pericentromeric bands get curved 
@@ -788,8 +797,8 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
   // Answer: because of a bug in the data.  Hack removed; won't work
   // for human 550 resolution until data is fixed.
   if (pcenIndex > 0) {
-    pArmWidth = pcen.offset;
-    qArmStart = qcen.offset + qcen.width;
+    pArmWidth = pcen.px.start;
+    qArmStart = qcen.px.stop;
   } else {
     // For telocentric centromeres, as in many mouse chromosomes
     pArmWidth = 5;
@@ -1026,13 +1035,15 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
   }
 }
 
+
+
 /**
 * Converts base pair coordinates to pixel offsets.
 * Bp-to-pixel scales differ among cytogenetic bands.
 */
-Ideogram.prototype.convertBpToOffset = function(chr, bp) {
+Ideogram.prototype.convertBpToPx = function(chr, bp) {
 
-  var i, band, bpToIscnScale, iscn, offset;
+  var i, band, bpToIscnScale, iscn, px;
 
   for (i = 0; i < chr.bands.length; i++) {
     band = chr.bands[i];
@@ -1041,15 +1052,43 @@ Ideogram.prototype.convertBpToOffset = function(chr, bp) {
       bpToIscnScale = (band.iscn.stop - band.iscn.start)/(band.bp.stop - band.bp.start);
       iscn = band.iscn.start + (bp - band.bp.start) * bpToIscnScale;
 
-      offset = 30 + band.offset + (band.width * (iscn - band.iscn.start)/(band.iscn.stop - band.iscn.start))
+      px = 30 + band.px.start + (band.px.width * (iscn - band.iscn.start)/(band.iscn.stop - band.iscn.start))
  
-      return offset;
+      return px;
     }
   }
 
   throw new Error(
     "Base pair out of range.  " + 
     "bp: " + bp + "; length of chr" + chr.name + ": " + band.bp.stop
+  );
+
+}
+
+/**
+* Converts base pair coordinates to pixel offsets.
+* Bp-to-pixel scales differ among cytogenetic bands.
+*/
+Ideogram.prototype.convertPxToBp = function(chr, px) {
+
+  var i, band, prevBand, bpToIscnScale, iscn;
+
+  for (i = 0; i < chr.bands.length; i++) {
+    band = chr.bands[i];
+    if (px >= band.px.start && px <= band.px.stop) {
+      
+      pxToIscnScale = (band.iscn.stop - band.iscn.start)/(band.px.stop - band.px.start);
+      iscn = band.iscn.start + (px - band.px.start) * pxToIscnScale;
+
+      bp = band.bp.start + ((band.bp.stop - band.bp.start) * (iscn - band.iscn.start)/(band.iscn.stop - band.iscn.start))
+
+      return Math.round(bp);
+    }
+  }
+
+  throw new Error(
+    "Pixel out of range.  " + 
+    "px: " + bp + "; length of chr" + chr.name + ": " + band.px.stop
   );
 
 }
@@ -1093,10 +1132,10 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
       opacity = regions.opacity;
     }
 
-    r1.startPx = this.convertBpToOffset(r1.chr, r1.start);
-    r1.stopPx = this.convertBpToOffset(r1.chr, r1.stop);
-    r2.startPx = this.convertBpToOffset(r2.chr, r2.start);
-    r2.stopPx = this.convertBpToOffset(r2.chr, r2.stop);
+    r1.startPx = this.convertBpToPx(r1.chr, r1.start);
+    r1.stopPx = this.convertBpToPx(r1.chr, r1.stop);
+    r2.startPx = this.convertBpToPx(r2.chr, r2.start);
+    r2.stopPx = this.convertBpToPx(r2.chr, r2.stop);
 
     c1Box = document.querySelectorAll("#" + r1.chr.id + " path")[0].getBBox();
     c2Box = document.querySelectorAll("#" + r2.chr.id + " path")[0].getBBox();
@@ -1180,7 +1219,7 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
   var i, j, annot, annots, rawAnnot,
       chr, start, stop,
       chrModel, 
-      startOffset, stopOffset, offset,
+      startPx, stopPx, px,
       trackIndex, color,
       ideo = this;
 
@@ -1201,10 +1240,10 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
 
       chrModel = ideo.chromosomes["9606"][chr]
 
-      startOffset = ideo.convertBpToOffset(chrModel, start);
-      stopOffset = ideo.convertBpToOffset(chrModel, stop);
+      startPx = ideo.convertBpToPx(chrModel, start);
+      stopPx = ideo.convertBpToPx(chrModel, stop);
 
-      offset = Math.round((startOffset + stopOffset)/2) - 28;
+      px = Math.round((startPx + stopPx)/2) - 28;
 
       // TODO: Make color configurable
       color = "#F00";
@@ -1220,7 +1259,7 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
         chrIndex: i,
         start: start,
         stop: stop,
-        offset: offset,
+        px: px,
         color: color,
         trackIndex: trackIndex
       }
@@ -1230,6 +1269,91 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
   }
 
   return annots;
+
+}
+
+/*
+* Can be used for bar chart or sparkline
+*/
+Ideogram.prototype.getHistogramBars = function(annots) {
+
+  var t0 = new Date().getTime();
+
+  var i, j, chrs, chr, 
+      chrModels, chrPxStop, px,
+      chrAnnots, annot, start, stop,
+      bars, bar, barPx, nextBarPx, barIndex, barWidth,
+      maxAnnotsPerBar, barHeight,
+      ideo = this;
+
+  bars = [];
+
+  barWidth = ideo.config.barWidth;
+
+  chrModels = ideo.chromosomes[ideo.config.taxid];
+  
+  for (chr in chrModels) {
+    chrModel = chrModels[chr];
+    chrIndex = chrModel.chrIndex
+    lastBand = chrModel["bands"][chrModel["bands"].length - 1]
+    chrPxStop = lastBand.px.stop;
+    numBins = Math.round(chrPxStop / barWidth);
+    bar = {"chr": chr, "annots": []}
+    for (i = 0; i < numBins; i++) {
+      px = i*barWidth;
+      bp = ideo.convertPxToBp(chrModel, px);
+      bar["annots"].push({"bp": bp, "px": px, "count": 0, "chrIndex": chrIndex, "color": "#F00"});
+    }
+    bars.push(bar);
+  }
+
+  for (chr in annots) {
+    chrAnnots = annots[chr].annots;
+    chrName = annots[chr].chr;
+    chrModel = chrModels[chrName];
+    chrIndex = chrModel.chrIndex;
+    barAnnots = bars[chrIndex - 1]["annots"];
+    for (i = 0; i < chrAnnots.length; i++) {
+      annot = chrAnnots[i];
+      px = annot.px;
+      for (j = 0; j < barAnnots.length - 1; j++) {
+        barPx = barAnnots[j].px;
+        nextBarPx = barAnnots[j + 1].px;
+        if (px > barPx && px < nextBarPx) {
+          bars[chrIndex - 1]["annots"][j]["count"] += 1;
+          break;
+        }
+      }
+    }
+  }
+
+  maxAnnotsPerBar = 0;
+  for (i = 0; i < bars.length; i++) {
+    annots = bars[i]["annots"];
+    for (j = 0; j < annots.length; j++) {
+      barCount = annots[j]["count"];
+      if (barCount > maxAnnotsPerBar) {
+        maxAnnotsPerBar = barCount;
+      }
+    }
+  }
+
+  // Set each bar's height to be proportional to 
+  // the height of the bar with the most annotations
+  for (i = 0; i < bars.length; i++) {
+    annots = bars[i]["annots"];
+    for (j = 0; j < annots.length; j++) {
+      barCount = annots[j]["count"];
+      height = (barCount/maxAnnotsPerBar) * ideo.config.chrMargin - 1;
+      //console.log(height)
+      bars[i]["annots"][j]["height"] = height;
+    }
+  }
+
+  var t1 = new Date().getTime();
+  console.log("Time spent in getHistogramBars: " + (t1 - t0) + " ms");
+
+  return bars;
 
 }
 
@@ -1244,7 +1368,8 @@ Ideogram.prototype.drawAnnots = function(annots) {
 
   var chrMargin, chrWidth, layout,
       annotHeight, triangle, chrAnnot, 
-      x1, x2, y1, y2;
+      x1, x2, y1, y2,
+      ideo = this;
 
   chrMargin = this.config.chrMargin;
   chrWidth = this.config.chrWidth;
@@ -1254,13 +1379,21 @@ Ideogram.prototype.drawAnnots = function(annots) {
     layout = this.config.annotationsLayout;
   } 
 
+  if (layout === "histogram") {
+    annots = ideo.getHistogramBars(annots)
+  }
+
   annotHeight = this.config.annotationHeight;
   triangle = 'l -' + annotHeight + ' ' + (2*annotHeight) + ' l ' + (2*annotHeight) + ' 0 z';
 
   chrAnnot = d3.selectAll(".chromosome")
     .data(annots)
       .selectAll("path.annot")
-      .data(function(d) { return d["annots"]})
+      .data(function(d) { 
+        //console.log("d");
+        //console.log(d)
+        return d["annots"]}
+      )
       .enter()
 
   if (layout === "tracks") {
@@ -1271,22 +1404,22 @@ Ideogram.prototype.drawAnnots = function(annots) {
       .attr("class", "annot")
       .attr("transform", function(d) {
         var y = (d.chrIndex + 1) * chrMargin + chrWidth + (d.trackIndex * annotHeight * 2);
-        return "translate(" + d.offset + "," + y + ")";
+        return "translate(" + d.px + "," + y + ")";
       })
       .append("path")
       .attr("d", "m0,0" + triangle)
       .attr("fill", function(d) { return d.color })
 
-    } else {
+    } else if (layout === "overlay") {
+      // Overlaid annotations appear directly on chromosomes
 
-      // Overlaid annotations
       chrAnnot.append("polygon")
         .attr("id", function(d, i) { return d.id; })
         .attr("class", "annot")
         .attr("points", function(d) { 
 
-          x1 = d.offset - 0.5;
-          x2 = d.offset + 0.5;
+          x1 = d.px - 0.5;
+          x2 = d.px + 0.5;
           y1 = (d.chrIndex + 1) * (chrMargin) + chrWidth;
           y2 = (d.chrIndex + 1) * (chrMargin)
           
@@ -1299,7 +1432,39 @@ Ideogram.prototype.drawAnnots = function(annots) {
 
         })
         .attr("fill", function(d) { return d.color })
+    
+    } else if (layout === "histogram") {
+
+      chrAnnot.append("polygon")
+        //.attr("id", function(d, i) { return d.id; })
+        .attr("class", "annot")
+        .attr("points", function(d) { 
+
+          //console.log(d.height)
+
+          x1 = d.px + ideo.bump;
+          x2 = d.px + ideo.config.barWidth + ideo.bump;
+          y1 = (d.chrIndex) * (chrMargin) + chrWidth;
+          y2 = (d.chrIndex) * (chrMargin) + chrWidth + d.height;
+          
+          var thisChrWidth = ideo.chromosomesArray[d.chrIndex - 1].width;
+
+          if (x2 > thisChrWidth) {
+            x2 = thisChrWidth;
+          }
+
+          return (
+            x1 + "," + y1 + " " +
+            x2 + "," + y1 + " " +
+            x2 + "," + y2 + " " +
+            x1 + "," + y2
+          );
+
+        })
+        .attr("fill", function(d) { return d.color })
+
     }
+
 }
 
 /** 
@@ -1390,7 +1555,6 @@ Ideogram.prototype.init = function() {
   for (i = 0; i < taxids.length; i++) {
     taxid = taxids[i];
 
-    
     bandDataFileNames = {
       9606: "ideogram_9606_GCF_000001305.14_850_V1",
       10090: "ideogram_10090_GCF_000000055.19_NA_V2"
@@ -1406,7 +1570,6 @@ Ideogram.prototype.init = function() {
           data.taxid = taxid;
         })
         .get(function(error, data) {
-
           ideo.bandData[data.taxid] = data.response;
           numBandDataResponses += 1;
 
