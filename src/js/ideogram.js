@@ -1562,7 +1562,7 @@ Ideogram.prototype.init = function() {
 
     if (typeof chrBands === "undefined") {
 
-      d3.xhr("data/bands/ncbi/" + bandDataFileNames[taxid])
+      d3.xhr("../data/bands/ncbi/" + bandDataFileNames[taxid])
         .on("beforesend", function(data) {
           // Ensures correct taxid is processed in response callback; using 
           // simply 'taxid' variable gives the last *requested* taxid, which
