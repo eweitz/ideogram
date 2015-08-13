@@ -57,13 +57,13 @@ var Ideogram = function(config) {
     "9606": {
       "commonName": "Human",
       "scientificName": "Homo sapiens",
-      "scientificNameAbbr": "H. sapiens",
+      "scientificNameAbbr": "H. sapiens"
     }, 
     "10090": {
       "commonName": "Mouse",
       "scientificName": "Mus musculus",
-      "scientificNameAbbr": "M. musculus",
-    }, 
+      "scientificNameAbbr": "M. musculus"
+    }
   }
 
   if (this.config.annotationsPath) {
