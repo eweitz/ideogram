@@ -5,6 +5,10 @@ var Ideogram = function(config) {
 
   this.config = config;
 
+  if (!this.config.container) {
+  	this.config.container = "body";
+  }
+
   if ("chrHeight" in config === false) {
     config.chrHeight = 500;
   } 
@@ -1540,7 +1544,7 @@ Ideogram.prototype.init = function() {
     svgClass += "faint"
   }
 
-  var svg = d3.select("body")
+  var svg = d3.select(this.config.container)
     .append("svg")
     .attr("id", "ideogram")
     .attr("class", svgClass)

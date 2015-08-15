@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Layout, small | Ideogram</title>
+  <link type="text/css" rel="stylesheet" href="../src/css/ideogram.css"/>
+  <script type="text/javascript" src="../src/js/d3.min.js"></script>
+  <script type="text/javascript" src="../src/js/ideogram.js"></script>
+  <style>
+    .top-left {
+      background-color: #FFC;
+      height: 400px;
+      width: 500px;
+      float: left;
+    }
+    .top-right {
+      width: 600px;
+      float: left;
+    }
+    .bottom {
+      background-color: #CFC;
+      height: 600px;
+      width: 960px;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-left">
+    <h1>Layout, small | Ideogram</h1>
+    <a href=".">Back to overview</a>
+  </div>
+  <div class="top-right"></div>
+  <div class="bottom"></div>
+
+  <script type="text/javascript">
+
+  function onIdeogramLoad() {
+
+    d3.selectAll("g").on("click", function() {
+      ideogram.rotateAndToggleDisplay(this.id);
+    });
+
+  }
+
+  var config = {
+    container: ".top-right",
+    taxid: 9606,
+    chromosomes: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y"],
+    chrWidth: 10,
+    chrHeight: 200,
+    chrMargin: 10,
+    showChromosomeLabels: true,
+    orientation: "vertical",
+    onLoad: onIdeogramLoad,
+  };
+
+  var ideogram = new Ideogram(config);
+
+  </script>
+
+</body>
+</html>
