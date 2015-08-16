@@ -9,6 +9,10 @@ var Ideogram = function(config) {
   	this.config.container = "body";
   }
 
+  if (!this.config.rows) {
+  	this.config.rows = 1;
+  }
+
   if ("chrHeight" in config === false) {
     config.chrHeight = 500;
   } 
@@ -1471,6 +1475,28 @@ Ideogram.prototype.drawAnnots = function(annots) {
 
 }
 
+
+Ideogram.prototype.putChromosomesInRows = function() {
+
+    var ideo = this,
+        rows = ideo.config.rows,
+        chrs,
+        chrsPerRow,
+        numChromosomes,
+        rowIndex;
+    
+    numChromosomes = ideo.config.chromosomes[ideo.config.taxid].length;
+    chrsPerRow = Math.floor(numChromosomes/rows);
+
+    for (i = 1; i < rows; i++) {
+      rowIndex = (chrsPerRow * i) + 1;
+      rowIndexStop = rowIndex + chrsPerRow;
+      range = "nth-child(n+" + rowIndex + "):nth-child(-n+" + rowIndexStop + ")";
+      d3.selectAll("#ideogram .chromosome:" + range)
+    }
+    
+}
+
 /** 
 * Called when Ideogram has finished initializing.
 * Accounts for certain ideogram properties not being set until 
@@ -1560,7 +1586,7 @@ Ideogram.prototype.init = function() {
     taxid = taxids[i];
 
     bandDataFileNames = {
-      9606: "ideogram_9606_GCF_000001305.14_850_V1",
+      9606: "ideogram_9606_GCF_000001305.14_550_V1",
       10090: "ideogram_10090_GCF_000000055.19_NA_V2"
     }
 
@@ -1749,6 +1775,10 @@ Ideogram.prototype.init = function() {
     
     if (ideo.config.showChromosomeLabels === true) {
       ideo.drawChromosomeLabels(ideo.chromosomes);
+    }
+    
+    if (ideo.config.rows > 1) {
+      ideo.putChromosomesInRows();
     }
 
     var t1_a = new Date().getTime();
