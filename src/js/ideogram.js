@@ -1493,6 +1493,23 @@ Ideogram.prototype.putChromosomesInRows = function() {
       rowIndexStop = rowIndex + chrsPerRow;
       range = "nth-child(n+" + rowIndex + "):nth-child(-n+" + rowIndexStop + ")";
       d3.selectAll("#ideogram .chromosome:" + range)
+        .attr("transform", function(d, j) {
+
+          var chrIndex, chrMargin, chrWidth, tPadding;
+
+            chrIndex = j;
+            chrWidth = ideo.config.chrWidth;
+            chrMargin = ideo.config.chrMargin * chrIndex;
+
+            if (!ideo.config.showBandLabels) {
+              chrIndex += 2;
+            }
+
+            tPadding = chrMargin + (chrWidth-4)*(chrIndex - 1);
+
+            return "rotate(90, " + (tPadding + 20) + ", " + (tPadding + 240) + ")";
+
+        });
     }
     
 }
@@ -1575,7 +1592,7 @@ Ideogram.prototype.init = function() {
     .attr("id", "ideogram")
     .attr("class", svgClass)
     .attr("width", "97%")
-    .attr("height", this.config.chrHeight + 40)
+    .attr("height", this.config.rows*(this.config.chrHeight + 40))
 
   var bandsArray = [],
       maxLength = 0,
