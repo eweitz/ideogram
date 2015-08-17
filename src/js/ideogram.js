@@ -9,6 +9,10 @@ var Ideogram = function(config) {
   	this.config.container = "body";
   }
 
+  if (!this.config.resolution) {
+    this.config.resolution = 850;
+  }
+
   if (!this.config.rows) {
   	this.config.rows = 1;
   }
@@ -1613,14 +1617,15 @@ Ideogram.prototype.init = function() {
 
   var bandsArray = [],
       maxLength = 0,
-      numBandDataResponses = 0;
+      numBandDataResponses = 0,
+      resolution = this.config.resolution;
 
 
   for (i = 0; i < taxids.length; i++) {
     taxid = taxids[i];
 
     bandDataFileNames = {
-      9606: "ideogram_9606_GCF_000001305.14_550_V1",
+      9606: "ideogram_9606_GCF_000001305.14_" + resolution + "_V1",
       10090: "ideogram_10090_GCF_000000055.19_NA_V2"
     }
 
@@ -1668,7 +1673,6 @@ Ideogram.prototype.init = function() {
 
     bandsArray = [];
     maxLength = 0;
-
 
     var t0_b = new Date().getTime();
     for (j = 0; j < taxids.length; j++) {
