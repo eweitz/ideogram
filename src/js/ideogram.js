@@ -1483,8 +1483,8 @@ Ideogram.prototype.putChromosomesInRows = function() {
         chrs,
         chrsPerRow,
         numChromosomes,
-        rowIndex,
-        chrHeight;
+        rowIndex, rowIndexStop,
+        rowHeight, chrIndex, chrWidth, chrMargin;
     
     numChromosomes = ideo.config.chromosomes[ideo.config.taxid].length;
     chrsPerRow = Math.floor(numChromosomes/rows);
@@ -1599,12 +1599,17 @@ Ideogram.prototype.init = function() {
     svgClass += "faint"
   }
 
+  var ideoHeight = this.config.chrHeight + 40;
+  if (this.config.rows > 1) {
+    ideoHeight = this.config.rows * (ideoHeight - 40)
+  }
+
   var svg = d3.select(this.config.container)
     .append("svg")
     .attr("id", "ideogram")
     .attr("class", svgClass)
     .attr("width", "97%")
-    .attr("height", this.config.rows*(this.config.chrHeight + 40))
+    .attr("height", ideoHeight)
 
   var bandsArray = [],
       maxLength = 0,
