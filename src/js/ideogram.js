@@ -1483,32 +1483,44 @@ Ideogram.prototype.putChromosomesInRows = function() {
         chrs,
         chrsPerRow,
         numChromosomes,
-        rowIndex;
+        rowIndex,
+        chrHeight;
     
     numChromosomes = ideo.config.chromosomes[ideo.config.taxid].length;
     chrsPerRow = Math.floor(numChromosomes/rows);
 
     for (i = 1; i < rows; i++) {
+      
       rowIndex = (chrsPerRow * i) + 1;
       rowIndexStop = rowIndex + chrsPerRow;
       range = "nth-child(n+" + rowIndex + "):nth-child(-n+" + rowIndexStop + ")";
+
+      rowHeight = ideo.config.chrHeight + 20;
+
+      chrIndex = rowIndex + 1;
+      chrWidth = ideo.config.chrWidth;
+      chrMargin = ideo.config.chrMargin * chrIndex;
+
+      if (!ideo.config.showBandLabels) {
+        chrIndex += 2;
+      }
+
+      if (ideo.config.showChromosomeLabels) {
+        rowHeight += 12; // TODO: Account for variable font size
+      }
+
+      // Similar to "tPadding" in other contexts
+      rowWidth = (chrMargin + (chrWidth-4)*(chrIndex)) + 8;
+
       d3.selectAll("#ideogram .chromosome:" + range)
         .attr("transform", function(d, j) {
 
-          var chrIndex, chrMargin, chrWidth, tPadding;
+          var currentTransform, translation;
 
-            chrIndex = j;
-            chrWidth = ideo.config.chrWidth;
-            chrMargin = ideo.config.chrMargin * chrIndex;
+          currentTransform = d3.select(this).attr("transform");
+          translation = "translate(" + rowHeight + ", " + rowWidth + ")";
 
-            if (!ideo.config.showBandLabels) {
-              chrIndex += 2;
-            }
-
-            tPadding = chrMargin + (chrWidth-4)*(chrIndex - 1);
-
-            return "rotate(90, " + (tPadding + 20) + ", " + (tPadding + 240) + ")";
-
+          return currentTransform + translation;
         });
     }
     
