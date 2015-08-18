@@ -13,6 +13,10 @@ var Ideogram = function(config) {
     this.config.resolution = 850;
   }
 
+  if (!this.config.slider) {
+    this.config.slider = false;
+  }  
+
   if (!this.config.rows) {
   	this.config.rows = 1;
   }
@@ -1530,6 +1534,25 @@ Ideogram.prototype.putChromosomesInRows = function() {
     
 }
 
+
+Ideogram.prototype.createSlider = function() {
+
+  var ideo = this,
+      slider;
+
+  d3.select("#ideogram")
+    .append("rect")
+      .attr("class", ".ideogram-slider")
+      .attr("width", "300px")
+      .attr("height", "30px")
+      .attr("fill", "#DDE")
+      .attr("opacity", "0.9")
+      .attr("transform", "translate(20, 25)")
+      
+
+}
+
+
 /** 
 * Called when Ideogram has finished initializing.
 * Accounts for certain ideogram properties not being set until 
@@ -1817,6 +1840,10 @@ Ideogram.prototype.init = function() {
     
     if (ideo.config.rows > 1) {
       ideo.putChromosomesInRows();
+    }
+
+    if (ideo.config.slider === true) {
+      ideo.createSlider();
     }
 
     var t1_a = new Date().getTime();
