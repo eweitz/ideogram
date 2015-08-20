@@ -1538,18 +1538,51 @@ Ideogram.prototype.putChromosomesInRows = function() {
 Ideogram.prototype.createSlider = function() {
 
   var ideo = this,
-      slider;
+      slider,
+      sliderLeft = 100,
+      sliderRight = 150;
 
+var mask = d3.select("#ideogram")
+    .append("mask")
+      .attr("id", "mask")
+
+  mask.append("rect")
+    .attr("fill", "white")
+    .attr("width", ideo.config.chrHeight + 2)
+    .attr("height", ideo.config.chrWidth + 10)
+
+  mask.append("rect")
+    .attr("class", "slider")
+    .attr("width", sliderLeft)
+    .attr("height", "100px")
+    .attr("stroke", "black")
+    .attr("stroke-width", 2)
+    .attr("fill-opacity", 1)
+    .attr("transform", "translate(" + sliderRight + ", 0)")
+
+  d3.select("#ideogram").append("rect")
+    .attr("mask", "url(#mask)")
+    .attr("fill", "#CCC")
+    .attr("opacity", "0.8")
+    .attr("width", "100%")
+    .attr("height", "100%")
+    .attr("transform", "translate(3, 25)")
+
+  /*
   d3.select("#ideogram")
     .append("rect")
       .attr("class", ".ideogram-slider")
       .attr("width", "300px")
-      .attr("height", "30px")
+      .attr("height", ideo.config.chrWidth + 10)
       .attr("fill", "#DDE")
-      .attr("opacity", "0.9")
+      .attr("opacity", "0.6")
+      .attr("stroke", "#00F")
+      .attr("stroke-width", "1px")
       .attr("transform", "translate(20, 25)")
+    .on("click", function() {
       
-
+    });
+  */
 }
 
 
