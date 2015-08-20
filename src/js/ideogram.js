@@ -1539,44 +1539,45 @@ Ideogram.prototype.createSlider = function() {
 
   var ideo = this,
       slider,
-      sliderLeft = 100,
-      sliderRight = 150,
-      sliderHeight = ideo.config.chrWidth + 6.5;
+      left = 100,
+      right = 150,
+      height = ideo.config.chrWidth + 6.5,
+      y = 26.5;
   
   var ideoDOM = d3.select("#ideogram");
 
   ideoDOM.append("rect")
     .attr("class", ".ideogram-slider-selection")
-    .attr("width", sliderRight - sliderLeft)
-    .attr("height", sliderHeight)
+    .attr("width", right - left)
+    .attr("height", height)
     .attr("opacity", "0")
-    .attr("transform", "translate(" + sliderLeft + ", 26.5)")
+    .attr("transform", "translate(" + left + ", " + height + ")")
     .attr("cursor", "move")
   
   ideoDOM.append("rect")
     .attr("class", ".ideogram-slider-left")
-    .attr("width", sliderLeft)
-    .attr("height", sliderHeight)
+    .attr("width", left)
+    .attr("height", height)
     .attr("fill", "#CCC")
     .attr("opacity", "0.6")
-    .attr("transform", "translate(0, 26.5)")
+    .attr("transform", "translate(0, " + height + ")")
     .attr("cursor", "none")
   
   ideoDOM.append("rect")
     .attr("class", ".ideogram-slider-right")
-    .attr("width", ideo.config.chrHeight + 4 - sliderRight)
-    .attr("height", sliderHeight)
+    .attr("width", ideo.config.chrHeight + 4 - right)
+    .attr("height", height)
     .attr("fill", "#CCC")
     .attr("opacity", "0.6")
-    .attr("transform", "translate(" + sliderRight + ", 26.5)")
+    .attr("transform", "translate(" + right + ", " + height + ")")
     .attr("cursor", "none")
 
   ideoDOM.append("rect")
     .attr("class", ".left-handle")
     .attr("width", "3px")
-    .attr("height", sliderHeight)
+    .attr("height", height)
     .attr("fill", "#555")
-    .attr("transform", "translate(" + sliderLeft + ", 26.5)")
+    .attr("transform", "translate(" + left + ", " + height + ")")
     .attr("cursor", "ew-resize")
     .attr("rx", "2")
     .attr("ry", "2")
@@ -1584,9 +1585,9 @@ Ideogram.prototype.createSlider = function() {
   ideoDOM.append("rect")
     .attr("class", ".right-handle")
     .attr("width", "3px")
-    .attr("height", sliderHeight)
+    .attr("height", height)
     .attr("fill", "#555")
-    .attr("transform", "translate(" + sliderRight + ", 26.5)")
+    .attr("transform", "translate(" + right + ", " + height + ")")
     .attr("cursor", "ew-resize")
     .attr("rx", "2")
     .attr("ry", "2")
