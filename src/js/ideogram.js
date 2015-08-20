@@ -1540,38 +1540,56 @@ Ideogram.prototype.createSlider = function() {
   var ideo = this,
       slider,
       sliderLeft = 100,
-      sliderRight = 150;
+      sliderRight = 150,
+      sliderHeight = ideo.config.chrWidth + 6.5;
   
   var ideoDOM = d3.select("#ideogram");
 
   ideoDOM.append("rect")
     .attr("class", ".ideogram-slider-selection")
     .attr("width", sliderRight - sliderLeft)
-    .attr("height", ideo.config.chrWidth + 10)
+    .attr("height", sliderHeight)
     .attr("opacity", "0")
-    .attr("transform", "translate(" + sliderLeft + ", 25)")
+    .attr("transform", "translate(" + sliderLeft + ", 26.5)")
     .attr("cursor", "move")
   
   ideoDOM.append("rect")
     .attr("class", ".ideogram-slider-left")
     .attr("width", sliderLeft)
-    .attr("height", ideo.config.chrWidth + 10)
+    .attr("height", sliderHeight)
     .attr("fill", "#CCC")
     .attr("opacity", "0.6")
-    .attr("transform", "translate(0, 25)")
+    .attr("transform", "translate(0, 26.5)")
     .attr("cursor", "none")
   
   ideoDOM.append("rect")
     .attr("class", ".ideogram-slider-right")
     .attr("width", ideo.config.chrHeight + 4 - sliderRight)
-    .attr("height", ideo.config.chrWidth + 10)
+    .attr("height", sliderHeight)
     .attr("fill", "#CCC")
     .attr("opacity", "0.6")
-    .attr("transform", "translate(" + sliderRight + ", 25)")
+    .attr("transform", "translate(" + sliderRight + ", 26.5)")
     .attr("cursor", "none")
 
-  
+  ideoDOM.append("rect")
+    .attr("class", ".left-handle")
+    .attr("width", "3px")
+    .attr("height", sliderHeight)
+    .attr("fill", "#555")
+    .attr("transform", "translate(" + sliderLeft + ", 26.5)")
+    .attr("cursor", "ew-resize")
+    .attr("rx", "2")
+    .attr("ry", "2")
 
+  ideoDOM.append("rect")
+    .attr("class", ".right-handle")
+    .attr("width", "3px")
+    .attr("height", sliderHeight)
+    .attr("fill", "#555")
+    .attr("transform", "translate(" + sliderRight + ", 26.5)")
+    .attr("cursor", "ew-resize")
+    .attr("rx", "2")
+    .attr("ry", "2")
 }
 
 
