@@ -1541,48 +1541,37 @@ Ideogram.prototype.createSlider = function() {
       slider,
       sliderLeft = 100,
       sliderRight = 150;
+  
+  var ideoDOM = d3.select("#ideogram");
 
-var mask = d3.select("#ideogram")
-    .append("mask")
-      .attr("id", "mask")
-
-  mask.append("rect")
-    .attr("fill", "white")
-    .attr("width", ideo.config.chrHeight + 2)
+  ideoDOM.append("rect")
+    .attr("class", ".ideogram-slider-selection")
+    .attr("width", sliderRight - sliderLeft)
     .attr("height", ideo.config.chrWidth + 10)
-
-  mask.append("rect")
-    .attr("class", "slider")
+    .attr("opacity", "0")
+    .attr("transform", "translate(" + sliderLeft + ", 25)")
+    .attr("cursor", "move")
+  
+  ideoDOM.append("rect")
+    .attr("class", ".ideogram-slider-left")
     .attr("width", sliderLeft)
-    .attr("height", "100px")
-    .attr("stroke", "black")
-    .attr("stroke-width", 2)
-    .attr("fill-opacity", 1)
-    .attr("transform", "translate(" + sliderRight + ", 0)")
-
-  d3.select("#ideogram").append("rect")
-    .attr("mask", "url(#mask)")
+    .attr("height", ideo.config.chrWidth + 10)
     .attr("fill", "#CCC")
-    .attr("opacity", "0.8")
-    .attr("width", "100%")
-    .attr("height", "100%")
-    .attr("transform", "translate(3, 25)")
+    .attr("opacity", "0.6")
+    .attr("transform", "translate(0, 25)")
+    .attr("cursor", "none")
+  
+  ideoDOM.append("rect")
+    .attr("class", ".ideogram-slider-right")
+    .attr("width", ideo.config.chrHeight + 4 - sliderRight)
+    .attr("height", ideo.config.chrWidth + 10)
+    .attr("fill", "#CCC")
+    .attr("opacity", "0.6")
+    .attr("transform", "translate(" + sliderRight + ", 25)")
+    .attr("cursor", "none")
 
-  /*
-  d3.select("#ideogram")
-    .append("rect")
-      .attr("class", ".ideogram-slider")
-      .attr("width", "300px")
-      .attr("height", ideo.config.chrWidth + 10)
-      .attr("fill", "#DDE")
-      .attr("opacity", "0.6")
-      .attr("stroke", "#00F")
-      .attr("stroke-width", "1px")
-      .attr("transform", "translate(20, 25)")
-    .on("click", function() {
-      
-    });
-  */
+  
+
 }
 
 
