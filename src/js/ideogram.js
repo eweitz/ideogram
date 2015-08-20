@@ -1537,21 +1537,22 @@ Ideogram.prototype.putChromosomesInRows = function() {
 
 Ideogram.prototype.createSlider = function() {
 
-  var ideo = this,
-      slider,
+  var slider,
+      ideo = this,
+      ideoDOM = d3.select("#ideogram"),
       left = 100,
       right = 150,
       height = ideo.config.chrWidth + 6.5,
-      y = 26.5;
-  
-  var ideoDOM = d3.select("#ideogram");
+      y = d3.select(".band")[0][0].getBBox().y - 3.25;
+
+  ideoDOM = d3.select("#ideogram");
 
   ideoDOM.append("rect")
     .attr("class", ".ideogram-slider-selection")
     .attr("width", right - left)
     .attr("height", height)
     .attr("opacity", "0")
-    .attr("transform", "translate(" + left + ", " + height + ")")
+    .attr("transform", "translate(" + left + ", " + y + ")")
     .attr("cursor", "move")
   
   ideoDOM.append("rect")
@@ -1560,7 +1561,7 @@ Ideogram.prototype.createSlider = function() {
     .attr("height", height)
     .attr("fill", "#CCC")
     .attr("opacity", "0.6")
-    .attr("transform", "translate(0, " + height + ")")
+    .attr("transform", "translate(0, " + y + ")")
     .attr("cursor", "none")
   
   ideoDOM.append("rect")
@@ -1569,7 +1570,7 @@ Ideogram.prototype.createSlider = function() {
     .attr("height", height)
     .attr("fill", "#CCC")
     .attr("opacity", "0.6")
-    .attr("transform", "translate(" + right + ", " + height + ")")
+    .attr("transform", "translate(" + right + ", " + y + ")")
     .attr("cursor", "none")
 
   ideoDOM.append("rect")
@@ -1577,7 +1578,7 @@ Ideogram.prototype.createSlider = function() {
     .attr("width", "3px")
     .attr("height", height)
     .attr("fill", "#555")
-    .attr("transform", "translate(" + left + ", " + height + ")")
+    .attr("transform", "translate(" + left + ", " + y + ")")
     .attr("cursor", "ew-resize")
     .attr("rx", "2")
     .attr("ry", "2")
@@ -1587,7 +1588,7 @@ Ideogram.prototype.createSlider = function() {
     .attr("width", "3px")
     .attr("height", height)
     .attr("fill", "#555")
-    .attr("transform", "translate(" + right + ", " + height + ")")
+    .attr("transform", "translate(" + right + ", " + y + ")")
     .attr("cursor", "ew-resize")
     .attr("rx", "2")
     .attr("ry", "2")
