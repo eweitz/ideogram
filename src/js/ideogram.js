@@ -13,6 +13,10 @@ var Ideogram = function(config) {
     this.config.resolution = 850;
   }
 
+  if (!this.config.slider) {
+    this.config.slider = false;
+  }  
+
   if (!this.config.rows) {
   	this.config.rows = 1;
   }
@@ -1530,6 +1534,94 @@ Ideogram.prototype.putChromosomesInRows = function() {
     
 }
 
+
+Ideogram.prototype.createSlider = function(left, right) {
+
+  var slider,
+      ideo = this,
+      ideoDOM = d3.select("#ideogram"),
+      height = ideo.config.chrWidth + 6.5,
+      y = d3.select(".band")[0][0].getBBox().y - 3.25,
+      newLeft, newRight;
+
+  if (typeof left === "undefined") {
+      left = 100;
+  }
+
+  if (typeof right === "undefined") {
+      right = 150;
+  }
+
+  d3.select(".slider-container").remove()
+  ideoDOM = d3.select("#ideogram").append("g").attr("class", "slider-container");
+
+  ideoDOM.append("rect")
+    .attr("class", "slider-selection")
+    .attr("width", right - left)
+    .attr("height", height)
+    .attr("opacity", "0")
+    .attr("transform", "translate(" + left + ", " + y + ")")
+    .attr("cursor", "move")
+  
+  ideoDOM.append("rect")
+    .attr("class", "slider-left")
+    .attr("width", left)
+    .attr("height", height)
+    .attr("fill", "#CCC")
+    .attr("opacity", "0.6")
+    .attr("transform", "translate(0, " + y + ")")
+    .attr("cursor", "none")
+  
+  ideoDOM.append("rect")
+    .attr("class", "slider-right")
+    .attr("width", ideo.config.chrHeight + 4 - right)
+    .attr("height", height)
+    .attr("fill", "#CCC")
+    .attr("opacity", "0.6")
+    .attr("transform", "translate(" + right + ", " + y + ")")
+    .attr("cursor", "none")
+
+  ideoDOM.append("rect")
+    .attr("class", "left-handle")
+    .attr("width", "3px")
+    .attr("height", height)
+    .attr("fill", "#555")
+    .attr("transform", "translate(" + left + ", " + y + ")")
+    .attr("cursor", "ew-resize")
+    .attr("rx", "2")
+    .attr("ry", "2")
+
+  ideoDOM.append("rect")
+    .attr("class", "right-handle")
+    .attr("width", "3px")
+    .attr("height", height)
+    .attr("fill", "#555")
+    .attr("transform", "translate(" + right + ", " + y + ")")
+    .attr("cursor", "ew-resize")
+    .attr("rx", "2")
+    .attr("ry", "2")
+
+
+  d3.selectAll(".slider-container").on("mousedown", function() {
+    newLeft = d3.mouse(this)[0];
+  });
+
+  d3.selectAll(".slider-container").on("mouseup", function() {
+    var x = d3.mouse(this)[0];
+
+    if (x > newLeft) {
+      newRight = x;
+    } else {
+      newRight = newLeft;
+      newLeft = x;
+    }
+    
+    ideo.createSlider(newLeft, newRight);
+  });  
+
+}
+
+
 /** 
 * Called when Ideogram has finished initializing.
 * Accounts for certain ideogram properties not being set until 
@@ -1817,6 +1909,10 @@ Ideogram.prototype.init = function() {
     
     if (ideo.config.rows > 1) {
       ideo.putChromosomesInRows();
+    }
+
+    if (ideo.config.slider === true) {
+      ideo.createSlider();
     }
 
     var t1_a = new Date().getTime();

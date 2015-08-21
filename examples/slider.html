@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Slider | Ideogram</title>
+  <link type="text/css" rel="stylesheet" href="../src/css/ideogram.css"/>
+  <script type="text/javascript" src="../src/js/d3.min.js"></script>
+  <script type="text/javascript" src="../src/js/ideogram.min.js"></script>
+</head>
+<body>
+  <h1>Slider | Ideogram</h1>
+  <a href=".">Back to overview</a>
+
+  <script type="text/javascript">
+
+  var config = {
+    taxid: 9606,
+    chromosomes: ["1"],
+    slider: true,
+    resolution: 550,
+    showBandLabels: true,
+    chrWidth: 20,
+    chrHeight: 900,
+    chrMargin: 10,
+    rows: 2,
+    orientation: "horizontal"
+  };
+
+  var ideogram = new Ideogram(config);
+
+
+  </script>
+
+</body>
+</html>
