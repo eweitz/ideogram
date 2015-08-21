@@ -1535,20 +1535,28 @@ Ideogram.prototype.putChromosomesInRows = function() {
 }
 
 
-Ideogram.prototype.createSlider = function() {
+Ideogram.prototype.createSlider = function(left, right) {
 
   var slider,
       ideo = this,
       ideoDOM = d3.select("#ideogram"),
-      left = 100,
-      right = 150,
       height = ideo.config.chrWidth + 6.5,
-      y = d3.select(".band")[0][0].getBBox().y - 3.25;
+      y = d3.select(".band")[0][0].getBBox().y - 3.25,
+      newLeft, newRight;
 
-  ideoDOM = d3.select("#ideogram");
+  if (typeof left === "undefined") {
+      left = 100;
+  }
+
+  if (typeof right === "undefined") {
+      right = 150;
+  }
+
+  d3.select(".slider-container").remove()
+  ideoDOM = d3.select("#ideogram").append("g").attr("class", "slider-container");
 
   ideoDOM.append("rect")
-    .attr("class", ".ideogram-slider-selection")
+    .attr("class", "slider-selection")
     .attr("width", right - left)
     .attr("height", height)
     .attr("opacity", "0")
@@ -1556,7 +1564,7 @@ Ideogram.prototype.createSlider = function() {
     .attr("cursor", "move")
   
   ideoDOM.append("rect")
-    .attr("class", ".ideogram-slider-left")
+    .attr("class", "slider-left")
     .attr("width", left)
     .attr("height", height)
     .attr("fill", "#CCC")
@@ -1565,7 +1573,7 @@ Ideogram.prototype.createSlider = function() {
     .attr("cursor", "none")
   
   ideoDOM.append("rect")
-    .attr("class", ".ideogram-slider-right")
+    .attr("class", "slider-right")
     .attr("width", ideo.config.chrHeight + 4 - right)
     .attr("height", height)
     .attr("fill", "#CCC")
@@ -1574,7 +1582,7 @@ Ideogram.prototype.createSlider = function() {
     .attr("cursor", "none")
 
   ideoDOM.append("rect")
-    .attr("class", ".left-handle")
+    .attr("class", "left-handle")
     .attr("width", "3px")
     .attr("height", height)
     .attr("fill", "#555")
@@ -1584,7 +1592,7 @@ Ideogram.prototype.createSlider = function() {
     .attr("ry", "2")
 
   ideoDOM.append("rect")
-    .attr("class", ".right-handle")
+    .attr("class", "right-handle")
     .attr("width", "3px")
     .attr("height", height)
     .attr("fill", "#555")
@@ -1592,6 +1600,25 @@ Ideogram.prototype.createSlider = function() {
     .attr("cursor", "ew-resize")
     .attr("rx", "2")
     .attr("ry", "2")
+
+
+  d3.selectAll(".slider-container").on("mousedown", function() {
+    newLeft = d3.mouse(this)[0];
+  });
+
+  d3.selectAll(".slider-container").on("mouseup", function() {
+    var x = d3.mouse(this)[0];
+
+    if (x > newLeft) {
+      newRight = x;
+    } else {
+      newRight = newLeft;
+      newLeft = x;
+    }
+    
+    ideo.createSlider(newLeft, newRight);
+  });  
+
 }
 
 
