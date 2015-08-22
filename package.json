@@ -1,0 +1,31 @@
+{
+  "name": "ideogram",
+  "version": "0.1.0",
+  "description": "Chromosome visualization with D3.js",
+  "main": "gulpfile.js",
+  "directories": {
+    "example": "examples",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eweitz/ideogram.git"
+  },
+  "keywords": [
+    "chromosome",
+    "ideogram",
+    "cytogenetics",
+    "genomics",
+    "visualization",
+    "d3"
+  ],
+  "author": "Eric Weitz",
+  "license": "CC0-1.0",
+  "bugs": {
+    "url": "https://github.com/eweitz/ideogram/issues"
+  },
+  "homepage": "https://github.com/eweitz/ideogram#readme"
+}
