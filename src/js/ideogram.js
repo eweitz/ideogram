@@ -1,12 +1,4 @@
-if (typeof define !== 'function') {
-  var define = require('amdefine')(module);
-}
 
-if (typeof d3 !== "function") {
-  var d3 = require("d3");
-}
-
-define(function() {
 // Developed by Eric Weitz (https://github.com/eweitz)
 
 /* Constructs a prototypal Ideogram class */
@@ -1938,6 +1930,3 @@ Ideogram.prototype.init = function() {
 
 }
 
-return Ideogram;
-
-});

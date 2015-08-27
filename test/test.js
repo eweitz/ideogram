@@ -1,19 +1,28 @@
-var requirejs = require('requirejs');
-requirejs.config({nodeRequire: require});
-var chai = require("chai");
-var expect = chai.expect;
-var assert = require("assert");
-
-describe('Array', function() {
-  describe('#indexOf()', function () {
-    it('should return -1 when the value is not present', function () {
-      assert.equal(-1, [1,2,3].indexOf(5));
-      assert.equal(-1, [1,2,3].indexOf(0));
+describe("DOM Tests", function () {
+    var el = document.createElement("div");
+    el.id = "myDiv";
+    el.innerHTML = "Hi there!";
+    el.style.background = "#ccc";
+    document.body.appendChild(el);
+ 
+    var myEl = document.getElementById('myDiv');
+    it("is in the DOM", function () {
+        expect(myEl).to.not.equal(null);
     });
-  });
+ 
+    it("is a child of the body", function () {
+        expect(myEl.parentElement).to.equal(document.body);
+    });
+ 
+    it("has the right text", function () {
+        expect(myEl.innerHTML).to.equal("Hi there!");
+    });
+ 
+    it("has the right background", function () {
+        expect(myEl.style.background).to.equal("rgb(204, 204, 204)");
+    });
 });
 
-requirejs(['../src/js/ideogram.js'], function(ideogramjs) {
 describe("Ideogram", function() {
  
   
@@ -36,13 +45,12 @@ describe("Ideogram", function() {
     orientation: "vertical"
   };
 
-  var ideogram = new ideogramjs(config);
+  var ideogram = new Ideogram(config);
   console.log("ideogram:");
   console.log(ideogram);
 
-  assert.equal(ideogramjs.config.container, ".small-ideogram");
+  assert.equal(ideogram.config.container, ".small-ideogram");
 
   });  
 
-});
 });
