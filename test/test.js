@@ -27,27 +27,20 @@ describe("Ideogram", function() {
     assert.equal(svg, 1);
   });
 
-  it("should have 24 chromosomes for a human ideogram instance ", function() {
+  it("should have 24 chromosomes for a human ideogram instance ", function(done) {
+    // This test uses Mocha's async support.
+    // Helpful:
+    //  - http://martinfowler.com/articles/asyncJS.html
+    //  - https://mochajs.org/#asynchronous-code
 
-    // TODO:  Refactor to native JS promise
     function callback() {
-      console.log("ideogram:");
-      console.log(ideogram);
-
-      console.log('ideogram.chromosomes');
-      console.log(ideogram.chromosomes);
-      console.log('ideogram.chromosomes["9606"]');
-      console.log(ideogram.chromosomes["9606"]);
-
       var numChromosomes = Object.keys(ideogram.chromosomes["9606"]).length;
-      assert.equal(numChromsomes, 24);
+      assert.equal(numChromosomes, 24);
+      done();
     }
 
     config.onLoad = callback;
-
     var ideogram = new Ideogram(config);
-
-
   });
 
 });
