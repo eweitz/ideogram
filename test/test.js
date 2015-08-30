@@ -17,31 +17,37 @@ describe("Ideogram", function() {
 
   it("should have a non-body container when specified", function() {
     config.container = ".small-ideogram";
-    config.rows = 2;
     var ideogram = new Ideogram(config);
     assert.equal(ideogram.config.container, ".small-ideogram");
   });
 
-  it("should write SVG to DOM", function() {
+  it("should write 'svg' element to DOM", function() {
     var ideogram = new Ideogram(config);
     var svg = document.getElementsByTagName("svg").length;
     assert.equal(svg, 1);
   });
 
   it("should have 24 chromosomes for a human ideogram instance ", function() {
-    var config = config;
+
+    // TODO:  Refactor to native JS promise
+    function callback() {
+      console.log("ideogram:");
+      console.log(ideogram);
+
+      console.log('ideogram.chromosomes');
+      console.log(ideogram.chromosomes);
+      console.log('ideogram.chromosomes["9606"]');
+      console.log(ideogram.chromosomes["9606"]);
+
+      var numChromosomes = Object.keys(ideogram.chromosomes["9606"]).length;
+      assert.equal(numChromsomes, 24);
+    }
+
+    config.onLoad = callback;
+
     var ideogram = new Ideogram(config);
 
-    console.log("ideogram:");
-    console.log(ideogram);
 
-    console.log('ideogram.chromosomes');
-    console.log(ideogram.chromosomes);
-    console.log('ideogram.chromosomes["9606"]');
-    console.log(ideogram.chromosomes["9606"]);
-
-    var numChromosomes = Object.keys(ideogram.chromosomes["9606"]).length;
-    assert.equal(numChromsomes, 24);
   });
 
 });
