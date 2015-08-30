@@ -24,7 +24,7 @@ describe("Ideogram", function() {
 
   it("should write SVG to DOM", function() {
     var ideogram = new Ideogram(config);
-    var svg = d3.selectAll("svg")[0].length;
+    var svg = document.getElementsByTagName("svg").length;
     assert.equal(svg, 1);
   });
 
