@@ -8,6 +8,9 @@ describe("Ideogram", function() {
   var config = {};
 
   beforeEach(function() {
+
+    d3.selectAll("svg").remove();
+
     config = {
       taxid: 9606,
       chromosomes: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y"],
@@ -19,6 +22,21 @@ describe("Ideogram", function() {
       orientation: "vertical"
     };
   });
+
+  function takeScreenshot() {
+    if (window.callPhantom) {
+      var date = new Date()
+      var filename = "screenshots/" + date.getTime()
+      console.log("Taking screenshot " + filename)
+      callPhantom({'screenshot': filename})
+    }
+  }
+
+  afterEach(function () {
+    if (this.currentTest.state == 'failed') {
+      takeScreenshot()
+    }
+  })
 
   it("should have a non-body container when specified", function() {
     config.container = ".small-ideogram";
@@ -165,6 +183,94 @@ describe("Ideogram", function() {
     var ideogram = new Ideogram(config);
   });
 
+  it("should have 25 syntenic regions for advanced example", function(done) {
+    // Tests use case from ../examples/homology_advanced.html
+
+    function callback() {
+
+      var chrs = ideogram.chromosomes,
+        chr1 = chrs["10090"]["1"],
+        chr2 = chrs["10090"]["2"],
+        r1Band = chr1["bands"][7],
+        r2Band = chr2["bands"][17],
+        range1, range2, range3, range4, range5, range6,
+        syntenicRegions = [];
+
+      range1 = {
+        chr: chr1,
+        start: r1Band.bp.start,
+        stop: r1Band.bp.stop
+      };
+
+      for (var i = 1; i < 20; i++) {
+        range2 = {
+          chr: chr2,
+          start: 6000000 * i,
+          stop: 6500000 * i
+        };
+        syntenicRegions.push({"r1": range1, "r2": range2, "color": "#F55"});
+      }
+
+      var range3 = {
+        chr: chr1,
+        start: 125000000,
+        stop: 126000000
+      };
+
+      range4 = {
+        chr: chr2,
+        start: 1500000 * i,
+        stop: 3600000 * i
+      };
+      syntenicRegions.push({"r1": range3, "r2": range4, "opacity": 0.7});
+
+      var range5 = {
+        chr: chr2,
+        start: r2Band.bp.start,
+        stop: r2Band.bp.stop
+      };
+
+      for (var i = 1; i < 6; i++) {
+        range6 = {
+          chr: chr1,
+          start: 120000000 + (12000000 * i),
+          stop: 120000000 + (8000000 * i)
+        };
+        color = "#AAF";
+        if (i == 5) {
+          color = "#DDD";
+        }
+        syntenicRegions.push({"r1": range5, "r2": range6, "color": color});
+      }
+
+      ideogram.drawSynteny(syntenicRegions);
+
+      var numChromosomes = Object.keys(ideogram.chromosomes["10090"]).length;
+      assert.equal(numChromosomes, 2);
+
+      var numSyntenicRegions = document.getElementsByClassName("syntenicRegion").length;
+      assert.equal(numSyntenicRegions, 25);
+
+      done();
+    }
+
+    config = {
+      taxid: 10090,
+      chromosomes: ["1", "2"],
+      chrWidth: 10,
+      chrHeight: 500,
+      chrMargin: 200,
+      showChromosomeLabels: true,
+      showBandLabels: true,
+      orientation: "vertical",
+      perspective: "comparative",
+      onLoad: callback
+    };
+
+    var ideogram = new Ideogram(config);
+  });
+
+
   it("should have 1 syntenic region between a human and a mouse chromosome", function(done) {
     // Tests use case from ../examples/homology_interspecies.html
 
@@ -199,26 +305,50 @@ describe("Ideogram", function() {
       ideogram.drawSynteny(syntenicRegions);
 
       var numHumanChromosomes = Object.keys(ideogram.chromosomes["9606"]).length;
-      assert.equal(numChromosomes, 1);
+      assert.equal(numHumanChromosomes, 1, "numHumanChromosomes");
 
       var numMouseChromosomes = Object.keys(ideogram.chromosomes["10090"]).length;
-      assert.equal(numMouseChromosomes, 1);
+      assert.equal(numMouseChromosomes, 1, "numMouseChromosomes");
 
       var numSyntenicRegions = document.getElementsByClassName("syntenicRegion").length;
-      assert.equal(numSyntenicRegions, 1);
+      //console.log(d3.selectAll(".syntenicRegion"));
+
+      console.log('document.getElementsByClassName("syntenicRegion")');
+      console.log(document.getElementsByClassName("syntenicRegion")[0][0]);
+      console.log(42);
+
+      assert.equal(numSyntenicRegions, 1, "numSyntenicRegions");
 
       done();
     }
 
     config.multiorganism = true;
     config.taxids = ["9606", "10090"];
-    config.chromosomes: {
+    config.chromosomes = {
       "9606": ["1"],
       "10090": ["4"]
     };
+    config.orientation = "vertical";
+    config.perspective = "comparative";
 
     config.onLoad = callback;
     var ideogram = new Ideogram(config);
   });
+
+  it("should have 1000 annotations in basic annotations example", function(done) {
+    // Tests use case from ../examples/annotations_basic.html
+
+    function callback() {
+      var numAnnots = document.getElementsByClassName("annot").length
+      assert.equal(numAnnots, 1000);
+      done();
+    }
+
+    config.annotationsPath = "../data/annotations/1000_virtual_snvs.json";
+
+    config.onLoad = callback;
+    var ideogram = new Ideogram(config);
+  });
+
 
 });
