@@ -339,7 +339,7 @@ describe("Ideogram", function() {
     // Tests use case from ../examples/annotations_basic.html
 
     function callback() {
-      var numAnnots = document.getElementsByClassName("annot").length
+      var numAnnots = document.getElementsByClassName("annot").length;
       assert.equal(numAnnots, 1000);
       done();
     }
@@ -350,5 +350,91 @@ describe("Ideogram", function() {
     var ideogram = new Ideogram(config);
   });
 
+  it("should have 1000 annotations in overlaid annotations example", function(done) {
+    // Tests use case from ../examples/annotations_overlaid.html
+
+    function onIdeogramLoad() {
+      var numAnnots = document.getElementsByClassName("annot").length;
+      assert.equal(numAnnots, 1000);
+      done();
+    }
+
+    config = {
+      taxid: 9606,
+      chromosomes: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y"],
+      chrWidth: 10,
+      chrHeight: 500,
+      chrMargin: 5,
+      showChromosomeLabels: true,
+      annotationsPath: "../data/annotations/1000_virtual_snvs.json",
+      annotationsLayout: "overlay",
+      orientation: "horizontal",
+      onLoad: onIdeogramLoad
+    };
+
+    ideogram = new Ideogram(config);
+  });
+
+  it("should have 1000 annotations and 5 tracks in tracks annotations example", function(done) {
+    // Tests use case from ../examples/annotations_tracks.html
+    // TODO: Add class to annots indicating track
+
+    function onIdeogramLoad() {
+      var numAnnots = document.getElementsByClassName("annot").length;
+      assert.equal(numAnnots, 1000);
+      done();
+    }
+
+    var annotationTracks = [
+      {"id": "pathogenicTrack", "displayName": "Pathogenic", "color": "#F00"},
+      {"id": "likelyPathogenicTrack", "displayName": "Likely pathogenic", "color": "#DB9"},
+      {"id": "uncertainSignificanceTrack", "displayName": "Uncertain significance", "color": "#CCC"},
+      {"id": "likelyBenignTrack", "displayName": "Likely benign", "color": "#BD9"},
+      {"id": "benignTrack",  "displayName": "Benign", "color": "#8D4"}
+    ]
+
+    var config = {
+      taxid: 9606,
+      chromosomes: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y"],
+      chrWidth: 8,
+      chrHeight: 500,
+      chrMargin: 10,
+      showChromosomeLabels: true,
+      annotationsPath: "../data/annotations/1000_virtual_snvs.json",
+      annotationTracks: annotationTracks,
+      annotationHeight: 2.5,
+      orientation: "vertical",
+      onLoad: onIdeogramLoad
+    };
+
+    ideogram = new Ideogram(config);
+  });
+
+  it("should have 2015 annotations in histogram annotations example", function(done) {
+    // Tests use case from ../examples/annotations_histogram.html
+    // TODO: Add class to annots indicating track
+
+    function onIdeogramLoad() {
+      var numAnnots = document.getElementsByClassName("annot").length;
+      assert.equal(numAnnots, 2015);
+      done();
+    }
+
+    var config = {
+      taxid: 9606,
+      chromosomes: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y"],
+      chrWidth: 10,
+      chrHeight: 500,
+      chrMargin: 10,
+      showChromosomeLabels: true,
+      annotationsPath: "../data/annotations/all_human_genes.json",
+      annotationsLayout: "histogram",
+      barWidth: 3,
+      orientation: "vertical",
+      onLoad: onIdeogramLoad
+    };
+
+    ideogram = new Ideogram(config);
+  });
 
 });
