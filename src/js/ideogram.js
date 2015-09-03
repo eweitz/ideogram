@@ -6,6 +6,8 @@ var Ideogram = function(config) {
 
   this.config = config;
 
+  this.debug = false;
+
   if (!this.config.container) {
   	this.config.container = "body";
   }
@@ -1218,8 +1220,9 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
   }
 
   var t1 = new Date().getTime();
-  console.log("Time in drawSyntenicRegions: " + (t1 - t0) + " ms");
-
+  if (this.debug) {
+    console.log("Time in drawSyntenicRegions: " + (t1 - t0) + " ms");
+  }
 }
 
 /**
@@ -1368,7 +1371,9 @@ Ideogram.prototype.getHistogramBars = function(annots) {
   }
 
   var t1 = new Date().getTime();
-  console.log("Time spent in getHistogramBars: " + (t1 - t0) + " ms");
+  if (this.debug) {
+    console.log("Time spent in getHistogramBars: " + (t1 - t0) + " ms");
+  }
 
   return bars;
 
@@ -1407,8 +1412,6 @@ Ideogram.prototype.drawAnnots = function(annots) {
     .data(annots)
       .selectAll("path.annot")
       .data(function(d) {
-        //console.log("d");
-        //console.log(d)
         return d["annots"]}
       )
       .enter()
@@ -1456,8 +1459,6 @@ Ideogram.prototype.drawAnnots = function(annots) {
         //.attr("id", function(d, i) { return d.id; })
         .attr("class", "annot")
         .attr("points", function(d) {
-
-          //console.log(d.height)
 
           x1 = d.px + ideo.bump;
           x2 = d.px + ideo.config.barWidth + ideo.bump;
@@ -1796,7 +1797,9 @@ Ideogram.prototype.init = function() {
       }
     }
     var t1_b = new Date().getTime();
-    console.log("Time in getBands: " + (t1_b - t0_b) + " ms")
+    if (this.debug) {
+      console.log("Time in getBands: " + (t1_b - t0_b) + " ms")
+    }
 
     var chrIndex = 0;
 
@@ -1894,7 +1897,9 @@ Ideogram.prototype.init = function() {
       d3.selectAll(".bandLabel, .bandLabelStalk").style("display", "none");
       d3.selectAll(bandsToShow).style("display", "")
       var t1_c = new Date().getTime();
-      console.log("Time in showing bands: " + (t1_c - t0_c) + " ms")
+      if (this.debug) {
+        console.log("Time in showing bands: " + (t1_c - t0_c) + " ms");
+      }
 
       if (ideo.config.orientation === "vertical") {
         for (var i = 0; i < ideo.chromosomesArray.length; i++) {
@@ -1916,12 +1921,17 @@ Ideogram.prototype.init = function() {
       ideo.createSlider();
     }
 
+
     var t1_a = new Date().getTime();
-    console.log("Time in drawChromosome: " + (t1_a - t0_a) + " ms")
+    if (this.debug) {
+      console.log("Time in drawChromosome: " + (t1_a - t0_a) + " ms");
+    }
 
     var t1 = new Date().getTime();
-    console.log("Time constructing ideogram: " + (t1 - t0) + " ms")
-
+    if (this.debug) {
+      console.log("Time constructing ideogram: " + (t1 - t0) + " ms");
+    }
+    
     if (ideo.onLoadCallback) {
       ideo.onLoadCallback();
     }
