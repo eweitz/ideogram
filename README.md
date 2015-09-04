@@ -2,3 +2,5 @@
 
 # ideogram
 Chromosome visualization with D3.js
+
+Examples: http://eweitz.github.io/ideogram/
