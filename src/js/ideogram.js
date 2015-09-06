@@ -1,4 +1,3 @@
-
 // Developed by Eric Weitz (https://github.com/eweitz)
 
 /* Constructs a prototypal Ideogram class */
@@ -16,8 +15,8 @@ var Ideogram = function(config) {
     this.config.resolution = 850;
   }
 
-  if (!this.config.slider) {
-    this.config.slider = false;
+  if (!this.config.brush) {
+    this.config.brush = false;
   }
 
   if (!this.config.rows) {
@@ -1536,93 +1535,29 @@ Ideogram.prototype.putChromosomesInRows = function() {
 
 }
 
+Ideogram.prototype.createBrush = function(left, right) {
 
-Ideogram.prototype.createSlider = function(left, right) {
+  var ideo = this,
+      width = ideo.config.chrWidth + 6.5,
+      height = ideo.config.chrHeight,
+      x, y;
 
-  var slider,
-      ideo = this,
-      ideoDOM = d3.select("#ideogram"),
-      height = ideo.config.chrWidth + 6.5,
-      y = d3.select(".band")[0][0].getBBox().y - 3.25,
-      newLeft, newRight;
+  x = d3.scale.linear().range([0, height]);
+  y = d3.select(".band")[0][0].getBBox().y - 3.25;
 
-  if (typeof left === "undefined") {
-      left = 100;
-  }
+  ideogramBrush = d3.svg.brush()
+      .x(x)
+      .extent([0.1, 0.2]);
 
-  if (typeof right === "undefined") {
-      right = 150;
-  }
-
-  d3.select(".slider-container").remove()
-  ideoDOM = d3.select("#ideogram").append("g").attr("class", "slider-container");
-
-  ideoDOM.append("rect")
-    .attr("class", "slider-selection")
-    .attr("width", right - left)
-    .attr("height", height)
-    .attr("opacity", "0")
-    .attr("transform", "translate(" + left + ", " + y + ")")
-    .attr("cursor", "move")
-
-  ideoDOM.append("rect")
-    .attr("class", "slider-left")
-    .attr("width", left)
-    .attr("height", height)
-    .attr("fill", "#CCC")
-    .attr("opacity", "0.6")
+  var brushg = d3.select("#ideogram").append("g")
+    .attr("class", "brush")
     .attr("transform", "translate(0, " + y + ")")
-    .attr("cursor", "none")
+    .call(ideogramBrush);
 
-  ideoDOM.append("rect")
-    .attr("class", "slider-right")
-    .attr("width", ideo.config.chrHeight + 4 - right)
-    .attr("height", height)
-    .attr("fill", "#CCC")
-    .attr("opacity", "0.6")
-    .attr("transform", "translate(" + right + ", " + y + ")")
-    .attr("cursor", "none")
-
-  ideoDOM.append("rect")
-    .attr("class", "left-handle")
-    .attr("width", "3px")
-    .attr("height", height)
-    .attr("fill", "#555")
-    .attr("transform", "translate(" + left + ", " + y + ")")
-    .attr("cursor", "ew-resize")
-    .attr("rx", "2")
-    .attr("ry", "2")
-
-  ideoDOM.append("rect")
-    .attr("class", "right-handle")
-    .attr("width", "3px")
-    .attr("height", height)
-    .attr("fill", "#555")
-    .attr("transform", "translate(" + right + ", " + y + ")")
-    .attr("cursor", "ew-resize")
-    .attr("rx", "2")
-    .attr("ry", "2")
-
-
-  d3.selectAll(".slider-container").on("mousedown", function() {
-    newLeft = d3.mouse(this)[0];
-  });
-
-  d3.selectAll(".slider-container").on("mouseup", function() {
-    var x = d3.mouse(this)[0];
-
-    if (x > newLeft) {
-      newRight = x;
-    } else {
-      newRight = newLeft;
-      newLeft = x;
-    }
-
-    ideo.createSlider(newLeft, newRight);
-  });
+  brushg.selectAll("rect")
+      .attr("height", width);
 
 }
-
 
 /**
 * Called when Ideogram has finished initializing.
@@ -1917,8 +1852,8 @@ Ideogram.prototype.init = function() {
       ideo.putChromosomesInRows();
     }
 
-    if (ideo.config.slider === true) {
-      ideo.createSlider();
+    if (ideo.config.brush === true) {
+      ideo.createBrush();
     }
 
 
@@ -1931,7 +1866,7 @@ Ideogram.prototype.init = function() {
     if (this.debug) {
       console.log("Time constructing ideogram: " + (t1 - t0) + " ms");
     }
-    
+
     if (ideo.onLoadCallback) {
       ideo.onLoadCallback();
     }
