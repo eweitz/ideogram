@@ -1548,11 +1548,11 @@ Ideogram.prototype.createBrush = function(from, to) {
   y = d3.select(".band")[0][0].getBBox().y - 3.25;
 
   if (typeof from === "undefined") {
-    from = 100000000;
+    from = chr.bands[chr.bands.length - 1].bp.stop/10;
   }
 
   if (typeof right === "undefined") {
-    to = 110000000;
+    to = from*2;
   }
 
   x0 = x.invert(ideo.convertBpToPx(chr, from));
