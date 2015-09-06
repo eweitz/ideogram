@@ -1535,19 +1535,32 @@ Ideogram.prototype.putChromosomesInRows = function() {
 
 }
 
-Ideogram.prototype.createBrush = function(left, right) {
+Ideogram.prototype.createBrush = function(from, to) {
 
   var ideo = this,
       width = ideo.config.chrWidth + 6.5,
-      height = ideo.config.chrHeight,
-      x, y;
+      length = ideo.config.chrHeight,
+      chr = ideo.chromosomesArray[0],
+      x, x0, x1,
+      y;
 
-  x = d3.scale.linear().range([0, height]);
+  x = d3.scale.linear().range([0, length]);
   y = d3.select(".band")[0][0].getBBox().y - 3.25;
 
+  if (typeof from === "undefined") {
+    from = 100000000;
+  }
+
+  if (typeof right === "undefined") {
+    to = 110000000;
+  }
+
+  x0 = x.invert(ideo.convertBpToPx(chr, from));
+  x1 = x.invert(ideo.convertBpToPx(chr, to));
+
   ideogramBrush = d3.svg.brush()
-      .x(x)
-      .extent([0.1, 0.2]);
+    .x(x)
+    .extent([x0, x1]);
 
   var brushg = d3.select("#ideogram").append("g")
     .attr("class", "brush")
