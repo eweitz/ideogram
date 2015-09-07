@@ -1543,9 +1543,18 @@ Ideogram.prototype.createBrush = function(from, to) {
       chr = ideo.chromosomesArray[0],
       chrLengthBp = chr.bands[chr.bands.length - 1].bp.stop,
       x, x0, x1,
-      y;
+      y,
+      domain = [0],
+      range = [0],
+      band;
 
-  x = d3.scale.linear().domain([0, chrLengthBp]).range([0, length]);
+  for (var i = 0; i < chr.bands.length; i++) {
+    band = chr.bands[i];
+    domain.push(band.bp.stop);
+    range.push(band.px.stop);
+  }
+
+  x = d3.scale.linear().domain(domain).range(range);
   y = d3.select(".band")[0][0].getBBox().y - 3.25;
 
   if (typeof from === "undefined") {
