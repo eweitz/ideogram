@@ -10,25 +10,46 @@
 <body>
   <h1>Brush | Ideogram</h1>
   <a href=".">Back to overview</a>
+  <br/><br/>
+  <div>
+    Selected region on chromosome 19:
+    <div><span id="from"></span>-<span id="to"></span>
+      (extent: <span id="extent"></span> base pairs)
+    </div>
+  </div>
+  <div class="small-ideogram">
+    <!-- The ideogram goes here. -->
+  </div>
+  <div>
+    <script type="text/javascript">
 
-  <script type="text/javascript">
+    function writeSelectedRange() {
+      var r = ideogram.selectedRegion,
+          from = r.from.toLocaleString(), // Adds thousands-separator
+          to = r.to.toLocaleString(),
+          extent = r.extent.toLocaleString();
 
-  var config = {
-    taxid: 9606,
-    chromosomes: ["1"],
-    brush: true,
-    resolution: 550,
-    showBandLabels: true,
-    chrWidth: 20,
-    chrHeight: 900,
-    chrMargin: 10,
-    orientation: "horizontal"
-  };
+      document.getElementById("from").innerHTML = from;
+      document.getElementById("to").innerHTML = to;
+      document.getElementById("extent").innerHTML = extent;
+    }
 
-  var ideogram = new Ideogram(config);
+    var config = {
+      container: ".small-ideogram",
+      taxid: 9606,
+      chromosomes: ["19"],
+      brush: true,
+      resolution: 550,
+      showBandLabels: true,
+      chrWidth: 20,
+      chrHeight: 900,
+      chrMargin: 10,
+      orientation: "horizontal",
+      onBrushMove: writeSelectedRange,
+      onLoad: writeSelectedRange
+    };
 
-
-  </script>
-
+    var ideogram = new Ideogram(config);
+    </script>
 </body>
 </html>

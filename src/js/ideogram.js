@@ -64,6 +64,10 @@ var Ideogram = function(config) {
     this.onLoadCallback = config.onLoad;
   }
 
+  if (config.onBrushMove) {
+    this.onBrushMoveCallback = config.onBrushMove;
+  }
+
   this.coordinateSystem = "iscn";
 
   this.maxLength = {
@@ -1535,6 +1539,10 @@ Ideogram.prototype.putChromosomesInRows = function() {
 
 }
 
+Ideogram.prototype.onBrushMove = function() {
+  call(this.onBrushMoveCallback);
+}
+
 Ideogram.prototype.createBrush = function(from, to) {
 
   var ideo = this,
@@ -1570,7 +1578,7 @@ Ideogram.prototype.createBrush = function(from, to) {
 
   ideo.selectedRegion = {"from": from, "to": to, "extent": (to - from)};
 
-  ideogramBrush = d3.svg.brush()
+  ideo.brush = d3.svg.brush()
     .x(x)
     .extent([x0, x1])
     .on("brush", onBrushMove);
@@ -1578,16 +1586,20 @@ Ideogram.prototype.createBrush = function(from, to) {
   var brushg = d3.select("#ideogram").append("g")
     .attr("class", "brush")
     .attr("transform", "translate(0, " + y + ")")
-    .call(ideogramBrush);
+    .call(ideo.brush);
 
   brushg.selectAll("rect")
       .attr("height", width);
 
   function onBrushMove() {
-    var extent = ideogramBrush.extent(),
+    var extent = ideo.brush.extent(),
         from = Math.floor(extent[0]),
         to = Math.ceil(extent[1]);
     ideo.selectedRegion = {"from": from, "to": to, "extent": (to - from)};
+
+    if (ideo.onBrushMove) {
+      ideo.onBrushMoveCallback();
+    }
     //console.log(ideo.selectedRegion)
   }
 
