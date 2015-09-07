@@ -1541,22 +1541,23 @@ Ideogram.prototype.createBrush = function(from, to) {
       width = ideo.config.chrWidth + 6.5,
       length = ideo.config.chrHeight,
       chr = ideo.chromosomesArray[0],
+      chrLengthBp = chr.bands[chr.bands.length - 1].bp.stop,
       x, x0, x1,
       y;
 
-  x = d3.scale.linear().range([0, length]);
+  x = d3.scale.linear().domain([0, chrLengthBp]).range([0, length]);
   y = d3.select(".band")[0][0].getBBox().y - 3.25;
 
   if (typeof from === "undefined") {
-    from = chr.bands[chr.bands.length - 1].bp.stop/10;
+    from = chrLengthBp/10;
   }
 
   if (typeof right === "undefined") {
     to = from*2;
   }
 
-  x0 = x.invert(ideo.convertBpToPx(chr, from));
-  x1 = x.invert(ideo.convertBpToPx(chr, to));
+  x0 = from;
+  x1 = to;
 
   ideogramBrush = d3.svg.brush()
     .x(x)
