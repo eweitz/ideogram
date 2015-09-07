@@ -757,14 +757,16 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
 
           if (i == 0) {
             left += pTerPad;
-
             // TODO: this is a minor kludge to preserve visible
             // centromeres in mouse, when viewing mouse and
             // human chromosomes for e.g. orthology analysis
             if (ideo.config.multiorganism === true) {
               left += pTerPad;
             }
+          }
 
+          if (i == chrModel.bands.length - 1) {
+            left -= pTerPad - bump/2;
           }
 
           d =
@@ -782,7 +784,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
     chr.append('path')
       .attr("class", "p-ter chromosomeBorder " + chrModel.bands[0].stain)
       .attr("d",
-        "M " + pTerPad + " " + chrMargin + " " +
+        "M " + (pTerPad - bump/2 + 0.5) + " " + chrMargin + " " +
         "q -" + pTerPad + " " + (chrWidth/2) + " 0 " + chrWidth)
   } else {
     // As in mouse
@@ -807,7 +809,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
   chr.append('path')
     .attr("class", "q-ter chromosomeBorder " + chrModel.bands[chrModel.bands.length - 1].stain)
     .attr("d",
-      "M " + width + " " + chrMargin + " " +
+      "M " + (width - bump/2 - 0.5) + " " + chrMargin + " " +
       "q " + bump + " " +  chrWidth/2 + " 0 " + chrWidth
     )
 
@@ -831,14 +833,14 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
 
   chr.append('line')
     .attr("class", "cb-p-arm-top chromosomeBorder")
-    .attr('x1', bump)
+    .attr('x1', bump/2)
     .attr('y1', chrMargin)
     .attr('x2', pArmWidth)
     .attr("y2", chrMargin)
 
   chr.append('line')
     .attr("class", "cb-p-arm-bottom chromosomeBorder")
-    .attr('x1', bump)
+    .attr('x1', bump/2)
     .attr('y1', chrWidth + chrMargin)
     .attr('x2', pArmWidth)
     .attr("y2", chrWidth + chrMargin)
@@ -847,14 +849,14 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
     .attr("class", "cb-q-arm-top chromosomeBorder")
     .attr('x1', qArmStart)
     .attr('y1', chrMargin)
-    .attr('x2', qArmStart + qArmWidth)
+    .attr('x2', qArmStart + qArmWidth - bump/2 - 0.5)
     .attr("y2", chrMargin)
 
   chr.append('line')
     .attr("class", "cb-q-arm-bottom chromosomeBorder")
     .attr('x1', qArmStart)
     .attr('y1', chrWidth + chrMargin)
-    .attr('x2', qArmStart + qArmWidth)
+    .attr('x2', qArmStart + qArmWidth - bump/2 - 0.5)
     .attr("y2", chrWidth + chrMargin)
 
 }
