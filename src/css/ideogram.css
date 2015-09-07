@@ -61,28 +61,9 @@ g {
 	stroke-width:1;
 }
 
-.selecting circle {
-  fill-opacity: .2;
-}
-
-.selecting circle.selected {
-  stroke: #f00;
-}
-
-.resize path {
-  fill: #666;
-  fill-opacity: .8;
-  stroke: #000;
-  stroke-width: 1.5px;
-}
-
-.axis path, .axis line {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
-}
-
 .brush .extent {
+	fill: #F00;
+	stroke: #F00;
   fill-opacity: .3;
   shape-rendering: crispEdges;
 }
