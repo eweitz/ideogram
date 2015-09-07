@@ -756,7 +756,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
           // Normal bands
 
           if (i == 0) {
-            left += pTerPad;
+            left += pTerPad - bump/2;
             // TODO: this is a minor kludge to preserve visible
             // centromeres in mouse, when viewing mouse and
             // human chromosomes for e.g. orthology analysis
