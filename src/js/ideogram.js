@@ -1558,19 +1558,22 @@ Ideogram.prototype.createBrush = function(from, to) {
   y = d3.select(".band")[0][0].getBBox().y - 3.25;
 
   if (typeof from === "undefined") {
-    from = chrLengthBp/10;
+    from = Math.floor(chrLengthBp/10);
   }
 
   if (typeof right === "undefined") {
-    to = from*2;
+    to = Math.ceil(from*2);
   }
 
   x0 = from;
   x1 = to;
 
+  ideo.selectedRegion = {"from": from, "to": to, "extent": (to - from)};
+
   ideogramBrush = d3.svg.brush()
     .x(x)
-    .extent([x0, x1]);
+    .extent([x0, x1])
+    .on("brush", onBrushMove);
 
   var brushg = d3.select("#ideogram").append("g")
     .attr("class", "brush")
@@ -1579,6 +1582,14 @@ Ideogram.prototype.createBrush = function(from, to) {
 
   brushg.selectAll("rect")
       .attr("height", width);
+
+  function onBrushMove() {
+    var extent = ideogramBrush.extent(),
+        from = Math.floor(extent[0]),
+        to = Math.ceil(extent[1]);
+    ideo.selectedRegion = {"from": from, "to": to, "extent": (to - from)};
+    //console.log(ideo.selectedRegion)
+  }
 
 }
 
