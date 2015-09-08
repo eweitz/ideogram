@@ -1,4 +1,4 @@
-/* 
+/*
 Developed by Eric Weitz (https://github.com/eweitz)
 */
 
@@ -7,7 +7,7 @@ body {
 	line-height: 19.6px;
 }
 
-svg { 
+svg {
 	padding-left: 5px;
 }
 
@@ -21,10 +21,10 @@ svg.labeledLeft {
 }
 
 text {
-	/* 
-	Tahoma has excellent readability and 
+	/*
+	Tahoma has excellent readability and
 	space utilization at small sizes.
-	More: http://ux.stackexchange.com/a/3334 
+	More: http://ux.stackexchange.com/a/3334
 	*/
 	font: 9px Tahoma;
 	fill: #000;
@@ -52,7 +52,7 @@ g {
 }
 
 .chromosomeBorder, .acen {
-    stroke: #000; 
+    stroke: #000;
     stroke-width:0.5;
 }
 
@@ -61,7 +61,14 @@ g {
 	stroke-width:1;
 }
 
-/* NCBI stain density colors */ 
+.brush .extent {
+	fill: #F00;
+	stroke: #F00;
+  fill-opacity: .3;
+  shape-rendering: crispEdges;
+}
+
+/* NCBI stain density colors */
 .gneg {fill: #FFF}
 .gpos25 {fill: #BBB}
 .gpos33 {fill: #AAA}
@@ -72,7 +79,7 @@ g {
 .acen {fill: #FDD}
 .stalk {fill: #CCE;}
 .gvar {fill: #DDF}
-/* Used when overlaid with annotations */ 
+/* Used when overlaid with annotations */
 .faint .gneg {fill: #FFF}
 .faint .gpos25 {fill: #EEE}
 .faint .gpos33 {fill: #EEE}
