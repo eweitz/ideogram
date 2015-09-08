@@ -1,4 +1,3 @@
-
 // Developed by Eric Weitz (https://github.com/eweitz)
 
 /* Constructs a prototypal Ideogram class */
@@ -16,8 +15,8 @@ var Ideogram = function(config) {
     this.config.resolution = 850;
   }
 
-  if (!this.config.slider) {
-    this.config.slider = false;
+  if (!this.config.brush) {
+    this.config.brush = false;
   }
 
   if (!this.config.rows) {
@@ -63,6 +62,10 @@ var Ideogram = function(config) {
 
   if (config.onLoad) {
     this.onLoadCallback = config.onLoad;
+  }
+
+  if (config.onBrushMove) {
+    this.onBrushMoveCallback = config.onBrushMove;
   }
 
   this.coordinateSystem = "iscn";
@@ -753,15 +756,17 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
           // Normal bands
 
           if (i == 0) {
-            left += pTerPad;
-
+            left += pTerPad - bump/2;
             // TODO: this is a minor kludge to preserve visible
             // centromeres in mouse, when viewing mouse and
             // human chromosomes for e.g. orthology analysis
             if (ideo.config.multiorganism === true) {
               left += pTerPad;
             }
+          }
 
+          if (i == chrModel.bands.length - 1) {
+            left -= pTerPad - bump/2;
           }
 
           d =
@@ -779,7 +784,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
     chr.append('path')
       .attr("class", "p-ter chromosomeBorder " + chrModel.bands[0].stain)
       .attr("d",
-        "M " + pTerPad + " " + chrMargin + " " +
+        "M " + (pTerPad - bump/2 + 0.5) + " " + chrMargin + " " +
         "q -" + pTerPad + " " + (chrWidth/2) + " 0 " + chrWidth)
   } else {
     // As in mouse
@@ -804,7 +809,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
   chr.append('path')
     .attr("class", "q-ter chromosomeBorder " + chrModel.bands[chrModel.bands.length - 1].stain)
     .attr("d",
-      "M " + width + " " + chrMargin + " " +
+      "M " + (width - bump/2 - 0.5) + " " + chrMargin + " " +
       "q " + bump + " " +  chrWidth/2 + " 0 " + chrWidth
     )
 
@@ -828,14 +833,14 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
 
   chr.append('line')
     .attr("class", "cb-p-arm-top chromosomeBorder")
-    .attr('x1', bump)
+    .attr('x1', bump/2)
     .attr('y1', chrMargin)
     .attr('x2', pArmWidth)
     .attr("y2", chrMargin)
 
   chr.append('line')
     .attr("class", "cb-p-arm-bottom chromosomeBorder")
-    .attr('x1', bump)
+    .attr('x1', bump/2)
     .attr('y1', chrWidth + chrMargin)
     .attr('x2', pArmWidth)
     .attr("y2", chrWidth + chrMargin)
@@ -844,14 +849,14 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
     .attr("class", "cb-q-arm-top chromosomeBorder")
     .attr('x1', qArmStart)
     .attr('y1', chrMargin)
-    .attr('x2', qArmStart + qArmWidth)
+    .attr('x2', qArmStart + qArmWidth - bump/2 - 0.5)
     .attr("y2", chrMargin)
 
   chr.append('line')
     .attr("class", "cb-q-arm-bottom chromosomeBorder")
     .attr('x1', qArmStart)
     .attr('y1', chrWidth + chrMargin)
-    .attr('x2', qArmStart + qArmWidth)
+    .attr('x2', qArmStart + qArmWidth - bump/2 - 0.5)
     .attr("y2", chrWidth + chrMargin)
 
 }
@@ -1536,93 +1541,71 @@ Ideogram.prototype.putChromosomesInRows = function() {
 
 }
 
+Ideogram.prototype.onBrushMove = function() {
+  call(this.onBrushMoveCallback);
+}
 
-Ideogram.prototype.createSlider = function(left, right) {
+Ideogram.prototype.createBrush = function(from, to) {
 
-  var slider,
-      ideo = this,
-      ideoDOM = d3.select("#ideogram"),
-      height = ideo.config.chrWidth + 6.5,
-      y = d3.select(".band")[0][0].getBBox().y - 3.25,
-      newLeft, newRight;
+  var ideo = this,
+      width = ideo.config.chrWidth + 6.5,
+      length = ideo.config.chrHeight,
+      chr = ideo.chromosomesArray[0],
+      chrLengthBp = chr.bands[chr.bands.length - 1].bp.stop,
+      x, x0, x1,
+      y,
+      domain = [0],
+      range = [0],
+      band;
 
-  if (typeof left === "undefined") {
-      left = 100;
+  for (var i = 0; i < chr.bands.length; i++) {
+    band = chr.bands[i];
+    domain.push(band.bp.stop);
+    range.push(band.px.stop);
+  }
+
+  x = d3.scale.linear().domain(domain).range(range);
+  y = d3.select(".band")[0][0].getBBox().y - 3.25;
+
+  if (typeof from === "undefined") {
+    from = Math.floor(chrLengthBp/10);
   }
 
   if (typeof right === "undefined") {
-      right = 150;
+    to = Math.ceil(from*2);
   }
 
-  d3.select(".slider-container").remove()
-  ideoDOM = d3.select("#ideogram").append("g").attr("class", "slider-container");
+  x0 = from;
+  x1 = to;
 
-  ideoDOM.append("rect")
-    .attr("class", "slider-selection")
-    .attr("width", right - left)
-    .attr("height", height)
-    .attr("opacity", "0")
-    .attr("transform", "translate(" + left + ", " + y + ")")
-    .attr("cursor", "move")
+  ideo.selectedRegion = {"from": from, "to": to, "extent": (to - from)};
 
-  ideoDOM.append("rect")
-    .attr("class", "slider-left")
-    .attr("width", left)
-    .attr("height", height)
-    .attr("fill", "#CCC")
-    .attr("opacity", "0.6")
+  ideo.brush = d3.svg.brush()
+    .x(x)
+    .extent([x0, x1])
+    .on("brush", onBrushMove);
+
+  var brushg = d3.select("#ideogram").append("g")
+    .attr("class", "brush")
     .attr("transform", "translate(0, " + y + ")")
-    .attr("cursor", "none")
+    .call(ideo.brush);
 
-  ideoDOM.append("rect")
-    .attr("class", "slider-right")
-    .attr("width", ideo.config.chrHeight + 4 - right)
-    .attr("height", height)
-    .attr("fill", "#CCC")
-    .attr("opacity", "0.6")
-    .attr("transform", "translate(" + right + ", " + y + ")")
-    .attr("cursor", "none")
+  brushg.selectAll("rect")
+      .attr("height", width);
 
-  ideoDOM.append("rect")
-    .attr("class", "left-handle")
-    .attr("width", "3px")
-    .attr("height", height)
-    .attr("fill", "#555")
-    .attr("transform", "translate(" + left + ", " + y + ")")
-    .attr("cursor", "ew-resize")
-    .attr("rx", "2")
-    .attr("ry", "2")
+  function onBrushMove() {
+    var extent = ideo.brush.extent(),
+        from = Math.floor(extent[0]),
+        to = Math.ceil(extent[1]);
+    ideo.selectedRegion = {"from": from, "to": to, "extent": (to - from)};
 
-  ideoDOM.append("rect")
-    .attr("class", "right-handle")
-    .attr("width", "3px")
-    .attr("height", height)
-    .attr("fill", "#555")
-    .attr("transform", "translate(" + right + ", " + y + ")")
-    .attr("cursor", "ew-resize")
-    .attr("rx", "2")
-    .attr("ry", "2")
-
-
-  d3.selectAll(".slider-container").on("mousedown", function() {
-    newLeft = d3.mouse(this)[0];
-  });
-
-  d3.selectAll(".slider-container").on("mouseup", function() {
-    var x = d3.mouse(this)[0];
-
-    if (x > newLeft) {
-      newRight = x;
-    } else {
-      newRight = newLeft;
-      newLeft = x;
+    if (ideo.onBrushMove) {
+      ideo.onBrushMoveCallback();
     }
-
-    ideo.createSlider(newLeft, newRight);
-  });
+    //console.log(ideo.selectedRegion)
+  }
 
 }
-
 
 /**
 * Called when Ideogram has finished initializing.
@@ -1917,8 +1900,8 @@ Ideogram.prototype.init = function() {
       ideo.putChromosomesInRows();
     }
 
-    if (ideo.config.slider === true) {
-      ideo.createSlider();
+    if (ideo.config.brush === true) {
+      ideo.createBrush();
     }
 
 
@@ -1931,7 +1914,7 @@ Ideogram.prototype.init = function() {
     if (this.debug) {
       console.log("Time constructing ideogram: " + (t1 - t0) + " ms");
     }
-    
+
     if (ideo.onLoadCallback) {
       ideo.onLoadCallback();
     }
