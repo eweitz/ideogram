@@ -437,4 +437,83 @@ describe("Ideogram", function() {
     ideogram = new Ideogram(config);
   });
 
+
+  it("should have histogram bars flush with chromosome ends", function(done) {
+    // Tests use case from ../examples/annotations_histogram.html
+    // TODO: Add class to annots indicating track
+
+    function getTerEnd(arm) {
+      // Helper function to get the x coordinate of the outermost
+      // edge of the p or q arm of chromosome 1
+
+      var ter = d3.select("." + arm + "-ter"),
+          terBox = ter[0][0].getBBox(),
+          terX = terBox.x,
+          terWidth = terBox.width,
+          terEnd,
+
+          terCurve = parseInt(ter.attr("d").split(" ")[4]),
+          terCurveX = parseInt(ter.attr("d").split(" ")[1]),
+
+          terStroke = parseFloat(ter.style("stroke-width").slice(0, -2));
+
+          console.log("terX")
+          console.log(terX)
+          console.log("terWidth")
+          console.log(terWidth)
+          console.log("terCurve")
+          console.log(terCurve)
+          console.log("terCurveX")
+          console.log(terCurveX)
+          console.log("terStroke")
+          console.log(terStroke)
+
+
+          if (arm == "p") {
+            terEnd = terX + terWidth + terCurve + terCurveX - terStroke;
+          } else {
+            terEnd = terCurve + terCurveX - terStroke;
+          }
+
+          terEnd = terEnd.toFixed(2);
+
+          return terEnd;
+    }
+
+    function onIdeogramLoad() {
+
+      var pterEnd = getTerEnd("p"),
+          firstAnnotEnd = d3.selectAll("#chr1-9606 .annot")[0][0].getBBox().x,
+          qterEnd = getTerEnd("q"),
+          tmp = d3.selectAll("#chr1-9606 .annot"),
+          tmp = tmp[0][tmp[0].length - 1].getBBox(),
+          lastAnnotEnd = tmp.x + tmp.width;
+
+          console.log("pterEnd");
+          console.log(pterEnd);
+          console.log("qterEnd");
+          console.log(qterEnd);
+          assert.equal(pterEnd, firstAnnotEnd);
+          assert.equal(qterEnd, lastAnnotEnd);
+
+      done();
+    }
+
+    var config = {
+      taxid: 9606,
+      chromosomes: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y"],
+      chrWidth: 10,
+      chrHeight: 500,
+      chrMargin: 10,
+      showChromosomeLabels: true,
+      annotationsPath: "../data/annotations/all_human_genes.json",
+      annotationsLayout: "histogram",
+      barWidth: 3,
+      orientation: "vertical",
+      onLoad: onIdeogramLoad
+    };
+
+    ideogram = new Ideogram(config);
+  });
+
 });
