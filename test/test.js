@@ -457,18 +457,6 @@ describe("Ideogram", function() {
 
           terStroke = parseFloat(ter.style("stroke-width").slice(0, -2));
 
-          console.log("terX")
-          console.log(terX)
-          console.log("terWidth")
-          console.log(terWidth)
-          console.log("terCurve")
-          console.log(terCurve)
-          console.log("terCurveX")
-          console.log(terCurveX)
-          console.log("terStroke")
-          console.log(terStroke)
-
-
           if (arm == "p") {
             terEnd = terX + terWidth + terCurve + terCurveX - terStroke;
           } else {
@@ -480,7 +468,7 @@ describe("Ideogram", function() {
           return terEnd;
     }
 
-    function onIdeogramLoad() {
+    function onIdeogramLoadAnnots() {
 
       var pterEnd = getTerEnd("p"),
           firstAnnotEnd = d3.selectAll("#chr1-9606 .annot")[0][0].getBBox().x,
@@ -489,12 +477,10 @@ describe("Ideogram", function() {
           tmp = tmp[0][tmp[0].length - 1].getBBox(),
           lastAnnotEnd = tmp.x + tmp.width;
 
-          console.log("pterEnd");
-          console.log(pterEnd);
-          console.log("qterEnd");
-          console.log(qterEnd);
-          assert.equal(pterEnd, firstAnnotEnd);
-          assert.equal(qterEnd, lastAnnotEnd);
+          console.log("pterEnd - firstAnnotEnd: " + (pterEnd - firstAnnotEnd));
+          console.log("qterEnd - lastAnnotEnd: " + (qterEnd - lastAnnotEnd));
+          assert.isBelow(pterEnd - firstAnnotEnd, 1);
+          assert.isAbove(qterEnd - lastAnnotEnd, -1);
 
       done();
     }
@@ -510,7 +496,7 @@ describe("Ideogram", function() {
       annotationsLayout: "histogram",
       barWidth: 3,
       orientation: "vertical",
-      onLoad: onIdeogramLoad
+      onLoadAnnots: onIdeogramLoadAnnots
     };
 
     ideogram = new Ideogram(config);

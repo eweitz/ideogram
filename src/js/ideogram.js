@@ -64,6 +64,10 @@ var Ideogram = function(config) {
     this.onLoadCallback = config.onLoad;
   }
 
+  if (config.onLoadAnnots) {
+    this.onLoadAnnotsCallback = config.onLoadAnnots;
+  }
+
   if (config.onBrushMove) {
     this.onBrushMoveCallback = config.onBrushMove;
   }
@@ -1488,6 +1492,9 @@ Ideogram.prototype.drawAnnots = function(annots) {
 
     }
 
+  if (ideo.onLoadAnnotsCallback) {
+    ideo.onLoadAnnotsCallback();
+  }
 }
 
 
@@ -1614,6 +1621,10 @@ Ideogram.prototype.createBrush = function(from, to) {
 */
 Ideogram.prototype.onLoad = function() {
   call(this.onLoadCallback);
+}
+
+Ideogram.prototype.onLoadAnnots = function() {
+  call(this.onLoadAnnotsCallback);
 }
 
 /**
