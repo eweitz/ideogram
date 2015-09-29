@@ -496,7 +496,7 @@ describe("Ideogram", function() {
       annotationsLayout: "histogram",
       barWidth: 3,
       orientation: "vertical",
-      onLoadAnnots: onIdeogramLoadAnnots
+      onDrawAnnots: onIdeogramLoadAnnots
     };
 
     ideogram = new Ideogram(config);
