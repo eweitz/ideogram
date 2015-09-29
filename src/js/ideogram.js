@@ -1373,7 +1373,7 @@ Ideogram.prototype.getHistogramBars = function(annots) {
     annots = bars[i]["annots"];
     for (j = 0; j < annots.length; j++) {
       barCount = annots[j]["count"];
-      height = (barCount/maxAnnotsPerBar) * ideo.config.chrMargin - 1;
+      height = (barCount/maxAnnotsPerBar) * ideo.config.chrMargin;
       //console.log(height)
       bars[i]["annots"][j]["height"] = height;
     }
