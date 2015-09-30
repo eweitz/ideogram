@@ -64,6 +64,10 @@ var Ideogram = function(config) {
     this.onLoadCallback = config.onLoad;
   }
 
+  if (config.onDrawAnnots) {
+    this.onDrawAnnotsCallback = config.onDrawAnnots;
+  }
+
   if (config.onBrushMove) {
     this.onBrushMoveCallback = config.onBrushMove;
   }
@@ -784,7 +788,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
     chr.append('path')
       .attr("class", "p-ter chromosomeBorder " + chrModel.bands[0].stain)
       .attr("d",
-        "M " + (pTerPad - bump/2 + 0.5) + " " + chrMargin + " " +
+        "M " + (pTerPad - bump/2 + 0.1) + " " + chrMargin + " " +
         "q -" + pTerPad + " " + (chrWidth/2) + " 0 " + chrWidth)
   } else {
     // As in mouse
@@ -809,7 +813,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
   chr.append('path')
     .attr("class", "q-ter chromosomeBorder " + chrModel.bands[chrModel.bands.length - 1].stain)
     .attr("d",
-      "M " + (width - bump/2 - 0.5) + " " + chrMargin + " " +
+      "M " + (width - bump/2 - 0.6) + " " + chrMargin + " " +
       "q " + bump + " " +  chrWidth/2 + " 0 " + chrWidth
     )
 
@@ -1325,8 +1329,8 @@ Ideogram.prototype.getHistogramBars = function(annots) {
     numBins = Math.round(chrPxStop / barWidth);
     bar = {"chr": chr, "annots": []}
     for (i = 0; i < numBins; i++) {
-      px = i*barWidth;
-      bp = ideo.convertPxToBp(chrModel, px);
+      px = i*barWidth - ideo.bump;
+      bp = ideo.convertPxToBp(chrModel, px + ideo.bump);
       bar["annots"].push({"bp": bp, "px": px, "count": 0, "chrIndex": chrIndex, "color": "#F00"});
     }
     bars.push(bar);
@@ -1369,7 +1373,7 @@ Ideogram.prototype.getHistogramBars = function(annots) {
     annots = bars[i]["annots"];
     for (j = 0; j < annots.length; j++) {
       barCount = annots[j]["count"];
-      height = (barCount/maxAnnotsPerBar) * ideo.config.chrMargin - 1;
+      height = (barCount/maxAnnotsPerBar) * ideo.config.chrMargin;
       //console.log(height)
       bars[i]["annots"][j]["height"] = height;
     }
@@ -1488,6 +1492,9 @@ Ideogram.prototype.drawAnnots = function(annots) {
 
     }
 
+  if (ideo.onDrawAnnotsCallback) {
+    ideo.onDrawAnnotsCallback();
+  }
 }
 
 
@@ -1614,6 +1621,10 @@ Ideogram.prototype.createBrush = function(from, to) {
 */
 Ideogram.prototype.onLoad = function() {
   call(this.onLoadCallback);
+}
+
+Ideogram.prototype.onDrawAnnots = function() {
+  call(this.onDrawAnnotsCallback);
 }
 
 /**
