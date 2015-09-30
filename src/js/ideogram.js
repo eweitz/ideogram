@@ -703,7 +703,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
   if (chrModel.centromerePosition != "telocentric") {
     pTerPad = bump;
   } else {
-    pTerPad = Math.round(bump/4);
+    pTerPad = Math.round(bump/4) + 3;
   }
 
   chr = d3.select("svg")
@@ -795,15 +795,15 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
     chr.append('path')
       .attr("class", "p-ter chromosomeBorder " + chrModel.bands[0].stain)
       .attr("d",
-        "M " + pTerPad + " " + chrMargin + " " +
-        "l -" + pTerPad + " 0 " +
+        "M " + (pTerPad - 3) + " " + chrMargin + " " +
+        "l -" + (pTerPad - 2) + " 0 " +
         "l 0 " + chrWidth + " " +
-        "l " + pTerPad + " 0 z")
+        "l " + (pTerPad - 2) + " 0 z")
 
     chr.insert('path', ':first-child')
       .attr("class", "acen")
       .attr("d",
-        "M " + (pTerPad - 1) + " " + (chrMargin + chrWidth * 0.1) + " " +
+        "M " + (pTerPad - 3) + " " + (chrMargin + chrWidth * 0.1) + " " +
         "l " + (pTerPad + bump/2 + 1) + " 0 " +
         "l 0 " + chrWidth * 0.8 + " " +
         "l -" + (pTerPad + bump/2 + 1) + " 0 z")
@@ -829,7 +829,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
     qArmStart = qcen.px.stop;
   } else {
     // For telocentric centromeres, as in many mouse chromosomes
-    pArmWidth = 5;
+    pArmWidth = 2;
     qArmStart = document.querySelectorAll("#" + chrModel.id + " .band")[0].getBBox().x;
   }
 
