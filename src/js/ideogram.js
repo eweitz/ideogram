@@ -555,8 +555,8 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation,
 
   if (typeof(scale) !== "undefined" && scale.hasOwnProperty("x") && !(scale.x == 1 && scale.y == 1)) {
     scaleSvg = "scale(" + scale.x + "," + scale.y + ")";
-    x = -2;
-    y = (scale === "" ? -16 : -12);
+    x = -6;
+    y = (scale === "" ? -16 : -14);
   } else {
     x = -8;
     y = -16;
@@ -958,7 +958,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 
     horizontalTransform =
       "rotate(0)" +
-      "translate(0, " + cy2 + ")" +
+      "translate(20, " + cy2 + ")" +
       scale;
 
   } else {
@@ -978,7 +978,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
       bandPad = 15;
     }
     cx = chrMargin + (chrWidth-bandPad)*(chrIndex - 2);
-    cy = cx;
+    cy = cx + 5;
 
     if (!this.config.showBandLabels) {
       cx += bandPad;
