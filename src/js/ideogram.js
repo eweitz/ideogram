@@ -819,7 +819,8 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
 
   var pcenIndex = chrModel["pcenIndex"],
       pcen = chrModel.bands[pcenIndex],
-      qcen = chrModel.bands[pcenIndex + 1];
+      qcen = chrModel.bands[pcenIndex + 1],
+      pBump;
 
   // Why does human chromosome 11 lack a centromeric p-arm band?
   // Answer: because of a bug in the data.  Hack removed; won't work
@@ -827,9 +828,11 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
   if (pcenIndex > 0) {
     pArmWidth = pcen.px.start;
     qArmStart = qcen.px.stop;
+    pBump = bump
   } else {
     // For telocentric centromeres, as in many mouse chromosomes
     pArmWidth = 2;
+    pBump = 0;
     qArmStart = document.querySelectorAll("#" + chrModel.id + " .band")[0].getBBox().x;
   }
 
