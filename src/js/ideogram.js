@@ -64,6 +64,10 @@ var Ideogram = function(config) {
     this.onLoadCallback = config.onLoad;
   }
 
+  if (config.onDrawAnnots) {
+    this.onDrawAnnotsCallback = config.onDrawAnnots;
+  }
+
   if (config.onBrushMove) {
     this.onBrushMoveCallback = config.onBrushMove;
   }
@@ -551,8 +555,8 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation,
 
   if (typeof(scale) !== "undefined" && scale.hasOwnProperty("x") && !(scale.x == 1 && scale.y == 1)) {
     scaleSvg = "scale(" + scale.x + "," + scale.y + ")";
-    x = -2;
-    y = (scale === "" ? -16 : -12);
+    x = -6;
+    y = (scale === "" ? -16 : -14);
   } else {
     x = -8;
     y = -16;
@@ -699,7 +703,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
   if (chrModel.centromerePosition != "telocentric") {
     pTerPad = bump;
   } else {
-    pTerPad = Math.round(bump/4);
+    pTerPad = Math.round(bump/4) + 3;
   }
 
   chr = d3.select("svg")
@@ -784,22 +788,22 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
     chr.append('path')
       .attr("class", "p-ter chromosomeBorder " + chrModel.bands[0].stain)
       .attr("d",
-        "M " + (pTerPad - bump/2 + 0.5) + " " + chrMargin + " " +
+        "M " + (pTerPad - bump/2 + 0.1) + " " + chrMargin + " " +
         "q -" + pTerPad + " " + (chrWidth/2) + " 0 " + chrWidth)
   } else {
     // As in mouse
     chr.append('path')
       .attr("class", "p-ter chromosomeBorder " + chrModel.bands[0].stain)
       .attr("d",
-        "M " + pTerPad + " " + chrMargin + " " +
-        "l -" + pTerPad + " 0 " +
+        "M " + (pTerPad - 3) + " " + chrMargin + " " +
+        "l -" + (pTerPad - 2) + " 0 " +
         "l 0 " + chrWidth + " " +
-        "l " + pTerPad + " 0 z")
+        "l " + (pTerPad - 2) + " 0 z")
 
     chr.insert('path', ':first-child')
       .attr("class", "acen")
       .attr("d",
-        "M " + (pTerPad - 1) + " " + (chrMargin + chrWidth * 0.1) + " " +
+        "M " + (pTerPad - 3) + " " + (chrMargin + chrWidth * 0.1) + " " +
         "l " + (pTerPad + bump/2 + 1) + " 0 " +
         "l 0 " + chrWidth * 0.8 + " " +
         "l -" + (pTerPad + bump/2 + 1) + " 0 z")
@@ -809,13 +813,14 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
   chr.append('path')
     .attr("class", "q-ter chromosomeBorder " + chrModel.bands[chrModel.bands.length - 1].stain)
     .attr("d",
-      "M " + (width - bump/2 - 0.5) + " " + chrMargin + " " +
+      "M " + (width - bump/2 - 0.6) + " " + chrMargin + " " +
       "q " + bump + " " +  chrWidth/2 + " 0 " + chrWidth
     )
 
   var pcenIndex = chrModel["pcenIndex"],
       pcen = chrModel.bands[pcenIndex],
-      qcen = chrModel.bands[pcenIndex + 1];
+      qcen = chrModel.bands[pcenIndex + 1],
+      pBump;
 
   // Why does human chromosome 11 lack a centromeric p-arm band?
   // Answer: because of a bug in the data.  Hack removed; won't work
@@ -823,9 +828,11 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
   if (pcenIndex > 0) {
     pArmWidth = pcen.px.start;
     qArmStart = qcen.px.stop;
+    pBump = bump
   } else {
     // For telocentric centromeres, as in many mouse chromosomes
-    pArmWidth = 5;
+    pArmWidth = 2;
+    pBump = 0;
     qArmStart = document.querySelectorAll("#" + chrModel.id + " .band")[0].getBBox().x;
   }
 
@@ -951,7 +958,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 
     horizontalTransform =
       "rotate(0)" +
-      "translate(0, " + cy2 + ")" +
+      "translate(20, " + cy2 + ")" +
       scale;
 
   } else {
@@ -971,7 +978,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
       bandPad = 15;
     }
     cx = chrMargin + (chrWidth-bandPad)*(chrIndex - 2);
-    cy = cx;
+    cy = cx + 5;
 
     if (!this.config.showBandLabels) {
       cx += bandPad;
@@ -1325,8 +1332,8 @@ Ideogram.prototype.getHistogramBars = function(annots) {
     numBins = Math.round(chrPxStop / barWidth);
     bar = {"chr": chr, "annots": []}
     for (i = 0; i < numBins; i++) {
-      px = i*barWidth;
-      bp = ideo.convertPxToBp(chrModel, px);
+      px = i*barWidth - ideo.bump;
+      bp = ideo.convertPxToBp(chrModel, px + ideo.bump);
       bar["annots"].push({"bp": bp, "px": px, "count": 0, "chrIndex": chrIndex, "color": "#F00"});
     }
     bars.push(bar);
@@ -1369,7 +1376,7 @@ Ideogram.prototype.getHistogramBars = function(annots) {
     annots = bars[i]["annots"];
     for (j = 0; j < annots.length; j++) {
       barCount = annots[j]["count"];
-      height = (barCount/maxAnnotsPerBar) * ideo.config.chrMargin - 1;
+      height = (barCount/maxAnnotsPerBar) * ideo.config.chrMargin;
       //console.log(height)
       bars[i]["annots"][j]["height"] = height;
     }
@@ -1488,6 +1495,9 @@ Ideogram.prototype.drawAnnots = function(annots) {
 
     }
 
+  if (ideo.onDrawAnnotsCallback) {
+    ideo.onDrawAnnotsCallback();
+  }
 }
 
 
@@ -1614,6 +1624,10 @@ Ideogram.prototype.createBrush = function(from, to) {
 */
 Ideogram.prototype.onLoad = function() {
   call(this.onLoadCallback);
+}
+
+Ideogram.prototype.onDrawAnnots = function() {
+  call(this.onDrawAnnotsCallback);
 }
 
 /**
