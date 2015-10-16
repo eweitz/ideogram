@@ -69,16 +69,16 @@ g {
 }
 
 /* NCBI stain density colors */
-.gneg {fill: #FFF}
-.gpos25 {fill: #BBB}
-.gpos33 {fill: #AAA}
-.gpos50 {fill: #888}
-.gpos66 {fill: #666}
-.gpos75 {fill: #444}
-.gpos100 {fill: #000}
-.acen {fill: #FDD}
-.stalk {fill: #CCE;}
-.gvar {fill: #DDF}
+.gneg {fill: url(#gneg)}
+.gpos25 {fill: url(#gpos25)}
+.gpos33 {fill: url(#gpos33)}
+.gpos50 {fill: url(#gpos50)}
+.gpos66 {fill: url(#gpos66)}
+.gpos75 {fill: url(#gpos75)}
+.gpos100 {fill: url(#gpos100)}
+.acen {fill: url(#acen)}
+.stalk {fill: url(#stalk)}
+.gvar {fill: url(#gvar)}
 /* Used when overlaid with annotations */
 .faint .gneg {fill: #FFF}
 .faint .gpos25 {fill: #EEE}

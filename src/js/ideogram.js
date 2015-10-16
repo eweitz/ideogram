@@ -1630,6 +1630,44 @@ Ideogram.prototype.onDrawAnnots = function() {
   call(this.onDrawAnnotsCallback);
 }
 
+
+Ideogram.prototype.getBandColorGradients = function() {
+
+  var color, colors,
+      stain,
+      gradients = "";
+
+  colors = [
+    ["gneg", "#FFF", "#FFF"],
+    ["gpos25", "#DDD", "#BBB"],
+    ["gpos33", "#BBB", "#AAA"],
+    ["gpos50", "#DDD", "#888"],
+    ["gpos66", "#888", "#666"],
+    ["gpos75", "#888", "#444"],
+    ["gpos100", "#888", "#000"],
+    ["acen", "#FEE", "#FDD"],
+    ["stalk", "#E5E5FF", "#CCE"],
+    ["gvar", "#EEF", "#DDF"]
+  ]
+
+  for (var i = 0; i < colors.length; i++) {
+    stain = colors[i][0];
+    color1 = colors[i][1];
+    color2 = colors[i][2];
+    gradients +=
+      '<linearGradient id="' + stain + '" x1="0%" y1="0%" x2="0%" y2="100%">' +
+        '<stop offset="10%" stop-color="' + color2 + '" />' +
+        '<stop offset="15%" stop-color="' + color1 + '" />' +
+        '<stop offset="100%" stop-color="' + color2 + '" />' +
+      '</linearGradient>'
+  }
+
+  gradients = "<defs>" + gradients + "</defs>";
+
+  return gradients;
+}
+
+
 /**
 * Initializes an ideogram.
 * Sets some high-level properties based on instance configuration,
@@ -1701,10 +1739,13 @@ Ideogram.prototype.init = function() {
 
   var svg = d3.select(this.config.container)
     .append("svg")
-    .attr("id", "ideogram")
-    .attr("class", svgClass)
-    .attr("width", "97%")
-    .attr("height", ideoHeight)
+      .attr("id", "ideogram")
+      .attr("class", svgClass)
+      .attr("width", "97%")
+      .attr("height", ideoHeight)
+
+  var gradients = this.getBandColorGradients();
+  document.getElementById("ideogram").innerHTML += gradients;
 
   var bandsArray = [],
       maxLength = 0,
@@ -1722,7 +1763,7 @@ Ideogram.prototype.init = function() {
 
     if (typeof chrBands === "undefined") {
 
-      d3.xhr("data/bands/ncbi/" + bandDataFileNames[taxid])
+      d3.xhr("../data/bands/ncbi/" + bandDataFileNames[taxid])
         .on("beforesend", function(data) {
           // Ensures correct taxid is processed in response callback; using
           // simply 'taxid' variable gives the last *requested* taxid, which
