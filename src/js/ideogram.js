@@ -1638,27 +1638,37 @@ Ideogram.prototype.getBandColorGradients = function() {
       gradients = "";
 
   colors = [
-    ["gneg", "#FFF", "#FFF"],
-    ["gpos25", "#DDD", "#BBB"],
-    ["gpos33", "#BBB", "#AAA"],
-    ["gpos50", "#DDD", "#888"],
-    ["gpos66", "#888", "#666"],
-    ["gpos75", "#888", "#444"],
-    ["gpos100", "#888", "#000"],
-    ["acen", "#FEE", "#FDD"],
-    ["stalk", "#E5E5FF", "#CCE"],
-    ["gvar", "#EEF", "#DDF"]
+    ["gneg", "#FFF", "#FFF", "#DDD"],
+    ["gpos25", "#C8C8C8", "#DDD", "#BBB"],
+    ["gpos33", "#BBB", "#BBB", "#AAA"],
+    ["gpos50", "#999", "#AAA", "#888"],
+    ["gpos66", "#888", "#888", "#666"],
+    ["gpos75", "#777", "#777", "#444"],
+    ["gpos100", "#444", "#666", "#000"],
+    ["acen", "#FEE", "#FEE", "#FDD"],
+    ["stalk", "#DDF", "#DDF", "#CCE"],
+    ["gvar", "#EEF", "#EEF", "#DDF"]
   ]
 
   for (var i = 0; i < colors.length; i++) {
     stain = colors[i][0];
     color1 = colors[i][1];
     color2 = colors[i][2];
+    color3 = colors[i][3];
     gradients +=
-      '<linearGradient id="' + stain + '" x1="0%" y1="0%" x2="0%" y2="100%">' +
-        '<stop offset="10%" stop-color="' + color2 + '" />' +
-        '<stop offset="15%" stop-color="' + color1 + '" />' +
-        '<stop offset="100%" stop-color="' + color2 + '" />' +
+      '<linearGradient id="' + stain + '" x1="0%" y1="0%" x2="0%" y2="100%">';
+    if (stain == "gneg") {
+      gradients +=
+        '<stop offset="70%" stop-color="' + color2 + '" />' +
+        '<stop offset="95%" stop-color="' + color3 + '" />' +
+        '<stop offset="100%" stop-color="' + color1 + '" />';
+    } else {
+      gradients +=
+        '<stop offset="5%" stop-color="' + color1 + '" />' +
+        '<stop offset="15%" stop-color="' + color2 + '" />' +
+        '<stop offset="60%" stop-color="' + color3 + '" />';
+    }
+    gradients +=
       '</linearGradient>'
   }
 
