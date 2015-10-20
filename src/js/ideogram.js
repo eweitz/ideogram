@@ -1682,8 +1682,21 @@ Ideogram.prototype.getBandColorGradients = function() {
        '<line x1="0" y1="0" x2="0" y2="100%" style="stroke:#99C; stroke-width:0.7;" />' +
     '</pattern>';
 
-  gradients = "<defs>" + gradients + "</defs>";
 
+  gradients = "<defs>" + gradients + "</defs>";
+  css = "<style>" +
+    '.gneg {fill: url("#gneg")} ' +
+    '.gpos25 {fill: url("#gpos25")} ' +
+    '.gpos33 {fill: url("#gpos33")} ' +
+    '.gpos50 {fill: url("#gpos50")} ' +
+    '.gpos66 {fill: url("#gpos66")} ' +
+    '.gpos75 {fill: url("#gpos75")} ' +
+    '.gpos100 {fill: url("#gpos100")} ' +
+    '.acen {fill: url("#acen")} ' +
+    '.stalk {fill: url("#stalk")} ' +
+    '.gvar {fill: url("#gvar")} ' +
+  '</style>';
+  gradients = css + gradients;
   return gradients;
 }
 

@@ -68,17 +68,6 @@ g {
   shape-rendering: crispEdges;
 }
 
-/* NCBI stain density colors */
-.gneg {fill: url(#gneg)}
-.gpos25 {fill: url(#gpos25)}
-.gpos33 {fill: url(#gpos33)}
-.gpos50 {fill: url(#gpos50)}
-.gpos66 {fill: url(#gpos66)}
-.gpos75 {fill: url(#gpos75)}
-.gpos100 {fill: url(#gpos100)}
-.acen {fill: url(#acen)}
-.stalk {fill: url(#stalk)}
-.gvar {fill: url(#gvar)}
 /* Used when overlaid with annotations */
 .faint .gneg {fill: #FFF}
 .faint .gpos25 {fill: #EEE}
