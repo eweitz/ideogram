@@ -1645,9 +1645,7 @@ Ideogram.prototype.getBandColorGradients = function() {
     ["gpos66", "#888", "#888", "#666"],
     ["gpos75", "#777", "#777", "#444"],
     ["gpos100", "#444", "#666", "#000"],
-    ["acen", "#FEE", "#FEE", "#FDD"],
-    ["stalk", "#DDF", "#DDF", "#CCE"],
-    ["gvar", "#EEF", "#EEF", "#DDF"]
+    ["acen", "#FEE", "#FEE", "#FDD"]
   ]
 
   for (var i = 0; i < colors.length; i++) {
@@ -1671,6 +1669,18 @@ Ideogram.prototype.getBandColorGradients = function() {
     gradients +=
       '</linearGradient>'
   }
+
+  gradients +=
+    '<pattern id="stalk" width="2" height="1" patternUnits="userSpaceOnUse" ' +
+      'patternTransform="rotate(30 0 0)">' +
+      '<rect x="0" y="0" width="10" height="2" fill="#CCE" /> ' +
+       '<line x1="0" y1="0" x2="0" y2="100%" style="stroke:#88B; stroke-width:0.7;" />' +
+    '</pattern>' +
+    '<pattern id="gvar" width="2" height="1" patternUnits="userSpaceOnUse" ' +
+      'patternTransform="rotate(-30 0 0)">' +
+      '<rect x="0" y="0" width="10" height="2" fill="#DDF" /> ' +
+       '<line x1="0" y1="0" x2="0" y2="100%" style="stroke:#99C; stroke-width:0.7;" />' +
+    '</pattern>';
 
   gradients = "<defs>" + gradients + "</defs>";
 
