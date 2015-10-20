@@ -1667,7 +1667,7 @@ Ideogram.prototype.getBandColorGradients = function() {
         '<stop offset="60%" stop-color="' + color3 + '" />';
     }
     gradients +=
-      '</linearGradient>'
+      '</linearGradient>';
   }
 
   gradients +=
@@ -1681,7 +1681,6 @@ Ideogram.prototype.getBandColorGradients = function() {
       '<rect x="0" y="0" width="10" height="2" fill="#DDF" /> ' +
        '<line x1="0" y1="0" x2="0" y2="100%" style="stroke:#99C; stroke-width:0.7;" />' +
     '</pattern>';
-
 
   gradients = "<defs>" + gradients + "</defs>";
   css = "<style>" +
@@ -1697,6 +1696,9 @@ Ideogram.prototype.getBandColorGradients = function() {
     '.gvar {fill: url("#gvar")} ' +
   '</style>';
   gradients = css + gradients;
+
+  //alert(gradients)
+
   return gradients;
 }
 
@@ -1770,15 +1772,15 @@ Ideogram.prototype.init = function() {
     ideoHeight = this.config.rows * (ideoHeight - 40)
   }
 
+  var gradients = this.getBandColorGradients();
+
   var svg = d3.select(this.config.container)
     .append("svg")
       .attr("id", "ideogram")
       .attr("class", svgClass)
       .attr("width", "97%")
       .attr("height", ideoHeight)
-
-  var gradients = this.getBandColorGradients();
-  document.getElementById("ideogram").innerHTML += gradients;
+      .html(gradients)
 
   var bandsArray = [],
       maxLength = 0,
