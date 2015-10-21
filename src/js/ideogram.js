@@ -1509,20 +1509,27 @@ Ideogram.prototype.putChromosomesInRows = function() {
         chrsPerRow,
         numChromosomes,
         rowIndex, rowIndexStop,
+        riCorrection,
         rowHeight, chrIndex, chrWidth, chrMargin;
 
     numChromosomes = ideo.config.chromosomes[ideo.config.taxid].length;
     chrsPerRow = Math.floor(numChromosomes/rows);
 
-    for (i = 1; i < rows; i++) {
+    riCorrection = 0;
+    if (d3.select("svg > *")[0][0].tagName !== "g") {
+      // Accounts for cross-browser differences in handling of nth-child
+      riCorrection = 2;
+    }
 
-      rowIndex = (chrsPerRow * i) + 1;
+    for (var i = 1; i < rows; i++) {
+
+      rowIndex = (chrsPerRow * i) + 1 + riCorrection;
       rowIndexStop = rowIndex + chrsPerRow;
       range = "nth-child(n+" + rowIndex + "):nth-child(-n+" + rowIndexStop + ")";
 
       rowHeight = ideo.config.chrHeight + 20;
 
-      chrIndex = rowIndex + 1;
+      chrIndex = rowIndex + 1 - riCorrection;
       chrWidth = ideo.config.chrWidth;
       chrMargin = ideo.config.chrMargin * chrIndex;
 
