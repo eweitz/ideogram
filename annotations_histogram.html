@@ -2,15 +2,13 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>Human | Ideogram</title>
-  <link type="text/css" rel="stylesheet" href="../src/css/ideogram.css"/>
-  <script type="text/javascript" src="../src/js/d3.min.js"></script>
-  <script type="text/javascript" src="../src/js/ideogram.js"></script>
-  <script type="text/javascript" src="../data/bands/native/ideogram_9606_GCF_000001405.26_550.js"></script>
-
+  <title>Annotations, histogram | Ideogram</title>
+  <link type="text/css" rel="stylesheet" href="src/css/ideogram.css"/>
+  <script type="text/javascript" src="src/js/d3.min.js"></script>
+  <script type="text/javascript" src="src/js/ideogram.min.js"></script>
 </head>
 <body>
-  <h1>Human | Ideogram</h1>
+  <h1>Annotations, histogram | Ideogram</h1>
   <a href=".">Back to overview</a>
 
   <script type="text/javascript">
@@ -29,8 +27,10 @@
     chrWidth: 10,
     chrHeight: 500,
     chrMargin: 10,
-    showBandLabels: true,
     showChromosomeLabels: true,
+    annotationsPath: "/ideogram/data/annotations/all_human_genes.json",
+    annotationsLayout: "histogram",
+    barWidth: 3,
     orientation: "vertical",
     onLoad: onIdeogramLoad
   };

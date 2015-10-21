@@ -1509,20 +1509,27 @@ Ideogram.prototype.putChromosomesInRows = function() {
         chrsPerRow,
         numChromosomes,
         rowIndex, rowIndexStop,
+        riCorrection,
         rowHeight, chrIndex, chrWidth, chrMargin;
 
     numChromosomes = ideo.config.chromosomes[ideo.config.taxid].length;
     chrsPerRow = Math.floor(numChromosomes/rows);
 
-    for (i = 1; i < rows; i++) {
+    riCorrection = 0;
+    if (d3.select("svg > *")[0][0].tagName !== "g") {
+      // Accounts for cross-browser differences in handling of nth-child
+      riCorrection = 2;
+    }
 
-      rowIndex = (chrsPerRow * i) + 1;
+    for (var i = 1; i < rows; i++) {
+
+      rowIndex = (chrsPerRow * i) + 1 + riCorrection;
       rowIndexStop = rowIndex + chrsPerRow;
       range = "nth-child(n+" + rowIndex + "):nth-child(-n+" + rowIndexStop + ")";
 
       rowHeight = ideo.config.chrHeight + 20;
 
-      chrIndex = rowIndex + 1;
+      chrIndex = rowIndex + 1 - riCorrection;
       chrWidth = ideo.config.chrWidth;
       chrMargin = ideo.config.chrMargin * chrIndex;
 
@@ -1630,6 +1637,79 @@ Ideogram.prototype.onDrawAnnots = function() {
   call(this.onDrawAnnotsCallback);
 }
 
+
+Ideogram.prototype.getBandColorGradients = function() {
+
+  var color, colors,
+      stain,
+      gradients = "";
+
+  colors = [
+    ["gneg", "#FFF", "#FFF", "#DDD"],
+    ["gpos25", "#C8C8C8", "#DDD", "#BBB"],
+    ["gpos33", "#BBB", "#BBB", "#AAA"],
+    ["gpos50", "#999", "#AAA", "#888"],
+    ["gpos66", "#888", "#888", "#666"],
+    ["gpos75", "#777", "#777", "#444"],
+    ["gpos100", "#444", "#666", "#000"],
+    ["acen", "#FEE", "#FEE", "#FDD"]
+  ]
+
+  for (var i = 0; i < colors.length; i++) {
+    stain = colors[i][0];
+    color1 = colors[i][1];
+    color2 = colors[i][2];
+    color3 = colors[i][3];
+    gradients +=
+      '<linearGradient id="' + stain + '" x1="0%" y1="0%" x2="0%" y2="100%">';
+    if (stain == "gneg") {
+      gradients +=
+        '<stop offset="70%" stop-color="' + color2 + '" />' +
+        '<stop offset="95%" stop-color="' + color3 + '" />' +
+        '<stop offset="100%" stop-color="' + color1 + '" />';
+    } else {
+      gradients +=
+        '<stop offset="5%" stop-color="' + color1 + '" />' +
+        '<stop offset="15%" stop-color="' + color2 + '" />' +
+        '<stop offset="60%" stop-color="' + color3 + '" />';
+    }
+    gradients +=
+      '</linearGradient>';
+  }
+
+  gradients +=
+    '<pattern id="stalk" width="2" height="1" patternUnits="userSpaceOnUse" ' +
+      'patternTransform="rotate(30 0 0)">' +
+      '<rect x="0" y="0" width="10" height="2" fill="#CCE" /> ' +
+       '<line x1="0" y1="0" x2="0" y2="100%" style="stroke:#88B; stroke-width:0.7;" />' +
+    '</pattern>' +
+    '<pattern id="gvar" width="2" height="1" patternUnits="userSpaceOnUse" ' +
+      'patternTransform="rotate(-30 0 0)">' +
+      '<rect x="0" y="0" width="10" height="2" fill="#DDF" /> ' +
+       '<line x1="0" y1="0" x2="0" y2="100%" style="stroke:#99C; stroke-width:0.7;" />' +
+    '</pattern>';
+
+  gradients = "<defs>" + gradients + "</defs>";
+  css = "<style>" +
+    '.gneg {fill: url("#gneg")} ' +
+    '.gpos25 {fill: url("#gpos25")} ' +
+    '.gpos33 {fill: url("#gpos33")} ' +
+    '.gpos50 {fill: url("#gpos50")} ' +
+    '.gpos66 {fill: url("#gpos66")} ' +
+    '.gpos75 {fill: url("#gpos75")} ' +
+    '.gpos100 {fill: url("#gpos100")} ' +
+    '.acen {fill: url("#acen")} ' +
+    '.stalk {fill: url("#stalk")} ' +
+    '.gvar {fill: url("#gvar")} ' +
+  '</style>';
+  gradients = css + gradients;
+
+  //alert(gradients)
+
+  return gradients;
+}
+
+
 /**
 * Initializes an ideogram.
 * Sets some high-level properties based on instance configuration,
@@ -1699,12 +1779,15 @@ Ideogram.prototype.init = function() {
     ideoHeight = this.config.rows * (ideoHeight - 40)
   }
 
+  var gradients = this.getBandColorGradients();
+
   var svg = d3.select(this.config.container)
     .append("svg")
-    .attr("id", "ideogram")
-    .attr("class", svgClass)
-    .attr("width", "97%")
-    .attr("height", ideoHeight)
+      .attr("id", "ideogram")
+      .attr("class", svgClass)
+      .attr("width", "97%")
+      .attr("height", ideoHeight)
+      .html(gradients)
 
   var bandsArray = [],
       maxLength = 0,

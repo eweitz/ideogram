@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Homology, advanced | Ideogram</title>
+  <link type="text/css" rel="stylesheet" href="src/css/ideogram.css"/>
+  <script type="text/javascript" src="src/js/d3.min.js"></script>
+  <script type="text/javascript" src="src/js/ideogram.min.js"></script>
+</head>
+<body>
+  <h1>Homology, advanced | Ideogram</h1>
+  <a href=".">Back to overview</a>
+	<script type="text/javascript">
+
+	function onIdeogramLoad() {
+
+	    d3.selectAll("g").on("click", function() {
+	      ideogram.rotateAndToggleDisplay(this.id);
+	    });
+
+		var chrs = ideogram.chromosomes,
+			chr1 = chrs["10090"]["1"],
+			chr2 = chrs["10090"]["2"],
+			r1Band = chr1["bands"][7],
+			r2Band = chr2["bands"][17],
+			range1, range2, range3, range4, range5, range6,
+			syntenicRegions = [];
+
+		range1 = {
+			chr: chr1,
+			start: r1Band.bp.start,
+			stop: r1Band.bp.stop
+		};
+
+		for (var i = 1; i < 20; i++) {
+			range2 = {
+				chr: chr2,
+				start: 6000000 * i,
+				stop: 6500000 * i
+			};
+			syntenicRegions.push({"r1": range1, "r2": range2, "color": "#F55"});
+		}
+
+		var range3 = {
+			chr: chr1,
+			start: 125000000,
+			stop: 126000000
+		};
+
+		range4 = {
+			chr: chr2,
+			start: 1500000 * i,
+			stop: 3600000 * i
+		};
+		syntenicRegions.push({"r1": range3, "r2": range4, "opacity": 0.7});
+
+
+		var range5 = {
+			chr: chr2,
+			start: r2Band.bp.start,
+			stop: r2Band.bp.stop
+		};
+
+		for (var i = 1; i < 6; i++) {
+			range6 = {
+				chr: chr1,
+				start: 120000000 + (12000000 * i),
+				stop: 120000000 + (8000000 * i)
+			};
+			color = "#AAF";
+			if (i == 5) {
+				color = "#DDD";
+			}
+			syntenicRegions.push({"r1": range5, "r2": range6, "color": color});
+		}
+
+		ideogram.drawSynteny(syntenicRegions);
+
+	}
+
+	var config = {
+	  taxid: 10090,
+	  chromosomes: ["1", "2"],
+	  chrWidth: 10,
+	  chrHeight: 500,
+	  chrMargin: 200,
+	  showChromosomeLabels: true,
+	  showBandLabels: true,
+	  orientation: "vertical",
+	  perspective: "comparative",
+	  onLoad: onIdeogramLoad
+	};
+
+	var ideogram = new Ideogram(config);
+
+	</script>
+</body>
+</html>

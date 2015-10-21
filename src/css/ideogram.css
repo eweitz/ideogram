@@ -67,7 +67,6 @@ g {
   fill-opacity: .3;
   shape-rendering: crispEdges;
 }
-
 /* NCBI stain density colors */
 .gneg {fill: #FFF}
 .gpos25 {fill: #BBB}

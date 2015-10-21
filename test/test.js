@@ -502,4 +502,37 @@ describe("Ideogram", function() {
     ideogram = new Ideogram(config);
   });
 
+  it("should have 12 chromosomes per row in small layout example", function(done) {
+      // Tests use case from ../examples/layout_small.html
+
+      function callback() {
+
+        lastChrRow1Transform = d3.select("#chr12-9606").attr("transform");
+        firstChrRow2Transform = d3.select("#chr13-9606").attr("transform");
+
+        assert.equal(/translate/.test(lastChrRow1Transform), false);
+        assert.equal(/translate/.test(firstChrRow2Transform), true);
+
+        done();
+      }
+
+      document.getElementsByTagName("body")[0].innerHTML += '<div class="small-ideogram"></div>';
+
+      var config = {
+        container: ".small-ideogram",
+        taxid: 9606,
+        chromosomes: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y"],
+        resolution: 550,
+        chrWidth: 10,
+        chrHeight: 150,
+        chrMargin: 10,
+        rows: 2,
+        showChromosomeLabels: true,
+        orientation: "vertical"
+      };
+
+      config.onLoad = callback;
+      var ideogram = new Ideogram(config);
+    });
+
 });
