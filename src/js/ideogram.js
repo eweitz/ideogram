@@ -28,6 +28,9 @@ var Ideogram = function(config) {
   }
 
   this.bump = Math.round(config.chrHeight / 125);
+  if (this.bump < 4) {
+    this.bump = 4;
+  }
 
   if (config.showBandLabels) {
     this.config.chrMargin += 20;
@@ -693,7 +696,8 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
       pArmWidth, selector, qArmStart, qArmWidth,
       pTerPad, chrClass,
       annotHeight, numAnnotTracks, annotTracksHeight,
-      bump, ideo;
+      bump, ideo,
+      borderTweak;
 
   ideo = this;
 
@@ -749,6 +753,11 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
               "q " + bump + " " + chrWidth/2 + " 0 " + chrWidth + " " +
               "l -" + x + " 0 z";
           } else {
+
+            if (ideo.bump === 4) {
+              x += 4;
+            }
+
             // q arm
             d =
               "M " + (left + x + bump/2) + " " + chrMargin + " " +
@@ -810,10 +819,17 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
 
   }
 
+
+  if (ideo.bump == 4) {
+    borderTweak = -0.6;
+  } else {
+    borderTweak = 0;
+  }
+
   chr.append('path')
     .attr("class", "q-ter chromosomeBorder " + chrModel.bands[chrModel.bands.length - 1].stain)
     .attr("d",
-      "M " + (width - bump/2 - 0.6) + " " + chrMargin + " " +
+      "M " + (width - bump/2 + borderTweak) + " " + chrMargin + " " +
       "q " + bump + " " +  chrWidth/2 + " 0 " + chrWidth
     )
 
