@@ -29,7 +29,7 @@ var Ideogram = function(config) {
 
   this.bump = Math.round(config.chrHeight / 125);
   this.adjustedBump = false
-  if (this.bump < 4) {
+  if (config.chrHeight < 200) {
     this.adjustedBump = true;
     this.bump = 4;
   }
