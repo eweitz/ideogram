@@ -28,6 +28,11 @@ var Ideogram = function(config) {
   }
 
   this.bump = Math.round(config.chrHeight / 125);
+  this.adjustedBump = false
+  if (config.chrHeight < 200) {
+    this.adjustedBump = true;
+    this.bump = 4;
+  }
 
   if (config.showBandLabels) {
     this.config.chrMargin += 20;
@@ -693,7 +698,8 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
       pArmWidth, selector, qArmStart, qArmWidth,
       pTerPad, chrClass,
       annotHeight, numAnnotTracks, annotTracksHeight,
-      bump, ideo;
+      bump, ideo,
+      bumpTweak, borderTweak;
 
   ideo = this;
 
@@ -736,24 +742,48 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
       })
       .attr("d", function(d, i) {
         var x = d.px.width,
-            left = d.px.start;
+            left = d.px.start,
+            curveStart, curveMid, curveEnd,
+            curveTweak,
+            innerBump = bump;
+
+        curveTweak = 0;
 
         if (d.stain == "acen") {
           // Pericentromeric bands get curved
-          x -= bump/2;
+          if (ideo.adjustedBump) {
+            curveTweak = 0.35;
+            x = 0.2;
+            left -= 0.1;
+            if (d.name[0] === "q") {
+              left += 1.2;
+            }
+          } else {
+            x -= bump/2;
+          }
+
+          curveStart = chrMargin + curveTweak;
+          curveMid = chrWidth/2 - curveTweak*2;
+          curveEnd = chrWidth - curveTweak*2;
+
           if (d.name[0] == "p") {
             // p arm
             d =
-              "M " + (left) + " " + chrMargin + " " +
+              "M " + left + " " + curveStart + " " +
               "l " + x + " 0 " +
-              "q " + bump + " " + chrWidth/2 + " 0 " + chrWidth + " " +
+              "q " + bump + " " + curveMid + " 0 " + curveEnd + " " +
               "l -" + x + " 0 z";
           } else {
+
+            if (ideo.adjustedBump) {
+              x += 0.2;
+            }
+
             // q arm
             d =
-              "M " + (left + x + bump/2) + " " + chrMargin + " " +
+              "M " + (left + x + bump/2) + " " + curveStart + " " +
               "l -" + x + " 0 " +
-              "q -" + (bump + 0.5) + " " + chrWidth/2 + " 0 " + chrWidth + " " +
+              "q -" + (bump + 0.5) + " " + curveMid + " 0 " + curveEnd + " " +
               "l " + x + " 0 z";
           }
         } else {
@@ -767,6 +797,11 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
             if (ideo.config.multiorganism === true) {
               left += pTerPad;
             }
+          }
+
+
+          if (ideo.adjustedBump && d.name[0] === "q") {
+            left += 1.8;
           }
 
           if (i == chrModel.bands.length - 1) {
@@ -810,10 +845,17 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
 
   }
 
+
+  if (ideo.adjustedBump) {
+    borderTweak = 1.8;
+  } else {
+    borderTweak = 0;
+  }
+
   chr.append('path')
     .attr("class", "q-ter chromosomeBorder " + chrModel.bands[chrModel.bands.length - 1].stain)
     .attr("d",
-      "M " + (width - bump/2 - 0.6) + " " + chrMargin + " " +
+      "M " + (width - bump/2 + borderTweak) + " " + chrMargin + " " +
       "q " + bump + " " +  chrWidth/2 + " 0 " + chrWidth
     )
 
@@ -827,7 +869,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
   // for human 550 resolution until data is fixed.
   if (pcenIndex > 0) {
     pArmWidth = pcen.px.start;
-    qArmStart = qcen.px.stop;
+    qArmStart = qcen.px.stop + borderTweak;
     pBump = bump
   } else {
     // For telocentric centromeres, as in many mouse chromosomes
@@ -836,7 +878,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
     qArmStart = document.querySelectorAll("#" + chrModel.id + " .band")[0].getBBox().x;
   }
 
-  qArmWidth = chrModel.width - qArmStart;
+  qArmWidth = chrModel.width - qArmStart + borderTweak*1.3;
 
   chr.append('line')
     .attr("class", "cb-p-arm-top chromosomeBorder")
