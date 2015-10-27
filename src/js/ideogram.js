@@ -3,7 +3,9 @@
 /* Constructs a prototypal Ideogram class */
 var Ideogram = function(config) {
 
-  this.config = config;
+  // Clone the config object, to allow multiple instantiations
+  // without picking up prior ideogram's settings
+  this.config = JSON.parse(JSON.stringify(config));
 
   this.debug = false;
 

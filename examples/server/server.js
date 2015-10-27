@@ -32,31 +32,36 @@ page.onConsoleMessage = function (msg){
 
 ideogramDrawer = function(config) {
 
-  var ideogram = new Ideogram(config),
+  var rawAnnotsByChr, ra,
+      ideogram,
       annot, annots, i,
       svg, id,
       images = [];
 
-  ideogram.annots = ideogram.processAnnotData(config.rawAnnots.annots);
+  rawAnnotsByChr = config.rawAnnots.annots;
+  for (i = 0; i < rawAnnotsByChr.length; i++) {
+    ra = rawAnnotsByChr[i];
+    config.rawAnnots = {"annots": [ra]};
+    config.chromosomes = [ra["chr"]];
 
-  someAnnots = [{
-    "chr": ideogram.annots[0]['chr'],
-    "annots": ideogram.annots[0]['annots'].slice(0, 100)
-  }];
+    ideogram = new Ideogram(config);
+    ideogram.annots = ideogram.processAnnotData(config.rawAnnots.annots);
 
-  d3.selectAll("g.chromosome").filter(function(d, i) { return this.id !== "chr1-9606"; }).remove();
+    for (j = 0; j < 1; j++) {
+      annot = ideogram.annots[0]["annots"][j]
+      id = annot["id"];
+      annots = [{
+        "chr": ideogram.annots[0]['chr'],
+        "annots": ideogram.annots[0]['annots'].slice(j, j+1)
+      }]
+      d3.selectAll(".annot").remove();
+      ideogram.drawAnnots(annots);
+      svg = d3.select(ideogram.config.container)[0][0].innerHTML;
+      images.push([id, svg]);
+    }
 
-  for (i = 0; i < someAnnots[0]["annots"].length; i++) {
-    annot = someAnnots[0]["annots"][i]
-    id = annot["id"];
-    annots = [{
-      "chr": ideogram.annots[0]['chr'],
-      "annots": ideogram.annots[0]['annots'].slice(i, i+1)
-    }]
-    d3.selectAll(".annot").remove();
-    ideogram.drawAnnots(annots);
-    svg = d3.select(ideogram.config.container)[0][0].innerHTML;
-    images.push([id, svg]);
+    d3.select(ideogram.config.container).html("")
+    delete ideogram;
   }
 
   return images;
@@ -68,6 +73,10 @@ svgDrawer = function(svg) {
 
 service = server.listen(port, function (request, response) {
 
+  var t0, t1, time,
+      t0a, t1a, timeA = 0,
+      t1a, t1b, timeB = 0;
+
   var ideoConfig = JSON.parse(request.post);
 
   var rawAnnots = JSON.parse(fs.read(ideoConfig.localAnnotationsPath));
@@ -75,17 +84,39 @@ service = server.listen(port, function (request, response) {
 
   page.open(url, function (status) {
 
+    t0 = new Date().getTime();
     var images = page.evaluate(ideogramDrawer, ideoConfig);
+    t1 = new Date().getTime();
+    time = t1 - t0;
+    console.log("Time to get images: " + time + " ms")
 
+    t0 = new Date().getTime();
     var image, id, png;
     for (var i = 0; i < images.length; i++) {
       image = images[i];
       id = image[0];
       svg = image[1];
+
+      fs.write(id + ".svg", svg);
+
+      t0a = new Date().getTime();
       page.evaluate(svgDrawer, svg);
+      t1a = new Date().getTime();
+      timeA += t1a - t0a;
+
+      t0b = new Date().getTime();
       png = atob(page.renderBase64('png'))
+      t1b = new Date().getTime();
+      timeB += t1b - t0b;
+
       fs.write(id + '.png', png, 'b');
     }
+    console.log("Time for page.evaluate(svgDrawer, svg): " + timeA + " ms")
+    console.log("Time for atob(page.renderBase64('png')): " + timeB + " ms")
+
+    t1 = new Date().getTime();
+    time = t1 - t0;
+    console.log("Time to write images: " + time + " ms")
 
     response.statusCode = 200;
 

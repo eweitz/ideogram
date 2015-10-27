@@ -6,7 +6,7 @@
   "chrMargin": 10,
   "showBandLabels": true,
   "showChromosomeLabels": true,
-  "orientation": "vertical",
+  "orientation": "horizontal",
   "container": "#ideo-container",
   "localAnnotationsPath": "../../data/annotations/all_human_genes.json"
 }
