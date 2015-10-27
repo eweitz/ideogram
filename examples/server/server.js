@@ -42,7 +42,9 @@ ideogramDrawer = function(config) {
   someAnnots = [{
     "chr": ideogram.annots[0]['chr'],
     "annots": ideogram.annots[0]['annots'].slice(0, 100)
-  }]
+  }];
+
+  d3.selectAll("g.chromosome").filter(function(d, i) { return this.id !== "chr1-9606"; }).remove();
 
   for (i = 0; i < someAnnots[0]["annots"].length; i++) {
     annot = someAnnots[0]["annots"][i]
