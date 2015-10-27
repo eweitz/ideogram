@@ -7,5 +7,6 @@
   "showBandLabels": true,
   "showChromosomeLabels": true,
   "orientation": "vertical",
-  "container": "#ideo-container"
+  "container": "#ideo-container",
+  "localAnnotationsPath": "../../data/annotations/all_human_genes.json"
 }

@@ -38,7 +38,7 @@ var Ideogram = function(config) {
     this.config.chrMargin += 20;
   }
 
-  if (this.config.annotationsPath) {
+  if (this.config.annotationsPath || this.config.localAnnotationsPath) {
 
     if (!this.config.annotationHeight) {
       this.config.annotationHeight = 3;

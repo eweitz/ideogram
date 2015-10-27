@@ -15,9 +15,9 @@
 // 3. phantomjs server.js
 // 4. Open another another terminal
 // 5. cd ideogram/examples/server
-// 6. curl -X POST -d @ideo_config.json -H "Content-Type: application/json" localhost:9494 > ideo.svg
+// 6. curl -X POST -d @ideo_config.json -H "Content-Type: application/json" localhost:9494
 
-var port, server, service, page, url, svgDrawer
+var port, server, service, page, url, svgDrawer,
     fs = require('fs');
 
 port = 9494;
@@ -26,20 +26,68 @@ server = require('webserver').create();
 page = require('webpage').create();
 url = 'file://' + fs.absolute('./human.html');
 
-svgDrawer = function(config) {
-  var ideogram = new Ideogram(config);
-  var svg = d3.select(ideogram.config.container)[0][0].innerHTML;
-  return svg;
+page.onConsoleMessage = function (msg){
+    console.log(msg);
+};
+
+ideogramDrawer = function(config) {
+
+  var ideogram = new Ideogram(config),
+      annot, annots, i,
+      svg, id,
+      images = [];
+
+  ideogram.annots = ideogram.processAnnotData(config.rawAnnots.annots);
+
+  someAnnots = [{
+    "chr": ideogram.annots[0]['chr'],
+    "annots": ideogram.annots[0]['annots'].slice(0, 100)
+  }]
+
+  for (i = 0; i < someAnnots[0]["annots"].length; i++) {
+    annot = someAnnots[0]["annots"][i]
+    id = annot["id"];
+    annots = [{
+      "chr": ideogram.annots[0]['chr'],
+      "annots": ideogram.annots[0]['annots'].slice(i, i+1)
+    }]
+    d3.selectAll(".annot").remove();
+    ideogram.drawAnnots(annots);
+    svg = d3.select(ideogram.config.container)[0][0].innerHTML;
+    images.push([id, svg]);
+  }
+
+  return images;
+}
+
+svgDrawer = function(svg) {
+  document.getElementsByTagName("div")[0].innerHTML = svg;
 }
 
 service = server.listen(port, function (request, response) {
 
   var ideoConfig = JSON.parse(request.post);
 
+  var rawAnnots = JSON.parse(fs.read(ideoConfig.localAnnotationsPath));
+  ideoConfig["rawAnnots"] = rawAnnots;
+
   page.open(url, function (status) {
-    var svg = page.evaluate(svgDrawer, ideoConfig);
+
+    var images = page.evaluate(ideogramDrawer, ideoConfig);
+
+    var image, id, png;
+    for (var i = 0; i < images.length; i++) {
+      image = images[i];
+      id = image[0];
+      svg = image[1];
+      page.evaluate(svgDrawer, svg);
+      png = atob(page.renderBase64('png'))
+      fs.write(id + '.png', png, 'b');
+    }
+
     response.statusCode = 200;
-    response.write(svg);
+
+    response.write("Done");
     response.close();
   });
 });
