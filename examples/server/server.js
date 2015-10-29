@@ -24,6 +24,8 @@ port = 9494;
 server = require('webserver').create();
 
 page = require('webpage').create();
+page.viewportSize = {width: 540, height: 70};
+
 url = 'file://' + fs.absolute('./human.html');
 
 page.onConsoleMessage = function (msg){
@@ -47,7 +49,7 @@ ideogramDrawer = function(config) {
     ideogram = new Ideogram(config);
     ideogram.annots = ideogram.processAnnotData(config.rawAnnots.annots);
 
-    for (j = 0; j < 1; j++) {
+    for (j = 0; j < 5; j++) {
       annot = ideogram.annots[0]["annots"][j]
       id = annot["id"];
       annots = [{
@@ -57,6 +59,7 @@ ideogramDrawer = function(config) {
       d3.selectAll(".annot").remove();
       ideogram.drawAnnots(annots);
       svg = d3.select(ideogram.config.container)[0][0].innerHTML;
+
       images.push([id, svg]);
     }
 
@@ -68,14 +71,15 @@ ideogramDrawer = function(config) {
 }
 
 svgDrawer = function(svg) {
-  document.getElementsByTagName("div")[0].innerHTML = svg;
+  document.getElementsByTagName("body")[0].innerHTML = svg;
 }
 
 service = server.listen(port, function (request, response) {
 
   var t0, t1, time,
       t0a, t1a, timeA = 0,
-      t1a, t1b, timeB = 0;
+      t1b, t1b, timeB = 0,
+      t1c, t1c, timeC = 0;
 
   var ideoConfig = JSON.parse(request.post);
 
@@ -97,26 +101,42 @@ service = server.listen(port, function (request, response) {
       id = image[0];
       svg = image[1];
 
-      fs.write(id + ".svg", svg);
+      //fs.write(id + ".svg", svg);
 
       t0a = new Date().getTime();
       page.evaluate(svgDrawer, svg);
       t1a = new Date().getTime();
       timeA += t1a - t0a;
 
+      page.clipRect = {
+        top: 40,
+        left: 0,
+        width: 550,
+        height: 60
+      };
+
+
       t0b = new Date().getTime();
       png = atob(page.renderBase64('png'))
+      //fs.write(id + '.png', png, 'b');
+      //png = page.render(id + '.png')
       t1b = new Date().getTime();
       timeB += t1b - t0b;
 
+      t0c = new Date().getTime();
       fs.write(id + '.png', png, 'b');
+      t1c = new Date().getTime();
+      timeC += t1c - t0c;
+
     }
-    console.log("Time for page.evaluate(svgDrawer, svg): " + timeA + " ms")
-    console.log("Time for atob(page.renderBase64('png')): " + timeB + " ms")
+    console.log("Time to evaluate SVG: " + timeA + " ms")
+    //console.log("Time to render, write: " + timeB + " ms")
+    console.log("Time to render: " + timeB + " ms")
+    console.log("Time to write: " + timeC + " ms")
 
     t1 = new Date().getTime();
     time = t1 - t0;
-    console.log("Time to write images: " + time + " ms")
+    console.log("Time to produce all images: " + time + " ms")
 
     response.statusCode = 200;
 
