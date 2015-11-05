@@ -32,15 +32,114 @@ page.onConsoleMessage = function (msg){
     console.log(msg);
 };
 
+
 ideogramDrawer = function(config) {
 
-  var rawAnnotsByChr, ra,
+  function rearrangeAnnots(annots) {
+    // Rearranges annots into an array where each chromosome in the
+    // ideogram gets 1 annotation.
+
+    //annots = annots["annots"];
+
+    var annot, chrs, chr, i, j, k, m,
+        chrAnnots, totalAnnots,
+        rearrangedAnnots = [], ras,
+        ids;
+
+    chrs = {};
+
+    totalAnnots = 0;
+
+    var seenAnnots = {}
+
+    for (i = 0; i < annots.length; i++) {
+      annotsByChr = annots[i];
+      chr = annotsByChr["chr"];
+      chrs[chr] = 0;
+    }
+    for (i = 0; i < annots.length; i++) {
+
+      annotsByChr = annots[i];
+      chr = annotsByChr["chr"];
+      chrAnnots = annotsByChr["annots"];
+
+      for (j = 0; j < chrAnnots.length; j++) {
+
+        if (j <= chrs[chr]) {
+
+          ras = [];
+          ids = [];
+          for (k = 0; k < annots.length; k++) {
+            if (j < annots[k]["annots"].length ) {
+              ra = annots[k]["annots"][j];
+              if (ra["id"] in seenAnnots === false) {
+                seenAnnots[ra["id"]] = 1;
+                ids.push(ra["id"]);
+                ras.push({"chr": annots[k]["chr"], "annots": [ra]});
+                totalAnnots += 1;
+              }
+            }
+          }
+          chrs[annots[i]["chr"]] += 1;
+          if (ids.length > 0) {
+            rearrangedAnnots.push([ids, ras]);
+          }
+        }
+      }
+
+    }
+
+
+    console.log("totalAnnots")
+    console.log(totalAnnots)
+
+    console.log("chrs")
+    console.log(chrs)
+    console.log("JSON.stringify(chrs)")
+    console.log(JSON.stringify(chrs))
+
+    return rearrangedAnnots;
+
+  }
+
+
+  var rawAnnotsByChr, rearrangedAnnots, ra,
       ideogram,
       annot, annots, i,
-      svg, id,
+      svg, id, ids, tmp,
       images = [];
 
-  rawAnnotsByChr = config.rawAnnots.annots;
+
+  ideogram = new Ideogram(config);
+  ideogram.annots = ideogram.processAnnotData(config.rawAnnots.annots);
+
+  //tmp = rearrangeAnnots(ideogram.annots);
+  //ids = tmp[0];
+  //rearrangedAnnots = tmp[1];
+  rearrangedAnnots = rearrangeAnnots(ideogram.annots);
+
+  console.log("rearrangedAnnots.length");
+  console.log(rearrangedAnnots.length);
+  console.log("rearrangedAnnots[0].length");
+  console.log(rearrangedAnnots[0].length);
+  console.log("JSON.stringify(rearrangedAnnots[0])");
+  console.log(JSON.stringify(rearrangedAnnots[0]));
+  console.log("JSON.stringify(rearrangedAnnots[1])");
+  console.log(JSON.stringify(rearrangedAnnots[1]));
+
+  for (i = 0; i < rearrangedAnnots.length; i++) {
+    d3.selectAll(".annot").remove();
+    //console.log("JSON.stringify(rearrangedAnnots[i][1])")
+    //console.log(JSON.stringify(rearrangedAnnots[i][1]))
+    //console.log(i)
+    //console.log(rearrangedAnnots.length)
+    ideogram.drawAnnots(rearrangedAnnots[i][1]);
+    //console.log(d3.selectAll(".annot")[0].length);
+    svg = d3.select(ideogram.config.container)[0][0].innerHTML;
+    images.push([rearrangedAnnots[i][0], svg]);
+  }
+
+  /*
   for (i = 0; i < rawAnnotsByChr.length; i++) {
     ra = rawAnnotsByChr[i];
     config.rawAnnots = {"annots": [ra]};
@@ -49,29 +148,38 @@ ideogramDrawer = function(config) {
     ideogram = new Ideogram(config);
     ideogram.annots = ideogram.processAnnotData(config.rawAnnots.annots);
 
-    for (j = 0; j < 5; j++) {
+    for (j = 0; j < 1; j++) {
       annot = ideogram.annots[0]["annots"][j]
       id = annot["id"];
       annots = [{
         "chr": ideogram.annots[0]['chr'],
         "annots": ideogram.annots[0]['annots'].slice(j, j+1)
-      }]
+      }];
       d3.selectAll(".annot").remove();
       ideogram.drawAnnots(annots);
-      svg = d3.select(ideogram.config.container)[0][0].innerHTML;
-
+      svg += d3.select(ideogram.config.container)[0][0].innerHTML + "\n";
       images.push([id, svg]);
     }
 
     d3.select(ideogram.config.container).html("")
     delete ideogram;
   }
+  */
+
+
 
   return images;
 }
 
+
 svgDrawer = function(svg) {
+  //var oldDiv = document.getElementsByTagName("body")[0];
+  //var newDiv = oldDiv.cloneNode(false);
+  //newDiv.innerHTML = svg;
+  //oldDiv.parentNode.replaceChild(newDiv, oldDiv);
+
   document.getElementsByTagName("body")[0].innerHTML = svg;
+
 }
 
 service = server.listen(port, function (request, response) {
@@ -90,18 +198,34 @@ service = server.listen(port, function (request, response) {
 
     t0 = new Date().getTime();
     var images = page.evaluate(ideogramDrawer, ideoConfig);
+
+    //response.write(images);
+
     t1 = new Date().getTime();
     time = t1 - t0;
     console.log("Time to get images: " + time + " ms")
 
     t0 = new Date().getTime();
     var image, id, png;
-    for (var i = 0; i < images.length; i++) {
+
+    fs.write(images[images.length - 1][0] + '.svg', images[images.length - 1][1])
+
+    page.evaluate(svgDrawer, images[images.length - 1][1]);
+    png = atob(page.renderBase64('png'))
+    fs.write(images[images.length - 1][0] + '.png', png, 'b');
+
+    //response.write(images[images.length - 1][1]);
+
+    //console.log(images)
+
+    /*
+    for (var i = 0; i < 1; i++) {
       image = images[i];
       id = image[0];
-      svg = image[1];
+      svg = image[1] + "\n\n\n" + images[i + 1][1];
+      console.log(svg)
 
-      //fs.write(id + ".svg", svg);
+      fs.write(id + ".svg", svg);
 
       t0a = new Date().getTime();
       page.evaluate(svgDrawer, svg);
@@ -112,9 +236,8 @@ service = server.listen(port, function (request, response) {
         top: 40,
         left: 0,
         width: 550,
-        height: 60
+        height: 60 * 2
       };
-
 
       t0b = new Date().getTime();
       png = atob(page.renderBase64('png'))
@@ -129,6 +252,8 @@ service = server.listen(port, function (request, response) {
       timeC += t1c - t0c;
 
     }
+    */
+
     console.log("Time to evaluate SVG: " + timeA + " ms")
     //console.log("Time to render, write: " + timeB + " ms")
     console.log("Time to render: " + timeB + " ms")
@@ -140,7 +265,7 @@ service = server.listen(port, function (request, response) {
 
     response.statusCode = 200;
 
-    response.write("Done");
+    //response.write("Done");
     response.close();
   });
 });
