@@ -18,7 +18,8 @@
 // 6. curl -X POST -d @ideo_config.json -H "Content-Type: application/json" localhost:9494
 
 var port, server, service, page, url, svgDrawer,
-    fs = require('fs');
+    fs = require('fs'),
+    async = require('async');
 
 port = 9494;
 server = require('webserver').create();
@@ -225,10 +226,27 @@ service = server.listen(port, function (request, response) {
       timeB += t1b - t0b;
       //console.log("begin fs.write")
 
+
       t0c = new Date().getTime();
-      fs.write(images[i][0][0] + '.png', png, 'b');
-      t1c = new Date().getTime();
-      timeC += t1c - t0c;
+      async.each(images[i][0], function (id, callback) {
+
+          fs.write(id + '.png', png, 'b')
+
+      }, function (err) {
+
+          if (err) {
+              // One of the iterations produced an error.
+              // All processing will now stop.
+              console.log('A file failed to process');
+          }
+          else {
+              console.log('All files have been processed successfully');
+
+              t1c = new Date().getTime();
+              timeC += t1c - t0c;
+          }
+      });
+      
     }
 
     //response.write(images[images.length - 1][1]);
