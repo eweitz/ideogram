@@ -88,8 +88,7 @@ ideogramDrawer = function(config) {
       }
 
     }
-
-
+    /*
     console.log("totalAnnots")
     console.log(totalAnnots)
 
@@ -97,7 +96,7 @@ ideogramDrawer = function(config) {
     console.log(chrs)
     console.log("JSON.stringify(chrs)")
     console.log(JSON.stringify(chrs))
-
+    */
     return rearrangedAnnots;
 
   }
@@ -116,8 +115,11 @@ ideogramDrawer = function(config) {
   //tmp = rearrangeAnnots(ideogram.annots);
   //ids = tmp[0];
   //rearrangedAnnots = tmp[1];
+  var t0 = new Date().getTime();
   rearrangedAnnots = rearrangeAnnots(ideogram.annots);
-
+  var t1 = new Date().getTime();
+  console.log("Time to rearrange annots: " + (t1-t0) + " ms");
+  /*
   console.log("rearrangedAnnots.length");
   console.log(rearrangedAnnots.length);
   console.log("rearrangedAnnots[0].length");
@@ -126,6 +128,7 @@ ideogramDrawer = function(config) {
   console.log(JSON.stringify(rearrangedAnnots[0]));
   console.log("JSON.stringify(rearrangedAnnots[1])");
   console.log(JSON.stringify(rearrangedAnnots[1]));
+  */
 
   for (i = 0; i < rearrangedAnnots.length; i++) {
     d3.selectAll(".annot").remove();
@@ -198,9 +201,6 @@ service = server.listen(port, function (request, response) {
 
     t0 = new Date().getTime();
     var images = page.evaluate(ideogramDrawer, ideoConfig);
-
-    //response.write(images);
-
     t1 = new Date().getTime();
     time = t1 - t0;
     console.log("Time to get images: " + time + " ms")
@@ -208,11 +208,28 @@ service = server.listen(port, function (request, response) {
     t0 = new Date().getTime();
     var image, id, png;
 
-    fs.write(images[images.length - 1][0] + '.svg', images[images.length - 1][1])
+    //fs.write(images[images.length - 1][0] + '.svg', images[images.length - 1][1])
+    //for (var i = 0; i < images.length; i++) {
+    for (var i = 0; i < 20; i++) {
+      //console.log(i + " of " + images.length)
+      //console.log("begin page.evaluate")
+      t0a = new Date().getTime();
+      page.evaluate(svgDrawer, images[i][1]);
+      t1a = new Date().getTime();
+      timeA += t1a - t0a;
+      //console.log("begin atob")
 
-    page.evaluate(svgDrawer, images[images.length - 1][1]);
-    png = atob(page.renderBase64('png'))
-    fs.write(images[images.length - 1][0] + '.png', png, 'b');
+      t0b = new Date().getTime();
+      png = atob(page.renderBase64('png'))
+      t1b = new Date().getTime();
+      timeB += t1b - t0b;
+      //console.log("begin fs.write")
+
+      t0c = new Date().getTime();
+      fs.write(images[i][0][0] + '.png', png, 'b');
+      t1c = new Date().getTime();
+      timeC += t1c - t0c;
+    }
 
     //response.write(images[images.length - 1][1]);
 
