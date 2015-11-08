@@ -447,7 +447,7 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
 
           var x, y;
 
-          x = -8 + d.px.start + d.px.width/2;
+          x = ideo.round(-8 + d.px.start + d.px.width/2);
 
           textOffsets[chrModel.id].push(x + 13);
           y = chrMargin - 10;
@@ -463,7 +463,7 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
       .append("g")
       .attr("class", function(d, i) { return "bandLabelStalk bsbsl-" + i  })
       .attr("transform", function(d) {
-        var x = d.px.start + d.px.width/2;
+        var x = ideo.round(d.px.start + d.px.width/2);
         return "translate(" + x + ", " + lineY1 + ")";
       })
         .append("line")
@@ -635,7 +635,8 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation,
 Ideogram.prototype.rotateBandLabels = function(chr, chrIndex, scale) {
 
   var chrMargin, chrWidth, scaleSvg,
-      orientation, bandLabels;
+      orientation, bandLabels,
+      ideo = this;
 
   bandLabels = chr.selectAll(".bandLabel");
 
@@ -659,7 +660,7 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex, scale) {
       .attr("transform", function(d) {
         var x, y;
         x = (8 - chrMargin) - 26;
-        y = 2 + d.px.start + d.px.width/2;
+        y = ideo.round(2 + d.px.start + d.px.width/2);
         return "rotate(-90)translate(" + x + "," + y + ")";
       })
       .selectAll("text")
@@ -669,7 +670,7 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex, scale) {
       .attr("transform", function(d) {
         var x, y;
         x = 8 - chrMargin;
-        y = 2 + d.px.start + d.px.width/2;
+        y = ideo.round(2 + d.px.start + d.px.width/2);
         return "rotate(-90)translate(" + x + "," + y + ")";
       })
       .selectAll("text")
@@ -678,7 +679,7 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex, scale) {
     bandLabels
       .attr("transform", function(d) {
         var x, y;
-        x = -8*scale.x + d.px.start + d.px.width/2;
+        x = ideo.round(-8*scale.x + d.px.start + d.px.width/2);
         y = chrMargin - 10;
         return "translate(" + x + "," + y + ")";
       })
@@ -689,6 +690,13 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex, scale) {
       .attr("transform", scaleSvg)
   }
 
+}
+
+Ideogram.prototype.round = function(coord) {
+  // Rounds an SVG coordinates to two decimal places
+  // e.g. 42.1234567890 -> 42.12
+  // Per http://stackoverflow.com/a/9453447, below method is fastest
+  return Math.round(coord * 100) / 100;
 }
 
 /**
@@ -743,8 +751,8 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
         return cls;
       })
       .attr("d", function(d, i) {
-        var x = d.px.width,
-            left = d.px.start,
+        var x = ideo.round(d.px.width),
+            left = ideo.round(d.px.start),
             curveStart, curveMid, curveEnd,
             curveTweak,
             innerBump = bump;
