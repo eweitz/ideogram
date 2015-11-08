@@ -164,10 +164,11 @@ service = server.listen(port, function (request, response) {
 
     for (var i = 0; i < images.length; i++) {
       t0a = new Date().getTime();
-      page.evaluate(svgDrawer, images[i][1]);
-      t1a = new Date().getTime();
 
-      t0c = new Date().getTime();
+      page.evaluate(svgDrawer, images[i][1]);
+
+      t1a = new Date().getTime();
+      timeA += t1a - t0a;
 
       async.each(images[i][0], function (id, callback) {
 
@@ -181,22 +182,11 @@ service = server.listen(port, function (request, response) {
           t1b = new Date().getTime();
           timeB += t1b - t0b;
 
+
+          t0c = new Date().getTime();
           page.render("images/" + id + '.png');
-
-      }, function (err) {
-
-          if (err) {
-              // One of the iterations produced an error.
-              // All processing will now stop.
-              console.log('A file failed to process');
-          }
-          else {
-              console.log('All files have been processed successfully');
-
-              t1c = new Date().getTime();
-              timeC += t1c - t0c;
-          }
-
+          t1c = new Date().getTime();
+          timeC += t1c - t0c;
 
       });
 
