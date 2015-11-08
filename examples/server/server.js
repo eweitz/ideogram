@@ -113,64 +113,17 @@ ideogramDrawer = function(config) {
   ideogram = new Ideogram(config);
   ideogram.annots = ideogram.processAnnotData(config.rawAnnots.annots);
 
-  //tmp = rearrangeAnnots(ideogram.annots);
-  //ids = tmp[0];
-  //rearrangedAnnots = tmp[1];
   var t0 = new Date().getTime();
   rearrangedAnnots = rearrangeAnnots(ideogram.annots);
   var t1 = new Date().getTime();
   console.log("Time to rearrange annots: " + (t1-t0) + " ms");
-  /*
-  console.log("rearrangedAnnots.length");
-  console.log(rearrangedAnnots.length);
-  console.log("rearrangedAnnots[0].length");
-  console.log(rearrangedAnnots[0].length);
-  console.log("JSON.stringify(rearrangedAnnots[0])");
-  console.log(JSON.stringify(rearrangedAnnots[0]));
-  console.log("JSON.stringify(rearrangedAnnots[1])");
-  console.log(JSON.stringify(rearrangedAnnots[1]));
-  */
 
   for (i = 0; i < rearrangedAnnots.length; i++) {
     d3.selectAll(".annot").remove();
-    //console.log("JSON.stringify(rearrangedAnnots[i][1])")
-    //console.log(JSON.stringify(rearrangedAnnots[i][1]))
-    //console.log(i)
-    //console.log(rearrangedAnnots.length)
     ideogram.drawAnnots(rearrangedAnnots[i][1]);
-    //console.log(d3.selectAll(".annot")[0].length);
     svg = d3.select(ideogram.config.container)[0][0].innerHTML;
     images.push([rearrangedAnnots[i][0], svg]);
   }
-
-  /*
-  for (i = 0; i < rawAnnotsByChr.length; i++) {
-    ra = rawAnnotsByChr[i];
-    config.rawAnnots = {"annots": [ra]};
-    config.chromosomes = [ra["chr"]];
-
-    ideogram = new Ideogram(config);
-    ideogram.annots = ideogram.processAnnotData(config.rawAnnots.annots);
-
-    for (j = 0; j < 1; j++) {
-      annot = ideogram.annots[0]["annots"][j]
-      id = annot["id"];
-      annots = [{
-        "chr": ideogram.annots[0]['chr'],
-        "annots": ideogram.annots[0]['annots'].slice(j, j+1)
-      }];
-      d3.selectAll(".annot").remove();
-      ideogram.drawAnnots(annots);
-      svg += d3.select(ideogram.config.container)[0][0].innerHTML + "\n";
-      images.push([id, svg]);
-    }
-
-    d3.select(ideogram.config.container).html("")
-    delete ideogram;
-  }
-  */
-
-
 
   return images;
 }
@@ -209,28 +162,26 @@ service = server.listen(port, function (request, response) {
     t0 = new Date().getTime();
     var image, id, png;
 
-    //fs.write(images[images.length - 1][0] + '.svg', images[images.length - 1][1])
-    //for (var i = 0; i < images.length; i++) {
-    for (var i = 0; i < 20; i++) {
-      //console.log(i + " of " + images.length)
-      //console.log("begin page.evaluate")
+    for (var i = 0; i < images.length; i++) {
       t0a = new Date().getTime();
       page.evaluate(svgDrawer, images[i][1]);
       t1a = new Date().getTime();
-      timeA += t1a - t0a;
-      //console.log("begin atob")
-
-      t0b = new Date().getTime();
-      png = atob(page.renderBase64('png'))
-      t1b = new Date().getTime();
-      timeB += t1b - t0b;
-      //console.log("begin fs.write")
-
 
       t0c = new Date().getTime();
+
       async.each(images[i][0], function (id, callback) {
 
-          fs.write(id + '.png', png, 'b')
+          t0b = new Date().getTime();
+          page.clipRect = {
+            top: 47 * (i + 1),
+            left: 0,
+            width: 550,
+            height: 40
+          }
+          t1b = new Date().getTime();
+          timeB += t1b - t0b;
+
+          page.render("images/" + id + '.png');
 
       }, function (err) {
 
@@ -245,49 +196,11 @@ service = server.listen(port, function (request, response) {
               t1c = new Date().getTime();
               timeC += t1c - t0c;
           }
+
+
       });
-      
-    }
-
-    //response.write(images[images.length - 1][1]);
-
-    //console.log(images)
-
-    /*
-    for (var i = 0; i < 1; i++) {
-      image = images[i];
-      id = image[0];
-      svg = image[1] + "\n\n\n" + images[i + 1][1];
-      console.log(svg)
-
-      fs.write(id + ".svg", svg);
-
-      t0a = new Date().getTime();
-      page.evaluate(svgDrawer, svg);
-      t1a = new Date().getTime();
-      timeA += t1a - t0a;
-
-      page.clipRect = {
-        top: 40,
-        left: 0,
-        width: 550,
-        height: 60 * 2
-      };
-
-      t0b = new Date().getTime();
-      png = atob(page.renderBase64('png'))
-      //fs.write(id + '.png', png, 'b');
-      //png = page.render(id + '.png')
-      t1b = new Date().getTime();
-      timeB += t1b - t0b;
-
-      t0c = new Date().getTime();
-      fs.write(id + '.png', png, 'b');
-      t1c = new Date().getTime();
-      timeC += t1c - t0c;
 
     }
-    */
 
     console.log("Time to evaluate SVG: " + timeA + " ms")
     //console.log("Time to render, write: " + timeB + " ms")
@@ -300,8 +213,9 @@ service = server.listen(port, function (request, response) {
 
     response.statusCode = 200;
 
-    //response.write("Done");
+    response.write("Done");
     response.close();
+
   });
 });
 
