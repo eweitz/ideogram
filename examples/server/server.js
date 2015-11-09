@@ -70,6 +70,7 @@ ideogramDrawer = function(config) {
 
           ras = [];
           ids = [];
+          rasChrs = [];
           for (k = 0; k < annots.length; k++) {
             if (j < annots[k]["annots"].length ) {
               ra = annots[k]["annots"][j];
@@ -77,27 +78,20 @@ ideogramDrawer = function(config) {
                 seenAnnots[ra["id"]] = 1;
                 ids.push(ra["id"]);
                 ras.push({"chr": annots[k]["chr"], "annots": [ra]});
+                rasChrs.push(annots[k]["chr"])
                 totalAnnots += 1;
               }
             }
           }
           chrs[annots[i]["chr"]] += 1;
           if (ids.length > 0) {
-            rearrangedAnnots.push([ids, ras]);
+            rearrangedAnnots.push([ids, ras, rasChrs]);
           }
         }
       }
 
     }
-    /*
-    console.log("totalAnnots")
-    console.log(totalAnnots)
 
-    console.log("chrs")
-    console.log(chrs)
-    console.log("JSON.stringify(chrs)")
-    console.log(JSON.stringify(chrs))
-    */
     return rearrangedAnnots;
 
   }
@@ -107,6 +101,7 @@ ideogramDrawer = function(config) {
       ideogram,
       annot, annots, i,
       svg, id, ids, tmp,
+      chrRects, rect, chrs, chr, chrID,
       images = [];
 
 
@@ -119,11 +114,30 @@ ideogramDrawer = function(config) {
   console.log("Time to rearrange annots: " + (t1-t0) + " ms");
 
   for (i = 0; i < rearrangedAnnots.length; i++) {
+  //for (i = 0; i < 2; i++) { // DEBUG
     d3.selectAll(".annot").remove();
-    ideogram.drawAnnots(rearrangedAnnots[i][1]);
+    ra = rearrangedAnnots[i];
+    ideogram.drawAnnots(ra[1]);
     svg = d3.select(ideogram.config.container)[0][0].innerHTML;
-    images.push([rearrangedAnnots[i][0], svg]);
+    images.push([ra[0], svg, ra[2]]);
   }
+
+  chrRects = {};
+  chrs = d3.selectAll(".chromosome")[0];
+  for (i = 0; i < chrs.length; i++) {
+    chr = chrs[i];
+    chrID = chr["id"].split("-")[0].slice(3); // e.g. chr12-9606 -> 12
+    rect = chr.getBoundingClientRect();
+    chrRects[chrID] = {
+      "top": rect.top,
+      //"left": rect.left,
+      "left": 5,
+      "width": rect.width + 15,
+      "height": rect.height + 7
+    }
+  }
+
+  images = [chrRects, images]
 
   return images;
 }
@@ -144,7 +158,8 @@ service = server.listen(port, function (request, response) {
   var t0, t1, time,
       t0a, t1a, timeA = 0,
       t1b, t1b, timeB = 0,
-      t1c, t1c, timeC = 0;
+      t1c, t1c, timeC = 0,
+      chr;
 
   var ideoConfig = JSON.parse(request.post);
 
@@ -154,13 +169,17 @@ service = server.listen(port, function (request, response) {
   page.open(url, function (status) {
 
     t0 = new Date().getTime();
-    var images = page.evaluate(ideogramDrawer, ideoConfig);
+    var tmp = page.evaluate(ideogramDrawer, ideoConfig);
+    var chrRects = tmp[0];
+    var images = tmp[1];
     t1 = new Date().getTime();
     time = t1 - t0;
     console.log("Time to get images: " + time + " ms")
 
     t0 = new Date().getTime();
     var image, id, png;
+
+    var chrRect = {};
 
     for (var i = 0; i < images.length; i++) {
       t0a = new Date().getTime();
@@ -170,18 +189,15 @@ service = server.listen(port, function (request, response) {
       t1a = new Date().getTime();
       timeA += t1a - t0a;
 
-      async.each(images[i][0], function (id, callback) {
+      async.forEachOf(images[i][0], function (id, index) {
 
           t0b = new Date().getTime();
-          page.clipRect = {
-            top: 47 * (i + 1),
-            left: 0,
-            width: 550,
-            height: 40
-          }
+          chr = images[i][2][index];
+          chrRect = chrRects[chr];
+          page.clipRect = chrRect;
+
           t1b = new Date().getTime();
           timeB += t1b - t0b;
-
 
           t0c = new Date().getTime();
           page.render("images/" + id + '.png');
