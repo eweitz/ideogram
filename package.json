@@ -29,7 +29,8 @@
   },
   "homepage": "https://github.com/eweitz/ideogram#readme",
   "dependencies": {
-    "d3": "^3.5.6"
+    "d3": "^3.5.6",
+    "async": "*"
   },
   "devDependencies": {
     "chai": "^3.2.0",
