@@ -113,6 +113,8 @@ ideogramDrawer = function(config) {
   var t1 = new Date().getTime();
   console.log("Time to rearrange annots: " + (t1-t0) + " ms");
 
+  d3.selectAll("*[style*='display: none']").remove();
+
   for (i = 0; i < rearrangedAnnots.length; i++) {
   //for (i = 0; i < 2; i++) { // DEBUG
     d3.selectAll(".annot").remove();
