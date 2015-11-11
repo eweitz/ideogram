@@ -116,7 +116,12 @@ ideogramDrawer = function(config) {
   // Typically takes < 300 ms for ~20000 annots
   //console.log("  (Time to rearrange annots: " + (t1-t0) + " ms)");
 
+  // Remove hidden elements.  Makes large batches ~30% faster (PR #23).
   d3.selectAll("*[style*='display: none']").remove();
+
+  // Remove JS hooks not used for static styling.
+  // Shrinks SVG ~16%; same PNG perf.
+  d3.selectAll(".band").attr("id", null).classed("band", null);
 
   for (i = 0; i < rearrangedAnnots.length; i++) {
   //for (i = 0; i < 2; i++) { // DEBUG
@@ -193,6 +198,8 @@ service = server.listen(port, function (request, response) {
     t0 = new Date().getTime();
 
     chrRect = {};
+
+    //fs.write("foo.svg", images[0][1]); // DEBUG
 
     for (var i = 0; i < images.length; i++) {
 
