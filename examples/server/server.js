@@ -130,7 +130,7 @@ ideogramDrawer = function(config) {
 
     }
 
-    return [rearrangedAnnots, totalAnnots];
+    return rearrangedAnnots;
 
   }
 
@@ -139,7 +139,7 @@ ideogramDrawer = function(config) {
       ideogram,
       annot, annots, i,
       svg, id, ids, tmp,
-      chrRects, rect, chrs, chr, chrID, tmp, totalAnnots,
+      chrRects, rect, chrs, chr, chrID,
       images = [];
 
 
@@ -147,9 +147,7 @@ ideogramDrawer = function(config) {
   ideogram.annots = ideogram.processAnnotData(config.rawAnnots.annots);
 
   var t0 = new Date().getTime();
-  tmp = rearrangeAnnots(ideogram.annots);
-  rearrangedAnnots = tmp[0];
-  totalAnnots = tmp[1];
+  rearrangedAnnots = rearrangeAnnots(ideogram.annots);
   var t1 = new Date().getTime();
   // Typically takes < 300 ms for ~20000 annots
   //console.log("  (Time to rearrange annots: " + (t1-t0) + " ms)");
@@ -186,7 +184,7 @@ ideogramDrawer = function(config) {
     }
   }
 
-  images = [chrRects, images, totalAnnots]
+  images = [chrRects, images]
 
   return images;
 }
@@ -223,20 +221,20 @@ service = server.listen(port, function (request, response) {
 
   page.open(url, function (status) {
 
-    var tmp, chrRects, images, totalAnnots,
+    var tmp, chrRects, images, totalImages,
         chrRect, chr, image, id, png,
 
     t0 = new Date().getTime();
     tmp = page.evaluate(ideogramDrawer, ideoConfig);
     chrRects = tmp[0];
     images = tmp[1];
-    totalAnnots = tmp[2];
     t1 = new Date().getTime();
     time = t1 - t0;
 
     t0 = new Date().getTime();
 
     chrRect = {};
+    totalImages = 0;
 
     //fs.write("foo.svg", images[0][1]); // DEBUG
 
@@ -263,6 +261,8 @@ service = server.listen(port, function (request, response) {
           t1c = new Date().getTime();
           timeC += t1c - t0c;
 
+          totalImages += 1;
+
       });
 
     }
@@ -273,7 +273,7 @@ service = server.listen(port, function (request, response) {
     console.log("Time to render and write PNG to disk: " + timeC + " ms");
 
     console.log("");
-    console.log("Total images: " + totalAnnots);
+    console.log("Total images: " + totalImages);
 
     response.statusCode = 200;
     response.write("Done");
@@ -286,8 +286,8 @@ service = server.listen(port, function (request, response) {
     //totalTimeFriendly = min + "m" + sec + "." + ms // Like Unix 'time' command
 
     // Will need to adjust when # annots != # ideograms
-    ideoPerMs = (totalAnnots/totalTime).toFixed(5);
-    msPerIdeo = Math.round(totalTime/totalAnnots);
+    ideoPerMs = (totalImages/totalTime).toFixed(5);
+    msPerIdeo = Math.round(totalTime/totalImages);
 
     console.log("Time to produce all images: " + totalTime + " ms");
     console.log(
