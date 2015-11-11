@@ -207,7 +207,7 @@ service = server.listen(port, function (request, response) {
   console.log("")
 
   var totalTime1, totalTime,
-      min, sec, msec, totalTimeFriendly,
+      date, day, hour, min, sec, msec, totalTimeFriendly,
       t0, t1, time,
       t0a, t1a, timeA = 0,
       t1b, t1b, timeB = 0,
@@ -280,16 +280,30 @@ service = server.listen(port, function (request, response) {
 
     totalTime1 = new Date().getTime();
     totalTime = totalTime1 - totalTime0;
-    //min = Math.floor(totalTime/(60000)); // 60000 milliseconds = 1 minute
-    //sec = Math.floor(10-(600000-totalTime)/1000);
-    //msec =
-    //totalTimeFriendly = min + "m" + sec + "." + ms // Like Unix 'time' command
+
+    date = new Date(totalTime);
+    day = date.getUTCDate() - 1;
+    hour = date.getUTCHours();
+    min = date.getUTCMinutes();
+    sec = date.getUTCSeconds();
+    ms = date.getUTCMilliseconds();
+    // Like Unix 'time' command
+    totalTimeFriendly = min + "m" + sec + "." + ms + "s"
+    if (hour > 0) {
+      totalTimeFriendly = hour + "h" + totalTimeFriendly;
+    }
+    if (day > 0) {
+      totalTimeFriendly = day + "d" + totalTimeFriendly;
+    }
 
     // Will need to adjust when # annots != # ideograms
     ideoPerMs = (totalImages/totalTime).toFixed(5);
     msPerIdeo = Math.round(totalTime/totalImages);
 
-    console.log("Time to produce all images: " + totalTime + " ms");
+    console.log(
+      "Time to produce all images: " + totalTime + " ms " +
+      "(" + totalTimeFriendly + ")"
+    );
     console.log(
       "Performance: " +
       ideoPerMs + " ideogram/ms " +
