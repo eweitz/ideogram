@@ -39,6 +39,44 @@ ideogramDrawer = function(config) {
   function rearrangeAnnots(annots) {
     // Rearranges annots into an array where each chromosome in the
     // ideogram gets 1 annotation.
+    //
+    // The idea here is to enable the rendering pipeline to generate one
+    // annotation per chromosome.  This way, often only 1 DOM write needs
+    // to happen for up to 24 different images, e.g. if we're running a batches
+    // job to generate one image for the location of each human gene.
+    //
+    // In practice, as we progress through the annotations, we end up with fewer
+    // and fewer chromosomes per DOM write, because some chromosomes have more
+    // annotations than others.  For example, chr1 has far more genes than
+    // chrY, so we end up omitting chrY in inner "ras" (arrays) in the
+    // implementation.
+    //
+    // That means this optimization will be less beneficial annotations are
+    // less evenly distributed among chromosomes.  This certainly affects human
+    // genes and variations, and probably all other kinds of annotation sets.
+    //
+    // Thus, while better than a completely naive implementation (1 DOM write
+    // per annotation) for whole-genome annotation sets, this algorithm is not
+    // ideal.  For single-chromosome annotations sets, this optimization will
+    // be no better than a naive implementation; actually being (generally
+    // negligibly, < 300 ms) worse.
+    //
+    // TODO:
+    //   - Consider updating ideogram.js to support rendering multiple
+    //     instances of the same chromosome, e.g. 200+ instances of chr1.  That
+    //     should address the shortcomings described above.  As of 2015-11-11,
+    //     ideogram.js mangles the display when passed multiple instances of
+    //     the same chromosome.
+    //
+    // N.B.:
+    // Regarding the priority of further optimization in this algorithm, note
+    // that the current implementation, though not ideal, has made it so that
+    // the "Get SVG" and "Write SVG DOM" steps of the all-human-genes job
+    // (which this algorithm targets) combined now take about 140 seconds out
+    // of roughly 600 seconds for the entire job.  See
+    // https://github.com/eweitz/ideogram/pull/23 for timing details.  It would
+    // probably be better to focus on optimizing the "Render and write PNG to
+    // disk" step, which takes about 480 seconds.
 
     //annots = annots["annots"];
 
@@ -68,9 +106,9 @@ ideogramDrawer = function(config) {
 
         if (j <= chrs[chr]) {
 
-          ras = [];
-          ids = [];
-          rasChrs = [];
+          ras = []; // inner array of rearranged annots
+          ids = []; // e.g. gene names or IDs, rs# from dbSNP
+          rasChrs = []; // chromosomes that have annots in this list
           for (k = 0; k < annots.length; k++) {
             if (j < annots[k]["annots"].length ) {
               ra = annots[k]["annots"][j];
@@ -123,6 +161,7 @@ ideogramDrawer = function(config) {
   // Shrinks SVG ~16%; same PNG perf.
   d3.selectAll(".band").attr("id", null).classed("band", null);
 
+  // Generates DOM for annotations, e.g. gene locations
   for (i = 0; i < rearrangedAnnots.length; i++) {
   //for (i = 0; i < 2; i++) { // DEBUG
     d3.selectAll(".annot").remove();
