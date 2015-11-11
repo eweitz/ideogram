@@ -92,7 +92,7 @@ ideogramDrawer = function(config) {
 
     }
 
-    return rearrangedAnnots;
+    return [rearrangedAnnots, totalAnnots];
 
   }
 
@@ -101,7 +101,7 @@ ideogramDrawer = function(config) {
       ideogram,
       annot, annots, i,
       svg, id, ids, tmp,
-      chrRects, rect, chrs, chr, chrID,
+      chrRects, rect, chrs, chr, chrID, tmp, totalAnnots,
       images = [];
 
 
@@ -109,9 +109,12 @@ ideogramDrawer = function(config) {
   ideogram.annots = ideogram.processAnnotData(config.rawAnnots.annots);
 
   var t0 = new Date().getTime();
-  rearrangedAnnots = rearrangeAnnots(ideogram.annots);
+  tmp = rearrangeAnnots(ideogram.annots);
+  rearrangedAnnots = tmp[0];
+  totalAnnots = tmp[1];
   var t1 = new Date().getTime();
-  console.log("Time to rearrange annots: " + (t1-t0) + " ms");
+  // Typically takes < 300 ms for ~20000 annots
+  //console.log("  (Time to rearrange annots: " + (t1-t0) + " ms)");
 
   d3.selectAll("*[style*='display: none']").remove();
 
@@ -139,7 +142,7 @@ ideogramDrawer = function(config) {
     }
   }
 
-  images = [chrRects, images]
+  images = [chrRects, images, totalAnnots]
 
   return images;
 }
@@ -157,47 +160,55 @@ svgDrawer = function(svg) {
 
 service = server.listen(port, function (request, response) {
 
-  var t0, t1, time,
+  var totalTime0 = new Date().getTime();
+
+  console.log("")
+
+  var totalTime1, totalTime,
+      min, sec, msec, totalTimeFriendly,
+      t0, t1, time,
       t0a, t1a, timeA = 0,
       t1b, t1b, timeB = 0,
       t1c, t1c, timeC = 0,
-      chr;
+      ideoConfig, rawAnnots;
 
-  var ideoConfig = JSON.parse(request.post);
+  ideoConfig = JSON.parse(request.post);
 
-  var rawAnnots = JSON.parse(fs.read(ideoConfig.localAnnotationsPath));
+  rawAnnots = JSON.parse(fs.read(ideoConfig.localAnnotationsPath));
   ideoConfig["rawAnnots"] = rawAnnots;
 
   page.open(url, function (status) {
 
+    var tmp, chrRects, images, totalAnnots,
+        chrRect, chr, image, id, png,
+
     t0 = new Date().getTime();
-    var tmp = page.evaluate(ideogramDrawer, ideoConfig);
-    var chrRects = tmp[0];
-    var images = tmp[1];
+    tmp = page.evaluate(ideogramDrawer, ideoConfig);
+    chrRects = tmp[0];
+    images = tmp[1];
+    totalAnnots = tmp[2];
     t1 = new Date().getTime();
     time = t1 - t0;
-    console.log("Time to get images: " + time + " ms")
 
     t0 = new Date().getTime();
-    var image, id, png;
 
-    var chrRect = {};
+    chrRect = {};
 
     for (var i = 0; i < images.length; i++) {
+
+      image = images[i];
+
       t0a = new Date().getTime();
-
-      page.evaluate(svgDrawer, images[i][1]);
-
+      page.evaluate(svgDrawer, image[1]);
       t1a = new Date().getTime();
       timeA += t1a - t0a;
 
-      async.forEachOf(images[i][0], function (id, index) {
+      async.forEachOf(image[0], function (id, index) {
 
           t0b = new Date().getTime();
-          chr = images[i][2][index];
+          chr = image[2][index];
           chrRect = chrRects[chr];
           page.clipRect = chrRect;
-
           t1b = new Date().getTime();
           timeB += t1b - t0b;
 
@@ -210,18 +221,36 @@ service = server.listen(port, function (request, response) {
 
     }
 
-    console.log("Time to evaluate SVG: " + timeA + " ms")
-    //console.log("Time to render, write: " + timeB + " ms")
-    console.log("Time to render: " + timeB + " ms")
-    console.log("Time to write: " + timeC + " ms")
+    console.log("Time to get SVG: " + time + " ms");
+    console.log("Time to write SVG to DOM: " + timeA + " ms");
+    console.log("Time to clip page: " + timeB + " ms");
+    console.log("Time to render and write PNG to disk: " + timeC + " ms");
 
-    t1 = new Date().getTime();
-    time = t1 - t0;
-    console.log("Time to produce all images: " + time + " ms")
+    console.log("");
+    console.log("Total images: " + totalAnnots);
 
     response.statusCode = 200;
-
     response.write("Done");
+
+    totalTime1 = new Date().getTime();
+    totalTime = totalTime1 - totalTime0;
+    //min = Math.floor(totalTime/(60000)); // 60000 milliseconds = 1 minute
+    //sec = Math.floor(10-(600000-totalTime)/1000);
+    //msec =
+    //totalTimeFriendly = min + "m" + sec + "." + ms // Like Unix 'time' command
+
+    // Will need to adjust when # annots != # ideograms
+    ideoPerMs = (totalAnnots/totalTime).toFixed(5);
+    msPerIdeo = Math.round(totalTime/totalAnnots);
+
+    console.log("Time to produce all images: " + totalTime + " ms");
+    console.log(
+      "Performance: " +
+      ideoPerMs + " ideogram/ms " +
+      "(" + msPerIdeo + " ms/ideogram)"
+    );
+    console.log("---");
+
     response.close();
 
   });
