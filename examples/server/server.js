@@ -39,8 +39,45 @@ ideogramDrawer = function(config) {
   function rearrangeAnnots(annots) {
     // Rearranges annots into an array where each chromosome in the
     // ideogram gets 1 annotation.
-
-    //annots = annots["annots"];
+    //
+    // The idea here is to enable the rendering pipeline to generate one
+    // annotation per chromosome.  This way, often only 1 DOM write needs
+    // to happen for up to 24 different images, e.g. if we're running a batch
+    // job to generate one image for the location of each human gene.
+    //
+    // In practice, as we progress through the annotations, we end up with fewer
+    // and fewer chromosomes per DOM write, because some chromosomes have more
+    // annotations than others.  For example, chr1 has far more genes than
+    // chrY, so we end up omitting chrY in inner "ras" (arrays) in the
+    // implementation.
+    //
+    // That means this optimization will be less beneficial for annotations
+    // that are less evenly distributed among chromosomes.  This certainly
+    // affects human genes and variations, and probably all other kinds of
+    // annotation sets.
+    //
+    // Thus, while better than a completely naive implementation (1 DOM write
+    // per annotation) for whole-genome annotation sets, this algorithm is not
+    // ideal.  For single-chromosome annotations sets, this optimization will
+    // be no better than a naive implementation; actually being (generally
+    // negligibly, < 300 ms) worse.
+    //
+    // TODO:
+    //   - Consider updating ideogram.js to support rendering multiple
+    //     instances of the same chromosome, e.g. 200+ instances of chr1.  That
+    //     should address the shortcomings described above.  As of 2015-11-11,
+    //     ideogram.js mangles the display when passed multiple instances of
+    //     the same chromosome.
+    //
+    // N.B.:
+    // Regarding the priority of further optimization in this algorithm, note
+    // that the current implementation, though not ideal, has made it so that
+    // the "Get SVG" and "Write SVG DOM" steps of the all-human-genes job
+    // (which this algorithm targets) combined now take about 140 seconds out
+    // of roughly 600 seconds for the entire job.  See
+    // https://github.com/eweitz/ideogram/pull/23 for timing details.  It would
+    // probably be better to focus on optimizing the "Render and write PNG to
+    // disk" step, which takes about 480 seconds.
 
     var annot, chrs, chr, i, j, k, m,
         chrAnnots, totalAnnots,
@@ -68,9 +105,9 @@ ideogramDrawer = function(config) {
 
         if (j <= chrs[chr]) {
 
-          ras = [];
-          ids = [];
-          rasChrs = [];
+          ras = []; // inner array of rearranged annots
+          ids = []; // e.g. gene names or IDs, rs# from dbSNP
+          rasChrs = []; // chromosomes that have annots in this list
           for (k = 0; k < annots.length; k++) {
             if (j < annots[k]["annots"].length ) {
               ra = annots[k]["annots"][j];
@@ -96,7 +133,6 @@ ideogramDrawer = function(config) {
 
   }
 
-
   var rawAnnotsByChr, rearrangedAnnots, ra,
       ideogram,
       annot, annots, i,
@@ -104,15 +140,23 @@ ideogramDrawer = function(config) {
       chrRects, rect, chrs, chr, chrID,
       images = [];
 
-
   ideogram = new Ideogram(config);
   ideogram.annots = ideogram.processAnnotData(config.rawAnnots.annots);
 
   var t0 = new Date().getTime();
   rearrangedAnnots = rearrangeAnnots(ideogram.annots);
   var t1 = new Date().getTime();
-  console.log("Time to rearrange annots: " + (t1-t0) + " ms");
+  // Typically takes < 300 ms for ~20000 annots
+  //console.log("  (Time to rearrange annots: " + (t1-t0) + " ms)");
 
+  // Remove hidden elements.  Makes large batches ~30% faster (PR #23).
+  d3.selectAll("*[style*='display: none']").remove();
+
+  // Remove JS hooks not used for static styling.
+  // Shrinks SVG ~16%; same PNG perf.
+  d3.selectAll(".band").attr("id", null).classed("band", null);
+
+  // Generates DOM for annotations, e.g. gene locations
   for (i = 0; i < rearrangedAnnots.length; i++) {
   //for (i = 0; i < 2; i++) { // DEBUG
     d3.selectAll(".annot").remove();
@@ -150,52 +194,62 @@ svgDrawer = function(svg) {
   //oldDiv.parentNode.replaceChild(newDiv, oldDiv);
 
   document.getElementsByTagName("body")[0].innerHTML = svg;
-
 }
+
 
 service = server.listen(port, function (request, response) {
 
-  var t0, t1, time,
+  var totalTime0 = new Date().getTime();
+
+  console.log("")
+
+  var totalTime1, totalTime,
+      date, day, hour, min, sec, msec, totalTimeFriendly,
+      t0, t1, time,
       t0a, t1a, timeA = 0,
       t1b, t1b, timeB = 0,
       t1c, t1c, timeC = 0,
-      chr;
+      ideoConfig, rawAnnots;
 
-  var ideoConfig = JSON.parse(request.post);
+  ideoConfig = JSON.parse(request.post);
 
-  var rawAnnots = JSON.parse(fs.read(ideoConfig.localAnnotationsPath));
+  rawAnnots = JSON.parse(fs.read(ideoConfig.localAnnotationsPath));
   ideoConfig["rawAnnots"] = rawAnnots;
 
   page.open(url, function (status) {
 
+    var tmp, chrRects, images, totalImages,
+        chrRect, chr, image, id, png;
+
     t0 = new Date().getTime();
-    var tmp = page.evaluate(ideogramDrawer, ideoConfig);
-    var chrRects = tmp[0];
-    var images = tmp[1];
+    tmp = page.evaluate(ideogramDrawer, ideoConfig);
+    chrRects = tmp[0];
+    images = tmp[1];
     t1 = new Date().getTime();
     time = t1 - t0;
-    console.log("Time to get images: " + time + " ms")
 
     t0 = new Date().getTime();
-    var image, id, png;
 
-    var chrRect = {};
+    chrRect = {};
+    totalImages = 0;
+
+    //fs.write("foo.svg", images[0][1]); // DEBUG
 
     for (var i = 0; i < images.length; i++) {
+
+      image = images[i];
+
       t0a = new Date().getTime();
-
-      page.evaluate(svgDrawer, images[i][1]);
-
+      page.evaluate(svgDrawer, image[1]);
       t1a = new Date().getTime();
       timeA += t1a - t0a;
 
-      async.forEachOf(images[i][0], function (id, index) {
+      async.forEachOf(image[0], function (id, index) {
 
           t0b = new Date().getTime();
-          chr = images[i][2][index];
+          chr = image[2][index];
           chrRect = chrRects[chr];
           page.clipRect = chrRect;
-
           t1b = new Date().getTime();
           timeB += t1b - t0b;
 
@@ -204,22 +258,54 @@ service = server.listen(port, function (request, response) {
           t1c = new Date().getTime();
           timeC += t1c - t0c;
 
+          totalImages += 1;
       });
-
     }
 
-    console.log("Time to evaluate SVG: " + timeA + " ms")
-    //console.log("Time to render, write: " + timeB + " ms")
-    console.log("Time to render: " + timeB + " ms")
-    console.log("Time to write: " + timeC + " ms")
+    console.log("Time to get SVG: " + time + " ms");
+    console.log("Time to write SVG to DOM: " + timeA + " ms");
+    console.log("Time to clip page: " + timeB + " ms");
+    console.log("Time to render and write PNG to disk: " + timeC + " ms");
 
-    t1 = new Date().getTime();
-    time = t1 - t0;
-    console.log("Time to produce all images: " + time + " ms")
+    console.log("");
+    console.log("Total images: " + totalImages);
 
     response.statusCode = 200;
-
     response.write("Done");
+
+    totalTime1 = new Date().getTime();
+    totalTime = totalTime1 - totalTime0;
+
+    date = new Date(totalTime);
+    day = date.getUTCDate() - 1;
+    hour = date.getUTCHours();
+    min = date.getUTCMinutes();
+    sec = date.getUTCSeconds();
+    ms = date.getUTCMilliseconds();
+    // Like Unix 'time' command
+    totalTimeFriendly = min + "m" + sec + "." + ms + "s"
+    if (hour > 0) {
+      totalTimeFriendly = hour + "h" + totalTimeFriendly;
+    }
+    if (day > 0) {
+      totalTimeFriendly = day + "d" + totalTimeFriendly;
+    }
+
+    // Will need to adjust when # annots != # ideograms
+    ideoPerMs = (totalImages/totalTime).toFixed(5);
+    msPerIdeo = Math.round(totalTime/totalImages);
+
+    console.log(
+      "Time to produce all images: " + totalTime + " ms " +
+      "(" + totalTimeFriendly + ")"
+    );
+    console.log(
+      "Performance: " +
+      ideoPerMs + " ideogram/ms " +
+      "(" + msPerIdeo + " ms/ideogram)"
+    );
+    console.log("---");
+
     response.close();
 
   });
