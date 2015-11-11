@@ -42,7 +42,7 @@ ideogramDrawer = function(config) {
     //
     // The idea here is to enable the rendering pipeline to generate one
     // annotation per chromosome.  This way, often only 1 DOM write needs
-    // to happen for up to 24 different images, e.g. if we're running a batches
+    // to happen for up to 24 different images, e.g. if we're running a batch
     // job to generate one image for the location of each human gene.
     //
     // In practice, as we progress through the annotations, we end up with fewer
@@ -51,9 +51,10 @@ ideogramDrawer = function(config) {
     // chrY, so we end up omitting chrY in inner "ras" (arrays) in the
     // implementation.
     //
-    // That means this optimization will be less beneficial annotations are
-    // less evenly distributed among chromosomes.  This certainly affects human
-    // genes and variations, and probably all other kinds of annotation sets.
+    // That means this optimization will be less beneficial for annotations
+    // that are less evenly distributed among chromosomes.  This certainly
+    // affects human genes and variations, and probably all other kinds of
+    // annotation sets.
     //
     // Thus, while better than a completely naive implementation (1 DOM write
     // per annotation) for whole-genome annotation sets, this algorithm is not
@@ -77,8 +78,6 @@ ideogramDrawer = function(config) {
     // https://github.com/eweitz/ideogram/pull/23 for timing details.  It would
     // probably be better to focus on optimizing the "Render and write PNG to
     // disk" step, which takes about 480 seconds.
-
-    //annots = annots["annots"];
 
     var annot, chrs, chr, i, j, k, m,
         chrAnnots, totalAnnots,
@@ -134,14 +133,12 @@ ideogramDrawer = function(config) {
 
   }
 
-
   var rawAnnotsByChr, rearrangedAnnots, ra,
       ideogram,
       annot, annots, i,
       svg, id, ids, tmp,
       chrRects, rect, chrs, chr, chrID,
       images = [];
-
 
   ideogram = new Ideogram(config);
   ideogram.annots = ideogram.processAnnotData(config.rawAnnots.annots);
@@ -197,8 +194,8 @@ svgDrawer = function(svg) {
   //oldDiv.parentNode.replaceChild(newDiv, oldDiv);
 
   document.getElementsByTagName("body")[0].innerHTML = svg;
-
 }
+
 
 service = server.listen(port, function (request, response) {
 
@@ -222,7 +219,7 @@ service = server.listen(port, function (request, response) {
   page.open(url, function (status) {
 
     var tmp, chrRects, images, totalImages,
-        chrRect, chr, image, id, png,
+        chrRect, chr, image, id, png;
 
     t0 = new Date().getTime();
     tmp = page.evaluate(ideogramDrawer, ideoConfig);
@@ -262,9 +259,7 @@ service = server.listen(port, function (request, response) {
           timeC += t1c - t0c;
 
           totalImages += 1;
-
       });
-
     }
 
     console.log("Time to get SVG: " + time + " ms");
