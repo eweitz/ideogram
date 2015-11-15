@@ -1,7 +1,7 @@
 // Server-side rendering module for Ideogram.js
 // Invoked via PhantomJS
 
-var page, url, svgDrawer,
+var page, svgDrawer,
     fs = require('fs'),
     async = require('async'),
     system = require('system');
@@ -27,20 +27,18 @@ if (args.length === 1) {
 } else {
 
   ideoConfig = {
-    "taxid": parseArg("--taxid"),
+    "taxid": parseInt(parseArg("--taxid")),
     "chromosomes": parseArg("--chromosomes").split(","),
-    "chrWidth": parseArg("--chr-width"),
-    "chrHeight": parseArg("--chr-height"),
-    "chrMargin": parseArg("--chr-margin"),
-    "showBandLabels": parseArg("--show-band-labels"),
-    "showChromosomeLabels": parseArg("--show-chromosome-labels"),
+    "chrWidth": parseInt(parseArg("--chr-width")),
+    "chrHeight": parseInt(parseArg("--chr-height")),
+    "chrMargin": parseInt(parseArg("--chr-margin")),
+    "showBandLabels": JSON.parse(parseArg("--show-band-labels")),
+    "showChromosomeLabels": JSON.parse(parseArg("--show-chromosome-labels")),
     "orientation": parseArg("--orientation"),
-    "localAnnotationsPath": parseArg("--local-annotations-path")
+    "localAnnotationsPath": parseArg("--local-annotations-path"),
+    "container": "#ideo-container"
   };
 
-  args.forEach(function(arg, i) {
-    console.log(i + ': ' + arg);
-  });
 }
 
 
@@ -226,12 +224,11 @@ var totalTime1, totalTime,
     t1c, t1c, timeC = 0,
     rawAnnots;
 
-console.log(ideoConfig);
-
 rawAnnots = JSON.parse(fs.read(ideoConfig.localAnnotationsPath));
+
 ideoConfig["rawAnnots"] = rawAnnots;
 
-page.open(url, function (status) {
+page.open("index.html", function (status) {
 
   var tmp, chrRects, images, totalImages,
       chrRect, chr, image, id, png;
@@ -251,7 +248,6 @@ page.open(url, function (status) {
   //fs.write("foo.svg", images[0][1]); // DEBUG
 
   for (var i = 0; i < images.length; i++) {
-
     image = images[i];
 
     t0a = new Date().getTime();
