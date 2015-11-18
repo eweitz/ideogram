@@ -2,9 +2,22 @@
 
 var program = require('commander');
 
-function list(val) {
-  return val.split(',');
-}
+program.on('--help', function(){
+  console.log('  Example:');
+  console.log('');
+  console.log('    ideogram ' +
+    '--taxid 9606 ' +
+    '--chromosomes 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,X,Y ' +
+    '--chr-width 10 ' +
+    '--chr-height 500 ' +
+    '--chr-margin 10 ' +
+    '--show-band-labels true ' +
+    '--show-chromosome-labels true ' +
+    '--orientation horizontal ' +
+    '--local-annotations-path ../data/annotations/1000_virtual_snvs.json'
+  );
+  console.log('');
+});
 
 program
   .version('0.1.0')
@@ -20,6 +33,7 @@ program
     'Path to local JSON annotations file');
 
 program.parse(process.argv);
+
 
 var path = require('path'),
     phantomjs = require('phantomjs'),
