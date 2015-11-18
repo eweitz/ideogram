@@ -21,6 +21,11 @@ parseArg = function(arg) {
   }
 }
 
+if (/batch-render.js/.test(args[0])) {
+  // Encountered when calling from Node's child_proces spawn
+  args = args.slice(1)
+}
+
 if (args.length === 1) {
   console.error("Error: this program requires arguments to run");
   phantom.exit(1);
@@ -313,5 +318,5 @@ page.open("index.html", function (status) {
     "(" + msPerIdeo + " ms/ideogram)"
   );
   console.log("---");
-
+  phantom.exit(0);
 });
