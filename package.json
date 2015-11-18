@@ -35,7 +35,8 @@
   "dependencies": {
     "d3": "^3.5.6",
     "async": "*",
-    "commander": "*"
+    "commander": "*",
+    "phantomjs": "1.9.7-14"
   },
   "devDependencies": {
     "chai": "^3.2.0",
