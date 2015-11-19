@@ -14,7 +14,7 @@ program.on('--help', function(){
     '--show-band-labels true ' +
     '--show-chromosome-labels true ' +
     '--orientation horizontal ' +
-    '--local-annotations-path ../data/annotations/100_virtual_snvs.json'
+    '--local-annotations-path data/annotations/100_virtual_snvs.json'
   );
   console.log('');
 });

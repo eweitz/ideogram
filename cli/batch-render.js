@@ -8,7 +8,8 @@ var page, svgDrawer,
 
 var args = system.args,
     arg, parseArg,
-    ideoConfig;
+    ideoConfig,
+    dir;
 
 parseArg = function(arg) {
   var index = args.indexOf(arg);
@@ -21,9 +22,12 @@ parseArg = function(arg) {
   }
 }
 
+
+
 if (/batch-render.js/.test(args[0])) {
   // Encountered when calling from Node's child_proces spawn
-  args = args.slice(1)
+  dir = args[0].split('/').slice(0, -2).join('/');
+  args = args.slice(1);
 }
 
 if (args.length === 1) {
@@ -53,6 +57,33 @@ page.viewportSize = {width: 540, height: 70};
 page.onConsoleMessage = function (msg){
     console.log(msg);
 };
+
+function getIndexHtml() {
+
+  var html, css, d3, js, bands, path;
+
+  css = dir + '/src/css/ideogram.css';
+  d3 = dir + '/src/js/d3.min.js';
+  js = dir + '/src/js/ideogram.js';
+  bands = dir + '/data/bands/native/ideogram_9606_GCF_000001405.26_850.js';
+
+  html =
+  '<!DOCTYPE html>' +
+  '<html>' +
+  '<head>' +
+    '<meta charset="UTF-8" />' +
+    '<link type="text/css" rel="stylesheet" href="' + css + '"/>' +
+    '<script type="text/javascript" src="' + d3 + '"></script>' +
+    '<script type="text/javascript" src="' + js + '"></script>' +
+    '<script type="text/javascript" src="' + bands + '"></script>' +
+  '</head>' +
+  '<body>' +
+    '<div id="ideo-container"></div>' +
+  '</body>' +
+  '</html>';
+
+  return html;
+}
 
 
 ideogramDrawer = function(config) {
@@ -227,13 +258,16 @@ var totalTime1, totalTime,
     t0a, t1a, timeA = 0,
     t1b, t1b, timeB = 0,
     t1c, t1c, timeC = 0,
-    rawAnnots;
+    rawAnnots, indexHtml;
 
 rawAnnots = JSON.parse(fs.read(ideoConfig.localAnnotationsPath));
 
 ideoConfig["rawAnnots"] = rawAnnots;
 
-page.open("index.html", function (status) {
+indexHtml = '/tmp/ideogram/' + parseInt(Math.random()*1000000) + '/index.html';
+fs.write(indexHtml, getIndexHtml());
+
+page.open(indexHtml, function (status) {
 
   var tmp, chrRects, images, totalImages,
       chrRect, chr, image, id, png;
