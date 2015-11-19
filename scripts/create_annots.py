@@ -1,8 +1,10 @@
+#! /usr/bin/python3
+
 ''' Creates simulated genome annotation data
 
 Data is currently simulated single-nucleotide variations (SNVs).
 
-TODO: 
+TODO:
 - Add handling for non-human organisms
 - Enhance with more data than simply position, e.g.:
 	- Variant type (use Sequence Ontology ID)
@@ -48,10 +50,10 @@ for chr in chrs:
 	annots.append({"chr": chr, "annots": []});
 
 i = 0
-while i < 1000:
+while i < 100:
 	j = str(i + 1)
 	chr = i % 24
-	
+
 	start = int((i * lengths_GRCh38[chrs[chr]])/1000 + 1)
 	stop = int((i * lengths_GRCh38[chrs[chr]])/1000 + 1)
 
@@ -63,10 +65,10 @@ while i < 1000:
 	]
 
 	annots[chr]["annots"].append(annot)
-	
+
 	i += 1
 
 annots = json.dumps(annots)
 annots = '{"annots":' + annots + '}'
 
-open("annotations/1000_virtual_snvs.json", "w").write(annots)
+open("../data/annotations/100_virtual_snvs.json", "w").write(annots)
