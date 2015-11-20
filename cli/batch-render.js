@@ -11,6 +11,21 @@ var args = system.args,
     ideoConfig,
     dir;
 
+phantom.onError = function(msg, trace) {
+
+    var msgStack = ['PHANTOM ERROR: ' + msg];
+
+    if (trace && trace.length) {
+      msgStack.push('TRACE:');
+      trace.forEach(function(t) {
+        msgStack.push(' -> ' + t.file + ': ' + t.line + (t.function ? ' (in function "' + t.function +'")' : ''));
+      });
+    }
+
+    console.error(msgStack.join('\n'));
+    phantom.exit(1);
+}
+
 parseArg = function(arg) {
   var index = args.indexOf(arg);
 
@@ -21,7 +36,6 @@ parseArg = function(arg) {
     return args[index + 1];
   }
 }
-
 
 
 if (/batch-render.js/.test(args[0])) {
@@ -49,7 +63,6 @@ if (args.length === 1) {
   };
 
 }
-
 
 page = require('webpage').create();
 page.viewportSize = {width: 540, height: 70};

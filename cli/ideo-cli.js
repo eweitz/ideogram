@@ -34,7 +34,6 @@ program
 
 program.parse(process.argv);
 
-
 var path = require('path'),
     phantomjs = require('phantomjs'),
     binPath = phantomjs.path,
@@ -59,6 +58,8 @@ readline.createInterface({
   terminal: false
 }).on('line', function(line) {
   console.log(line);
+  br.kill()
+  process.exit(1);
 });
 
 br.on('exit', function() {
