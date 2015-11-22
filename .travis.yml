@@ -3,4 +3,5 @@ node_js:
   - "0.12"
 before_script:
   - npm install gulp
+  - npm link
 script: gulp
