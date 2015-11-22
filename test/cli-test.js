@@ -22,12 +22,6 @@ describe("Ideogram CLI", function() {
       '--local-annotations-path data/annotations/' + numImages + '_virtual_snvs.json';
 
     exec(cmd, function(error, stdout, stderr) {
-      console.log('ideogram cli, error:')
-      console.log(error)
-      console.log('ideogram cli, stdout:')
-      console.log(stderr)
-      console.log('ideogram cli, stderr:')
-      console.log(stderr)
       var images = fs.readdirSync('images');
       assert.equal(numImages, images.length);
       done();
