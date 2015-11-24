@@ -1826,9 +1826,15 @@ Ideogram.prototype.init = function() {
     svgClass += "faint"
   }
 
-  var ideoHeight = this.config.chrHeight + 40;
-  if (this.config.rows > 1) {
-    ideoHeight = this.config.rows * (ideoHeight - 40)
+  var ideoHeight;
+
+  if (this.config.orientation === "vertical") {
+    ideoHeight = this.config.chrHeight + 40;
+    if (this.config.rows > 1) {
+      ideoHeight = this.config.rows * (ideoHeight - 40)
+    }
+  } else {
+    ideoHeight = (this.config.chrWidth + 40) * chrs.length;
   }
 
   var gradients = this.getBandColorGradients();
@@ -1845,7 +1851,6 @@ Ideogram.prototype.init = function() {
       maxLength = 0,
       numBandDataResponses = 0,
       resolution = this.config.resolution;
-
 
   for (i = 0; i < taxids.length; i++) {
     taxid = taxids[i];

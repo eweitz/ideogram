@@ -7,6 +7,10 @@
     "example": "examples",
     "test": "test"
   },
+  "preferGlobal": true,
+  "bin": {
+    "ideogram": "cli/ideo-cli.js"
+  },
   "scripts": {
     "test": "gulp"
   },
@@ -30,11 +34,14 @@
   "homepage": "https://github.com/eweitz/ideogram#readme",
   "dependencies": {
     "d3": "^3.5.6",
-    "async": "*"
+    "async": "*",
+    "commander": "*",
+    "phantomjs": "1.9.7-14"
   },
   "devDependencies": {
     "chai": "^3.2.0",
     "gulp-mocha-phantomjs": "^0.10.1",
+    "gulp-mocha": "*",
     "mocha": "^2.3.0"
   }
 }
