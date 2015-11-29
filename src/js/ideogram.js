@@ -862,17 +862,10 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
     borderTweak = 0;
   }
 
-  chr.append('path')
-    .attr("class", "q-ter chromosomeBorder " + chrModel.bands[chrModel.bands.length - 1].stain)
-    .attr("d",
-      "M " + (width - bump/2 + borderTweak) + " " + chrMargin + " " +
-      "q " + bump + " " +  chrWidth/2 + " 0 " + chrWidth
-    )
-
   var pcenIndex = chrModel["pcenIndex"],
       pcen = chrModel.bands[pcenIndex],
       qcen = chrModel.bands[pcenIndex + 1],
-      pBump;
+      pBump, qArmEnd;
 
   // Why does human chromosome 11 lack a centromeric p-arm band?
   // Answer: because of a bug in the data.  Hack removed; won't work
@@ -889,6 +882,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
   }
 
   qArmWidth = chrModel.width - qArmStart + borderTweak*1.3;
+  qArmEnd = qArmStart + qArmWidth - bump/2 - 0.5;
 
   chr.append('line')
     .attr("class", "cb-p-arm-top chromosomeBorder")
@@ -908,15 +902,22 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
     .attr("class", "cb-q-arm-top chromosomeBorder")
     .attr('x1', qArmStart)
     .attr('y1', chrMargin)
-    .attr('x2', qArmStart + qArmWidth - bump/2 - 0.5)
+    .attr('x2', qArmEnd)
     .attr("y2", chrMargin)
 
   chr.append('line')
     .attr("class", "cb-q-arm-bottom chromosomeBorder")
     .attr('x1', qArmStart)
     .attr('y1', chrWidth + chrMargin)
-    .attr('x2', qArmStart + qArmWidth - bump/2 - 0.5)
+    .attr('x2', qArmEnd)
     .attr("y2", chrWidth + chrMargin)
+
+  chr.append('path')
+    .attr("class", "q-ter chromosomeBorder " + chrModel.bands[chrModel.bands.length - 1].stain)
+    .attr("d",
+      "M " + qArmEnd + " " + chrMargin + " " +
+      "q " + bump + " " +  chrWidth/2 + " 0 " + chrWidth
+    )
 
 }
 
