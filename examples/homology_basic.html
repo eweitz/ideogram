@@ -5,7 +5,7 @@
   <title>Homology, basic | Ideogram</title>
   <link type="text/css" rel="stylesheet" href="../src/css/ideogram.css"/>
   <script type="text/javascript" src="../src/js/d3.min.js"></script>
-  <script type="text/javascript" src="../src/js/ideogram.min.js"></script>
+  <script type="text/javascript" src="../src/js/ideogram.js"></script>
 </head>
 <body>
   <h1>Homology, basic | Ideogram</h1>
@@ -15,7 +15,7 @@
 function onIdeogramLoad() {
 
 	var chrs = ideogram.chromosomes,
-		chr1 = chrs["9606"]["1"], 
+		chr1 = chrs["9606"]["1"],
 		chr2 = chrs["9606"]["2"],
 		r1Band, r2Band,
 		r3Band, r4Band,
@@ -29,14 +29,14 @@ function onIdeogramLoad() {
 		start: r1Band.bp.start,
 		stop: r1Band.bp.stop
 	};
-	
+
 	r2Band = chr2.bands[2];
 	range2 = {
 		chr: chr2,
 		start: r2Band.bp.start,
 		stop: r2Band.bp.stop
 	};
-	
+
 	// 1p11, chromosome 1 centromeric p band
 	r3Band = chr1.bands[22];
 	range3 = {
@@ -44,7 +44,7 @@ function onIdeogramLoad() {
 		start: r3Band.bp.start,
 		stop: r3Band.bp.stop
 	};
-	
+
 	// 2p11.1, chromosome 2 centromeric p band
 	r4Band = chr2.bands[13];
 	range4 = {
@@ -85,14 +85,14 @@ function onIdeogramLoad() {
 	};
 
 	syntenicRegions.push(
-		{"r1": range1, "r2": range2}, 
+		{"r1": range1, "r2": range2},
 		{"r1": range3, "r2": range4},
 		{"r1": range5, "r2": range6},
 		{"r1": range7, "r2": range8}
 	);
 
 	ideogram.drawSynteny(syntenicRegions);
-	
+
 }
 
 var config = {
