@@ -987,7 +987,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 
     chrLength = chr[0][0].getBoundingClientRect().height;
 
-    scaleX = (ideoWidth/chrLength)*0.99;
+    scaleX = (ideoWidth/chrLength)*0.97;
     scaleY = 1.5;
     scale = "scale(" + scaleX + ", " + scaleY + ")";
 
@@ -1018,7 +1018,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 
     chrLength = chr[0][0].getBoundingClientRect().width;
 
-    scaleX = (ideoHeight/chrLength)*0.99;
+    scaleX = (ideoHeight/chrLength)*0.97;
     scaleY = 1.5;
     scale = "scale(" + scaleX + ", " + scaleY + ")";
 
@@ -1783,26 +1783,26 @@ Ideogram.prototype.init = function() {
 
   if (isMultiOrganism == false) {
     if (typeof this.config.taxid == "undefined") {
-      this.config.taxid = "9606";
+      ideo.config.taxid = "9606";
     }
     taxid = this.config.taxid;
     taxids = [taxid];
     this.config.taxids = taxids;
     chrs = this.config.chromosomes.slice();
-    this.config.chromosomes = {};
-    this.config.chromosomes[taxid] = chrs;
+    ideo.config.chromosomes = {};
+    ideo.config.chromosomes[taxid] = chrs;
     numChromosomes = this.config.chromosomes[taxid].length;
   } else {
-    this.coordinateSystem = "bp";
+    ideo.coordinateSystem = "bp";
     taxids = this.config.taxids;
     numChromosomes = 0;
     for (i = 0; i < taxids.length; i++) {
       taxid = taxids[i];
-      numChromosomes += this.config.chromosomes[taxid].length;
+      numChromosomes += ideo.config.chromosomes[taxid].length;
     }
   }
 
-  if (this.config.annotationsPath) {
+  if (ideo.config.annotationsPath) {
     d3.json(
       ideo.config.annotationsPath, // URL
       function(data) { // Callback
@@ -1812,8 +1812,8 @@ Ideogram.prototype.init = function() {
   }
 
   svgClass = "";
-  if (this.config.showChromosomeLabels) {
-    if (this.config.orientation == "horizontal") {
+  if (ideo.config.showChromosomeLabels) {
+    if (ideo.config.orientation == "horizontal") {
       svgClass += "labeledLeft ";
     } else {
       svgClass += "labeled ";
@@ -1829,16 +1829,16 @@ Ideogram.prototype.init = function() {
 
   var ideoHeight;
 
-  if (this.config.orientation === "vertical") {
-    ideoHeight = this.config.chrHeight + 40;
-    if (this.config.rows > 1) {
-      ideoHeight = this.config.rows * (ideoHeight - 40)
+  if (ideo.config.orientation === "vertical") {
+    ideoHeight = ideo.config.chrHeight + 30;
+    if (ideo.config.rows > 1) {
+      ideoHeight = ideo.config.rows * (ideoHeight - 30)
     }
   } else {
-    ideoHeight = (this.config.chrWidth + 40) * chrs.length;
+    ideoHeight = ideo.config.chrMargin * chrs.length + 30;
   }
 
-  var gradients = this.getBandColorGradients();
+  var gradients = ideo.getBandColorGradients();
 
   var svg = d3.select(this.config.container)
     .append("svg")
