@@ -552,7 +552,7 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
 Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation, scale) {
 
   var chrMargin, chrWidth, ideo, x, y,
-      numAnnotTracks, scaleSvg;
+      numAnnotTracks, scaleSvg, tracksHeight;
 
   chrWidth = this.config.chrWidth;
   chrMargin = this.config.chrMargin * chrIndex;
@@ -608,13 +608,18 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation,
       chrMargin2 = ideo.config.chrMargin + 8;
     }
 
+    tracksHeight = ideo.config.annotTracksHeight;
+    if (ideo.config.annotationsLayout !== "overlay") {
+      tracksHeight = tracksHeight * 2;
+    }
+
     chr.selectAll("text.chrLabel")
       .attr("transform", "rotate(-90)" + scaleSvg)
       .selectAll("tspan")
       .attr("x", function(d, i) {
 
         chrMargin = ideo.config.chrMargin * chrIndex;
-        x = -(chrMargin + chrMargin2) + 3 + ideo.config.annotTracksHeight * 2;
+        x = -(chrMargin + chrMargin2) + 3 + tracksHeight;
         x = x/scale.x
         return x;
       })
