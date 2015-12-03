@@ -10,7 +10,7 @@ chrs = [
 	"21", "22", "X", "Y"
 ]
 
-file_name = "../data/annotations/Homo_sapiens,_Ensembl_80.tsv"
+file_name = "data/annotations/Homo_sapiens,_Ensembl_80.tsv"
 file = open(file_name, "r").readlines()
 
 for chr in chrs:
@@ -34,7 +34,7 @@ for line in file[1:]:
 		chr = int(chr) - 1
 
 	start = int(columns[0])
-	stop = int(columns[1])
+	stop = int(columns[1]) - start
 	gene_symbol = columns[2]
 	gene_type = columns[3]
 
@@ -50,4 +50,4 @@ for line in file[1:]:
 annots = json.dumps(annots)
 annots = '{"annots":' + annots + '}'
 
-open("../data/annotations/all_human_genes.json", "w").write(annots)
+open("data/annotations/all_human_genes.json", "w").write(annots)
