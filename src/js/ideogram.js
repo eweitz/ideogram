@@ -1325,8 +1325,8 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
       chr = annotsByChr.chr;
       ra = annotsByChr.annots[j];
 
-      start = ra[1],
-      stop = ra[2]
+      start = ra[1];
+      stop = ra[2] + start;
 
       chrModel = ideo.chromosomes["9606"][chr]
 
@@ -1857,6 +1857,7 @@ Ideogram.prototype.init = function() {
       maxLength = 0,
       numBandDataResponses = 0,
       resolution = this.config.resolution;
+
 
   for (i = 0; i < taxids.length; i++) {
     taxid = taxids[i];

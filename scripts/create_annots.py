@@ -1,5 +1,3 @@
-#! /usr/bin/python3
-
 ''' Creates simulated genome annotation data
 
 Data is currently simulated single-nucleotide variations (SNVs).
@@ -50,12 +48,12 @@ for chr in chrs:
 	annots.append({"chr": chr, "annots": []});
 
 i = 0
-while i < 100:
+while i < 1000:
 	j = str(i + 1)
 	chr = i % 24
 
 	start = int((i * lengths_GRCh38[chrs[chr]])/1000 + 1)
-	stop = int((i * lengths_GRCh38[chrs[chr]])/1000 + 1)
+	stop = 1
 
 	annot = [
 		"rs" + j,
@@ -71,4 +69,4 @@ while i < 100:
 annots = json.dumps(annots)
 annots = '{"annots":' + annots + '}'
 
-open("../data/annotations/100_virtual_snvs.json", "w").write(annots)
+open("data/annotations/1000_virtual_snvs.json", "w").write(annots)
