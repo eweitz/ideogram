@@ -113,6 +113,7 @@ var Ideogram = function(config) {
   this.bandsToShow = [];
 
   this.chromosomes = {};
+  this.numChromosomes = 0;
   this.bandData = {};
 
   this.init();
@@ -149,7 +150,7 @@ Ideogram.prototype.getBands = function(content, taxid, chromosomes) {
 
   tsvLinesLength = tsvLines.length;
 
-  for (i = init; i < tsvLinesLength; i++) {
+  for (i = init; i < tsvLinesLength - 1; i++) {
 
     columns = tsvLines[i].split(delimiter);
 
@@ -159,7 +160,7 @@ Ideogram.prototype.getBands = function(content, taxid, chromosomes) {
       // If a specific set of chromosomes has been requested, and
       // the current chromosome
       typeof(chromosomes) !== "undefined" &&
-      chr in chromosomes === false)
+      chr in chromosomes === false
     ) {
       continue;
     }
@@ -1576,13 +1577,11 @@ Ideogram.prototype.putChromosomesInRows = function() {
         rows = ideo.config.rows,
         chrs,
         chrsPerRow,
-        numChromosomes,
         rowIndex, rowIndexStop,
         riCorrection,
         rowHeight, chrIndex, chrWidth, chrMargin;
 
-    numChromosomes = ideo.config.chromosomes[ideo.config.taxid].length;
-    chrsPerRow = Math.floor(numChromosomes/rows);
+    chrsPerRow = Math.floor(ideo.numChromosomes/rows);
 
     riCorrection = 0;
     if (d3.select("svg > *")[0][0].tagName !== "g") {
@@ -1790,22 +1789,27 @@ Ideogram.prototype.init = function() {
 
   var bandDataFile,
       taxid, taxids, i, svgClass,
-      chrs, numChromosomes;
+      chrs;
 
   var ideo = this;
 
   var t0 = new Date().getTime();
 
-  if (ideo.config.multiorganism == false) {
+  var bandsArray = [],
+      maxLength = 0,
+      numBandDataResponses = 0,
+      resolution = this.config.resolution;
+
+  if (ideo.config.multiorganism === true) {
+    ideo.coordinateSystem = "bp";
+    taxids = ideo.config.taxids;
+  } else {
     if (typeof this.config.taxid == "undefined") {
       ideo.config.taxid = "9606";
     }
-    taxid = this.config.taxid;
+    taxid = ideo.config.taxid;
     taxids = [taxid];
     ideo.config.taxids = taxids;
-  } else {
-    ideo.coordinateSystem = "bp";
-    taxids = this.config.taxids;
   }
 
   for (i = 0; i < taxids.length; i++) {
@@ -1831,6 +1835,8 @@ Ideogram.prototype.init = function() {
 
           if (numBandDataResponses == taxids.length) {
             processBandData();
+            writeContainer();
+            finishInit();
           }
         }
       )
@@ -1838,60 +1844,62 @@ Ideogram.prototype.init = function() {
       // If bands already available, e.g. via <script> tag in initial page load
       ideo.bandData["9606"] = chrBands;
       processBandData();
+      writeContainer();
+      finishInit();
     }
 
   }
 
-  if (ideo.config.annotationsPath) {
-    d3.json(
-      ideo.config.annotationsPath, // URL
-      function(data) { // Callback
-        ideo.rawAnnots = data.annots;
+
+  function writeContainer() {
+
+    if (ideo.config.annotationsPath) {
+      d3.json(
+        ideo.config.annotationsPath, // URL
+        function(data) { // Callback
+          ideo.rawAnnots = data.annots;
+        }
+      );
+    }
+
+    svgClass = "";
+    if (ideo.config.showChromosomeLabels) {
+      if (ideo.config.orientation == "horizontal") {
+        svgClass += "labeledLeft ";
+      } else {
+        svgClass += "labeled ";
       }
-    );
-  }
+    }
 
-  svgClass = "";
-  if (ideo.config.showChromosomeLabels) {
-    if (ideo.config.orientation == "horizontal") {
-      svgClass += "labeledLeft ";
+    if (
+      this.config.annotationsLayout &&
+      this.config.annotationsLayout === "overlay"
+    ) {
+      svgClass += "faint"
+    }
+
+    var ideoHeight;
+
+    if (ideo.config.orientation === "vertical") {
+      ideoHeight = ideo.config.chrHeight + 30;
+      if (ideo.config.rows > 1) {
+        ideoHeight = ideo.config.rows * (ideoHeight - 30)
+      }
     } else {
-      svgClass += "labeled ";
+      ideoHeight = ideo.config.chrMargin * ideo.numChromosomes + 30;
     }
+
+    var gradients = ideo.getBandColorGradients();
+
+    var svg = d3.select(ideo.config.container)
+      .append("svg")
+        .attr("id", "ideogram")
+        .attr("class", svgClass)
+        .attr("width", "97%")
+        .attr("height", ideoHeight)
+        .html(gradients)
+
   }
-
-  if (
-    this.config.annotationsLayout &&
-    this.config.annotationsLayout === "overlay"
-  ) {
-    svgClass += "faint"
-  }
-
-  var ideoHeight;
-
-  if (ideo.config.orientation === "vertical") {
-    ideoHeight = ideo.config.chrHeight + 30;
-    if (ideo.config.rows > 1) {
-      ideoHeight = ideo.config.rows * (ideoHeight - 30)
-    }
-  } else {
-    ideoHeight = ideo.config.chrMargin * chrs.length + 30;
-  }
-
-  var gradients = ideo.getBandColorGradients();
-
-  var svg = d3.select(this.config.container)
-    .append("svg")
-      .attr("id", "ideogram")
-      .attr("class", svgClass)
-      .attr("width", "97%")
-      .attr("height", ideoHeight)
-      .html(gradients)
-
-  var bandsArray = [],
-      maxLength = 0,
-      numBandDataResponses = 0,
-      resolution = this.config.resolution;
 
   /*
   * Completes default ideogram initialization
@@ -1903,36 +1911,32 @@ Ideogram.prototype.init = function() {
   * execute callbacks defined by client code
   */
   function processBandData() {
-    
+
     var j, k, chromosome, bands, chromosomeModel,
         chrLength,
         bandData,
         stopType,
-        taxid, taxids, chrs, numChromosomes;
+        taxid, taxids, chrs;
 
     bandsArray = [];
     maxLength = 0;
 
-    if (this.config.multiorganism === false) {
+    if (ideo.config.multiorganism === true) {
+      ideo.coordinateSystem = "bp";
+      taxids = ideo.config.taxids;
+      for (i = 0; i < taxids.length; i++) {
+        taxid = taxids[i];
+      }
+    } else {
       if (typeof this.config.taxid == "undefined") {
         ideo.config.taxid = "9606";
       }
-      taxid = this.config.taxid;
+      taxid = ideo.config.taxid;
       taxids = [taxid];
       ideo.config.taxids = taxids;
-      chrs = ideo.config.chromosomes.slice();
-      ideo.config.chromosomes = {};
-      ideo.config.chromosomes[taxid] = chrs;
-      numChromosomes = this.config.chromosomes[taxid].length;
-    } else {
-      ideo.coordinateSystem = "bp";
-      taxids = this.config.taxids;
-      numChromosomes = 0;
-      for (i = 0; i < taxids.length; i++) {
-        taxid = taxids[i];
-        numChromosomes += ideo.config.chromosomes[taxid].length;
-      }
     }
+
+    ideo.config.chromosomes = {};
 
     var t0_b = new Date().getTime();
     for (j = 0; j < taxids.length; j++) {
@@ -1940,13 +1944,20 @@ Ideogram.prototype.init = function() {
       taxid = taxids[j];
       bandData = ideo.bandData[taxid];
 
-      chrs = ideo.config.chromosomes[taxid];
-      chrs = ideo.getBands(bandData, taxid, chromosomes);
+      bandsByChr = ideo.getBands(bandData, taxid);
+
+      chrs = Object.keys(bandsByChr);
+
+      ideo.config.chromosomes[taxid] = chrs.slice();
+
+      ideo.numChromosomes += ideo.config.chromosomes[taxid].length;
+
+      ideo.config.chromosomes[taxid] = chrs.slice();
 
       for (k = 0; k < chrs.length; k++) {
 
         chromosome = chrs[k];
-        bands = ideo.getBands(bandData, taxid);
+        bands = bandsByChr[chromosome];
         bandsArray.push(bands);
 
         chrLength = {
@@ -1965,9 +1976,11 @@ Ideogram.prototype.init = function() {
     }
     var t1_b = new Date().getTime();
     if (this.debug) {
-      console.log("Time in getBands: " + (t1_b - t0_b) + " ms")
+      console.log("Time in processBandData: " + (t1_b - t0_b) + " ms")
     }
+}
 
+function finishInit() {
     var chrIndex = 0;
 
     var t0_a = new Date().getTime();
@@ -1994,7 +2007,6 @@ Ideogram.prototype.init = function() {
         ideo.drawChromosome(chromosomeModel, chrIndex);
 
       }
-
 
       if (ideo.config.showBandLabels === true) {
           ideo.drawBandLabels(ideo.chromosomes);
