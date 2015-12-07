@@ -160,7 +160,7 @@ Ideogram.prototype.getBands = function(content, taxid, chromosomes) {
       // If a specific set of chromosomes has been requested, and
       // the current chromosome
       typeof(chromosomes) !== "undefined" &&
-      chr in chromosomes === false
+      chromosomes.indexOf(chr) === -1
     ) {
       continue;
     }
@@ -1936,6 +1936,10 @@ Ideogram.prototype.init = function() {
       ideo.config.taxids = taxids;
     }
 
+    if ("chromosomes" in ideo.config) {
+      chrs = ideo.config.chromosomes;
+    }
+
     ideo.config.chromosomes = {};
 
     var t0_b = new Date().getTime();
@@ -1944,15 +1948,13 @@ Ideogram.prototype.init = function() {
       taxid = taxids[j];
       bandData = ideo.bandData[taxid];
 
-      bandsByChr = ideo.getBands(bandData, taxid);
+      bandsByChr = ideo.getBands(bandData, taxid, chrs);
 
       chrs = Object.keys(bandsByChr);
 
       ideo.config.chromosomes[taxid] = chrs.slice();
 
       ideo.numChromosomes += ideo.config.chromosomes[taxid].length;
-
-      ideo.config.chromosomes[taxid] = chrs.slice();
 
       for (k = 0; k < chrs.length; k++) {
 
