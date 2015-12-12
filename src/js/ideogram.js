@@ -1777,6 +1777,57 @@ Ideogram.prototype.getBandColorGradients = function() {
   return gradients;
 }
 
+/**
+* Returns an array of taxids for the current ideogram
+**/
+Ideogram.prototype.getTaxids = function() {
+
+  var ideo = this,
+    taxid, taxids,
+    org, orgs, i,
+    taxidInit;
+
+  taxidInit = "taxid" in ideo.config;
+
+  ideo.config.multiorganism = (
+    ("org" in ideo.config && ideo.config.org instanceof Array) ||
+    (taxidInit && ideo.config.taxid instanceof Array)
+  );
+
+  if ("org" in ideo.config) {
+    // Ideogram instance was constructed using common organism name(s)
+    if (ideo.config.multiorganism) {
+      orgs = ideo.config.org;
+    } else {
+      orgs = [ideo.config.org];
+    }
+
+    taxids = [];
+    for (i = 0; i < orgs.length; i++) {
+      org = orgs[i];
+      for (taxid in ideo.organisms) {
+        if (ideo.organisms[taxid]["commonName"].toLowerCase() === org) {
+          taxids.push(taxid);
+        }
+      }
+    }
+    ideo.config.taxids = taxids;
+  }
+
+  if (ideo.config.multiorganism) {
+    ideo.coordinateSystem = "bp";
+    if (taxidInit) {
+      taxids = ideo.config.taxid;
+    }
+  } else {
+    if (taxidInit) {
+      taxids = [ideo.config.taxid];
+    }
+    ideo.config.taxids = taxids;
+  }
+
+  return taxids;
+}
 
 /**
 * Initializes an ideogram.
@@ -1800,17 +1851,7 @@ Ideogram.prototype.init = function() {
       numBandDataResponses = 0,
       resolution = this.config.resolution;
 
-  if (ideo.config.multiorganism === true) {
-    ideo.coordinateSystem = "bp";
-    taxids = ideo.config.taxids;
-  } else {
-    if (typeof this.config.taxid == "undefined") {
-      ideo.config.taxid = "9606";
-    }
-    taxid = ideo.config.taxid;
-    taxids = [taxid];
-    ideo.config.taxids = taxids;
-  }
+  taxids = ideo.getTaxids();
 
   for (i = 0; i < taxids.length; i++) {
     taxid = taxids[i];
@@ -1872,8 +1913,8 @@ Ideogram.prototype.init = function() {
     }
 
     if (
-      this.config.annotationsLayout &&
-      this.config.annotationsLayout === "overlay"
+      ideo.config.annotationsLayout &&
+      ideo.config.annotationsLayout === "overlay"
     ) {
       svgClass += "faint"
     }
@@ -1916,7 +1957,7 @@ Ideogram.prototype.init = function() {
         chrLength,
         bandData,
         stopType,
-        taxid, taxids, chrs;
+        taxid, taxids, chrs, chrsByTaxid;
 
     bandsArray = [];
     maxLength = 0;
@@ -1928,7 +1969,7 @@ Ideogram.prototype.init = function() {
         taxid = taxids[i];
       }
     } else {
-      if (typeof this.config.taxid == "undefined") {
+      if (typeof ideo.config.taxid == "undefined") {
         ideo.config.taxid = "9606";
       }
       taxid = ideo.config.taxid;
@@ -1939,7 +1980,9 @@ Ideogram.prototype.init = function() {
     if ("chromosomes" in ideo.config) {
       chrs = ideo.config.chromosomes;
     }
-
+    if (ideo.config.multiorganism) {
+      chrsByTaxid = chrs;
+    }
     ideo.config.chromosomes = {};
 
     var t0_b = new Date().getTime();
@@ -1948,6 +1991,9 @@ Ideogram.prototype.init = function() {
       taxid = taxids[j];
       bandData = ideo.bandData[taxid];
 
+      if (ideo.config.multiorganism) {
+        chrs = chrsByTaxid[taxid];
+      }
       bandsByChr = ideo.getBands(bandData, taxid, chrs);
 
       chrs = Object.keys(bandsByChr);
