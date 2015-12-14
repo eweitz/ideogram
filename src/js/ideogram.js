@@ -1779,13 +1779,16 @@ Ideogram.prototype.getBandColorGradients = function() {
 
 /**
 * Returns an array of taxids for the current ideogram
+* Also sets configuration parameters related to taxid(s), whether ideogram is
+* multiorganism, and adjusts chromosomes parameters as needed
 **/
 Ideogram.prototype.getTaxids = function() {
 
   var ideo = this,
     taxid, taxids,
     org, orgs, i,
-    taxidInit;
+    taxidInit, tmpChrs,
+    multiorganism;
 
   taxidInit = "taxid" in ideo.config;
 
@@ -1794,27 +1797,39 @@ Ideogram.prototype.getTaxids = function() {
     (taxidInit && ideo.config.taxid instanceof Array)
   );
 
+  multiorganism = ideo.config.multiorganism;
+
   if ("org" in ideo.config) {
     // Ideogram instance was constructed using common organism name(s)
-    if (ideo.config.multiorganism) {
+    if (multiorganism) {
       orgs = ideo.config.org;
     } else {
       orgs = [ideo.config.org];
     }
 
     taxids = [];
+    tmpChrs = {};
     for (i = 0; i < orgs.length; i++) {
+      // Gets a list of taxids from common organism names
       org = orgs[i];
       for (taxid in ideo.organisms) {
         if (ideo.organisms[taxid]["commonName"].toLowerCase() === org) {
           taxids.push(taxid);
+          if (multiorganism) {
+            // Adjusts 'chromosomes' configuration parameter to make object
+            // keys use taxid instead of common organism name
+            tmpChrs[taxid] = ideo.config.chromosomes[org];
+          }
         }
       }
     }
     ideo.config.taxids = taxids;
+    if (multiorganism) {
+      ideo.config.chromosomes = tmpChrs;
+    }
   }
 
-  if (ideo.config.multiorganism) {
+  if (multiorganism) {
     ideo.coordinateSystem = "bp";
     if (taxidInit) {
       taxids = ideo.config.taxid;
