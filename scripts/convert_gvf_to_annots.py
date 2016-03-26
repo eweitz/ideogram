@@ -32,7 +32,7 @@ lengths_GRCh38 = {
     "22": 50818468, "X": 156040895, "Y": 57227415
 }
 
-file_name = "estd214_1000_Genomes_Consortium_Phase_3.GRCh38.remap.all.germline.short.gvf"
+file_name = "../data/annotations/estd214_1000_Genomes_Consortium_Phase_3.GRCh38.remap.var.germline.gvf"
 file = open(file_name, "r").readlines()
 
 for chr in chrs:
@@ -48,11 +48,11 @@ for line in file[1:]:
 
     # E.g. NC_000001.11 -> 1
     # This RefSeq hack only works for human chromosomes 1-22
-    chr = chr.split(".")[0][-2:].replace("0", "")
+    chr = str(int(chr.split(".")[0][-2:]))
 
-    if chr == "22":
+    if chr == "23":
     	chr = "X"
-    elif chr == "23":
+    elif chr == "24":
     	chr = "Y"
 
     if chr not in chrs:
@@ -76,16 +76,9 @@ for line in file[1:]:
         1 # placeholder for future use
     ]
 
-    if chr == "X":
-        chr = 22
-    elif chr == "Y":
-        chr = 23
-    else:
-        chr = int(chr) - 1
-
     annots[chr]["annots"].append(annot)
 
 annots = json.dumps(annots)
 annots = '{"annots":' + annots + '}'
 
-open("dbvar_estd214.json", "w").write(annots)
+open("../data/annotations/dbvar_estd214.var.json", "w").write(annots)
