@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Fly | Ideogram</title>
+  <link type="text/css" rel="stylesheet" href="../src/css/ideogram.css"/>
+  <script type="text/javascript" src="../src/js/d3.min.js"></script>
+  <script type="text/javascript" src="../src/js/ideogram.js"></script>
+
+</head>
+<body>
+  <h1>Fly | Ideogram</h1>
+  <a href=".">Back to overview</a>
+
+  <script type="text/javascript">
+
+  function onIdeogramLoad() {
+
+    d3.selectAll("g").on("click", function() {
+      ideogram.rotateAndToggleDisplay(this.id);
+    });
+
+  }
+
+  var config = {
+    taxid: 7227,
+    chromosomes: ['X', '2L', '2R', '3L', '3R', '4'],
+    chrWidth: 10,
+    chrHeight: 500,
+    chrMargin: 10,
+    showBandLabels: true,
+    showChromosomeLabels: true,
+    orientation: "vertical",
+    onLoad: onIdeogramLoad
+  };
+
+  var ideogram = new Ideogram(config);
+
+  </script>
+</body>
+</html>
