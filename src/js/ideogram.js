@@ -136,7 +136,7 @@ Ideogram.prototype.getBands = function(content, chromosomeName, taxid) {
   var lines = [];
   var tsvLines, columns, line, stain,
       i, prefetched, init, tsvLinesLength, source,
-      start, stop;
+      start, stop, firstColumn;
 
   if (typeof chrBands === "undefined") {
     delimiter = /\t/;
@@ -148,15 +148,18 @@ Ideogram.prototype.getBands = function(content, chromosomeName, taxid) {
     init = 0;
   }
 
-  if (tsvLines[0].split(delimiter)[0] == '#chromosome') {
+  firstColumn = tsvLines[0].split(delimiter)[0];
+  if (firstColumn == '#chromosome') {
     source = 'ncbi';
-  } else {
+  } else if (firstColumn == '#chrom'){
     source = 'ucsc';
+  } else {
+    source = 'native';
   }
 
   tsvLinesLength = tsvLines.length;
 
-  if (source === 'ncbi') {
+  if (source === 'ncbi' || source === 'native') {
     for (i = init; i < tsvLinesLength; i++) {
 
       columns = tsvLines[i].split(delimiter);
