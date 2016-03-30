@@ -341,15 +341,9 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
   var i, chr, chrs, taxid, ideo,
       chrMargin2;
 
-  chrs = [];
-
-  for (taxid in chromosomes) {
-    for (chr in chromosomes[taxid]) {
-      chrs.push(chromosomes[taxid][chr]);
-    }
-  }
-
   ideo = this;
+
+  chrs = ideo.chromosomesArray;
 
   chrMargin2 = ideo.config.chrMargin - ideo.config.chrWidth - 2;
   if (ideo.config.orientation === "vertical" && ideo.config.showBandLabels === true) {
@@ -367,7 +361,6 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
         .each(function (d, i) {
 
           var i, chrMargin, x, cls;
-
           var arr = d.name.split(" ");
           var lines = [];
 
