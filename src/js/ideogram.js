@@ -1385,8 +1385,7 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
 
       px = Math.round((startPx + stopPx)/2) - 28;
 
-      // TODO: Make color configurable
-      color = "#F00";
+      color = ideo.config.annotationsColor;
       if (ideo.config.annotationTracks) {
         trackIndex = ra[3]
         color = ideo.config.annotationTracks[trackIndex].color;
