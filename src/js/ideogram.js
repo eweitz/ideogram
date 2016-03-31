@@ -135,7 +135,8 @@ Ideogram.prototype.getBands = function(content, chromosomeName, taxid) {
 
   var lines = [];
   var tsvLines, columns, line, stain,
-      i, prefetched, init, tsvLinesLength;
+      i, prefetched, init, tsvLinesLength, source,
+      start, stop, firstColumn;
 
   if (typeof chrBands === "undefined") {
     delimiter = /\t/;
@@ -147,44 +148,96 @@ Ideogram.prototype.getBands = function(content, chromosomeName, taxid) {
     init = 0;
   }
 
+  firstColumn = tsvLines[0].split(delimiter)[0];
+  if (firstColumn == '#chromosome') {
+    source = 'ncbi';
+  } else if (firstColumn == '#chrom'){
+    source = 'ucsc';
+  } else {
+    source = 'native';
+  }
+
   tsvLinesLength = tsvLines.length;
 
-  for (i = init; i < tsvLinesLength; i++) {
+  if (source === 'ncbi' || source === 'native') {
+    for (i = init; i < tsvLinesLength; i++) {
 
-    columns = tsvLines[i].split(delimiter);
+      columns = tsvLines[i].split(delimiter);
 
-    if (columns[0] !== chromosomeName) {
-      continue;
+      if (columns[0] !== chromosomeName) {
+        continue;
+      }
+
+      stain = columns[7];
+      if (columns[8]) {
+        // For e.g. acen and gvar, columns[8] (density) is undefined
+        stain += columns[8];
+      }
+
+      line = {
+        "chr": columns[0],
+        "bp": {
+          "start": parseInt(columns[5], 10),
+          "stop": parseInt(columns[6], 10)
+        },
+        "iscn": {
+          "start": parseInt(columns[3], 10),
+          "stop": parseInt(columns[4], 10)
+        },
+        "px": {
+          "start": -1,
+          "stop": -1,
+          "width": -1
+        },
+        "name": columns[1] + columns[2],
+        "stain": stain,
+        "taxid": taxid
+      };
+
+      lines.push(line);
+
     }
+  } else if (source === 'ucsc') {
+    for (i = init; i < tsvLinesLength; i++) {
 
-    stain = columns[7];
-    if (columns[8]) {
-      // For e.g. acen and gvar, columns[8] (density) is undefined
-      stain += columns[8];
+      // #chrom chromStart  chromEnd  name  gieStain
+      // e.g. for fly:
+      // chr4	69508	108296	102A1	n/a
+      columns = tsvLines[i].split(delimiter);
+
+      if (columns[0] !== 'chr' + chromosomeName) {
+        continue;
+      }
+
+      stain = columns[4];
+      if (stain === 'n/a') {
+        stain = 'gpos100';
+      }
+      start = parseInt(columns[1], 10);
+      stop = parseInt(columns[2], 10);
+
+      line = {
+        "chr": columns[0].split('chr')[1],
+        "bp": {
+          "start": start,
+          "stop": stop
+        },
+        "iscn": {
+          "start": start,
+          "stop": stop
+        },
+        "px": {
+          "start": -1,
+          "stop": -1,
+          "width": -1
+        },
+        "name": columns[3],
+        "stain": stain,
+        "taxid": taxid
+      };
+
+      lines.push(line);
     }
-
-    line = {
-      "chr": columns[0],
-      "bp": {
-        "start": parseInt(columns[5], 10),
-        "stop": parseInt(columns[6], 10)
-      },
-      "iscn": {
-        "start": parseInt(columns[3], 10),
-        "stop": parseInt(columns[4], 10)
-      },
-      "px": {
-        "start": -1,
-        "stop": -1,
-        "width": -1
-      },
-      "name": columns[1] + columns[2],
-      "stain": stain,
-      "taxid": taxid
-    };
-
-    lines.push(line);
-
   }
 
   return lines;
@@ -288,15 +341,9 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
   var i, chr, chrs, taxid, ideo,
       chrMargin2;
 
-  chrs = [];
-
-  for (taxid in chromosomes) {
-    for (chr in chromosomes[taxid]) {
-      chrs.push(chromosomes[taxid][chr]);
-    }
-  }
-
   ideo = this;
+
+  chrs = ideo.chromosomesArray;
 
   chrMargin2 = ideo.config.chrMargin - ideo.config.chrWidth - 2;
   if (ideo.config.orientation === "vertical" && ideo.config.showBandLabels === true) {
@@ -314,7 +361,6 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
         .each(function (d, i) {
 
           var i, chrMargin, x, cls;
-
           var arr = d.name.split(" ");
           var lines = [];
 
@@ -1863,13 +1909,19 @@ Ideogram.prototype.init = function() {
     taxid = taxids[i];
 
     bandDataFileNames = {
-      9606: "ideogram_9606_GCF_000001305.14_" + resolution + "_V1",
-      10090: "ideogram_10090_GCF_000000055.19_NA_V2"
+      // Homo sapiens (human)
+      9606: "ncbi/ideogram_9606_GCF_000001305.14_" + resolution + "_V1",
+
+      // Mus musculus (mouse)
+      10090: "ncbi/ideogram_10090_GCF_000000055.19_NA_V2",
+
+      // Drosophila melanogaster (fly)
+      7227: "ucsc/drosophila_melanogaster_dm6.tsv"
     }
 
     if (typeof chrBands === "undefined") {
 
-      d3.xhr("../data/bands/ncbi/" + bandDataFileNames[taxid])
+      d3.xhr("../data/bands/" + bandDataFileNames[taxid])
         .on("beforesend", function(data) {
           // Ensures correct taxid is processed in response callback; using
           // simply 'taxid' variable gives the last *requested* taxid, which
