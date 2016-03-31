@@ -54,7 +54,11 @@ var Ideogram = function(config) {
     this.config.annotTracksHeight = this.config.annotationHeight * this.config.numAnnotTracks;
 
     if (typeof this.config.barWidth === "undefined") {
-      this.config.barWidth = 10;
+      this.config.barWidth = 3;
+    }
+
+    if (typeof this.config.annotationsColor === "undefined") {
+      this.config.annotationsColor = "#F00";
     }
 
   } else {
@@ -1419,7 +1423,7 @@ Ideogram.prototype.getHistogramBars = function(annots) {
       chrModels, chrPxStop, px,
       chrAnnots, annot, start, stop,
       bars, bar, barPx, nextBarPx, barIndex, barWidth,
-      maxAnnotsPerBar, barHeight,
+      maxAnnotsPerBar, barHeight, color,
       ideo = this;
 
   bars = [];
@@ -1427,6 +1431,8 @@ Ideogram.prototype.getHistogramBars = function(annots) {
   barWidth = ideo.config.barWidth;
 
   chrModels = ideo.chromosomes[ideo.config.taxid];
+
+  color = ideo.config.annotationsColor;
 
   for (chr in chrModels) {
     chrModel = chrModels[chr];
@@ -1438,7 +1444,7 @@ Ideogram.prototype.getHistogramBars = function(annots) {
     for (i = 0; i < numBins; i++) {
       px = i*barWidth - ideo.bump;
       bp = ideo.convertPxToBp(chrModel, px + ideo.bump);
-      bar["annots"].push({"bp": bp, "px": px, "count": 0, "chrIndex": chrIndex, "color": "#F00"});
+      bar["annots"].push({"bp": bp, "px": px, "count": 0, "chrIndex": chrIndex, "color": color});
     }
     bars.push(bar);
   }
