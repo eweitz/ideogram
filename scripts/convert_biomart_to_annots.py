@@ -42,7 +42,7 @@ for line in file[1:]:
 		gene_symbol,
 		start,
 		stop,
-		1 #gene_type
+		random.randint(1,16) #gene_type
 	]
 
 	annots[chr]["annots"].append(annot)
