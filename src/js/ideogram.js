@@ -100,6 +100,11 @@ var Ideogram = function(config) {
       "commonName": "Mouse",
       "scientificName": "Mus musculus",
       "scientificNameAbbr": "M. musculus"
+    },
+    "7227": {
+      "commonName": "Fly",
+      "scientificName": "Drosophlia melanogaster",
+      "scientificNameAbbr": "D. melanogaster"
     }
   }
 
