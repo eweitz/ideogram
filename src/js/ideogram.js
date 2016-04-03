@@ -1506,23 +1506,6 @@ Ideogram.prototype.getHistogramBars = function(annots) {
 }
 
 
-Ideogram.prototype.filterAnnots(filters, annots) {
-
-  var ideo = this,
-      filteredAnnots;
-
-  // TODO:
-  // Get list of annotations
-  // Pass into crossfilter (https://github.com/square/crossfilter/wiki/API-Reference)
-  // Animate transition in case of histogram
-  // This functionality may make sense as a separate module which can be
-  // requested after the main, render-critical Ideogram.js module
-
-  return filteredAnnots;
-
-}
-
-
 /**
 * Draws genome annotations on chromosomes.
 * Annotations can be rendered as either overlaid directly
