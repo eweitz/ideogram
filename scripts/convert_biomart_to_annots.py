@@ -47,7 +47,9 @@ for line in file[1:]:
 
 	annots[chr]["annots"].append(annot)
 
-annots = json.dumps(annots)
-annots = '{"annots":' + annots + '}'
+top_annots = {}
+top_annots["keys"] = ["name", "from", "to", "type"]
+top_annots["annots"] = annots
+annots = json.dumps(top_annots)
 
 open("data/annotations/all_human_genes.json", "w").write(annots)
