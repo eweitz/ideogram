@@ -1,15 +1,17 @@
 Ideogram.prototype.initCrossFilter = function() {
 
-  var chr, annot, annots, i, j,
+  var chr, annots, i, j,
       annotsBag = [],
       ideo = this,
-      chrs = ideo['annots'];
+      chrs = ideo.annots;
 
-
-  for (var i = 0; i < chrs.length; chrs++) {
+  for (i = 0; i < chrs.length; i++) {
     chr = chrs[i];
-    annots = chr['annots'];
-    annotsBag.concat(annots)
+    annots = chr.annots;
+    for (j = 0; j < annots.length; j ++) {
+      annots[j]['chr'] = chr.chr;
+    }
+    annotsBag = annotsBag.concat(annots);
   }
 
   ideo.crossfilter = crossfilter(annotsBag);
@@ -17,16 +19,21 @@ Ideogram.prototype.initCrossFilter = function() {
 }
 
 
-Ideogram.prototype.filterAnnots = function(filters, annots) {
+Ideogram.prototype.filterAnnots = function(facet, filter) {
 
-  var ideo = this,
-      filteredAnnots;
+  var annotsByFacet, results,
+      ideo = this;
 
-  // TODO:
-  // Get list of annotations
-  // Pass into crossfilter (https://github.com/square/crossfilter/wiki/API-Reference)
-  // Animate transition in case of histogram
+  annotsByFacet =
+    ideo.crossfilter
+      .dimension(function(d) {
+        return d[facet];
+      })
+      .filter(function(d) {
+        return d == filter;
+      });
 
-  return filteredAnnots;
-
+  results = annotsByFacet.top(Infinity);
+  annotsByFacet.filterAll(); // clear filters
+  return results;
 }

@@ -1412,8 +1412,7 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
       annots[i]["annots"].push(annot)
     }
   }
-
-  console.log(annots)
+  
   return annots;
 
 }
