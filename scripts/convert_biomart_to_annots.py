@@ -34,21 +34,21 @@ for line in file[1:]:
 		chr = int(chr) - 1
 
 	start = int(columns[0])
-	stop = int(columns[1]) - start
+	length = int(columns[1]) - start
 	gene_symbol = columns[2]
 	gene_type = columns[3]
 
 	annot = [
 		gene_symbol,
 		start,
-		stop,
+		length,
 		random.randint(1,16) #gene_type
 	]
 
 	annots[chr]["annots"].append(annot)
 
 top_annots = {}
-top_annots["keys"] = ["name", "from", "to", "type"]
+top_annots["keys"] = ["name", "start", "length", "type"]
 top_annots["annots"] = annots
 annots = json.dumps(top_annots)
 

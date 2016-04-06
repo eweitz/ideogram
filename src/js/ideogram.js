@@ -1361,7 +1361,9 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
 */
 Ideogram.prototype.processAnnotData = function(rawAnnots) {
 
-  var i, j, annot, annots, rawAnnot,
+  var keys = rawAnnots.keys,
+      rawAnnots = rawAnnots.annots,
+      i, j, annot, annots, rawAnnot,
       chr, start, stop,
       chrModel,
       startPx, stopPx, px,
@@ -1369,6 +1371,7 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
       ideo = this;
 
   annots = [];
+
 
   for (i = 0; i < rawAnnots.length; i++) {
     annotsByChr = rawAnnots[i]
@@ -1379,39 +1382,38 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
 
       chr = annotsByChr.chr;
       ra = annotsByChr.annots[j];
+      annot = {}
 
-      start = ra[1];
-      stop = ra[2] + start;
+      for (var k = 0; k < keys.length; k++) {
+        annot[keys[k]] = ra[k];
+      }
+
+      annot['stop'] = annot.start + annot.length;
 
       chrModel = ideo.chromosomes["9606"][chr]
 
-      startPx = ideo.convertBpToPx(chrModel, start);
-      stopPx = ideo.convertBpToPx(chrModel, stop);
+      startPx = ideo.convertBpToPx(chrModel, annot.start);
+      stopPx = ideo.convertBpToPx(chrModel, annot.stop);
 
       px = Math.round((startPx + stopPx)/2) - 28;
 
       color = ideo.config.annotationsColor;
       if (ideo.config.annotationTracks) {
-        trackIndex = ra[3]
-        color = ideo.config.annotationTracks[trackIndex].color;
+        annot['trackIndex'] = ra[3];
+        color = ideo.config.annotationTracks[annot.trackIndex].color;
       } else {
-        trackIndex = 0;
+        annot['trackIndex'] = 0;
       }
 
-      annot = {
-        id: ra[0],
-        chrIndex: i,
-        start: start,
-        stop: stop,
-        px: px,
-        color: color,
-        trackIndex: trackIndex
-      }
+      annot['chrIndex'] = i;
+      annot['px'] = px;
+      annot['color'] = color;
 
       annots[i]["annots"].push(annot)
     }
   }
 
+  console.log(annots)
   return annots;
 
 }
@@ -1448,7 +1450,14 @@ Ideogram.prototype.getHistogramBars = function(annots) {
     for (i = 0; i < numBins; i++) {
       px = i*barWidth - ideo.bump;
       bp = ideo.convertPxToBp(chrModel, px + ideo.bump);
-      bar["annots"].push({"bp": bp, "px": px, "count": 0, "chrIndex": chrIndex, "color": color});
+      bar["annots"].push({
+        "bp": bp,
+        "px": px,
+        "count": 0,
+        "chrIndex": chrIndex,
+        "chrName": chr,
+        "color": color,
+      });
     }
     bars.push(bar);
   }
@@ -1867,7 +1876,7 @@ Ideogram.prototype.init = function() {
     d3.json(
       ideo.config.annotationsPath, // URL
       function(data) { // Callback
-        ideo.rawAnnots = data.annots;
+        ideo.rawAnnots = data;
       }
     );
   }
