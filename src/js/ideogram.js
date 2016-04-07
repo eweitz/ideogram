@@ -1404,7 +1404,7 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
       } else {
         annot['trackIndex'] = 0;
       }
-      
+
       annot['chr'] = chr;
       annot['chrIndex'] = i;
       annot['px'] = px;
@@ -1427,7 +1427,7 @@ Ideogram.prototype.getHistogramBars = function(annots) {
 
   var i, j, chrs, chr,
       chrModels, chrPxStop, px,
-      chrAnnots, annot, start, stop,
+      chrAnnots, chrName, chrIndex, annot, start, stop,
       bars, bar, barPx, nextBarPx, barIndex, barWidth,
       maxAnnotsPerBar, barHeight, color,
       ideo = this;

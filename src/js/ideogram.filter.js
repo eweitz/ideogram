@@ -24,7 +24,7 @@ Ideogram.prototype.packAnnots = function(unpackedAnnots) {
       chrs = ideo.annots;
 
   for (var chr in chrs) {
-    annots.push({'chr': chrs[chr], annots: []});
+    annots.push({'chr': chrs[chr].chr, annots: []});
   }
 
   for (i = 0; i < unpackedAnnots.length; i++) {
@@ -61,5 +61,6 @@ Ideogram.prototype.filterAnnots = function(facet, filter) {
   results = annotsByFacet.top(Infinity);
   annotsByFacet.filterAll(); // clear filters
   results = ideo.packAnnots(results);
-  return results;
+  ideo.drawAnnots(results);
+
 }
