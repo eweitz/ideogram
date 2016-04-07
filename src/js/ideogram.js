@@ -1404,7 +1404,8 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
       } else {
         annot['trackIndex'] = 0;
       }
-
+      
+      annot['chr'] = chr;
       annot['chrIndex'] = i;
       annot['px'] = px;
       annot['color'] = color;
@@ -1412,7 +1413,7 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
       annots[i]["annots"].push(annot)
     }
   }
-  
+
   return annots;
 
 }

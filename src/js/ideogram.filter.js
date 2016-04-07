@@ -1,21 +1,25 @@
-Ideogram.prototype.initCrossFilter = function() {
+Ideogram.prototype.unpackAnnots = function() {
 
-  var chr, annots, i, j,
-      annotsBag = [],
+  var chr, annots, i,
+      unpackedAnnots = [],
       ideo = this,
       chrs = ideo.annots;
 
   for (i = 0; i < chrs.length; i++) {
     chr = chrs[i];
     annots = chr.annots;
-    for (j = 0; j < annots.length; j ++) {
-      annots[j]['chr'] = chr.chr;
-    }
-    annotsBag = annotsBag.concat(annots);
+    unpackedAnnots = unpackedAnnots.concat(annots);
   }
 
-  ideo.crossfilter = crossfilter(annotsBag);
+  return unpackedAnnots;
 
+}
+
+
+Ideogram.prototype.initCrossFilter = function() {
+  var ideo = this;
+  var unpackedAnnots = ideo.unpackAnnots();
+  ideo.crossfilter = crossfilter(unpackedAnnots);
 }
 
 
