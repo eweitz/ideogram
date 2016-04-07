@@ -16,6 +16,27 @@ Ideogram.prototype.unpackAnnots = function() {
 }
 
 
+Ideogram.prototype.packAnnots = function(unpackedAnnots) {
+
+  var chr, annot, i,
+      annots = [],
+      ideo = this,
+      chrs = ideo.annots;
+
+  for (var chr in chrs) {
+    annots.push({'chr': chrs[chr], annots: []});
+  }
+
+  for (i = 0; i < unpackedAnnots.length; i++) {
+    annot = unpackedAnnots[i];
+    annots[annot.chrIndex]['annots'].push(annot);
+  }
+
+  return annots;
+
+}
+
+
 Ideogram.prototype.initCrossFilter = function() {
   var ideo = this;
   var unpackedAnnots = ideo.unpackAnnots();
@@ -39,5 +60,6 @@ Ideogram.prototype.filterAnnots = function(facet, filter) {
 
   results = annotsByFacet.top(Infinity);
   annotsByFacet.filterAll(); // clear filters
+  results = ideo.packAnnots(results);
   return results;
 }
