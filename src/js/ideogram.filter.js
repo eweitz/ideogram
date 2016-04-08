@@ -46,6 +46,8 @@ Ideogram.prototype.initCrossFilter = function() {
 
 Ideogram.prototype.filterAnnots = function(facet, filter) {
 
+  var t0 = Date.now();
+
   var annotsByFacet, results,
       ideo = this;
 
@@ -54,13 +56,15 @@ Ideogram.prototype.filterAnnots = function(facet, filter) {
       .dimension(function(d) {
         return d[facet];
       })
-      .filter(function(d) {
-        return d == filter;
-      });
+      .filter(filter);
 
   results = annotsByFacet.top(Infinity);
   annotsByFacet.filterAll(); // clear filters
   results = ideo.packAnnots(results);
+
+  d3.selectAll("polygon.annot").remove();
   ideo.drawAnnots(results);
+
+  console.log("Time in filterAnnots: " + (Date.now() - t0) + " ms")
 
 }
