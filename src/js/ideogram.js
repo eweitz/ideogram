@@ -2075,11 +2075,18 @@ Ideogram.prototype.init = function() {
     if (ideo.config.annotationsPath) {
 
       function pa() {
+
         if (typeof timeout !== "undefined") {
           window.clearTimeout(timeout);
         }
+        
         ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
         ideo.drawAnnots(ideo.annots);
+
+        if (ideo.initCrossFilter) {
+          ideo.initCrossFilter();
+        }
+
       }
 
       if (ideo.rawAnnots) {
