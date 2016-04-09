@@ -44,19 +44,27 @@ Ideogram.prototype.initCrossFilter = function() {
 }
 
 
-Ideogram.prototype.filterAnnots = function(facet, filter) {
+Ideogram.prototype.filterAnnots = function(facet, filters) {
 
   var t0 = Date.now();
 
-  var annotsByFacet, results,
+  var annotsByFacet, results, fn,
       ideo = this;
+
+  if (Object.keys(filters).length == 0) {
+    fn = null;
+  } else {
+    fn = function(d) {
+      return d in filters;
+    };
+  }
 
   annotsByFacet =
     ideo.crossfilter
       .dimension(function(d) {
         return d[facet];
       })
-      .filter(filter);
+      .filter(fn);
 
   results = annotsByFacet.top(Infinity);
   annotsByFacet.filterAll(); // clear filters

@@ -63,7 +63,7 @@
   d3.selectAll("input").on("click", function() {
     var filterMap,
         checkedFilters,
-        filters = [],
+        filters = {},
         i,
         filterID;
 
@@ -80,14 +80,9 @@
     for (i = 0; i < checkedFilters.length; i++) {
       console.log(checkedFilters[i].id);
       filterID = filterMap[checkedFilters[i].id];
-      filters.push(filterID);
+      filters[filterID] = 1;;
     }
-    if (filters.length == 1) {
-      filters = filters[0];
-    } else if (filters.length == 0) {
-      filters = null;
-    }
-    console.log(filters)
+    
     ideogram.filterAnnots('tissue-type', filters)
 
   });
