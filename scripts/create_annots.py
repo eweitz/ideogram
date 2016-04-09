@@ -47,8 +47,10 @@ lengths_GRCh37 = {
 for chr in chrs:
 	annots.append({"chr": chr, "annots": []});
 
+n = 100
+
 i = 0
-while i < 1000:
+while i < n:
 	j = str(i + 1)
 	chr = i % 24
 
@@ -71,4 +73,4 @@ top_annots["keys"] = ["name", "start", "length", "trackIndex"]
 top_annots["annots"] = annots
 annots = json.dumps(top_annots)
 
-open("data/annotations/1000_virtual_snvs.json", "w").write(annots)
+open("data/annotations/" + str(n) + "_virtual_snvs.json", "w").write(annots)
