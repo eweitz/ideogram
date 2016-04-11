@@ -176,9 +176,9 @@ ideogramDrawer = function(config) {
           for (k = 0; k < annots.length; k++) {
             if (j < annots[k]["annots"].length ) {
               ra = annots[k]["annots"][j];
-              if (ra["id"] in seenAnnots === false) {
-                seenAnnots[ra["id"]] = 1;
-                ids.push(ra["id"]);
+              if (ra["name"] in seenAnnots === false) {
+                seenAnnots[ra["name"]] = 1;
+                ids.push(ra["name"]);
                 ras.push({"chr": annots[k]["chr"], "annots": [ra]});
                 rasChrs.push(annots[k]["chr"])
                 totalAnnots += 1;
@@ -206,7 +206,7 @@ ideogramDrawer = function(config) {
       images = [];
 
   ideogram = new Ideogram(config);
-  ideogram.annots = ideogram.processAnnotData(config.rawAnnots.annots);
+  ideogram.annots = ideogram.processAnnotData(config.rawAnnots);
 
   var t0 = new Date().getTime();
   rearrangedAnnots = rearrangeAnnots(ideogram.annots);
