@@ -1940,7 +1940,7 @@ Ideogram.prototype.init = function() {
 
     if (typeof chrBands === "undefined") {
 
-      d3.xhr("../data/bands/" + bandDataFileNames[taxid])
+      d3.xhr("data/bands/" + bandDataFileNames[taxid])
         .on("beforesend", function(data) {
           // Ensures correct taxid is processed in response callback; using
           // simply 'taxid' variable gives the last *requested* taxid, which
@@ -2079,7 +2079,7 @@ Ideogram.prototype.init = function() {
         if (typeof timeout !== "undefined") {
           window.clearTimeout(timeout);
         }
-        
+
         ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
         ideo.drawAnnots(ideo.annots);
 

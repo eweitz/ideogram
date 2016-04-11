@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Layout, small | Ideogram</title>
+  <link type="text/css" rel="stylesheet" href="src/css/ideogram.css"/>
+  <script type="text/javascript" src="src/js/d3.min.js"></script>
+  <script type="text/javascript" src="src/js/ideogram.min.js"></script>
+  <style>
+
+    .top-left {
+      /* background-color: #FFC; */
+      width: 440px;
+      padding-right: 10px;
+      float: left;
+    }
+
+    .top-right {
+      padding-top: 75px;
+      width: 460px;
+      float: left;
+    }
+
+    .bottom {
+      /* background-color: #CFC; */
+      height: 600px;
+      min-width: 960px;
+      float: left;
+    }
+
+    g {
+      cursor: default;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="top-left">
+    <h1>Layout, small | Ideogram</h1>
+    <a href=".">Back to overview</a>
+    <div class="small-ideogram">
+      <!-- The ideogram goes here. -->
+    </div>
+  </div>
+  <div class="top-right">
+    <p>
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    </p>
+  </div>
+  <div class="bottom">
+    <p>
+    Quo usque tandem abutere, Catilina, patientia nostra? Quam diu etiam furor iste tuus nos eludet? Quem ad finem sese effrenata iactabit audacia?  Etaoin shrdlu
+    </p>
+  </div>
+
+  <script type="text/javascript">
+
+  var config = {
+    container: ".small-ideogram",
+    taxid: 9606,
+    chromosomes: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y"],
+    resolution: 550,
+    chrWidth: 10,
+    chrHeight: 150,
+    chrMargin: 10,
+    rows: 2,
+    showChromosomeLabels: true,
+    orientation: "vertical"
+  };
+
+  var ideogram = new Ideogram(config);
+
+  </script>
+
+</body>
+</html>
