@@ -34,20 +34,22 @@ for line in file[1:]:
 		chr = int(chr) - 1
 
 	start = int(columns[0])
-	stop = int(columns[1]) - start
+	length = int(columns[1]) - start
 	gene_symbol = columns[2]
 	gene_type = columns[3]
 
 	annot = [
 		gene_symbol,
 		start,
-		stop,
-		1 #gene_type
+		length,
+		random.randint(1,5)
 	]
 
 	annots[chr]["annots"].append(annot)
 
-annots = json.dumps(annots)
-annots = '{"annots":' + annots + '}'
+top_annots = {}
+top_annots["keys"] = ["name", "start", "length", "tissue-type"]
+top_annots["annots"] = annots
+annots = json.dumps(top_annots)
 
 open("data/annotations/all_human_genes.json", "w").write(annots)
