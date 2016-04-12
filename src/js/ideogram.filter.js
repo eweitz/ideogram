@@ -1,3 +1,18 @@
+/* Decompresses ideogram's annotations for crossfilter initialization
+By default, annotations are clustered by chromosome, e.g.
+[
+  {"chr": "1", "annots": [{"from": 100, "to", 101, "chr": "1", ...}, ...]},
+  {"chr": "2", "annots": [{"from": 500, "to", 501, "chr": "2", ...}, ...]},
+  ...
+]
+This method flattens that structure to e.g.
+[
+  {"from": 100, "to": 101, "chr": "1"},
+  ...
+  {"from": 500, "to": 501, "chr": "2"},
+]
+See also: packAnnots
+*/
 Ideogram.prototype.unpackAnnots = function() {
 
   var chr, annots, i,
@@ -15,7 +30,9 @@ Ideogram.prototype.unpackAnnots = function() {
 
 }
 
-
+/*
+  Compresses annots back to default state.  Inverse of unpackAnnots.
+*/
 Ideogram.prototype.packAnnots = function(unpackedAnnots) {
 
   var chr, annot, i,
@@ -36,14 +53,24 @@ Ideogram.prototype.packAnnots = function(unpackedAnnots) {
 
 }
 
-
+/*
+  Initializes crossfilter.  Needed for client-side filtering.
+  More: https://github.com/square/crossfilter/wiki/API-Reference
+*/
 Ideogram.prototype.initCrossFilter = function() {
   var ideo = this;
   var unpackedAnnots = ideo.unpackAnnots();
   ideo.crossfilter = crossfilter(unpackedAnnots);
 }
 
-
+/*
+  Filters annotations based on given facet and filter selection
+  TODO:
+    * Multiple facets
+    * Filter counts
+    * Range filters
+    * Integrate server-side filtering for very large datasets
+*/
 Ideogram.prototype.filterAnnots = function(facet, filters) {
 
   var t0 = Date.now();
