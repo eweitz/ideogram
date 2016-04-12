@@ -7,9 +7,9 @@ By default, annotations are clustered by chromosome, e.g.
 ]
 This method flattens that structure to e.g.
 [
-  {"from": 100, "to": 101, "chr": "1"},
+  {"from": 100, "to": 101, "chr": "1", ...},
   ...
-  {"from": 500, "to": 501, "chr": "2"},
+  {"from": 500, "to": 501, "chr": "2", ...},
 ]
 See also: packAnnots
 */
