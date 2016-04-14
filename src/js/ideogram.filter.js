@@ -94,6 +94,9 @@ Ideogram.prototype.filterAnnots = function(facet, filters) {
       .filter(fn);
 
   results = annotsByFacet.top(Infinity);
+
+  counts = annotsByFacet.group().top(Infinity);
+
   annotsByFacet.filterAll(); // clear filters
   results = ideo.packAnnots(results);
 
@@ -102,4 +105,5 @@ Ideogram.prototype.filterAnnots = function(facet, filters) {
 
   console.log("Time in filterAnnots: " + (Date.now() - t0) + " ms")
 
+  return counts;
 }

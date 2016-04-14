@@ -29,30 +29,37 @@
       <label for="cerebral-cortex">
         <input type="checkbox" id="cerebral-cortex">Cerebral cortex</input>
       </label>
+      <span class="count"></span>
     </li>
     <li>
       <label for="heart">
         <input type="checkbox" id="heart">Heart</input>
       </label>
+      <span class="count"></span>
     </li>
     <li>
       <label for="liver">
         <input type="checkbox" id="liver">Liver</input>
       </label>
+      <span class="count"></span>
     </li>
     <li>
       <label for="skin">
         <input type="checkbox" id="skin">Skin</input>
       </label>
+      <span class="count"></span>
     </li>
     <li>
       <label for="skeletal-muscle">
         <input type="checkbox" id="skeletal-muscle">Skeletal muscle</input>
       </label>
+      <span class="count"></span>
     </li>
   </ul>
   <span class="note">Histogram shows all human genes, but filters use artificial data.</span>
   <script type="text/javascript">
+
+  var counts, key, count;
 
   function onIdeogramLoad() {
     d3.selectAll("g.chromosome").on("click", function() {
@@ -82,8 +89,15 @@
       filterID = filterMap[checkedFilters[i].id];
       filters[filterID] = 1;;
     }
-    
-    ideogram.filterAnnots('tissue-type', filters)
+
+    counts = ideogram.filterAnnots('tissue-type', filters);
+
+    for (i = 0; i < counts.length; i++) {
+      count = counts[i];
+      key = count.key - 1;
+      value = "(" + count.value + ")";
+      document.querySelectorAll("span.count")[key].innerHTML = value;
+    }
 
   });
 
