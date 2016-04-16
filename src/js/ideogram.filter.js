@@ -61,28 +61,50 @@ Ideogram.prototype.initCrossFilter = function() {
   var ideo = this;
   var unpackedAnnots = ideo.unpackAnnots();
   ideo.crossfilter = crossfilter(unpackedAnnots);
+  ideo.facets
 }
 
 /*
-  Filters annotations based on given facet and filter selection
+  Filters annotations based on the given selections
+  "selections" is an object of objects, e.g.
+
+    {
+      "tissue-type": {          <-- a facet
+        "cerebral-cortex": 1,   <-- a filter; "1" means it is selected
+        "liver": 1
+      },
+      "gene-type": {
+        mirna": 1
+      }
+    }
+
+  Translation:
+  select where:
+      (tissue-type is cerebral-cortex OR liver) and (gene-type is mirna)
+
   TODO:
-    * Multiple facets
     * Filter counts
     * Range filters
     * Integrate server-side filtering for very large datasets
 */
-Ideogram.prototype.filterAnnots = function(facet, filters) {
+Ideogram.prototype.filterAnnots = function(selections) {
 
   var t0 = Date.now();
 
   var annotsByFacet, results, fn,
       ideo = this;
 
-  if (Object.keys(filters).length == 0) {
+  if (Object.keys(selections).length == 0) {
+    // Triggers clearing filters for this facet
     fn = null;
   } else {
     fn = function(d) {
-      return d in filters;
+      for (var facet in selections) {
+        // returns true if d is in set of current filters
+        if (d in selections[facet]) {
+          return true;
+        }
+      }
     };
   }
 
@@ -103,7 +125,7 @@ Ideogram.prototype.filterAnnots = function(facet, filters) {
   d3.selectAll("polygon.annot").remove();
   ideo.drawAnnots(results);
 
-  console.log("Time in filterAnnots: " + (Date.now() - t0) + " ms")
+  console.log("Time in filterAnnots: " + (Date.now() - t0) + " ms");
 
   return counts;
 }

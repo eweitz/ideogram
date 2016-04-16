@@ -56,35 +56,35 @@
       <span class="count"></span>
     </li>
   </ul>
-  <ul id="expression-level">
-    Expression level
+  <ul id="gene-type">
+    Gene type
     <li>
-      <label for="filter_expression-level_high">
-        <input type="checkbox" id="filter_expression-level_high">High</input>
+      <label for="filter_gene-type_mrna">
+        <input type="checkbox" id="filter_gene-type_mrna">mRNA</input>
       </label>
       <span class="count"></span>
     </li>
     <li>
-      <label for="filter_expression-level_medium-high">
-        <input type="checkbox" id="filter_expression-level_medium-high">Medium high</input>
+      <label for="filter_gene-type_misc-rna">
+        <input type="checkbox" id="filter_gene-type_misc-rna">misc_RNA</input>
       </label>
       <span class="count"></span>
     </li>
     <li>
-      <label for="filter_expression-level_medium">
-        <input type="medium" id="filter_expression-level_medium">Medium</input>
+      <label for="filter_gene-type_mirna">
+        <input type="medium" id="filter_gene-type_mirna">miRNA</input>
       </label>
       <span class="count"></span>
     </li>
     <li>
-      <label for="filter_expression-level_medium-low">
-        <input type="checkbox" id="filter_expression-level_medium-low">Medium low</input>
+      <label for="filter_gene-type_trna">
+        <input type="checkbox" id="filter_gene-type_trna">tRNA</input>
       </label>
       <span class="count"></span>
     </li>
     <li>
-      <label for="filter_expression-level_low-or-none">
-        <input type="checkbox" id="filter_expression-level_low-or-none">Low or none</input>
+      <label for="filter_gene-type_lncrna">
+        <input type="checkbox" id="filter_gene-type_lncrna">lncRNA</input>
       </label>
       <span class="count"></span>
     </li>
@@ -105,7 +105,7 @@
         tmp, facet,
         checkedFilter,
         checkedFilters,
-        filters = {},
+        selections = {},
         i,
         filterID;
 
@@ -117,12 +117,12 @@
         "skin": 4,
         "skeletal-muscle": 5
       },
-      "expression-level": {
-        "high": 1,
-        "medium-high": 2,
-        "medium": 3,
-        "medium-low": 4,
-        "low-or-none": 5
+      "gene-type": {
+        "mrna": 1,
+        "misc-rna": 2,
+        "mirna": 3,
+        "trna": 4,
+        "lncrna": 5
       }
     };
 
@@ -135,10 +135,14 @@
       checkedFilter = tmp[2];
 
       filterID = filterMap[facet][checkedFilter];
-      filters[filterID] = 1;;
+      if (facet in selections) {
+        selections[facet] = {filterID: 1};
+      } else {
+        selections[facet][filterID] = 1
+      }
     }
 
-    counts = ideogram.filterAnnots('tissue-type', filters);
+    counts = ideogram.filterAnnots(selections);
 
     for (i = 0; i < counts.length; i++) {
       count = counts[i];
