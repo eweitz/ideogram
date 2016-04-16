@@ -12,10 +12,16 @@
     ul {
       list-style: none;
       padding-left: 10px;
+      float: left;
     }
+
+    #gene-type {
+      padding-left: 30px;
+    }
+
     .note {
       font-style: italic;
-      padding-left: 10px;
+      padding: 10px 0 0 10px;
     }
   </style>
 </head>
@@ -23,6 +29,7 @@
   <h1>Annotations, histogram | Ideogram</h1>
   <a href=".">Back to overview</a>
   <div id="container"></div>
+  <div class="note">Histogram shows all human genes, but filters use artificial data.</div>
   <ul id="facet_tissue-type">
     Tissue type
     <li>
@@ -72,7 +79,7 @@
     </li>
     <li>
       <label for="filter_gene-type_mirna">
-        <input type="medium" id="filter_gene-type_mirna">miRNA</input>
+        <input type="checkbox" id="filter_gene-type_mirna">miRNA</input>
       </label>
       <span class="count"></span>
     </li>
@@ -89,7 +96,6 @@
       <span class="count"></span>
     </li>
   </ul>
-  <span class="note">Histogram shows all human genes, but filters use artificial data.</span>
   <script type="text/javascript">
 
   var counts, key, count;
