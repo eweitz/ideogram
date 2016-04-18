@@ -71,7 +71,6 @@ Ideogram.prototype.initCrossFilter = function() {
 
   for (i = 0; i < ideo.facets.length; i++) {
     facet = ideo.facets[i];
-    console.log(facet)
     ideo.annotsByFacet[facet] =
       ideo.crossfilter
         .dimension(function(d) {

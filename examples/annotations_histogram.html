@@ -193,18 +193,17 @@
 
     for (i = 0; i < checkedFilters.length; i++) {
       tmp = checkedFilters[i].id.split("_");
-      console.log(tmp);
       facet = tmp[1];
       checkedFilter = tmp[2];
 
       filterID = filterMap[facet][checkedFilter];
-
-      selections[facet] = {}
+      if (facet in selections == false) {
+        selections[facet] = {};
+      }
       selections[facet][filterID] = 1;
     }
 
     counts = ideogram.filterAnnots(selections);
-
 
     for (facet in counts) {
       for (i = 0; i < counts[facet].length; i++) {
