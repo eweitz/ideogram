@@ -21,7 +21,8 @@
 
     .note {
       font-style: italic;
-      padding: 10px 0 0 10px;
+      padding-left: 10px;
+      clear: left;
     }
   </style>
 </head>
@@ -29,38 +30,49 @@
   <h1>Annotations, histogram | Ideogram</h1>
   <a href=".">Back to overview</a>
   <div id="container"></div>
-  <div class="note">Histogram shows all human genes, but filters use artificial data.</div>
-  <ul id="facet_tissue-type">
-    Tissue type
+  <ul id="expression-level">
+    Expression level
     <li>
-      <label for="filter_tissue-type_cerebral-cortex">
-        <input type="checkbox" id="filter_tissue-type_cerebral-cortex">Cerebral cortex</input>
-      </label>
+      <label for="filter_expression-level_extremely-high">
+        <input type="checkbox" id="filter_expression-level_extremely-high">Extremely high</input>
       <span class="count"></span>
+      </label>
     </li>
     <li>
-      <label for="filter_tissue-type_heart">
-        <input type="checkbox" id="filter_tissue-type_heart">Heart</input>
-      </label>
+      <label for="filter_expression-level_very-high">
+        <input type="checkbox" id="filter_expression-level_very-high">Very high</input>
       <span class="count"></span>
+      </label>
     </li>
     <li>
-      <label for="filter_tissue-type_liver">
-        <input type="checkbox" id="filter_tissue-type_liver">Liver</input>
-      </label>
+      <label for="filter_expression-level_high">
+        <input type="checkbox" id="filter_expression-level_high">High</input>
       <span class="count"></span>
+      </label>
     </li>
     <li>
-      <label for="filter_tissue-type_skin">
-        <input type="checkbox" id="filter_tissue-type_skin">Skin</input>
-      </label>
+      <label for="filter_expression-level_moderately-high">
+        <input type="checkbox" id="filter_expression-level_moderately-high">Moderately high</input>
       <span class="count"></span>
+      </label>
     </li>
     <li>
-      <label for="filter_tissue-type_skeletal-muscle">
-        <input type="checkbox" id="filter_tissue-type_skeletal-muscle">Skeletal muscle</input>
-      </label>
+      <label for="filter_expression-level_moderate">
+        <input type="checkbox" id="filter_expression-level_moderate">Moderate</input>
       <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_expression-level_low">
+        <input type="checkbox" id="filter_expression-level_low">Low</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_expression-level_very-low">
+        <input type="checkbox" id="filter_expression-level_very-low">Very low</input>
+      <span class="count"></span>
+      </label>
     </li>
   </ul>
   <ul id="gene-type">
@@ -68,34 +80,70 @@
     <li>
       <label for="filter_gene-type_mrna">
         <input type="checkbox" id="filter_gene-type_mrna">mRNA</input>
-      </label>
       <span class="count"></span>
+      </label>
     </li>
     <li>
       <label for="filter_gene-type_misc-rna">
         <input type="checkbox" id="filter_gene-type_misc-rna">misc_RNA</input>
-      </label>
       <span class="count"></span>
+      </label>
     </li>
     <li>
       <label for="filter_gene-type_mirna">
         <input type="checkbox" id="filter_gene-type_mirna">miRNA</input>
-      </label>
       <span class="count"></span>
+      </label>
     </li>
     <li>
       <label for="filter_gene-type_trna">
         <input type="checkbox" id="filter_gene-type_trna">tRNA</input>
-      </label>
       <span class="count"></span>
+      </label>
     </li>
     <li>
       <label for="filter_gene-type_lncrna">
         <input type="checkbox" id="filter_gene-type_lncrna">lncRNA</input>
-      </label>
       <span class="count"></span>
+      </label>
     </li>
   </ul>
+  <!--
+  <ul id="facet_tissue-type">
+    Tissue type
+    <li>
+      <label for="filter_tissue-type_cerebral-cortex">
+        <input type="checkbox" id="filter_tissue-type_cerebral-cortex">Cerebral cortex</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_tissue-type_heart">
+        <input type="checkbox" id="filter_tissue-type_heart">Heart</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_tissue-type_liver">
+        <input type="checkbox" id="filter_tissue-type_liver">Liver</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_tissue-type_skin">
+        <input type="checkbox" id="filter_tissue-type_skin">Skin</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_tissue-type_skeletal-muscle">
+        <input type="checkbox" id="filter_tissue-type_skeletal-muscle">Skeletal muscle</input>
+      <span class="count"></span>
+      </label>
+    </li>
+  </ul>
+  -->
+  <div class="note">Histogram shows all human genes, but filters use artificial data.</div>
   <script type="text/javascript">
 
   var counts, key, count;
@@ -112,16 +160,18 @@
         checkedFilter,
         checkedFilters,
         selections = {},
-        i,
+        i, facet, counts, count,
         filterID;
 
     filterMap = {
-      "tissue-type": {
-        "cerebral-cortex": 1,
-        "heart": 2,
-        "liver": 3,
-        "skin": 4,
-        "skeletal-muscle": 5
+      "expression-level": {
+        "extremely-high": 7,
+        "very-high": 6,
+        "high": 5,
+        "moderately-high": 4,
+        "moderate": 3,
+        "low": 2,
+        "very-low": 1
       },
       "gene-type": {
         "mrna": 1,
@@ -129,6 +179,13 @@
         "mirna": 3,
         "trna": 4,
         "lncrna": 5
+      },
+      "tissue-type": {
+        "cerebral-cortex": 1,
+        "heart": 2,
+        "liver": 3,
+        "skin": 4,
+        "skeletal-muscle": 5
       }
     };
 
@@ -141,22 +198,23 @@
       checkedFilter = tmp[2];
 
       filterID = filterMap[facet][checkedFilter];
-      if (facet in selections) {
-        selections[facet] = {filterID: 1};
-      } else {
-        selections[facet][filterID] = 1
-      }
+
+      selections[facet] = {}
+      selections[facet][filterID] = 1;
     }
 
     counts = ideogram.filterAnnots(selections);
 
-    for (i = 0; i < counts.length; i++) {
-      count = counts[i];
-      key = count.key - 1;
-      value = "(" + count.value + ")";
-      document.querySelectorAll("span.count")[key].innerHTML = value;
-    }
 
+    for (facet in counts) {
+      for (i = 0; i < counts[facet].length; i++) {
+        count = counts[facet][i];
+        key = count.key - 1;
+        value = "(" + count.value + ")";
+
+        // document.querySelectorAll("#" + facet + " .count")[key].innerHTML = value;
+      }
+    }
   });
 
   var config = {
