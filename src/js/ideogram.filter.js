@@ -58,48 +58,91 @@ Ideogram.prototype.packAnnots = function(unpackedAnnots) {
   More: https://github.com/square/crossfilter/wiki/API-Reference
 */
 Ideogram.prototype.initCrossFilter = function() {
-  var ideo = this;
-  var unpackedAnnots = ideo.unpackAnnots();
-  ideo.crossfilter = crossfilter(unpackedAnnots);
+  var ideo = this,
+      keys = ideo.rawAnnots.keys,
+      i, facet;
+
+  ideo.unpackedAnnots = ideo.unpackAnnots();
+  ideo.crossfilter = crossfilter(ideo.unpackedAnnots);
+
+  ideo.annotsByFacet = {};
+
+  ideo.facets = keys.slice(3, keys.length);
+
+  for (i = 0; i < ideo.facets.length; i++) {
+    facet = ideo.facets[i];
+    ideo.annotsByFacet[facet] =
+      ideo.crossfilter
+        .dimension(function(d) {
+          return d[facet];
+        })
+  }
 }
 
 /*
-  Filters annotations based on given facet and filter selection
+  Filters annotations based on the given selections
+  "selections" is an object of objects, e.g.
+
+    {
+      "tissue-type": {          <-- a facet
+        "cerebral-cortex": 1,   <-- a filter; "1" means it is selected
+        "liver": 1
+      },
+      "gene-type": {
+        mirna": 1
+      }
+    }
+
+  Translation:
+  select where:
+      (tissue-type is cerebral-cortex OR liver) and (gene-type is mirna)
+
   TODO:
-    * Multiple facets
     * Filter counts
     * Range filters
     * Integrate server-side filtering for very large datasets
 */
-Ideogram.prototype.filterAnnots = function(facet, filters) {
+Ideogram.prototype.filterAnnots = function(selections) {
 
   var t0 = Date.now();
 
-  var annotsByFacet, results, fn,
+  var i, facet,
+      prevFacet = null,
+      results, fn,
+      counts = {},
       ideo = this;
 
-  if (Object.keys(filters).length == 0) {
-    fn = null;
+  if (Object.keys(selections).length == 0) {
+    results = ideo.unpackedAnnots;
   } else {
-    fn = function(d) {
-      return d in filters;
-    };
+    for (i = 0; i < ideo.facets.length; i++) {
+      facet = ideo.facets[i];
+      if (facet in selections) {
+        fn = function(d) {
+          if (d in selections[facet]) {
+            return true;
+          }
+        };
+      } else {
+        fn = null;
+      }
+      ideo.annotsByFacet[facet].filter(fn);
+      counts[facet] = ideo.annotsByFacet[facet].group().top(Infinity);
+    }
+
+    results = ideo.annotsByFacet[facet].top(Infinity);
   }
 
-  annotsByFacet =
-    ideo.crossfilter
-      .dimension(function(d) {
-        return d[facet];
-      })
-      .filter(fn);
+  for (i < 0; i < ideo.facets.length; i++) {
+    ideo.annotsByFacet[facet].filterAll(); // clear filters
+  }
 
-  results = annotsByFacet.top(Infinity);
-  annotsByFacet.filterAll(); // clear filters
   results = ideo.packAnnots(results);
 
   d3.selectAll("polygon.annot").remove();
   ideo.drawAnnots(results);
 
-  console.log("Time in filterAnnots: " + (Date.now() - t0) + " ms")
+  console.log("Time in filterAnnots: " + (Date.now() - t0) + " ms");
 
+  return counts;
 }

@@ -42,13 +42,14 @@ for line in file[1:]:
 		gene_symbol,
 		start,
 		length,
-		random.randint(1,5)
+		random.randint(1,7),
+		random.randint(1,5),
 	]
 
 	annots[chr]["annots"].append(annot)
 
 top_annots = {}
-top_annots["keys"] = ["name", "start", "length", "tissue-type"]
+top_annots["keys"] = ["name", "start", "length", "expression-level", "gene-type"]
 top_annots["annots"] = annots
 annots = json.dumps(top_annots)
 
