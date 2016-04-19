@@ -12,10 +12,17 @@
     ul {
       list-style: none;
       padding-left: 10px;
+      float: left;
     }
+
+    #gene-type {
+      padding-left: 30px;
+    }
+
     .note {
       font-style: italic;
       padding-left: 10px;
+      clear: left;
     }
   </style>
 </head>
@@ -23,36 +30,123 @@
   <h1>Annotations, histogram | Ideogram</h1>
   <a href=".">Back to overview</a>
   <div id="container"></div>
-  <ul>
-    Tissue type
+  <ul id="expression-level">
+    Expression level
     <li>
-      <label for="cerebral-cortex">
-        <input type="checkbox" id="cerebral-cortex">Cerebral cortex</input>
+      <label for="filter_expression-level_extremely-high">
+        <input type="checkbox" id="filter_expression-level_extremely-high">Extremely high</input>
+      <span class="count"></span>
       </label>
     </li>
     <li>
-      <label for="heart">
-        <input type="checkbox" id="heart">Heart</input>
+      <label for="filter_expression-level_very-high">
+        <input type="checkbox" id="filter_expression-level_very-high">Very high</input>
+      <span class="count"></span>
       </label>
     </li>
     <li>
-      <label for="liver">
-        <input type="checkbox" id="liver">Liver</input>
+      <label for="filter_expression-level_high">
+        <input type="checkbox" id="filter_expression-level_high">High</input>
+      <span class="count"></span>
       </label>
     </li>
     <li>
-      <label for="skin">
-        <input type="checkbox" id="skin">Skin</input>
+      <label for="filter_expression-level_moderately-high">
+        <input type="checkbox" id="filter_expression-level_moderately-high">Moderately high</input>
+      <span class="count"></span>
       </label>
     </li>
     <li>
-      <label for="skeletal-muscle">
-        <input type="checkbox" id="skeletal-muscle">Skeletal muscle</input>
+      <label for="filter_expression-level_moderate">
+        <input type="checkbox" id="filter_expression-level_moderate">Moderate</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_expression-level_low">
+        <input type="checkbox" id="filter_expression-level_low">Low</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_expression-level_very-low">
+        <input type="checkbox" id="filter_expression-level_very-low">Very low</input>
+      <span class="count"></span>
       </label>
     </li>
   </ul>
-  <span class="note">Histogram shows all human genes, but filters use artificial data.</span>
+  <ul id="gene-type">
+    Gene type
+    <li>
+      <label for="filter_gene-type_mrna">
+        <input type="checkbox" id="filter_gene-type_mrna">mRNA</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_gene-type_misc-rna">
+        <input type="checkbox" id="filter_gene-type_misc-rna">misc_RNA</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_gene-type_mirna">
+        <input type="checkbox" id="filter_gene-type_mirna">miRNA</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_gene-type_trna">
+        <input type="checkbox" id="filter_gene-type_trna">tRNA</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_gene-type_lncrna">
+        <input type="checkbox" id="filter_gene-type_lncrna">lncRNA</input>
+      <span class="count"></span>
+      </label>
+    </li>
+  </ul>
+  <!--
+  <ul id="facet_tissue-type">
+    Tissue type
+    <li>
+      <label for="filter_tissue-type_cerebral-cortex">
+        <input type="checkbox" id="filter_tissue-type_cerebral-cortex">Cerebral cortex</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_tissue-type_heart">
+        <input type="checkbox" id="filter_tissue-type_heart">Heart</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_tissue-type_liver">
+        <input type="checkbox" id="filter_tissue-type_liver">Liver</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_tissue-type_skin">
+        <input type="checkbox" id="filter_tissue-type_skin">Skin</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_tissue-type_skeletal-muscle">
+        <input type="checkbox" id="filter_tissue-type_skeletal-muscle">Skeletal muscle</input>
+      <span class="count"></span>
+      </label>
+    </li>
+  </ul>
+  -->
+  <div class="note">Histogram shows all human genes, but filters use artificial data.</div>
   <script type="text/javascript">
+
+  var counts, key, count;
 
   function onIdeogramLoad() {
     d3.selectAll("g.chromosome").on("click", function() {
@@ -62,29 +156,64 @@
 
   d3.selectAll("input").on("click", function() {
     var filterMap,
+        tmp, facet,
+        checkedFilter,
         checkedFilters,
-        filters = {},
-        i,
+        selections = {},
+        i, facet, counts, count,
         filterID;
 
     filterMap = {
-      "cerebral-cortex": 1,
-      "heart": 2,
-      "liver": 3,
-      "skin": 4,
-      "skeletal-muscle": 5
+      "expression-level": {
+        "extremely-high": 7,
+        "very-high": 6,
+        "high": 5,
+        "moderately-high": 4,
+        "moderate": 3,
+        "low": 2,
+        "very-low": 1
+      },
+      "gene-type": {
+        "mrna": 1,
+        "misc-rna": 2,
+        "mirna": 3,
+        "trna": 4,
+        "lncrna": 5
+      },
+      "tissue-type": {
+        "cerebral-cortex": 1,
+        "heart": 2,
+        "liver": 3,
+        "skin": 4,
+        "skeletal-muscle": 5
+      }
     };
 
     checkedFilters = d3.selectAll("input:checked")[0];
 
     for (i = 0; i < checkedFilters.length; i++) {
-      console.log(checkedFilters[i].id);
-      filterID = filterMap[checkedFilters[i].id];
-      filters[filterID] = 1;;
+      tmp = checkedFilters[i].id.split("_");
+      facet = tmp[1];
+      checkedFilter = tmp[2];
+
+      filterID = filterMap[facet][checkedFilter];
+      if (facet in selections == false) {
+        selections[facet] = {};
+      }
+      selections[facet][filterID] = 1;
     }
 
-    ideogram.filterAnnots('tissue-type', filters)
+    counts = ideogram.filterAnnots(selections);
 
+    for (facet in counts) {
+      for (i = 0; i < counts[facet].length; i++) {
+        count = counts[facet][i];
+        key = count.key - 1;
+        value = "(" + count.value + ")";
+
+        // document.querySelectorAll("#" + facet + " .count")[key].innerHTML = value;
+      }
+    }
   });
 
   var config = {
@@ -95,7 +224,7 @@
     chrHeight: 300,
     chrMargin: 10,
     showChromosomeLabels: true,
-    annotationsPath: "data/annotations/all_human_genes.json",
+    annotationsPath: "/ideogram/data/annotations/all_human_genes.json",
     annotationsLayout: "histogram",
     barWidth: 3,
     orientation: "vertical",
