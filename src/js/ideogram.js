@@ -1430,15 +1430,26 @@ Ideogram.prototype.getHistogramBars = function(annots) {
       chrAnnots, chrName, chrIndex, annot, start, stop,
       bars, bar, barPx, nextBarPx, barIndex, barWidth,
       maxAnnotsPerBar, barHeight, color,
+      firstGet = false,
+      histogramScaling,
       ideo = this;
 
   bars = [];
 
   barWidth = ideo.config.barWidth;
-
   chrModels = ideo.chromosomes[ideo.config.taxid];
-
   color = ideo.config.annotationsColor;
+
+  if ("histogramScaling" in ideo.config) {
+      histogramScaling = ideo.config.histogramScaling;
+  } else {
+    histogramScaling = "relative";
+  }
+
+  if (typeof ideo.maxAnnotsPerBar === "undefined") {
+      ideo.maxAnnotsPerBar = {};
+      firstGet = true;
+  }
 
   for (chr in chrModels) {
     chrModel = chrModels[chr];
@@ -1482,15 +1493,18 @@ Ideogram.prototype.getHistogramBars = function(annots) {
     }
   }
 
-  maxAnnotsPerBar = 0;
-  for (i = 0; i < bars.length; i++) {
-    annots = bars[i]["annots"];
-    for (j = 0; j < annots.length; j++) {
-      barCount = annots[j]["count"];
-      if (barCount > maxAnnotsPerBar) {
-        maxAnnotsPerBar = barCount;
+  if (firstGet == true || histogramScaling == "relative") {
+    maxAnnotsPerBar = 0;
+    for (i = 0; i < bars.length; i++) {
+      annots = bars[i]["annots"];
+      for (j = 0; j < annots.length; j++) {
+        barCount = annots[j]["count"];
+        if (barCount > maxAnnotsPerBar) {
+          maxAnnotsPerBar = barCount;
+        }
       }
     }
+    ideo.maxAnnotsPerBar[chr] = maxAnnotsPerBar;
   }
 
   // Set each bar's height to be proportional to
@@ -1499,7 +1513,7 @@ Ideogram.prototype.getHistogramBars = function(annots) {
     annots = bars[i]["annots"];
     for (j = 0; j < annots.length; j++) {
       barCount = annots[j]["count"];
-      height = (barCount/maxAnnotsPerBar) * ideo.config.chrMargin;
+      height = (barCount/ideo.maxAnnotsPerBar[chr]) * ideo.config.chrMargin;
       //console.log(height)
       bars[i]["annots"][j]["height"] = height;
     }
@@ -2079,7 +2093,7 @@ Ideogram.prototype.init = function() {
         if (typeof timeout !== "undefined") {
           window.clearTimeout(timeout);
         }
-        
+
         ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
         ideo.drawAnnots(ideo.annots);
 
