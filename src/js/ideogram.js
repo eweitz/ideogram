@@ -2044,6 +2044,9 @@ Ideogram.prototype.init = function() {
 }
 
 function finishInit() {
+
+    try {
+
     var chrIndex = 0;
 
     var t0_a = new Date().getTime();
@@ -2176,6 +2179,11 @@ function finishInit() {
 
     if (ideo.onLoadCallback) {
       ideo.onLoadCallback();
+    }
+
+    } catch (e) {
+      console.log(e.stack)
+      //throw e;
     }
 
   };
