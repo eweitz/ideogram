@@ -1844,6 +1844,44 @@ Ideogram.prototype.getTaxids = function() {
   return taxids;
 }
 
+
+Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
+
+  var ideo = this,
+      taxids = ideo.config.taxids,
+      chrIndex = 0,
+      i, j, chrs, chromosome, chromosomeModel;
+
+  for (i = 0; i < taxids.length; i++) {
+
+    taxid = taxids[i];
+    chrs = ideo.config.chromosomes[taxid];
+
+    ideo.chromosomes[taxid] = {}
+
+    for (j = 0; j < chrs.length; j++) {
+
+      bands = bandsArray[chrIndex];
+
+      chrIndex += 1;
+
+      chromosome = chrs[j];
+      chromosomeModel = ideo.getChromosomeModel(bands, chromosome, taxid, chrIndex);
+
+      ideo.chromosomes[taxid][chromosome] = chromosomeModel;
+      ideo.chromosomesArray.push(chromosomeModel);
+
+      ideo.drawChromosome(chromosomeModel, chrIndex);
+    }
+
+    if (ideo.config.showBandLabels === true) {
+        ideo.drawBandLabels(ideo.chromosomes);
+    }
+
+  }
+}
+
+
 /**
 * Initializes an ideogram.
 * Sets some high-level properties based on instance configuration,
@@ -2045,50 +2083,24 @@ Ideogram.prototype.init = function() {
 
 function finishInit() {
 
-    try {
-
-    var chrIndex = 0;
+    // try {
 
     var t0_a = new Date().getTime();
 
-    for (j = 0; j < taxids.length; j++) {
+    var chrIndex = 0,
+        i, j, m, n;
 
-      taxid = taxids[j];
-      chrs = ideo.config.chromosomes[taxid];
-
-      ideo.chromosomes[taxid] = {}
-
-      for (k = 0; k < chrs.length; k++) {
-
-        bands = bandsArray[chrIndex];
-
-        chrIndex += 1;
-
-        chromosome = chrs[k];
-        chromosomeModel = ideo.getChromosomeModel(bands, chromosome, taxid, chrIndex);
-
-        ideo.chromosomes[taxid][chromosome] = chromosomeModel;
-        ideo.chromosomesArray.push(chromosomeModel);
-
-        ideo.drawChromosome(chromosomeModel, chrIndex);
-
-      }
-
-      if (ideo.config.showBandLabels === true) {
-          ideo.drawBandLabels(ideo.chromosomes);
-      }
-
-    }
+    ideo.initDrawChromosomes(bandsArray);
 
     chrIndex = 0;
-    for (j = 0; j < taxids.length; j++) {
-      taxid = taxids[j];
+    for (m = 0; m < taxids.length; m++) {
+      taxid = taxids[m];
       chrs = ideo.config.chromosomes[taxid];
-      for (k = 0; k < chrs.length; k++) {
+      for (n = 0; n < chrs.length; n++) {
 
         chrIndex += 1;
 
-        chromosome = chrs[k];
+        chromosome = chrs[n];
 
         chrModel = ideo.chromosomes[taxid][chromosome];
 
@@ -2181,10 +2193,10 @@ function finishInit() {
       ideo.onLoadCallback();
     }
 
-    } catch (e) {
-      console.log(e.stack)
-      //throw e;
-    }
+    // } catch (e) {
+    //   console.log(e.stack)
+    //   //throw e;
+    // }
 
   };
 
