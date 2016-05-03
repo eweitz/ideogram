@@ -1930,7 +1930,6 @@ Ideogram.prototype.init = function() {
           if (numBandDataResponses == taxids.length) {
             processBandData();
             writeContainer();
-            finishInit();
           }
         }
       )
@@ -1939,7 +1938,6 @@ Ideogram.prototype.init = function() {
       ideo.bandData["9606"] = chrBands;
       processBandData();
       writeContainer();
-      finishInit();
     }
 
   }
@@ -1993,6 +1991,8 @@ Ideogram.prototype.init = function() {
         .attr("height", ideoHeight)
         .html(gradients)
 
+    finishInit();
+
   }
 
   /*
@@ -2043,7 +2043,6 @@ Ideogram.prototype.init = function() {
 
       taxid = taxids[j];
       bandData = ideo.bandData[taxid];
-
       if (ideo.config.multiorganism) {
         chrs = chrsByTaxid[taxid];
       }
@@ -2083,7 +2082,7 @@ Ideogram.prototype.init = function() {
 
 function finishInit() {
 
-    // try {
+    try {
 
     var t0_a = new Date().getTime();
 
@@ -2107,7 +2106,6 @@ function finishInit() {
         chr = d3.select("#chr" + chromosome + "-" + taxid);
 
         ideo.initTransformChromosome(chr, chrIndex);
-
       }
 
     }
@@ -2193,10 +2191,10 @@ function finishInit() {
       ideo.onLoadCallback();
     }
 
-    // } catch (e) {
-    //   console.log(e.stack)
-    //   //throw e;
-    // }
+     } catch (e) {
+       console.log(e.stack)
+       //throw e;
+    }
 
   };
 
