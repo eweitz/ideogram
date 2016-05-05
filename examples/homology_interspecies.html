@@ -45,19 +45,15 @@
     }
 
   var config = {
-    multiorganism: true,
-    taxids: ["9606", "10090"],
+    org: ["human", "mouse"],
     chromosomes: {
-      "9606": ["1"],
-      "10090": ["4"]
+      "human": ["1"],
+      "mouse": ["4"]
     },
-    chrWidth: 10,
     chrHeight: 500,
     chrMargin: 50,
-    showChromosomeLabels: true,
     fullChromosomeLabels: true,
     showBandLabels: true,
-    orientation: "vertical",
     perspective: "comparative",
     onLoad: onIdeogramLoad
   };

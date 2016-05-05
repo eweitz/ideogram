@@ -12,8 +12,7 @@ describe("Ideogram", function() {
     d3.selectAll("svg").remove();
 
     config = {
-      taxid: 9606,
-      chromosomes: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y"],
+      org: "human",
       resolution: 550,
       chrWidth: 10,
       chrHeight: 150,
@@ -44,11 +43,20 @@ describe("Ideogram", function() {
     assert.equal(ideogram.config.container, ".small-ideogram");
   });
 
-  it("should write 'svg' element to DOM", function() {
+  it("should write 'svg' element to DOM", function(done) {
+
+    function callback() {
+      var svg = document.getElementsByTagName("svg").length;
+      assert.equal(svg, 1);
+      done();
+    }
+    config.onLoad = callback;
+
     var ideogram = new Ideogram(config);
-    var svg = document.getElementsByTagName("svg").length;
-    assert.equal(svg, 1);
+    // var svg = document.getElementsByTagName("svg").length;
+    // assert.equal(svg, 1);
   });
+
 
   it("should have 24 chromosomes for a human ideogram instance", function(done) {
     // Tests use case from ../examples/human.html
@@ -62,6 +70,7 @@ describe("Ideogram", function() {
     config.onLoad = callback;
     var ideogram = new Ideogram(config);
   });
+
 
   it("should have 21 chromosomes for a mouse ideogram instance", function(done) {
     // Tests use case from ../examples/mouse.html
@@ -79,7 +88,6 @@ describe("Ideogram", function() {
     config.onLoad = callback;
     var ideogram = new Ideogram(config);
   });
-
 
   it("should have 4 syntenic regions for basic homology example", function(done) {
     // Tests use case from ../examples/homology_basic.html
@@ -182,6 +190,7 @@ describe("Ideogram", function() {
     config.onLoad = callback;
     var ideogram = new Ideogram(config);
   });
+
 
   it("should have 25 syntenic regions for advanced example", function(done) {
     // Tests use case from ../examples/homology_advanced.html
@@ -315,18 +324,16 @@ describe("Ideogram", function() {
 
       console.log('document.getElementsByClassName("syntenicRegion")');
       console.log(document.getElementsByClassName("syntenicRegion")[0][0]);
-      console.log(42);
 
       assert.equal(numSyntenicRegions, 1, "numSyntenicRegions");
 
       done();
     }
 
-    config.multiorganism = true;
-    config.taxids = ["9606", "10090"];
+    config.org = ["human", "mouse"];
     config.chromosomes = {
-      "9606": ["1"],
-      "10090": ["4"]
+      "human": ["1"],
+      "mouse": ["4"]
     };
     config.orientation = "vertical";
     config.perspective = "comparative";
@@ -346,22 +353,22 @@ describe("Ideogram", function() {
 
     config.annotationsPath = "../data/annotations/1000_virtual_snvs.json";
 
-    config.onLoad = callback;
+    config.onDrawAnnots = callback;
     var ideogram = new Ideogram(config);
   });
+
 
   it("should have 1000 annotations in overlaid annotations example", function(done) {
     // Tests use case from ../examples/annotations_overlaid.html
 
-    function onIdeogramLoad() {
+    function callback() {
       var numAnnots = document.getElementsByClassName("annot").length;
       assert.equal(numAnnots, 1000);
       done();
     }
 
     config = {
-      taxid: 9606,
-      chromosomes: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y"],
+      org: "human",
       chrWidth: 10,
       chrHeight: 500,
       chrMargin: 5,
@@ -369,7 +376,7 @@ describe("Ideogram", function() {
       annotationsPath: "../data/annotations/1000_virtual_snvs.json",
       annotationsLayout: "overlay",
       orientation: "horizontal",
-      onLoad: onIdeogramLoad
+      onDrawAnnots: callback
     };
 
     ideogram = new Ideogram(config);
@@ -379,7 +386,7 @@ describe("Ideogram", function() {
     // Tests use case from ../examples/annotations_tracks.html
     // TODO: Add class to annots indicating track
 
-    function onIdeogramLoad() {
+    function callback() {
       var numAnnots = document.getElementsByClassName("annot").length;
       assert.equal(numAnnots, 1000);
       done();
@@ -395,7 +402,6 @@ describe("Ideogram", function() {
 
     var config = {
       taxid: 9606,
-      chromosomes: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y"],
       chrWidth: 8,
       chrHeight: 500,
       chrMargin: 10,
@@ -404,7 +410,7 @@ describe("Ideogram", function() {
       annotationTracks: annotationTracks,
       annotationHeight: 2.5,
       orientation: "vertical",
-      onLoad: onIdeogramLoad
+      onDrawAnnots: callback
     };
 
     ideogram = new Ideogram(config);
@@ -414,15 +420,14 @@ describe("Ideogram", function() {
     // Tests use case from ../examples/annotations_histogram.html
     // TODO: Add class to annots indicating track
 
-    function onIdeogramLoad() {
+    function callback() {
       var numAnnots = document.getElementsByClassName("annot").length;
       assert.equal(numAnnots, 2015);
       done();
     }
 
     var config = {
-      taxid: 9606,
-      chromosomes: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y"],
+      org: "human",
       chrWidth: 10,
       chrHeight: 500,
       chrMargin: 10,
@@ -431,7 +436,7 @@ describe("Ideogram", function() {
       annotationsLayout: "histogram",
       barWidth: 3,
       orientation: "vertical",
-      onLoad: onIdeogramLoad
+      onDrawAnnots: callback
     };
 
     ideogram = new Ideogram(config);
@@ -486,8 +491,7 @@ describe("Ideogram", function() {
     }
 
     var config = {
-      taxid: 9606,
-      chromosomes: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y"],
+      org: "human",
       chrWidth: 10,
       chrHeight: 500,
       chrMargin: 10,
@@ -520,8 +524,7 @@ describe("Ideogram", function() {
 
       var config = {
         container: ".small-ideogram",
-        taxid: 9606,
-        chromosomes: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y"],
+        org: "human",
         resolution: 550,
         chrWidth: 10,
         chrHeight: 150,
