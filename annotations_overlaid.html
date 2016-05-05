@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Annotations, overlays | Ideogram</title>
+  <link type="text/css" rel="stylesheet" href="src/css/ideogram.css"/>
+  <script type="text/javascript" src="src/js/d3.min.js"></script>
+  <script type="text/javascript" src="src/js/ideogram.min.js"></script>
+</head>
+<body>
+  <h1>Annotations, overlays | Ideogram</h1>
+  <a href=".">Back to overview</a>
+
+  <script type="text/javascript">
+
+  function onIdeogramLoad() {
+
+    d3.selectAll("g").on("click", function() {
+      ideogram.rotateAndToggleDisplay(this.id);
+    });
+
+  }
+  var config = {
+    org: "human",
+    chrHeight: 500,
+    chrMargin: 5,
+    annotationsPath: "/ideogram/data/annotations/1000_virtual_snvs.json",
+    annotationsLayout: "overlay",
+    orientation: "horizontal",
+    onLoad: onIdeogramLoad
+  };
+
+  var ideogram = new Ideogram(config);
+
+  </script>
+</body>
+</html>
