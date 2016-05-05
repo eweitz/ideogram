@@ -2,13 +2,14 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>Annotations, overlays | Ideogram</title>
+  <title>Fly | Ideogram</title>
   <link type="text/css" rel="stylesheet" href="../src/css/ideogram.css"/>
   <script type="text/javascript" src="../src/js/d3.min.js"></script>
   <script type="text/javascript" src="../src/js/ideogram.js"></script>
+
 </head>
 <body>
-  <h1>Annotations, overlays | Ideogram</h1>
+  <h1>Fly | Ideogram</h1>
   <a href=".">Back to overview</a>
 
   <script type="text/javascript">
@@ -20,15 +21,16 @@
     });
 
   }
+
   var config = {
-    org: "human",
+    taxid: 7227,
+    chromosomes: ['X', '2L', '2R', '3L', '3R', '4'],
     chrWidth: 10,
     chrHeight: 500,
-    chrMargin: 5,
+    chrMargin: 10,
+    showBandLabels: true,
     showChromosomeLabels: true,
-    annotationsPath: "/ideogram/data/annotations/1000_virtual_snvs.json",
-    annotationsLayout: "overlay",
-    orientation: "horizontal",
+    orientation: "vertical",
     onLoad: onIdeogramLoad
   };
 
