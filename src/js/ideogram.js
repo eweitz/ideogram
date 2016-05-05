@@ -17,6 +17,26 @@ var Ideogram = function(config) {
     this.config.resolution = 850;
   }
 
+  if ("showChromosomeLabels" in this.config === false) {
+    this.config.showChromosomeLabels = true;
+  }
+
+  if (!this.config.chrMargin) {
+      this.config.chrMargin = 10;
+  }
+
+  if (!this.config.chrWidth) {
+      this.config.chrWidth = 10;
+  }
+
+  if (!this.config.orientation) {
+    this.config.orientation = "vertical";
+  }
+
+  if (!this.config.showBandLabels) {
+    this.config.showBandLabels = false;
+  }
+
   if (!this.config.brush) {
     this.config.brush = false;
   }
