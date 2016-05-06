@@ -2011,10 +2011,10 @@ Ideogram.prototype.init = function() {
 
     bandDataFileNames = {
       // Homo sapiens (human)
-      "9606": "ncbi/ideogram_9606_GCF_000001305.14_" + resolution + "_V1",
+      "9606": "ncbi/ideogram_9606_GCF_000001305.14_" + resolution + "_V1.tsv",
 
       // Mus musculus (mouse)
-      "10090": "ncbi/ideogram_10090_GCF_000000055.19_NA_V2",
+      "10090": "ncbi/ideogram_10090_GCF_000000055.19_NA_V2.tsv",
 
       // Drosophila melanogaster (fly)
       "7227": "ucsc/drosophila_melanogaster_dm6.tsv"
