@@ -114,12 +114,20 @@ var Ideogram = function(config) {
     "9606": {
       "commonName": "Human",
       "scientificName": "Homo sapiens",
-      "scientificNameAbbr": "H. sapiens"
+      "scientificNameAbbr": "H. sapiens",
+      "assemblies": { // technically, primary assembly unit of assembly
+        "default": "GCF_000001305.14", // GRCh38
+        "GRCh38": "GCF_000001305.14",
+        "GRCh37": "GCF_000001305.13",
+      }
     },
     "10090": {
       "commonName": "Mouse",
       "scientificName": "Mus musculus",
-      "scientificNameAbbr": "M. musculus"
+      "scientificNameAbbr": "M. musculus",
+      "assemblies": {
+        "default": "GCF_000000055.19"
+      }
     },
     "7227": {
       "commonName": "Fly",
@@ -2001,7 +2009,8 @@ Ideogram.prototype.init = function() {
   var bandsArray = [],
       maxLength = 0,
       numBandDataResponses = 0,
-      resolution = this.config.resolution;
+      resolution = this.config.resolution,
+      accession;
 
   taxids = ideo.getTaxids();
   ideo.config.taxids = taxids;
@@ -2009,12 +2018,17 @@ Ideogram.prototype.init = function() {
   for (i = 0; i < taxids.length; i++) {
     taxid = taxids[i];
 
+    if (!ideo.config.assembly) {
+      ideo.config.assembly = "default";
+    }
+    accession = ideo.organisms[taxid]["assemblies"][ideo.config.assembly];
+
     bandDataFileNames = {
       // Homo sapiens (human)
-      "9606": "ncbi/ideogram_9606_GCF_000001305.14_" + resolution + "_V1.tsv",
+      "9606": "ncbi/ideogram_9606_" + accession + "_" + resolution + "_V1.tsv",
 
       // Mus musculus (mouse)
-      "10090": "ncbi/ideogram_10090_GCF_000000055.19_NA_V2.tsv",
+      "10090": "ncbi/ideogram_10090_" + accession + "_NA_V2.tsv",
 
       // Drosophila melanogaster (fly)
       "7227": "ucsc/drosophila_melanogaster_dm6.tsv"
