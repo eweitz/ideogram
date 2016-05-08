@@ -9,6 +9,10 @@ var Ideogram = function(config) {
 
   this.debug = false;
 
+  if (!this.config.bandDir) {
+    this.config.bandDir = "../data/bands/";
+  }
+
   if (!this.config.container) {
   	this.config.container = "body";
   }
@@ -176,13 +180,21 @@ Ideogram.prototype.getBands = function(content, taxid, chromosomes) {
       i, prefetched, init, tsvLinesLength, source,
       start, stop, firstColumn;
 
-  if (typeof chrBands === "undefined") {
+  if (content.slice(0, 8) === "chrBands") {
+    source = "native";
+  }
+
+  if (typeof chrBands === "undefined" && source !== "native") {
     delimiter = /\t/;
     tsvLines = content.split(/\r\n|\n/);
     init = 1;
   } else {
     delimiter = / /;
-    tsvLines = content;
+    if (source === "native") {
+     tsvLines = eval(content);
+    } else {
+      tsvLines = content;
+    }
     init = 0;
   }
 
@@ -1385,7 +1397,7 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
   }
 
   var t1 = new Date().getTime();
-  if (this.debug) {
+  if (ideo.debug) {
     console.log("Time in drawSyntenicRegions: " + (t1 - t0) + " ms");
   }
 }
@@ -1560,7 +1572,7 @@ Ideogram.prototype.getHistogramBars = function(annots) {
   }
 
   var t1 = new Date().getTime();
-  if (this.debug) {
+  if (ideo.debug) {
     console.log("Time spent in getHistogramBars: " + (t1 - t0) + " ms");
   }
 
@@ -2025,10 +2037,11 @@ Ideogram.prototype.init = function() {
 
     bandDataFileNames = {
       // Homo sapiens (human)
-      "9606": "ncbi/ideogram_9606_" + accession + "_" + resolution + "_V1.tsv",
+      "9606": "native/ideogram_9606_" + accession + "_" + resolution + "_V1.js",
+      //"9606": "ncbi/ideogram_9606_" + accession + "_" + resolution + "_V1.tsv",
 
       // Mus musculus (mouse)
-      "10090": "ncbi/ideogram_10090_" + accession + "_NA_V2.tsv",
+      "10090": "native/ideogram_10090_" + accession + "_NA_V2.js",
 
       // Drosophila melanogaster (fly)
       "7227": "ucsc/drosophila_melanogaster_dm6.tsv"
@@ -2036,7 +2049,7 @@ Ideogram.prototype.init = function() {
 
     if (typeof chrBands === "undefined") {
 
-      d3.xhr("../data/bands/" + bandDataFileNames[taxid])
+      d3.xhr(ideo.config.bandDir + bandDataFileNames[taxid])
         .on("beforesend", function(data) {
           // Ensures correct taxid is processed in response callback; using
           // simply 'taxid' variable gives the last *requested* taxid, which
@@ -2195,7 +2208,7 @@ Ideogram.prototype.init = function() {
       }
     }
     var t1_b = new Date().getTime();
-    if (this.debug) {
+    if (ideo.debug) {
       console.log("Time in processBandData: " + (t1_b - t0_b) + " ms")
     }
 }
@@ -2279,7 +2292,7 @@ function finishInit() {
       d3.selectAll(".bandLabel, .bandLabelStalk").style("display", "none");
       d3.selectAll(bandsToShow).style("display", "")
       var t1_c = new Date().getTime();
-      if (this.debug) {
+      if (ideo.debug) {
         console.log("Time in showing bands: " + (t1_c - t0_c) + " ms");
       }
 
@@ -2305,12 +2318,12 @@ function finishInit() {
 
 
     var t1_a = new Date().getTime();
-    if (this.debug) {
+    if (ideo.debug) {
       console.log("Time in drawChromosome: " + (t1_a - t0_a) + " ms");
     }
 
     var t1 = new Date().getTime();
-    if (this.debug) {
+    if (ideo.debug) {
       console.log("Time constructing ideogram: " + (t1 - t0) + " ms");
     }
 

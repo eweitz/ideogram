@@ -13,25 +13,33 @@ http://genome.ucsc.edu/cgi-bin/hgTables
   - group: Mapping and Sequencing
   - track: Chromosome Band (Ideogram)
 
-TODO: 
-- CLI argument handling
+TODO:
 - Converting UCSC data
-- Multiple taxa
 '''
 
 import json
+from os import walk
 
-output = []
+in_dir = "data/bands/ncbi/"
+out_dir = "data/bands/native/"
 
-input_file = "ncbi/ideogram_9606_GCF_000001305.14_550_V1"
-output_file = "native/ideogram_9606_GCF_000001405.26_550.js"
+f = []
+for (dirpath, dirnames, filenames) in walk(in_dir):
+    print(filenames)
+    f.extend(filenames)
+    break
 
-rows = open(input_file, "r").readlines()[1:]
-for row in rows:
-	columns = row.replace("\n", "").replace("\t", " ")
-	output.append(columns)
+for input_file in f:
+    output = []
 
-output = json.dumps(output)
-output = "chrBands = " + output + ";"
+    output_file = out_dir + input_file.replace("tsv", "js")
 
-open(output_file, "w").write(output)
+    rows = open(in_dir + input_file, "r").readlines()[1:]
+    for row in rows:
+    	columns = row.replace("\n", "").replace("\t", " ")
+    	output.append(columns)
+
+    output = json.dumps(output)
+    output = "chrBands = " + output + ";"
+
+    open(output_file, "w").write(output)
