@@ -538,4 +538,20 @@ describe("Ideogram", function() {
       var ideogram = new Ideogram(config);
     });
 
+
+    it("should use GRCh37 when specified in 'assembly' parameter", function(done) {
+      // Tests use case from ../examples/human.html
+
+      function callback() {
+        var bands = ideogram.chromosomes["9606"]["1"]["bands"]
+        var chr1Length = bands[bands.length - 1].bp.stop;
+        assert.equal(chr1Length, 249250621);
+        done();
+      }
+
+      config.assembly = "GRCh37";
+      config.onLoad = callback;
+      var ideogram = new Ideogram(config);
+    });
+
 });
