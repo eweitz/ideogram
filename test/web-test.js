@@ -9,10 +9,11 @@ describe("Ideogram", function() {
 
   beforeEach(function() {
 
+    delete chrBands;
     d3.selectAll("svg").remove();
 
     config = {
-      org: "human",
+      organism: "human",
       resolution: 550,
       chrWidth: 10,
       chrHeight: 150,
@@ -330,7 +331,7 @@ describe("Ideogram", function() {
       done();
     }
 
-    config.org = ["human", "mouse"];
+    config.organism = ["human", "mouse"];
     config.chromosomes = {
       "human": ["1"],
       "mouse": ["4"]
@@ -368,7 +369,7 @@ describe("Ideogram", function() {
     }
 
     config = {
-      org: "human",
+      organism: "human",
       chrWidth: 10,
       chrHeight: 500,
       chrMargin: 5,
@@ -427,7 +428,7 @@ describe("Ideogram", function() {
     }
 
     var config = {
-      org: "human",
+      organism: "human",
       chrWidth: 10,
       chrHeight: 500,
       chrMargin: 10,
@@ -491,7 +492,7 @@ describe("Ideogram", function() {
     }
 
     var config = {
-      org: "human",
+      organism: "human",
       chrWidth: 10,
       chrHeight: 500,
       chrMargin: 10,
@@ -524,7 +525,7 @@ describe("Ideogram", function() {
 
       var config = {
         container: ".small-ideogram",
-        org: "human",
+        organism: "human",
         resolution: 550,
         chrWidth: 10,
         chrHeight: 150,
@@ -534,6 +535,22 @@ describe("Ideogram", function() {
         orientation: "vertical"
       };
 
+      config.onLoad = callback;
+      var ideogram = new Ideogram(config);
+    });
+
+
+    it("should use GRCh37 when specified in 'assembly' parameter", function(done) {
+      // Tests use case from ../examples/human.html
+
+      function callback() {
+        var bands = ideogram.chromosomes["9606"]["1"]["bands"]
+        var chr1Length = bands[bands.length - 1].bp.stop;
+        assert.equal(chr1Length, 249250621);
+        done();
+      }
+
+      config.assembly = "GRCh37";
       config.onLoad = callback;
       var ideogram = new Ideogram(config);
     });
