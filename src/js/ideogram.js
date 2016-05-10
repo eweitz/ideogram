@@ -210,7 +210,7 @@ Ideogram.prototype.getBands = function(content, taxid, chromosomes) {
   tsvLinesLength = tsvLines.length;
 
   if (source === 'ncbi' || source === 'native') {
-    for (i = init; i < tsvLinesLength - 1; i++) {
+    for (i = init; i < tsvLinesLength; i++) {
 
       columns = tsvLines[i].split(delimiter);
 
@@ -1305,7 +1305,8 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
       region,
       syntenies, synteny,
       i, svg, color, opacity,
-      regionID;
+      regionID,
+      ideo = this;
 
   syntenies = d3.select("svg")
     .append("g")

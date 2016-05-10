@@ -9,6 +9,7 @@ describe("Ideogram", function() {
 
   beforeEach(function() {
 
+    delete chrBands;
     d3.selectAll("svg").remove();
 
     config = {
