@@ -1913,18 +1913,18 @@ Ideogram.prototype.getTaxids = function() {
   taxidInit = "taxid" in ideo.config;
 
   ideo.config.multiorganism = (
-    ("org" in ideo.config && ideo.config.org instanceof Array) ||
+    ("organism" in ideo.config && ideo.config.organism instanceof Array) ||
     (taxidInit && ideo.config.taxid instanceof Array)
   );
 
   multiorganism = ideo.config.multiorganism;
 
-  if ("org" in ideo.config) {
+  if ("organism" in ideo.config) {
     // Ideogram instance was constructed using common organism name(s)
     if (multiorganism) {
-      orgs = ideo.config.org;
+      orgs = ideo.config.organism;
     } else {
-      orgs = [ideo.config.org];
+      orgs = [ideo.config.organism];
     }
 
     taxids = [];

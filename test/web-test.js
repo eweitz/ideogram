@@ -13,7 +13,7 @@ describe("Ideogram", function() {
     d3.selectAll("svg").remove();
 
     config = {
-      org: "human",
+      organism: "human",
       resolution: 550,
       chrWidth: 10,
       chrHeight: 150,
@@ -331,7 +331,7 @@ describe("Ideogram", function() {
       done();
     }
 
-    config.org = ["human", "mouse"];
+    config.organism = ["human", "mouse"];
     config.chromosomes = {
       "human": ["1"],
       "mouse": ["4"]
@@ -369,7 +369,7 @@ describe("Ideogram", function() {
     }
 
     config = {
-      org: "human",
+      organism: "human",
       chrWidth: 10,
       chrHeight: 500,
       chrMargin: 5,
@@ -428,7 +428,7 @@ describe("Ideogram", function() {
     }
 
     var config = {
-      org: "human",
+      organism: "human",
       chrWidth: 10,
       chrHeight: 500,
       chrMargin: 10,
@@ -492,7 +492,7 @@ describe("Ideogram", function() {
     }
 
     var config = {
-      org: "human",
+      organism: "human",
       chrWidth: 10,
       chrHeight: 500,
       chrMargin: 10,
@@ -525,7 +525,7 @@ describe("Ideogram", function() {
 
       var config = {
         container: ".small-ideogram",
-        org: "human",
+        organism: "human",
         resolution: 550,
         chrWidth: 10,
         chrHeight: 150,
