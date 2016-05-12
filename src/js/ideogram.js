@@ -64,30 +64,7 @@ var Ideogram = function(config) {
     this.config.chrMargin += 20;
   }
 
-  if (this.config.annotationsPath || this.config.localAnnotationsPath) {
-
-    if (!this.config.annotationHeight) {
-      this.config.annotationHeight = 3;
-    }
-
-    if (this.config.annotationTracks) {
-      this.config.numAnnotTracks = this.config.annotationTracks.length;
-    } else {
-      this.config.numAnnotTracks = 1;
-    }
-    this.config.annotTracksHeight = this.config.annotationHeight * this.config.numAnnotTracks;
-
-    if (typeof this.config.barWidth === "undefined") {
-      this.config.barWidth = 3;
-    }
-
-    if (typeof this.config.annotationsColor === "undefined") {
-      this.config.annotationsColor = "#F00";
-    }
-
-  } else {
-    this.config.annotTracksHeight = 0;
-  }
+  this.initAnnotSettings()
 
   this.config.chrMargin = (
     this.config.chrMargin +
@@ -1403,6 +1380,75 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
   }
 }
 
+
+Ideogram.prototype.initAnnotSettings = function() {
+
+  if (this.config.annotationsPath || this.config.localAnnotationsPath
+    || this.annots) {
+
+    if (!this.config.annotationHeight) {
+      this.config.annotationHeight = 3;
+    }
+
+    if (this.config.annotationTracks) {
+      this.config.numAnnotTracks = this.config.annotationTracks.length;
+    } else {
+      this.config.numAnnotTracks = 1;
+    }
+    this.config.annotTracksHeight = this.config.annotationHeight * this.config.numAnnotTracks;
+
+    if (typeof this.config.barWidth === "undefined") {
+      this.config.barWidth = 3;
+    }
+
+    if (typeof this.config.annotationsColor === "undefined") {
+      this.config.annotationsColor = "#F00";
+    }
+
+  } else {
+    this.config.annotTracksHeight = 0;
+  }
+
+}
+
+
+Ideogram.prototype.processFriendlyAnnots = function(friendlyAnnots) {
+
+  var ideo = this,
+      i, j, annot,
+      rawAnnots = [],
+      rawAnnot,
+      name, chr, from, to,
+      chrs = ideo.chromosomes[ideo.config.taxid], // TODO: multiorganism
+      annotsByChr = {};
+
+  for (chr in chrs) {
+    rawAnnots.push({"chr": chr, "annots": []});
+  }
+
+  for (i = 0; i < friendlyAnnots.length; i++) {
+    annot = friendlyAnnots[i];
+    for (j = 0; j < rawAnnots.length; j++) {
+      if (annot.chr === rawAnnots[j].chr) {
+        rawAnnots[j]["annots"].push([
+          annot.name,
+          annot.start,
+          annot.stop - annot.start
+        ]);
+        break;
+      }
+    }
+  }
+
+  ideo.rawAnnots = {"keys": ["name", "start", "length"], "annots": rawAnnots};
+  ideo.annots = ideo.processAnnotData(ideo.rawAnnots)
+
+  ideo.initAnnotSettings();
+
+  ideo.drawAnnots(ideo.annots);
+
+}
+
 /**
 * Proccesses genome annotation data.
 * Genome annotations represent features like a gene, SNP, etc. as
@@ -1607,7 +1653,8 @@ Ideogram.prototype.drawAnnots = function(annots) {
     annots = ideo.getHistogramBars(annots)
   }
 
-  annotHeight = this.config.annotationHeight;
+  annotHeight = ideo.config.annotationHeight;
+  
   triangle = 'l -' + annotHeight + ' ' + (2*annotHeight) + ' l ' + (2*annotHeight) + ' 0 z';
 
   chrAnnot = d3.selectAll(".chromosome")
