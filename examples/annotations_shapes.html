@@ -16,12 +16,22 @@
   function onIdeogramLoad() {
 
     var acmgGenes, gene, i, annots, annot,
-        geneID, geneIDs,
+        geneClause, geneID, geneIDs,
         eutils, esearch, esummary, url, defaultParams;
 
     geneIDs = [];
     annots = [];
 
+    eutils = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/";
+    defaultParams = "?db=gene&retmode=json";
+    esearch = eutils + "esearch.fcgi" + defaultParams;
+    esummary = eutils + "esummary.fcgi" + defaultParams;
+
+    // "We recommend that laboratories performing clinical sequencing seek and
+    // report mutations of the specified classes or types in the genes listed here."
+    // ACMG Recommendations for Reporting of Incidental Findings in Clinical Exome and Genome Sequencing
+    // This is that gene list, including official updates.
+    // http://www.ncbi.nlm.nih.gov/clinvar/docs/acmg/
     acmgGenes = [
       "APC", "MYH11", "ACTA2", "MYLK", "TMEM43", "DSP", "PKP2", "DSG2", "DSC2",
       "BRCA1", "BRCA2", "SCN5A", "RYR2", "LMNA", "MYBPC3", "COL3A1", "GLA",
@@ -33,36 +43,30 @@
       "PTEN", "RB1", "TSC1", "TSC2", "VHL"
     ];
 
-    eutils = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/";
-    defaultParams = "?db=gene&retmode=json";
-    esearch = eutils + "esearch.fcgi" + defaultParams;
-    esummary = eutils + "esummary.fcgi" + defaultParams;
+    geneClause = acmgGenes.join("[symbol] OR ") + "[symbol]"
 
-    annots = [];
-    for (i = 0; i < acmgGenes.length; i++) {
-      gene = acmgGenes[i];
-      url = esearch + "&term=Homo-sapiens[Organism]%20AND%20" + gene + "[symbol]";
+    url = esearch + "&term=Homo-sapiens[Organism] AND " + geneClause;
+    d3.json(url, function(error, data) {
+      geneIDs = data.esearchresult.idlist;
+      url = esummary + "&id=" + geneIDs.join(",");
       d3.json(url, function(error, data) {
-        geneID = data.esearchresult.idlist[0];
-        geneIDs.push(geneID);
-        if (geneIDs.length == acmgGenes.length) {
-          url = esummary + "&id=" + geneIDs.join(",");
-          d3.json(url, function(error, data) {
-            for (var j = 0; j < geneIDs.length; j ++) {
-              var result, chr, loc, start, stop;
-              geneID = geneIDs[j];
-              result = data.result[geneID];
-              chr = result.chromosome;
-              loc = result.locationhist[0]; // better than "genomicinfo"
-              start = loc.chrstart;
-              stop = loc.chrstop;
-              annots.push({"name": gene, "chr": chr, "start": start, "stop": stop});
-              ideogram.processFriendlyAnnots(annots);
-            }
-          });
+        for (var j = 0; j < geneIDs.length; j ++) {
+          var result, chr, loc, start, stop;
+          geneID = geneIDs[j];
+          result = data.result[geneID];
+          chr = result.chromosome;
+          loc = result.locationhist[0]; // better than "genomicinfo"
+          start = loc.chrstart;
+          stop = loc.chrstop;
+          annots.push({"name": gene, "chr": chr, "start": start, "stop": stop});
+          ideogram.processFriendlyAnnots(annots);
         }
+        // Placing processFriendlyAnnots here would be more efficient,
+        // but the color of annotations turned from red to black.  Why?
+        //ideogram.processFriendlyAnnots(annots);
       });
-    }
+    })
+
   }
 
   var config = {
