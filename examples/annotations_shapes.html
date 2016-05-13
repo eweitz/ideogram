@@ -16,8 +16,10 @@
   function onIdeogramLoad() {
 
     var acmgGenes, gene, i, annots, annot,
+        geneID, geneIDs,
         eutils, esearch, esummary, url, defaultParams;
 
+    geneIDs = [];
     annots = [];
 
     acmgGenes = [
@@ -41,21 +43,26 @@
       gene = acmgGenes[i];
       url = esearch + "&term=Homo-sapiens[Organism]%20AND%20" + gene + "[symbol]";
       d3.json(url, function(error, data) {
-        var geneID = data.esearchresult.idlist[0];
-        url = esummary + "&id=" + geneID;
-        d3.json(url, function(error, data) {
-          var result, chr, loc, start, stop;
-          result = data.result[geneID];
-          chr = result.chromosome;
-          loc = result.locationhist[0]; // better than "genomicinfo"
-          start = loc.chrstart;
-          stop = loc.chrstop;
-          annots.push({"name": gene, "chr": chr, "start": start, "stop": stop});
-          ideogram.processFriendlyAnnots(annots);
-        })
-      })
+        geneID = data.esearchresult.idlist[0];
+        geneIDs.push(geneID);
+        if (geneIDs.length == acmgGenes.length) {
+          url = esummary + "&id=" + geneIDs.join(",");
+          d3.json(url, function(error, data) {
+            for (var j = 0; j < geneIDs.length; j ++) {
+              var result, chr, loc, start, stop;
+              geneID = geneIDs[j];
+              result = data.result[geneID];
+              chr = result.chromosome;
+              loc = result.locationhist[0]; // better than "genomicinfo"
+              start = loc.chrstart;
+              stop = loc.chrstop;
+              annots.push({"name": gene, "chr": chr, "start": start, "stop": stop});
+              ideogram.processFriendlyAnnots(annots);
+            }
+          });
+        }
+      });
     }
-
   }
 
   var config = {
