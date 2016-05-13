@@ -14,14 +14,53 @@
   <script type="text/javascript">
 
   function onIdeogramLoad() {
-    var annots = [
-      {"name": "BRCA1", "chr": "17", "start": 43044295, "stop": 43125483}
+
+    var acmgGenes, gene, i, annots, annot,
+        eutils, esearch, esummary, url, defaultParams;
+
+    annots = [];
+
+    acmgGenes = [
+      "APC", "MYH11", "ACTA2", "MYLK", "TMEM43", "DSP", "PKP2", "DSG2", "DSC2",
+      "BRCA1", "BRCA2", "SCN5A", "RYR2", "LMNA", "MYBPC3", "COL3A1", "GLA",
+      "APOB", "LDLR", "MYH7", "TPM1", "MYBPC3", "PRKAG2", "TNNI3", "MYL3",
+      "MYL2", "ACTC1", "RET", "PCSK9", "TNNT2", "TP53", "TGFBR1", "TGFBR2",
+      "TGFBR1", "TGFBR2", "SMAD3", "KCNQ1", "KCNH2", "SCN5A", "MLH1", "MSH2",
+      "MSH6", "PMS2", "RYR1", "CACNA1S", "FBN1", "TGFBR1", "MEN1", "RET",
+      "MUTYH", "NF2", "SDHD", "SDHAF2", "SDHC", "SDHB", "STK11", "MUTYH",
+      "PTEN", "RB1", "TSC1", "TSC2", "VHL"
     ];
-    ideogram.processFriendlyAnnots(annots);
+
+    eutils = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/";
+    defaultParams = "?db=gene&retmode=json";
+    esearch = eutils + "esearch.fcgi" + defaultParams;
+    esummary = eutils + "esummary.fcgi" + defaultParams;
+
+    annots = [];
+    for (i = 0; i < acmgGenes.length; i++) {
+      gene = acmgGenes[i];
+      url = esearch + "&term=Homo-sapiens[Organism]%20AND%20" + gene + "[symbol]";
+      d3.json(url, function(error, data) {
+        var geneID = data.esearchresult.idlist[0];
+        url = esummary + "&id=" + geneID;
+        d3.json(url, function(error, data) {
+          var result, chr, loc, start, stop;
+          result = data.result[geneID];
+          chr = result.chromosome;
+          loc = result.locationhist[0]; // better than "genomicinfo"
+          start = loc.chrstart;
+          stop = loc.chrstop;
+          annots.push({"name": gene, "chr": chr, "start": start, "stop": stop});
+          ideogram.processFriendlyAnnots(annots);
+        })
+      })
+    }
+
   }
 
   var config = {
     organism: "human",
+    resolution: 550,
     chrHeight: 500,
     onLoad: onIdeogramLoad
   };
