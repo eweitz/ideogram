@@ -1412,7 +1412,7 @@ Ideogram.prototype.initAnnotSettings = function() {
 }
 
 
-Ideogram.prototype.processFriendlyAnnots = function(friendlyAnnots) {
+Ideogram.prototype.drawAnnots = function(friendlyAnnots) {
 
   var ideo = this,
       i, j, annot,
@@ -1445,7 +1445,7 @@ Ideogram.prototype.processFriendlyAnnots = function(friendlyAnnots) {
 
   ideo.initAnnotSettings();
 
-  ideo.drawAnnots(ideo.annots);
+  ideo.drawProcessedAnnots(ideo.annots);
 
 }
 
@@ -1634,7 +1634,7 @@ Ideogram.prototype.getHistogramBars = function(annots) {
 * on a chromosome, or along one or more "tracks"
 * running parallel to each chromosome.
 */
-Ideogram.prototype.drawAnnots = function(annots) {
+Ideogram.prototype.drawProcessedAnnots = function(annots) {
 
   var chrMargin, chrWidth, layout,
       annotHeight, triangle, chrAnnot,
@@ -1654,7 +1654,7 @@ Ideogram.prototype.drawAnnots = function(annots) {
   }
 
   annotHeight = ideo.config.annotationHeight;
-  
+
   triangle = 'l -' + annotHeight + ' ' + (2*annotHeight) + ' l ' + (2*annotHeight) + ' 0 z';
 
   chrAnnot = d3.selectAll(".chromosome")
@@ -2302,7 +2302,7 @@ function finishInit() {
         }
 
         ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
-        ideo.drawAnnots(ideo.annots);
+        ideo.drawProcessedAnnots(ideo.annots);
 
         if (ideo.initCrossFilter) {
           ideo.initCrossFilter();

@@ -59,11 +59,11 @@
           start = loc.chrstart;
           stop = loc.chrstop;
           annots.push({"name": gene, "chr": chr, "start": start, "stop": stop});
-          ideogram.processFriendlyAnnots(annots);
+          ideogram.drawAnnots(annots);
         }
-        // Placing processFriendlyAnnots here would be more efficient,
+        // Placing drawAnnots here would be more efficient,
         // but the color of annotations turned from red to black.  Why?
-        //ideogram.processFriendlyAnnots(annots);
+        //ideogram.drawAnnots(annots);
       });
     })
 
