@@ -10,7 +10,14 @@
 <body>
   <h1>Annotations, shapes | Ideogram</h1>
   <a href=".">Back to overview</a>
-
+  <p>
+   The <a href="https://www.acmg.net/">American College of Medical Genetics and
+   Genomics</a> (ACMG) recommends that laboratories performing clinical
+   sequencing seek and report certain mutations in
+   <a href="https://www.ncbi.nlm.nih.gov/clinvar/docs/acmg/">the genes depicted
+   here.</a>
+ </p>
+  <div id="container"></div>
   <script type="text/javascript">
 
   function onIdeogramLoad() {
@@ -22,16 +29,16 @@
     geneIDs = [];
     annots = [];
 
+    // EUtils is a web API to access NCBI data
     eutils = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/";
     defaultParams = "?db=gene&retmode=json";
+
+    // Use ESearch to get NCBI Gene ID for gene name, e.g. BRCA1 -> 672
     esearch = eutils + "esearch.fcgi" + defaultParams;
+
+    // Use ESummary to get genomic coordinates for given gene IDs
     esummary = eutils + "esummary.fcgi" + defaultParams;
 
-    // "We recommend that laboratories performing clinical sequencing seek and
-    // report mutations of the specified classes or types in the genes listed here."
-    // ACMG Recommendations for Reporting of Incidental Findings in Clinical Exome and Genome Sequencing
-    // This is that gene list, including official updates.
-    // http://www.ncbi.nlm.nih.gov/clinvar/docs/acmg/
     acmgGenes = [
       "APC", "MYH11", "ACTA2", "MYLK", "TMEM43", "DSP", "PKP2", "DSG2", "DSC2",
       "BRCA1", "BRCA2", "SCN5A", "RYR2", "LMNA", "MYBPC3", "COL3A1", "GLA",
@@ -43,11 +50,14 @@
       "PTEN", "RB1", "TSC1", "TSC2", "VHL"
     ];
 
+    // Batch request all ACMG genes
     geneClause = acmgGenes.join("[symbol] OR ") + "[symbol]"
 
     url = esearch + "&term=Homo-sapiens[Organism] AND " + geneClause;
     d3.json(url, function(error, data) {
       geneIDs = data.esearchresult.idlist;
+
+      // Batch request genomic coordinates for all ACMG genes
       url = esummary + "&id=" + geneIDs.join(",");
       d3.json(url, function(error, data) {
         for (var j = 0; j < geneIDs.length; j ++) {
@@ -58,8 +68,13 @@
           loc = result.locationhist[0]; // better than "genomicinfo"
           start = loc.chrstart;
           stop = loc.chrstop;
+
+          ///////////
+          // This is the annotations API
+          ///////////
           annots.push({"name": gene, "chr": chr, "start": start, "stop": stop});
           ideogram.drawAnnots(annots);
+
         }
         // Placing drawAnnots here would be more efficient,
         // but the color of annotations turned from red to black.  Why?
@@ -72,7 +87,8 @@
   var config = {
     organism: "human",
     resolution: 550,
-    chrHeight: 500,
+    chrHeight: 300,
+    annotationHeight: 4,
     onLoad: onIdeogramLoad
   };
 
