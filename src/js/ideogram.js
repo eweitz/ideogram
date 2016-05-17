@@ -64,7 +64,7 @@ var Ideogram = function(config) {
     this.config.chrMargin += 20;
   }
 
-  this.initAnnotSettings()
+  this.initAnnotSettings();
 
   this.config.chrMargin = (
     this.config.chrMargin +
@@ -1401,12 +1401,12 @@ Ideogram.prototype.initAnnotSettings = function() {
       this.config.barWidth = 3;
     }
 
-    if (typeof this.config.annotationsColor === "undefined") {
-      this.config.annotationsColor = "#F00";
-    }
-
   } else {
     this.config.annotTracksHeight = 0;
+  }
+
+  if (typeof this.config.annotationsColor === "undefined") {
+    this.config.annotationsColor = "#F00";
   }
 
 }
@@ -1441,9 +1441,10 @@ Ideogram.prototype.drawAnnots = function(friendlyAnnots) {
   }
 
   ideo.rawAnnots = {"keys": ["name", "start", "length"], "annots": rawAnnots};
-  ideo.annots = ideo.processAnnotData(ideo.rawAnnots)
 
-  ideo.initAnnotSettings();
+  //ideo.initAnnotSettings();
+
+  ideo.annots = ideo.processAnnotData(ideo.rawAnnots)
 
   ideo.drawProcessedAnnots(ideo.annots);
 
