@@ -31,7 +31,7 @@
 
     // EUtils is a web API to access NCBI data
     eutils = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/";
-    defaultParams = "?db=gene&retmode=json";
+    defaultParams = "?db=gene&retmode=json&retmax=100";
 
     // Use ESearch to get NCBI Gene ID for gene name, e.g. BRCA1 -> 672
     esearch = eutils + "esearch.fcgi" + defaultParams;
@@ -51,7 +51,7 @@
     ];
 
     // Batch request all ACMG genes
-    geneClause = acmgGenes.join("[symbol] OR ") + "[symbol]"
+    geneClause = "(" + acmgGenes.join("[symbol] OR ") + "[symbol])"
 
     url = esearch + "&term=Homo-sapiens[Organism] AND " + geneClause;
     d3.json(url, function(error, data) {
@@ -64,6 +64,15 @@
           var result, chr, loc, start, stop;
           geneID = geneIDs[j];
           result = data.result[geneID];
+          if (result.currentid !== "" || acmgGenes.indexOf(result.name) === -1 ) {
+            // currentid case occurs when one gene symbol in a taxon maps to
+            // multiple gene.  It seems to be annotation-run noise.
+            // result.name case occurs when gene has a non-canonical alias
+            // matching the gene symbol.
+            // Ignore both.
+            continue;
+          }
+          gene = result.name;
           chr = result.chromosome;
           loc = result.locationhist[0]; // better than "genomicinfo"
           start = loc.chrstart;
@@ -72,13 +81,17 @@
           ///////////
           // This is the annotations API
           ///////////
-          annots.push({"name": gene, "chr": chr, "start": start, "stop": stop});
-          ideogram.drawAnnots(annots);
+          annots.push({
+            "name": gene,
+            "chr": chr,
+            "start": start,
+            "stop": stop
+          });
 
         }
-        // Placing drawAnnots here would be more efficient,
-        // but the color of annotations turned from red to black.  Why?
-        //ideogram.drawAnnots(annots);
+
+        ideogram.drawAnnots(annots);
+
       });
     })
 
