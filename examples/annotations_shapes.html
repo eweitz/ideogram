@@ -23,7 +23,7 @@
   function onIdeogramLoad() {
 
     var acmgGenes, gene, i, annots, annot,
-        geneClause, geneID, geneIDs,
+        geneClause, geneID, geneIDs, topWeight,
         eutils, esearch, esummary, url, defaultParams;
 
     geneIDs = [];
@@ -51,7 +51,10 @@
     ];
 
     // Batch request all ACMG genes
-    geneClause = "(" + acmgGenes.join("[symbol] OR ") + "[symbol])"
+    geneClause = "(" + acmgGenes.join("[symbol] OR ") + "[symbol])";
+
+    topWeight = 0;
+    weights = [];
 
     url = esearch + "&term=Homo-sapiens[Organism] AND " + geneClause;
     d3.json(url, function(error, data) {
@@ -60,9 +63,9 @@
       // Batch request genomic coordinates for all ACMG genes
       url = esummary + "&id=" + geneIDs.join(",");
       d3.json(url, function(error, data) {
-        for (var j = 0; j < geneIDs.length; j ++) {
-          var result, chr, loc, start, stop;
-          geneID = geneIDs[j];
+        for (var i = 0; i < geneIDs.length; i++) {
+          var result, gene, chr, loc, start, stop, weight;
+          geneID = geneIDs[i];
           result = data.result[geneID];
           if (result.currentid !== "" || acmgGenes.indexOf(result.name) === -1 ) {
             // currentid case occurs when one gene symbol in a taxon maps to
@@ -77,17 +80,32 @@
           loc = result.locationhist[0]; // better than "genomicinfo"
           start = loc.chrstart;
           stop = loc.chrstop;
+          weight = result.geneweight;
 
-          ///////////
+          if (result.weight > topWeight) {
+            topWeight = result;
+          }
+
+          ////
           // This is the annotations API
-          ///////////
+          ////
           annots.push({
-            "name": gene,
-            "chr": chr,
-            "start": start,
-            "stop": stop
+            "name": gene, // required, but unused
+            "chr": chr, // required
+            "start": start, // required
+            "stop": stop, // required
+            "weight": weight // optional
           });
 
+        }
+
+        annots.sort(function(a, b) {
+          return b.weight - a.weight;
+        });
+
+        for (i = 0; i < annots.length; i++) {
+          color = (i < 10) ? "#F00" : "#FAA";
+          annots[i]["color"] = color;
         }
 
         ideogram.drawAnnots(annots);

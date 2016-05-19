@@ -1417,7 +1417,7 @@ Ideogram.prototype.drawAnnots = function(friendlyAnnots) {
   var ideo = this,
       i, j, annot,
       rawAnnots = [],
-      rawAnnot,
+      rawAnnot, keys,
       name, chr, from, to,
       chrs = ideo.chromosomes[ideo.config.taxid], // TODO: multiorganism
       annotsByChr = {};
@@ -1430,19 +1430,25 @@ Ideogram.prototype.drawAnnots = function(friendlyAnnots) {
     annot = friendlyAnnots[i];
     for (j = 0; j < rawAnnots.length; j++) {
       if (annot.chr === rawAnnots[j].chr) {
-        rawAnnots[j]["annots"].push([
+        rawAnnot = [
           annot.name,
           annot.start,
           annot.stop - annot.start
-        ]);
+        ];
+        if ("color" in annot) {
+          rawAnnot.push(annot.color)
+        }
+        rawAnnots[j]["annots"].push(rawAnnot);
         break;
       }
     }
   }
-
-  ideo.rawAnnots = {"keys": ["name", "start", "length"], "annots": rawAnnots};
-
-  //ideo.initAnnotSettings();
+  
+  keys = ["name", "start", "length"];
+  if ("color" in friendlyAnnots[0]) {
+    keys.push("color");
+  }
+  ideo.rawAnnots = {"keys": keys,  "annots": rawAnnots};
 
   ideo.annots = ideo.processAnnotData(ideo.rawAnnots)
 
@@ -1471,7 +1477,6 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
       ideo = this;
 
   annots = [];
-
 
   for (i = 0; i < rawAnnots.length; i++) {
     annotsByChr = rawAnnots[i]
@@ -1503,6 +1508,10 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
         color = ideo.config.annotationTracks[annot.trackIndex].color;
       } else {
         annot['trackIndex'] = 0;
+      }
+
+      if ('color' in annot) {
+        color = annot['color'];
       }
 
       annot['chr'] = chr;
