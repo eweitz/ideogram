@@ -1438,6 +1438,9 @@ Ideogram.prototype.drawAnnots = function(friendlyAnnots) {
         if ("color" in annot) {
           rawAnnot.push(annot.color)
         }
+        if ("shape" in annot) {
+          rawAnnot.push(annot.shape);
+        }
         rawAnnots[j]["annots"].push(rawAnnot);
         break;
       }
@@ -1447,6 +1450,9 @@ Ideogram.prototype.drawAnnots = function(friendlyAnnots) {
   keys = ["name", "start", "length"];
   if ("color" in friendlyAnnots[0]) {
     keys.push("color");
+  }
+  if ("shape" in friendlyAnnots[0]) {
+    keys.push("shape");
   }
   ideo.rawAnnots = {"keys": keys,  "annots": rawAnnots};
 
@@ -1647,7 +1653,7 @@ Ideogram.prototype.getHistogramBars = function(annots) {
 Ideogram.prototype.drawProcessedAnnots = function(annots) {
 
   var chrMargin, chrWidth, layout,
-      annotHeight, triangle, chrAnnot,
+      annotHeight, triangle, circle, r, chrAnnot,
       x1, x2, y1, y2,
       ideo = this;
 
@@ -1666,6 +1672,16 @@ Ideogram.prototype.drawProcessedAnnots = function(annots) {
   annotHeight = ideo.config.annotationHeight;
 
   triangle = 'l -' + annotHeight + ' ' + (2*annotHeight) + ' l ' + (2*annotHeight) + ' 0 z';
+
+  // From http://stackoverflow.com/a/10477334, with a minor change ("m -r, r")
+  // Circles are supported natively via <circle>, but having it as a path
+  // simplifies handling triangles, circles and other shapes in the same
+  // D3 call
+  r = annotHeight;
+  circle =
+    'm -' + r  + ', ' + r +
+    'a ' + r + ',' + r + ' 0 1,0 ' + (r * 2) + ',0' +
+    'a ' + r + ',' + r + ' 0 1,0 -' + (r * 2) + ',0';
 
   chrAnnot = d3.selectAll(".chromosome")
     .data(annots)
@@ -1686,7 +1702,13 @@ Ideogram.prototype.drawProcessedAnnots = function(annots) {
         return "translate(" + d.px + "," + y + ")";
       })
       .append("path")
-      .attr("d", "m0,0" + triangle)
+      .attr("d", function(d) {
+          if (!d.shape || d.shape === "triangle") {
+            return "m0,0" + triangle;
+          } else if (d.shape === "circle") {
+            return circle;
+          }
+      })
       .attr("fill", function(d) { return d.color })
 
     } else if (layout === "overlay") {

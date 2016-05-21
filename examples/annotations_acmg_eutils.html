@@ -105,7 +105,13 @@
 
         for (i = 0; i < annots.length; i++) {
           color = (i < 10) ? "#F00" : "#FAA";
-          annots[i]["color"] = color;
+          annots[i].shape = "triangle";
+          annots[i].color = color;
+
+          if (annots[i].name === "TP53") {
+            annots[i].shape = "circle";
+            annots[i].color = "#0A0";
+          }
         }
 
         ideogram.drawAnnots(annots);
