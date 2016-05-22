@@ -1421,6 +1421,11 @@ Ideogram.prototype.drawAnnots = function(friendlyAnnots) {
       chr,
       chrs = ideo.chromosomes[ideo.config.taxid]; // TODO: multiorganism
 
+  // Occurs when filtering
+  if ("annots" in friendlyAnnots[0]) {
+    return ideo.drawProcessedAnnots(friendlyAnnots);
+  }
+
   for (chr in chrs) {
     rawAnnots.push({"chr": chr, "annots": []});
   }
