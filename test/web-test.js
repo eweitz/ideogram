@@ -555,4 +555,23 @@ describe("Ideogram", function() {
       var ideogram = new Ideogram(config);
     });
 
+    it("should handle arrayed objects in 'annotations' parameter", function(done) {
+      // Tests use case from ../examples/human.html
+
+      function callback() {
+        var numAnnots = d3.selectAll(".annot")[0].length;
+        assert.equal(numAnnots, 1);
+        done();
+      }
+
+      config.annotations = [{
+        "name": "BRCA1",
+        "chr": "17",
+        "start": 43044294,
+        "stop": 43125482
+      }],
+      config.onDrawAnnots = callback;
+      var ideogram = new Ideogram(config);
+    });
+
 });
