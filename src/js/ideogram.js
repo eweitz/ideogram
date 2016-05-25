@@ -64,30 +64,7 @@ var Ideogram = function(config) {
     this.config.chrMargin += 20;
   }
 
-  if (this.config.annotationsPath || this.config.localAnnotationsPath) {
-
-    if (!this.config.annotationHeight) {
-      this.config.annotationHeight = 3;
-    }
-
-    if (this.config.annotationTracks) {
-      this.config.numAnnotTracks = this.config.annotationTracks.length;
-    } else {
-      this.config.numAnnotTracks = 1;
-    }
-    this.config.annotTracksHeight = this.config.annotationHeight * this.config.numAnnotTracks;
-
-    if (typeof this.config.barWidth === "undefined") {
-      this.config.barWidth = 3;
-    }
-
-    if (typeof this.config.annotationsColor === "undefined") {
-      this.config.annotationsColor = "#F00";
-    }
-
-  } else {
-    this.config.annotTracksHeight = 0;
-  }
+  this.initAnnotSettings();
 
   this.config.chrMargin = (
     this.config.chrMargin +
@@ -140,7 +117,7 @@ var Ideogram = function(config) {
     }
   }
 
-  if (this.config.annotationsPath) {
+  if (this.config.annotationsPath || this.config.annotations) {
     if (!this.config.annotationHeight) {
       this.config.annotationHeight = 3;
     }
@@ -1403,6 +1380,93 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
   }
 }
 
+
+Ideogram.prototype.initAnnotSettings = function() {
+
+  if (this.config.annotationsPath || this.config.localAnnotationsPath
+    || this.annots) {
+
+    if (!this.config.annotationHeight) {
+      this.config.annotationHeight = 3;
+    }
+
+    if (this.config.annotationTracks) {
+      this.config.numAnnotTracks = this.config.annotationTracks.length;
+    } else {
+      this.config.numAnnotTracks = 1;
+    }
+    this.config.annotTracksHeight = this.config.annotationHeight * this.config.numAnnotTracks;
+
+    if (typeof this.config.barWidth === "undefined") {
+      this.config.barWidth = 3;
+    }
+
+  } else {
+    this.config.annotTracksHeight = 0;
+  }
+
+  if (typeof this.config.annotationsColor === "undefined") {
+    this.config.annotationsColor = "#F00";
+  }
+
+}
+
+
+Ideogram.prototype.drawAnnots = function(friendlyAnnots) {
+
+  var ideo = this,
+      i, j, annot,
+      rawAnnots = [],
+      rawAnnot, keys,
+      chr,
+      chrs = ideo.chromosomes[ideo.config.taxid]; // TODO: multiorganism
+
+  // Occurs when filtering
+  if ("annots" in friendlyAnnots[0]) {
+    return ideo.drawProcessedAnnots(friendlyAnnots);
+  }
+
+  for (chr in chrs) {
+    rawAnnots.push({"chr": chr, "annots": []});
+  }
+
+  for (i = 0; i < friendlyAnnots.length; i++) {
+    annot = friendlyAnnots[i];
+
+    for (j = 0; j < rawAnnots.length; j++) {
+      if (annot.chr === rawAnnots[j].chr) {
+        rawAnnot = [
+          annot.name,
+          annot.start,
+          annot.stop - annot.start
+        ];
+        if ("color" in annot) {
+          rawAnnot.push(annot.color)
+        }
+        if ("shape" in annot) {
+          rawAnnot.push(annot.shape);
+        }
+        rawAnnots[j]["annots"].push(rawAnnot);
+        break;
+      }
+    }
+  }
+
+  keys = ["name", "start", "length"];
+  if ("color" in friendlyAnnots[0]) {
+    keys.push("color");
+  }
+  if ("shape" in friendlyAnnots[0]) {
+    keys.push("shape");
+  }
+  ideo.rawAnnots = {"keys": keys,  "annots": rawAnnots};
+
+  ideo.annots = ideo.processAnnotData(ideo.rawAnnots)
+
+  ideo.drawProcessedAnnots(ideo.annots);
+
+}
+
 /**
 * Proccesses genome annotation data.
 * Genome annotations represent features like a gene, SNP, etc. as
@@ -1424,7 +1488,6 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
       ideo = this;
 
   annots = [];
-
 
   for (i = 0; i < rawAnnots.length; i++) {
     annotsByChr = rawAnnots[i]
@@ -1456,6 +1519,10 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
         color = ideo.config.annotationTracks[annot.trackIndex].color;
       } else {
         annot['trackIndex'] = 0;
+      }
+
+      if ('color' in annot) {
+        color = annot['color'];
       }
 
       annot['chr'] = chr;
@@ -1588,10 +1655,10 @@ Ideogram.prototype.getHistogramBars = function(annots) {
 * on a chromosome, or along one or more "tracks"
 * running parallel to each chromosome.
 */
-Ideogram.prototype.drawAnnots = function(annots) {
+Ideogram.prototype.drawProcessedAnnots = function(annots) {
 
   var chrMargin, chrWidth, layout,
-      annotHeight, triangle, chrAnnot,
+      annotHeight, triangle, circle, r, chrAnnot,
       x1, x2, y1, y2,
       ideo = this;
 
@@ -1607,8 +1674,19 @@ Ideogram.prototype.drawAnnots = function(annots) {
     annots = ideo.getHistogramBars(annots)
   }
 
-  annotHeight = this.config.annotationHeight;
+  annotHeight = ideo.config.annotationHeight;
+
   triangle = 'l -' + annotHeight + ' ' + (2*annotHeight) + ' l ' + (2*annotHeight) + ' 0 z';
+
+  // From http://stackoverflow.com/a/10477334, with a minor change ("m -r, r")
+  // Circles are supported natively via <circle>, but having it as a path
+  // simplifies handling triangles, circles and other shapes in the same
+  // D3 call
+  r = annotHeight;
+  circle =
+    'm -' + r  + ', ' + r +
+    'a ' + r + ',' + r + ' 0 1,0 ' + (r * 2) + ',0' +
+    'a ' + r + ',' + r + ' 0 1,0 -' + (r * 2) + ',0';
 
   chrAnnot = d3.selectAll(".chromosome")
     .data(annots)
@@ -1629,7 +1707,13 @@ Ideogram.prototype.drawAnnots = function(annots) {
         return "translate(" + d.px + "," + y + ")";
       })
       .append("path")
-      .attr("d", "m0,0" + triangle)
+      .attr("d", function(d) {
+          if (!d.shape || d.shape === "triangle") {
+            return "m0,0" + triangle;
+          } else if (d.shape === "circle") {
+            return circle;
+          }
+      })
       .attr("fill", function(d) { return d.color })
 
     } else if (layout === "overlay") {
@@ -2255,7 +2339,7 @@ function finishInit() {
         }
 
         ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
-        ideo.drawAnnots(ideo.annots);
+        ideo.drawProcessedAnnots(ideo.annots);
 
         if (ideo.initCrossFilter) {
           ideo.initCrossFilter();
@@ -2317,6 +2401,9 @@ function finishInit() {
       ideo.createBrush();
     }
 
+    if (ideo.config.annotations) {
+      ideo.drawAnnots(ideo.config.annotations);
+    }
 
     var t1_a = new Date().getTime();
     if (ideo.debug) {
