@@ -383,7 +383,7 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
 
   chrs = ideo.chromosomesArray;
 
-  chrMargin2 = ideo.config.chrMargin - ideo.config.chrWidth - 2;
+  chrMargin2 = ideo.config.chrWidth/2 + ideo.config.chrMargin - 8;
   if (ideo.config.orientation === "vertical" && ideo.config.showBandLabels === true) {
     chrMargin2 = ideo.config.chrMargin + 8;
   }
@@ -449,7 +449,7 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
                 lines.push(arr[arr.length - 1]);
 
                 chrMargin = ideo.config.chrMargin * i;
-                y = (chrMargin + chrMargin2) + 9;
+                y = (chrMargin + chrMargin2);
 
                 for (var i = 0; i < lines.length; i++) {
 
