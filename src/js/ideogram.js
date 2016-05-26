@@ -377,15 +377,16 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid, c
 Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
 
   var i, chr, chrs, taxid, ideo,
-      chrMargin2;
-
-  ideo = this;
+      chrMargin2,
+      ideo = this,
+      chrMargin = ideo.config.chrMargin,
+      chrWidth = ideo.config.chrWidth;
 
   chrs = ideo.chromosomesArray;
 
-  chrMargin2 = ideo.config.chrWidth/2 + ideo.config.chrMargin - 8;
+  chrMargin2 = chrWidth/2 + chrMargin - 8;
   if (ideo.config.orientation === "vertical" && ideo.config.showBandLabels === true) {
-    chrMargin2 = ideo.config.chrMargin + 8;
+    chrMargin2 = chrMargin + 8;
   }
 
   if (ideo.config.orientation === "vertical") {
@@ -398,7 +399,7 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
         .attr("y", -16)
         .each(function (d, i) {
 
-          var i, chrMargin, x, cls;
+          var i, chrMarginI, x, cls;
           var arr = d.name.split(" ");
           var lines = [];
 
@@ -410,8 +411,8 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
                 i += 1;
               }
 
-              chrMargin = (ideo.config.chrMargin) * i;
-              x = -(chrMargin + chrMargin2) + 3 + ideo.config.annotTracksHeight * 2;
+              chrMarginI = chrMargin * i;
+              x = -(chrMarginI + chrMargin2 - chrWidth - 2) + ideo.config.annotTracksHeight * 2;
 
               for (var i = 0; i < lines.length; i++) {
 
@@ -439,7 +440,7 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
           .attr("x", -5)
           .each(function (d, i) {
 
-            var i, chrMargin, y, cls;
+            var i, chrMarginI, y, cls;
 
             var arr = d.name.split(" ");
             var lines = [];
@@ -448,8 +449,8 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
                 lines.push(arr.slice(0, arr.length - 1).join(" "))
                 lines.push(arr[arr.length - 1]);
 
-                chrMargin = ideo.config.chrMargin * i;
-                y = (chrMargin + chrMargin2);
+                chrMarginI = chrMargin * i;
+                y = (chrMarginI + chrMargin2);
 
                 for (var i = 0; i < lines.length; i++) {
 
