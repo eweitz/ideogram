@@ -386,7 +386,7 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
 
   chrMargin2 = chrWidth/2 + chrMargin - 8;
   if (ideo.config.orientation === "vertical" && ideo.config.showBandLabels === true) {
-    chrMargin2 = chrMargin + 8;
+    chrMargin2 = chrMargin + 17;
   }
 
   if (ideo.config.orientation === "vertical") {

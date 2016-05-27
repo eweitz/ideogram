@@ -582,8 +582,8 @@ describe("Ideogram", function() {
         var band, bandMiddle,
             chrLabel, chrLabelMiddle;
 
-        band = d3.select(".chromosome .band")[0][0].getBoundingClientRect();
-        chrLabel = d3.select(".chromosome .chrLabel")[0][0].getBoundingClientRect();
+        band = d3.selectAll(".chromosome .band")[0][0].getBoundingClientRect();
+        chrLabel = d3.selectAll(".chromosome .chrLabel")[0][0].getBoundingClientRect();
 
         bandMiddle = band.top + band.height/2;
         chrLabelMiddle = chrLabel.top + chrLabel.height/2;
@@ -619,8 +619,8 @@ describe("Ideogram", function() {
         var band, bandMiddle,
             chrLabel, chrLabelMiddle;
 
-        band = d3.select(".chromosome .band")[0][0].getBoundingClientRect();
-        chrLabel = d3.select(".chromosome .chrLabel")[0][0].getBoundingClientRect();
+        band = d3.selectAll(".chromosome .band")[0][0].getBoundingClientRect();
+        chrLabel = d3.selectAll(".chromosome .chrLabel")[0][0].getBoundingClientRect();
 
         bandMiddle = band.left + band.width/2;
         chrLabelMiddle = chrLabel.left + chrLabel.width/2;
@@ -651,5 +651,36 @@ describe("Ideogram", function() {
       config.onDrawAnnots = callback;
       var ideogram = new Ideogram(config);
     });
+
+
+    it("should align chr. label with band-labeled vertical chromosome", function(done) {
+      // Tests use case from ../examples/human.html
+
+      function callback() {
+
+        var band, bandMiddle,
+            chrLabel, chrLabelMiddle;
+
+        band = d3.select(".chromosome .band")[0][0].getBoundingClientRect();
+        chrLabel = d3.select(".chromosome .chrLabel")[0][0].getBoundingClientRect();
+
+        bandMiddle = band.left + band.width/2;
+        chrLabelMiddle = chrLabel.left + chrLabel.width/2;
+
+        labelsDiff = Math.abs(bandMiddle - chrLabelMiddle);
+
+        assert.isAtMost(labelsDiff, 1);
+        done();
+      }
+
+      var config = {
+        organism: "human",
+        showBandLabels: true,
+        chrHeight: 500
+      };
+      config.onLoad = callback;
+      var ideogram = new Ideogram(config);
+    });
+
 
 });
