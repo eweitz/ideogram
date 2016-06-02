@@ -153,7 +153,7 @@ var Ideogram = function(config) {
 Ideogram.prototype.getBands = function(content, taxid, chromosomes) {
 
   var lines = {},
-      tsvLines, columns, line, stain, chr,
+      delimiter, tsvLines, columns, line, stain, chr,
       i, prefetched, init, tsvLinesLength, source,
       start, stop, firstColumn;
 
@@ -292,7 +292,7 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid, c
 
   var chr = {};
   var band, scale,
-      width,
+      width, pxStop,
       startType, stopType,
       chrHeight = this.config.chrHeight,
       maxLength = this.maxLength,
@@ -1481,9 +1481,9 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
 
   var keys = rawAnnots.keys,
       rawAnnots = rawAnnots.annots,
-      i, j, annot, annots, rawAnnot,
+      i, j, annot, annots, rawAnnot, annotsByChr,
       chr, start, stop,
-      chrModel,
+      chrModel, ra,
       startPx, stopPx, px,
       trackIndex, color,
       ideo = this;
@@ -1914,7 +1914,8 @@ Ideogram.prototype.onDrawAnnots = function() {
 Ideogram.prototype.getBandColorGradients = function() {
 
   var color, colors,
-      stain,
+      stain, color1, color2, color3,
+      css,
       gradients = "";
 
   colors = [
@@ -2054,6 +2055,7 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
 
   var ideo = this,
       taxids = ideo.config.taxids,
+      taxid,
       chrIndex = 0,
       i, j, chrs, chromosome, chromosomeModel;
 
@@ -2096,7 +2098,7 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
 */
 Ideogram.prototype.init = function() {
 
-  var bandDataFile,
+  var bandDataFile, bandDataFileNames,
       taxid, taxids, i, svgClass,
       chrs;
 
@@ -2227,7 +2229,7 @@ Ideogram.prototype.init = function() {
 
     var j, k, chromosome, bands, chromosomeModel,
         chrLength,
-        bandData,
+        bandData, bands, bandsByChr,
         stopType,
         taxid, taxids, chrs, chrsByTaxid;
 
@@ -2306,6 +2308,7 @@ function finishInit() {
     var t0_a = new Date().getTime();
 
     var chrIndex = 0,
+        chr, chrModel, chromosome,
         i, j, m, n;
 
     ideo.initDrawChromosomes(bandsArray);
