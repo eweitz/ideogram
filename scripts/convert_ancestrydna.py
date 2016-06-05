@@ -1,4 +1,4 @@
-    import json, re
+import json, re
 
 file = open("data/annotations/clinvar_20160531.vcf").readlines()
 
@@ -33,6 +33,7 @@ file_name = "data/annotations/AncestryDNA.txt"
 file =  open(file_name).readlines()
 
 annots = []
+clin_annots = []
 
 allele_map = {
     "A": 0,
@@ -43,6 +44,7 @@ allele_map = {
 }
 
 seen_chrs = {}
+seen_chrs_clin_annots = {}
 
 clinical_alleles = []
 
@@ -68,18 +70,28 @@ for line in file:
     elif chr == "25":
         continue # TODO: mitochondrial DNA!
 
-    if name in rsids and rsids[name]["alt"] in set((allele1, allele2)):
-        #print("clinical: " + name)
-        # TODO: Hom vs. het clinsig
-        if rsids[name]["clinsig"] in set((4,5)):
-            clinical_alleles.append(name)
-        clinsig = rsids[name]["clinsig"]
-    else:
-        clinsig = -1 # Not in ClinVar
-
     heterozygous = 0
     if (allele1 != allele2):
         heterozygous = 1
+
+    if name in rsids and rsids[name]["alt"] in set((allele1, allele2)):
+        #print("clinical: " + name)
+        # TODO: Hom vs. het clinsig
+        clinsig = rsids[name]["clinsig"]
+        if clinsig in set((4,5)):
+            clinical_alleles.append(name)
+            if heterozygous == 0 and clinsig == 5:
+                print("Homozygous pathogenic: " + name)
+        if clinsig in set((1,2,3,4,5)):
+            clinsig -= 1
+            clin_annot = [name, start, length, clinsig]
+            if chr in seen_chrs_clin_annots:
+                clin_annots[chr_index - 1]["annots"].append(clin_annot)
+            else:
+                clin_annots.append({"chr": chr, "annots": [clin_annot]})
+                seen_chrs_clin_annots[chr] = 1
+    else:
+        clinsig = -1 # Not in ClinVar
 
     allele1 = allele_map[allele1]
     allele2 = allele_map[allele2]
@@ -106,9 +118,16 @@ top_annots["keys"] = [
 ]
 top_annots["annots"] = annots
 annots = json.dumps(top_annots)
+open("data/annotations/ancestrydna.json", "w").write(annots)
+
+top_annots = {}
+top_annots["keys"] = [
+    "name", "start", "length", "trackIndex"
+]
+top_annots["annots"] = clin_annots
+annots = json.dumps(top_annots)
+open("data/annotations/ancestrydna_tracks.json", "w").write(annots)
 
 for rs in clinical_alleles:
     print(rs)
 print(len(clinical_alleles))
-
-open("data/annotations/ancestrydna.json", "w").write(annots)
