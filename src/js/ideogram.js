@@ -2301,7 +2301,7 @@ Ideogram.prototype.init = function() {
 
 function finishInit() {
 
-    // try {
+    try {
 
     var t0_a = new Date().getTime();
 
@@ -2421,10 +2421,10 @@ function finishInit() {
       ideo.onLoadCallback();
     }
 
-    //  } catch (e) {
-      //  console.log(e.stack)
+     } catch (e) {
+       console.log(e.stack)
       //  throw e;
-    // }
+    }
 
   }
 
