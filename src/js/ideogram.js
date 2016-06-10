@@ -282,6 +282,22 @@ Ideogram.prototype.getBands = function(content, taxid, chromosomes) {
 
 };
 
+Ideogram.prototype.colorArms = function(pArmColor, qArmColor) {
+  this.chromosomesArray.forEach(function(chr){
+    d3.selectAll("#" + chr.id + " .band")
+      .data(chr.bands)
+      .style("fill", function(d, i) {
+        if (i <= chr.pcenIndex) {
+          return pArmColor;
+        } else {
+          return qArmColor;
+        }
+      });
+  });
+  d3.selectAll(".p-ter.chromosomeBorder").style("fill", pArmColor);
+  d3.selectAll(".q-ter.chromosomeBorder").style("fill", qArmColor);
+};
+
 /**
 * Generates a model object for each chromosome
 * containing information on its name, DOM ID,
