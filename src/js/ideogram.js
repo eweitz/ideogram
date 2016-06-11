@@ -296,6 +296,20 @@ Ideogram.prototype.colorArms = function(pArmColor, qArmColor) {
   });
   d3.selectAll(".p-ter.chromosomeBorder").style("fill", pArmColor);
   d3.selectAll(".q-ter.chromosomeBorder").style("fill", qArmColor);
+  d3.selectAll(".acen")[0].forEach(function(d){
+  console.log(d);
+  var chrID = d.id.split("-").slice(0,2).join("-");
+  console.log(chrID)
+  var r = d.getBoundingClientRect();
+  console.log(r);
+  d3.select("#" + chrID)
+    .append("line")
+      .attr("x1", r.top)
+      .attr("y1", r.left + r.width)
+      .attr("x2", r.top)
+      .attr("y2", r.left)
+      .style("stroke", "#0F0")
+  });
 };
 
 /**
@@ -2421,6 +2435,11 @@ function finishInit() {
 
     if (ideo.config.annotations) {
       ideo.drawAnnots(ideo.config.annotations);
+    }
+
+    if (ideo.config.armColors) {
+      var ac = ideo.config.armColors;
+      ideo.colorArms(ac[0], ac[1]);
     }
 
     var t1_a = new Date().getTime();
