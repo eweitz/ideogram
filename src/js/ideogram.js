@@ -283,6 +283,56 @@ Ideogram.prototype.getBands = function(content, taxid, chromosomes) {
 };
 
 /**
+* Fills cytogenetic arms -- p-arm and q-arm -- with specified colors
+*/
+Ideogram.prototype.colorArms = function(pArmColor, qArmColor) {
+
+  var ideo = this;
+
+  ideo.chromosomesArray.forEach(function(chr, chrIndex){
+
+    var bands = chr.bands,
+        pcen = bands[chr.pcenIndex],
+        qcen = bands[chr.pcenIndex + 1],
+        chrID = chr.id,
+        chrMargin = ideo.config.chrMargin * (chrIndex + 1),
+        chrWidth = ideo.config.chrWidth;
+
+    pcenStart = pcen.px.start;
+    qcenStop = qcen.px.stop;
+
+    d3.select("#" + chrID)
+      .append("line")
+        .attr("x1", pcenStart)
+        .attr("y1", chrMargin + 0.2)
+        .attr("x2", pcenStart)
+        .attr("y2", chrMargin + chrWidth - 0.2)
+        .style("stroke", pArmColor)
+
+    d3.select("#" + chrID)
+      .append("line")
+        .attr("x1", qcenStop)
+        .attr("y1", chrMargin + 0.2)
+        .attr("x2", qcenStop)
+        .attr("y2", chrMargin + chrWidth - 0.2)
+        .style("stroke", qArmColor)
+
+    d3.selectAll("#" + chrID + " .band")
+      .data(chr.bands)
+      .style("fill", function(d, i) {
+        if (i <= chr.pcenIndex) {
+          return pArmColor;
+        } else {
+          return qArmColor;
+        }
+      });
+  });
+  d3.selectAll(".p-ter.chromosomeBorder").style("fill", pArmColor);
+  d3.selectAll(".q-ter.chromosomeBorder").style("fill", qArmColor);
+
+};
+
+/**
 * Generates a model object for each chromosome
 * containing information on its name, DOM ID,
 * length in base pairs or ISCN coordinates,
@@ -2405,6 +2455,11 @@ function finishInit() {
 
     if (ideo.config.annotations) {
       ideo.drawAnnots(ideo.config.annotations);
+    }
+
+    if (ideo.config.armColors) {
+      var ac = ideo.config.armColors;
+      ideo.colorArms(ac[0], ac[1]);
     }
 
     var t1_a = new Date().getTime();
