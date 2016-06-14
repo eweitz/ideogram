@@ -288,22 +288,31 @@ Ideogram.prototype.colorArms = function(pArmColor, qArmColor) {
 
   ideo.chromosomesArray.forEach(function(chr, chrIndex){
 
-    var pcen = chr.bands[chr.pcenIndex],
+    var bands = chr.bands,
+        pcen = bands[chr.pcenIndex],
+        qcen = bands[chr.pcenIndex + 1],
         chrID = chr.id,
-        rect = d3.select("#" + chrID + " path")[0][0].getBoundingClientRect(),
-        box = d3.select("#" + chrID + " path")[0][0].getBBox(),
         chrMargin = ideo.config.chrMargin * (chrIndex + 1),
         chrWidth = ideo.config.chrWidth;
 
     pcenStart = pcen.px.start;
+    qcenStop = qcen.px.stop;
 
     d3.select("#" + chrID)
       .append("line")
         .attr("x1", pcenStart)
-        .attr("y1", chrMargin)
+        .attr("y1", chrMargin + 0.2)
         .attr("x2", pcenStart)
-        .attr("y2", chrMargin + chrWidth)
+        .attr("y2", chrMargin + chrWidth - 0.2)
         .style("stroke", pArmColor)
+
+    d3.select("#" + chrID)
+      .append("line")
+        .attr("x1", qcenStop)
+        .attr("y1", chrMargin + 0.2)
+        .attr("x2", qcenStop)
+        .attr("y2", chrMargin + chrWidth - 0.2)
+        .style("stroke", qArmColor)
 
     d3.selectAll("#" + chrID + " .band")
       .data(chr.bands)
