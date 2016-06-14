@@ -283,8 +283,29 @@ Ideogram.prototype.getBands = function(content, taxid, chromosomes) {
 };
 
 Ideogram.prototype.colorArms = function(pArmColor, qArmColor) {
-  this.chromosomesArray.forEach(function(chr){
-    d3.selectAll("#" + chr.id + " .band")
+
+  var ideo = this;
+
+  ideo.chromosomesArray.forEach(function(chr, chrIndex){
+
+    var pcen = chr.bands[chr.pcenIndex],
+        chrID = chr.id,
+        rect = d3.select("#" + chrID + " path")[0][0].getBoundingClientRect(),
+        box = d3.select("#" + chrID + " path")[0][0].getBBox(),
+        chrMargin = ideo.config.chrMargin * (chrIndex + 1),
+        chrWidth = ideo.config.chrWidth;
+
+    pcenStart = pcen.px.start;
+
+    d3.select("#" + chrID)
+      .append("line")
+        .attr("x1", pcenStart)
+        .attr("y1", chrMargin)
+        .attr("x2", pcenStart)
+        .attr("y2", chrMargin + chrWidth)
+        .style("stroke", pArmColor)
+
+    d3.selectAll("#" + chrID + " .band")
       .data(chr.bands)
       .style("fill", function(d, i) {
         if (i <= chr.pcenIndex) {
@@ -296,20 +317,7 @@ Ideogram.prototype.colorArms = function(pArmColor, qArmColor) {
   });
   d3.selectAll(".p-ter.chromosomeBorder").style("fill", pArmColor);
   d3.selectAll(".q-ter.chromosomeBorder").style("fill", qArmColor);
-  d3.selectAll(".acen")[0].forEach(function(d){
-  console.log(d);
-  var chrID = d.id.split("-").slice(0,2).join("-");
-  console.log(chrID)
-  var r = d.getBoundingClientRect();
-  console.log(r);
-  d3.select("#" + chrID)
-    .append("line")
-      .attr("x1", r.top)
-      .attr("y1", r.left + r.width)
-      .attr("x2", r.top)
-      .attr("y2", r.left)
-      .style("stroke", "#0F0")
-  });
+
 };
 
 /**
