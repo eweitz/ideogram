@@ -282,6 +282,9 @@ Ideogram.prototype.getBands = function(content, taxid, chromosomes) {
 
 };
 
+/**
+* Fills cytogenetic arms -- p-arm and q-arm -- with specified colors
+*/
 Ideogram.prototype.colorArms = function(pArmColor, qArmColor) {
 
   var ideo = this;
