@@ -76,7 +76,7 @@ function getIndexHtml() {
   var html, css, d3, js, bands, path;
 
   css = dir + '/src/css/ideogram.css';
-  d3 = dir + '/src/js/d3.min.js';
+  d3 = dir + '/node_modules/d3/d3.min.js';
   js = dir + '/src/js/ideogram.js';
   bands = dir + '/data/bands/native/ideogram_9606_GCF_000001305.14_850_V1.js';
 
@@ -226,7 +226,7 @@ ideogramDrawer = function(config) {
   //for (i = 0; i < 2; i++) { // DEBUG
     d3.selectAll(".annot").remove();
     ra = rearrangedAnnots[i];
-    ideogram.drawAnnots(ra[1]);
+    ideogram.drawProcessedAnnots(ra[1]);
     svg = d3.select(ideogram.config.container)[0][0].innerHTML;
     images.push([ra[0], svg, ra[2]]);
   }

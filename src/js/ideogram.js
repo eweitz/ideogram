@@ -54,7 +54,7 @@ var Ideogram = function(config) {
   }
 
   this.bump = Math.round(config.chrHeight / 125);
-  this.adjustedBump = false
+  this.adjustedBump = false;
   if (config.chrHeight < 200) {
     this.adjustedBump = true;
     this.bump = 4;
@@ -64,36 +64,13 @@ var Ideogram = function(config) {
     this.config.chrMargin += 20;
   }
 
-  if (this.config.annotationsPath || this.config.localAnnotationsPath) {
-
-    if (!this.config.annotationHeight) {
-      this.config.annotationHeight = 3;
-    }
-
-    if (this.config.annotationTracks) {
-      this.config.numAnnotTracks = this.config.annotationTracks.length;
-    } else {
-      this.config.numAnnotTracks = 1;
-    }
-    this.config.annotTracksHeight = this.config.annotationHeight * this.config.numAnnotTracks;
-
-    if (typeof this.config.barWidth === "undefined") {
-      this.config.barWidth = 3;
-    }
-
-    if (typeof this.config.annotationsColor === "undefined") {
-      this.config.annotationsColor = "#F00";
-    }
-
-  } else {
-    this.config.annotTracksHeight = 0;
-  }
+  this.initAnnotSettings();
 
   this.config.chrMargin = (
     this.config.chrMargin +
     this.config.chrWidth +
     this.config.annotTracksHeight * 2
-  )
+  );
 
   if (config.onLoad) {
     this.onLoadCallback = config.onLoad;
@@ -112,7 +89,7 @@ var Ideogram = function(config) {
   this.maxLength = {
     "bp": 0,
     "iscn": 0
-  }
+  };
 
   this.organisms = {
     "9606": {
@@ -138,9 +115,9 @@ var Ideogram = function(config) {
       "scientificName": "Drosophlia melanogaster",
       "scientificNameAbbr": "D. melanogaster"
     }
-  }
+  };
 
-  if (this.config.annotationsPath) {
+  if (this.config.annotationsPath || this.config.annotations) {
     if (!this.config.annotationHeight) {
       this.config.annotationHeight = 3;
     }
@@ -159,7 +136,7 @@ var Ideogram = function(config) {
 
   this.init();
 
-}
+};
 
 /**
 * Gets chromosome band data from a
@@ -176,7 +153,7 @@ var Ideogram = function(config) {
 Ideogram.prototype.getBands = function(content, taxid, chromosomes) {
 
   var lines = {},
-      tsvLines, columns, line, stain, chr,
+      delimiter, tsvLines, columns, line, stain, chr,
       i, prefetched, init, tsvLinesLength, source,
       start, stop, firstColumn;
 
@@ -306,6 +283,56 @@ Ideogram.prototype.getBands = function(content, taxid, chromosomes) {
 };
 
 /**
+* Fills cytogenetic arms -- p-arm and q-arm -- with specified colors
+*/
+Ideogram.prototype.colorArms = function(pArmColor, qArmColor) {
+
+  var ideo = this;
+
+  ideo.chromosomesArray.forEach(function(chr, chrIndex){
+
+    var bands = chr.bands,
+        pcen = bands[chr.pcenIndex],
+        qcen = bands[chr.pcenIndex + 1],
+        chrID = chr.id,
+        chrMargin = ideo.config.chrMargin * (chrIndex + 1),
+        chrWidth = ideo.config.chrWidth;
+
+    pcenStart = pcen.px.start;
+    qcenStop = qcen.px.stop;
+
+    d3.select("#" + chrID)
+      .append("line")
+        .attr("x1", pcenStart)
+        .attr("y1", chrMargin + 0.2)
+        .attr("x2", pcenStart)
+        .attr("y2", chrMargin + chrWidth - 0.2)
+        .style("stroke", pArmColor)
+
+    d3.select("#" + chrID)
+      .append("line")
+        .attr("x1", qcenStop)
+        .attr("y1", chrMargin + 0.2)
+        .attr("x2", qcenStop)
+        .attr("y2", chrMargin + chrWidth - 0.2)
+        .style("stroke", qArmColor)
+
+    d3.selectAll("#" + chrID + " .band")
+      .data(chr.bands)
+      .style("fill", function(d, i) {
+        if (i <= chr.pcenIndex) {
+          return pArmColor;
+        } else {
+          return qArmColor;
+        }
+      });
+  });
+  d3.selectAll(".p-ter.chromosomeBorder").style("fill", pArmColor);
+  d3.selectAll(".q-ter.chromosomeBorder").style("fill", qArmColor);
+
+};
+
+/**
 * Generates a model object for each chromosome
 * containing information on its name, DOM ID,
 * length in base pairs or ISCN coordinates,
@@ -315,7 +342,7 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid, c
 
   var chr = {};
   var band, scale,
-      width,
+      width, pxStop,
       startType, stopType,
       chrHeight = this.config.chrHeight,
       maxLength = this.maxLength,
@@ -335,7 +362,7 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid, c
   chr["id"] = "chr" + chromosomeName + "-" + taxid;
 
   chr["length"] = bands[bands.length - 1][cs].stop;
-  chrLength = chr["length"]
+  chrLength = chr["length"];
 
   pxStop = 0;
 
@@ -356,7 +383,7 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid, c
 
   chr["width"] = pxStop;
 
-  chr["scale"] = {}
+  chr["scale"] = {};
 
   // TODO:
   //
@@ -389,7 +416,7 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid, c
   }
 
   return chr;
-}
+};
 
 /**
 * Draws labels for each chromosome, e.g. "1", "2", "X".
@@ -400,15 +427,16 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid, c
 Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
 
   var i, chr, chrs, taxid, ideo,
-      chrMargin2;
-
-  ideo = this;
+      chrMargin2,
+      ideo = this,
+      chrMargin = ideo.config.chrMargin,
+      chrWidth = ideo.config.chrWidth;
 
   chrs = ideo.chromosomesArray;
 
-  chrMargin2 = ideo.config.chrMargin - ideo.config.chrWidth - 2;
+  chrMargin2 = chrWidth/2 + chrMargin - 8;
   if (ideo.config.orientation === "vertical" && ideo.config.showBandLabels === true) {
-    chrMargin2 = ideo.config.chrMargin + 8;
+    chrMargin2 = chrMargin + 17;
   }
 
   if (ideo.config.orientation === "vertical") {
@@ -421,20 +449,20 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
         .attr("y", -16)
         .each(function (d, i) {
 
-          var i, chrMargin, x, cls;
+          var i, chrMarginI, x, cls;
           var arr = d.name.split(" ");
           var lines = [];
 
           if (arr != undefined) {
-              lines.push(arr.slice(0, arr.length - 1).join(" "))
+              lines.push(arr.slice(0, arr.length - 1).join(" "));
               lines.push(arr[arr.length - 1]);
 
               if (!ideo.config.showBandLabels) {
                 i += 1;
               }
 
-              chrMargin = (ideo.config.chrMargin) * i;
-              x = -(chrMargin + chrMargin2) + 3 + ideo.config.annotTracksHeight * 2;
+              chrMarginI = chrMargin * i;
+              x = -(chrMarginI + chrMargin2 - chrWidth - 2) + ideo.config.annotTracksHeight * 2;
 
               for (var i = 0; i < lines.length; i++) {
 
@@ -451,7 +479,7 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
                     .attr("class", cls);
               }
           }
-        })
+        });
 
   } else {
 
@@ -462,17 +490,17 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
           .attr("x", -5)
           .each(function (d, i) {
 
-            var i, chrMargin, y, cls;
+            var i, chrMarginI, y, cls;
 
             var arr = d.name.split(" ");
             var lines = [];
 
             if (arr != undefined) {
-                lines.push(arr.slice(0, arr.length - 1).join(" "))
+                lines.push(arr.slice(0, arr.length - 1).join(" "));
                 lines.push(arr[arr.length - 1]);
 
-                chrMargin = ideo.config.chrMargin * i;
-                y = (chrMargin + chrMargin2) + 9;
+                chrMarginI = chrMargin * i;
+                y = (chrMarginI + chrMargin2);
 
                 for (var i = 0; i < lines.length; i++) {
 
@@ -490,11 +518,11 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
                       .attr("class", cls);
                 }
             }
-          })
+          });
 
   }
 
-}
+};
 
 /**
 * Draws labels and stalks for cytogenetic bands.
@@ -549,7 +577,7 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
       .data(chrModel.bands)
       .enter()
       .append("g")
-        .attr("class", function(d, i) { return "bandLabel bsbsl-" + i  })
+        .attr("class", function(d, i) { return "bandLabel bsbsl-" + i;  })
         .attr("transform", function(d) {
 
           var x, y;
@@ -562,13 +590,13 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
           return "translate(" + x + "," + y + ")";
         })
         .append("text")
-        .text(function(d) { return d.name; })
+        .text(function(d) { return d.name; });
 
     chr.selectAll("line.bandLabelStalk")
       .data(chrModel.bands)
       .enter()
       .append("g")
-      .attr("class", function(d, i) { return "bandLabelStalk bsbsl-" + i  })
+      .attr("class", function(d, i) { return "bandLabelStalk bsbsl-" + i; })
       .attr("transform", function(d) {
         var x = ideo.round(d.px.start + d.px.width/2);
         return "translate(" + x + ", " + lineY1 + ")";
@@ -577,7 +605,7 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
         .attr("x1", 0)
         .attr("y1", 0)
         .attr("x2", 0)
-        .attr("y2", -8)
+        .attr("y2", -8);
   }
 
   for (var i = 0; i < chrs.length; i++) {
@@ -651,7 +679,7 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
 
   }
 
-}
+};
 
 /**
 * Rotates chromosome labels by 90 degrees, e.g. upon clicking a chromosome to focus.
@@ -704,7 +732,7 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation,
           }
 
           return chrMargin + chrMargin2;
-        })
+        });
 
   } else {
 
@@ -727,14 +755,14 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation,
 
         chrMargin = ideo.config.chrMargin * chrIndex;
         x = -(chrMargin + chrMargin2) + 3 + tracksHeight;
-        x = x/scale.x
+        x = x/scale.x;
         return x;
       })
-      .attr("y", y)
+      .attr("y", y);
 
   }
 
-}
+};
 
 /**
 * Rotates band labels by 90 degrees, e.g. upon clicking a chromosome to focus.
@@ -776,7 +804,7 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex, scale) {
         return "rotate(-90)translate(" + x + "," + y + ")";
       })
       .selectAll("text")
-        .attr("text-anchor", "end")
+        .attr("text-anchor", "end");
   } else if (orientation == "vertical")  {
     bandLabels
       .attr("transform", function(d) {
@@ -786,7 +814,7 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex, scale) {
         return "rotate(-90)translate(" + x + "," + y + ")";
       })
       .selectAll("text")
-        .attr("transform", scaleSvg)
+        .attr("transform", scaleSvg);
   } else {
     bandLabels
       .attr("transform", function(d) {
@@ -796,20 +824,20 @@ Ideogram.prototype.rotateBandLabels = function(chr, chrIndex, scale) {
         return "translate(" + x + "," + y + ")";
       })
       .selectAll("text")
-        .attr("transform", scaleSvg)
+        .attr("transform", scaleSvg);
 
     chr.selectAll(".bandLabelStalk line")
-      .attr("transform", scaleSvg)
+      .attr("transform", scaleSvg);
   }
 
-}
+};
 
 Ideogram.prototype.round = function(coord) {
   // Rounds an SVG coordinates to two decimal places
   // e.g. 42.1234567890 -> 42.12
   // Per http://stackoverflow.com/a/9453447, below method is fastest
   return Math.round(coord * 100) / 100;
-}
+};
 
 /**
 * Renders all the bands and outlining boundaries of a chromosome.
@@ -938,7 +966,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
         }
 
         return d;
-      })
+      });
 
   if (chrModel.centromerePosition != "telocentric") {
     // As in human
@@ -946,7 +974,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
       .attr("class", "p-ter chromosomeBorder " + chrModel.bands[0].stain)
       .attr("d",
         "M " + (pTerPad - bump/2 + 0.1) + " " + chrMargin + " " +
-        "q -" + pTerPad + " " + (chrWidth/2) + " 0 " + chrWidth)
+        "q -" + pTerPad + " " + (chrWidth/2) + " 0 " + chrWidth);
   } else {
     // As in mouse
     chr.append('path')
@@ -955,7 +983,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
         "M " + (pTerPad - 3) + " " + chrMargin + " " +
         "l -" + (pTerPad - 2) + " 0 " +
         "l 0 " + chrWidth + " " +
-        "l " + (pTerPad - 2) + " 0 z")
+        "l " + (pTerPad - 2) + " 0 z");
 
     chr.insert('path', ':first-child')
       .attr("class", "acen")
@@ -963,7 +991,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
         "M " + (pTerPad - 3) + " " + (chrMargin + chrWidth * 0.1) + " " +
         "l " + (pTerPad + bump/2 + 1) + " 0 " +
         "l 0 " + chrWidth * 0.8 + " " +
-        "l -" + (pTerPad + bump/2 + 1) + " 0 z")
+        "l -" + (pTerPad + bump/2 + 1) + " 0 z");
 
   }
 
@@ -985,7 +1013,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
   if (pcenIndex > 0) {
     pArmWidth = pcen.px.start;
     qArmStart = qcen.px.stop + borderTweak;
-    pBump = bump
+    pBump = bump;
   } else {
     // For telocentric centromeres, as in many mouse chromosomes
     pArmWidth = 2;
@@ -1001,37 +1029,37 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
     .attr('x1', bump/2)
     .attr('y1', chrMargin)
     .attr('x2', pArmWidth)
-    .attr("y2", chrMargin)
+    .attr("y2", chrMargin);
 
   chr.append('line')
     .attr("class", "cb-p-arm-bottom chromosomeBorder")
     .attr('x1', bump/2)
     .attr('y1', chrWidth + chrMargin)
     .attr('x2', pArmWidth)
-    .attr("y2", chrWidth + chrMargin)
+    .attr("y2", chrWidth + chrMargin);
 
   chr.append('line')
     .attr("class", "cb-q-arm-top chromosomeBorder")
     .attr('x1', qArmStart)
     .attr('y1', chrMargin)
     .attr('x2', qArmEnd)
-    .attr("y2", chrMargin)
+    .attr("y2", chrMargin);
 
   chr.append('line')
     .attr("class", "cb-q-arm-bottom chromosomeBorder")
     .attr('x1', qArmStart)
     .attr('y1', chrWidth + chrMargin)
     .attr('x2', qArmEnd)
-    .attr("y2", chrWidth + chrMargin)
+    .attr("y2", chrWidth + chrMargin);
 
   chr.append('path')
     .attr("class", "q-ter chromosomeBorder " + chrModel.bands[chrModel.bands.length - 1].stain)
     .attr("d",
       "M " + qArmEnd + " " + chrMargin + " " +
       "q " + bump + " " +  chrWidth/2 + " 0 " + chrWidth
-    )
+    );
 
-}
+};
 
 
 /**
@@ -1054,14 +1082,14 @@ Ideogram.prototype.initTransformChromosome = function(chr, chrIndex) {
 
     chr
       .attr("data-orientation", "vertical")
-      .attr("transform", "rotate(90, " + (tPadding - 30) + ", " + (tPadding) + ")")
+      .attr("transform", "rotate(90, " + (tPadding - 30) + ", " + (tPadding) + ")");
 
     this.rotateBandLabels(chr, chrIndex);
 
   } else {
-    chr.attr("data-orientation", "horizontal")
+    chr.attr("data-orientation", "horizontal");
   }
-}
+};
 
 /**
 * Rotates a chromosome 90 degrees and shows or hides all other chromosomes
@@ -1079,7 +1107,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 
   chr = d3.select("#" + id);
 
-  chrModel = ideo.chromosomes[ideo.config.taxid][id.split("-")[0].split("chr")[1]]
+  chrModel = ideo.chromosomes[ideo.config.taxid][id.split("-")[0].split("chr")[1]];
 
   chrIndex = chrModel["chrIndex"];
 
@@ -1153,7 +1181,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
     verticalTransform = (
       "rotate(90, " + cx + ", " + cy + ")" +
       scale
-    )
+    );
     horizontalTransform = "";
 
   }
@@ -1189,7 +1217,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
           otherChrs.style("display", "");
         }
 
-      })
+      });
 
   } else {
 
@@ -1225,11 +1253,11 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
           otherChrs.style("display", "");
         }
 
-      })
+      });
 
 
   }
-}
+};
 
 
 
@@ -1248,7 +1276,7 @@ Ideogram.prototype.convertBpToPx = function(chr, bp) {
       bpToIscnScale = (band.iscn.stop - band.iscn.start)/(band.bp.stop - band.bp.start);
       iscn = band.iscn.start + (bp - band.bp.start) * bpToIscnScale;
 
-      px = 30 + band.px.start + (band.px.width * (iscn - band.iscn.start)/(band.iscn.stop - band.iscn.start))
+      px = 30 + band.px.start + (band.px.width * (iscn - band.iscn.start)/(band.iscn.stop - band.iscn.start));
 
       return px;
     }
@@ -1259,7 +1287,7 @@ Ideogram.prototype.convertBpToPx = function(chr, bp) {
     "bp: " + bp + "; length of chr" + chr.name + ": " + band.bp.stop
   );
 
-}
+};
 
 /**
 * Converts base pair coordinates to pixel offsets.
@@ -1276,7 +1304,7 @@ Ideogram.prototype.convertPxToBp = function(chr, px) {
       pxToIscnScale = (band.iscn.stop - band.iscn.start)/(band.px.stop - band.px.start);
       iscn = band.iscn.start + (px - band.px.start) * pxToIscnScale;
 
-      bp = band.bp.start + ((band.bp.stop - band.bp.start) * (iscn - band.iscn.start)/(band.iscn.stop - band.iscn.start))
+      bp = band.bp.start + ((band.bp.stop - band.bp.start) * (iscn - band.iscn.start)/(band.iscn.stop - band.iscn.start));
 
       return Math.round(bp);
     }
@@ -1287,7 +1315,7 @@ Ideogram.prototype.convertPxToBp = function(chr, px) {
     "px: " + bp + "; length of chr" + chr.name + ": " + band.px.stop
   );
 
-}
+};
 
 /**
 * Draws a trapezoid connecting a genomic range on
@@ -1337,14 +1365,14 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
     c1Box = document.querySelectorAll("#" + r1.chr.id + " path")[0].getBBox();
     c2Box = document.querySelectorAll("#" + r2.chr.id + " path")[0].getBBox();
 
-    chr1Plane = c1Box.y - 30
+    chr1Plane = c1Box.y - 30;
     chr2Plane = c2Box.y - 29;
 
     regionID = (
       r1.chr.id + "_" + r1.start + "_" + r1.stop + "_" +
       "__" +
       r2.chr.id + "_" + r2.start + "_" + r2.stop
-    )
+    );
 
     syntenicRegion = syntenies.append("g")
       .attr("class", "syntenicRegion")
@@ -1355,9 +1383,9 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
         var others = d3.selectAll(".syntenicRegion")
           .filter(function(d, i) {
             return (this !== activeRegion);
-          })
+          });
 
-        others.classed("hidden", !others.classed("hidden"))
+        others.classed("hidden", !others.classed("hidden"));
 
       })
       .on("mouseover", function() {
@@ -1366,11 +1394,11 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
           .filter(function(d, i) {
             return (this !== activeRegion);
           })
-          .classed("ghost", true)
+          .classed("ghost", true);
       })
       .on("mouseout", function() {
-        d3.selectAll(".syntenicRegion").classed("ghost", false)
-      })
+        d3.selectAll(".syntenicRegion").classed("ghost", false);
+      });
 
 
     syntenicRegion.append("polygon")
@@ -1380,28 +1408,115 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
         chr2Plane + ', ' + r2.stopPx + ' ' +
         chr2Plane + ', ' + r2.startPx
       )
-      .attr('style', "fill: " + color + "; fill-opacity: " + opacity)
+      .attr('style', "fill: " + color + "; fill-opacity: " + opacity);
 
     syntenicRegion.append("line")
       .attr("class", "syntenyBorder")
       .attr("x1", chr1Plane)
       .attr("x2", chr2Plane)
       .attr("y1", r1.startPx)
-      .attr("y2", r2.startPx)
+      .attr("y2", r2.startPx);
 
     syntenicRegion.append("line")
       .attr("class", "syntenyBorder")
       .attr("x1", chr1Plane)
       .attr("x2", chr2Plane)
       .attr("y1", r1.stopPx)
-      .attr("y2", r2.stopPx)
+      .attr("y2", r2.stopPx);
   }
 
   var t1 = new Date().getTime();
   if (ideo.debug) {
     console.log("Time in drawSyntenicRegions: " + (t1 - t0) + " ms");
   }
-}
+};
+
+
+Ideogram.prototype.initAnnotSettings = function() {
+
+  if (this.config.annotationsPath || this.config.localAnnotationsPath
+    || this.annots) {
+
+    if (!this.config.annotationHeight) {
+      this.config.annotationHeight = 3;
+    }
+
+    if (this.config.annotationTracks) {
+      this.config.numAnnotTracks = this.config.annotationTracks.length;
+    } else {
+      this.config.numAnnotTracks = 1;
+    }
+    this.config.annotTracksHeight = this.config.annotationHeight * this.config.numAnnotTracks;
+
+    if (typeof this.config.barWidth === "undefined") {
+      this.config.barWidth = 3;
+    }
+
+  } else {
+    this.config.annotTracksHeight = 0;
+  }
+
+  if (typeof this.config.annotationsColor === "undefined") {
+    this.config.annotationsColor = "#F00";
+  }
+
+};
+
+
+Ideogram.prototype.drawAnnots = function(friendlyAnnots) {
+
+  var ideo = this,
+      i, j, annot,
+      rawAnnots = [],
+      rawAnnot, keys,
+      chr,
+      chrs = ideo.chromosomes[ideo.config.taxid]; // TODO: multiorganism
+
+  // Occurs when filtering
+  if ("annots" in friendlyAnnots[0]) {
+    return ideo.drawProcessedAnnots(friendlyAnnots);
+  }
+
+  for (chr in chrs) {
+    rawAnnots.push({"chr": chr, "annots": []});
+  }
+
+  for (i = 0; i < friendlyAnnots.length; i++) {
+    annot = friendlyAnnots[i];
+
+    for (j = 0; j < rawAnnots.length; j++) {
+      if (annot.chr === rawAnnots[j].chr) {
+        rawAnnot = [
+          annot.name,
+          annot.start,
+          annot.stop - annot.start
+        ];
+        if ("color" in annot) {
+          rawAnnot.push(annot.color);
+        }
+        if ("shape" in annot) {
+          rawAnnot.push(annot.shape);
+        }
+        rawAnnots[j]["annots"].push(rawAnnot);
+        break;
+      }
+    }
+  }
+
+  keys = ["name", "start", "length"];
+  if ("color" in friendlyAnnots[0]) {
+    keys.push("color");
+  }
+  if ("shape" in friendlyAnnots[0]) {
+    keys.push("shape");
+  }
+  ideo.rawAnnots = {"keys": keys,  "annots": rawAnnots};
+
+  ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
+
+  ideo.drawProcessedAnnots(ideo.annots);
+
+};
 
 /**
 * Proccesses genome annotation data.
@@ -1416,18 +1531,17 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
 
   var keys = rawAnnots.keys,
       rawAnnots = rawAnnots.annots,
-      i, j, annot, annots, rawAnnot,
+      i, j, annot, annots, rawAnnot, annotsByChr,
       chr, start, stop,
-      chrModel,
+      chrModel, ra,
       startPx, stopPx, px,
       trackIndex, color,
       ideo = this;
 
   annots = [];
 
-
   for (i = 0; i < rawAnnots.length; i++) {
-    annotsByChr = rawAnnots[i]
+    annotsByChr = rawAnnots[i];
 
     annots.push({"chr": annotsByChr.chr, "annots": []});
 
@@ -1435,7 +1549,7 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
 
       chr = annotsByChr.chr;
       ra = annotsByChr.annots[j];
-      annot = {}
+      annot = {};
 
       for (var k = 0; k < keys.length; k++) {
         annot[keys[k]] = ra[k];
@@ -1443,7 +1557,7 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
 
       annot['stop'] = annot.start + annot.length;
 
-      chrModel = ideo.chromosomes["9606"][chr]
+      chrModel = ideo.chromosomes["9606"][chr];
 
       startPx = ideo.convertBpToPx(chrModel, annot.start);
       stopPx = ideo.convertBpToPx(chrModel, annot.stop);
@@ -1458,18 +1572,22 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
         annot['trackIndex'] = 0;
       }
 
+      if ('color' in annot) {
+        color = annot['color'];
+      }
+
       annot['chr'] = chr;
       annot['chrIndex'] = i;
       annot['px'] = px;
       annot['color'] = color;
 
-      annots[i]["annots"].push(annot)
+      annots[i]["annots"].push(annot);
     }
   }
 
   return annots;
 
-}
+};
 
 /*
 * Can be used for bar chart or sparkline
@@ -1506,11 +1624,11 @@ Ideogram.prototype.getHistogramBars = function(annots) {
 
   for (chr in chrModels) {
     chrModel = chrModels[chr];
-    chrIndex = chrModel.chrIndex
-    lastBand = chrModel["bands"][chrModel["bands"].length - 1]
+    chrIndex = chrModel.chrIndex;
+    lastBand = chrModel["bands"][chrModel["bands"].length - 1];
     chrPxStop = lastBand.px.stop;
     numBins = Math.round(chrPxStop / barWidth);
-    bar = {"chr": chr, "annots": []}
+    bar = {"chr": chr, "annots": []};
     for (i = 0; i < numBins; i++) {
       px = i*barWidth - ideo.bump;
       bp = ideo.convertPxToBp(chrModel, px + ideo.bump);
@@ -1579,7 +1697,7 @@ Ideogram.prototype.getHistogramBars = function(annots) {
 
   return bars;
 
-}
+};
 
 
 /**
@@ -1588,10 +1706,10 @@ Ideogram.prototype.getHistogramBars = function(annots) {
 * on a chromosome, or along one or more "tracks"
 * running parallel to each chromosome.
 */
-Ideogram.prototype.drawAnnots = function(annots) {
+Ideogram.prototype.drawProcessedAnnots = function(annots) {
 
   var chrMargin, chrWidth, layout,
-      annotHeight, triangle, chrAnnot,
+      annotHeight, triangle, circle, r, chrAnnot,
       x1, x2, y1, y2,
       ideo = this;
 
@@ -1604,19 +1722,30 @@ Ideogram.prototype.drawAnnots = function(annots) {
   }
 
   if (layout === "histogram") {
-    annots = ideo.getHistogramBars(annots)
+    annots = ideo.getHistogramBars(annots);
   }
 
-  annotHeight = this.config.annotationHeight;
+  annotHeight = ideo.config.annotationHeight;
+
   triangle = 'l -' + annotHeight + ' ' + (2*annotHeight) + ' l ' + (2*annotHeight) + ' 0 z';
+
+  // From http://stackoverflow.com/a/10477334, with a minor change ("m -r, r")
+  // Circles are supported natively via <circle>, but having it as a path
+  // simplifies handling triangles, circles and other shapes in the same
+  // D3 call
+  r = annotHeight;
+  circle =
+    'm -' + r  + ', ' + r +
+    'a ' + r + ',' + r + ' 0 1,0 ' + (r * 2) + ',0' +
+    'a ' + r + ',' + r + ' 0 1,0 -' + (r * 2) + ',0';
 
   chrAnnot = d3.selectAll(".chromosome")
     .data(annots)
       .selectAll("path.annot")
       .data(function(d) {
-        return d["annots"]}
-      )
-      .enter()
+        return d["annots"];
+      })
+      .enter();
 
   if (layout === "tracks") {
 
@@ -1629,8 +1758,14 @@ Ideogram.prototype.drawAnnots = function(annots) {
         return "translate(" + d.px + "," + y + ")";
       })
       .append("path")
-      .attr("d", "m0,0" + triangle)
-      .attr("fill", function(d) { return d.color })
+      .attr("d", function(d) {
+          if (!d.shape || d.shape === "triangle") {
+            return "m0,0" + triangle;
+          } else if (d.shape === "circle") {
+            return circle;
+          }
+      })
+      .attr("fill", function(d) { return d.color; });
 
     } else if (layout === "overlay") {
       // Overlaid annotations appear directly on chromosomes
@@ -1643,7 +1778,7 @@ Ideogram.prototype.drawAnnots = function(annots) {
           x1 = d.px - 0.5;
           x2 = d.px + 0.5;
           y1 = (d.chrIndex + 1) * (chrMargin) + chrWidth;
-          y2 = (d.chrIndex + 1) * (chrMargin)
+          y2 = (d.chrIndex + 1) * (chrMargin);
 
           return (
             x1 + "," + y1 + " " +
@@ -1653,7 +1788,7 @@ Ideogram.prototype.drawAnnots = function(annots) {
           );
 
         })
-        .attr("fill", function(d) { return d.color })
+        .attr("fill", function(d) { return d.color; });
 
     } else if (layout === "histogram") {
 
@@ -1681,14 +1816,14 @@ Ideogram.prototype.drawAnnots = function(annots) {
           );
 
         })
-        .attr("fill", function(d) { return d.color })
+        .attr("fill", function(d) { return d.color; });
 
     }
 
   if (ideo.onDrawAnnotsCallback) {
     ideo.onDrawAnnotsCallback();
   }
-}
+};
 
 
 Ideogram.prototype.putChromosomesInRows = function() {
@@ -1743,12 +1878,11 @@ Ideogram.prototype.putChromosomesInRows = function() {
           return currentTransform + translation;
         });
     }
-
-}
+};
 
 Ideogram.prototype.onBrushMove = function() {
   call(this.onBrushMoveCallback);
-}
+};
 
 Ideogram.prototype.createBrush = function(from, to) {
 
@@ -1809,8 +1943,7 @@ Ideogram.prototype.createBrush = function(from, to) {
     }
     //console.log(ideo.selectedRegion)
   }
-
-}
+};
 
 /**
 * Called when Ideogram has finished initializing.
@@ -1819,17 +1952,18 @@ Ideogram.prototype.createBrush = function(from, to) {
 */
 Ideogram.prototype.onLoad = function() {
   call(this.onLoadCallback);
-}
+};
 
 Ideogram.prototype.onDrawAnnots = function() {
   call(this.onDrawAnnotsCallback);
-}
+};
 
 
 Ideogram.prototype.getBandColorGradients = function() {
 
   var color, colors,
-      stain,
+      stain, color1, color2, color3,
+      css,
       gradients = "";
 
   colors = [
@@ -1841,7 +1975,7 @@ Ideogram.prototype.getBandColorGradients = function() {
     ["gpos75", "#777", "#777", "#444"],
     ["gpos100", "#444", "#666", "#000"],
     ["acen", "#FEE", "#FEE", "#FDD"]
-  ]
+  ];
 
   for (var i = 0; i < colors.length; i++) {
     stain = colors[i][0];
@@ -1895,7 +2029,7 @@ Ideogram.prototype.getBandColorGradients = function() {
   //alert(gradients)
 
   return gradients;
-}
+};
 
 /**
 * Returns an array of taxids for the current ideogram
@@ -1962,13 +2096,14 @@ Ideogram.prototype.getTaxids = function() {
   }
 
   return taxids;
-}
+};
 
 
 Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
 
   var ideo = this,
       taxids = ideo.config.taxids,
+      taxid,
       chrIndex = 0,
       i, j, chrs, chromosome, chromosomeModel;
 
@@ -1977,7 +2112,7 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
     taxid = taxids[i];
     chrs = ideo.config.chromosomes[taxid];
 
-    ideo.chromosomes[taxid] = {}
+    ideo.chromosomes[taxid] = {};
 
     for (j = 0; j < chrs.length; j++) {
 
@@ -1999,7 +2134,7 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
     }
 
   }
-}
+};
 
 
 /**
@@ -2011,7 +2146,7 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
 */
 Ideogram.prototype.init = function() {
 
-  var bandDataFile,
+  var bandDataFile, bandDataFileNames,
       taxid, taxids, i, svgClass,
       chrs;
 
@@ -2046,7 +2181,7 @@ Ideogram.prototype.init = function() {
 
       // Drosophila melanogaster (fly)
       "7227": "ucsc/drosophila_melanogaster_dm6.tsv"
-    }
+    };
 
     if (typeof chrBands === "undefined") {
 
@@ -2066,7 +2201,7 @@ Ideogram.prototype.init = function() {
             writeContainer();
           }
         }
-      )
+      );
     } else {
       // If bands already available, e.g. via <script> tag in initial page load
       ideo.bandData[taxid] = chrBands;
@@ -2101,7 +2236,7 @@ Ideogram.prototype.init = function() {
       ideo.config.annotationsLayout &&
       ideo.config.annotationsLayout === "overlay"
     ) {
-      svgClass += "faint"
+      svgClass += "faint";
     }
 
     var ideoHeight;
@@ -2109,7 +2244,7 @@ Ideogram.prototype.init = function() {
     if (ideo.config.orientation === "vertical") {
       ideoHeight = ideo.config.chrHeight + 30;
       if (ideo.config.rows > 1) {
-        ideoHeight = ideo.config.rows * (ideoHeight - 30)
+        ideoHeight = ideo.config.rows * (ideoHeight - 30);
       }
     } else {
       ideoHeight = ideo.config.chrMargin * ideo.numChromosomes + 30;
@@ -2123,7 +2258,7 @@ Ideogram.prototype.init = function() {
         .attr("class", svgClass)
         .attr("width", "97%")
         .attr("height", ideoHeight)
-        .html(gradients)
+        .html(gradients);
 
     finishInit();
 
@@ -2142,7 +2277,7 @@ Ideogram.prototype.init = function() {
 
     var j, k, chromosome, bands, chromosomeModel,
         chrLength,
-        bandData,
+        bandData, bands, bandsByChr,
         stopType,
         taxid, taxids, chrs, chrsByTaxid;
 
@@ -2197,7 +2332,7 @@ Ideogram.prototype.init = function() {
         chrLength = {
           "iscn": bands[bands.length - 1].iscn.stop,
           "bp": bands[bands.length - 1].bp.stop
-        }
+        };
 
         if (chrLength.iscn > ideo.maxLength.iscn) {
           ideo.maxLength.iscn = chrLength.iscn;
@@ -2210,7 +2345,7 @@ Ideogram.prototype.init = function() {
     }
     var t1_b = new Date().getTime();
     if (ideo.debug) {
-      console.log("Time in processBandData: " + (t1_b - t0_b) + " ms")
+      console.log("Time in processBandData: " + (t1_b - t0_b) + " ms");
     }
 }
 
@@ -2221,6 +2356,7 @@ function finishInit() {
     var t0_a = new Date().getTime();
 
     var chrIndex = 0,
+        chr, chrModel, chromosome,
         i, j, m, n;
 
     ideo.initDrawChromosomes(bandsArray);
@@ -2255,7 +2391,7 @@ function finishInit() {
         }
 
         ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
-        ideo.drawAnnots(ideo.annots);
+        ideo.drawProcessedAnnots(ideo.annots);
 
         if (ideo.initCrossFilter) {
           ideo.initCrossFilter();
@@ -2275,13 +2411,13 @@ function finishInit() {
             }
             },
             50
-          )
+          );
         })();
       }
     }
 
     if (ideo.config.showBandLabels === true) {
-      var bandsToShow = ideo.bandsToShow.join(",")
+      var bandsToShow = ideo.bandsToShow.join(",");
 
       // d3.selectAll resolves to querySelectorAll (QSA).
       // QSA takes a surprisingly long time to complete,
@@ -2291,7 +2427,7 @@ function finishInit() {
       // relatively few bands that are shown.
       var t0_c = new Date().getTime();
       d3.selectAll(".bandLabel, .bandLabelStalk").style("display", "none");
-      d3.selectAll(bandsToShow).style("display", "")
+      d3.selectAll(bandsToShow).style("display", "");
       var t1_c = new Date().getTime();
       if (ideo.debug) {
         console.log("Time in showing bands: " + (t1_c - t0_c) + " ms");
@@ -2317,6 +2453,14 @@ function finishInit() {
       ideo.createBrush();
     }
 
+    if (ideo.config.annotations) {
+      ideo.drawAnnots(ideo.config.annotations);
+    }
+
+    if (ideo.config.armColors) {
+      var ac = ideo.config.armColors;
+      ideo.colorArms(ac[0], ac[1]);
+    }
 
     var t1_a = new Date().getTime();
     if (ideo.debug) {
@@ -2337,6 +2481,6 @@ function finishInit() {
       //  throw e;
     }
 
-  };
+  }
 
-}
+};
