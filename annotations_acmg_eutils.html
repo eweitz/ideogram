@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Annotations, basic | Ideogram</title>
+  <link type="text/css" rel="stylesheet" href="src/css/ideogram.css"/>
+  <script type="text/javascript" src="src/js/d3.min.js"></script>
+  <script type="text/javascript" src="src/js/ideogram.js"></script>
+</head>
+<body>
+  <h1>Annotations, shapes | Ideogram</h1>
+  <a href=".">Back to overview</a>
+  <p>
+   The <a href="https://www.acmg.net/">American College of Medical Genetics and
+   Genomics</a> (ACMG) recommends that laboratories performing clinical
+   sequencing seek and report certain mutations in
+   <a href="https://www.ncbi.nlm.nih.gov/clinvar/docs/acmg/">the genes depicted
+   here.</a>
+ </p>
+  <div id="container"></div>
+  <script type="text/javascript">
+
+  function onIdeogramLoad() {
+
+    var acmgGenes, gene, i, annots, annot,
+        geneClause, geneID, geneIDs, topWeight,
+        eutils, esearch, esummary, url, defaultParams;
+
+    geneIDs = [];
+    annots = [];
+
+    // EUtils is a web API to access NCBI data
+    eutils = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/";
+    defaultParams = "?db=gene&retmode=json&retmax=100";
+
+    // Use ESearch to get NCBI Gene ID for gene name, e.g. BRCA1 -> 672
+    esearch = eutils + "esearch.fcgi" + defaultParams;
+
+    // Use ESummary to get genomic coordinates for given gene IDs
+    esummary = eutils + "esummary.fcgi" + defaultParams;
+
+    acmgGenes = [
+      "APC", "MYH11", "ACTA2", "MYLK", "TMEM43", "DSP", "PKP2", "DSG2", "DSC2",
+      "BRCA1", "BRCA2", "SCN5A", "RYR2", "LMNA", "MYBPC3", "COL3A1", "GLA",
+      "APOB", "LDLR", "MYH7", "TPM1", "MYBPC3", "PRKAG2", "TNNI3", "MYL3",
+      "MYL2", "ACTC1", "RET", "PCSK9", "TNNT2", "TP53", "TGFBR1", "TGFBR2",
+      "TGFBR1", "TGFBR2", "SMAD3", "KCNQ1", "KCNH2", "SCN5A", "MLH1", "MSH2",
+      "MSH6", "PMS2", "RYR1", "CACNA1S", "FBN1", "TGFBR1", "MEN1", "RET",
+      "MUTYH", "NF2", "SDHD", "SDHAF2", "SDHC", "SDHB", "STK11", "MUTYH",
+      "PTEN", "RB1", "TSC1", "TSC2", "VHL"
+    ];
+
+    // Batch request all ACMG genes
+    geneClause = "(" + acmgGenes.join("[symbol] OR ") + "[symbol])";
+
+    topWeight = 0;
+    weights = [];
+
+    url = esearch + "&term=Homo-sapiens[Organism] AND " + geneClause;
+    d3.json(url, function(error, data) {
+      geneIDs = data.esearchresult.idlist;
+
+      // Batch request genomic coordinates for all ACMG genes
+      url = esummary + "&id=" + geneIDs.join(",");
+      d3.json(url, function(error, data) {
+        for (var i = 0; i < geneIDs.length; i++) {
+          var result, gene, chr, loc, start, stop, weight;
+          geneID = geneIDs[i];
+          result = data.result[geneID];
+          if (result.currentid !== "" || acmgGenes.indexOf(result.name) === -1 ) {
+            // currentid case occurs when one gene symbol in a taxon maps to
+            // multiple gene.  It seems to be annotation-run noise.
+            // result.name case occurs when gene has a non-canonical alias
+            // matching the gene symbol.
+            // Ignore both.
+            continue;
+          }
+          gene = result.name;
+          chr = result.chromosome;
+          loc = result.locationhist[0]; // better than "genomicinfo"
+          start = loc.chrstart;
+          stop = loc.chrstop;
+          weight = result.geneweight;
+
+          if (result.weight > topWeight) {
+            topWeight = result;
+          }
+
+          ////
+          // This is the annotations API
+          ////
+          annots.push({
+            "name": gene, // required, but unused
+            "chr": chr, // required
+            "start": start, // required
+            "stop": stop, // required
+            "weight": weight // optional
+          });
+
+        }
+
+        annots.sort(function(a, b) {
+          return b.weight - a.weight;
+        });
+
+        for (i = 0; i < annots.length; i++) {
+          color = (i < 10) ? "#F00" : "#FAA";
+          annots[i].shape = "triangle";
+          annots[i].color = color;
+
+          if (annots[i].name === "BRCA1") {
+            annots[i].shape = "circle";
+            annots[i].color = "#0A0";
+          }
+        }
+
+        ideogram.drawAnnots(annots);
+
+      });
+    })
+
+  }
+
+  var config = {
+    organism: "human",
+    resolution: 550,
+    chrHeight: 300,
+    annotationHeight: 4,
+    onLoad: onIdeogramLoad
+  };
+
+  var ideogram = new Ideogram(config);
+
+  </script>
+</body>
+</html>

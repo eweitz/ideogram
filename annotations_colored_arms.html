@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Annotations, colored arms | Ideogram</title>
+  <link type="text/css" rel="stylesheet" href="src/css/ideogram.css"/>
+  <script type="text/javascript" src="src/js/d3.min.js"></script>
+  <script type="text/javascript" src="src/js/ideogram.js"></script>
+  <script type="text/javascript" src="data/bands/native/ideogram_9606_GCF_000001305.14_850_V1.js"></script>
+</head>
+<body>
+  <h1>Annotations, colored arms | Ideogram</h1>
+  <a href=".">Back to overview</a>
+
+  <script type="text/javascript">
+
+    function onIdeogramLoad() {
+      d3.selectAll("g").on("click", function() {
+        ideogram.rotateAndToggleDisplay(this.id);
+      });
+    }
+
+    var config = {
+      organism: "human",
+      chrHeight: 500,
+      armColors: ["#D00", "#CCC"],
+      onLoad: onIdeogramLoad
+    };
+
+    var ideogram = new Ideogram(config);
+
+  </script>
+</body>
+</html>
