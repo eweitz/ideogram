@@ -10,25 +10,28 @@
 <body>
   <h1>Annotations, basic | Ideogram</h1>
   <a href=".">Back to overview</a>
-
+  <p>
+  The location of <a href="https://www.ncbi.nlm.nih.gov/gene/672">BRCA1</a> is depicted here in red.
+  </p>
   <script type="text/javascript">
 
-  function onIdeogramLoad() {
+    var config = {
+      organism: "human",
+      chrHeight: 600,
+      chrWidth: 15,
+      orientation: "horizontal",
+      showBandLabels: true,
+      chromosomes: ["17"],
+      annotations: [{
+        "name": "BRCA1",
+        "chr": "17",
+        "start": 43044294,
+        "stop": 43125482
+      }],
+      annotationHeight: 6
+    };
 
-    d3.selectAll("g").on("click", function() {
-      ideogram.rotateAndToggleDisplay(this.id);
-    });
-
-  }
-
-  var config = {
-    organism: "human",
-    chrHeight: 500,
-    annotationsPath: "/ideogram/data/annotations/1000_virtual_snvs.json",
-    onLoad: onIdeogramLoad
-  };
-
-  var ideogram = new Ideogram(config);
+    var ideogram = new Ideogram(config);
 
   </script>
 </body>
