@@ -108,51 +108,10 @@
       </label>
     </li>
   </ul>
-  <!--
-  <ul id="facet_tissue-type">
-    Tissue type
-    <li>
-      <label for="filter_tissue-type_cerebral-cortex">
-        <input type="checkbox" id="filter_tissue-type_cerebral-cortex">Cerebral cortex</input>
-      <span class="count"></span>
-      </label>
-    </li>
-    <li>
-      <label for="filter_tissue-type_heart">
-        <input type="checkbox" id="filter_tissue-type_heart">Heart</input>
-      <span class="count"></span>
-      </label>
-    </li>
-    <li>
-      <label for="filter_tissue-type_liver">
-        <input type="checkbox" id="filter_tissue-type_liver">Liver</input>
-      <span class="count"></span>
-      </label>
-    </li>
-    <li>
-      <label for="filter_tissue-type_skin">
-        <input type="checkbox" id="filter_tissue-type_skin">Skin</input>
-      <span class="count"></span>
-      </label>
-    </li>
-    <li>
-      <label for="filter_tissue-type_skeletal-muscle">
-        <input type="checkbox" id="filter_tissue-type_skeletal-muscle">Skeletal muscle</input>
-      <span class="count"></span>
-      </label>
-    </li>
-  </ul>
-  -->
   <div class="note">Histogram shows all human genes, but filters use artificial data.</div>
   <script type="text/javascript">
 
   var counts, key, count;
-
-  function onIdeogramLoad() {
-    d3.selectAll("g.chromosome").on("click", function() {
-      ideogram.rotateAndToggleDisplay(this.id);
-    });
-  }
 
   d3.selectAll("input").on("click", function() {
     var filterMap,
@@ -222,8 +181,7 @@
     chrHeight: 300,
     annotationsPath: "/ideogram/data/annotations/all_human_genes.json",
     annotationsLayout: "histogram",
-    barWidth: 3,
-    onLoad: onIdeogramLoad
+    barWidth: 3
   };
 
   var ideogram = new Ideogram(config);

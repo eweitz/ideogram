@@ -14,10 +14,6 @@
 
 	function onIdeogramLoad() {
 
-	    d3.selectAll("g").on("click", function() {
-	      ideogram.rotateAndToggleDisplay(this.id);
-	    });
-
 		var chrs = ideogram.chromosomes,
 			chr1 = chrs["10090"]["1"],
 			chr2 = chrs["10090"]["2"],
@@ -81,7 +77,6 @@
 	var config = {
 	  organism: "mouse",
 	  chromosomes: ["1", "2"],
-	  chrHeight: 500,
 	  chrMargin: 200,
 	  showBandLabels: true,
 	  perspective: "comparative",

@@ -14,7 +14,8 @@ var Ideogram = function(config) {
   }
 
   if (!this.config.container) {
-  	this.config.container = "body";
+    var container = "body";
+  	this.config.container = container;
   }
 
   if (!this.config.resolution) {
@@ -26,15 +27,34 @@ var Ideogram = function(config) {
   }
 
   if (!this.config.chrMargin) {
-      this.config.chrMargin = 10;
+    this.config.chrMargin = 10;
+  }
+
+
+  if (!this.config.orientation) {
+    var orientation = "vertical";
+    this.config.orientation = orientation;
   }
 
   if (!this.config.chrWidth) {
-      this.config.chrWidth = 10;
+    var chrWidth = 10;
+    this.config.chrWidth = 10;
   }
 
-  if (!this.config.orientation) {
-    this.config.orientation = "vertical";
+  if (!this.config.chrHeight) {
+      var chrHeight,
+          rect = document.querySelector(container).getBoundingClientRect()
+
+      if (orientation === "vertical") {
+        chrHeight = rect.height;
+      } else {
+        chrHeight = rect.width;
+      }
+
+      if (container == "body") {
+        chrHeight = 500;
+      }
+      this.config.chrHeight = chrHeight;
   }
 
   if (!this.config.showBandLabels) {
@@ -1951,6 +1971,7 @@ Ideogram.prototype.createBrush = function(from, to) {
 * asynchronous requests succeed, etc.
 */
 Ideogram.prototype.onLoad = function() {
+
   call(this.onLoadCallback);
 };
 
@@ -2474,6 +2495,12 @@ function finishInit() {
 
     if (ideo.onLoadCallback) {
       ideo.onLoadCallback();
+    }
+
+    if (!("rotatable" in ideo.config && ideo.config.rotatable === false)) {
+      d3.selectAll("g").on("click", function() {
+        ideogram.rotateAndToggleDisplay(this.id);
+      });
     }
 
      } catch (e) {
