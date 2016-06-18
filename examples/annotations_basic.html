@@ -6,6 +6,11 @@
   <link type="text/css" rel="stylesheet" href="../src/css/ideogram.css"/>
   <script type="text/javascript" src="../src/js/d3.min.js"></script>
   <script type="text/javascript" src="../src/js/ideogram.js"></script>
+  <style>
+    html, body {
+        height: 100%;
+    }
+  </style>
 </head>
 <body>
   <h1>Annotations, basic | Ideogram</h1>
@@ -15,17 +20,12 @@
   </p>
   <script type="text/javascript">
 
-    function onIdeogramLoad() {
-      d3.selectAll("g").on("click", function() {
-        ideogram.rotateAndToggleDisplay(this.id);
-      });
-    }
-
     var config = {
       organism: "human",
       chrHeight: 600,
       chrWidth: 15,
       orientation: "horizontal",
+      rotatable: false, 
       showBandLabels: true,
       chromosomes: ["17"],
       annotations: [{
@@ -34,8 +34,7 @@
         "start": 43044294,
         "stop": 43125482
       }],
-      annotationHeight: 6,
-      onLoad: onIdeogramLoad
+      annotationHeight: 6
     };
 
     var ideogram = new Ideogram(config);

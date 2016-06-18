@@ -34,7 +34,7 @@ text {
 	font-style: italic;
 }
 
-g {
+.chromosome {
 	cursor: pointer;
 }
 

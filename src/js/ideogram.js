@@ -2498,9 +2498,11 @@ function finishInit() {
     }
 
     if (!("rotatable" in ideo.config && ideo.config.rotatable === false)) {
-      d3.selectAll("g").on("click", function() {
+      d3.selectAll(".chromosome").on("click", function() {
         ideogram.rotateAndToggleDisplay(this.id);
       });
+    } else {
+      d3.selectAll(".chromosome").style("cursor", "default");
     }
 
      } catch (e) {
