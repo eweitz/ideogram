@@ -2,13 +2,13 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>Annotations, basic | Ideogram</title>
+  <title>Annotations, external data | Ideogram</title>
   <link type="text/css" rel="stylesheet" href="../src/css/ideogram.css"/>
   <script type="text/javascript" src="../src/js/d3.min.js"></script>
   <script type="text/javascript" src="../src/js/ideogram.js"></script>
 </head>
 <body>
-  <h1>Annotations, shapes | Ideogram</h1>
+  <h1>Annotations, external data | Ideogram</h1>
   <a href=".">Back to overview</a>
   <p>
    The <a href="https://www.acmg.net/">American College of Medical Genetics and
@@ -20,7 +20,12 @@
   <div id="container"></div>
   <script type="text/javascript">
 
-  function onIdeogramLoad() {
+  /**
+  * This function gets genomic coordinate data for ACMG genes from NCBI EUtils.
+  * EUtils docs: https://www.ncbi.nlm.nih.gov/books/NBK25500/
+  * Ideogram.js then draws those genes as annotations on chromosomes.
+  */
+  function getAndDrawAcmgGenes() {
 
     var acmgGenes, gene, i, annots, annot,
         geneClause, geneID, geneIDs, topWeight,
@@ -99,15 +104,21 @@
 
         }
 
+        // NCBI assigned each gene a weight based on how well it is characterized.
+        // http://www.ncbi.nlm.nih.gov/books/NBK3841/#EntrezGene.Sort_by
+        // Gene weight is a rough proxy for general biomedical relevance.
+        // Higher weight, more important.
         annots.sort(function(a, b) {
           return b.weight - a.weight;
         });
 
+        // This block highlights the 10 most important ACMG genes.
         for (i = 0; i < annots.length; i++) {
           color = (i < 10) ? "#F00" : "#FAA";
           annots[i].shape = "triangle";
           annots[i].color = color;
 
+          // BRCA1 is the most widely-recognized gene name.  Make it stand out.
           if (annots[i].name === "BRCA1") {
             annots[i].shape = "circle";
             annots[i].color = "#0A0";
@@ -126,7 +137,7 @@
     resolution: 550,
     chrHeight: 300,
     annotationHeight: 4,
-    onLoad: onIdeogramLoad
+    onLoad: getAndDrawAcmgGenes
   };
 
   var ideogram = new Ideogram(config);
