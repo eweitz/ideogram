@@ -86,6 +86,12 @@ var Ideogram = function(config) {
 
   if (config.chromosome) {
     this.config.chromosomes = [config.chromosome];
+    if ("showBandLabels" in config === false) {
+      this.config.showBandLabels = true;
+    }
+    if ("rotatable" in config === false) {
+      this.config.rotatable = false;
+    }
   }
 
   this.initAnnotSettings();
