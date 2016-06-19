@@ -84,6 +84,10 @@ var Ideogram = function(config) {
     this.config.chrMargin += 20;
   }
 
+  if (config.chromosome) {
+    this.config.chromosomes = [config.chromosome];
+  }
+
   this.initAnnotSettings();
 
   this.config.chrMargin = (
