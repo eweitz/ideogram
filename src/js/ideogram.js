@@ -14,8 +14,7 @@ var Ideogram = function(config) {
   }
 
   if (!this.config.container) {
-    var container = "body";
-  	this.config.container = container;
+  	this.config.container = "body";
   }
 
   if (!this.config.resolution) {
@@ -30,20 +29,15 @@ var Ideogram = function(config) {
     this.config.chrMargin = 10;
   }
 
-
   if (!this.config.orientation) {
     var orientation = "vertical";
     this.config.orientation = orientation;
   }
 
-  if (!this.config.chrWidth) {
-    var chrWidth = 10;
-    this.config.chrWidth = 10;
-  }
-
   if (!this.config.chrHeight) {
       var chrHeight,
-          rect = document.querySelector(container).getBoundingClientRect()
+          container = this.config.container,
+          rect = document.querySelector(container).getBoundingClientRect();
 
       if (orientation === "vertical") {
         chrHeight = rect.height;
@@ -55,6 +49,17 @@ var Ideogram = function(config) {
         chrHeight = 500;
       }
       this.config.chrHeight = chrHeight;
+  }
+
+  if (!this.config.chrWidth) {
+    var chrWidth = 10,
+        chrHeight = this.config.chrHeight;
+    if (900 > chrHeight && chrHeight > 500) {
+      chrWidth = Math.round(chrHeight / 40);
+    } else if (chrHeight >= 900) {
+      chrWidth = Math.round(chrHeight / 45);
+    }
+    this.config.chrWidth = chrWidth;
   }
 
   if (!this.config.showBandLabels) {
@@ -69,13 +74,9 @@ var Ideogram = function(config) {
   	this.config.rows = 1;
   }
 
-  if ("chrHeight" in config === false) {
-    config.chrHeight = 500;
-  }
-
-  this.bump = Math.round(config.chrHeight / 125);
+  this.bump = Math.round(this.config.chrHeight / 125);
   this.adjustedBump = false;
-  if (config.chrHeight < 200) {
+  if (this.config.chrHeight < 200) {
     this.adjustedBump = true;
     this.bump = 4;
   }
@@ -1468,7 +1469,8 @@ Ideogram.prototype.initAnnotSettings = function() {
     || this.annots) {
 
     if (!this.config.annotationHeight) {
-      this.config.annotationHeight = 3;
+      var annotHeight = Math.round(this.config.chrHeight/100);
+      this.config.annotationHeight = annotHeight;
     }
 
     if (this.config.annotationTracks) {
