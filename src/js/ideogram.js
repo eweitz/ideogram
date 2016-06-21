@@ -148,12 +148,6 @@ var Ideogram = function(config) {
     }
   };
 
-  if (this.config.annotationsPath || this.config.annotations) {
-    if (!this.config.annotationHeight) {
-      this.config.annotationHeight = 3;
-    }
-  }
-
   // A flat array of chromosomes
   // (this.chromosomes is an object of
   // arrays of chromosomes, keyed by organism)
@@ -1462,11 +1456,13 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
   }
 };
 
-
+/**
+* Initializes various annotation settings.  Constructor help function.
+*/
 Ideogram.prototype.initAnnotSettings = function() {
 
   if (this.config.annotationsPath || this.config.localAnnotationsPath
-    || this.annots) {
+    || this.annots || this.config.annotations) {
 
     if (!this.config.annotationHeight) {
       var annotHeight = Math.round(this.config.chrHeight/100);
@@ -1494,7 +1490,9 @@ Ideogram.prototype.initAnnotSettings = function() {
 
 };
 
-
+/**
+* Draws annotations defined by user
+*/
 Ideogram.prototype.drawAnnots = function(friendlyAnnots) {
 
   var ideo = this,
