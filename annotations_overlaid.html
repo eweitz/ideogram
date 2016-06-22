@@ -13,21 +13,12 @@
 
   <script type="text/javascript">
 
-  function onIdeogramLoad() {
-
-    d3.selectAll("g").on("click", function() {
-      ideogram.rotateAndToggleDisplay(this.id);
-    });
-
-  }
   var config = {
     organism: "human",
-    chrHeight: 500,
     chrMargin: 5,
     annotationsPath: "/ideogram/data/annotations/1000_virtual_snvs.json",
     annotationsLayout: "overlay",
-    orientation: "horizontal",
-    onLoad: onIdeogramLoad
+    orientation: "horizontal"
   };
 
   var ideogram = new Ideogram(config);

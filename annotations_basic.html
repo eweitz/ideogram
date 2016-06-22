@@ -6,6 +6,11 @@
   <link type="text/css" rel="stylesheet" href="src/css/ideogram.css"/>
   <script type="text/javascript" src="src/js/d3.min.js"></script>
   <script type="text/javascript" src="src/js/ideogram.js"></script>
+  <style>
+    html, body {
+        height: 100%;
+    }
+  </style>
 </head>
 <body>
   <h1>Annotations, basic | Ideogram</h1>
@@ -17,18 +22,15 @@
 
     var config = {
       organism: "human",
+      chromosome: "17",
       chrHeight: 600,
-      chrWidth: 15,
       orientation: "horizontal",
-      showBandLabels: true,
-      chromosomes: ["17"],
       annotations: [{
         "name": "BRCA1",
         "chr": "17",
         "start": 43044294,
         "stop": 43125482
-      }],
-      annotationHeight: 6
+      }]
     };
 
     var ideogram = new Ideogram(config);

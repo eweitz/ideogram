@@ -14,16 +14,8 @@
 
   <script type="text/javascript">
 
-    function onIdeogramLoad() {
-      d3.selectAll("g").on("click", function() {
-        ideogram.rotateAndToggleDisplay(this.id);
-      });
-    }
-
     var config = {
-      organism: "human",
-      chrHeight: 500,
-      onLoad: onIdeogramLoad
+      organism: "human"
     };
 
     var ideogram = new Ideogram(config);

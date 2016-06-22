@@ -113,12 +113,6 @@
 
   var counts, key, count;
 
-  function onIdeogramLoad() {
-    d3.selectAll("g.chromosome").on("click", function() {
-      ideogram.rotateAndToggleDisplay(this.id);
-    });
-  }
-
   d3.selectAll("input").on("click", function() {
     var filterMap,
         tmp, facet,
@@ -187,8 +181,7 @@
     chrHeight: 300,
     annotationsPath: "/ideogram/data/annotations/all_human_genes.json",
     annotationsLayout: "histogram",
-    barWidth: 3,
-    onLoad: onIdeogramLoad
+    barWidth: 3
   };
 
   var ideogram = new Ideogram(config);

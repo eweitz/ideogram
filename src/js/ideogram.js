@@ -26,15 +26,40 @@ var Ideogram = function(config) {
   }
 
   if (!this.config.chrMargin) {
-      this.config.chrMargin = 10;
-  }
-
-  if (!this.config.chrWidth) {
-      this.config.chrWidth = 10;
+    this.config.chrMargin = 10;
   }
 
   if (!this.config.orientation) {
-    this.config.orientation = "vertical";
+    var orientation = "vertical";
+    this.config.orientation = orientation;
+  }
+
+  if (!this.config.chrHeight) {
+      var chrHeight,
+          container = this.config.container,
+          rect = document.querySelector(container).getBoundingClientRect();
+
+      if (orientation === "vertical") {
+        chrHeight = rect.height;
+      } else {
+        chrHeight = rect.width;
+      }
+
+      if (container == "body") {
+        chrHeight = 500;
+      }
+      this.config.chrHeight = chrHeight;
+  }
+
+  if (!this.config.chrWidth) {
+    var chrWidth = 10,
+        chrHeight = this.config.chrHeight;
+    if (900 > chrHeight && chrHeight > 500) {
+      chrWidth = Math.round(chrHeight / 40);
+    } else if (chrHeight >= 900) {
+      chrWidth = Math.round(chrHeight / 45);
+    }
+    this.config.chrWidth = chrWidth;
   }
 
   if (!this.config.showBandLabels) {
@@ -49,19 +74,25 @@ var Ideogram = function(config) {
   	this.config.rows = 1;
   }
 
-  if ("chrHeight" in config === false) {
-    config.chrHeight = 500;
-  }
-
-  this.bump = Math.round(config.chrHeight / 125);
+  this.bump = Math.round(this.config.chrHeight / 125);
   this.adjustedBump = false;
-  if (config.chrHeight < 200) {
+  if (this.config.chrHeight < 200) {
     this.adjustedBump = true;
     this.bump = 4;
   }
 
   if (config.showBandLabels) {
     this.config.chrMargin += 20;
+  }
+
+  if (config.chromosome) {
+    this.config.chromosomes = [config.chromosome];
+    if ("showBandLabels" in config === false) {
+      this.config.showBandLabels = true;
+    }
+    if ("rotatable" in config === false) {
+      this.config.rotatable = false;
+    }
   }
 
   this.initAnnotSettings();
@@ -116,12 +147,6 @@ var Ideogram = function(config) {
       "scientificNameAbbr": "D. melanogaster"
     }
   };
-
-  if (this.config.annotationsPath || this.config.annotations) {
-    if (!this.config.annotationHeight) {
-      this.config.annotationHeight = 3;
-    }
-  }
 
   // A flat array of chromosomes
   // (this.chromosomes is an object of
@@ -1431,14 +1456,17 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
   }
 };
 
-
+/**
+* Initializes various annotation settings.  Constructor help function.
+*/
 Ideogram.prototype.initAnnotSettings = function() {
 
   if (this.config.annotationsPath || this.config.localAnnotationsPath
-    || this.annots) {
+    || this.annots || this.config.annotations) {
 
     if (!this.config.annotationHeight) {
-      this.config.annotationHeight = 3;
+      var annotHeight = Math.round(this.config.chrHeight/100);
+      this.config.annotationHeight = annotHeight;
     }
 
     if (this.config.annotationTracks) {
@@ -1462,7 +1490,9 @@ Ideogram.prototype.initAnnotSettings = function() {
 
 };
 
-
+/**
+* Draws annotations defined by user
+*/
 Ideogram.prototype.drawAnnots = function(friendlyAnnots) {
 
   var ideo = this,
@@ -1951,6 +1981,7 @@ Ideogram.prototype.createBrush = function(from, to) {
 * asynchronous requests succeed, etc.
 */
 Ideogram.prototype.onLoad = function() {
+
   call(this.onLoadCallback);
 };
 
@@ -2474,6 +2505,14 @@ function finishInit() {
 
     if (ideo.onLoadCallback) {
       ideo.onLoadCallback();
+    }
+
+    if (!("rotatable" in ideo.config && ideo.config.rotatable === false)) {
+      d3.selectAll(".chromosome").on("click", function() {
+        ideogram.rotateAndToggleDisplay(this.id);
+      });
+    } else {
+      d3.selectAll(".chromosome").style("cursor", "default");
     }
 
      } catch (e) {
