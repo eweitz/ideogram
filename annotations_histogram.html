@@ -108,7 +108,10 @@
       </label>
     </li>
   </ul>
-  <div class="note">Histogram shows all human genes, but filters use artificial data.</div>
+  <div class="note">
+    Histogram shows all human genes.
+    Expression data from NCBI SRA (SRR562645)
+    via <a href="https://github.com/NCBI-Hackathons/rnaseqview">rnaseqview</a> pipeline.</div>
   <script type="text/javascript">
 
   var counts, key, count;
@@ -178,8 +181,9 @@
   var config = {
     container: "#container",
     organism: "human",
+    assembly: "GRCh37",
     chrHeight: 300,
-    annotationsPath: "/ideogram/data/annotations/all_human_genes.json",
+    annotationsPath: "/ideogram/data/annotations/SRR562646.json",
     annotationsLayout: "histogram",
     barWidth: 3
   };
