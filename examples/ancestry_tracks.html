@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Annotations, tracks | Ideogram</title>
+  <link type="text/css" rel="stylesheet" href="../src/css/ideogram.css"/>
+  <script type="text/javascript" src="../src/js/d3.min.js"></script>
+  <script type="text/javascript" src="../src/js/ideogram.js"></script>
+</head>
+<body>
+  <h1>Annotations, tracks | Ideogram</h1>
+  <a href=".">Back to overview</a>
+
+  <script type="text/javascript">
+
+  var annotationTracks = [
+    {"id": "benignTrack",  "displayName": "Benign", "color": "#8D4"},
+    {"id": "likelyBenignTrack", "displayName": "Likely benign", "color": "#BD9"},
+    {"id": "uncertainSignificanceTrack", "displayName": "Uncertain significance", "color": "#CCC"},
+    {"id": "likelyPathogenicTrack", "displayName": "Likely pathogenic", "color": "#DB9"},
+    {"id": "pathogenicTrack", "displayName": "Pathogenic", "color": "#F00"}
+  ]
+
+  function onIdeogramLoad() {
+
+    d3.selectAll("g").on("click", function() {
+      ideogram.rotateAndToggleDisplay(this.id);
+    });
+
+  }
+
+  var config = {
+    organism: "human",
+    assembly: "GRCh37",
+    chrWidth: 8,
+    chrHeight: 500,
+    annotationsPath: "/ideogram/data/annotations/ancestrydna_tracks.json",
+    annotationTracks: annotationTracks,
+    annotationHeight: 3,
+    onLoad: onIdeogramLoad
+  };
+
+  var ideogram = new Ideogram(config);
+
+  </script>
+</body>
+</html>
