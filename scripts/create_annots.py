@@ -47,7 +47,11 @@ lengths_GRCh37 = {
 for chr in chrs:
 	annots.append({"chr": chr, "annots": []});
 
-n = 100
+n = 1000
+
+#
+trackIndexPool = [0]*5 + [1]*80 + [2]*15
+poolSize = len(trackIndexPool)
 
 i = 0
 while i < n:
@@ -61,7 +65,7 @@ while i < n:
 		"rs" + j,
 		start,
 		length,
-		random.randrange(0, 5)
+		trackIndexPool[random.randrange(0, poolSize - 1)]
 	]
 
 	annots[chr]["annots"].append(annot)

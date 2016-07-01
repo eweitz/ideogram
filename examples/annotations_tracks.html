@@ -15,9 +15,7 @@
 
   var annotationTracks = [
     {"id": "pathogenicTrack", "displayName": "Pathogenic", "color": "#F00"},
-    {"id": "likelyPathogenicTrack", "displayName": "Likely pathogenic", "color": "#DB9"},
     {"id": "uncertainSignificanceTrack", "displayName": "Uncertain significance", "color": "#CCC"},
-    {"id": "likelyBenignTrack", "displayName": "Likely benign", "color": "#BD9"},
     {"id": "benignTrack",  "displayName": "Benign", "color": "#8D4"}
   ]
 
@@ -26,7 +24,7 @@
     chrWidth: 8,
     annotationsPath: "/ideogram/data/annotations/1000_virtual_snvs.json",
     annotationTracks: annotationTracks,
-    annotationHeight: 2.5
+    annotationHeight: 3.5
   };
 
   var ideogram = new Ideogram(config);
