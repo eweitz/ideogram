@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8" />
   <title>Homology, advanced | Ideogram</title>
   <link type="text/css" rel="stylesheet" href="src/css/ideogram.css"/>
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
@@ -51,14 +50,14 @@
 		syntenicRegions.push({"r1": range3, "r2": range4, "opacity": 0.7});
 
 
-		var range5 = {
+		var range6 = {
 			chr: chr2,
 			start: r2Band.bp.start,
 			stop: r2Band.bp.stop
 		};
 
 		for (var i = 1; i < 6; i++) {
-			range6 = {
+			range5 = {
 				chr: chr1,
 				start: 120000000 + (12000000 * i),
 				stop: 120000000 + (8000000 * i)

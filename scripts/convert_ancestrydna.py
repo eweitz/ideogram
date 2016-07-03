@@ -5,6 +5,7 @@ file = open("data/annotations/clinvar_20160531.vcf").readlines()
 rsids = {}
 
 clinsig_re = re.compile("CLNSIG=(\d+)")
+gene_re = re.compile("GENEINFO=(\w+)")
 
 for line in file:
     if line[0] == "#":
@@ -18,10 +19,17 @@ for line in file:
     rsid = columns[2]
     clinsig = int(clinsig_re.search(info).group(1))
 
+    gene_group = gene_re.search(info)
+    if gene_group:
+        gene = gene_group.group(1)
+    else:
+        gene = ""
+
     rsids[rsid] = {
         "ref": columns[3],
         "alt": columns[4],
         "clinsig": clinsig,
+        "gene": gene
         #"clinrevstat": info[25]
     }
 
@@ -70,20 +78,24 @@ for line in file:
     elif chr == "25":
         continue # TODO: mitochondrial DNA!
 
-    heterozygous = 0
-    if (allele1 != allele2):
-        heterozygous = 1
+    homozygous = 0
+    if (allele1 == allele2):
+        homozygous = 1
 
     if name in rsids and rsids[name]["alt"] in set((allele1, allele2)):
         #print("clinical: " + name)
         # TODO: Hom vs. het clinsig
         clinsig = rsids[name]["clinsig"]
         if clinsig in set((4,5)):
-            clinical_alleles.append(name)
-            if heterozygous == 0 and clinsig == 5:
+            clinical_alleles.append(
+                name + " "
+                "chr" + chr + ":" + str(start) + " " +
+                rsids[name]["gene"]
+            )
+            if homozygous == 1 and clinsig == 5:
                 print("Homozygous pathogenic: " + name)
         if clinsig in set((1,2,3,4,5)):
-            clinsig -= 1
+            #clinsig -= 1
             clin_annot = [name, start, length, clinsig]
             if chr in seen_chrs_clin_annots:
                 clin_annots[chr_index - 1]["annots"].append(clin_annot)
@@ -100,7 +112,7 @@ for line in file:
         name,
         start,
         length,
-        heterozygous,
+        homozygous,
         allele1,
         allele2,
         clinsig
@@ -114,7 +126,7 @@ for line in file:
 
 top_annots = {}
 top_annots["keys"] = [
-    "name", "start", "length", "heterozygous", "allele1", "allele2", "clinsig"
+    "name", "start", "length", "homozygous", "allele1", "allele2", "clinsig"
 ]
 top_annots["annots"] = annots
 annots = json.dumps(top_annots)
@@ -130,4 +142,4 @@ open("data/annotations/ancestrydna_tracks.json", "w").write(annots)
 
 for rs in clinical_alleles:
     print(rs)
-print(len(clinical_alleles))
+print("Pathogenic or likely pathogenic alleles: " + str(len(clinical_alleles)))

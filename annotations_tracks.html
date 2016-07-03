@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8" />
   <title>Annotations, tracks | Ideogram</title>
   <link type="text/css" rel="stylesheet" href="src/css/ideogram.css"/>
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
@@ -15,9 +14,7 @@
 
   var annotationTracks = [
     {"id": "pathogenicTrack", "displayName": "Pathogenic", "color": "#F00"},
-    {"id": "likelyPathogenicTrack", "displayName": "Likely pathogenic", "color": "#DB9"},
     {"id": "uncertainSignificanceTrack", "displayName": "Uncertain significance", "color": "#CCC"},
-    {"id": "likelyBenignTrack", "displayName": "Likely benign", "color": "#BD9"},
     {"id": "benignTrack",  "displayName": "Benign", "color": "#8D4"}
   ]
 
@@ -26,7 +23,7 @@
     chrWidth: 8,
     annotationsPath: "/ideogram/data/annotations/1000_virtual_snvs.json",
     annotationTracks: annotationTracks,
-    annotationHeight: 2.5
+    annotationHeight: 3.5
   };
 
   var ideogram = new Ideogram(config);
