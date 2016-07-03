@@ -1362,7 +1362,7 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
       ideo = this;
 
   syntenies = d3.select("svg")
-    .append("g")
+    .insert("g", ":first-child")
     .attr("class", "synteny");
 
   for (i = 0; i < syntenicRegions.length; i++) {
@@ -1390,8 +1390,8 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
     c1Box = document.querySelectorAll("#" + r1.chr.id + " path")[0].getBBox();
     c2Box = document.querySelectorAll("#" + r2.chr.id + " path")[0].getBBox();
 
-    chr1Plane = c1Box.y - 30;
-    chr2Plane = c2Box.y - 29;
+    chr1Plane = c1Box.y - 31;
+    chr2Plane = c2Box.y - 28;
 
     regionID = (
       r1.chr.id + "_" + r1.start + "_" + r1.stop + "_" +
