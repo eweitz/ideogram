@@ -2133,16 +2133,19 @@ Ideogram.prototype.getTaxids = function() {
  * Returns names and lengths of chromosomes fir an organism's best-known genome assembly
  */
 Ideogram.prototype.getChromosomes = function(organismName) {
-    var output = [];
-    // console.log("organismName is: ", organismName);
-    var organism = organismName.split(" ");
-    // Querying NCBI database for genome
-    var link = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=assembly&retmode=json&term=";
-    for (var i = 0; i < organism.length; i++) {
-        link += organism[i];
-        link += "%20";
+    var eutils, organism, output, link, i, idList, rsuid;
+
+    output = [];
+
+    organism = organismName.split(" ");
+
+    // Query NCBI Assembly database for genome
+    link = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=assembly&retmode=json&term=";
+    for (i = 0; i < organism.length; i++) {
+      link += organism[i] + "%20";
     }
     link += "AND%20(%22latest%20refseq%22[filter])%20AND%20%22chromosome%20level%22[filter]";
+
     d3.json(link, function(data) {
         // var res = JSON.parse(data.response);
         var idList = data.esearchresult.idlist;
