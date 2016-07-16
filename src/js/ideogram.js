@@ -2130,16 +2130,17 @@ Ideogram.prototype.getTaxids = function() {
 };
 
 /**
- * Returns names and lengths of chromosomes fir an organism's best-known genome assembly
- */
-Ideogram.prototype.getChromosomes = function(organismName) {
+  Returns names and lengths of chromosomes for an organism's best-known
+  genome assembly.  Gets data from NCBI EUtils web API.
+*/
+Ideogram.prototype.getChromosomes = function(organism) {
 
     var eutils, organism, results, link, i, idList,
-      asmUid, rsUid, chromosomes,
+      asmUid, rsUid, link, ntSummary,
+      chromosomes, chrName, chrLength, subtypes,
+      results, result;
 
     chromosomes = [];
-
-    organism = organismName.split(" ");
 
     eutils = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/";
     esearch = eutils + "esearch.fcgi?retmode=json";
@@ -2149,10 +2150,10 @@ Ideogram.prototype.getChromosomes = function(organismName) {
     asmSearch =
       esearch +
       "&db=assembly" +
-      "&term=" + organismName +
+      "&term=" + organism +
       "AND%20(%22latest%20refseq%22[filter])%20AND%20%22chromosome%20level%22[filter]";
 
-    d3.json(asm_search, function(data) {
+    d3.json(asmSearch, function(data) {
 
       // NCBI Assembly database's internal identifier (uid) for this assembly
       asmUid = data.esearchresult.idlist[0];
@@ -2164,51 +2165,52 @@ Ideogram.prototype.getChromosomes = function(organismName) {
         // RefSeq UID for this assembly
         rsUid = data.result[asmUid].rsuid;
 
-        // Getting chromosome for genome
-        // CORS workaround
-        // Instead of grabbing from well known databases like Assembly,
-        // grab from GenColl.
+        // Get a list of IDs for the chromosomes in this genome.
+        //
+        // This information does not seem to be available from well-known
+        // NCBI databases like Assembly or Nucleotide, so we use GenColl,
+        // a lesser-known NCBI database.
         nuccoreLink = elink + "&db=nuccore&linkname=gencoll_nuccore_chr&from_uid=" + rsUid;
 
         d3.json(nuccoreLink, function(data) {
 
-          var linksArray = data.linksets[0].linksetdbs[0].links;
-          var links = "";
-          for (var i = 0; i < linksArray.length; i++) {
-            links += linksArray[i].toString();
-            if (i < (linksArray.length - 1)) {
-              links += ",";
-            }
-          }
+          links = data.linksets[0].linksetdbs[0].links.join(",");
 
-          var link = esummary + "&db=nucleotide&id=" + links;
+          ntSummary = esummary + "&db=nucleotide&id=" + links;
 
-          d3.json(link, function(data) {
+          d3.json(ntSummary, function(data) {
+
             results = data.result;
-            len = Object.keys(chromosomes).length;
 
-              for (var x in results) {
-                // omitting uids
-                if (x == "uids") {
-                  continue;
-                }
+            for (var x in results) {
 
-                chrName = results[x].subname;
-                chrLength = results[x].slen.toString();
+              result = results[x];
 
-                var chromosome = {
-                  "name": chrName,
-                  "length": chrLength
-                };
+              // omit list of reult uids, and skip chrMT
+              if (x === "uids" || result.genome === "mitochondrion") {
+                continue;
+              }
 
-                chromosomes.push(chromosome);
+              cnIndex = result.subtype.split("|").indexOf("chromosome");
+
+              chrName = result.subname.split("|")[cnIndex];
+              chrLength = result.slen;
+
+              var chromosome = {
+                "name": chrName,
+                "length": chrLength
+              };
+
+              chromosomes.push(chromosome);
             }
+
             return chromosomes;
         });
-        });
+      });
     });
   });
 };
+
 
 Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
 
