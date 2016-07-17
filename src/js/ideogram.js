@@ -2129,6 +2129,41 @@ Ideogram.prototype.getTaxids = function() {
   return taxids;
 };
 
+
+Ideogram.prototype.isNumber = function(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}
+
+/**
+Sorts an array of chromosomes by name, per biological convention.
+For example: 1, 2, 3, ..., 22, X, Y
+*/
+Ideogram.prototype.sortChromosomesByName = function(chromosomes) {
+
+  var ideo = this;
+
+  return chromosomes.sort(function(a, b) {
+
+    var a = a.name,
+        b = b.name,
+        isANumeric = ideo.isNumber(a),
+        isBNumeric = ideo.isNumber(b);
+
+    if (isANumeric) a = parseInt(a, 10);
+    if (isBNumeric) b = parseInt(b, 10);
+
+    if (isANumeric && isBNumeric) {
+        return a - b;
+    } else if (!isANumeric && !isBNumeric){
+      return (a > b) ? 1 : -1;
+    } else {
+      return (isANumeric === false) ? 1 : -1;
+    }
+  });
+
+}
+
+
 /**
   Returns names and lengths of chromosomes for an organism's best-known
   genome assembly.  Gets data from NCBI EUtils web API.
@@ -2138,7 +2173,8 @@ Ideogram.prototype.getChromosomes = function(organism) {
     var eutils, organism, results, link, i, idList,
       asmUid, rsUid, link, ntSummary,
       chromosomes, chrName, chrLength, subtypes,
-      results, result;
+      results, result,
+      ideo = this;
 
     chromosomes = [];
 
@@ -2203,6 +2239,8 @@ Ideogram.prototype.getChromosomes = function(organism) {
 
               chromosomes.push(chromosome);
             }
+
+            chromosomes = ideo.sortChromosomesByName(chromosomes)
 
             return chromosomes;
         });
