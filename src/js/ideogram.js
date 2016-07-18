@@ -122,6 +122,14 @@ var Ideogram = function(config) {
     "iscn": 0
   };
 
+
+  // The E-Utilies In Depth: Parameters, Syntax and More:
+  // https://www.ncbi.nlm.nih.gov/books/NBK25499/
+  var eutils = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/";
+  this.esearch = eutils + "esearch.fcgi?retmode=json";
+  this.esummary = eutils + "esummary.fcgi?retmode=json";
+  this.elink = eutils + "elink.fcgi?retmode=json";
+
   this.organisms = {
     "9606": {
       "commonName": "Human",
@@ -2062,6 +2070,30 @@ Ideogram.prototype.getBandColorGradients = function() {
   return gradients;
 };
 
+/*
+  Returns an NCBI taxonomy identifier (taxid) for the given organism name
+
+  Example:
+  * Input:
+  ideo.getTaxidFromEutils("Caenorhabditis elegans")
+  * Output:
+  "6239"
+*/
+Ideogram.prototype.getTaxidFromEutils = function(organism) {
+
+  var taxonomySearch,
+      taxid,
+      ideo = this;
+
+  taxonomySearch = ideo.esearch + "&db=taxonomy&term=" + organism;
+
+  d3.json(taxonomySearch, function(data) {
+    taxid = data.esearchresult.idlist[0];
+    return taxid;
+  });
+}
+
+
 /**
 * Returns an array of taxids for the current ideogram
 * Also sets configuration parameters related to taxid(s), whether ideogram is
@@ -2108,6 +2140,7 @@ Ideogram.prototype.getTaxids = function() {
         }
       }
     }
+
     ideo.config.taxids = taxids;
     if (multiorganism) {
       ideo.config.chromosomes = tmpChrs;
@@ -2170,7 +2203,7 @@ Ideogram.prototype.sortChromosomesByName = function(chromosomes) {
 */
 Ideogram.prototype.getChromosomes = function(organism) {
 
-    var eutils, organism, results, link, i, idList,
+    var organism, results, link, i, idList,
       asmUid, rsUid, link, ntSummary,
       chromosomes, chrName, chrLength, subtypes,
       results, result,
@@ -2178,13 +2211,8 @@ Ideogram.prototype.getChromosomes = function(organism) {
 
     chromosomes = [];
 
-    eutils = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/";
-    esearch = eutils + "esearch.fcgi?retmode=json";
-    esummary = eutils + "esummary.fcgi?retmode=json";
-    elink = eutils + "elink.fcgi?retmode=json";
-
     asmSearch =
-      esearch +
+      ideo.esearch +
       "&db=assembly" +
       "&term=" + organism +
       "AND%20(%22latest%20refseq%22[filter])%20AND%20%22chromosome%20level%22[filter]";
@@ -2194,7 +2222,7 @@ Ideogram.prototype.getChromosomes = function(organism) {
       // NCBI Assembly database's internal identifier (uid) for this assembly
       asmUid = data.esearchresult.idlist[0];
 
-      asmSummary = esummary + "&db=assembly&id=" + asmUid;
+      asmSummary = ideo.esummary + "&db=assembly&id=" + asmUid;
 
       d3.json(asmSummary, function(data) {
 
@@ -2206,13 +2234,13 @@ Ideogram.prototype.getChromosomes = function(organism) {
         // This information does not seem to be available from well-known
         // NCBI databases like Assembly or Nucleotide, so we use GenColl,
         // a lesser-known NCBI database.
-        nuccoreLink = elink + "&db=nuccore&linkname=gencoll_nuccore_chr&from_uid=" + rsUid;
+        nuccoreLink = ideo.elink + "&db=nuccore&linkname=gencoll_nuccore_chr&from_uid=" + rsUid;
 
         d3.json(nuccoreLink, function(data) {
 
           links = data.linksets[0].linksetdbs[0].links.join(",");
 
-          ntSummary = esummary + "&db=nucleotide&id=" + links;
+          ntSummary = ideo.esummary + "&db=nucleotide&id=" + links;
 
           d3.json(ntSummary, function(data) {
 
