@@ -9,6 +9,10 @@ var Ideogram = function(config) {
 
   this.debug = false;
 
+  if (!this.config.ploidy) {
+    this.config.ploidy = 1;
+  }
+
   if (!this.config.bandDir) {
     this.config.bandDir = "../data/bands/";
   }
@@ -867,7 +871,7 @@ Ideogram.prototype.round = function(coord) {
 /**
 * Renders all the bands and outlining boundaries of a chromosome.
 */
-Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
+Ideogram.prototype.drawChromosome = function(chrModel, chrIndex, container, k) {
 
   var chr, chrWidth, width,
       pArmWidth, selector, qArmStart, qArmWidth,
@@ -887,10 +891,12 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
     pTerPad = Math.round(bump/4) + 3;
   }
 
-  chr = d3.select("svg")
+//  chr = d3.select("svg")
+  chr = container
     .append("g")
       .attr("id", chrModel.id)
-      .attr("class", "chromosome");
+      .attr("class", "chromosome")
+      .attr("transform", "translate(0, " + k * 20 + ")");
 
   chrWidth = ideo.config.chrWidth;
   width = chrModel.width;
@@ -2228,7 +2234,19 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
       ideo.chromosomes[taxid][chromosome] = chromosomeModel;
       ideo.chromosomesArray.push(chromosomeModel);
 
-      ideo.drawChromosome(chromosomeModel, chrIndex);
+      /*
+       * Append cromosome set container.
+       */
+//      console.log(ideo._getChromosomeSetTranslate(j));
+      var container = d3.select("svg")
+        .append("g")
+        .attr("class", "cromosome-set-container")
+        .attr("transform", ideo._getChromosomeSetTranslate(j))
+        .attr("id", chromosomeModel.id + "-chromosome-set");
+
+      for (var k = 0; k < this.config.ploidy; k ++) {
+        ideo.drawChromosome(chromosomeModel, chrIndex, container, k);
+      }
     }
 
     if (ideo.config.showBandLabels === true) {
@@ -2237,6 +2255,20 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
 
   }
 };
+
+
+/**
+ * 
+ */
+Ideogram.prototype._getChromosomeSetTranslate = function(setNumber) {
+
+//  console.log(setNumber, this.config.ploidy, this.config.orientation);
+  if (this.config.orientation === "horizontal") {
+    return "translate(0, " + setNumber * (this.config.ploidy - 1) * 20 + ")";
+  } else {
+    return "translate(" + setNumber * (this.config.ploidy - 1) + ", 0)";
+  }
+}
 
 
 /**
@@ -2587,7 +2619,7 @@ function finishInit() {
     }
 
      } catch (e) {
-       console.log(e.stack)
+       console.log(e)
       //  throw e;
     }
 
