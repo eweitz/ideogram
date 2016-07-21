@@ -1152,13 +1152,13 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
   chrMargin = this.config.chrMargin * chrIndex;
   chrWidth = this.config.chrWidth;
 
-  ideoBox = d3.select("#ideogram")[0][0].getBoundingClientRect();
+  ideoBox = d3.select("#ideogram").nodes()[0].getBoundingClientRect();
   ideoHeight = ideoBox.height;
   ideoWidth = ideoBox.width;
 
   if (initOrientation == "vertical") {
 
-    chrLength = chr[0][0].getBoundingClientRect().height;
+    chrLength = chr.nodes()[0].getBoundingClientRect().height;
 
     scaleX = (ideoWidth/chrLength)*0.97;
     scaleY = 1.5;
@@ -1189,7 +1189,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 
   } else {
 
-    chrLength = chr[0][0].getBoundingClientRect().width;
+    chrLength = chr.nodes()[0].getBoundingClientRect().width;
 
     scaleX = (ideoHeight/chrLength)*0.97;
     scaleY = 1.5;
@@ -1877,7 +1877,7 @@ Ideogram.prototype.putChromosomesInRows = function() {
     chrsPerRow = Math.floor(ideo.numChromosomes/rows);
 
     riCorrection = 0;
-    if (d3.select("svg > *")[0][0].tagName !== "g") {
+    if (d3.select("svg > *").nodes()[0].tagName !== "g") {
       // Accounts for cross-browser differences in handling of nth-child
       riCorrection = 2;
     }
@@ -1942,7 +1942,7 @@ Ideogram.prototype.createBrush = function(from, to) {
   }
 
   x = d3.scale.linear().domain(domain).range(range);
-  y = d3.select(".band")[0][0].getBBox().y - 3.25;
+  y = d3.select(".band").nodes()[0].getBBox().y - 3.25;
 
   if (typeof from === "undefined") {
     from = Math.floor(chrLengthBp/10);
