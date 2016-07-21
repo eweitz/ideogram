@@ -2070,14 +2070,15 @@ Ideogram.prototype.getBandColorGradients = function() {
   return gradients;
 };
 
+
 /*
   Returns an NCBI taxonomy identifier (taxid) for the given organism name
 
   Example:
-  * Input:
-  ideo.getTaxidFromEutils("Caenorhabditis elegans")
-  * Output:
-  "6239"
+    Input:
+      ideo.getTaxidFromEutils("Caenorhabditis elegans")
+    Output:
+      "6239"
 */
 Ideogram.prototype.getTaxidFromEutils = function(organism) {
 
@@ -2364,7 +2365,7 @@ Ideogram.prototype.init = function() {
 
     if (typeof chrBands === "undefined") {
 
-      d3.xhr(ideo.config.bandDir + bandDataFileNames[taxid])
+      d3.request(ideo.config.bandDir + bandDataFileNames[taxid])
         .on("beforesend", function(data) {
           // Ensures correct taxid is processed in response callback; using
           // simply 'taxid' variable gives the last *requested* taxid, which
