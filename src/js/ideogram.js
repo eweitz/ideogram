@@ -1235,7 +1235,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
       .attr("data-orientation", "vertical")
       .transition()
       .attr("transform", verticalTransform)
-      .each("end", function() {
+      .on("end", function() {
 
         if (initOrientation == "vertical") {
           scale = "";
@@ -1267,7 +1267,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
     chr
       .transition()
       .attr("transform", horizontalTransform)
-      .each("end", function() {
+      .on("end", function() {
 
         if (initOrientation == "horizontal") {
           if (currentOrientation == "vertical") {
