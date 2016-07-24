@@ -1941,7 +1941,7 @@ Ideogram.prototype.createBrush = function(from, to) {
     range.push(band.px.stop);
   }
 
-  x = d3.scale.linear().domain(domain).range(range);
+  x = d3.scaleLinear().domain(domain).range(range);
   y = d3.select(".band").nodes()[0].getBBox().y - 3.25;
 
   if (typeof from === "undefined") {
@@ -1952,28 +1952,27 @@ Ideogram.prototype.createBrush = function(from, to) {
     to = Math.ceil(from*2);
   }
 
-  x0 = from;
-  x1 = to;
+  x0 = ideo.convertBpToPx(chr, from);
+  x1 = ideo.convertBpToPx(chr, to);
 
   ideo.selectedRegion = {"from": from, "to": to, "extent": (to - from)};
 
-  ideo.brush = d3.svg.brush()
-    .x(x)
-    .extent([x0, x1])
+  ideo.brush = d3.brushX()
+    .extent([[0, 0], [length, width]])
     .on("brush", onBrushMove);
 
   var brushg = d3.select("#ideogram").append("g")
     .attr("class", "brush")
     .attr("transform", "translate(0, " + y + ")")
-    .call(ideo.brush);
-
-  brushg.selectAll("rect")
-      .attr("height", width);
+    .call(ideo.brush)
+    .call(ideo.brush.move, [x0, x1]);
 
   function onBrushMove() {
-    var extent = ideo.brush.extent(),
+
+    var extent = d3.event.selection.map(x.invert),
         from = Math.floor(extent[0]),
         to = Math.ceil(extent[1]);
+
     ideo.selectedRegion = {"from": from, "to": to, "extent": (to - from)};
 
     if (ideo.onBrushMove) {
