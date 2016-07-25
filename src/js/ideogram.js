@@ -1152,13 +1152,13 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
   chrMargin = this.config.chrMargin * chrIndex;
   chrWidth = this.config.chrWidth;
 
-  ideoBox = d3.select("#ideogram")[0][0].getBoundingClientRect();
+  ideoBox = d3.select("#ideogram").nodes()[0].getBoundingClientRect();
   ideoHeight = ideoBox.height;
   ideoWidth = ideoBox.width;
 
   if (initOrientation == "vertical") {
 
-    chrLength = chr[0][0].getBoundingClientRect().height;
+    chrLength = chr.nodes()[0].getBoundingClientRect().height;
 
     scaleX = (ideoWidth/chrLength)*0.97;
     scaleY = 1.5;
@@ -1189,7 +1189,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 
   } else {
 
-    chrLength = chr[0][0].getBoundingClientRect().width;
+    chrLength = chr.nodes()[0].getBoundingClientRect().width;
 
     scaleX = (ideoHeight/chrLength)*0.97;
     scaleY = 1.5;
@@ -1235,7 +1235,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
       .attr("data-orientation", "vertical")
       .transition()
       .attr("transform", verticalTransform)
-      .each("end", function() {
+      .on("end", function() {
 
         if (initOrientation == "vertical") {
           scale = "";
@@ -1267,7 +1267,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
     chr
       .transition()
       .attr("transform", horizontalTransform)
-      .each("end", function() {
+      .on("end", function() {
 
         if (initOrientation == "horizontal") {
           if (currentOrientation == "vertical") {
@@ -1877,7 +1877,7 @@ Ideogram.prototype.putChromosomesInRows = function() {
     chrsPerRow = Math.floor(ideo.numChromosomes/rows);
 
     riCorrection = 0;
-    if (d3.select("svg > *")[0][0].tagName !== "g") {
+    if (d3.select("svg > *").nodes()[0].tagName !== "g") {
       // Accounts for cross-browser differences in handling of nth-child
       riCorrection = 2;
     }
@@ -1941,8 +1941,8 @@ Ideogram.prototype.createBrush = function(from, to) {
     range.push(band.px.stop);
   }
 
-  x = d3.scale.linear().domain(domain).range(range);
-  y = d3.select(".band")[0][0].getBBox().y - 3.25;
+  x = d3.scaleLinear().domain(domain).range(range);
+  y = d3.select(".band").nodes()[0].getBBox().y - 3.25;
 
   if (typeof from === "undefined") {
     from = Math.floor(chrLengthBp/10);
@@ -1952,28 +1952,27 @@ Ideogram.prototype.createBrush = function(from, to) {
     to = Math.ceil(from*2);
   }
 
-  x0 = from;
-  x1 = to;
+  x0 = ideo.convertBpToPx(chr, from);
+  x1 = ideo.convertBpToPx(chr, to);
 
   ideo.selectedRegion = {"from": from, "to": to, "extent": (to - from)};
 
-  ideo.brush = d3.svg.brush()
-    .x(x)
-    .extent([x0, x1])
+  ideo.brush = d3.brushX()
+    .extent([[0, 0], [length, width]])
     .on("brush", onBrushMove);
 
   var brushg = d3.select("#ideogram").append("g")
     .attr("class", "brush")
     .attr("transform", "translate(0, " + y + ")")
-    .call(ideo.brush);
-
-  brushg.selectAll("rect")
-      .attr("height", width);
+    .call(ideo.brush)
+    .call(ideo.brush.move, [x0, x1]);
 
   function onBrushMove() {
-    var extent = ideo.brush.extent(),
+
+    var extent = d3.event.selection.map(x.invert),
         from = Math.floor(extent[0]),
         to = Math.ceil(extent[1]);
+
     ideo.selectedRegion = {"from": from, "to": to, "extent": (to - from)};
 
     if (ideo.onBrushMove) {
@@ -2070,14 +2069,15 @@ Ideogram.prototype.getBandColorGradients = function() {
   return gradients;
 };
 
+
 /*
   Returns an NCBI taxonomy identifier (taxid) for the given organism name
 
   Example:
-  * Input:
-  ideo.getTaxidFromEutils("Caenorhabditis elegans")
-  * Output:
-  "6239"
+    Input:
+      ideo.getTaxidFromEutils("Caenorhabditis elegans")
+    Output:
+      "6239"
 */
 Ideogram.prototype.getTaxidFromEutils = function(organism) {
 
@@ -2364,7 +2364,7 @@ Ideogram.prototype.init = function() {
 
     if (typeof chrBands === "undefined") {
 
-      d3.xhr(ideo.config.bandDir + bandDataFileNames[taxid])
+      d3.request(ideo.config.bandDir + bandDataFileNames[taxid])
         .on("beforesend", function(data) {
           // Ensures correct taxid is processed in response callback; using
           // simply 'taxid' variable gives the last *requested* taxid, which
