@@ -453,7 +453,7 @@ describe("Ideogram", function() {
       // edge of the p or q arm of chromosome 1
 
       var ter = d3.select("." + arm + "-ter"),
-          terBox = ter[0][0].getBBox(),
+          terBox = ter.nodes()[0].getBBox(),
           terX = terBox.x,
           terWidth = terBox.width,
           terEnd,
@@ -477,10 +477,10 @@ describe("Ideogram", function() {
     function onIdeogramLoadAnnots() {
 
       var pterEnd = getTerEnd("p"),
-          firstAnnotEnd = d3.selectAll("#chr1-9606 .annot")[0][0].getBBox().x,
+          firstAnnotEnd = d3.selectAll("#chr1-9606 .annot").nodes()[0].getBBox().x,
           qterEnd = getTerEnd("q"),
-          tmp = d3.selectAll("#chr1-9606 .annot"),
-          tmp = tmp[0][tmp[0].length - 1].getBBox(),
+          tmp = d3.selectAll("#chr1-9606 .annot").nodes(),
+          tmp = tmp[tmp.length - 1].getBBox(),
           lastAnnotEnd = tmp.x + tmp.width;
 
           console.log("pterEnd - firstAnnotEnd: " + (pterEnd - firstAnnotEnd));
@@ -559,7 +559,7 @@ describe("Ideogram", function() {
       // Tests use case from ../examples/human.html
 
       function callback() {
-        var numAnnots = d3.selectAll(".annot")[0].length;
+        var numAnnots = d3.selectAll(".annot").nodes().length;
         assert.equal(numAnnots, 1);
         done();
       }
@@ -576,14 +576,14 @@ describe("Ideogram", function() {
 
 
     it("should align chr. label with thick horizontal chromosome", function(done) {
-      // Tests use case from ../examples/human.html
+      // Tests use case from ../examples/annotations_basic.html
 
       function callback() {
         var band, bandMiddle,
             chrLabel, chrLabelMiddle;
 
-        band = d3.selectAll(".chromosome .band")[0][0].getBoundingClientRect();
-        chrLabel = d3.selectAll(".chromosome .chrLabel")[0][0].getBoundingClientRect();
+        band = d3.selectAll(".chromosome .band").nodes()[0].getBoundingClientRect();
+        chrLabel = d3.selectAll(".chromosome .chrLabel").nodes()[0].getBoundingClientRect();
 
         bandMiddle = band.top + band.height/2;
         chrLabelMiddle = chrLabel.top + chrLabel.height/2;
@@ -619,8 +619,8 @@ describe("Ideogram", function() {
         var band, bandMiddle,
             chrLabel, chrLabelMiddle;
 
-        band = d3.selectAll(".chromosome .band")[0][0].getBoundingClientRect();
-        chrLabel = d3.selectAll(".chromosome .chrLabel")[0][0].getBoundingClientRect();
+        band = d3.selectAll(".chromosome .band").nodes()[0].getBoundingClientRect();
+        chrLabel = d3.selectAll(".chromosome .chrLabel").nodes()[0].getBoundingClientRect();
 
         bandMiddle = band.left + band.width/2;
         chrLabelMiddle = chrLabel.left + chrLabel.width/2;
@@ -661,8 +661,8 @@ describe("Ideogram", function() {
         var band, bandMiddle,
             chrLabel, chrLabelMiddle;
 
-        band = d3.select(".chromosome .band")[0][0].getBoundingClientRect();
-        chrLabel = d3.select(".chromosome .chrLabel")[0][0].getBoundingClientRect();
+        band = d3.select(".chromosome .band").nodes()[0].getBoundingClientRect();
+        chrLabel = d3.select(".chromosome .chrLabel").nodes()[0].getBoundingClientRect();
 
         bandMiddle = band.left + band.width/2;
         chrLabelMiddle = chrLabel.left + chrLabel.width/2;
