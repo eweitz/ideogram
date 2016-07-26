@@ -2204,7 +2204,7 @@ Ideogram.prototype.sortChromosomesByName = function(chromosomes) {
 Ideogram.prototype.getChromosomes = function(organism) {
 
     var organism, results, link, i, idList,
-      asmUid, rsUid, link, ntSummary,
+      asmUid, asmSummary, rsUid, link, ntSummary,
       chromosomes, chrName, chrLength, subtypes,
       results, result,
       ideo = this;
@@ -2217,64 +2217,73 @@ Ideogram.prototype.getChromosomes = function(organism) {
       "&term=" + organism +
       "AND%20(%22latest%20refseq%22[filter])%20AND%20%22chromosome%20level%22[filter]";
 
-    d3.json(asmSearch, function(data) {
+    d3.queue()
+      .defer(d3.json, asmSearch, function(data) {
+          // NCBI Assembly database's internal identifier (uid) for this assembly
+          asmUid = data.esearchresult.idlist[0];
+          asmSummary = ideo.esummary + "&db=assembly&id=" + asmUid;
+          console.log('asmSummary');
+          console.log(asmSummary);
+      })
+      .defer(d3.json, asmSummary, function(data) {
+        //console.log("asmSummary")
+        //console.log(asmSummary)
 
-      // NCBI Assembly database's internal identifier (uid) for this assembly
-      asmUid = data.esearchresult.idlist[0];
+          // RefSeq UID for this assembly
+          rsUid = data.result[asmUid].rsuid;
 
-      asmSummary = ideo.esummary + "&db=assembly&id=" + asmUid;
+          // Get a list of IDs for the chromosomes in this genome.
+          //
+          // This information does not seem to be available from well-known
+          // NCBI databases like Assembly or Nucleotide, so we use GenColl,
+          // a lesser-known NCBI database.
+          nuccoreLink = ideo.elink + "&db=nuccore&linkname=gencoll_nuccore_chr&from_uid=" + rsUid;
 
-      d3.json(asmSummary, function(data) {
+          console.log("rsUid")
+          console.log(rsUid)
 
-        // RefSeq UID for this assembly
-        rsUid = data.result[asmUid].rsuid;
+        })
 
-        // Get a list of IDs for the chromosomes in this genome.
-        //
-        // This information does not seem to be available from well-known
-        // NCBI databases like Assembly or Nucleotide, so we use GenColl,
-        // a lesser-known NCBI database.
-        nuccoreLink = ideo.elink + "&db=nuccore&linkname=gencoll_nuccore_chr&from_uid=" + rsUid;
-
-        d3.json(nuccoreLink, function(data) {
-
-          links = data.linksets[0].linksetdbs[0].links.join(",");
-
-          ntSummary = ideo.esummary + "&db=nucleotide&id=" + links;
-
-          d3.json(ntSummary, function(data) {
-
-            results = data.result;
-
-            for (var x in results) {
-
-              result = results[x];
-
-              // omit list of reult uids, and skip chrMT
-              if (x === "uids" || result.genome === "mitochondrion") {
-                continue;
-              }
-
-              cnIndex = result.subtype.split("|").indexOf("chromosome");
-
-              chrName = result.subname.split("|")[cnIndex];
-              chrLength = result.slen;
-
-              var chromosome = {
-                "name": chrName,
-                "length": chrLength
-              };
-
-              chromosomes.push(chromosome);
-            }
-
-            chromosomes = ideo.sortChromosomesByName(chromosomes)
-
-            return chromosomes;
-        });
-      });
-    });
-  });
+    //
+    //     d3.json(nuccoreLink, function(data) {
+    //
+    //       links = data.linksets[0].linksetdbs[0].links.join(",");
+    //
+    //       ntSummary = ideo.esummary + "&db=nucleotide&id=" + links;
+    //
+    //       d3.json(ntSummary, function(data) {
+    //
+    //         results = data.result;
+    //
+    //         for (var x in results) {
+    //
+    //           result = results[x];
+    //
+    //           // omit list of reult uids, and skip chrMT
+    //           if (x === "uids" || result.genome === "mitochondrion") {
+    //             continue;
+    //           }
+    //
+    //           cnIndex = result.subtype.split("|").indexOf("chromosome");
+    //
+    //           chrName = result.subname.split("|")[cnIndex];
+    //           chrLength = result.slen;
+    //
+    //           var chromosome = {
+    //             "name": chrName,
+    //             "length": chrLength
+    //           };
+    //
+    //           chromosomes.push(chromosome);
+    //         }
+    //
+    //         chromosomes = ideo.sortChromosomesByName(chromosomes)
+    //
+    //         return chromosomes;
+    //     });
+    //   });
+    // });
+  // });
 };
 
 
