@@ -1,5 +1,8 @@
 // Developed by Eric Weitz (https://github.com/eweitz)
 
+// https://github.com/kristw/d3.promise
+!function(a,b){"function"==typeof define&&define.amd?define(["d3"],b):"object"==typeof exports?module.exports=b(require("d3")):a.d3.promise=b(a.d3)}(this,function(a){var b=function(){function b(a,b){return function(){var c=Array.prototype.slice.call(arguments);return new Promise(function(d,e){var f=function(a,b){return a?void e(Error(a)):void d(b)};b.apply(a,c.concat(f))})}}var c={};return["csv","tsv","json","xml","text","html"].forEach(function(d){c[d]=b(a,a[d])}),c}();return a.promise=b,b});
+
 /* Constructs a prototypal Ideogram class */
 var Ideogram = function(config) {
 
@@ -2205,6 +2208,7 @@ Ideogram.prototype.getChromosomes = function(organism) {
 
     var organism, results, link, i, idList,
       asmUid, asmSummary, rsUid, link, ntSummary,
+      nuccoreLink,
       chromosomes, chrName, chrLength, subtypes,
       results, result,
       ideo = this;
@@ -2217,98 +2221,69 @@ Ideogram.prototype.getChromosomes = function(organism) {
       "&term=" + organism +
       "AND%20(%22latest%20refseq%22[filter])%20AND%20%22chromosome%20level%22[filter]";
 
-    // Begin excerpt from github.com/kristw/d3.promise
-    // https://github.com/kristw/d3.promise/blob/b9c66e2a23b5e5576beb5ade8f85d96c1d6c9bad/src/d3.promise.js#L29
-    function promisify(caller, fn){
-      return function(){
-        var args = Array.prototype.slice.call(arguments);
-        return new Promise(function(resolve, reject){
-          var callback = function(error, data){
-            if(error){
-              reject(Error(error));
-              return;
-            }
-            resolve(data);
-          };
-          fn.apply(caller, args.concat(callback));
-        });
-      };
-    }
+    var promise = d3.promise.json(asmSearch);
 
-    var module = {};
+    promise
+      .then(function(data) {
 
-    ['csv', 'tsv', 'json', 'xml', 'text', 'html'].forEach(function(fnName){
-      module[fnName] = promisify(d3, d3[fnName]);
-    });
-    // end excerpt
+        // NCBI Assembly database's internal identifier (uid) for this assembly
+        asmUid = data.esearchresult.idlist[0];
+        asmSummary = ideo.esummary + "&db=assembly&id=" + asmUid;
 
-    d3.queue(1)
-      .defer(d3.json, asmSearch, function(data) {
-          // NCBI Assembly database's internal identifier (uid) for this assembly
-          asmUid = data.esearchresult.idlist[0];
-          asmSummary = ideo.esummary + "&db=assembly&id=" + asmUid;
-          console.log('asmSummary');
-          console.log(asmSummary);
+        return d3.promise.json(asmSummary);
       })
-      .defer(d3.json, asmSummary, function(data) {
-        //console.log("asmSummary")
-        //console.log(asmSummary)
+      .then(function(data) {
 
-          // RefSeq UID for this assembly
-          rsUid = data.result[asmUid].rsuid;
+        // RefSeq UID for this assembly
+        rsUid = data.result[asmUid].rsuid;
 
-          // Get a list of IDs for the chromosomes in this genome.
-          //
-          // This information does not seem to be available from well-known
-          // NCBI databases like Assembly or Nucleotide, so we use GenColl,
-          // a lesser-known NCBI database.
-          nuccoreLink = ideo.elink + "&db=nuccore&linkname=gencoll_nuccore_chr&from_uid=" + rsUid;
+        // Get a list of IDs for the chromosomes in this genome.
+        //
+        // This information does not seem to be available from well-known
+        // NCBI databases like Assembly or Nucleotide, so we use GenColl,
+        // a lesser-known NCBI database.
+        nuccoreLink = ideo.elink + "&db=nuccore&linkname=gencoll_nuccore_chr&from_uid=" + rsUid;
 
-          console.log("rsUid")
-          console.log(rsUid)
+        return d3.promise.json(nuccoreLink);
+      })
+      .then(function(data) {
 
-        })
+        links = data.linksets[0].linksetdbs[0].links.join(",");
+        ntSummary = ideo.esummary + "&db=nucleotide&id=" + links;
 
-    //
-    //     d3.json(nuccoreLink, function(data) {
-    //
-    //       links = data.linksets[0].linksetdbs[0].links.join(",");
-    //
-    //       ntSummary = ideo.esummary + "&db=nucleotide&id=" + links;
-    //
-    //       d3.json(ntSummary, function(data) {
-    //
-    //         results = data.result;
-    //
-    //         for (var x in results) {
-    //
-    //           result = results[x];
-    //
-    //           // omit list of reult uids, and skip chrMT
-    //           if (x === "uids" || result.genome === "mitochondrion") {
-    //             continue;
-    //           }
-    //
-    //           cnIndex = result.subtype.split("|").indexOf("chromosome");
-    //
-    //           chrName = result.subname.split("|")[cnIndex];
-    //           chrLength = result.slen;
-    //
-    //           var chromosome = {
-    //             "name": chrName,
-    //             "length": chrLength
-    //           };
-    //
-    //           chromosomes.push(chromosome);
-    //         }
-    //
-    //         chromosomes = ideo.sortChromosomesByName(chromosomes)
-    //
-    //         return chromosomes;
-    //     });
-    //   });
-    // });
-  // });
+        return d3.promise.json(ntSummary);
+      })
+      .then(function(data) {
+
+        results = data.result;
+
+        for (var x in results) {
+
+          result = results[x];
+
+          // omit list of reult uids, and skip chrMT
+          if (x === "uids" || result.genome === "mitochondrion") {
+            continue;
+          }
+
+          cnIndex = result.subtype.split("|").indexOf("chromosome");
+
+          chrName = result.subname.split("|")[cnIndex];
+          chrLength = result.slen;
+
+          var chromosome = {
+            "name": chrName,
+            "length": chrLength
+          };
+
+          chromosomes.push(chromosome);
+        }
+
+        chromosomes = ideo.sortChromosomesByName(chromosomes)
+        
+        return chromosomes;
+    });
+
 };
 
 
