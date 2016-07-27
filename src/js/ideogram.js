@@ -2217,7 +2217,32 @@ Ideogram.prototype.getChromosomes = function(organism) {
       "&term=" + organism +
       "AND%20(%22latest%20refseq%22[filter])%20AND%20%22chromosome%20level%22[filter]";
 
-    d3.queue()
+    // Begin excerpt from github.com/kristw/d3.promise
+    // https://github.com/kristw/d3.promise/blob/b9c66e2a23b5e5576beb5ade8f85d96c1d6c9bad/src/d3.promise.js#L29
+    function promisify(caller, fn){
+      return function(){
+        var args = Array.prototype.slice.call(arguments);
+        return new Promise(function(resolve, reject){
+          var callback = function(error, data){
+            if(error){
+              reject(Error(error));
+              return;
+            }
+            resolve(data);
+          };
+          fn.apply(caller, args.concat(callback));
+        });
+      };
+    }
+
+    var module = {};
+
+    ['csv', 'tsv', 'json', 'xml', 'text', 'html'].forEach(function(fnName){
+      module[fnName] = promisify(d3, d3[fnName]);
+    });
+    // end excerpt
+
+    d3.queue(1)
       .defer(d3.json, asmSearch, function(data) {
           // NCBI Assembly database's internal identifier (uid) for this assembly
           asmUid = data.esearchresult.idlist[0];
