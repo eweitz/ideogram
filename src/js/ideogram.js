@@ -2206,11 +2206,11 @@ Ideogram.prototype.sortChromosomesByName = function(chromosomes) {
 */
 Ideogram.prototype.getChromosomes = function(organism) {
 
-    var organism, results, link, i, idList,
-      asmUid, asmSummary, rsUid, link, ntSummary,
-      nuccoreLink,
-      chromosomes, chrName, chrLength, subtypes,
-      results, result,
+    var organism, chromosomes, asmSearch,
+      asmUid, asmSummary,
+      rsUid, nuccoreLink,
+      links, ntSummary,
+      results, result, chrIndex, chrName, chrLength, chromosome,
       ideo = this;
 
     chromosomes = [];
@@ -2271,7 +2271,7 @@ Ideogram.prototype.getChromosomes = function(organism) {
           chrName = result.subname.split("|")[cnIndex];
           chrLength = result.slen;
 
-          var chromosome = {
+          chromosome = {
             "name": chrName,
             "length": chrLength
           };
@@ -2280,7 +2280,7 @@ Ideogram.prototype.getChromosomes = function(organism) {
         }
 
         chromosomes = ideo.sortChromosomesByName(chromosomes)
-        
+
         return chromosomes;
     });
 
