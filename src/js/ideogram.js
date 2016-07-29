@@ -2074,23 +2074,18 @@ Ideogram.prototype.getBandColorGradients = function() {
 
 
 /*
-  Returns an NCBI taxonomy identifier (taxid) for the given organism name
-
-  Example:
-    Input:
-      ideo.getTaxidFromEutils("Caenorhabditis elegans")
-    Output:
-      "6239"
+  Returns an NCBI taxonomy identifier (taxid) for the configured organism
 */
-Ideogram.prototype.getTaxidFromEutils = function(organism) {
+Ideogram.prototype.getTaxidFromEutils = function() {
 
-  var taxonomySearch,
-      taxid,
+  var organism, taxonomySearch, taxid,
       ideo = this;
+
+  organism = ideo.config.organism;
 
   taxonomySearch = ideo.esearch + "&db=taxonomy&term=" + organism;
 
-  d3.json(taxonomySearch, function(data) {
+  return d3.json(taxonomySearch, function(data) {
     taxid = data.esearchresult.idlist[0];
     return taxid;
   });
@@ -2108,7 +2103,8 @@ Ideogram.prototype.getTaxids = function() {
     taxid, taxids,
     org, orgs, i,
     taxidInit, tmpChrs,
-    multiorganism;
+    multiorganism,
+    fetchTaxid = true;
 
   taxidInit = "taxid" in ideo.config;
 
@@ -2142,6 +2138,11 @@ Ideogram.prototype.getTaxids = function() {
           }
         }
       }
+    }
+
+    if (taxids.length == 0) {
+      taxid = ideo.getTaxidFromEutils();
+      taxids.push(taxid);
     }
 
     ideo.config.taxids = taxids;
