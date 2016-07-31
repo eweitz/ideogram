@@ -2076,7 +2076,7 @@ Ideogram.prototype.getBandColorGradients = function() {
 /*
   Returns an NCBI taxonomy identifier (taxid) for the configured organism
 */
-Ideogram.prototype.getTaxidFromEutils = function() {
+Ideogram.prototype.getTaxidFromEutils = function(callback) {
 
   var organism, taxonomySearch, taxid,
       ideo = this;
@@ -2085,9 +2085,9 @@ Ideogram.prototype.getTaxidFromEutils = function() {
 
   taxonomySearch = ideo.esearch + "&db=taxonomy&term=" + organism;
 
-  return d3.json(taxonomySearch, function(data) {
+  d3.json(taxonomySearch, function(data) {
     taxid = data.esearchresult.idlist[0];
-    return taxid;
+    return callback(taxid)
   });
 }
 
@@ -2141,8 +2141,18 @@ Ideogram.prototype.getTaxids = function() {
     }
 
     if (taxids.length == 0) {
-      taxid = ideo.getTaxidFromEutils();
-      taxids.push(taxid);
+      promise = new Promise(function(resolve, reject) {
+        ideo.getTaxidFromEutils(resolve);
+      })
+      promise.then(function(taxid){
+        taxids.push(taxid);
+        return new Promise(function(resolve, reject) {
+          ideo.getChromosomesFromEutils(resolve);
+        })
+      })
+      .then(function(chromosomes) {
+        ideo.config.chromosomes = chromosomes;
+      });
     }
 
     ideo.config.taxids = taxids;
@@ -2205,14 +2215,16 @@ Ideogram.prototype.sortChromosomesByName = function(chromosomes) {
   Returns names and lengths of chromosomes for an organism's best-known
   genome assembly.  Gets data from NCBI EUtils web API.
 */
-Ideogram.prototype.getChromosomes = function(organism) {
+Ideogram.prototype.getChromosomesFromEutils = function(callback) {
 
-    var organism, chromosomes, asmSearch,
+    var chromosomes, asmSearch,
       asmUid, asmSummary,
       rsUid, nuccoreLink,
       links, ntSummary,
       results, result, chrIndex, chrName, chrLength, chromosome,
       ideo = this;
+
+    organism = ideo.config.organism;
 
     chromosomes = [];
 
@@ -2282,7 +2294,7 @@ Ideogram.prototype.getChromosomes = function(organism) {
 
         chromosomes = ideo.sortChromosomesByName(chromosomes)
 
-        return chromosomes;
+        return callback(chromosomes);
     });
 
 };
