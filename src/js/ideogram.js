@@ -2097,7 +2097,7 @@ Ideogram.prototype.getTaxidFromEutils = function(callback) {
 * Also sets configuration parameters related to taxid(s), whether ideogram is
 * multiorganism, and adjusts chromosomes parameters as needed
 **/
-Ideogram.prototype.getTaxids = function() {
+Ideogram.prototype.getTaxids = function(callback) {
 
   var ideo = this,
     taxid, taxids,
@@ -2151,29 +2151,34 @@ Ideogram.prototype.getTaxids = function() {
         })
       })
       .then(function(chromosomes) {
+        ideo.config.taxids = taxids;
         ideo.config.chromosomes = chromosomes;
+
+        callback(taxids);
       });
-    }
+    } else {
 
-    ideo.config.taxids = taxids;
-    if (multiorganism) {
-      ideo.config.chromosomes = tmpChrs;
-    }
-  }
-
-  if (multiorganism) {
-    ideo.coordinateSystem = "bp";
-    if (taxidInit) {
-      taxids = ideo.config.taxid;
+      ideo.config.taxids = taxids;
+      if (multiorganism) {
+        ideo.config.chromosomes = tmpChrs;
+      }
     }
   } else {
-    if (taxidInit) {
-      taxids = [ideo.config.taxid];
-    }
-    ideo.config.taxids = taxids;
-  }
 
-  return taxids;
+    if (multiorganism) {
+      ideo.coordinateSystem = "bp";
+      if (taxidInit) {
+        taxids = ideo.config.taxid;
+      }
+    } else {
+      if (taxidInit) {
+        taxids = [ideo.config.taxid];
+      }
+      ideo.config.taxids = taxids;
+    }
+
+    callback(taxids);
+  }
 };
 
 
@@ -2361,7 +2366,12 @@ Ideogram.prototype.init = function() {
       resolution = this.config.resolution,
       accession;
 
-  taxids = ideo.getTaxids();
+  var promise = new Promise(function(resolve, reject) {
+    ideo.getTaxids(resolve);
+  })
+
+  promise.then(function(taxids) {
+
   ideo.config.taxids = taxids;
 
   for (i = 0; i < taxids.length; i++) {
@@ -2410,7 +2420,9 @@ Ideogram.prototype.init = function() {
       writeContainer();
     }
 
+
   }
+});
 
 
   function writeContainer() {
