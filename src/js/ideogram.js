@@ -329,36 +329,45 @@ Ideogram.prototype.colorArms = function(pArmColor, qArmColor) {
 
     pcenStart = pcen.px.start;
     qcenStop = qcen.px.stop;
+    /*
+     * Select chromosome set. Then select all chromosomes within
+     * and apply ideogram initial code to each chromosome to
+     * colour them all correct.
+     */
+    d3.select("#" + chrID + "-chromosome-set")
+      .selectAll("g.chromosome")
+      .each(function() {
 
-    d3.select("#" + chrID)
-      .append("line")
-        .attr("x1", pcenStart)
-        .attr("y1", chrMargin + 0.2)
-        .attr("x2", pcenStart)
-        .attr("y2", chrMargin + chrWidth - 0.2)
-        .style("stroke", pArmColor)
+        var chromosome = d3.select(this);
 
-    d3.select("#" + chrID)
-      .append("line")
-        .attr("x1", qcenStop)
-        .attr("y1", chrMargin + 0.2)
-        .attr("x2", qcenStop)
-        .attr("y2", chrMargin + chrWidth - 0.2)
-        .style("stroke", qArmColor)
+        chromosome.append("line")
+          .attr("x1", pcenStart)
+          .attr("y1", chrMargin + 0.2)
+          .attr("x2", pcenStart)
+          .attr("y2", chrMargin + chrWidth - 0.2)
+          .style("stroke", pArmColor)
 
-    d3.selectAll("#" + chrID + " .band")
-      .data(chr.bands)
-      .style("fill", function(d, i) {
-        if (i <= chr.pcenIndex) {
-          return pArmColor;
-        } else {
-          return qArmColor;
-        }
+        chromosome.append("line")
+          .attr("x1", qcenStop)
+          .attr("y1", chrMargin + 0.2)
+          .attr("x2", qcenStop)
+          .attr("y2", chrMargin + chrWidth - 0.2)
+          .style("stroke", qArmColor)
+
+        chromosome.selectAll(" .band")
+          .data(chr.bands)
+          .style("fill", function(d, i) {
+            if (i <= chr.pcenIndex) {
+              return pArmColor;
+            } else {
+              return qArmColor;
+            }
+          });
       });
   });
+
   d3.selectAll(".p-ter.chromosomeBorder").style("fill", pArmColor);
   d3.selectAll(".q-ter.chromosomeBorder").style("fill", qArmColor);
-
 };
 
 /**
