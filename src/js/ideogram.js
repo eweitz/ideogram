@@ -2103,6 +2103,7 @@ Ideogram.prototype.getTaxids = function(callback) {
     taxid, taxids,
     org, orgs, i,
     taxidInit, tmpChrs,
+    assembly, chromosomes,
     multiorganism,
     fetchTaxid = true;
 
@@ -2144,15 +2145,27 @@ Ideogram.prototype.getTaxids = function(callback) {
       promise = new Promise(function(resolve, reject) {
         ideo.getTaxidFromEutils(resolve);
       })
-      promise.then(function(taxid){
+      promise.then(function(data){
+        taxid = data;
         taxids.push(taxid);
+
+        ideo.config.taxids = taxids;
+        ideo.organisms[taxid] = {
+          "commonName": "",
+          "scientificName": ideo.config.organism,
+          "scientificNameAbbr": "",
+        }
         return new Promise(function(resolve, reject) {
-          ideo.getChromosomesFromEutils(resolve);
+          ideo.getAssemblyAndChromosomesFromEutils(resolve);
         })
       })
-      .then(function(chromosomes) {
-        ideo.config.taxids = taxids;
+      .then(function(asmChrArray) {
+        assembly = asmChrArray[0];
+        chromosomes = asmChrArray[1];
         ideo.config.chromosomes = chromosomes;
+        ideo.organisms[taxid]["assemblies"] = {
+          "default": assembly
+        }
 
         callback(taxids);
       });
@@ -2220,9 +2233,10 @@ Ideogram.prototype.sortChromosomesByName = function(chromosomes) {
   Returns names and lengths of chromosomes for an organism's best-known
   genome assembly.  Gets data from NCBI EUtils web API.
 */
-Ideogram.prototype.getChromosomesFromEutils = function(callback) {
+Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
 
-    var chromosomes, asmSearch,
+    var asmAndChrArray, // [assembly_accession, chromosome_objects_array]
+      assemblyAccession, chromosomes, asmSearch,
       asmUid, asmSummary,
       rsUid, nuccoreLink,
       links, ntSummary,
@@ -2231,6 +2245,7 @@ Ideogram.prototype.getChromosomesFromEutils = function(callback) {
 
     organism = ideo.config.organism;
 
+    asmAndChrArray = [];
     chromosomes = [];
 
     asmSearch =
@@ -2254,6 +2269,9 @@ Ideogram.prototype.getChromosomesFromEutils = function(callback) {
 
         // RefSeq UID for this assembly
         rsUid = data.result[asmUid].rsuid;
+        assemblyAccession = data.result[asmUid].assemblyaccession;
+
+        asmAndChrArray.push(assemblyAccession);
 
         // Get a list of IDs for the chromosomes in this genome.
         //
@@ -2298,8 +2316,8 @@ Ideogram.prototype.getChromosomesFromEutils = function(callback) {
         }
 
         chromosomes = ideo.sortChromosomesByName(chromosomes)
-
-        return callback(chromosomes);
+        asmAndChrArray.push(chromosomes)
+        return callback(asmAndChrArray);
     });
 
 };
@@ -2372,6 +2390,8 @@ Ideogram.prototype.init = function() {
 
   promise.then(function(taxids) {
 
+  taxid = taxids[0]
+  ideo.config.taxid = taxid;
   ideo.config.taxids = taxids;
 
   for (i = 0; i < taxids.length; i++) {
