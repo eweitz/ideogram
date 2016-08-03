@@ -2416,7 +2416,7 @@ Ideogram.prototype.init = function() {
       "7227": "ucsc/drosophila_melanogaster_dm6.tsv"
     };
 
-    if (typeof chrBands === "undefined") {
+    if (typeof chrBands === "undefined" && taxid in bandDataFileNames) {
 
       d3.request(ideo.config.bandDir + bandDataFileNames[taxid])
         .on("beforesend", function(data) {
@@ -2433,11 +2433,14 @@ Ideogram.prototype.init = function() {
             processBandData();
             writeContainer();
           }
-        }
-      );
+        });
+
     } else {
-      // If bands already available, e.g. via <script> tag in initial page load
-      ideo.bandData[taxid] = chrBands;
+      if (typeof chrBands !== "undefined") {
+        // If bands already available,
+        // e.g. via <script> tag in initial page load
+        ideo.bandData[taxid] = chrBands;
+      }
       processBandData();
       writeContainer();
     }
