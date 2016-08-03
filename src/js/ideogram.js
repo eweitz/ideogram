@@ -2175,6 +2175,8 @@ Ideogram.prototype.getTaxids = function(callback) {
       if (multiorganism) {
         ideo.config.chromosomes = tmpChrs;
       }
+
+      callback(taxids);
     }
   } else {
 
@@ -2589,10 +2591,13 @@ function finishInit() {
     var t0_a = new Date().getTime();
 
     var chrIndex = 0,
+        taxids,
         chr, chrModel, chromosome,
         i, j, m, n;
 
     ideo.initDrawChromosomes(bandsArray);
+
+    taxids = ideo.config.taxids;
 
     chrIndex = 0;
     for (m = 0; m < taxids.length; m++) {
