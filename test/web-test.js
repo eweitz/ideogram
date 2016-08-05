@@ -3,8 +3,6 @@
 //  - http://martinfowler.com/articles/asyncJS.html
 //  - https://mochajs.org/#asynchronous-code
 
-var Promise = require("es6-promise").Promise;
-
 describe("Ideogram", function() {
 
   var config = {};
