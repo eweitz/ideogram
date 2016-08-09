@@ -76,7 +76,7 @@ function getIndexHtml() {
   var html, css, d3, js, bands, path;
 
   css = dir + '/src/css/ideogram.css';
-  d3 = dir + '/node_modules/d3/d3.min.js';
+  d3 = dir + '/node_modules/d3/build/d3.min.js';
   js = dir + '/src/js/ideogram.js';
   bands = dir + '/data/bands/native/ideogram_9606_GCF_000001305.14_850_V1.js';
 
@@ -227,12 +227,12 @@ ideogramDrawer = function(config) {
     d3.selectAll(".annot").remove();
     ra = rearrangedAnnots[i];
     ideogram.drawProcessedAnnots(ra[1]);
-    svg = d3.select(ideogram.config.container)[0][0].innerHTML;
+    svg = d3.select(ideogram.config.container).nodes()[0].innerHTML;
     images.push([ra[0], svg, ra[2]]);
   }
 
   chrRects = {};
-  chrs = d3.selectAll(".chromosome")[0];
+  chrs = d3.selectAll(".chromosome").nodes()[0];
   for (i = 0; i < chrs.length; i++) {
     chr = chrs[i];
     chrID = chr["id"].split("-")[0].slice(3); // e.g. chr12-9606 -> 12

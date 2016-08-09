@@ -61,7 +61,7 @@ text {
 	stroke-width:1;
 }
 
-.brush .extent {
+.brush .selection {
 	fill: #F00;
 	stroke: #F00;
   fill-opacity: .3;

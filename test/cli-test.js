@@ -6,7 +6,7 @@ describe("Ideogram CLI", function() {
 
   it("should run the built-in example", function(done) {
 
-    this.timeout(10000);
+    this.timeout(30000);
     var numImages = 100;
 
     var cmd =
@@ -20,6 +20,9 @@ describe("Ideogram CLI", function() {
       '--show-chromosome-labels true ' +
       '--orientation horizontal ' +
       '--local-annotations-path data/annotations/' + numImages + '_virtual_snvs.json';
+
+    console.log("Ideogram CLI test command:")
+    console.log(cmd)
 
     exec(cmd, function(error, stdout, stderr) {
       var images = fs.readdirSync('images');
