@@ -172,6 +172,7 @@ var Ideogram = function(config) {
   this.chromosomes = {};
   this.numChromosomes = 0;
   this.bandData = {};
+  this.gotChromosomesFromApi = false;
 
   this.init();
 
@@ -2165,6 +2166,7 @@ Ideogram.prototype.getTaxids = function(callback) {
       .then(function(asmChrArray) {
         assembly = asmChrArray[0];
         chromosomes = asmChrArray[1];
+
         ideo.config.chromosomes = chromosomes;
         ideo.organisms[taxid]["assemblies"] = {
           "default": assembly
@@ -2546,44 +2548,52 @@ Ideogram.prototype.init = function() {
     if (ideo.config.multiorganism) {
       chrsByTaxid = chrs;
     }
-    ideo.config.chromosomes = {};
+    if (ideo.config.gotChromosomesFromApi === false) {
+      ideo.config.chromosomes = {};
+    }
 
     var t0_b = new Date().getTime();
-    for (j = 0; j < taxids.length; j++) {
 
-      taxid = taxids[j];
-      bandData = ideo.bandData[taxid];
-      if (ideo.config.multiorganism) {
-        chrs = chrsByTaxid[taxid];
-      }
-      bandsByChr = ideo.getBands(bandData, taxid, chrs);
+    if (ideo.config.gotChromosomesFromApi === false) {
+      for (j = 0; j < taxids.length; j++) {
 
-      chrs = Object.keys(bandsByChr);
-
-      ideo.config.chromosomes[taxid] = chrs.slice();
-
-      ideo.numChromosomes += ideo.config.chromosomes[taxid].length;
-
-      for (k = 0; k < chrs.length; k++) {
-
-        chromosome = chrs[k];
-        bands = bandsByChr[chromosome];
-        bandsArray.push(bands);
-
-        chrLength = {
-          "iscn": bands[bands.length - 1].iscn.stop,
-          "bp": bands[bands.length - 1].bp.stop
-        };
-
-        if (chrLength.iscn > ideo.maxLength.iscn) {
-          ideo.maxLength.iscn = chrLength.iscn;
+        taxid = taxids[j];
+        bandData = ideo.bandData[taxid];
+        if (ideo.config.multiorganism) {
+          chrs = chrsByTaxid[taxid];
         }
+        bandsByChr = ideo.getBands(bandData, taxid, chrs);
 
-        if (chrLength.bp > ideo.maxLength.bp) {
-          ideo.maxLength.bp = chrLength.bp;
+        chrs = Object.keys(bandsByChr);
+
+        ideo.config.chromosomes[taxid] = chrs.slice();
+
+        ideo.numChromosomes += ideo.config.chromosomes[taxid].length;
+
+        for (k = 0; k < chrs.length; k++) {
+
+          chromosome = chrs[k];
+          bands = bandsByChr[chromosome];
+          bandsArray.push(bands);
+
+          chrLength = {
+            "iscn": bands[bands.length - 1].iscn.stop,
+            "bp": bands[bands.length - 1].bp.stop
+          };
+
+          if (chrLength.iscn > ideo.maxLength.iscn) {
+            ideo.maxLength.iscn = chrLength.iscn;
+          }
+
+          if (chrLength.bp > ideo.maxLength.bp) {
+            ideo.maxLength.bp = chrLength.bp;
+          }
         }
       }
+    } else {
+        
     }
+
     var t1_b = new Date().getTime();
     if (ideo.debug) {
       console.log("Time in processBandData: " + (t1_b - t0_b) + " ms");
