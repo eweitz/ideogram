@@ -2324,6 +2324,9 @@ Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
 
         chromosomes = ideo.sortChromosomesByName(chromosomes)
         asmAndChrArray.push(chromosomes)
+
+        ideo.config.gotChromosomesFromApi = true;
+
         return callback(asmAndChrArray);
     });
 
@@ -2519,7 +2522,7 @@ Ideogram.prototype.init = function() {
   function processBandData() {
 
     var j, k, chromosome, bands, chromosomeModel,
-        chrLength,
+        chrLength, chr,
         bandData, bands, bandsByChr,
         stopType,
         taxid, taxids, chrs, chrsByTaxid;
@@ -2548,26 +2551,27 @@ Ideogram.prototype.init = function() {
     if (ideo.config.multiorganism) {
       chrsByTaxid = chrs;
     }
-    if (ideo.config.gotChromosomesFromApi === false) {
-      ideo.config.chromosomes = {};
-    }
+
+    ideo.config.chromosomes = {};
 
     var t0_b = new Date().getTime();
 
-    if (ideo.config.gotChromosomesFromApi === false) {
-      for (j = 0; j < taxids.length; j++) {
+    for (j = 0; j < taxids.length; j++) {
 
-        taxid = taxids[j];
+      taxid = taxids[j];
+
+      if (ideo.config.multiorganism) {
+        chrs = chrsByTaxid[taxid];
+      }
+
+      if (ideo.config.gotChromosomesFromApi === false) {
         bandData = ideo.bandData[taxid];
-        if (ideo.config.multiorganism) {
-          chrs = chrsByTaxid[taxid];
-        }
+
         bandsByChr = ideo.getBands(bandData, taxid, chrs);
 
         chrs = Object.keys(bandsByChr);
 
         ideo.config.chromosomes[taxid] = chrs.slice();
-
         ideo.numChromosomes += ideo.config.chromosomes[taxid].length;
 
         for (k = 0; k < chrs.length; k++) {
@@ -2589,9 +2593,19 @@ Ideogram.prototype.init = function() {
             ideo.maxLength.bp = chrLength.bp;
           }
         }
+      } else {
+
+        ideo.config.chromosomes[taxid] = Object.keys(chrs.slice());
+        ideo.numChromosomes += ideo.config.chromosomes[taxid].length;
+
+        for (k = 0; k < chrs.length; k++) {
+          chr = chrs[k];
+          if (chr.length > ideo.maxLength.bp) {
+            ideo.maxLength.bp = chr.length;
+          }
+        }
+
       }
-    } else {
-        
     }
 
     var t1_b = new Date().getTime();
