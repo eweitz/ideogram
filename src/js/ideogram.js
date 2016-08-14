@@ -2390,7 +2390,7 @@ Ideogram.prototype.init = function() {
         ideoHeight = ideo.config.rows * (ideoHeight - 30);
       }
     } else {
-      ideoHeight = ideo.config.chrMargin * ideo.numChromosomes + 30;
+      ideoHeight = ideo.config.chrMargin * ideo.numChromosomes * ideo.config.ploidy + 30;
     }
 
     var gradients = ideo.getBandColorGradients();
