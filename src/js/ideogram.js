@@ -149,6 +149,14 @@ var Ideogram = function(config) {
       "commonName": "Fly",
       "scientificName": "Drosophlia melanogaster",
       "scientificNameAbbr": "D. melanogaster"
+    },
+    "4641": {
+      "commonName": "banana",
+      "scientificName": "Musa acuminata",
+      "scientificNameAbbr": "M. acuminata",
+      "assemblies": {
+          "default": "mock"
+        }
     }
   };
 
