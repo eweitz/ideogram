@@ -378,47 +378,56 @@ Ideogram.prototype.colorArms = function(pArmColor, qArmColor) {
 * length in base pairs or ISCN coordinates,
 * cytogenetic bands, centromere position, etc.
 */
-Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid, chrIndex) {
+Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIndex) {
 
-  var chr = {};
-  var band, scale,
+  var chr = {},
+      band, scale,
       width, pxStop,
       startType, stopType,
       chrHeight = this.config.chrHeight,
       maxLength = this.maxLength,
       chrLength,
-      cs;
+      cs, hasBands;
 
   cs = this.coordinateSystem;
+  hasBands = (typeof bands !== "undefined");
 
   chr["chrIndex"] = chrIndex;
-  chr["name"] = chromosomeName;
+
+  if (hasBands) {
+    chr["name"] = chromosome;
+    chr["length"] = bands[bands.length - 1][cs].stop;
+  } else {
+    chr = chromosome;
+  }
 
   if (this.config.fullChromosomeLabels === true) {
     var orgName = this.organisms[taxid].scientificNameAbbr;
     chr["name"] = orgName + " chr" + chr.name;
   }
 
-  chr["id"] = "chr" + chromosomeName + "-" + taxid;
+  chr["id"] = "chr" + chr.name + "-" + taxid;
 
-  chr["length"] = bands[bands.length - 1][cs].stop;
   chrLength = chr["length"];
 
   pxStop = 0;
 
-  for (var i = 0; i < bands.length; i++) {
-    band = bands[i];
+  if (hasBands) {
+    for (var i = 0; i < bands.length; i++) {
+      band = bands[i];
 
-    width = chrHeight * chr["length"]/maxLength[cs] * (band[cs].stop - band[cs].start)/chrLength;
+      width = chrHeight * chr["length"]/maxLength[cs] * (band[cs].stop - band[cs].start)/chrLength;
 
-    bands[i]["px"] = {"start": pxStop, "stop": pxStop + width, "width": width};
+      bands[i]["px"] = {"start": pxStop, "stop": pxStop + width, "width": width};
 
-    pxStop = bands[i].px.stop;
+      pxStop = bands[i].px.stop;
 
-    if (band.stain === "acen" && band.name[0] === "p") {
-      chr["pcenIndex"] = i;
+      if (hasBands && band.stain === "acen" && band.name[0] === "p") {
+        chr["pcenIndex"] = i;
+      }
     }
-
+  } else {
+    pxStop = chrHeight * chr["length"]/maxLength[cs];
   }
 
   chr["width"] = pxStop;
@@ -442,12 +451,14 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid, c
     chr["scale"].iscn = chrHeight * chrLength/maxLength.bp;
   } else {
     chr["scale"].bp = chrHeight / maxLength.bp;
-    chr["scale"].iscn = chrHeight / maxLength.iscn;
+    if (hasBands) {
+      chr["scale"].iscn = chrHeight / maxLength.iscn;
+    }
   }
   chr["bands"] = bands;
 
   chr["centromerePosition"] = "";
-  if (bands[0].bp.stop - bands[0].bp.start == 1) {
+  if (hasBands && bands[0].bp.stop - bands[0].bp.start == 1) {
     // As with mouse
     chr["centromerePosition"] = "telocentric";
 
@@ -2325,13 +2336,12 @@ Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
         chromosomes = ideo.sortChromosomesByName(chromosomes)
         asmAndChrArray.push(chromosomes)
 
-        ideo.config.gotChromosomesFromApi = true;
+        ideo.coordinateSystem = "bp";
 
         return callback(asmAndChrArray);
     });
 
 };
-
 
 Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
 
@@ -2350,11 +2360,10 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
 
     for (j = 0; j < chrs.length; j++) {
 
+      chromosome = chrs[j];
       bands = bandsArray[chrIndex];
-
       chrIndex += 1;
 
-      chromosome = chrs[j];
       chromosomeModel = ideo.getChromosomeModel(bands, chromosome, taxid, chrIndex);
 
       ideo.chromosomes[taxid][chromosome] = chromosomeModel;
@@ -2564,7 +2573,7 @@ Ideogram.prototype.init = function() {
         chrs = chrsByTaxid[taxid];
       }
 
-      if (ideo.config.gotChromosomesFromApi === false) {
+      if (ideo.coordinateSystem === "iscn") {
         bandData = ideo.bandData[taxid];
 
         bandsByChr = ideo.getBands(bandData, taxid, chrs);
@@ -2593,9 +2602,10 @@ Ideogram.prototype.init = function() {
             ideo.maxLength.bp = chrLength.bp;
           }
         }
-      } else {
+      } else if (ideo.coordinateSystem == "bp"){
+        // If lacking band-level data
 
-        ideo.config.chromosomes[taxid] = Object.keys(chrs.slice());
+        ideo.config.chromosomes[taxid] = chrs.slice();
         ideo.numChromosomes += ideo.config.chromosomes[taxid].length;
 
         for (k = 0; k < chrs.length; k++) {
