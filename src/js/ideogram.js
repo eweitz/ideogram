@@ -890,6 +890,40 @@ Ideogram.prototype.round = function(coord) {
   return Math.round(coord * 100) / 100;
 };
 
+Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
+
+  var chr,
+      bump, chrMargin,
+      ideo = this;
+
+  bump = ideo.bump;
+
+  chrMargin = ideo.config.chrMargin * chrIndex;
+
+  chr = d3.select("svg")
+    .append("g")
+      .attr("id", chrModel.id)
+      .attr("class", "chromosome");
+
+  chrWidth = ideo.config.chrWidth;
+  width = chrModel.width;
+
+  chr.append('line')
+    .attr("class", "cb-top chromosomeBorder")
+    .attr('x1', bump/2)
+    .attr('y1', chrMargin)
+    .attr('x2', width)
+    .attr("y2", chrMargin);
+
+  chr.append('line')
+    .attr("class", "cb-bottom chromosomeBorder")
+    .attr('x1', bump/2)
+    .attr('y1', chrWidth + chrMargin)
+    .attr('x2', width)
+    .attr("y2", chrWidth + chrMargin);
+
+}
+
 /**
 * Renders all the bands and outlining boundaries of a chromosome.
 */
@@ -900,9 +934,13 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
       pTerPad, chrClass,
       annotHeight, numAnnotTracks, annotTracksHeight,
       bump, ideo,
-      bumpTweak, borderTweak;
+      bumpTweak, borderTweak,
+      ideo = this;
 
-  ideo = this;
+  if (typeof chrModel.bands === "undefined") {
+    ideo.drawChromosomeNoBands(chrModel, chrIndex);
+    return;
+  }
 
   bump = ideo.bump;
 
@@ -2651,7 +2689,7 @@ function finishInit() {
 
         chrModel = ideo.chromosomes[taxid][chromosome];
 
-        chr = d3.select("#chr" + chromosome + "-" + taxid);
+        chr = d3.select("#" + chrModel.id);
 
         ideo.initTransformChromosome(chr, chrIndex);
       }
