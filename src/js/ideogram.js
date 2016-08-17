@@ -2405,7 +2405,8 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
       taxids = ideo.config.taxids,
       taxid,
       chrIndex = 0,
-      i, j, chrs, chromosome, chromosomeModel;
+      i, j, chrs, chromosome, chromosomeModel
+      tmpChrs = [];
 
   for (i = 0; i < taxids.length; i++) {
 
@@ -2426,7 +2427,14 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
       ideo.chromosomesArray.push(chromosomeModel);
 
       ideo.drawChromosome(chromosomeModel, chrIndex);
+
+      if (typeof bands === "undefined") {
+        ideo.chromosomes[taxid][chromosome.name] = chromosomeModel;
+        tmpChrs[j] = chromosomeModel.name;
+      }
     }
+
+    ideo.config.chromosomes[taxid] = tmpChrs;
 
     if (ideo.config.showBandLabels === true) {
         ideo.drawBandLabels(ideo.chromosomes);
@@ -2688,7 +2696,7 @@ function finishInit() {
 
     var chrIndex = 0,
         taxids,
-        chr, chrModel, chromosome,
+        chr, chrs, chrModel, chromosome,
         i, j, m, n;
 
     ideo.initDrawChromosomes(bandsArray);
