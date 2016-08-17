@@ -172,7 +172,6 @@ var Ideogram = function(config) {
   this.chromosomes = {};
   this.numChromosomes = 0;
   this.bandData = {};
-  this.gotChromosomesFromApi = false;
 
   this.init();
 
@@ -907,6 +906,25 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
 
   chrWidth = ideo.config.chrWidth;
   width = chrModel.width;
+
+  pTerPad = bump;
+
+  chr.append('path')
+    .attr("class", "p-ter chromosomeBorder")
+    .attr("d",
+      "M " + (pTerPad - 3) + " " + chrMargin + " " +
+      "l -" + (pTerPad - 2) + " 0 " +
+      "l 0 " + chrWidth + " " +
+      "l " + (pTerPad - 2) + " 0 z");
+
+  qArmEnd = chrModel.width;
+
+  chr.append('path')
+    .attr("class", "q-ter chromosomeBorder")
+    .attr("d",
+      "M " + qArmEnd + " " + chrMargin + " " +
+      "q " + bump + " " +  chrWidth/2 + " 0 " + chrWidth
+    );
 
   chr.append('line')
     .attr("class", "cb-top chromosomeBorder")
@@ -2680,13 +2698,16 @@ function finishInit() {
     chrIndex = 0;
     for (m = 0; m < taxids.length; m++) {
       taxid = taxids[m];
+
+      //ideo.config.chromosomes[taxid] = Object.keys(ideo.config.chromosomes[taxid])
       chrs = ideo.config.chromosomes[taxid];
+
       for (n = 0; n < chrs.length; n++) {
 
         chrIndex += 1;
 
         chromosome = chrs[n];
-
+        console.log(chromosome)
         chrModel = ideo.chromosomes[taxid][chromosome];
 
         chr = d3.select("#" + chrModel.id);
