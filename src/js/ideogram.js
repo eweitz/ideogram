@@ -6,6 +6,12 @@ var Ideogram = function(config) {
   // Clone the config object, to allow multiple instantiations
   // without picking up prior ideogram's settings
   this.config = JSON.parse(JSON.stringify(config));
+  /**
+   * Color provider.
+   * @private
+   * @member {Color}
+   */
+  this._color = new Color(this.config);
 
   this.debug = false;
 
@@ -322,7 +328,7 @@ Ideogram.prototype.getBands = function(content, taxid, chromosomes) {
 /**
 * Fills cytogenetic arms -- p-arm and q-arm -- with specified colors
 */
-Ideogram.prototype.colorArms = function(pArmColor, qArmColor) {
+Ideogram.prototype.colorArms = function() {
 
   var ideo = this;
 
@@ -344,38 +350,39 @@ Ideogram.prototype.colorArms = function(pArmColor, qArmColor) {
      */
     d3.select("#" + chrID + "-chromosome-set")
       .selectAll("g.chromosome")
-      .each(function() {
+      .each(function(mock, chrNumber) {
 
         var chromosome = d3.select(this);
-
+        /*
+         * Color arm's ends borders.
+         */
         chromosome.append("line")
           .attr("x1", pcenStart)
           .attr("y1", chrMargin + 0.2)
           .attr("x2", pcenStart)
           .attr("y2", chrMargin + chrWidth - 0.2)
-          .style("stroke", pArmColor)
-
+          .style("stroke", ideo._color.getArmColor(chrIndex, chrNumber, 0))
         chromosome.append("line")
           .attr("x1", qcenStop)
           .attr("y1", chrMargin + 0.2)
           .attr("x2", qcenStop)
           .attr("y2", chrMargin + chrWidth - 0.2)
-          .style("stroke", qArmColor)
-
+          .style("stroke", ideo._color.getArmColor(chrIndex, chrNumber, 1))
+        /*
+         * Color bands.
+         */
         chromosome.selectAll(" .band")
           .data(chr.bands)
           .style("fill", function(d, i) {
-            if (i <= chr.pcenIndex) {
-              return pArmColor;
-            } else {
-              return qArmColor;
-            }
+            return ideo._color.getArmColor(chrIndex, chrNumber, Number(! (i <= chr.pcenIndex)));
           });
+        /*
+         * Color arm's ends.
+         */
+        chromosome.selectAll(".p-ter.chromosomeBorder").style("fill", ideo._color.getArmColor(chrIndex, chrNumber, 0));
+        chromosome.selectAll(".q-ter.chromosomeBorder").style("fill", ideo._color.getArmColor(chrIndex, chrNumber, 1));
       });
   });
-
-  d3.selectAll(".p-ter.chromosomeBorder").style("fill", pArmColor);
-  d3.selectAll(".q-ter.chromosomeBorder").style("fill", qArmColor);
 };
 
 /**
@@ -2231,7 +2238,7 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
       taxid,
       chrIndex = 0,
       i, j, chrs, chromosome, chromosomeModel;
-
+  console.log(ideo.config);
   for (i = 0; i < taxids.length; i++) {
 
     taxid = taxids[i];
@@ -2608,9 +2615,8 @@ function finishInit() {
       ideo.drawAnnots(ideo.config.annotations);
     }
 
-    if (ideo.config.armColors) {
-      var ac = ideo.config.armColors;
-      ideo.colorArms(ac[0], ac[1]);
+    if (ideo.config.armColors || ideo.config.ploidyDesc) {
+      ideo.colorArms();
     }
 
     var t1_a = new Date().getTime();

@@ -6,6 +6,7 @@
   <link type="text/css" rel="stylesheet" href="../src/css/ideogram.css"/>
   <!-- script type="text/javascript" src="../lib/d3/d3.min.js"></script -->
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+  <script type="text/javascript" src="../src/js/color.js"></script>
   <script type="text/javascript" src="../src/js/ideogram.js"></script>
   <script type="text/javascript" src="../data/bands/native/ideogram_banana_v0.1.js"></script>
 </head>
@@ -17,11 +18,28 @@
 
     var config = {
       organism: "banana",
-      armColors: ["#D00", "#CCC"],
+      // armColors: ["#D00", "#CCC"],
       // armColors: ["#fff", "#fff"],
       // armColors: ["#dea673", "#7396be"],
       orientation: "horizontal",
-      ploidy: 3
+      ploidy: 3,
+      ancestors: {
+        "A": "#dea673",
+        "B": "#7396be"
+      },
+      ploidyDesc: [
+        'ABB',
+        {'AAB': ['01', '11', '11']},
+        'BAB',
+        {'AABB': ['11', '11', '11', '20']},
+        'AAB',
+        'BBB',
+        {'AAB': ['01', '11', '11']},
+        'AAB',
+        'AAB',
+        'AAB',
+        'AAB'
+      ]
     };
 
     var ideogram = new Ideogram(config);
