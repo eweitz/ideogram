@@ -17,42 +17,77 @@ function Color(config) {
  * @returns {String}
  */
 Color.prototype.getArmColor = function(chrSetNumber, chrNmber, armNumber) {
-    /*
-     * Handle armColors option if provided.
-     */
+
     if (this._config.armColors) {
-        /*
-         * Return color corresponding to arm number.
-         */
         return this._config.armColors[armNumber];
-    /*
-     * Handle ancestors color scheme in case of ploidy.
-     */
     } else if (this._config.ancestors) {
-        /*
-         * Get chromosome set description by number.
-         */
-        var chrSetDesc = this._config.ploidyDesc[chrSetNumber];
-        /*
-         * If description defined as object get key of the object.
-         */
-        if (chrSetDesc instanceof Object) {
-            chrSetDesc = Object.keys(chrSetDesc)[0];
-        }
-        /*
-         * Find ancestor letter.
-         */
-        var ancestor = chrSetDesc.split('')[chrNmber];
-        /*
-         * Return color by ancestor.
-         */
-        return this._config.ancestors[ancestor];
-    /*
-     * Throw exception in another case.
-     */
+        return this._getPolyploidArmColor(chrSetNumber, chrNmber, armNumber);
     } else {
         throw new Exception('No color scheme provided');
     }
+};
+
+
+/**
+ * Get polyploid organism chromosome arm's color.
+ * @param chrSetNumber
+ * @param chrNmber
+ * @param armNumber
+ * @returns {String}
+ */
+Color.prototype._getPolyploidArmColor = function(chrSetNumber, chrNmber, armNumber) {
+    /*
+     * Define color variable.
+     */
+    var color;
+    /*
+     * Get chromosome set code by number.
+     */
+    var chrSetCode = this._config.ploidyDesc[chrSetNumber];
+    /*
+     * If description defined as object get key of the object.
+     */
+    if (chrSetCode instanceof Object) {
+        /*
+         * Get chromosome set description object.
+         */
+        var chrSet = chrSetCode;
+        /*
+         * Redefine code.
+         */
+        chrSetCode = Object.keys(chrSet)[0];
+        /*
+         * Get description map.
+         */
+        var chrSetDesc = chrSet[chrSetCode];
+        /*
+         * Find ancestor letter.
+         */
+        var ancestor = chrSetCode.split('')[chrNmber];
+        /*
+         * Is chromosome exists (not absent/lost).
+         */
+        var isExists = Number(chrSetDesc[chrNmber].split('')[armNumber]);
+
+        if (isExists) {
+            color = this._config.ancestors[ancestor];
+        } else {
+            color = '#fff';
+        }
+    } else {
+        /*
+         * Find ancestor letter.
+         */
+        var ancestor = chrSetCode.split('')[chrNmber];
+        /*
+         * Return color by ancestor.
+         */
+        color = this._config.ancestors[ancestor];
+    }
+    /*
+     * Return color by ancestor.
+     */
+    return color;
 };
 
 
