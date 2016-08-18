@@ -391,14 +391,14 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
   cs = this.coordinateSystem;
   hasBands = (typeof bands !== "undefined");
 
-  chr["chrIndex"] = chrIndex;
-
   if (hasBands) {
     chr["name"] = chromosome;
     chr["length"] = bands[bands.length - 1][cs].stop;
   } else {
     chr = chromosome;
   }
+
+  chr["chrIndex"] = chrIndex;
 
   if (this.config.fullChromosomeLabels === true) {
     var orgName = this.organisms[taxid].scientificNameAbbr;
@@ -2708,7 +2708,6 @@ function finishInit() {
     for (m = 0; m < taxids.length; m++) {
       taxid = taxids[m];
 
-      //ideo.config.chromosomes[taxid] = Object.keys(ideo.config.chromosomes[taxid])
       chrs = ideo.config.chromosomes[taxid];
 
       for (n = 0; n < chrs.length; n++) {
@@ -2716,7 +2715,7 @@ function finishInit() {
         chrIndex += 1;
 
         chromosome = chrs[n];
-        console.log(chromosome)
+
         chrModel = ideo.chromosomes[taxid][chromosome];
 
         chr = d3.select("#" + chrModel.id);
