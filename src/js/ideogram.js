@@ -892,7 +892,7 @@ Ideogram.prototype.round = function(coord) {
 Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
 
   var chr,
-      bump, chrMargin,
+      bump, chrMargin, chrWidth, width,
       ideo = this;
 
   bump = ideo.bump;
@@ -902,29 +902,22 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
   chr = d3.select("svg")
     .append("g")
       .attr("id", chrModel.id)
-      .attr("class", "chromosome");
+      .attr("class", "chromosome noBands");
 
   chrWidth = ideo.config.chrWidth;
   width = chrModel.width;
 
-  pTerPad = bump;
+  chr.append('path')
+    .attr("class", "upstream chromosomeBorder")
+    .attr("d",
+      "M " + (bump - bump/2 + 0.1) + " " + chrMargin + " " +
+      "q -" + bump + " " + (chrWidth/2) + " 0 " + chrWidth);
 
   chr.append('path')
-    .attr("class", "p-ter chromosomeBorder")
+    .attr("class", "downstream chromosomeBorder")
     .attr("d",
-      "M " + (pTerPad - 3) + " " + chrMargin + " " +
-      "l -" + (pTerPad - 2) + " 0 " +
-      "l 0 " + chrWidth + " " +
-      "l " + (pTerPad - 2) + " 0 z");
-
-  qArmEnd = chrModel.width;
-
-  chr.append('path')
-    .attr("class", "q-ter chromosomeBorder")
-    .attr("d",
-      "M " + qArmEnd + " " + chrMargin + " " +
-      "q " + bump + " " +  chrWidth/2 + " 0 " + chrWidth
-    );
+      "M " + width + " " + chrMargin + " " +
+      "q " + bump + " " +  chrWidth/2 + " 0 " + chrWidth);
 
   chr.append('line')
     .attr("class", "cb-top chromosomeBorder")
@@ -940,6 +933,13 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
     .attr('x2', width)
     .attr("y2", chrWidth + chrMargin);
 
+  chr.append('path')
+    .attr("class", "chromosomeBody")
+    .attr("d",
+      "M " + bump/2 + " " + chrMargin + " " +
+      "l " + (width - bump/2) + " 0 " +
+      "l 0 " + chrWidth + " " +
+      "l -" + (width - bump/2) + " 0 z");
 }
 
 /**
@@ -2433,8 +2433,9 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
         tmpChrs[j] = chromosomeModel.name;
       }
     }
-
-    ideo.config.chromosomes[taxid] = tmpChrs;
+    if (typeof bands === "undefined") {
+      ideo.config.chromosomes[taxid] = tmpChrs;
+    }
 
     if (ideo.config.showBandLabels === true) {
         ideo.drawBandLabels(ideo.chromosomes);
