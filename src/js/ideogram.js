@@ -2238,7 +2238,7 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
       taxid,
       chrIndex = 0,
       i, j, chrs, chromosome, chromosomeModel;
-  console.log(ideo.config);
+
   for (i = 0; i < taxids.length; i++) {
 
     taxid = taxids[i];
