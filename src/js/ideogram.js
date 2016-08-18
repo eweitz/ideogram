@@ -2261,7 +2261,6 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
       /*
        * Append cromosome set container.
        */
-//      console.log(ideo._getChromosomeSetTranslate(j));
       var container = d3.select("svg")
         .append("g")
         .attr("class", "cromosome-set-container")
@@ -2282,17 +2281,18 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
 
 
 /**
- * 
+ * Get chromosome set shift.
+ * @param {Integer} setNumber
+ * @return {String}
  */
 Ideogram.prototype._getChromosomeSetTranslate = function(setNumber) {
 
-//  console.log(setNumber, this.config.ploidy, this.config.orientation);
   if (this.config.orientation === "horizontal") {
-    return "translate(0, " + setNumber * (this.config.ploidy - 1) * 20 + ")";
+    return "translate(15, " + (setNumber * (this.config.ploidy - 1) * 20 + (this.config.ploidy > 1 ? 20 * setNumber : 0)) + ")";
   } else {
     return "translate(" + setNumber * (this.config.ploidy - 1) + ", 0)";
   }
-}
+};
 
 
 /**
@@ -2405,7 +2405,7 @@ Ideogram.prototype.init = function() {
         ideoHeight = ideo.config.rows * (ideoHeight - 30);
       }
     } else {
-      ideoHeight = ideo.config.chrMargin * ideo.numChromosomes * ideo.config.ploidy + 30;
+      ideoHeight = ideo.config.chrMargin * ideo.numChromosomes * ideo.config.ploidy + 30 + (this.config.ploidy > 1 ? 20 * ideo.config.chromosomes[taxid].length : 0);
     }
 
     var gradients = ideo.getBandColorGradients();
