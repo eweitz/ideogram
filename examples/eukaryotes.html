@@ -23,8 +23,19 @@
   <div>
   <ul id="organismList">
     <li>
-      Familiar land animals
+      Model organisms
       <ul>
+        <li><a href="?org=rattus-norvegicus">Rat (Rattus novegicus)</a>
+        <li><a href="?org=drosophila-melanogaster">Fly (Drosophila melanogaster)</a>
+        <li><a href="?org=caenorhabditis-elegans">Worm (Caenorhabditis elegans)</a></li>
+        <li><a href="?org=danio-rerio">Zebrafish (Danio rerio)</a></li>
+        <li><a href="?org=arabidopsis-thaliana">Thale cress (Arabidopsis thaliana)</a></li>
+      </ul>
+    </li>
+    <li>
+      Vertebrates
+      <ul>
+        <li><a href="?org=pan-troglodytes">Chimpanzee (Pan troglodytes)</a></li>
         <li><a href="?org=felis-catus">Cat (Felis catus)</a></li>
         <li><a href="?org=canis-lupus-familiaris">Dog (Canis lupus familiaris)</a></li>
         <li><a href="?org=gallus-gallus">Chicken (Gallus gallus)</a></li>
@@ -35,12 +46,11 @@
     <li>
       Plants
       <ul>
-        <li><a href="?org=musa-acuminata">Banana (Musa acuminata)</a></li>
-        <li><a href="?org=vitis-vinifera">Grape (Vitis vinifera)</a></li>
-        <li><a href="?org=zea-mays">Corn (Zea mays)</a></li>
+        <li><a href="?org=zea-mays">Maize (Zea mays)</a></li>
         <li><a href="?org=oryza-sativa">Rice (Oryza sativa)</a>
         <li><a href="?org=solanum-lycopersicum">Tomato (Solanum lycopersicum)</a></li>
-        <li><a href="?org=pinus-taeda">Pine tree (Pinus taeda)</a></li>
+        <li><a href="?org=musa-acuminata">Banana (Musa acuminata)</a></li>
+        <li><a href="?org=vitis-vinifera">Grape (Vitis vinifera)</a></li>
       </ul>
     </li>
     <li>
@@ -48,33 +58,13 @@
       <ul>
         <li><a href="?org=anopheles-gambiae">Mosquito (Anopheles gambiae)</a></li>
         <li><a href="?org=apis-mellifera">Bee (Apis mellifera)</a></li>
-        <li><a href="?org=pogonomyrmex-barbatus">Ant (Pogonomyrmex barbatus)</a></li>
-      </ul>
-    <li>
-      Aquatic organisms
-      <ul>
-        <li><a href="?org=physeter-macrocephalus">Whale (Physeter macrocephalus)</a></li>
-        <li><a href="?org=morone-saxatilis">Bass (Morone saxatilis)</a></li>
-        <li><a href="?org=octopus-bimaculoides">Octopus (Octopus bimaculoides)</a></li>
-        <li><a href="?org=chrysemys-picta-bellii">Turtle (Chrysemys picta bellii)</a></li>
-        <li><a href="?org=micromonas-commoda">Algae (Micromonas commoda)</a></li>
       </ul>
     </li>
     <li>
-      Pathogens
+      Protozoa
       <ul>
         <li><a href="?org=plasmodium-falciparum">Malaria parasite (Plasmodium falciparum)</a></li>
         <li><a href="?org=leishmania-donovani">Leishmania parasite (Leishmania donovani)</a></li>
-      </ul>
-    </li>
-    <li>
-      Model organisms
-      <ul>
-        <li><a href="?org=drosophila-melanogaster">Fly (Drosophila melanogaster)</a>
-        <li><a href="?org=caenorhabditis-elegans">Worm (Caenorhabditis elegans)</a></li>
-        <li><a href="?org=danio-rerio">Zebrafish (Danio rerio)</a></li>
-        <li><a href="?org=arabidopsis-thaliana">Thale cress (Arabidopsis thaliana)</a></li>
-        <li><a href="?org=pan-troglodytes">Chimpanzee (Pan troglodytes)</a></li>
       </ul>
     </li>
   </ul>
@@ -96,7 +86,7 @@
         container: "#container"
       };
 
-      var ideogram = new Ideogram(config);
+      ideogram = new Ideogram(config);
 
     });
   </script>

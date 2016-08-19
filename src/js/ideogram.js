@@ -898,14 +898,13 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
   bump = ideo.bump;
 
   chrMargin = ideo.config.chrMargin * chrIndex;
+  chrWidth = ideo.config.chrWidth;
+  width = chrModel.width;
 
   chr = d3.select("svg")
     .append("g")
       .attr("id", chrModel.id)
       .attr("class", "chromosome noBands");
-
-  chrWidth = ideo.config.chrWidth;
-  width = chrModel.width;
 
   chr.append('path')
     .attr("class", "upstream chromosomeBorder")
@@ -1226,7 +1225,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
   chrMargin = this.config.chrMargin * chrIndex;
   chrWidth = this.config.chrWidth;
 
-  ideoBox = d3.select("#ideogram").nodes()[0].getBoundingClientRect();
+  ideoBox = d3.select("#_ideogram").nodes()[0].getBoundingClientRect();
   ideoHeight = ideoBox.height;
   ideoWidth = ideoBox.width;
 
@@ -2035,7 +2034,7 @@ Ideogram.prototype.createBrush = function(from, to) {
     .extent([[0, 0], [length, width]])
     .on("brush", onBrushMove);
 
-  var brushg = d3.select("#ideogram").append("g")
+  var brushg = d3.select("#_ideogram").append("g")
     .attr("class", "brush")
     .attr("transform", "translate(0, " + y + ")")
     .call(ideo.brush)
@@ -2574,7 +2573,7 @@ Ideogram.prototype.init = function() {
 
     var svg = d3.select(ideo.config.container)
       .append("svg")
-        .attr("id", "ideogram")
+        .attr("id", "_ideogram")
         .attr("class", svgClass)
         .attr("width", "97%")
         .attr("height", ideoHeight)
