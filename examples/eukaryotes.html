@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Eukaryotes | Ideogram</title>
+  <link type="text/css" rel="stylesheet" href="../src/css/ideogram.css"/>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.1.1/d3.js"></script>
+  <script type="text/javascript" src="../src/js/ideogram.js"></script>
+  <style>
+    #container {
+      float: left;
+      height: 600px;
+      width: 70%;
+    }
+
+    #organismList {
+      float:left;
+    }
+  </style>
+</head>
+<body>
+  <h1>Eukaryotes | Ideogram</h1>
+  <a href=".">Back to overview</a>
+  <div>
+  <ul id="organismList">
+    <li>
+      Familiar land animals
+      <ul>
+        <li><a href="?org=felis-catus">Cat (Felis catus)</a></li>
+        <li><a href="?org=canis-lupus-familiaris">Dog (Canis lupus familiaris)</a></li>
+        <li><a href="?org=gallus-gallus">Chicken (Gallus gallus)</a></li>
+        <li><a href="?org=bos-taurus">Cow (Bos taurus)</a></li>
+        <li><a href="?org=bos-taurus">Pig (Sus scrofa)</a></li>
+      </ul>
+    </li>
+    <li>
+      Plants
+      <ul>
+        <li><a href="?org=musa-acuminata">Banana (Musa acuminata)</a></li>
+        <li><a href="?org=vitis-vinifera">Grape (Vitis vinifera)</a></li>
+        <li><a href="?org=zea-mays">Corn (Zea mays)</a></li>
+        <li><a href="?org=oryza-sativa">Rice (Oryza sativa)</a>
+        <li><a href="?org=solanum-lycopersicum">Tomato (Solanum lycopersicum)</a></li>
+        <li><a href="?org=pinus-taeda">Pine tree (Pinus taeda)</a></li>
+      </ul>
+    </li>
+    <li>
+      Insects
+      <ul>
+        <li><a href="?org=anopheles-gambiae">Mosquito (Anopheles gambiae)</a></li>
+        <li><a href="?org=apis-mellifera">Bee (Apis mellifera)</a></li>
+        <li><a href="?org=pogonomyrmex-barbatus">Ant (Pogonomyrmex barbatus)</a></li>
+      </ul>
+    <li>
+      Aquatic organisms
+      <ul>
+        <li><a href="?org=physeter-macrocephalus">Whale (Physeter macrocephalus)</a></li>
+        <li><a href="?org=morone-saxatilis">Bass (Morone saxatilis)</a></li>
+        <li><a href="?org=octopus-bimaculoides">Octopus (Octopus bimaculoides)</a></li>
+        <li><a href="?org=chrysemys-picta-bellii">Turtle (Chrysemys picta bellii)</a></li>
+        <li><a href="?org=micromonas-commoda">Algae (Micromonas commoda)</a></li>
+      </ul>
+    </li>
+    <li>
+      Pathogens
+      <ul>
+        <li><a href="?org=plasmodium-falciparum">Malaria parasite (Plasmodium falciparum)</a></li>
+        <li><a href="?org=leishmania-donovani">Leishmania parasite (Leishmania donovani)</a></li>
+      </ul>
+    </li>
+    <li>
+      Model organisms
+      <ul>
+        <li><a href="?org=drosophila-melanogaster">Fly (Drosophila melanogaster)</a>
+        <li><a href="?org=caenorhabditis-elegans">Worm (Caenorhabditis elegans)</a></li>
+        <li><a href="?org=danio-rerio">Zebrafish (Danio rerio)</a></li>
+        <li><a href="?org=arabidopsis-thaliana">Thale cress (Arabidopsis thaliana)</a></li>
+        <li><a href="?org=pan-troglodytes">Chimpanzee (Pan troglodytes)</a></li>
+      </ul>
+    </li>
+  </ul>
+  <div id="container"></div>
+</div>
+  <script type="text/javascript">
+
+    d3.selectAll("li a").on("click", function(d) {
+
+      d3.select("#ideogram").remove();
+
+      d3.event.preventDefault();
+
+      org = d3.select(this).attr("href").split("=")[1].split("-");
+      org = org[0] + " " + org[1];
+
+      var config = {
+        organism: org,
+        container: "#container"
+      };
+
+      var ideogram = new Ideogram(config);
+
+    });
+  </script>
+
+  </body>
+</html>
