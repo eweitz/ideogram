@@ -1943,7 +1943,7 @@ Ideogram.prototype.putChromosomesInRows = function() {
         rows = ideo.config.rows,
         chrs,
         chrsPerRow,
-        rowIndex, rowIndexStop,
+        rowIndex, rowIndexStop, range,
         riCorrection,
         rowHeight, chrIndex, chrWidth, chrMargin;
 
@@ -1978,7 +1978,7 @@ Ideogram.prototype.putChromosomesInRows = function() {
       // Similar to "tPadding" in other contexts
       rowWidth = (chrMargin + (chrWidth-4)*(chrIndex)) + 8;
 
-      d3.selectAll("#ideogram .chromosome:" + range)
+      d3.selectAll("#_ideogram .chromosome:" + range)
         .attr("transform", function(d, j) {
 
           var currentTransform, translation;

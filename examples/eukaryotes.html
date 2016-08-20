@@ -72,22 +72,42 @@
 </div>
   <script type="text/javascript">
 
-    d3.selectAll("li a").on("click", function(d) {
+    function loadOrganism(org) {
 
-      d3.select("#ideogram").remove();
+      var org, chrHeight, rows, config;
 
-      d3.event.preventDefault();
+      history.pushState(null, null, org);
+      org = org.split("=")[1].split("-").join(" ");
 
-      org = d3.select(this).attr("href").split("=")[1].split("-");
-      org = org[0] + " " + org[1];
+      if (
+        org === "canis lupus familiaris" ||
+        org === "gallus gallus" ||
+        org === "leishmania donovani"
+      ) {
+        chrHeight = 200;
+        rows = 2;
+      } else {
+        chrHeight = 400;
+        rows = 1;
+      }
 
-      var config = {
+      config = {
         organism: org,
-        container: "#container"
+        container: "#container",
+        chrWidth: 10,
+        chrHeight: chrHeight,
+        rows: rows
       };
 
       ideogram = new Ideogram(config);
+    }
 
+    d3.selectAll("li a").on("click", function(d) {
+      var org;
+      d3.select("#_ideogram").remove();
+      d3.event.preventDefault();
+      org = d3.select(this).attr("href");
+      loadOrganism(org);
     });
   </script>
 
