@@ -4,8 +4,9 @@
   <title>Annotations, colored arms | Ideogram</title>
   <meta charset="utf-8">
   <link type="text/css" rel="stylesheet" href="../src/css/ideogram.css"/>
-  <!-- script type="text/javascript" src="../lib/d3/d3.min.js"></script -->
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+  <script type="text/javascript" src="../lib/d3/d3.min.js"></script>
+  <!-- script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script -->
+  <script type="text/javascript" src="../src/js/ploidy.js"></script>
   <script type="text/javascript" src="../src/js/color.js"></script>
   <script type="text/javascript" src="../src/js/ideogram.js"></script>
   <script type="text/javascript" src="../data/bands/native/ideogram_banana_v0.1.js"></script>
@@ -25,10 +26,11 @@
       ploidy: 3,
       ancestors: {
         "A": "#dea673",
-        "B": "#7396be"
+        "B": "#7396be",
+        "C": "red"
       },
       ploidyDesc: [
-        'ABB',
+        {'AABB': ['11', '11', '11', '02']},
         {'AAB': ['01', '11', '11']},
         'BAB',
         {'AABB': ['11', '11', '11', '20']},
