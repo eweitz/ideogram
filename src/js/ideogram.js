@@ -12,6 +12,7 @@ var Ideogram = function(config) {
    * @member {Color}
    */
   this._color = new Color(this.config);
+  this._ploidy = new Ploidy(this.config);
 
   this.debug = false;
 
@@ -1084,35 +1085,39 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex, container, k) {
     .attr('x1', bump/2)
     .attr('y1', chrMargin)
     .attr('x2', pArmWidth)
-    .attr("y2", chrMargin);
+    .attr("y2", chrMargin)
+    .style('stroke', this._color.getPolyploidBorderColor(chrIndex, k, 0));
 
   chr.append('line')
     .attr("class", "cb-p-arm-bottom chromosomeBorder")
     .attr('x1', bump/2)
     .attr('y1', chrWidth + chrMargin)
     .attr('x2', pArmWidth)
-    .attr("y2", chrWidth + chrMargin);
+    .attr("y2", chrWidth + chrMargin)
+    .style('stroke', this._color.getPolyploidBorderColor(chrIndex, k, 0));
 
   chr.append('line')
     .attr("class", "cb-q-arm-top chromosomeBorder")
     .attr('x1', qArmStart)
     .attr('y1', chrMargin)
     .attr('x2', qArmEnd)
-    .attr("y2", chrMargin);
+    .attr("y2", chrMargin)
+    .style('stroke', this._color.getPolyploidBorderColor(chrIndex, k, 1));
 
   chr.append('line')
     .attr("class", "cb-q-arm-bottom chromosomeBorder")
     .attr('x1', qArmStart)
     .attr('y1', chrWidth + chrMargin)
     .attr('x2', qArmEnd)
-    .attr("y2", chrWidth + chrMargin);
+    .attr("y2", chrWidth + chrMargin)
+    .style('stroke', this._color.getPolyploidBorderColor(chrIndex, k, 1));
 
   chr.append('path')
     .attr("class", "q-ter chromosomeBorder " + chrModel.bands[chrModel.bands.length - 1].stain)
     .attr("d",
       "M " + qArmEnd + " " + chrMargin + " " +
       "q " + bump + " " +  chrWidth/2 + " 0 " + chrWidth
-    );
+    ).style('stroke', this._color.getPolyploidBorderColor(chrIndex, k, 1));
 
 };
 
@@ -2264,10 +2269,10 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
       var container = d3.select("svg")
         .append("g")
         .attr("class", "cromosome-set-container")
-        .attr("transform", ideo._getChromosomeSetTranslate(j))
+        .attr("transform", ideo._ploidy.getChromosomeSetTranslate(j))
         .attr("id", chromosomeModel.id + "-chromosome-set");
 
-      for (var k = 0; k < this.config.ploidy; k ++) {
+      for (var k = 0; k < this._ploidy.getChromosomesNumber(j); k ++) {
         ideo.drawChromosome(chromosomeModel, chrIndex, container, k);
       }
     }
@@ -2276,21 +2281,6 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
         ideo.drawBandLabels(ideo.chromosomes);
     }
 
-  }
-};
-
-
-/**
- * Get chromosome set shift.
- * @param {Integer} setNumber
- * @return {String}
- */
-Ideogram.prototype._getChromosomeSetTranslate = function(setNumber) {
-
-  if (this.config.orientation === "horizontal") {
-    return "translate(15, " + (setNumber * (this.config.ploidy - 1) * 20 + (this.config.ploidy > 1 ? 20 * setNumber : 0)) + ")";
-  } else {
-    return "translate(" + setNumber * (this.config.ploidy - 1) + ", 0)";
   }
 };
 

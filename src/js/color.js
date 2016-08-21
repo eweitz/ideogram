@@ -28,6 +28,16 @@ Color.prototype.getArmColor = function(chrSetNumber, chrNmber, armNumber) {
 };
 
 
+Color.prototype.getPolyploidBorderColor = function(chrSetNumber, chrNmber, armNumber) {
+
+    if (chrNmber < this._config.ploidy) {
+        return '#000';
+    } else {
+        return '#fff';
+    }
+};
+
+
 /**
  * Get polyploid organism chromosome arm's color.
  * @param chrSetNumber
