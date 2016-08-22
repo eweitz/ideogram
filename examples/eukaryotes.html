@@ -109,6 +109,10 @@
       org = d3.select(this).attr("href");
       loadOrganism(org);
     });
+
+    if (window.location.search !== "") {
+      loadOrganism(window.location.search)
+    }
   </script>
 
   </body>
