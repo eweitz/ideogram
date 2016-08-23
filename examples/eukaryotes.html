@@ -8,7 +8,7 @@
   <style>
     #container {
       float: left;
-      height: 600px;
+      height: 650px;
       width: 70%;
     }
 
@@ -26,7 +26,7 @@
       Model organisms
       <ul>
         <li><a href="?org=rattus-norvegicus">Rat (Rattus novegicus)</a>
-        <li><a href="?org=drosophila-melanogaster">Fly (Drosophila melanogaster)</a>
+        <!-- <li><a href="?org=drosophila-melanogaster">Fly (Drosophila melanogaster)</a> -->
         <li><a href="?org=caenorhabditis-elegans">Worm (Caenorhabditis elegans)</a></li>
         <li><a href="?org=danio-rerio">Zebrafish (Danio rerio)</a></li>
         <li><a href="?org=arabidopsis-thaliana">Thale cress (Arabidopsis thaliana)</a></li>
@@ -37,10 +37,10 @@
       <ul>
         <li><a href="?org=pan-troglodytes">Chimpanzee (Pan troglodytes)</a></li>
         <li><a href="?org=felis-catus">Cat (Felis catus)</a></li>
-        <li><a href="?org=canis-lupus-familiaris">Dog (Canis lupus familiaris)</a></li>
-        <li><a href="?org=gallus-gallus">Chicken (Gallus gallus)</a></li>
-        <li><a href="?org=bos-taurus">Cow (Bos taurus)</a></li>
-        <li><a href="?org=bos-taurus">Pig (Sus scrofa)</a></li>
+        <!-- <li><a href="?org=canis-lupus-familiaris">Dog (Canis lupus familiaris)</a></li> -->
+        <!-- <li><a href="?org=gallus-gallus">Chicken (Gallus gallus)</a></li> -->
+        <!-- <li><a href="?org=bos-taurus">Cow (Bos taurus)</a></li> -->
+        <li><a href="?org=sus-scrofa">Pig (Sus scrofa)</a></li>
       </ul>
     </li>
     <li>
@@ -57,14 +57,14 @@
       Insects
       <ul>
         <li><a href="?org=anopheles-gambiae">Mosquito (Anopheles gambiae)</a></li>
-        <li><a href="?org=apis-mellifera">Bee (Apis mellifera)</a></li>
+        <!-- <li><a href="?org=apis-mellifera">Bee (Apis mellifera)</a></li> -->
       </ul>
     </li>
     <li>
       Protozoa
       <ul>
         <li><a href="?org=plasmodium-falciparum">Malaria parasite (Plasmodium falciparum)</a></li>
-        <li><a href="?org=leishmania-donovani">Leishmania parasite (Leishmania donovani)</a></li>
+        <!-- <li><a href="?org=leishmania-donovani">Leishmania parasite (Leishmania donovani)</a></li> -->
       </ul>
     </li>
   </ul>
@@ -81,6 +81,7 @@
 
       if (
         org === "canis lupus familiaris" ||
+        org === "bos taurus" ||
         org === "gallus gallus" ||
         org === "leishmania donovani"
       ) {

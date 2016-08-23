@@ -1976,7 +1976,8 @@ Ideogram.prototype.putChromosomesInRows = function() {
       }
 
       // Similar to "tPadding" in other contexts
-      rowWidth = (chrMargin + (chrWidth-4)*(chrIndex)) + 8;
+      rowWidth = ((chrWidth-4)*chrIndex) + 8 + chrMargin;
+      //rowWidth = 6*chrIndex - 57.24 + rowWidth;
 
       d3.selectAll("#_ideogram .chromosome:" + range)
         .attr("transform", function(d, j) {
