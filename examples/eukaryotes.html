@@ -15,6 +15,14 @@
     #organismList {
       float:left;
     }
+
+    li ul {
+      padding: 2px 0 10px 10px;
+    }
+
+    li ul li {
+      list-style-type: none;
+    }
   </style>
 </head>
 <body>
@@ -25,46 +33,46 @@
     <li>
       Model organisms
       <ul>
-        <li><a href="?org=rattus-norvegicus">Rat (Rattus novegicus)</a>
-        <!-- <li><a href="?org=drosophila-melanogaster">Fly (Drosophila melanogaster)</a> -->
-        <li><a href="?org=caenorhabditis-elegans">Worm (Caenorhabditis elegans)</a></li>
-        <li><a href="?org=danio-rerio">Zebrafish (Danio rerio)</a></li>
-        <li><a href="?org=arabidopsis-thaliana">Thale cress (Arabidopsis thaliana)</a></li>
+        <li><label for="rattus-norvegicus"><input type="radio" name="org" value="rattus-norvegicus" id="rattus-norvegicus">Rat (Rattus novegicus)</label></li>
+        <!-- <li><label for="drosophila-melanogaster"><input type="radio" name="org" value="drosophila-melanogaster" id="drosophila-melanogaster">Fly (Drosophila melanogaster)</label> -->
+        <li><label for="caenorhabditis-elegans"><input type="radio" name="org" value="caenorhabditis-elegans" id="caenorhabditis-elegans">Worm (Caenorhabditis elegans)</label></li>
+        <li><label for="danio-rerio"><input type="radio" name="org" value="danio-rerio" id="danio-rerio">Zebrafish (Danio rerio)</label></li>
+        <li><label for="arabidopsis-thaliana"><input type="radio" name="org" value="arabidopsis-thaliana" id="arabidopsis-thaliana">Thale cress (Arabidopsis thaliana)</label></li>
       </ul>
     </li>
     <li>
       Vertebrates
       <ul>
-        <li><a href="?org=pan-troglodytes">Chimpanzee (Pan troglodytes)</a></li>
-        <li><a href="?org=felis-catus">Cat (Felis catus)</a></li>
-        <!-- <li><a href="?org=canis-lupus-familiaris">Dog (Canis lupus familiaris)</a></li> -->
-        <!-- <li><a href="?org=gallus-gallus">Chicken (Gallus gallus)</a></li> -->
-        <!-- <li><a href="?org=bos-taurus">Cow (Bos taurus)</a></li> -->
-        <li><a href="?org=sus-scrofa">Pig (Sus scrofa)</a></li>
+        <li><label for="pan-troglodytes"><input type="radio" name="org" value="pan-troglodytes" id="pan-troglodytes">Chimpanzee (Pan troglodytes)</label></li>
+        <li><label for="felis-catus"><input type="radio" name="org" value="felis-catus" id="felis-catus">Cat (Felis catus)</label></li>
+        <!-- <li><label for="canis-lupus-familiaris"><input type="radio" name="org" value="canis-lupus-familiaris" id="canis-lupus-familiaris">Dog (Canis lupus familiaris)</label></li> -->
+        <!-- <li><label for="gallus-gallus"><input type="radio" name="org" value="gallus-gallus" id="gallus-gallus">Chicken (Gallus gallus)</label></li> -->
+        <!-- <li><label for="bos-taurus"><input type="radio" name="org" value="bos-taurus" id="bos-taurus">Cow (Bos taurus)</label></li> -->
+        <li><label for="sus-scrofa"><input type="radio" name="org" value="sus-scrofa" id="sus-scrofa">Pig (Sus scrofa)</label></li>
       </ul>
     </li>
     <li>
       Plants
       <ul>
-        <li><a href="?org=zea-mays">Maize (Zea mays)</a></li>
-        <li><a href="?org=oryza-sativa">Rice (Oryza sativa)</a>
-        <li><a href="?org=solanum-lycopersicum">Tomato (Solanum lycopersicum)</a></li>
-        <li><a href="?org=musa-acuminata">Banana (Musa acuminata)</a></li>
-        <li><a href="?org=vitis-vinifera">Grape (Vitis vinifera)</a></li>
+        <li><label for="zea-mays"><input type="radio" name="org" value="zea-mays" id="zea-mays">Maize (Zea mays)</label></li>
+        <li><label for="oryza-sativa"><input type="radio" name="org" value="oryza-sativa" id="oryza-sativa">Rice (Oryza sativa)</label>
+        <li><label for="solanum-lycopersicum"><input type="radio" name="org" value="solanum-lycopersicum" id="solanum-lycopersicum">Tomato (Solanum lycopersicum)</label></li>
+        <li><label for="musa-acuminata"><input type="radio" name="org" value="musa-acuminata" id="musa-acuminata">Banana (Musa acuminata)</label></li>
+        <li><label for="vitis-vinifera"><input type="radio" name="org" value="vitis-vinifera" id="vitis-vinifera">Grape (Vitis vinifera)</label></li>
       </ul>
     </li>
     <li>
       Insects
       <ul>
-        <li><a href="?org=anopheles-gambiae">Mosquito (Anopheles gambiae)</a></li>
-        <!-- <li><a href="?org=apis-mellifera">Bee (Apis mellifera)</a></li> -->
+        <li><label for="anopheles-gambiae"><input type="radio" name="org" value="anopheles-gambiae" id="anopheles-gambiae">Mosquito (Anopheles gambiae)</label></li>
+        <!-- <li><label for="apis-mellifera"><input type="radio" name="org" value="apis-mellifera" id="apis-mellifera">Bee (Apis mellifera)</label></li> -->
       </ul>
     </li>
     <li>
       Protozoa
       <ul>
-        <li><a href="?org=plasmodium-falciparum">Malaria parasite (Plasmodium falciparum)</a></li>
-        <!-- <li><a href="?org=leishmania-donovani">Leishmania parasite (Leishmania donovani)</a></li> -->
+        <li><label for="plasmodium-falciparum"><input type="radio" name="org" value="plasmodium-falciparum" id="plasmodium-falciparum">Malaria parasite (Plasmodium falciparum)</label></li>
+        <!-- <li><label for="leishmania-donovani"><input type="radio" name="org" value="leishmania-donovani" id="leishmania-donovani">Leishmania parasite (Leishmania donovani)</label></li> -->
       </ul>
     </li>
   </ul>
@@ -76,8 +84,8 @@
 
       var org, chrHeight, rows, config;
 
-      history.pushState(null, null, org);
-      org = org.split("=")[1].split("-").join(" ");
+      history.pushState(null, null, "?org=" + org);
+      org = org.split("-").join(" ");
 
       if (
         org === "canis lupus familiaris" ||
@@ -103,16 +111,20 @@
       ideogram = new Ideogram(config);
     }
 
-    d3.selectAll("li a").on("click", function(d) {
+    d3.selectAll("input").on("change", function(d) {
       var org;
       d3.select("#_ideogram").remove();
       d3.event.preventDefault();
-      org = d3.select(this).attr("href");
+      org = d3.select(this).attr("value");
       loadOrganism(org);
     });
 
     if (window.location.search !== "") {
-      loadOrganism(window.location.search)
+      var org = window.location.search.split("=")[1];
+      d3.select("#" + org).property("checked", true)
+      loadOrganism(org)
+    } else {
+      loadOrganism("rattus-norvegicus")
     }
   </script>
 
