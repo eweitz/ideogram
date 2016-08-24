@@ -2562,7 +2562,7 @@ Ideogram.prototype.init = function() {
     var ideoHeight;
 
     if (ideo.config.orientation === "vertical") {
-      ideoHeight = ideo.config.chrHeight + 30;
+      ideoHeight = ideo.config.chrHeight + 40;
       if (ideo.config.rows > 1) {
         ideoHeight = ideo.config.rows * (ideoHeight - 30);
       }
