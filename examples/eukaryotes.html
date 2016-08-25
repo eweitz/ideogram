@@ -119,13 +119,17 @@
       loadOrganism(org);
     });
 
+    var org;
+
     if (window.location.search !== "") {
-      var org = window.location.search.split("=")[1];
-      d3.select("#" + org).property("checked", true)
-      loadOrganism(org)
+      org = window.location.search.split("=")[1];
     } else {
-      loadOrganism("rattus-norvegicus")
+      org = "rattus-norvegicus";
     }
+
+    d3.select("#" + org).property("checked", true);
+    loadOrganism(org);
+
   </script>
 
   </body>

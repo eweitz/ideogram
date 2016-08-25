@@ -68,7 +68,7 @@ text {
   shape-rendering: crispEdges;
 }
 
-.chromosome.noBands {
+.noBands {
 	fill: #AAA;
 }
 

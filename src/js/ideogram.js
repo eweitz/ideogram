@@ -2086,7 +2086,8 @@ Ideogram.prototype.getBandColorGradients = function() {
     ["gpos66", "#888", "#888", "#666"],
     ["gpos75", "#777", "#777", "#444"],
     ["gpos100", "#444", "#666", "#000"],
-    ["acen", "#FEE", "#FEE", "#FDD"]
+    ["acen", "#FEE", "#FEE", "#FDD"],
+    ["noBands", "#BBB", "#BBB", "#AAA"]
   ];
 
   for (var i = 0; i < colors.length; i++) {
@@ -2135,6 +2136,7 @@ Ideogram.prototype.getBandColorGradients = function() {
     '.acen {fill: url("#acen")} ' +
     '.stalk {fill: url("#stalk")} ' +
     '.gvar {fill: url("#gvar")} ' +
+    '.noBands {fill: url("#noBands")} ' + 
   '</style>';
   gradients = css + gradients;
 
