@@ -6,6 +6,10 @@
 // https://github.com/kristw/d3.promise
 !function(a,b){"function"==typeof define&&define.amd?define(["d3"],b):"object"==typeof exports?module.exports=b(require("d3")):a.d3.promise=b(a.d3)}(this,function(a){var b=function(){function b(a,b){return function(){var c=Array.prototype.slice.call(arguments);return new Promise(function(d,e){var f=function(a,b){return a?void e(Error(a)):void d(b)};b.apply(a,c.concat(f))})}}var c={};return["csv","tsv","json","xml","text","html"].forEach(function(d){c[d]=b(a,a[d])}),c}();return a.promise=b,b});
 
+// https://github.com/overset/javascript-natural-sort
+// eweitz: Trivially customized for sorting list of objects by "name" property
+function naturalSort(a,b){var q,r,a=a.name,b=b.name,c=/(^([+\-]?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?(?=\D|\s|$))|^0x[\da-fA-F]+$|\d+)/g,d=/^\s+|\s+$/g,e=/\s+/g,f=/(^([\w ]+,?[\w ]+)?[\w ]+,?[\w ]+\d+:\d+(:\d+)?[\w ]?|^\d{1,4}[\/\-]\d{1,4}[\/\-]\d{1,4}|^\w+, \w+ \d+, \d{4})/,g=/^0x[0-9a-f]+$/i,h=/^0/,i=function(a){return(naturalSort.insensitive&&(""+a).toLowerCase()||""+a).replace(d,"")},j=i(a),k=i(b),l=j.replace(c,"\0$1\0").replace(/\0$/,"").replace(/^\0/,"").split("\0"),m=k.replace(c,"\0$1\0").replace(/\0$/,"").replace(/^\0/,"").split("\0"),n=parseInt(j.match(g),16)||1!==l.length&&Date.parse(j),o=parseInt(k.match(g),16)||n&&k.match(f)&&Date.parse(k)||null,p=function(a,b){return(!a.match(h)||1==b)&&parseFloat(a)||a.replace(e," ").replace(d,"")||0};if(o){if(n<o)return-1;if(n>o)return 1}for(var s=0,t=l.length,u=m.length,v=Math.max(t,u);s<v;s++){if(q=p(l[s]||"",t),r=p(m[s]||"",u),isNaN(q)!==isNaN(r))return isNaN(q)?1:-1;if(/[^\x00-\x80]/.test(q+r)&&q.localeCompare){var w=q.localeCompare(r);return w/Math.abs(w)}if(q<r)return-1;if(q>r)return 1}}
+
 /* Constructs a prototypal Ideogram class */
 var Ideogram = function(config) {
 
@@ -2271,40 +2275,6 @@ Ideogram.prototype.getTaxids = function(callback) {
 };
 
 
-Ideogram.prototype.isNumber = function(n) {
-  return !isNaN(parseFloat(n)) && isFinite(n);
-}
-
-/**
-Sorts an array of chromosomes by name, per biological convention.
-For example: 1, 2, 3, ..., 22, X, Y
-*/
-Ideogram.prototype.sortChromosomesByName = function(chromosomes) {
-
-  var ideo = this;
-
-  return chromosomes.sort(function(a, b) {
-
-    var a = a.name,
-        b = b.name,
-        aIsNumeric = ideo.isNumber(a),
-        bIsNumeric = ideo.isNumber(b);
-
-    if (aIsNumeric) a = parseInt(a, 10);
-    if (bIsNumeric) b = parseInt(b, 10);
-
-    if (aIsNumeric && bIsNumeric) {
-        return a - b;
-    } else if (!aIsNumeric && !bIsNumeric){
-      return (a > b) ? 1 : -1;
-    } else {
-      return (aIsNumeric === false) ? 1 : -1;
-    }
-  });
-
-}
-
-
 /**
   Returns names and lengths of chromosomes for an organism's best-known
   genome assembly.  Gets data from NCBI EUtils web API.
@@ -2396,7 +2366,7 @@ Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
           chromosomes.push(chromosome);
         }
 
-        chromosomes = ideo.sortChromosomesByName(chromosomes)
+        chromosomes = chromosomes.sort(naturalSort);
         asmAndChrArray.push(chromosomes)
 
         ideo.coordinateSystem = "bp";
