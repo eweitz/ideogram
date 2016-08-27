@@ -2287,18 +2287,18 @@ Ideogram.prototype.sortChromosomesByName = function(chromosomes) {
 
     var a = a.name,
         b = b.name,
-        isANumeric = ideo.isNumber(a),
-        isBNumeric = ideo.isNumber(b);
+        aIsNumeric = ideo.isNumber(a),
+        bIsNumeric = ideo.isNumber(b);
 
-    if (isANumeric) a = parseInt(a, 10);
-    if (isBNumeric) b = parseInt(b, 10);
+    if (aIsNumeric) a = parseInt(a, 10);
+    if (bIsNumeric) b = parseInt(b, 10);
 
-    if (isANumeric && isBNumeric) {
+    if (aIsNumeric && bIsNumeric) {
         return a - b;
-    } else if (!isANumeric && !isBNumeric){
+    } else if (!aIsNumeric && !bIsNumeric){
       return (a > b) ? 1 : -1;
     } else {
-      return (isANumeric === false) ? 1 : -1;
+      return (aIsNumeric === false) ? 1 : -1;
     }
   });
 
