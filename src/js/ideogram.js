@@ -2316,7 +2316,7 @@ Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
       asmUid, asmSummary,
       rsUid, nuccoreLink,
       links, ntSummary,
-      results, result, chrIndex, chrName, chrLength, chromosome,
+      results, result, cnIndex, chrName, chrLength, chromosome,
       ideo = this;
 
     organism = ideo.config.organism;
@@ -2381,6 +2381,11 @@ Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
           cnIndex = result.subtype.split("|").indexOf("chromosome");
 
           chrName = result.subname.split("|")[cnIndex];
+          if (typeof chrName !== "undefined" && chrName.substr(0, 3) === "chr") {
+            // Convert "chr12" to "12", e.g. for banana (GCF_000313855.2)
+            chrName = chrName.substr(3);
+          }
+
           chrLength = result.slen;
 
           chromosome = {
