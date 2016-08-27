@@ -400,12 +400,12 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
 
   chr["chrIndex"] = chrIndex;
 
+  chr["id"] = "chr" + chr.name + "-" + taxid;
+
   if (this.config.fullChromosomeLabels === true) {
     var orgName = this.organisms[taxid].scientificNameAbbr;
     chr["name"] = orgName + " chr" + chr.name;
   }
-
-  chr["id"] = "chr" + chr.name + "-" + taxid;
 
   chrLength = chr["length"];
 
@@ -583,7 +583,7 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
 Ideogram.prototype.drawBandLabels = function(chromosomes) {
 
   var i, chr, chrs, taxid, ideo,
-      chrMargin2;
+      chrMargin2, chrModel;
 
   ideo = this;
 
@@ -2136,7 +2136,7 @@ Ideogram.prototype.getBandColorGradients = function() {
     '.acen {fill: url("#acen")} ' +
     '.stalk {fill: url("#stalk")} ' +
     '.gvar {fill: url("#gvar")} ' +
-    '.noBands {fill: url("#noBands")} ' + 
+    '.noBands {fill: url("#noBands")} ' +
   '</style>';
   gradients = css + gradients;
 
@@ -2640,7 +2640,7 @@ Ideogram.prototype.init = function() {
         chrs = chrsByTaxid[taxid];
       }
 
-      if (ideo.coordinateSystem === "iscn") {
+      if (ideo.coordinateSystem === "iscn" || ideo.config.multiorganism) {
         bandData = ideo.bandData[taxid];
 
         bandsByChr = ideo.getBands(bandData, taxid, chrs);
