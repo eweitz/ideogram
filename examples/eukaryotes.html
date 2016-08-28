@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Eukaryotes | Ideogram</title>
+  <link type="text/css" rel="stylesheet" href="../src/css/ideogram.css"/>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.1.1/d3.js"></script>
+  <script type="text/javascript" src="../src/js/ideogram.js"></script>
+  <style>
+    #container {
+      float: left;
+      height: 650px;
+      width: 70%;
+    }
+
+    #organismList {
+      float:left;
+    }
+
+    li ul {
+      padding: 2px 0 10px 10px;
+    }
+
+    li ul li {
+      list-style-type: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Eukaryotes | Ideogram</h1>
+  <a href=".">Back to overview</a>
+  <div>
+  <ul id="organismList">
+    <li>
+      Model organisms
+      <ul>
+        <li><label for="rattus-norvegicus"><input type="radio" name="org" value="rattus-norvegicus" id="rattus-norvegicus">Rat (Rattus novegicus)</label></li>
+        <!-- <li><label for="drosophila-melanogaster"><input type="radio" name="org" value="drosophila-melanogaster" id="drosophila-melanogaster">Fly (Drosophila melanogaster)</label> -->
+        <li><label for="caenorhabditis-elegans"><input type="radio" name="org" value="caenorhabditis-elegans" id="caenorhabditis-elegans">Worm (Caenorhabditis elegans)</label></li>
+        <li><label for="danio-rerio"><input type="radio" name="org" value="danio-rerio" id="danio-rerio">Zebrafish (Danio rerio)</label></li>
+        <li><label for="arabidopsis-thaliana"><input type="radio" name="org" value="arabidopsis-thaliana" id="arabidopsis-thaliana">Thale cress (Arabidopsis thaliana)</label></li>
+      </ul>
+    </li>
+    <li>
+      Vertebrates
+      <ul>
+        <li><label for="pan-troglodytes"><input type="radio" name="org" value="pan-troglodytes" id="pan-troglodytes">Chimpanzee (Pan troglodytes)</label></li>
+        <li><label for="felis-catus"><input type="radio" name="org" value="felis-catus" id="felis-catus">Cat (Felis catus)</label></li>
+        <!-- <li><label for="canis-lupus-familiaris"><input type="radio" name="org" value="canis-lupus-familiaris" id="canis-lupus-familiaris">Dog (Canis lupus familiaris)</label></li> -->
+        <!-- <li><label for="gallus-gallus"><input type="radio" name="org" value="gallus-gallus" id="gallus-gallus">Chicken (Gallus gallus)</label></li> -->
+        <!-- <li><label for="bos-taurus"><input type="radio" name="org" value="bos-taurus" id="bos-taurus">Cow (Bos taurus)</label></li> -->
+        <li><label for="sus-scrofa"><input type="radio" name="org" value="sus-scrofa" id="sus-scrofa">Pig (Sus scrofa)</label></li>
+      </ul>
+    </li>
+    <li>
+      Plants
+      <ul>
+        <li><label for="zea-mays"><input type="radio" name="org" value="zea-mays" id="zea-mays">Maize (Zea mays)</label></li>
+        <li><label for="oryza-sativa"><input type="radio" name="org" value="oryza-sativa" id="oryza-sativa">Rice (Oryza sativa)</label>
+        <li><label for="solanum-lycopersicum"><input type="radio" name="org" value="solanum-lycopersicum" id="solanum-lycopersicum">Tomato (Solanum lycopersicum)</label></li>
+        <li><label for="musa-acuminata"><input type="radio" name="org" value="musa-acuminata" id="musa-acuminata">Banana (Musa acuminata)</label></li>
+        <li><label for="vitis-vinifera"><input type="radio" name="org" value="vitis-vinifera" id="vitis-vinifera">Grape (Vitis vinifera)</label></li>
+      </ul>
+    </li>
+    <li>
+      Insects
+      <ul>
+        <li><label for="anopheles-gambiae"><input type="radio" name="org" value="anopheles-gambiae" id="anopheles-gambiae">Mosquito (Anopheles gambiae)</label></li>
+        <!-- <li><label for="apis-mellifera"><input type="radio" name="org" value="apis-mellifera" id="apis-mellifera">Bee (Apis mellifera)</label></li> -->
+      </ul>
+    </li>
+    <li>
+      Protozoa
+      <ul>
+        <li><label for="plasmodium-falciparum"><input type="radio" name="org" value="plasmodium-falciparum" id="plasmodium-falciparum">Malaria parasite (Plasmodium falciparum)</label></li>
+        <!-- <li><label for="leishmania-donovani"><input type="radio" name="org" value="leishmania-donovani" id="leishmania-donovani">Leishmania parasite (Leishmania donovani)</label></li> -->
+      </ul>
+    </li>
+  </ul>
+  <div id="container"></div>
+</div>
+  <script type="text/javascript">
+
+    function loadOrganism(org) {
+
+      var org, chrHeight, rows, config;
+
+      history.pushState(null, null, "?org=" + org);
+      org = org.split("-").join(" ");
+
+      if (
+        org === "canis lupus familiaris" ||
+        org === "bos taurus" ||
+        org === "gallus gallus" ||
+        org === "leishmania donovani"
+      ) {
+        chrHeight = 200;
+        rows = 2;
+      } else {
+        chrHeight = 400;
+        rows = 1;
+      }
+
+      config = {
+        organism: org,
+        container: "#container",
+        chrWidth: 10,
+        chrHeight: chrHeight,
+        rows: rows
+      };
+
+      ideogram = new Ideogram(config);
+    }
+
+    d3.selectAll("input").on("change", function(d) {
+      var org;
+      d3.select("#_ideogram").remove();
+      d3.event.preventDefault();
+      org = d3.select(this).attr("value");
+      loadOrganism(org);
+    });
+
+    var org;
+
+    if (window.location.search !== "") {
+      org = window.location.search.split("=")[1];
+    } else {
+      org = "rattus-norvegicus";
+    }
+
+    d3.select("#" + org).property("checked", true);
+    loadOrganism(org);
+
+  </script>
+
+  </body>
+</html>
