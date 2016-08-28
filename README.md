@@ -4,7 +4,7 @@
 
 Chromosome visualization with D3.js
 
-[![All human genes](https://github.com/eweitz/ideogram/blob/master/examples/ideogram_histogram_all_human_genes.png)](http://eweitz.github.io/ideogram/annotations_histogram.html)
+[![All human genes](https://raw.githubusercontent.com/eweitz/ideogram/master/examples/ideogram_histogram_all_human_genes.png)](http://eweitz.github.io/ideogram/annotations_histogram.html)
 
 More examples: http://eweitz.github.io/ideogram/
 
