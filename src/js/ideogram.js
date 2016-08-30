@@ -2297,7 +2297,7 @@ Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
     asmSearch =
       ideo.esearch +
       "&db=assembly" +
-      "&term=" + organism +
+      "&term=%22" + organism + "%22[organism]" + 
       "AND%20(%22latest%20refseq%22[filter])%20AND%20%22chromosome%20level%22[filter]";
 
     var promise = d3.promise.json(asmSearch);
@@ -2472,7 +2472,7 @@ Ideogram.prototype.init = function() {
       "10090": "native/ideogram_10090_" + accession + "_NA_V2.js",
 
       // Drosophila melanogaster (fly)
-      "7227": "ucsc/drosophila_melanogaster_dm6.tsv"
+      //"7227": "ucsc/drosophila_melanogaster_dm6.tsv"
     };
 
     if (typeof chrBands === "undefined" && taxid in bandDataFileNames) {
