@@ -2297,7 +2297,7 @@ Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
     asmSearch =
       ideo.esearch +
       "&db=assembly" +
-      "&term=%22" + organism + "%22[organism]" + 
+      "&term=%22" + organism + "%22[organism]" +
       "AND%20(%22latest%20refseq%22[filter])%20AND%20%22chromosome%20level%22[filter]";
 
     var promise = d3.promise.json(asmSearch);
@@ -2344,16 +2344,31 @@ Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
           result = results[x];
 
           // omit list of reult uids, and skip chrMT
-          if (x === "uids" || result.genome === "mitochondrion") {
+          if (x === "uids") {
             continue;
           }
 
-          cnIndex = result.subtype.split("|").indexOf("chromosome");
+          if (result.genome === "mitochondrion") {
+            if (ideo.config.showNonNuclearChromosomes) {
+              chrName = "MT";
+            } else {
+              continue;
+            }
+          } else if (result.genome === "chloroplast") {
+            if (ideo.config.showNonNuclearChromosomes) {
+              chrName = "CP";
+            } else {
+              continue;
+            }
+          } else {
 
-          chrName = result.subname.split("|")[cnIndex];
-          if (typeof chrName !== "undefined" && chrName.substr(0, 3) === "chr") {
-            // Convert "chr12" to "12", e.g. for banana (GCF_000313855.2)
-            chrName = chrName.substr(3);
+            cnIndex = result.subtype.split("|").indexOf("chromosome");
+
+            chrName = result.subname.split("|")[cnIndex];
+            if (typeof chrName !== "undefined" && chrName.substr(0, 3) === "chr") {
+              // Convert "chr12" to "12", e.g. for banana (GCF_000313855.2)
+              chrName = chrName.substr(3);
+            }
           }
 
           chrLength = result.slen;
