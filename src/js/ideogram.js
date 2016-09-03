@@ -7,8 +7,7 @@
 !function(a,b){"function"==typeof define&&define.amd?define(["d3"],b):"object"==typeof exports?module.exports=b(require("d3")):a.d3.promise=b(a.d3)}(this,function(a){var b=function(){function b(a,b){return function(){var c=Array.prototype.slice.call(arguments);return new Promise(function(d,e){var f=function(a,b){return a?void e(Error(a)):void d(b)};b.apply(a,c.concat(f))})}}var c={};return["csv","tsv","json","xml","text","html"].forEach(function(d){c[d]=b(a,a[d])}),c}();return a.promise=b,b});
 
 // https://github.com/overset/javascript-natural-sort
-// eweitz: Trivially customized for sorting list of objects by "name" property
-function naturalSort(a,b){var q,r,a=a.name,b=b.name,c=/(^([+\-]?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?(?=\D|\s|$))|^0x[\da-fA-F]+$|\d+)/g,d=/^\s+|\s+$/g,e=/\s+/g,f=/(^([\w ]+,?[\w ]+)?[\w ]+,?[\w ]+\d+:\d+(:\d+)?[\w ]?|^\d{1,4}[\/\-]\d{1,4}[\/\-]\d{1,4}|^\w+, \w+ \d+, \d{4})/,g=/^0x[0-9a-f]+$/i,h=/^0/,i=function(a){return(naturalSort.insensitive&&(""+a).toLowerCase()||""+a).replace(d,"")},j=i(a),k=i(b),l=j.replace(c,"\0$1\0").replace(/\0$/,"").replace(/^\0/,"").split("\0"),m=k.replace(c,"\0$1\0").replace(/\0$/,"").replace(/^\0/,"").split("\0"),n=parseInt(j.match(g),16)||1!==l.length&&Date.parse(j),o=parseInt(k.match(g),16)||n&&k.match(f)&&Date.parse(k)||null,p=function(a,b){return(!a.match(h)||1==b)&&parseFloat(a)||a.replace(e," ").replace(d,"")||0};if(o){if(n<o)return-1;if(n>o)return 1}for(var s=0,t=l.length,u=m.length,v=Math.max(t,u);s<v;s++){if(q=p(l[s]||"",t),r=p(m[s]||"",u),isNaN(q)!==isNaN(r))return isNaN(q)?1:-1;if(/[^\x00-\x80]/.test(q+r)&&q.localeCompare){var w=q.localeCompare(r);return w/Math.abs(w)}if(q<r)return-1;if(q>r)return 1}}
+function naturalSort(a,b){var q,r,c=/(^([+\-]?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?(?=\D|\s|$))|^0x[\da-fA-F]+$|\d+)/g,d=/^\s+|\s+$/g,e=/\s+/g,f=/(^([\w ]+,?[\w ]+)?[\w ]+,?[\w ]+\d+:\d+(:\d+)?[\w ]?|^\d{1,4}[\/\-]\d{1,4}[\/\-]\d{1,4}|^\w+, \w+ \d+, \d{4})/,g=/^0x[0-9a-f]+$/i,h=/^0/,i=function(a){return(naturalSort.insensitive&&(""+a).toLowerCase()||""+a).replace(d,"")},j=i(a),k=i(b),l=j.replace(c,"\0$1\0").replace(/\0$/,"").replace(/^\0/,"").split("\0"),m=k.replace(c,"\0$1\0").replace(/\0$/,"").replace(/^\0/,"").split("\0"),n=parseInt(j.match(g),16)||1!==l.length&&Date.parse(j),o=parseInt(k.match(g),16)||n&&k.match(f)&&Date.parse(k)||null,p=function(a,b){return(!a.match(h)||1==b)&&parseFloat(a)||a.replace(e," ").replace(d,"")||0};if(o){if(n<o)return-1;if(n>o)return 1}for(var s=0,t=l.length,u=m.length,v=Math.max(t,u);s<v;s++){if(q=p(l[s]||"",t),r=p(m[s]||"",u),isNaN(q)!==isNaN(r))return isNaN(q)?1:-1;if(/[^\x00-\x80]/.test(q+r)&&q.localeCompare){var w=q.localeCompare(r);return w/Math.abs(w)}if(q<r)return-1;if(q>r)return 1}}
 
 /* Constructs a prototypal Ideogram class */
 var Ideogram = function(config) {
@@ -103,6 +102,10 @@ var Ideogram = function(config) {
     if ("rotatable" in config === false) {
       this.config.rotatable = false;
     }
+  }
+
+  if (!this.config.showNonNuclearChromosomes) {
+    this.config.showNonNuclearChromosomes = false;
   }
 
   this.initAnnotSettings();
@@ -909,6 +912,11 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
     .append("g")
       .attr("id", chrModel.id)
       .attr("class", "chromosome noBands");
+
+  if (width < 1) {
+    // Applies to mitochrondial and chloroplast chromosomes
+    return;
+  }
 
   chr.append('path')
     .attr("class", "upstream chromosomeBorder")
@@ -2274,6 +2282,26 @@ Ideogram.prototype.getTaxids = function(callback) {
   }
 };
 
+Ideogram.prototype.sortChromosomes = function(a, b) {
+
+  var a = a.name,
+      b = b.name;
+
+  if (a != "MT" && a != "CP" && b != "MT" && b != "CP") {
+    return naturalSort(a, b);
+  } else if (a == "MT" && b != "MT") {
+    return 1;
+  } else if (a == "CP" && b != "CP") {
+    return 1;
+  } else if (a == "MT" && b == "CP") {
+    return 1;
+  } else if (a == "CP" && b == "MT") {
+    return -1;
+  } else if (a !== "MT" && a !== "CP" && (b == "MT" || b == "CP")) {
+    return -1;
+  }
+
+}
 
 /**
   Returns names and lengths of chromosomes for an organism's best-known
@@ -2297,7 +2325,7 @@ Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
     asmSearch =
       ideo.esearch +
       "&db=assembly" +
-      "&term=%22" + organism + "%22[organism]" + 
+      "&term=%22" + organism + "%22[organism]" +
       "AND%20(%22latest%20refseq%22[filter])%20AND%20%22chromosome%20level%22[filter]";
 
     var promise = d3.promise.json(asmSearch);
@@ -2343,17 +2371,32 @@ Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
 
           result = results[x];
 
-          // omit list of reult uids, and skip chrMT
-          if (x === "uids" || result.genome === "mitochondrion") {
+          // omit list of reult uids
+          if (x === "uids") {
             continue;
           }
 
-          cnIndex = result.subtype.split("|").indexOf("chromosome");
+          if (result.genome === "mitochondrion") {
+            if (ideo.config.showNonNuclearChromosomes) {
+              chrName = "MT";
+            } else {
+              continue;
+            }
+          } else if (result.genome === "chloroplast") {
+            if (ideo.config.showNonNuclearChromosomes) {
+              chrName = "CP";
+            } else {
+              continue;
+            }
+          } else {
 
-          chrName = result.subname.split("|")[cnIndex];
-          if (typeof chrName !== "undefined" && chrName.substr(0, 3) === "chr") {
-            // Convert "chr12" to "12", e.g. for banana (GCF_000313855.2)
-            chrName = chrName.substr(3);
+            cnIndex = result.subtype.split("|").indexOf("chromosome");
+
+            chrName = result.subname.split("|")[cnIndex];
+            if (typeof chrName !== "undefined" && chrName.substr(0, 3) === "chr") {
+              // Convert "chr12" to "12", e.g. for banana (GCF_000313855.2)
+              chrName = chrName.substr(3);
+            }
           }
 
           chrLength = result.slen;
@@ -2366,7 +2409,7 @@ Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
           chromosomes.push(chromosome);
         }
 
-        chromosomes = chromosomes.sort(naturalSort);
+        chromosomes = chromosomes.sort(ideo.sortChromosomes);
         asmAndChrArray.push(chromosomes)
 
         ideo.coordinateSystem = "bp";
