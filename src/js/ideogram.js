@@ -913,6 +913,11 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
       .attr("id", chrModel.id)
       .attr("class", "chromosome noBands");
 
+  if (width < 1) {
+    // Applies to mitochrondial and chloroplast chromosomes
+    return;
+  }
+
   chr.append('path')
     .attr("class", "upstream chromosomeBorder")
     .attr("d",
@@ -2366,7 +2371,7 @@ Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
 
           result = results[x];
 
-          // omit list of reult uids, and skip chrMT
+          // omit list of reult uids
           if (x === "uids") {
             continue;
           }
