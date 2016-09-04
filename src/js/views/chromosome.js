@@ -35,14 +35,15 @@ Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
  * @param {Selection} container
  * @param {Integer} chrSetNumber
  * @param {Integer} chrNumber
- * @param {Number} x
+ * @param {Object} position
  * @param {'p'|'q'} arm
  * @returns {Number}
  */
-Chromosome.prototype._renderBands = function(container, chrSetNumber, chrNumber, x, arm) {
+Chromosome.prototype._renderBands = function(container, chrSetNumber, chrNumber, position, arm) {
 
     var self = this;
-    var offset = x;
+
+    var x = position.x;
 
     container.selectAll("path.band." + arm)
         .data(self._model.bands.filter(function(band) {
@@ -55,10 +56,10 @@ Chromosome.prototype._renderBands = function(container, chrSetNumber, chrNumber,
             return 'band ' + arm + '-band ' + d.stain;
         }).attr("d", function(d, i) {
 
-            var start = self._ideo.round(d.px.start) + x;
+            var start = self._ideo.round(d.px.start) + position.offset;
             var length = self._ideo.round(d.px.width);
 
-            offset = start + length;
+            x = start + length;
 
             return "M " + start + ", 0" +
                 "l " + length + " 0 " +
@@ -68,7 +69,10 @@ Chromosome.prototype._renderBands = function(container, chrSetNumber, chrNumber,
             return self._color.getArmColor(chrSetNumber, chrNumber, arm == 'p' ? 0 : 1);
         });
 
-    return offset;
+    return {
+        offset: position.offset,
+        x: x
+    };
 };
 
 
@@ -82,11 +86,20 @@ Chromosome.prototype._renderBands = function(container, chrSetNumber, chrNumber,
  */
 Chromosome.prototype._renderPArm = function(container, chrSetNumber, chrNumber) {
 
-    var width = this._renderLeftTerminal(container, chrSetNumber, chrNumber, 0, 'p');
+    var position = {
+        offset: 0,
+        x: 0
+    };
 
-    var offset = this._renderBands(container, chrSetNumber, chrNumber, width, 'p');
+    position = this._renderLeftTerminal(container, chrSetNumber, chrNumber, position, 'p');
+    start = position.offset;
 
-    return this._renderRightTerminal(container, chrSetNumber, chrNumber, offset, 'p');
+    position = this._renderBands(container, chrSetNumber, chrNumber, position, 'p');
+    stop = position.x;
+
+    this._renderBorder(container, chrSetNumber, chrNumber, 'p', start, stop);
+
+    return this._renderRightTerminal(container, chrSetNumber, chrNumber, position, 'p');
 };
 
 
@@ -95,14 +108,37 @@ Chromosome.prototype._renderPArm = function(container, chrSetNumber, chrNumber) 
  * @param {Selection} container
  * @param {Integer} chrSetNumber
  * @param {Integer} chrNumber
- * @param {Number} x
+ * @param {Object} x
  * @returns {Number}
  */
-Chromosome.prototype._renderQArm = function(container, chrSetNumber, chrNumber, x) {
+Chromosome.prototype._renderQArm = function(container, chrSetNumber, chrNumber, position) {
 
-    var width = this._renderLeftTerminal(container, chrSetNumber, chrNumber, x, 'q');
+    var position = this._renderLeftTerminal(container, chrSetNumber, chrNumber, position, 'q');
+    start = position.x;
 
-    var offset = this._renderBands(container, chrSetNumber, chrNumber, width * 2, 'q');
+    position = this._renderBands(container, chrSetNumber, chrNumber, position, 'q');
+    stop = position.x;
 
-    return this._renderRightTerminal(container, chrSetNumber, chrNumber, offset, 'q');
+    this._renderBorder(container, chrSetNumber, chrNumber, 'q', start, stop);
+
+    return this._renderRightTerminal(container, chrSetNumber, chrNumber, position, 'q');
+};
+
+
+Chromosome.prototype._renderBorder = function(container, chrSetNumber, chrNumber, arm, from, to) {
+
+    container.append('line')
+        .attr('x1', from)
+        .attr('y1', 0)
+        .attr('x2', to)
+        .attr('y2', 0)
+        .style('stroke', this._color.getBorderColor(chrSetNumber, chrNumber, arm == 'p' ? 0 : 1))
+        .style('stroke-width', 0.5);
+    container.append('line')
+        .attr('x1', from)
+        .attr('y1', this._config.chrWidth)
+        .attr('x2', to)
+        .attr('y2', this._config.chrWidth)
+        .style('stroke', this._color.getBorderColor(chrSetNumber, chrNumber, arm == 'p' ? 0 : 1))
+        .style('stroke-width', 0.5);
 };

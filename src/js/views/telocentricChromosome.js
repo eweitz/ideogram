@@ -1,5 +1,10 @@
 /**
- * 
+ * Telocentric chromosome view class.
+ * @public
+ * @class
+ * @param {Object} model
+ * @param {Object} config
+ * @param {Ideogram} ideo
  */
 function TelocentricChromosome(model, config, ideo) {
 
@@ -17,16 +22,16 @@ TelocentricChromosome.prototype = Object.create(Chromosome.prototype);
  * @param {Selection} container
  * @param {Integer} chrSetNumber
  * @param {Integer} chrNumber
- * @param {Number} x
+ * @param {Object} position
  * @param {'p'|'q'} arm
  * @returns {Number}
  */
-TelocentricChromosome.prototype._renderRightTerminal = function(container, chrSetNumber, chrNumber, x, arm) {
+TelocentricChromosome.prototype._renderRightTerminal = function(container, chrSetNumber, chrNumber, position, arm) {
 
     if (arm == 'p') {
-        return this._renderTelocentricRightTerminal(container, chrSetNumber, chrNumber, x, arm);
+        return this._renderTelocentricRightTerminal(container, chrSetNumber, chrNumber, position, arm);
     } else {
-        return this._renderMetacentricRightTerminal(container, chrSetNumber, chrNumber, x, arm);
+        return this._renderMetacentricRightTerminal(container, chrSetNumber, chrNumber, position, arm);
     }
 };
 
@@ -37,29 +42,33 @@ TelocentricChromosome.prototype._renderRightTerminal = function(container, chrSe
  * @param {Selection} container
  * @param {Integer} chrSetNumber
  * @param {Integer} chrNumber
- * @param {Number} x
+ * @param {Object} position
  * @param {'p'|'q'} arm
  * @returns {Number}
  */
-TelocentricChromosome.prototype._renderTelocentricRightTerminal = function(container, chrSetNumber, chrNumber, x, arm) {
+TelocentricChromosome.prototype._renderTelocentricRightTerminal = function(container, chrSetNumber, chrNumber, position, arm) {
 
-    var width = this._ideo.config.chrWidth;
+    var width = this._config.chrWidth;
+    var x = 4;
 
     container.append('path')
         .attr('class', 'band acen')
-        .attr('d', 'M1,1 L6,1 L6,' + (width - 1) + ' L1,' + (width - 1) + ' Z')
+        .attr('d', 'M1,1 L' + x + ',1 L' + x + ',' + (width - 1) + ' L1,' + (width - 1) + ' Z')
         .style('stroke', 'black')
         .style('stroke-width', 0.5);
 
     container.append('line')
-        .attr('x1', 1)
+        .attr('x1', 0)
         .attr('y1', 0)
-        .attr('x2', 1)
+        .attr('x2', 0)
         .attr('y2', width)
         .style('stroke', 'black')
         .style('stroke-width', 2);
 
-    return 1.5;
+    return {
+        offset: position.offset + x - 2,
+        x: position.x + x
+    };
 };
 
 
@@ -87,11 +96,14 @@ TelocentricChromosome.prototype._renderMetacentricRightTerminal = function(conta
  * @param {Selection} container
  * @param {Integer} chrSetNumber
  * @param {Integer} chrNumber
- * @param {Number} x
+ * @param {Object} position
  * @param {'p'|'q'} arm
  * @returns {Number}
  */
-TelocentricChromosome.prototype._renderLeftTerminal = function(container, chrSetNumber, chrNumber, x, arm) {
+TelocentricChromosome.prototype._renderLeftTerminal = function(container, chrSetNumber, chrNumber, position, arm) {
 
-    return x;
+    return {
+        offset: position.offset,
+        x: position.x
+    }
 };

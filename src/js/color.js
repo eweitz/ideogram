@@ -39,9 +39,11 @@ Color.prototype.getArmColor = function(chrSetNumber, chrNmber, armNumber) {
 };
 
 
-Color.prototype.getPolyploidBorderColor = function(chrSetNumber, chrNmber, armNumber) {
+Color.prototype.getBorderColor = function(chrSetNumber, chrNmber, armNumber) {
 
     if (chrNmber < this._config.ploidy) {
+        return '#000';
+    } else if (this._description.isExists(chrSetNumber, chrNmber, armNumber)) {
         return '#000';
     } else {
         return '#fff';
