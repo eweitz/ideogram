@@ -326,65 +326,6 @@ Ideogram.prototype.getBands = function(content, taxid, chromosomes) {
 
 };
 
-/**
-* Fills cytogenetic arms -- p-arm and q-arm -- with specified colors
-*/
-Ideogram.prototype.colorArms = function() {
-
-  var ideo = this;
-
-  ideo.chromosomesArray.forEach(function(chr, chrIndex){
-
-    var bands = chr.bands,
-        pcen = bands[chr.pcenIndex],
-        qcen = bands[chr.pcenIndex + 1],
-        chrID = chr.id,
-        chrMargin = ideo.config.chrMargin * (chrIndex + 1),
-        chrWidth = ideo.config.chrWidth;
-
-    pcenStart = pcen.px.start;
-    qcenStop = qcen.px.stop;
-    /*
-     * Select chromosome set. Then select all chromosomes within
-     * and apply ideogram initial code to each chromosome to
-     * colour them all correct.
-     */
-    d3.select("#" + chrID + "-chromosome-set")
-      .selectAll("g.chromosome")
-      .each(function(mock, chrNumber) {
-
-        var chromosome = d3.select(this);
-        /*
-         * Color arm's ends borders.
-         */
-        chromosome.append("line")
-          .attr("x1", pcenStart)
-          .attr("y1", chrMargin + 0.2)
-          .attr("x2", pcenStart)
-          .attr("y2", chrMargin + chrWidth - 0.2)
-          .style("stroke", ideo._color.getArmColor(chrIndex, chrNumber, 0))
-        chromosome.append("line")
-          .attr("x1", qcenStop)
-          .attr("y1", chrMargin + 0.2)
-          .attr("x2", qcenStop)
-          .attr("y2", chrMargin + chrWidth - 0.2)
-          .style("stroke", ideo._color.getArmColor(chrIndex, chrNumber, 1))
-        /*
-         * Color bands.
-         */
-        chromosome.selectAll(" .band")
-          .data(chr.bands)
-          .style("fill", function(d, i) {
-            return ideo._color.getArmColor(chrIndex, chrNumber, Number(! (i <= chr.pcenIndex)));
-          });
-        /*
-         * Color arm's ends.
-         */
-        chromosome.selectAll(".p-ter.chromosomeBorder").style("fill", ideo._color.getArmColor(chrIndex, chrNumber, 0));
-        chromosome.selectAll(".q-ter.chromosomeBorder").style("fill", ideo._color.getArmColor(chrIndex, chrNumber, 1));
-      });
-  });
-};
 
 /**
 * Generates a model object for each chromosome
@@ -898,227 +839,21 @@ Ideogram.prototype.round = function(coord) {
 */
 Ideogram.prototype.drawChromosome = function(chrModel, chrIndex, container, k) {
 
-  var chr, chrWidth, width,
-      pArmWidth, selector, qArmStart, qArmWidth,
-      pTerPad, chrClass,
-      annotHeight, numAnnotTracks, annotTracksHeight,
-      bump, ideo,
-      bumpTweak, borderTweak;
+    var chromosome = container
+        .append("g")
+        .attr("id", chrModel.id)
+        .attr("class", "chromosome")
+        .attr("transform", "translate(0, " + k * 20 + ")");
 
-  ideo = this;
+    var view;
 
-  bump = ideo.bump;
+    if (chrModel.centromerePosition == 'telocentric') {
+        view = new TelocentricChromosome(chrModel, this.config, this);
+    } else {
+        view = new MetacentricChromosome(chrModel, this.config, this);
+    }
 
-  // p-terminal band padding
-  if (chrModel.centromerePosition != "telocentric") {
-    pTerPad = bump;
-  } else {
-    pTerPad = Math.round(bump/4) + 3;
-  }
-
-//  chr = d3.select("svg")
-  chr = container
-    .append("g")
-      .attr("id", chrModel.id)
-      .attr("class", "chromosome")
-      .attr("transform", "translate(0, " + k * 20 + ")");
-
-  chrWidth = ideo.config.chrWidth;
-  width = chrModel.width;
-
-  var chrMargin = ideo.config.chrMargin * chrIndex;
-
-  // Draw chromosome bands
-  chr.selectAll("path")
-    .data(chrModel.bands)
-    .enter()
-    .append("path")
-      .attr("id", function(d) {
-        // e.g. 1q31
-        var band = d.name.replace(".", "-");
-        return chrModel.id + "-" + band;
-      })
-      .attr("class", function(d) {
-        var cls = "band " + d.stain;
-        if (d.stain == "acen") {
-          var arm = d.name[0]; // e.g. p in p11
-          cls += " " + arm + "-cen";
-        }
-        return cls;
-      })
-      .attr("d", function(d, i) {
-        var x = ideo.round(d.px.width),
-            left = ideo.round(d.px.start),
-            curveStart, curveMid, curveEnd,
-            curveTweak,
-            innerBump = bump;
-
-        curveTweak = 0;
-
-        if (d.stain == "acen") {
-          // Pericentromeric bands get curved
-          if (ideo.adjustedBump) {
-            curveTweak = 0.35;
-            x = 0.2;
-            left -= 0.1;
-            if (d.name[0] === "q") {
-              left += 1.2;
-            }
-          } else {
-            x -= bump/2;
-          }
-
-          curveStart = chrMargin + curveTweak;
-          curveMid = chrWidth/2 - curveTweak*2;
-          curveEnd = chrWidth - curveTweak*2;
-
-          if (d.name[0] == "p") {
-            // p arm
-            d =
-              "M " + left + " " + curveStart + " " +
-              "l " + x + " 0 " +
-              "q " + bump + " " + curveMid + " 0 " + curveEnd + " " +
-              "l -" + x + " 0 z";
-          } else {
-
-            if (ideo.adjustedBump) {
-              x += 0.2;
-            }
-
-            // q arm
-            d =
-              "M " + (left + x + bump/2) + " " + curveStart + " " +
-              "l -" + x + " 0 " +
-              "q -" + (bump + 0.5) + " " + curveMid + " 0 " + curveEnd + " " +
-              "l " + x + " 0 z";
-          }
-        } else {
-          // Normal bands
-
-          if (i == 0) {
-            left += pTerPad - bump/2;
-            // TODO: this is a minor kludge to preserve visible
-            // centromeres in mouse, when viewing mouse and
-            // human chromosomes for e.g. orthology analysis
-            if (ideo.config.multiorganism === true) {
-              left += pTerPad;
-            }
-          }
-
-
-          if (ideo.adjustedBump && d.name[0] === "q") {
-            left += 1.8;
-          }
-
-          if (i == chrModel.bands.length - 1) {
-            left -= pTerPad - bump/2;
-          }
-
-          d =
-            "M " + left + " " + chrMargin + " " +
-            "l " + x + " 0 " +
-            "l 0 " + chrWidth + " " +
-            "l -" + x + " 0 z";
-        }
-
-        return d;
-      });
-
-  if (chrModel.centromerePosition != "telocentric") {
-    // As in human
-    chr.append('path')
-      .attr("class", "p-ter chromosomeBorder " + chrModel.bands[0].stain)
-      .attr("d",
-        "M " + (pTerPad - bump/2 + 0.1) + " " + chrMargin + " " +
-        "q -" + pTerPad + " " + (chrWidth/2) + " 0 " + chrWidth);
-  } else {
-    // As in mouse
-    chr.append('path')
-      .attr("class", "p-ter chromosomeBorder " + chrModel.bands[0].stain)
-      .attr("d",
-        "M " + (pTerPad - 3) + " " + chrMargin + " " +
-        "l -" + (pTerPad - 2) + " 0 " +
-        "l 0 " + chrWidth + " " +
-        "l " + (pTerPad - 2) + " 0 z");
-
-    chr.insert('path', ':first-child')
-      .attr("class", "acen")
-      .attr("d",
-        "M " + (pTerPad - 3) + " " + (chrMargin + chrWidth * 0.1) + " " +
-        "l " + (pTerPad + bump/2 + 1) + " 0 " +
-        "l 0 " + chrWidth * 0.8 + " " +
-        "l -" + (pTerPad + bump/2 + 1) + " 0 z");
-
-  }
-
-
-  if (ideo.adjustedBump) {
-    borderTweak = 1.8;
-  } else {
-    borderTweak = 0;
-  }
-
-  var pcenIndex = chrModel["pcenIndex"],
-      pcen = chrModel.bands[pcenIndex],
-      qcen = chrModel.bands[pcenIndex + 1],
-      pBump, qArmEnd;
-
-  // Why does human chromosome 11 lack a centromeric p-arm band?
-  // Answer: because of a bug in the data.  Hack removed; won't work
-  // for human 550 resolution until data is fixed.
-  if (pcenIndex > 0) {
-    pArmWidth = pcen.px.start;
-    qArmStart = qcen.px.stop + borderTweak;
-    pBump = bump;
-  } else {
-    // For telocentric centromeres, as in many mouse chromosomes
-    pArmWidth = 2;
-    pBump = 0;
-    qArmStart = document.querySelectorAll("#" + chrModel.id + " .band")[0].getBBox().x;
-  }
-
-  qArmWidth = chrModel.width - qArmStart + borderTweak*1.3;
-  qArmEnd = qArmStart + qArmWidth - bump/2 - 0.5;
-
-  chr.append('line')
-    .attr("class", "cb-p-arm-top chromosomeBorder")
-    .attr('x1', bump/2)
-    .attr('y1', chrMargin)
-    .attr('x2', pArmWidth)
-    .attr("y2", chrMargin)
-    .style('stroke', this._color.getPolyploidBorderColor(chrIndex, k, 0));
-
-  chr.append('line')
-    .attr("class", "cb-p-arm-bottom chromosomeBorder")
-    .attr('x1', bump/2)
-    .attr('y1', chrWidth + chrMargin)
-    .attr('x2', pArmWidth)
-    .attr("y2", chrWidth + chrMargin)
-    .style('stroke', this._color.getPolyploidBorderColor(chrIndex, k, 0));
-
-  chr.append('line')
-    .attr("class", "cb-q-arm-top chromosomeBorder")
-    .attr('x1', qArmStart)
-    .attr('y1', chrMargin)
-    .attr('x2', qArmEnd)
-    .attr("y2", chrMargin)
-    .style('stroke', this._color.getPolyploidBorderColor(chrIndex, k, 1));
-
-  chr.append('line')
-    .attr("class", "cb-q-arm-bottom chromosomeBorder")
-    .attr('x1', qArmStart)
-    .attr('y1', chrWidth + chrMargin)
-    .attr('x2', qArmEnd)
-    .attr("y2", chrWidth + chrMargin)
-    .style('stroke', this._color.getPolyploidBorderColor(chrIndex, k, 1));
-
-  chr.append('path')
-    .attr("class", "q-ter chromosomeBorder " + chrModel.bands[chrModel.bands.length - 1].stain)
-    .attr("d",
-      "M " + qArmEnd + " " + chrMargin + " " +
-      "q " + bump + " " +  chrWidth/2 + " 0 " + chrWidth
-    ).style('stroke', this._color.getPolyploidBorderColor(chrIndex, k, 1));
-
+    view.render(chromosome, chrIndex, k);
 };
 
 
@@ -2273,7 +2008,7 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
         .attr("id", chromosomeModel.id + "-chromosome-set");
 
       for (var k = 0; k < this._ploidy.getChromosomesNumber(j); k ++) {
-        ideo.drawChromosome(chromosomeModel, chrIndex, container, k);
+        ideo.drawChromosome(chromosomeModel, chrIndex - 1, container, k);
       }
     }
 
@@ -2395,7 +2130,7 @@ Ideogram.prototype.init = function() {
         ideoHeight = ideo.config.rows * (ideoHeight - 30);
       }
     } else {
-      ideoHeight = ideo.config.chrMargin * ideo.numChromosomes * ideo.config.ploidy + 30 + (this.config.ploidy > 1 ? 20 * ideo.config.chromosomes[taxid].length : 0);
+      ideoHeight = ideo.config.chrMargin * ideo.numChromosomes * ideo.config.ploidy + 30 + (ideo.config.ploidy > 1 ? 20 * ideo.config.chromosomes[taxid].length : 0);
     }
 
     var gradients = ideo.getBandColorGradients();
@@ -2603,10 +2338,6 @@ function finishInit() {
 
     if (ideo.config.annotations) {
       ideo.drawAnnots(ideo.config.annotations);
-    }
-
-    if (ideo.config.armColors || ideo.config.ploidyDesc) {
-      ideo.colorArms();
     }
 
     var t1_a = new Date().getTime();
