@@ -40,7 +40,7 @@ Ploidy.prototype._getChromosomeSetHorizontalTranslate = function(setNumber) {
         /*
          * First offset equals to zero.
          */
-        this._translate = [0];
+        this._translate = [1];
         /*
          * Loop through description set.
          */
@@ -62,7 +62,7 @@ Ploidy.prototype._getChromosomeSetHorizontalTranslate = function(setNumber) {
             /*
              * Add new offset into translate array.
              */
-            this._translate[i] = this._translate[i - 1] + (setSize - 1) * 20 + (this._config.ploidy > 1 ? 20 : 0);
+            this._translate[i] = this._translate[i - 1] + setSize * 20 + (this._config.ploidy > 1 ? 20 : 0);
         };
     }
 
