@@ -30,7 +30,7 @@ Ploidy.prototype._getChromosomeSetHorizontalTranslate = function(setNumber) {
      * If no detailed description provided just use one formula for all cases.
      */
     if (! this._config.ploidyDesc) {
-        return setNumber * (this._config.ploidy - 1) * 20 + (this._config.ploidy > 1 ? 20 * setNumber : 0);
+        return 20 * (setNumber + 1);
     }
     /*
      * Id detailed description provided start to calculate offsets
