@@ -401,6 +401,7 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
   if (hasBands) {
     chr["name"] = chromosome;
     chr["length"] = bands[bands.length - 1][cs].stop;
+    chr["type"] = "nuclear";
   } else {
     chr = chromosome;
   }
@@ -2284,22 +2285,26 @@ Ideogram.prototype.getTaxids = function(callback) {
 
 Ideogram.prototype.sortChromosomes = function(a, b) {
 
-  var a = a.name,
-      b = b.name;
+  var aIsNuclear = a.type === "nuclear",
+      bIsNuclear = b.type === "nuclear",
+      aIsCP = a.type === "chloroplast",
+      bIsCP = b.type === "chloroplast",
+      aIsMT = a.type === "mitochondrion",
+      bIsMT = b.type === "mitochondrion",
+      aIsPlastid = aIsMT && a.name !== "MT", // e.g. B1 in rice genome GCF_001433935.1
+      bIsPlastid = bIsMT && b.name !== "MT";
 
-  if (a != "MT" && a != "CP" && b != "MT" && b != "CP") {
-    return naturalSort(a, b);
-  } else if (a == "MT" && b != "MT") {
-    return 1;
-  } else if (a == "CP" && b != "CP") {
-    return 1;
-  } else if (a == "MT" && b == "CP") {
-    return 1;
-  } else if (a == "CP" && b == "MT") {
-    return -1;
-  } else if (a !== "MT" && a !== "CP" && (b == "MT" || b == "CP")) {
-    return -1;
-  }
+    if (aIsNuclear && bIsNuclear) {
+      return naturalSort(a.name, b.name);
+    } else if (!aIsNuclear && bIsNuclear) {
+      return 1;
+    } else if (aIsMT && bIsCP) {
+      return 1;
+    } else if (aIsCP && bIsMT) {
+      return -1;
+    } else if (!aIsMT && !aIsCP && (bIsMT || bIsCP)) {
+      return -1;
+    }
 
 }
 
@@ -2314,7 +2319,7 @@ Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
       asmUid, asmSummary,
       rsUid, nuccoreLink,
       links, ntSummary,
-      results, result, cnIndex, chrName, chrLength, chromosome,
+      results, result, cnIndex, chrName, chrLength, chromosome, type,
       ideo = this;
 
     organism = ideo.config.organism;
@@ -2378,18 +2383,31 @@ Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
 
           if (result.genome === "mitochondrion") {
             if (ideo.config.showNonNuclearChromosomes) {
-              chrName = "MT";
+              type = result.genome;
+              cnIndex = result.subtype.split("|").indexOf("plasmid");
+              if (cnIndex === -1) {
+                chrName = "MT";
+              } else {
+                // Seen in e.g. rice genome IRGSP-1.0 (GCF_001433935.1),
+                // From https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?retmode=json&db=nucleotide&id=996703432,996703431,996703430,996703429,996703428,996703427,996703426,996703425,996703424,996703423,996703422,996703421,194033210,11466763,7524755
+                  // "genome": "mitochondrion",
+                  // "subtype": "cell_line|plasmid",
+                  // "subname": "A-58 CMS|B1",
+                chrName = result.subname.split("|")[cnIndex];
+              }
             } else {
               continue;
             }
-          } else if (result.genome === "chloroplast") {
+          } else if (result.genome === "chloroplast" || result.genome === "plastid") {
+            type = "chloroplast";
+            // Plastid encountered with rice genome IRGSP-1.0 (GCF_001433935.1)
             if (ideo.config.showNonNuclearChromosomes) {
               chrName = "CP";
             } else {
               continue;
             }
           } else {
-
+            type = "nuclear";
             cnIndex = result.subtype.split("|").indexOf("chromosome");
 
             chrName = result.subname.split("|")[cnIndex];
@@ -2403,7 +2421,8 @@ Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
 
           chromosome = {
             "name": chrName,
-            "length": chrLength
+            "length": chrLength,
+            "type": type
           };
 
           chromosomes.push(chromosome);
