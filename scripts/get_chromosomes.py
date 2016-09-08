@@ -1,11 +1,10 @@
 import urllib.request as request
 from urllib.parse import quote
 import urllib.error
+import os
 import json
 import io
 import gzip
-
-output_dir = 'data/'
 
 eutils = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
 esearch = eutils + 'esearch.fcgi?retmode=json';
@@ -57,6 +56,9 @@ for uid in data['result']:
     rs_uid = result['rsuid']
     taxid = result['taxid']
     organism = result['speciesname']
+
+    output_dir = 'data/chromosomes/' + organism.lower().replace(' ', '-') + '/'
+    os.mkdir(output_dir)
 
     asm_segment = acc + '_' + name.replace(' ', '_')
 
