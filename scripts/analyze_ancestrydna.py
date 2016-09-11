@@ -3,16 +3,31 @@ import re
 import os
 import urllib.request as request
 import gzip
-
+import argparse
 from collections import OrderedDict
 
-show_snpedia_results = True
+parser = argparse.ArgumentParser(description=
+    "Analyze AncestryDNA raw data.  Outputs plaintext genome analysis and " +
+    "interactive genome-wide visualization of AncestryDNA genomic data\n\n" +
+    "Example:\n" +
+    "python3 analyze_ancestrydna.py --input ~/AncestryDNA.txt"
+)
+parser.add_argument("--input", "-i",
+    help="Input AncestryDNA.txt path",
+    required=True)
+parser.add_argument("--snpedia", "-s",
+    help="Show SNPpedia result.  Default: true",
+    type=bool,
+    default=True)
+args = parser.parse_args()
 
-data_dir = "data/analysis/"
+show_snpedia_results = args.snpedia
+
+data_dir = "../data/analysis/"
 if os.path.exists(data_dir) == False:
     os.mkdir(data_dir)
 
-input_file = data_dir + "AncestryDNA.txt"
+input_file = args.input
 output_file = data_dir + "genome_analysis.txt"
 
 # Raw sample data from AncestryDNA
@@ -318,7 +333,7 @@ top_annots["keys"] = [
 ]
 top_annots["annots"] = annots
 annots = json.dumps(top_annots)
-open("data/analysis/ancestrydna.json", "w").write(annots)
+open(data_dir + "ancestrydna.json", "w").write(annots)
 
 top_annots = {}
 top_annots["keys"] = [
@@ -326,8 +341,7 @@ top_annots["keys"] = [
 ]
 top_annots["annots"] = clin_annots
 annots = json.dumps(top_annots)
-open("data/analysis/ancestrydna_tracks.json", "w").write(annots)
-
+open(data_dir + "ancestrydna_tracks.json", "w").write(annots)
 
 output.append("Number variants in AncestryDNA sample:")
 output.append(str(num_ancestrydna_rsids) + "\n")
