@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Ancestry | Ideogram</title>
-  <link type="text/css" rel="stylesheet" href="../src/css/ideogram.css"/>
-  <script type="text/javascript" src="../src/js/d3.min.js"></script>
+  <title>AncestryDNA analysis | Ideogram</title>
+  <link type="text/css" rel="stylesheet" href="../../src/css/ideogram.css"/>
+  <script type="text/javascript" src="../bands/native/ideogram_9606_GCF_000001305.13_850_v1.js"></script>
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.1.1/d3.min.js"></script>
-  <script type="text/javascript" src="../src/js/crossfilter.min.js"></script>
-  <script type="text/javascript" src="../src/js/ideogram.filter.js"></script>
+  <script type="text/javascript" src="../../src/js/ideogram.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter/1.3.12/crossfilter.min.js"></script>
+  <script type="text/javascript" src="../../src/js/ideogram.filter.js"></script>
   <style>
     ul {
       list-style: none;
@@ -26,9 +27,62 @@
   </style>
 </head>
 <body>
-  <h1>Ancestry | Ideogram</h1>
-  <a href=".">Back to overview</a>
+  <h1>AncestryDNA analysis | Ideogram</h1>
+  <a href="ancestry_tracks.html">View same data in tracks</a>
   <div id="container"></div>
+  <ul id="clinsig">
+    Clinical significance
+    <li>
+      <label for="filter_clinsig_pathogenic">
+        <input type="checkbox" id="filter_clinsig_pathogenic">Pathogenic</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_clinsig_likely-pathogenic">
+        <input type="checkbox" id="filter_clinsig_likely-pathogenic">Likely pathogenic</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_clinsig_likely-benign">
+        <input type="checkbox" id="filter_clinsig_likely-benign">Likely benign</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_clinsig_benign">
+        <input type="checkbox" id="filter_clinsig_benign">Benign</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_clinsig_uncertain-significance">
+        <input type="checkbox" id="filter_clinsig_uncertain-significance">Uncertain</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <!--
+    <li>
+      <label for="filter_clinsig_not-provided">
+        <input type="checkbox" id="filter_clinsig_not-provided">Not provided</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_clinsig_other">
+        <input type="checkbox" id="filter_clinsig_other">Other</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_clinsig_not-in-clinsig">
+        <input type="checkbox" id="filter_clinsig_not-in-clinvar">Not in ClinVar</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    -->
+  </ul>
   <ul id="homozygous">
     Homozygous
     <li>
@@ -110,59 +164,6 @@
       </label>
     </li>
   </ul>
-  <ul id="clinsig">
-    Clinical significance
-    <li>
-      <label for="filter_clinsig_pathogenic">
-        <input type="checkbox" id="filter_clinsig_pathogenic">Pathogenic</input>
-      <span class="count"></span>
-      </label>
-    </li>
-    <li>
-      <label for="filter_clinsig_likely-pathogenic">
-        <input type="checkbox" id="filter_clinsig_likely-pathogenic">Likely pathogenic</input>
-      <span class="count"></span>
-      </label>
-    </li>
-    <li>
-      <label for="filter_clinsig_likely-benign">
-        <input type="checkbox" id="filter_clinsig_likely-benign">Likely benign</input>
-      <span class="count"></span>
-      </label>
-    </li>
-    <li>
-      <label for="filter_clinsig_benign">
-        <input type="checkbox" id="filter_clinsig_benign">Benign</input>
-      <span class="count"></span>
-      </label>
-    </li>
-    <li>
-      <label for="filter_clinsig_uncertain-significance">
-        <input type="checkbox" id="filter_clinsig_uncertain-significance">Uncertain</input>
-      <span class="count"></span>
-      </label>
-    </li>
-    <!--
-    <li>
-      <label for="filter_clinsig_not-provided">
-        <input type="checkbox" id="filter_clinsig_not-provided">Not provided</input>
-      <span class="count"></span>
-      </label>
-    </li>
-    <li>
-      <label for="filter_clinsig_other">
-        <input type="checkbox" id="filter_clinsig_other">Other</input>
-      <span class="count"></span>
-      </label>
-    </li>
-    <li>
-      <label for="filter_clinsig_not-in-clinsig">
-        <input type="checkbox" id="filter_clinsig_not-in-clinvar">Not in ClinVar</input>
-      <span class="count"></span>
-      </label>
-    </li>
-    -->
-  </ul>
   <div class="note">Histogram shows real human variant data</div>
   <script type="text/javascript">
 
@@ -216,7 +217,7 @@
       }
     };
 
-    checkedFilters = d3.selectAll("input:checked")[0];
+    checkedFilters = d3.selectAll("input:checked").nodes();
 
     for (i = 0; i < checkedFilters.length; i++) {
       tmp = checkedFilters[i].id.split("_");
@@ -248,7 +249,8 @@
     organism: "human",
     assembly: "GRCh37",
     chrHeight: 300,
-    annotationsPath: "/ideogram/data/annotations/ancestrydna.json",
+    // Annotations generated by ideogram/scripts/analyze_ancestrydna.py
+    annotationsPath: "/ideogram/data/analysis/ancestrydna.json",
     annotationsLayout: "histogram",
     // histogramScaling: "absolute",
     barWidth: 3,

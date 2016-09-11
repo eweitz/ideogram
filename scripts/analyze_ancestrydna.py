@@ -4,16 +4,18 @@ import os
 import urllib.request as request
 import gzip
 import argparse
+import shutil
 from collections import OrderedDict
 
 parser = argparse.ArgumentParser(description=
     "Analyze AncestryDNA raw data.  Outputs plaintext genome analysis and " +
     "interactive genome-wide visualization of AncestryDNA genomic data\n\n" +
     "Example:\n" +
-    "python3 analyze_ancestrydna.py --input ~/AncestryDNA.txt"
+    "python3 analyze_ancestrydna.py --input ~/AncestryDNA.txt",
+    formatter_class=argparse.RawTextHelpFormatter
 )
 parser.add_argument("--input", "-i",
-    help="Input AncestryDNA.txt path",
+    help="Input AncestryDNA.txt file",
     required=True)
 parser.add_argument("--snpedia", "-s",
     help="Show SNPpedia result.  Default: true",
@@ -297,9 +299,20 @@ for line in ancestrydna_sample:
                 key = cs_label.lower().replace(" ", "_")
                 rs_summaries[key].append(rs_summary)
 
-            if clinsig in set((1,2,3,4,5)):
-                #clinsig -= 1
-                clin_annot = [name, start, length, clinsig]
+            if clinsig in set((0,2,3,4,5)):
+                track_index = clinsig - 1
+                # Simplify to "Pathogenic or likely pathogenic" or
+                # "Benign or likely benign"
+                if track_index in ((4, 3)):
+                    # Pathogenic or likely pathogenic
+                    track_index = 2
+                elif track_index == -1:
+                    # Uncertain significance
+                    track_index = 1
+                elif track_index in ((1, 2)):
+                    # Benign or likely benign
+                    track_index = 0
+                clin_annot = [name, start, length, track_index]
                 if chr in seen_chrs_clin_annots:
                     clin_annots[chr_index - 1]["annots"].append(clin_annot)
                 else:
@@ -371,3 +384,13 @@ for key in rs_summaries:
 output = "\n".join(output)
 
 open(output_file, "w").write(output)
+
+shutil.copy("../examples/ancestry.html", data_dir)
+shutil.copy("../examples/ancestry_tracks.html", data_dir)
+
+print(
+    "\nAnalysis of AncestryDNA data in:\n" +
+    "\t../data/analysis/genome_analysis.txt\n" +
+    "\thttp://localhost/ideogram/data/analysis/ancestry.html\n" +
+    "\thttp://localhost/ideogram/data/analysis/ancestry_tracks.html\n"
+)
