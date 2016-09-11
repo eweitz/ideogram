@@ -169,12 +169,6 @@
 
   var counts, key, count;
 
-  function onIdeogramLoad() {
-    d3.selectAll("g.chromosome").on("click", function() {
-      ideogram.rotateAndToggleDisplay(this.id);
-    });
-  }
-
   d3.selectAll("input").on("click", function() {
     var filterMap,
         tmp, facet,
@@ -253,8 +247,7 @@
     annotationsPath: "/ideogram/data/analysis/ancestrydna.json",
     annotationsLayout: "histogram",
     // histogramScaling: "absolute",
-    barWidth: 3,
-    onLoad: onIdeogramLoad
+    barWidth: 3
   };
 
   var ideogram = new Ideogram(config);

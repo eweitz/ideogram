@@ -125,6 +125,37 @@ rs_summaries = OrderedDict([
 if show_snpedia_results:
     rs_summaries["snpedia"] = []
 
+def get_snpedia_comment(name, allele1, allele2):
+
+    if name in snpedia_json and snpedia_json[name]:
+        # SNPedia RS object, e.g.
+        a1 = allele1
+        a2 = allele2
+
+        if a1 in (("I", "D", "0")) or a1 in (("I", "D", "0")):
+            # Skip insertions, deletions, or unknown
+            return []
+
+        sample_genotype = a1 + a2
+        srs = snpedia_json[name]
+        if srs["original_orientation"] == "minus":
+            sample_genotype = complement(a1) + complement(a2)
+        if sample_genotype in srs["genotypes"]:
+            sg = srs["genotypes"][sample_genotype]
+            if sg["comment"].lower() in ((
+                "", "common in clinvar", "common in complete genomics",
+                "common on affy axiom data", "normal", "common", "?", "none",
+                "normal risk", "average", "common/normal",
+                "normal (orientation reversed)"
+            )):
+                # Skip uninformative entries
+                return []
+            else:
+                return sg["comment"]
+
+    return []
+
+
 # Column headers of VCF file:
 # #CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
 #
@@ -199,7 +230,6 @@ for line in clinvar_vcf_file:
         "gene": gene
     }
 
-
 for line in ancestrydna_sample:
 
     if line[0] == "#" or line[:4] == "rsid":
@@ -241,36 +271,14 @@ for line in ancestrydna_sample:
 
     clinalleles  = rsids[name]["clinalleles"]
 
-    if name in snpedia_json and snpedia_json[name]:
-        # SNPedia RS object, e.g.
-        a1 = allele1
-        a2 = allele2
-
-        if a1 in (("I", "D", "0")) or a1 in (("I", "D", "0")):
-            # Skip insertions, deletions, or unknown
-            continue
-
-        sample_genotype = a1 + a2
-        srs = snpedia_json[name]
-        if srs["original_orientation"] == "minus":
-            sample_genotype = complement(a1) + complement(a2)
-        if sample_genotype in srs["genotypes"]:
-            sg = srs["genotypes"][sample_genotype]
-            if sg["comment"].lower() in ((
-                "", "common in clinvar", "common in complete genomics",
-                "common on affy axiom data", "normal", "common", "?", "none",
-                "normal risk", "average", "common/normal",
-                "normal (orientation reversed)"
-            )):
-                # Skip uninformative entries
-                continue
-
+    if show_snpedia_results:
+        snpedia_comment = get_snpedia_comment(name, allele1, allele2)
+        if len(snpedia_comment) > 0:
             # SNPedia seems noisier than ClinVar, also much overlap.
-            if show_snpedia_results:
-                rs_summaries["snpedia"].append(
-                    "SNPedia result for " + genotype + ":\n" +
-                        "\t" + sg["comment"]
-                )
+            rs_summaries["snpedia"].append(
+                "SNPedia result for " + genotype + ":\n" +
+                    "\t" + snpedia_comment
+            )
 
     for i, clinallele in enumerate(clinalleles):
         if name in rsids and clinallele in set((allele1, allele2)):
@@ -321,24 +329,24 @@ for line in ancestrydna_sample:
         else:
             clinsig = -1 # Not in ClinVar
 
-    allele1 = allele_map[allele1]
-    allele2 = allele_map[allele2]
+        allele1 = allele_map[allele1]
+        allele2 = allele_map[allele2]
 
-    annot = [
-        name,
-        start,
-        length,
-        homozygous,
-        allele1,
-        allele2,
-        clinsig
-    ]
+        annot = [
+            name,
+            start,
+            length,
+            homozygous,
+            allele1,
+            allele2,
+            clinsig
+        ]
 
-    if chr in seen_chrs:
-        annots[chr_index - 1]["annots"].append(annot)
-    else:
-        annots.append({"chr": chr, "annots": [annot]})
-        seen_chrs[chr] = 1
+        if chr in seen_chrs:
+            annots[chr_index - 1]["annots"].append(annot)
+        else:
+            annots.append({"chr": chr, "annots": [annot]})
+            seen_chrs[chr] = 1
 
 top_annots = {}
 top_annots["keys"] = [
