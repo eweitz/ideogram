@@ -1,9 +1,16 @@
-import json, re
+import json
+import re
+import os
+import urllib.request as request
+import gzip
+
 from collections import OrderedDict
 
 show_snpedia_results = True
 
 data_dir = "data/analysis/"
+if os.path.exists(data_dir) == False:
+    os.mkdir(data_dir)
 
 input_file = data_dir + "AncestryDNA.txt"
 output_file = data_dir + "genome_analysis.txt"
@@ -11,11 +18,30 @@ output_file = data_dir + "genome_analysis.txt"
 # Raw sample data from AncestryDNA
 ancestrydna_sample =  open(input_file).readlines()
 
-# Example ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/archive/2016/clinvar_20160802.vcf.gz
-clinvar_vcf_file = open(data_dir + "clinvar_20160831.vcf").readlines()
+# Download ClinVar data if not already available
+clinvar_vcf_path = data_dir + "clinvar_20160802.vcf"
+if os.path.exists(clinvar_vcf_path) == False:
+    url = "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/archive/2016/clinvar_20160802.vcf.gz"
+    with request.urlopen(url) as response:
+        gzip_file = gzip.GzipFile(fileobj=response)
+        with open(clinvar_vcf_path, "w") as f:
+            for line in gzip_file:
+                f.write(line.decode("utf-8"))
 
-# From https://raw.githubusercontent.com/heiner/snpedia-23andme/master/snpedia-archive.json
-snpedia_json = json.loads(open(data_dir + "snpedia-archive.json").read())
+with open(clinvar_vcf_path) as f:
+    clinvar_vcf_file = f.readlines()
+
+# Download SNPedia data if not already available
+snpedia_json_path = data_dir + "snpedia-archive.json"
+if os.path.exists(snpedia_json_path) == False:
+    url = "https://raw.githubusercontent.com/heiner/snpedia-23andme/master/snpedia-archive.json"
+    with request.urlopen(url) as response:
+        data = response.read()
+        with open(snpedia_json_path, "w") as f:
+            f.write(data.decode("utf-8"))
+
+with open(snpedia_json_path) as f:
+    snpedia_json = json.loads(f.read())
 
 output = []
 
@@ -59,6 +85,28 @@ def complement(nt):
         "G": "C"
     }
     return complements[nt]
+
+
+clinsig_labels = {
+    0: "Uncertain significance",
+    1: "Not provided",
+    2: "Benign",
+    3: "Likely benign",
+    4: "Likely pathogenic",
+    5: "Pathogenic",
+    6: "Drug response",
+    7: "Histocompatibility",
+    255: "Other"
+}
+
+rs_summaries = OrderedDict([
+    ("pathogenic", []),
+    ("likely_pathogenic", []),
+    ("drug_response", [])
+])
+
+if show_snpedia_results:
+    rs_summaries["snpedia"] = []
 
 # Column headers of VCF file:
 # #CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
@@ -134,26 +182,6 @@ for line in clinvar_vcf_file:
         "gene": gene
     }
 
-clinsig_labels = {
-    0: "Uncertain significance",
-    1: "Not provided",
-    2: "Benign",
-    3: "Likely benign",
-    4: "Likely pathogenic",
-    5: "Pathogenic",
-    6: "Drug response",
-    7: "Histocompatibility",
-    255: "Other"
-}
-
-rs_summaries = OrderedDict([
-    ("pathogenic", []),
-    ("likely_pathogenic", []),
-    ("drug_response", [])
-])
-
-if show_snpedia_results:
-    rs_summaries["snpedia"] = []
 
 for line in ancestrydna_sample:
 
@@ -312,7 +340,6 @@ output.append(str(num_skipped_clinvars) + "\n")
 
 #for rs in clinical_alleles:
 #    output.append(rs)
-
 
 s = rs_summaries
 
