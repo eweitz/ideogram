@@ -51,6 +51,20 @@ PloidyDescription.prototype._normilize = function(description) {
 
 
 /**
+ * @public
+ * @param chrSetNumber
+ */
+PloidyDescription.prototype.getSetSize = function(chrSetNumber) {
+
+    if (this._description) {
+        return this._description[chrSetNumber].ancestors.length;
+    } else {
+        return 1;
+    }
+};
+
+
+/**
  * Get ancestor letter.
  * @param {Integer} chrSetNumber
  * @param {Integer} chrNumber

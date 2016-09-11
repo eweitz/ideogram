@@ -13,6 +13,7 @@ var Ideogram = function(config) {
    */
   this._color = new Color(this.config);
   this._ploidy = new Ploidy(this.config);
+  this._layout = new Layout(this.config);
 
   this.debug = false;
 
@@ -421,102 +422,20 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid, c
 */
 Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
 
-  var i, chr, chrs, taxid, ideo,
-      chrMargin2,
-      ideo = this,
-      chrMargin = ideo.config.chrMargin,
-      chrWidth = ideo.config.chrWidth;
+    var ideo = this;
 
-  chrs = ideo.chromosomesArray;
-
-  chrMargin2 = chrWidth/2 + chrMargin - 8;
-  if (ideo.config.orientation === "vertical" && ideo.config.showBandLabels === true) {
-    chrMargin2 = chrMargin + 17;
-  }
-
-  if (ideo.config.orientation === "vertical") {
-
-    d3.selectAll(".chromosome")
-      .append("text")
-       .data(chrs)
-        .attr("class", "chrLabel")
-        .attr("transform", "rotate(-90)")
-        .attr("y", -16)
-        .each(function (d, i) {
-
-          var i, chrMarginI, x, cls;
-          var arr = d.name.split(" ");
-          var lines = [];
-
-          if (arr != undefined) {
-              lines.push(arr.slice(0, arr.length - 1).join(" "));
-              lines.push(arr[arr.length - 1]);
-
-              if (!ideo.config.showBandLabels) {
-                i += 1;
-              }
-
-              chrMarginI = chrMargin * i;
-              x = -(chrMarginI + chrMargin2 - chrWidth - 2) + ideo.config.annotTracksHeight * 2;
-
-              for (var i = 0; i < lines.length; i++) {
-
-                  cls = "";
-                  if (i == 0 && ideo.config.fullChromosomeLabels) {
-                    cls = "italic";
-                  }
-
-                  d3.select(this).append("tspan")
-                    .text(lines[i])
-                    .attr("dy", i ? "1.2em" : 0)
-                    .attr("x", x)
-                    .attr("text-anchor", "middle")
-                    .attr("class", cls);
-              }
-          }
-        });
-
-  } else {
-
-     d3.selectAll(".chromosome")
+    d3.selectAll(".cromosome-set-container")
         .append("text")
-         .data(chrs)
-          .attr("class", "chrLabel")
-          .attr("x", -5)
-          .each(function (d, i) {
-
-            var i, chrMarginI, y, cls;
-
-            var arr = d.name.split(" ");
-            var lines = [];
-
-            if (arr != undefined) {
-                lines.push(arr.slice(0, arr.length - 1).join(" "));
-                lines.push(arr[arr.length - 1]);
-
-                chrMarginI = chrMargin * i;
-                y = (chrMarginI + chrMargin2);
-
-                for (var i = 0; i < lines.length; i++) {
-
-                    cls = "";
-                    if (i == 0 && ideo.config.fullChromosomeLabels) {
-                      cls = "italic";
-                    }
-
-                    d3.select(this).append("tspan")
-                      .text(lines[i])
-                      .attr("dy", i ? "1.2em" : 0)
-                      .attr("y", y)
-                      .attr("x", -8)
-                      .attr("text-anchor", "middle")
-                      .attr("class", cls);
-                }
-            }
-          });
-
-  }
-
+        .data(ideo.chromosomesArray)
+        .attr("class", "chrSetLabel")
+        .attr("transform", ideo._layout.getChromosomeSetLabelTranslate())
+        .attr("x", function(d, i) {
+            return ideo._layout.getChromosomeSetLabelXPosition(i);
+        }).attr("y", function(d, i) {
+            return ideo._layout.getChromosomeSetLabelYPosition(i) * ideo.config.chrWidth;
+        }).text(function(d, i) {
+            return d.name;
+        }).attr("text-anchor", "middle");
 };
 
 /**
@@ -862,28 +781,28 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex, container, k) {
 */
 Ideogram.prototype.initTransformChromosome = function(chr, chrIndex) {
 
-  if (this.config.orientation == "vertical") {
-
-    var chrMargin, chrWidth, tPadding;
-
-    chrWidth = this.config.chrWidth;
-    chrMargin = this.config.chrMargin * chrIndex;
-
-    if (!this.config.showBandLabels) {
-      chrIndex += 2;
-    }
-
-    tPadding = chrMargin + (chrWidth-4)*(chrIndex - 1);
-
-    chr
-      .attr("data-orientation", "vertical")
-      .attr("transform", "rotate(90, " + (tPadding - 30) + ", " + (tPadding) + ")");
-
-    this.rotateBandLabels(chr, chrIndex);
-
-  } else {
-    chr.attr("data-orientation", "horizontal");
-  }
+//  if (this.config.orientation == "vertical") {
+//
+//    var chrMargin, chrWidth, tPadding;
+//
+//    chrWidth = this.config.chrWidth;
+//    chrMargin = this.config.chrMargin * chrIndex;
+//
+//    if (!this.config.showBandLabels) {
+//      chrIndex += 2;
+//    }
+//
+//    tPadding = chrMargin + (chrWidth-4)*(chrIndex - 1);
+//
+//    chr
+//      .attr("data-orientation", "vertical")
+//      .attr("transform", "rotate(90, " + (tPadding - 30) + ", " + (tPadding) + ")");
+//
+//    this.rotateBandLabels(chr, chrIndex);
+//
+//  } else {
+//    chr.attr("data-orientation", "horizontal");
+//  }
 };
 
 /**
@@ -1978,7 +1897,7 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
       taxid,
       chrIndex = 0,
       i, j, chrs, chromosome, chromosomeModel;
-
+console.log(ideo._layout)
   for (i = 0; i < taxids.length; i++) {
 
     taxid = taxids[i];
@@ -2004,7 +1923,7 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
       var container = d3.select("svg")
         .append("g")
         .attr("class", "cromosome-set-container")
-        .attr("transform", ideo._ploidy.getChromosomeSetTranslate(j))
+        .attr("transform", ideo._layout.getChromosomeSetTranslate(j))
         .attr("id", chromosomeModel.id + "-chromosome-set");
 
       for (var k = 0; k < this._ploidy.getChromosomesNumber(j); k ++) {
