@@ -38,6 +38,10 @@ text {
 	cursor: pointer;
 }
 
+.chromosome-set-container .chrSetLabel{
+    font-weight: bolder;
+}
+
 .ghost {
 	opacity: 0.2;
 }

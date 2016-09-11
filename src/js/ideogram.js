@@ -14,6 +14,7 @@ var Ideogram = function(config) {
   this._color = new Color(this.config);
   this._ploidy = new Ploidy(this.config);
   this._layout = new Layout(this.config);
+  this._description = new PloidyDescription(this.config.ploidyDesc);
 
   this.debug = false;
 
@@ -423,8 +424,10 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosomeName, taxid, c
 Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
 
     var ideo = this;
-
-    d3.selectAll(".cromosome-set-container")
+    /*
+     * Append chromosomes set's labels.
+     */
+    d3.selectAll(".chromosome-set-container")
         .append("text")
         .data(ideo.chromosomesArray)
         .attr("class", "chrSetLabel")
@@ -432,9 +435,24 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
         .attr("x", function(d, i) {
             return ideo._layout.getChromosomeSetLabelXPosition(i);
         }).attr("y", function(d, i) {
-            return ideo._layout.getChromosomeSetLabelYPosition(i) * ideo.config.chrWidth;
+            return ideo._layout.getChromosomeSetLabelYPosition(i);
         }).text(function(d, i) {
             return d.name;
+        }).attr("text-anchor", "middle");
+    /*
+     * Append chromosomes labels.
+     */
+    d3.selectAll(".chromosome-set-container")
+        .selectAll(".chromosome")
+        .append("text")
+        .attr("class", "chrLabel")
+        .attr("transform", ideo._layout.getChromosomeSetLabelTranslate())
+        .attr("x", function(d, i) {
+            return ideo._layout.getChromosomeLabelXPosition(i);
+        }).attr("y", function(d, i) {
+            return ideo._layout.getChromosomeLabelYPosition(i);
+        }).text(function(d, chrNumber, chrSetNumber) {
+            return ideo._description.getAncestor(chrSetNumber, chrNumber);
         }).attr("text-anchor", "middle");
 };
 
@@ -1897,7 +1915,7 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
       taxid,
       chrIndex = 0,
       i, j, chrs, chromosome, chromosomeModel;
-console.log(ideo._layout)
+
   for (i = 0; i < taxids.length; i++) {
 
     taxid = taxids[i];
@@ -1922,7 +1940,7 @@ console.log(ideo._layout)
        */
       var container = d3.select("svg")
         .append("g")
-        .attr("class", "cromosome-set-container")
+        .attr("class", "chromosome-set-container")
         .attr("transform", ideo._layout.getChromosomeSetTranslate(j))
         .attr("id", chromosomeModel.id + "-chromosome-set");
 

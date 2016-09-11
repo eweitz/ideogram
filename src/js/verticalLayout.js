@@ -89,17 +89,17 @@ VerticalLayout.prototype.getChromosomeSetLabelXPosition = function(setNumber) {
 
 VerticalLayout.prototype.getChromosomeSetLabelYPosition = function(i) {
 
-    return -1;
+    return -2 * this._config.chrWidth;
 }
 
 
 VerticalLayout.prototype.getChromosomeLabelXPosition = function(i) {
 
-    
+    return this._config.chrWidth / - 2;
 }
 
 
 VerticalLayout.prototype.getChromosomeLabelYPosition = function(i) {
 
-    
+    return -5;
 }

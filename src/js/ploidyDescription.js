@@ -12,6 +12,12 @@ function PloidyDescription(description) {
 }
 
 
+PloidyDescription.prototype.hasDescription = function() {
+
+    
+};
+
+
 /**
  * Normalize use defined description.
  * @private
@@ -68,12 +74,15 @@ PloidyDescription.prototype.getSetSize = function(chrSetNumber) {
  * Get ancestor letter.
  * @param {Integer} chrSetNumber
  * @param {Integer} chrNumber
- * @param {Integer} armNumber
  * @returns {String}
  */
-PloidyDescription.prototype.getAncestor = function(chrSetNumber, chrNumber, armNumber) {
+PloidyDescription.prototype.getAncestor = function(chrSetNumber, chrNumber) {
 
-    return this._description[chrSetNumber].ancestors[chrNumber];
+    if (this._description) {
+        return this._description[chrSetNumber].ancestors[chrNumber];
+    } else {
+        return '';
+    }
 }
 
 
