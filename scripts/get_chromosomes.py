@@ -5,6 +5,7 @@ import os
 import json
 import io
 import gzip
+import subprocess
 
 eutils = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
 esearch = eutils + 'esearch.fcgi?retmode=json';
@@ -43,6 +44,66 @@ asm_summary = esummary + '&db=assembly&id=' + uids
 with request.urlopen(asm_summary) as response:
     data = json.loads(response.read().decode('utf-8'))
 
+if os.path.exists('data/chromosomes') == False:
+    os.mkdir('data/chromosomes')
+
+
+def download_genome_agp(results, asm):
+
+    agp_base_url = asm['agp_base_url']
+    agp_base_dir = asm['agp_base_dir']
+    acc = asm['acc']
+    organism = asm['organism']
+    output_dir = asm['output_dir']
+
+    for uid in results:
+        if uid == "uids":
+            continue
+
+        result = results[uid];
+
+        split_subtype = result['subtype'].split("|")
+        if 'chromosome' not in split_subtype:
+            continue
+
+        cn_index = result['subtype'].split("|").index("chromosome")
+
+        chr_name = 'chr' + result['subname'].split("|")[cn_index];
+        #if (typeof chrName !== "undefined" && chrName.substr(0, 3) === "chr") {
+        #// Convert "chr12" to "12", e.g. for banana (GCF_000313855.2)
+        #chrName = chrName.substr(3);
+        #}
+
+        # Example: 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF_000001515.7_Pan_tro_3.0/GCF_000001515.7_Pan_tro_3.0_assembly_structure/Primary_Assembly/assembled_chromosomes/AGP/chr1.agp.gz'
+        agp_url = agp_base_url + chr_name + ".agp.gz"
+
+        try:
+            print('Fetching ' + agp_url)
+            with request.urlopen(agp_url) as response:
+                compressed_file = io.BytesIO(response.read())
+
+        except urllib.error.URLError as e:
+            print(e)
+            return
+
+        decompressed_file = gzip.GzipFile(fileobj=compressed_file)
+
+        agp = decompressed_file.read()
+        has_centromere_data = False
+
+        if "centromere" in str(agp):
+            has_centromere_data = True
+
+        if has_centromere_data == False:
+            return
+
+        if os.path.exists(output_dir) == False:
+            os.mkdir(output_dir)
+
+        output_name = agp_base_dir + '_' + chr_name + '.agp'
+        with open(output_name, 'wb') as outfile:
+            outfile.write(agp)
+
 
 for uid in data['result']:
 
@@ -55,10 +116,10 @@ for uid in data['result']:
     name = result['assemblyname']
     rs_uid = result['rsuid']
     taxid = result['taxid']
-    organism = result['speciesname']
+    organism = result['speciesname'].lower().replace(' ', '-')
 
-    output_dir = 'data/chromosomes/' + organism.lower().replace(' ', '-') + '/'
-    os.mkdir(output_dir)
+    #if organism != 'plasmodium-falciparum':
+    #    continue
 
     asm_segment = acc + '_' + name.replace(' ', '_')
 
@@ -89,48 +150,21 @@ for uid in data['result']:
         nt_response = json.loads(response.read().decode('utf-8'))
 
     results = nt_response['result']
-    for uid in results:
-        if uid == "uids":
-            continue
 
-        result = results[uid];
-
-        split_subtype = result['subtype'].split("|")
-        if 'chromosome' not in split_subtype:
-            continue
-
-        cn_index = result['subtype'].split("|").index("chromosome")
-
-        chr_name = 'chr' + result['subname'].split("|")[cn_index];
-        #if (typeof chrName !== "undefined" && chrName.substr(0, 3) === "chr") {
-        #// Convert "chr12" to "12", e.g. for banana (GCF_000313855.2)
-        #chrName = chrName.substr(3);
-        #}
-
-        # Example: 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF_000001515.7_Pan_tro_3.0/GCF_000001515.7_Pan_tro_3.0_assembly_structure/Primary_Assembly/assembled_chromosomes/AGP/chr1.agp.gz'
-        agp_url = agp_base_url + chr_name + ".agp.gz"
-
-        try:
-            print('Fetching ' + agp_url)
-            with request.urlopen(agp_url) as response:
-                compressed_file = io.BytesIO(response.read())
-
-        except urllib.error.URLError as e:
-            print(e)
-            continue
-
-        decompressed_file = gzip.GzipFile(fileobj=compressed_file)
-
-        output_name = output_dir + asm_segment + '_' + chr_name + '.agp'
-        with open(output_name, 'wb') as outfile:
-            outfile.write(decompressed_file.read())
+    output_dir = 'data/chromosomes/' + organism + '/'
+    agp_base_dir = output_dir + asm_segment + '_'
 
     asm = {
         'acc': acc,
         'name': name,
-        'agp_url': agp_url,
         'rs_uid': rs_uid,
         'taxid': taxid,
-        'organism': organism
+        'organism': organism,
+        'agp_base_url': agp_base_url,
+        'agp_base_dir': agp_base_dir,
+        'output_dir': output_dir
     }
+
+    download_genome_agp(results, asm)
+
     asms.append(asm)
