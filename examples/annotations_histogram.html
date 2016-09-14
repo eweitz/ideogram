@@ -150,7 +150,7 @@
       }
     };
 
-    checkedFilters = d3.selectAll("input:checked")[0];
+    checkedFilters = d3.selectAll("input:checked").nodes();
 
     for (i = 0; i < checkedFilters.length; i++) {
       tmp = checkedFilters[i].id.split("_");

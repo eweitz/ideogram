@@ -1758,11 +1758,12 @@ Ideogram.prototype.getHistogramBars = function(annots) {
       bp = ideo.convertPxToBp(chrModel, px + ideo.bump);
       bar["annots"].push({
         "bp": bp,
-        "px": px,
+        "px": px - ideo.bump,
         "count": 0,
         "chrIndex": chrIndex,
         "chrName": chr,
         "color": color,
+        "annots": []
       });
     }
     bars.push(bar);
@@ -1772,16 +1773,20 @@ Ideogram.prototype.getHistogramBars = function(annots) {
     chrAnnots = annots[chr].annots;
     chrName = annots[chr].chr;
     chrModel = chrModels[chrName];
-    chrIndex = chrModel.chrIndex;
-    barAnnots = bars[chrIndex - 1]["annots"];
+    chrIndex = chrModel.chrIndex - 1;
+    barAnnots = bars[chrIndex]["annots"];
     for (i = 0; i < chrAnnots.length; i++) {
       annot = chrAnnots[i];
-      px = annot.px;
-      for (j = 0; j < barAnnots.length - 1; j++) {
+      px = annot.px - ideo.bump;
+      for (j = 0; j < barAnnots.length; j++) {
         barPx = barAnnots[j].px;
-        nextBarPx = barAnnots[j + 1].px;
-        if (px > barPx && px < nextBarPx) {
-          bars[chrIndex - 1]["annots"][j]["count"] += 1;
+        nextBarPx = barPx + barWidth;
+        if (j == barAnnots.length - 1) {
+          nextBarPx += barWidth;
+        }
+        if (px >= barPx && px < nextBarPx) {
+          bars[chrIndex]["annots"][j]["count"] += 1;
+          bars[chrIndex]["annots"][j]["annots"].push(annot);
           break;
         }
       }
@@ -1818,6 +1823,8 @@ Ideogram.prototype.getHistogramBars = function(annots) {
   if (ideo.debug) {
     console.log("Time spent in getHistogramBars: " + (t1 - t0) + " ms");
   }
+
+  ideo.bars = bars;
 
   return bars;
 

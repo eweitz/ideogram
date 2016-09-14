@@ -5,3 +5,4 @@ images/
 .DS_Store
 d3.min.js
 crossfilter.min.js
+data/analysis/

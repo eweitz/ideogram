@@ -484,12 +484,13 @@ describe("Ideogram", function() {
           qterEnd = getTerEnd("q"),
           tmp = d3.selectAll("#chr1-9606 .annot").nodes(),
           tmp = tmp[tmp.length - 1].getBBox(),
+          bump = ideogram.bump,
           lastAnnotEnd = tmp.x + tmp.width;
 
-          console.log("pterEnd - firstAnnotEnd: " + (pterEnd - firstAnnotEnd));
-          console.log("qterEnd - lastAnnotEnd: " + (qterEnd - lastAnnotEnd));
-          assert.isBelow(pterEnd - firstAnnotEnd, 1);
-          assert.isAbove(qterEnd - lastAnnotEnd, -1);
+          //console.log("pterEnd - firstAnnotEnd: " + (pterEnd - firstAnnotEnd));
+          //console.log("qterEnd - lastAnnotEnd: " + (qterEnd - lastAnnotEnd));
+          assert.isBelow(pterEnd - firstAnnotEnd - bump, 1);
+          assert.isAbove(qterEnd - lastAnnotEnd - bump, -1);
 
       done();
     }
