@@ -1763,6 +1763,7 @@ Ideogram.prototype.getHistogramBars = function(annots) {
         "chrIndex": chrIndex,
         "chrName": chr,
         "color": color,
+        "annots": []
       });
     }
     bars.push(bar);
@@ -1785,6 +1786,7 @@ Ideogram.prototype.getHistogramBars = function(annots) {
         }
         if (px >= barPx && px < nextBarPx) {
           bars[chrIndex]["annots"][j]["count"] += 1;
+          bars[chrIndex]["annots"][j]["annots"].push(annot);
           break;
         }
       }
@@ -1821,6 +1823,8 @@ Ideogram.prototype.getHistogramBars = function(annots) {
   if (ideo.debug) {
     console.log("Time spent in getHistogramBars: " + (t1 - t0) + " ms");
   }
+
+  ideo.bars = bars;
 
   return bars;
 
