@@ -6,6 +6,31 @@ import json
 import io
 import gzip
 import subprocess
+import logging
+
+output_dir = 'data/chromosomes/'
+
+if os.path.exists(output_dir) == False:
+    os.mkdir(output_dir)
+
+# create logger with 'get_chromosomes'
+logger = logging.getLogger('get_chromosomes')
+logger.setLevel(logging.DEBUG)
+# create file handler which logs even debug messages
+fh = logging.FileHandler(output_dir + 'get_chromosomes.log')
+fh.setLevel(logging.DEBUG)
+# create console handler with a higher log level
+ch = logging.StreamHandler()
+ch.setLevel(logging.ERROR)
+# create formatter and add it to the handlers
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+fh.setFormatter(formatter)
+ch.setFormatter(formatter)
+# add the handlers to the logger
+logger.addHandler(fh)
+logger.addHandler(ch)
+
+logger.info('Beginning get_chromosomes.py')
 
 eutils = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
 esearch = eutils + 'esearch.fcgi?retmode=json';
@@ -21,6 +46,7 @@ term = quote(
 
 asm_search = esearch + '&db=assembly&term=' + term + '&retmax=10000'
 
+# Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?retmode=json&db=assembly&term=("latest refseq"[filter] AND "chromosome level"[filter]) AND (animals[filter] OR plants[filter] OR fungi[filter] OR protists[filter])&retmax=10000
 with request.urlopen(asm_search) as response:
     data = json.loads(response.read().decode('utf-8'))
 
@@ -31,7 +57,7 @@ asm_uid_lists = []
 for i in range(0, len(uid_list) % 100):
     asm_uid_list = []
     for j in range(0, 100):
-        #print(100*i + j)
+        #logger.info(100*i + j)
         if 100*i + j < len(uid_list):
             asm_uid = uid_list[100*i + j]
             asm_uid_list.append(asm_uid)
@@ -44,10 +70,6 @@ asm_summary = esummary + '&db=assembly&id=' + uids
 with request.urlopen(asm_summary) as response:
     data = json.loads(response.read().decode('utf-8'))
 
-if os.path.exists('data/chromosomes') == False:
-    os.mkdir('data/chromosomes')
-
-
 def download_genome_agp(results, asm):
 
     agp_base_url = asm['agp_base_url']
@@ -55,6 +77,7 @@ def download_genome_agp(results, asm):
     acc = asm['acc']
     organism = asm['organism']
     output_dir = asm['output_dir']
+    asm_name = asm['name']
 
     for uid in results:
         if uid == "uids":
@@ -78,13 +101,20 @@ def download_genome_agp(results, asm):
         agp_url = agp_base_url + chr_name + ".agp.gz"
 
         try:
-            print('Fetching ' + agp_url)
+            # Look for e.g. chr1.agp.gz
+            logger.info('Fetching ' + agp_url)
             with request.urlopen(agp_url) as response:
                 compressed_file = io.BytesIO(response.read())
-
         except urllib.error.URLError as e:
-            print(e)
-            return
+            # Look for e.g. chr1.comp.agp.gz
+            try:
+                agp_url = agp_base_url + chr_name + ".comp.agp.gz"
+                logger.info('Fetching ' + agp_url)
+                with request.urlopen(agp_url) as response:
+                    compressed_file = io.BytesIO(response.read())
+            except urllib.error.URLError as e:
+                logger.info('AGP not found for ' + organism + ' genome assembly ' + asm_name)
+                return
 
         decompressed_file = gzip.GzipFile(fileobj=compressed_file)
 
@@ -95,7 +125,9 @@ def download_genome_agp(results, asm):
             has_centromere_data = True
 
         if has_centromere_data == False:
-            return
+            logger.info('No centromere data found in AGP for ' + organism + ' genome assembly ' + asm_name)
+            #return
+            continue
 
         if os.path.exists(output_dir) == False:
             os.mkdir(output_dir)
@@ -133,7 +165,7 @@ for uid in data['result']:
     try:
         request.urlopen(agp_base_url)
     except urllib.error.URLError as e:
-        print(e)
+        logger.info(e)
         continue
 
     nuccore_link = elink + "&db=nuccore&linkname=gencoll_nuccore_chr&from_uid=" + result['rsuid'];
