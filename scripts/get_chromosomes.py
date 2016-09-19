@@ -30,45 +30,7 @@ ch.setFormatter(formatter)
 logger.addHandler(fh)
 logger.addHandler(ch)
 
-logger.info('Beginning get_chromosomes.py')
-
-eutils = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
-esearch = eutils + 'esearch.fcgi?retmode=json';
-esummary = eutils + 'esummary.fcgi?retmode=json';
-elink = eutils + 'elink.fcgi?retmode=json';
-
-asms = []
-
-term = quote(
-    '("latest refseq"[filter] AND "chromosome level"[filter]) AND ' +
-    '(animals[filter] OR plants[filter] OR fungi[filter] OR protists[filter])'
-)
-
-asm_search = esearch + '&db=assembly&term=' + term + '&retmax=10000'
-
-# Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?retmode=json&db=assembly&term=("latest refseq"[filter] AND "chromosome level"[filter]) AND (animals[filter] OR plants[filter] OR fungi[filter] OR protists[filter])&retmax=10000
-with request.urlopen(asm_search) as response:
-    data = json.loads(response.read().decode('utf-8'))
-
-# Returns ~1000 ids
-uid_list = data['esearchresult']['idlist']
-
-asm_uid_lists = []
-for i in range(0, len(uid_list) % 100):
-    asm_uid_list = []
-    for j in range(0, 100):
-        #logger.info(100*i + j)
-        if 100*i + j < len(uid_list):
-            asm_uid = uid_list[100*i + j]
-            asm_uid_list.append(asm_uid)
-    asm_uid_lists.append(asm_uid_list)
-
-uids = ','.join(asm_uid_lists[0])
-asm_summary = esummary + '&db=assembly&id=' + uids
-
-# Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?retmode=json&db=assembly&id=733711
-with request.urlopen(asm_summary) as response:
-    data = json.loads(response.read().decode('utf-8'))
+logger.info('Starting get_chromosomes.py')
 
 def download_genome_agp(results, asm):
 
@@ -126,8 +88,8 @@ def download_genome_agp(results, asm):
 
         if has_centromere_data == False:
             logger.info('No centromere data found in AGP for ' + organism + ' genome assembly ' + asm_name)
-            #return
-            continue
+            return
+            #continue
 
         if os.path.exists(output_dir) == False:
             os.mkdir(output_dir)
@@ -136,67 +98,120 @@ def download_genome_agp(results, asm):
         with open(output_name, 'wb') as outfile:
             outfile.write(agp)
 
+def find_genomes_with_centromeres(asm_summary_response):
 
-for uid in data['result']:
+    data = asm_summary_response
 
-    # Omit list of UIDs
-    if uid == 'uids':
-        continue
+    for uid in data['result']:
 
-    result = data['result'][uid]
-    acc = result['assemblyaccession'] # RefSeq accession
-    name = result['assemblyname']
-    rs_uid = result['rsuid']
-    taxid = result['taxid']
-    organism = result['speciesname'].lower().replace(' ', '-')
+        # Omit list of UIDs
+        if uid == 'uids':
+            continue
 
-    #if organism != 'plasmodium-falciparum':
-    #    continue
+        result = data['result'][uid]
+        acc = result['assemblyaccession'] # RefSeq accession
+        name = result['assemblyname']
+        rs_uid = result['rsuid']
+        taxid = result['taxid']
+        organism = result['speciesname'].lower().replace(' ', '-')
 
-    asm_segment = acc + '_' + name.replace(' ', '_')
+        #if organism != 'plasmodium-falciparum':
+        #    continue
 
-    # Example: ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF_000001515.7_Pan_tro_3.0/GCF_000001515.7_Pan_tro_3.0_assembly_structure/Primary_Assembly/assembled_chromosomes/AGP/chr1.agp.gz
-    agp_base_url = (
-        'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/' +
-        asm_segment + '/' + asm_segment + '_assembly_structure/' +
-        'Primary_Assembly/assembled_chromosomes/AGP/'
-    )
+        asm_segment = acc + '_' + name.replace(' ', '_')
 
-    try:
-        request.urlopen(agp_base_url)
-    except urllib.error.URLError as e:
-        logger.info(e)
-        continue
+        # Example: ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF_000001515.7_Pan_tro_3.0/GCF_000001515.7_Pan_tro_3.0_assembly_structure/Primary_Assembly/assembled_chromosomes/AGP/chr1.agp.gz
+        agp_base_url = (
+            'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/' +
+            asm_segment + '/' + asm_segment + '_assembly_structure/' +
+            'Primary_Assembly/assembled_chromosomes/AGP/'
+        )
 
-    nuccore_link = elink + "&db=nuccore&linkname=gencoll_nuccore_chr&from_uid=" + result['rsuid'];
+        try:
+            request.urlopen(agp_base_url)
+        except urllib.error.URLError as e:
+            logger.info(e)
+            continue
 
-    with request.urlopen(nuccore_link) as response:
-        nuccore_data = json.loads(response.read().decode('utf-8'))
+        nuccore_link = elink + "&db=nuccore&linkname=gencoll_nuccore_chr&from_uid=" + result['rsuid'];
 
-    links = nuccore_data['linksets'][0]['linksetdbs'][0]['links']
+        with request.urlopen(nuccore_link) as response:
+            nuccore_data = json.loads(response.read().decode('utf-8'))
 
-    links = ','.join(str(x) for x in links)
+        links = nuccore_data['linksets'][0]['linksetdbs'][0]['links']
 
-    nt_summary = esummary + "&db=nucleotide&id=" + links;
-    with request.urlopen(nt_summary) as response:
-        nt_response = json.loads(response.read().decode('utf-8'))
+        links = ','.join(str(x) for x in links)
 
-    results = nt_response['result']
+        nt_summary = esummary + "&db=nucleotide&id=" + links;
+        with request.urlopen(nt_summary) as response:
+            nt_response = json.loads(response.read().decode('utf-8'))
 
-    output_dir = 'data/chromosomes/' + organism + '/'
-    agp_base_dir = output_dir + asm_segment + '_'
+        results = nt_response['result']
 
-    asm = {
-        'acc': acc,
-        'name': name,
-        'rs_uid': rs_uid,
-        'taxid': taxid,
-        'organism': organism,
-        'agp_base_url': agp_base_url,
-        'agp_base_dir': agp_base_dir,
-        'output_dir': output_dir
-    }
+        output_dir = 'data/chromosomes/' + organism + '/'
+        agp_base_dir = output_dir + asm_segment + '_'
 
-    download_genome_agp(results, asm)
+        asm = {
+            'acc': acc,
+            'name': name,
+            'rs_uid': rs_uid,
+            'taxid': taxid,
+            'organism': organism,
+            'agp_base_url': agp_base_url,
+            'agp_base_dir': agp_base_dir,
+            'output_dir': output_dir
+        }
 
-    asms.append(asm)
+        download_genome_agp(results, asm)
+
+        asms.append(asm)
+
+eutils = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
+esearch = eutils + 'esearch.fcgi?retmode=json';
+esummary = eutils + 'esummary.fcgi?retmode=json';
+elink = eutils + 'elink.fcgi?retmode=json';
+
+asms = []
+
+term = quote(
+    '("latest refseq"[filter] AND "chromosome level"[filter]) AND ' +
+    '(animals[filter] OR plants[filter] OR fungi[filter] OR protists[filter])'
+)
+
+asm_search = esearch + '&db=assembly&term=' + term + '&retmax=10000'
+
+# Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?retmode=json&db=assembly&term=("latest refseq"[filter] AND "chromosome level"[filter]) AND (animals[filter] OR plants[filter] OR fungi[filter] OR protists[filter])&retmax=10000
+with request.urlopen(asm_search) as response:
+    data = json.loads(response.read().decode('utf-8'))
+
+# Returns ~1000 ids
+uid_list = data['esearchresult']['idlist']
+
+logger.info('Assembly UIDs returned in search results: ' + str(len(uid_list)))
+
+# asm_uid_lists = []
+# for i in range(0, len(uid_list) % 100):
+#     asm_uid_list = []
+#     for j in range(0, 100):
+#         #logger.info(100*i + j)
+#         if 100*i + j < len(uid_list):
+#             asm_uid = uid_list[100*i + j]
+#             asm_uid_list.append(asm_uid)
+#     asm_uid_lists.append(asm_uid_list)
+#
+# uids = ''
+# for asm_uid_list in asm_uid_lists:
+#     uids += ','.join(asm_uid_list)
+
+uid_list = ','.join(uid_list)
+
+asm_summary = esummary + '&db=assembly&id=' + uid_list
+
+logger.info('Fetching ' + asm_summary)
+# Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?retmode=json&db=assembly&id=733711
+with request.urlopen(asm_summary) as response:
+    data = json.loads(response.read().decode('utf-8'))
+
+find_genomes_with_centromeres(data)
+
+logger.info('Ending get_chromosomes.py')
