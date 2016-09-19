@@ -118,7 +118,7 @@ def find_genomes_with_centromeres(asm_summary_response):
         #if organism != 'plasmodium-falciparum':
         #    continue
 
-        asm_segment = acc + '_' + name.replace(' ', '_')
+        asm_segment = acc + '_' + name.replace(' ', '_').replace('-', '_')
 
         # Example: ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF_000001515.7_Pan_tro_3.0/GCF_000001515.7_Pan_tro_3.0_assembly_structure/Primary_Assembly/assembled_chromosomes/AGP/chr1.agp.gz
         agp_base_url = (
@@ -126,6 +126,22 @@ def find_genomes_with_centromeres(asm_summary_response):
             asm_segment + '/' + asm_segment + '_assembly_structure/' +
             'Primary_Assembly/assembled_chromosomes/AGP/'
         )
+
+        output_dir = 'data/chromosomes/' + organism + '/'
+        agp_base_dir = output_dir + asm_segment + '_'
+
+        asm = {
+            'acc': acc,
+            'name': name,
+            'rs_uid': rs_uid,
+            'taxid': taxid,
+            'organism': organism,
+            'agp_base_url': agp_base_url,
+            'agp_base_dir': agp_base_dir,
+            'output_dir': output_dir
+        }
+
+        logger.info('Processing assembly ' + str(asm))
 
         try:
             request.urlopen(agp_base_url)
@@ -147,20 +163,6 @@ def find_genomes_with_centromeres(asm_summary_response):
             nt_response = json.loads(response.read().decode('utf-8'))
 
         results = nt_response['result']
-
-        output_dir = 'data/chromosomes/' + organism + '/'
-        agp_base_dir = output_dir + asm_segment + '_'
-
-        asm = {
-            'acc': acc,
-            'name': name,
-            'rs_uid': rs_uid,
-            'taxid': taxid,
-            'organism': organism,
-            'agp_base_url': agp_base_url,
-            'agp_base_dir': agp_base_dir,
-            'output_dir': output_dir
-        }
 
         download_genome_agp(results, asm)
 
