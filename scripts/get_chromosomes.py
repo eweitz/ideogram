@@ -1,7 +1,9 @@
 import urllib.request as request
+import socket
 from urllib.parse import quote
 import urllib.error
 import os
+import shutil
 import json
 import io
 import gzip
@@ -32,6 +34,9 @@ logger.addHandler(ch)
 
 logger.info('Starting get_chromosomes.py')
 
+# Throw timeout error after 15 seconds of blocking on network
+socket.setdefaulttimeout(15)
+
 def download_genome_agp(results, asm):
 
     agp_base_url = asm['agp_base_url']
@@ -40,6 +45,8 @@ def download_genome_agp(results, asm):
     organism = asm['organism']
     output_dir = asm['output_dir']
     asm_name = asm['name']
+
+    has_centromere_data = False
 
     for uid in results:
         if uid == "uids":
@@ -81,15 +88,16 @@ def download_genome_agp(results, asm):
         decompressed_file = gzip.GzipFile(fileobj=compressed_file)
 
         agp = decompressed_file.read()
-        has_centromere_data = False
 
         if "centromere" in str(agp):
             has_centromere_data = True
-
-        if has_centromere_data == False:
-            logger.info('No centromere data found in AGP for ' + organism + ' genome assembly ' + asm_name)
-            return
-            #continue
+        else:
+            logger.info(
+                'No centromere data found in AGP for ' + organism + ' ' +
+                'genome assembly ' + asm_name + ' chromosome ' + chr_name
+            )
+            #return
+            continue
 
         if os.path.exists(output_dir) == False:
             os.mkdir(output_dir)
@@ -97,6 +105,12 @@ def download_genome_agp(results, asm):
         output_name = agp_base_dir + '_' + chr_name + '.agp'
         with open(output_name, 'wb') as outfile:
             outfile.write(agp)
+
+    if has_centromere_data == False:
+        logger.info(
+            'No centromere data found in AGP for ' + organism + ' ' +
+            'for any chromosomes in genome assembly ' + asm_name
+        )
 
 def find_genomes_with_centromeres(asm_summary_response):
 
