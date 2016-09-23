@@ -3,12 +3,13 @@
  * @class
  * @param {Object} config
  */
-function VerticalLayout(config) {
+function VerticalLayout(config, ideo) {
     /**
      * @private
      * @member {Object}
      */
     this._config = config;
+    this._ideo = ideo;
     /**
      * @private
      * @member {String}
@@ -47,11 +48,18 @@ VerticalLayout.prototype.getChromosomeSetTranslate = function(setNumber) {
  * @returns {Number}
  */
 VerticalLayout.prototype._getChromosomeSetHorizontalTranslate = function(setNumber) {
+
+    var annotationHeight = this._config.annotationHeight || 0;
+    var additionalPadding = 0;
+
+    if (this._config.annotationHeight) {
+        additionalPadding = this._config.annotationHeight * (this._config.numAnnotTracks || 1);
+    }
     /*
      * If no detailed description provided just use one formula for all cases.
      */
     if (! this._config.ploidyDesc) {
-        return 30 * (setNumber) + this._config.chrWidth;
+        return 30 * (setNumber) + this._config.chrWidth + additionalPadding * 2 + additionalPadding * setNumber;
     }
     /*
      * Id detailed description provided start to calculate offsets

@@ -1491,7 +1491,7 @@ Ideogram.prototype.drawProcessedAnnots = function(annots) {
       .attr("id", function(d, i) { return d.id; })
       .attr("class", "annot")
       .attr("transform", function(d) {
-        var y = (d.chrIndex + 1) * chrMargin + chrWidth + (d.trackIndex * annotHeight * 2);
+        var y = ideo.config.chrWidth + (d.trackIndex * annotHeight * 2);
         return "translate(" + d.px + "," + y + ")";
       })
       .append("path")
