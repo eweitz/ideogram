@@ -47,11 +47,18 @@ HorizontalLayout.prototype.getChromosomeSetTranslate = function(setNumber) {
  * @returns {Number}
  */
 HorizontalLayout.prototype._getChromosomeSetHorizontalTranslate = function(setNumber) {
+
+    var annotationHeight = this._config.annotationHeight || 0;
+    var additionalPadding = 0;
+
+    if (this._config.annotationHeight) {
+        additionalPadding = this._config.annotationHeight * (this._config.numAnnotTracks || 1);
+    }
     /*
      * If no detailed description provided just use one formula for all cases.
      */
     if (! this._config.ploidyDesc) {
-        return 20 * (setNumber + 1);
+        return 30 * (setNumber) + this._config.chrWidth + additionalPadding * 2 + additionalPadding * setNumber;
     }
     /*
      * Id detailed description provided start to calculate offsets
