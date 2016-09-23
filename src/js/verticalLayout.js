@@ -3,13 +3,12 @@
  * @class
  * @param {Object} config
  */
-function VerticalLayout(config, ideo) {
+function VerticalLayout(config) {
     /**
      * @private
      * @member {Object}
      */
     this._config = config;
-    this._ideo = ideo;
     /**
      * @private
      * @member {String}
@@ -59,7 +58,11 @@ VerticalLayout.prototype._getChromosomeSetHorizontalTranslate = function(setNumb
      * If no detailed description provided just use one formula for all cases.
      */
     if (! this._config.ploidyDesc) {
-        return 30 * (setNumber) + this._config.chrWidth + additionalPadding * 2 + additionalPadding * setNumber;
+        /*
+         * TODO: Here is we have magic number 10. It is simpliy adjusted to accomodate bars on histogramm view.
+         * But it should be replaced with bar's maximum height...
+         */
+        return 10 + 35 * (setNumber) + this._config.chrWidth + additionalPadding * 2 + additionalPadding * setNumber;
     }
     /*
      * Id detailed description provided start to calculate offsets
