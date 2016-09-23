@@ -1536,8 +1536,8 @@ Ideogram.prototype.drawProcessedAnnots = function(annots) {
 
           x1 = d.px + ideo.bump;
           x2 = d.px + ideo.config.barWidth + ideo.bump;
-          y1 = (d.chrIndex) * (chrMargin) + chrWidth;
-          y2 = (d.chrIndex) * (chrMargin) + chrWidth + d.height;
+          y1 = chrWidth;
+          y2 = chrWidth + d.height;
 
           var thisChrWidth = ideo.chromosomesArray[d.chrIndex - 1].width;
 
