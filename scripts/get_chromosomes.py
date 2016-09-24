@@ -1,3 +1,5 @@
+"""Download AGPs from NCBI and format chromosome data, including centromeres"""
+
 import urllib.request as request
 import ftplib
 import socket
@@ -63,6 +65,8 @@ def download_genome_agp(asm):
     logger.info('List of files in FTP working directory')
     logger.info(file_names)
     for file_name in file_names:
+        # Download each chromomsome's compressed AGP file
+
         output_path = output_dir + file_name
 
         if os.path.exists(output_dir) == False:
@@ -93,10 +97,16 @@ def download_genome_agp(asm):
         with open(output_path_agp, 'wb') as outfile:
             outfile.write(agp)
 
+        # Remove e.g. chr1.agp.gz in its respective directory
         os.remove(output_path)
 
     if has_centromere_data == False:
+
+        # Remove directory for this particular assembly.
+        # Useful when organism has multiple retrieved assemblies, but
+        # not all of them have centromere data.
         shutil.rmtree(output_dir)
+
         if organism not in orgs_with_centromere_data:
             shutil.rmtree('data/chromosomes/' + organism + '/')
         logger.info(
