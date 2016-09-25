@@ -4,28 +4,27 @@
  * @param {Object} config
  */
 function HorizontalLayout(config) {
-    /**
-     * @private
-     * @member {Object}
+    /*
+     * 
      */
-    this._config = config;
+    Layout.call(this, config);
     /**
      * @private
      * @member {String}
      */
     this._class = 'HorizontalLayout';
     /**
+     * Layout margins.
      * @private
-     * @member {PloidyDescription}
+     * @member {Object}
      */
-    this._description = new PloidyDescription(config.ploidyDesc);
-    /**
-     * Chromosome set's offset array.
-     * @private
-     * @member {Number[]}
-     */
-    this._translate = undefined;
+    this._margin = {
+        left : 25
+    };
 }
+
+
+HorizontalLayout.prototype = Object.create(Layout.prototype);
 
 
 HorizontalLayout.prototype.getChromosomeSetLabelTranslate = function() {
@@ -34,19 +33,19 @@ HorizontalLayout.prototype.getChromosomeSetLabelTranslate = function() {
 };
 
 
+/**
+ * @override
+ */
 HorizontalLayout.prototype.getChromosomeSetTranslate = function(setNumber) {
 
-    return "translate(25, " + this._getChromosomeSetHorizontalTranslate(setNumber) + ")";
+    return "translate(" + this._margin.left + ", " + this.getChromosomeSetYTranslate(setNumber) + ")";
 };
 
 
 /**
- * Get chromosome set horizontal offset.
- * @private
- * @param {Integer} setNumber
- * @returns {Number}
+ * @override
  */
-HorizontalLayout.prototype._getChromosomeSetHorizontalTranslate = function(setNumber) {
+HorizontalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
 
     var annotationHeight = this._config.annotationHeight || 0;
     var additionalPadding = 0;

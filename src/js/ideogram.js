@@ -13,7 +13,7 @@ var Ideogram = function(config) {
    */
   this._color = new Color(this.config);
   this._ploidy = new Ploidy(this.config);
-  this._layout = new Layout(this.config);
+  this._layout = Layout.getInstance(this.config);
   this._description = new PloidyDescription(this.config.ploidyDesc);
 
   this.debug = false;
@@ -1648,7 +1648,7 @@ Ideogram.prototype.createBrush = function(from, to) {
   }
 
   x = d3.scale.linear().domain(domain).range(range);
-  y = d3.select(".band")[0][0].getBBox().y - 3.25;
+  y = this._layout.getChromosomeSetYTranslate(0) + (ideo.config.chrWidth - width) / 2;
 
   if (typeof from === "undefined") {
     from = Math.floor(chrLengthBp/10);
