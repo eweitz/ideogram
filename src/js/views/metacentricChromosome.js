@@ -15,6 +15,12 @@ function MetacentricChromosome(model, config, ideo) {
 MetacentricChromosome.prototype = Object.create(Chromosome.prototype);
 
 
+MetacentricChromosome.prototype.getBumpsLength = function() {
+
+    return this._bump * 4;
+};
+
+
 /**
  * Render chromosome right terminal.
  * @protected
@@ -29,15 +35,12 @@ MetacentricChromosome.prototype._renderRightTerminal = function(container, chrSe
 
     var self = this;
 
-    var width = this._config.chrWidth;
-    var bump  = width / 3.5;
-
     var band = this._model.bands.filter(function(band) {
         return band.name[0] == arm;
     }).pop();
 
     var path = container.append('path')
-        .attr('d', 'M' + position.x + ',' + width + ' q' + (bump * 2) + ',' + (width / - 2) + ',0,-' + width)
+        .attr('d', 'M' + position.x + ',' + this._width + ' q' + (this._bump * 2) + ',' + (this._width / - 2) + ',0,-' + this._width)
         .attr('class', 'terminal right-terminal ' + band.stain)
         .style('fill', function(d) {
             return self._color.getArmColor(chrSetNumber, chrNumber, arm == 'p' ? 0 : 1);
@@ -46,8 +49,8 @@ MetacentricChromosome.prototype._renderRightTerminal = function(container, chrSe
         }).style('stroke-width', 0.5);
 
     return {
-        offset: position.offset + bump,
-        x: position.x + bump
+        offset: position.offset + this._bump,
+        x: position.x + this._bump
     };
 };
 
@@ -66,15 +69,12 @@ MetacentricChromosome.prototype._renderLeftTerminal = function(container, chrSet
 
     var self = this;
 
-    var width = this._config.chrWidth;
-    var bump  = width / 3.5;
-
     var band = this._model.bands.find(function(band) {
         return band.name[0] == arm;
     });
 
     var path = container.append('path')
-        .attr('d', 'M' + (position.x + bump) + ',' + width + ' q' + (- bump * 2) + ',' + width / -2 + ',0' + -width)
+        .attr('d', 'M' + (position.x + this._bump) + ',' + this._width + ' q' + (- this._bump * 2) + ',' + this._width / -2 + ',0' + -this._width)
         .attr('class', 'terminal left-terminal ' + band.stain)
         .style('fill', function(d) {
             return self._color.getArmColor(chrSetNumber, chrNumber, arm == 'p' ? 0 : 1);
@@ -87,7 +87,7 @@ MetacentricChromosome.prototype._renderLeftTerminal = function(container, chrSet
     pathWidth = dimension.width;
 
     return {
-        offset: position.offset + bump,
-        x: position.x + bump
+        offset: position.offset + this._bump,
+        x: position.x + this._bump
     };
 };

@@ -788,15 +788,8 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex, container, k) {
         .attr("class", "chromosome")
         .attr("transform", "translate(0, " + k * 20 + ")");
 
-    var view;
-
-    if (chrModel.centromerePosition == 'telocentric') {
-        view = new TelocentricChromosome(chrModel, this.config, this);
-    } else {
-        view = new MetacentricChromosome(chrModel, this.config, this);
-    }
-
-    view.render(chromosome, chrIndex, k);
+    Chromosome.getInstance(chrModel, this.config, this)
+        .render(chromosome, chrIndex, k);
 };
 
 
@@ -1637,15 +1630,14 @@ Ideogram.prototype.createBrush = function(from, to) {
       chrLengthBp = chr.bands[chr.bands.length - 1].bp.stop,
       x, x0, x1,
       y,
-      domain = [0],
-      range = [0],
-      band;
-
-  for (var i = 0; i < chr.bands.length; i++) {
-    band = chr.bands[i];
-    domain.push(band.bp.stop);
-    range.push(band.px.stop);
-  }
+      xOffset = this._layout.getMargin().left,
+      view = Chromosome.getInstance(ideo.chromosomesArray[0], this.config, this)
+      domain = [0, d3.max(chr.bands, function(band) {
+          return band.bp.stop;
+      })],
+      range = [xOffset, d3.max(chr.bands, function(band) {
+          return band.px.stop;
+      }) + xOffset + view.getBumpsLength()];
 
   x = d3.scale.linear().domain(domain).range(range);
   y = this._layout.getChromosomeSetYTranslate(0) + (ideo.config.chrWidth - width) / 2;

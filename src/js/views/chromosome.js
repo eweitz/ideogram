@@ -13,6 +13,27 @@ function Chromosome(model, config, ideo) {
     this._ideo = ideo;
     this._color = new Color(this._config);
     this._currentArm = undefined;
+    this._width = this._config.chrWidth;
+    this._bump = this._width / 3.5;
+}
+
+
+/**
+ * Factory method.
+ * @public
+ * @static
+ * @param {Object} model
+ * @param {Object} config
+ * @param {Ideogram} ideo
+ * @return {Chromosome}
+ */
+Chromosome.getInstance = function(model, config, ideo) {
+
+    if (model.centromerePosition == 'telocentric') {
+        return new TelocentricChromosome(model, config, ideo);
+    } else {
+        return new MetacentricChromosome(model, config, ideo);
+    }
 }
 
 
