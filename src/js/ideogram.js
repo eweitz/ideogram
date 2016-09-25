@@ -517,7 +517,7 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
           x = ideo.round(-8 + d.px.start + d.px.width/2);
 
           textOffsets[chrModel.id].push(x + 13);
-          y = chrMargin - 10;
+          y = -10;//chrMargin - 10;
 
           return "translate(" + x + "," + y + ")";
         })
@@ -530,14 +530,20 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
       .append("g")
       .attr("class", function(d, i) { return "bandLabelStalk bsbsl-" + i; })
       .attr("transform", function(d) {
-        var x = ideo.round(d.px.start + d.px.width/2);
-        return "translate(" + x + ", " + lineY1 + ")";
+          var x, y;
+
+          x = ideo.round(-8 + d.px.start + d.px.width/2);
+
+          textOffsets[chrModel.id].push(x + 13);
+          y = -10;
+
+          return "translate(" + x + "," + y + ")";
       })
         .append("line")
         .attr("x1", 0)
-        .attr("y1", 0)
+        .attr("y1", 2)
         .attr("x2", 0)
-        .attr("y2", -8);
+        .attr("y2", 10);
   }
 
   for (var i = 0; i < chrs.length; i++) {
@@ -1491,6 +1497,7 @@ Ideogram.prototype.drawProcessedAnnots = function(annots) {
       .attr("id", function(d, i) { return d.id; })
       .attr("class", "annot")
       .attr("transform", function(d) {
+        //var y = (d.chrIndex + 1) * chrMargin + chrWidth + (d.trackIndex * annotHeight * 2);
         var y = ideo.config.chrWidth + (d.trackIndex * annotHeight * 2);
         return "translate(" + d.px + "," + y + ")";
       })
@@ -1514,8 +1521,8 @@ Ideogram.prototype.drawProcessedAnnots = function(annots) {
 
           x1 = d.px - 0.5;
           x2 = d.px + 0.5;
-          y1 = (d.chrIndex + 1) * (chrMargin) + chrWidth;
-          y2 = (d.chrIndex + 1) * (chrMargin);
+          y1 = chrWidth;
+          y2 = 0;
 
           return (
             x1 + "," + y1 + " " +
