@@ -16,6 +16,12 @@ function TelocentricChromosome(model, config, ideo) {
 TelocentricChromosome.prototype = Object.create(Chromosome.prototype);
 
 
+TelocentricChromosome.prototype.getBumpsLength = function() {
+
+    return this._bump * 3 + 4;
+};
+
+
 /**
  * Render chromosome right terminal.
  * @protected
