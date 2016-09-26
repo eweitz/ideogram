@@ -13,7 +13,7 @@ var Ideogram = function(config) {
    */
   this._color = new Color(this.config);
   this._ploidy = new Ploidy(this.config);
-  this._layout = Layout.getInstance(this.config);
+  this._layout = Layout.getInstance(this.config, this);
   this._description = new PloidyDescription(this.config.ploidyDesc);
 
   this.debug = false;
@@ -464,6 +464,7 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
 */
 Ideogram.prototype.drawBandLabels = function(chromosomes) {
 
+  var self = this;
   var i, chr, chrs, taxid, ideo,
       chrMargin2;
 
@@ -511,17 +512,17 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
       .append("g")
         .attr("class", function(d, i) { return "bandLabel bsbsl-" + i;  })
         .attr("transform", function(d) {
+          var transform = self._layout.getChromosomeBandLabelTranslate(d, i);
 
-          var x, y;
-
-          x = ideo.round(-8 + d.px.start + d.px.width/2);
+          var x = transform.x;
+          var y = transform.y;
 
           textOffsets[chrModel.id].push(x + 13);
-          y = -10;//chrMargin - 10;
 
-          return "translate(" + x + "," + y + ")";
+          return transform.translate;
         })
         .append("text")
+        .attr('text-anchor', self._layout.getChromosomeBandLabelAnchor(i))
         .text(function(d) { return d.name; });
 
     chr.selectAll("line.bandLabelStalk")
@@ -532,7 +533,7 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
       .attr("transform", function(d) {
           var x, y;
 
-          x = ideo.round(-8 + d.px.start + d.px.width/2);
+          x = ideo.round(d.px.start + d.px.width/2);
 
           textOffsets[chrModel.id].push(x + 13);
           y = -10;
@@ -541,9 +542,12 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
       })
         .append("line")
         .attr("x1", 0)
-        .attr("y1", 2)
-        .attr("x2", 0)
-        .attr("y2", 10);
+        .attr("y1", function() {
+            return self._layout.getChromosomeBandTickY1(i);
+        }).attr("x2", 0)
+        .attr("y2", function() {
+            return self._layout.getChromosomeBandTickY2(i);
+        });
   }
 
   for (var i = 0; i < chrs.length; i++) {
@@ -1093,12 +1097,6 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
     r2.startPx = this.convertBpToPx(r2.chr, r2.start);
     r2.stopPx = this.convertBpToPx(r2.chr, r2.stop);
 
-    c1Box = document.querySelectorAll("#" + r1.chr.id + " path")[0].getBBox();
-    c2Box = document.querySelectorAll("#" + r2.chr.id + " path")[0].getBBox();
-
-    chr1Plane = c1Box.y - 31;
-    chr2Plane = c2Box.y - 28;
-
     regionID = (
       r1.chr.id + "_" + r1.start + "_" + r1.stop + "_" +
       "__" +
@@ -1131,27 +1129,29 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
         d3.selectAll(".syntenicRegion").classed("ghost", false);
       });
 
+    var x1 = this._layout.getChromosomeSetYTranslate(0);
+    var x2 = this._layout.getChromosomeSetYTranslate(1);
 
     syntenicRegion.append("polygon")
       .attr("points",
-        chr1Plane + ', ' + r1.startPx + ' ' +
-        chr1Plane + ', ' + r1.stopPx + ' ' +
-        chr2Plane + ', ' + r2.stopPx + ' ' +
-        chr2Plane + ', ' + r2.startPx
+        x1 + ', ' + r1.startPx + ' ' +
+        x1 + ', ' + r1.stopPx + ' ' +
+        x2 + ', ' + r2.stopPx + ' ' +
+        x2 + ', ' + r2.startPx
       )
       .attr('style', "fill: " + color + "; fill-opacity: " + opacity);
 
     syntenicRegion.append("line")
       .attr("class", "syntenyBorder")
-      .attr("x1", chr1Plane)
-      .attr("x2", chr2Plane)
+      .attr("x1", x1)
+      .attr("x2", x2)
       .attr("y1", r1.startPx)
       .attr("y2", r2.startPx);
 
     syntenicRegion.append("line")
       .attr("class", "syntenyBorder")
-      .attr("x1", chr1Plane)
-      .attr("x2", chr2Plane)
+      .attr("x1", x1)
+      .attr("x2", x2)
       .attr("y1", r1.stopPx)
       .attr("y2", r2.stopPx);
   }
@@ -1913,6 +1913,7 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
       taxids = ideo.config.taxids,
       taxid,
       chrIndex = 0,
+      chrSetNumber = 0,
       i, j, chrs, chromosome, chromosomeModel;
 
   for (i = 0; i < taxids.length; i++) {
@@ -1940,7 +1941,7 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
       var container = d3.select("svg")
         .append("g")
         .attr("class", "chromosome-set-container")
-        .attr("transform", ideo._layout.getChromosomeSetTranslate(j))
+        .attr("transform", ideo._layout.getChromosomeSetTranslate(chrSetNumber ++))
         .attr("id", chromosomeModel.id + "-chromosome-set");
 
       for (var k = 0; k < this._ploidy.getChromosomesNumber(j); k ++) {
