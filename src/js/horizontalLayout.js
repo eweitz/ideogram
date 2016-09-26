@@ -2,12 +2,13 @@
  * @public
  * @class
  * @param {Object} config
+ * @param {Ideogram} ideo
  */
-function HorizontalLayout(config) {
+function HorizontalLayout(config, ideo) {
     /*
      * 
      */
-    Layout.call(this, config);
+    Layout.call(this, config, ideo);
     /**
      * @private
      * @member {String}
@@ -27,6 +28,52 @@ function HorizontalLayout(config) {
 HorizontalLayout.prototype = Object.create(Layout.prototype);
 
 
+/**
+ * @override
+ */
+HorizontalLayout.prototype.getChromosomeBandLabelAnchor = function(chrNumber) {
+
+    return null;
+};
+
+
+/**
+ * @override
+ */
+HorizontalLayout.prototype.getChromosomeBandTickY1 = function(chrNumber) {
+
+    return 2;
+};
+
+
+/**
+ * @override
+ */
+HorizontalLayout.prototype.getChromosomeBandTickY2 = function(chrNumber) {
+
+    return 10;
+};
+
+
+/**
+ * @override
+ */
+HorizontalLayout.prototype.getChromosomeBandLabelTranslate = function(band) {
+
+    var x = this._ideo.round(- this._tickSize + band.px.start + band.px.width / 2);
+    var y = -10;
+
+    return {
+        x : x,
+        y : y,
+        translate : 'translate(' + x + ',' + y + ')'
+    };
+};
+
+
+/**
+ * @override
+ */
 HorizontalLayout.prototype.getChromosomeSetLabelTranslate = function() {
 
     return null;
@@ -87,25 +134,37 @@ HorizontalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
 };
 
 
+/**
+ * @override
+ */
 HorizontalLayout.prototype.getChromosomeSetLabelXPosition = function(i) {
 
     return -20;
-}
+};
 
 
+/**
+ * @override
+ */
 HorizontalLayout.prototype.getChromosomeSetLabelYPosition = function(i) {
 
     return this._description.getSetSize(i) * this._config.chrWidth;
-}
+};
 
 
+/**
+ * @override
+ */
 HorizontalLayout.prototype.getChromosomeLabelXPosition = function(i) {
 
     return -8;
-}
+};
 
 
+/**
+ * @override
+ */
 HorizontalLayout.prototype.getChromosomeLabelYPosition = function(i) {
 
     return this._config.chrWidth;
-}
+};

@@ -2,12 +2,13 @@
  * @public
  * @class
  * @param {Object} config
+ * @param {Ideogram} ideo
  */
-function VerticalLayout(config) {
+function VerticalLayout(config, ideo) {
     /*
      * 
      */
-    Layout.call(this, config);
+    Layout.call(this, config, ideo);
     /**
      * @private
      * @member {String}
@@ -27,6 +28,17 @@ function VerticalLayout(config) {
 VerticalLayout.prototype = Object.create(Layout.prototype);
 
 
+/**
+ * @override
+ */
+VerticalLayout.prototype.getChromosomeBandLabelTranslate = function(band) {
+
+};
+
+
+/**
+ * @override
+ */
 VerticalLayout.prototype.getChromosomeSetLabelTranslate = function() {
 
     return 'rotate(-90)';
@@ -91,25 +103,37 @@ VerticalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
 };
 
 
+/**
+ * @override
+ */
 VerticalLayout.prototype.getChromosomeSetLabelXPosition = function(setNumber) {
 
     return ((this._description.getSetSize(setNumber) * this._config.chrWidth + 20) / - 2) + (this._config.ploidy > 1 ? 0 : this._config.chrWidth);
-}
+};
 
 
+/**
+ * @override
+ */
 VerticalLayout.prototype.getChromosomeSetLabelYPosition = function(i) {
 
     return -2 * this._config.chrWidth;
-}
+};
 
 
+/**
+ * @override
+ */
 VerticalLayout.prototype.getChromosomeLabelXPosition = function(i) {
 
     return this._config.chrWidth / - 2;
-}
+};
 
 
+/**
+ * @override
+ */
 VerticalLayout.prototype.getChromosomeLabelYPosition = function(i) {
 
     return -5;
-}
+};
