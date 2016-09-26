@@ -1,10 +1,10 @@
 """Download AGPs from NCBI and format chromosome data, including centromeres"""
 
 import urllib.request as request
-import ftplib
-import socket
 from urllib.parse import quote
 import urllib.error
+import ftplib
+import socket
 import os
 import shutil
 import json
@@ -43,6 +43,30 @@ ftp_domain = 'ftp.ncbi.nlm.nih.gov'
 ftp = ftplib.FTP(ftp_domain)
 ftp.login()
 
+def get_chromosome_object(agp):
+
+    agp = agp.split('\n')
+
+    chr = {}
+    for i, line in enumerate(agp):
+        #print('line')
+        #print(line)
+        if len(line) == 0 or line[0] == '#':
+            continue
+        tabs = line.split("\t")
+        acc = tabs[0]
+        start = int(tabs[1])
+        stop = int(tabs[2])
+        comp_type = tabs[6]
+        if 'acc' not in chr:
+            chr['accession'] = acc
+        if comp_type == 'centromere':
+            chr['centromere_start'] = start
+            chr['centromere_length'] = stop - start
+        if i == len(agp):
+            chr['length'] = stop
+    return chr
+
 def download_genome_agp(asm):
 
     agp_ftp_wd = asm['agp_ftp_wd']
@@ -50,6 +74,8 @@ def download_genome_agp(asm):
     organism = asm['organism']
     output_dir = asm['output_dir']
     asm_name = asm['name']
+
+    chrs = []
 
     has_centromere_data = False
 
@@ -79,7 +105,7 @@ def download_genome_agp(asm):
             ftp.retrbinary('RETR '+ file_name, file.write)
 
         with gzip.open(output_path, 'rb') as file:
-            agp = file.read()
+            agp = file.read().decode('utf-8')
 
         if "centromere" in str(agp):
             has_centromere_data = True
@@ -93,9 +119,8 @@ def download_genome_agp(asm):
             #return
             continue
 
-        output_path_agp = output_path.replace(".gz", "")
-        with open(output_path_agp, 'wb') as outfile:
-            outfile.write(agp)
+        chr = get_chromosome_object(agp)
+        chrs.append(chr)
 
         # Remove e.g. chr1.agp.gz in its respective directory
         os.remove(output_path)
@@ -113,6 +138,9 @@ def download_genome_agp(asm):
             'No centromere data found in AGP for ' + organism + ' ' +
             'for any chromosomes in genome assembly ' + asm_name
         )
+    else:
+        with open(output_dir + "chromosomes.json", "w") as f:
+            f.write(json.dumps(chrs))
 
 def find_genomes_with_centromeres(asm_summary_response):
 
@@ -133,6 +161,9 @@ def find_genomes_with_centromeres(asm_summary_response):
         rs_uid = result['rsuid']
         taxid = result['taxid']
         organism = result['speciesname'].lower().replace(' ', '-')
+
+        #if organism != 'mus-musculus':
+        #    continue
 
         asm_segment = acc + '_' + name.replace(' ', '_').replace('-', '_')
 
