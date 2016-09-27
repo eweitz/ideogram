@@ -44,10 +44,13 @@ ftp = ftplib.FTP(ftp_domain)
 ftp.login()
 
 def get_chromosome_object(agp):
+    """Extracts centromere coordinates and chromosome length from AGP data,
+    and returns a chromosome object formatted in JSON"""
+
+    chr = {}
 
     agp = agp.split('\n')
 
-    chr = {}
     for i, line in enumerate(agp):
         #print('line')
         #print(line)
@@ -63,7 +66,7 @@ def get_chromosome_object(agp):
         if comp_type == 'centromere':
             chr['centromere_start'] = start
             chr['centromere_length'] = stop - start
-        if i == len(agp):
+        if i == len(agp) - 2:
             chr['length'] = stop
     return chr
 
@@ -76,6 +79,7 @@ def download_genome_agp(asm):
     asm_name = asm['name']
 
     chrs = []
+    chrs_seen = {}
 
     has_centromere_data = False
 
@@ -120,10 +124,15 @@ def download_genome_agp(asm):
             continue
 
         chr = get_chromosome_object(agp)
-        chrs.append(chr)
 
         # Remove e.g. chr1.agp.gz in its respective directory
         os.remove(output_path)
+
+        chr_acc = chr['accession']
+        if chr_acc not in chrs_seen:
+            chr['name'] = file_name.split('.')[0].split('chr')[1]
+            chrs.append(chr)
+            chrs_seen[chr_acc] = 1
 
     if has_centromere_data == False:
 
