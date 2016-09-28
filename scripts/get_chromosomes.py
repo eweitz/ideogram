@@ -52,8 +52,6 @@ def get_chromosome_object(agp):
     agp = agp.split('\n')
 
     for i, line in enumerate(agp):
-        #print('line')
-        #print(line)
         if len(line) == 0 or line[0] == '#':
             continue
         tabs = line.split("\t")
@@ -63,6 +61,7 @@ def get_chromosome_object(agp):
         comp_type = tabs[6]
         if 'acc' not in chr:
             chr['accession'] = acc
+            chr['type'] = 'nuclear'
         if comp_type == 'centromere':
             chr['centromere_start'] = start
             chr['centromere_length'] = stop - start
@@ -75,8 +74,9 @@ def download_genome_agp(asm):
     agp_ftp_wd = asm['agp_ftp_wd']
     acc = asm['acc']
     organism = asm['organism']
-    output_dir = asm['output_dir']
+    asm_output_dir = asm['asm_output_dir']
     asm_name = asm['name']
+    asm_segment = asm['asm_segment']
 
     chrs = []
     chrs_seen = {}
@@ -97,10 +97,10 @@ def download_genome_agp(asm):
     for file_name in file_names:
         # Download each chromomsome's compressed AGP file
 
-        output_path = output_dir + file_name
+        output_path = asm_output_dir + file_name
 
-        if os.path.exists(output_dir) == False:
-            os.makedirs(output_dir)
+        if os.path.exists(asm_output_dir) == False:
+            os.makedirs(asm_output_dir)
 
         # Example full URL of file:
         # 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF_000001515.7_Pan_tro_3.0/GCF_000001515.7_Pan_tro_3.0_assembly_structure/Primary_Assembly/assembled_chromosomes/AGP/chr1.agp.gz'
@@ -110,6 +110,17 @@ def download_genome_agp(asm):
 
         with gzip.open(output_path, 'rb') as file:
             agp = file.read().decode('utf-8')
+
+        chr = get_chromosome_object(agp)
+
+        # Remove e.g. chr1.agp.gz in its respective directory
+        os.remove(output_path)
+
+        chr_acc = chr['accession']
+        if chr_acc not in chrs_seen:
+            chr['name'] = file_name.split('.')[0].split('chr')[1]
+            chrs.append(chr)
+            chrs_seen[chr_acc] = 1
 
         if "centromere" in str(agp):
             has_centromere_data = True
@@ -123,32 +134,21 @@ def download_genome_agp(asm):
             #return
             continue
 
-        chr = get_chromosome_object(agp)
-
-        # Remove e.g. chr1.agp.gz in its respective directory
-        os.remove(output_path)
-
-        chr_acc = chr['accession']
-        if chr_acc not in chrs_seen:
-            chr['name'] = file_name.split('.')[0].split('chr')[1]
-            chrs.append(chr)
-            chrs_seen[chr_acc] = 1
-
     if has_centromere_data == False:
 
         # Remove directory for this particular assembly.
         # Useful when organism has multiple retrieved assemblies, but
         # not all of them have centromere data.
-        shutil.rmtree(output_dir)
+        shutil.rmtree(asm_output_dir)
 
         if organism not in orgs_with_centromere_data:
-            shutil.rmtree('data/chromosomes/' + organism + '/')
+            shutil.rmtree(output_dir + organism + '/')
         logger.info(
             'No centromere data found in AGP for ' + organism + ' ' +
             'for any chromosomes in genome assembly ' + asm_name
         )
     else:
-        with open(output_dir + "chromosomes.json", "w") as f:
+        with open(output_dir + asm_segment + "_chromosomes.json", "w") as f:
             f.write(json.dumps(chrs))
 
 def find_genomes_with_centromeres(asm_summary_response):
@@ -171,8 +171,8 @@ def find_genomes_with_centromeres(asm_summary_response):
         taxid = result['taxid']
         organism = result['speciesname'].lower().replace(' ', '-')
 
-        #if organism != 'mus-musculus':
-        #    continue
+        if organism != 'mus-musculus':
+            continue
 
         asm_segment = acc + '_' + name.replace(' ', '_').replace('-', '_')
 
@@ -183,7 +183,7 @@ def find_genomes_with_centromeres(asm_summary_response):
             'Primary_Assembly/assembled_chromosomes/AGP/'
         )
 
-        output_dir = 'data/chromosomes/' + organism + '/' + asm_segment + '/'
+        asm_output_dir = 'data/chromosomes/' + organism + '/' + asm_segment + '/'
 
         asm = {
             'acc': acc,
@@ -192,7 +192,8 @@ def find_genomes_with_centromeres(asm_summary_response):
             'taxid': taxid,
             'organism': organism,
             'agp_ftp_wd': agp_ftp_wd,
-            'output_dir': output_dir
+            'asm_output_dir': asm_output_dir,
+            'asm_segment': asm_segment
         }
 
         download_genome_agp(asm)
