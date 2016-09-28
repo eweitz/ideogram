@@ -131,25 +131,19 @@ def download_genome_agp(asm):
                 'No centromere data found in AGP for ' + organism + ' ' +
                 'genome assembly ' + asm_name + ' chromosome ' + chr_name
             )
-            #return
             continue
 
     if has_centromere_data == False:
-
-        # Remove directory for this particular assembly.
-        # Useful when organism has multiple retrieved assemblies, but
-        # not all of them have centromere data.
-        shutil.rmtree(asm_output_dir)
-
-        if organism not in orgs_with_centromere_data:
-            shutil.rmtree(output_dir + organism + '/')
         logger.info(
             'No centromere data found in AGP for ' + organism + ' ' +
             'for any chromosomes in genome assembly ' + asm_name
         )
     else:
-        with open(output_dir + asm_segment + "_chromosomes.json", "w") as f:
+        output_path = output_dir + organism + "_" + asm_segment + "_chromosomes.json"
+        with open(output_path, "w") as f:
             f.write(json.dumps(chrs))
+
+    shutil.rmtree(output_dir + organism + '/')
 
 def find_genomes_with_centromeres(asm_summary_response):
 
@@ -171,8 +165,8 @@ def find_genomes_with_centromeres(asm_summary_response):
         taxid = result['taxid']
         organism = result['speciesname'].lower().replace(' ', '-')
 
-        if organism != 'mus-musculus':
-            continue
+        #if organism != 'homo-sapiens':
+        #    continue
 
         asm_segment = acc + '_' + name.replace(' ', '_').replace('-', '_')
 
