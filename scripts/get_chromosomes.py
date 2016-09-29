@@ -139,9 +139,14 @@ def download_genome_agp(asm):
             'for any chromosomes in genome assembly ' + asm_name
         )
     else:
-        output_path = output_dir + organism + "_" + asm_segment + "_chromosomes.json"
+        output_path = output_dir + organism + "_chromosomes.json"
+        chrs = {
+            'assemblyname': asm_name,
+            'assemblyaccession': acc,
+            'chromosomes': chrs
+        }
         with open(output_path, "w") as f:
-            f.write(json.dumps(chrs))
+            f.write(json.dumps(chrs, indent=4))
 
     shutil.rmtree(output_dir + organism + '/')
 
