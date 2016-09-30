@@ -18,8 +18,12 @@ var Ideogram = function(config) {
 
   this.debug = false;
 
+  if (!this.config.dataDir) {
+    this.config.dataDir = "../data/";
+  }
+
   if (!this.config.bandDir) {
-    this.config.bandDir = "../data/bands/";
+    this.config.bandDir = this.config.dataDir + "bands/";
   }
 
   if (!this.config.container) {
@@ -387,6 +391,7 @@ Ideogram.prototype.colorArms = function(pArmColor, qArmColor) {
 Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIndex) {
 
   var chr = {},
+      ideo = this,
       band, scale,
       width, pxStop,
       startType, stopType,
@@ -395,7 +400,7 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
       chrLength,
       cs, hasBands;
 
-  cs = this.coordinateSystem;
+  cs = ideo.coordinateSystem;
   hasBands = (typeof bands !== "undefined");
 
   if (hasBands) {
@@ -404,14 +409,22 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
     chr["type"] = "nuclear";
   } else {
     chr = chromosome;
+
+    if ("centromere_start" in chr) {
+      var cen_start = chr["centromere_start"];
+      var cen_stop = cen_start + chr["centromere_length"];
+      chr["centromere_px_start"] = ideo.convertBpToPxNoBands(chr, cen_start);
+      chr["centromere_px_stop"] = ideo.convertBpToPxNoBands(chr, cen_stop);
+    }
+
   }
 
   chr["chrIndex"] = chrIndex;
 
   chr["id"] = "chr" + chr.name + "-" + taxid;
 
-  if (this.config.fullChromosomeLabels === true) {
-    var orgName = this.organisms[taxid].scientificNameAbbr;
+  if (ideo.config.fullChromosomeLabels === true) {
+    var orgName = ideo.organisms[taxid].scientificNameAbbr;
     chr["name"] = orgName + " chr" + chr.name;
   }
 
@@ -1373,12 +1386,15 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
         }
 
       });
-
-
   }
 };
 
-
+/**
+* convertBpToPx, for chromosomes that lack band data, i.e. not human or mouse
+*/
+Ideogram.prototype.convertBpToPxNoBands = function(chr, bp) {
+  return bp/chr.length;
+}
 
 /**
 * Converts base pair coordinates to pixel offsets.
@@ -2239,18 +2255,43 @@ Ideogram.prototype.getTaxids = function(callback) {
         ideo.getTaxidFromEutils(resolve);
       })
       promise.then(function(data){
+
+        var organism = ideo.config.organism,
+            dataDir = ideo.config.dataDir,
+            urlOrg = organism.replace(" ", "-");
+
         taxid = data;
         taxids.push(taxid);
 
         ideo.config.taxids = taxids;
         ideo.organisms[taxid] = {
           "commonName": "",
-          "scientificName": ideo.config.organism,
+          "scientificName": organism,
           "scientificNameAbbr": "",
         }
-        return new Promise(function(resolve, reject) {
-          ideo.getAssemblyAndChromosomesFromEutils(resolve);
-        })
+
+        var chromosomesUrl = dataDir + "chromosomes/" + urlOrg + ".json";
+
+        var promise = d3.promise.json(chromosomesUrl);
+
+        return promise
+          .then(
+            function(data) {
+              console.log(data);
+              var asmAndChrArray = [],
+                  chromosomes;
+              asmAndChrArray.push(data.assemblyaccession);
+              chromosomes = data.chromosomes.sort(ideo.sortChromosomes);
+              asmAndChrArray.push(chromosomes);
+              ideo.coordinateSystem = "bp";
+              return asmAndChrArray
+            },
+            function(error) {
+              return new Promise(function(resolve, reject) {
+                ideo.getAssemblyAndChromosomesFromEutils(resolve);
+              })
+            }
+          )
       })
       .then(function(asmChrArray) {
         assembly = asmChrArray[0];
