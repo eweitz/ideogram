@@ -139,7 +139,7 @@ def download_genome_agp(asm):
             'for any chromosomes in genome assembly ' + asm_name
         )
     else:
-        output_path = output_dir + organism + "_chromosomes.json"
+        output_path = output_dir + organism + ".json"
         chrs = {
             'assemblyname': asm_name,
             'assemblyaccession': acc,

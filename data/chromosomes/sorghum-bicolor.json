@@ -1,0 +1,86 @@
+{
+    "assemblyname": "Sorbi1",
+    "assemblyaccession": "GCF_000003195.2",
+    "chromosomes": [
+        {
+            "centromere_start": 33771829,
+            "centromere_length": 4799999,
+            "accession": "NC_012870.1",
+            "name": "1",
+            "type": "nuclear",
+            "length": 73840631
+        },
+        {
+            "centromere_start": 29010536,
+            "centromere_length": 3099999,
+            "accession": "NC_012879.1",
+            "name": "10",
+            "type": "nuclear",
+            "length": 60981646
+        },
+        {
+            "centromere_start": 34478192,
+            "centromere_length": 99999,
+            "accession": "NC_012871.1",
+            "name": "2",
+            "type": "nuclear",
+            "length": 77932606
+        },
+        {
+            "centromere_start": 35293954,
+            "centromere_length": 299999,
+            "accession": "NC_012872.1",
+            "name": "3",
+            "type": "nuclear",
+            "length": 74441160
+        },
+        {
+            "centromere_start": 27898142,
+            "centromere_length": 4299999,
+            "accession": "NC_012873.1",
+            "name": "4",
+            "type": "nuclear",
+            "length": 68034345
+        },
+        {
+            "centromere_start": 38675096,
+            "centromere_length": 2199999,
+            "accession": "NC_012874.1",
+            "name": "5",
+            "type": "nuclear",
+            "length": 62352331
+        },
+        {
+            "centromere_start": 22101634,
+            "centromere_length": 99999,
+            "accession": "NC_012875.1",
+            "name": "6",
+            "type": "nuclear",
+            "length": 62208784
+        },
+        {
+            "centromere_start": 31614123,
+            "centromere_length": 3599999,
+            "accession": "NC_012876.1",
+            "name": "7",
+            "type": "nuclear",
+            "length": 64342021
+        },
+        {
+            "centromere_start": 19349318,
+            "centromere_length": 2499999,
+            "accession": "NC_012877.1",
+            "name": "8",
+            "type": "nuclear",
+            "length": 55460251
+        },
+        {
+            "centromere_start": 27547206,
+            "centromere_length": 3199999,
+            "accession": "NC_012878.1",
+            "name": "9",
+            "type": "nuclear",
+            "length": 59635592
+        }
+    ]
+}
