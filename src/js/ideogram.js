@@ -1563,60 +1563,6 @@ Ideogram.prototype.drawProcessedAnnots = function(annots) {
 };
 
 
-Ideogram.prototype.putChromosomesInRows = function() {
-
-    var ideo = this,
-        rows = ideo.config.rows,
-        chrs,
-        chrsPerRow,
-        rowIndex, rowIndexStop,
-        riCorrection,
-        rowHeight, chrIndex, chrWidth, chrMargin;
-
-    chrsPerRow = Math.floor(ideo.numChromosomes/rows);
-
-    riCorrection = 0;
-    if (d3.select("svg > *")[0][0].tagName !== "g") {
-      // Accounts for cross-browser differences in handling of nth-child
-      riCorrection = 2;
-    }
-
-    for (var i = 1; i < rows; i++) {
-
-      rowIndex = (chrsPerRow * i) + 1 + riCorrection;
-      rowIndexStop = rowIndex + chrsPerRow;
-      range = "nth-child(n+" + rowIndex + "):nth-child(-n+" + rowIndexStop + ")";
-
-      rowHeight = ideo.config.chrHeight + 20;
-
-      chrIndex = rowIndex + 1 - riCorrection;
-      chrWidth = ideo.config.chrWidth;
-      chrMargin = ideo.config.chrMargin * chrIndex;
-
-      if (!ideo.config.showBandLabels) {
-        chrIndex += 2;
-      }
-
-      if (ideo.config.showChromosomeLabels) {
-        rowHeight += 12; // TODO: Account for variable font size
-      }
-
-      // Similar to "tPadding" in other contexts
-      rowWidth = (chrMargin + (chrWidth-4)*(chrIndex)) + 8;
-
-      d3.selectAll("#ideogram .chromosome:" + range)
-        .attr("transform", function(d, j) {
-
-          var currentTransform, translation;
-
-          currentTransform = d3.select(this).attr("transform");
-          translation = "translate(" + rowHeight + ", " + rowWidth + ")";
-
-          return currentTransform + translation;
-        });
-    }
-};
-
 Ideogram.prototype.onBrushMove = function() {
   call(this.onBrushMoveCallback);
 };
@@ -2263,10 +2209,6 @@ function finishInit() {
 
     if (ideo.config.showChromosomeLabels === true) {
       ideo.drawChromosomeLabels(ideo.chromosomes);
-    }
-
-    if (ideo.config.rows > 1) {
-      ideo.putChromosomesInRows();
     }
 
     if (ideo.config.brush === true) {

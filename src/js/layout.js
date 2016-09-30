@@ -44,6 +44,8 @@ Layout.getInstance = function(config, ideo) {
 
     if ("perspective" in config && config.perspective == "comparative") {
         return new PairedLayout(config, ideo);
+    } else if ("rows" in config && config.rows > 1) {
+        return new SmallLayout(config, ideo);
     } else if (config.orientation === 'vertical') {
         return new VerticalLayout(config, ideo);
     } else {
