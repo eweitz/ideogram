@@ -63,8 +63,12 @@ def get_chromosome_object(agp):
             chr['accession'] = acc
             chr['type'] = 'nuclear'
         if comp_type == 'centromere':
-            chr['centromere_start'] = start
-            chr['centromere_length'] = stop - start
+            chr['centromere'] = {
+                'bp': {
+                    'start': start,
+                    'length': stop-start
+                }
+            }
         if i == len(agp) - 2:
             chr['length'] = stop
     return chr
