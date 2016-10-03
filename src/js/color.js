@@ -1,6 +1,6 @@
 /**
  * Color provider class.
- * @private
+ * @public
  * @class
  * @param {Object} config
  */
@@ -14,14 +14,15 @@ function Color(config) {
     /**
      * Ploidy description.
      * @private
-     * @member {SetDescription}
+     * @member {PloidyDescription}
      */
     this._description = new PloidyDescription(config.ploidyDesc);
 }
 
 
 /**
- * Get chromosome arm color.
+ * Get chromosome's arm color.
+ * @public
  * @param {Integer} chrSetNumber
  * @param {Integer} chrNmber
  * @param {Integer} armNumber
@@ -39,6 +40,14 @@ Color.prototype.getArmColor = function(chrSetNumber, chrNmber, armNumber) {
 };
 
 
+/**
+ * Get chromosome's arm border color.
+ * @public
+ * @param {Integer} chrSetNumber
+ * @param {Integer} chrNmber
+ * @param {0|1} armNumber
+ * @returns {String}
+ */
 Color.prototype.getBorderColor = function(chrSetNumber, chrNmber, armNumber) {
 
     if (chrNmber < this._config.ploidy) {
@@ -53,6 +62,7 @@ Color.prototype.getBorderColor = function(chrSetNumber, chrNmber, armNumber) {
 
 /**
  * Get polyploid organism chromosome arm's color.
+ * @private
  * @param chrSetNumber
  * @param chrNmber
  * @param armNumber
