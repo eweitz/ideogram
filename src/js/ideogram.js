@@ -409,14 +409,6 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
     chr["type"] = "nuclear";
   } else {
     chr = chromosome;
-
-    if ("centromere_start" in chr) {
-      var cen_start = chr["centromere_start"];
-      var cen_stop = cen_start + chr["centromere_length"];
-      chr["centromere_px_start"] = ideo.convertBpToPxNoBands(chr, cen_start);
-      chr["centromere_px_stop"] = ideo.convertBpToPxNoBands(chr, cen_stop);
-    }
-
   }
 
   chr["chrIndex"] = chrIndex;
@@ -484,6 +476,20 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
 
     // Remove placeholder pter band
     chr["bands"] = chr["bands"].slice(1);
+  }
+
+
+  if ("centromere" in chr) {
+    // Includes some non-human non-mouse organisms, e.g. Pan troglodytes (chimpanzee)
+    var cenStart = chr.centromere.bp.start;
+    var cenStop = cenStart + chr.centromere.bp.length;
+    var cenStartPx = ideo.convertBpToPxNoBands(chr, cenStart);
+    var cenStopPx = ideo.convertBpToPxNoBands(chr, cenStop);
+    chr["centromere"]["px"] = {
+      "start": cenStartPx,
+      "stop": cenStopPx,
+      "width": cenStopPx - cenStartPx
+    }
   }
 
   return chr;
@@ -910,6 +916,60 @@ Ideogram.prototype.round = function(coord) {
   return Math.round(coord * 100) / 100;
 };
 
+Ideogram.prototype.getCentromerePath = function(d, chrModel) {
+
+  var ideo = this,
+      left = ideo.round(d.px.start),
+      x = ideo.round(d.px.width),
+      bump = ideo.bump,
+      innerBump = bump,
+      chrWidth = ideo.config.chrWidth,
+      chrMargin = ideo.config.chrMargin * chrModel.chrIndex,
+      curveStart, curveMid, curveEnd,
+      curveTweak;
+
+  curveTweak = 0;
+
+  // Pericentromeric bands get curved
+  if (ideo.adjustedBump) {
+    curveTweak = 0.35;
+    x = 0.2;
+    left -= 0.1;
+    if (d.name[0] === "q") {
+      left += 1.2;
+    }
+  } else {
+    x -= bump/2;
+  }
+
+  curveStart = chrMargin + curveTweak;
+  curveMid = chrWidth/2 - curveTweak*2;
+  curveEnd = chrWidth - curveTweak*2;
+
+  if (d.name[0] == "p") {
+    // p arm
+    d =
+      "M " + left + " " + curveStart + " " +
+      "l " + x + " 0 " +
+      "q " + bump + " " + curveMid + " 0 " + curveEnd + " " +
+      "l -" + x + " 0 z";
+  } else {
+
+    if (ideo.adjustedBump) {
+      x += 0.2;
+    }
+
+    // q arm
+    d =
+      "M " + (left + x + bump/2) + " " + curveStart + " " +
+      "l -" + x + " 0 " +
+      "q -" + (bump + 0.5) + " " + curveMid + " 0 " + curveEnd + " " +
+      "l " + x + " 0 z";
+  }
+
+  return d;
+}
+
 Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
 
   var chr,
@@ -928,7 +988,7 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
       .attr("class", "chromosome noBands");
 
   if (width < 1) {
-    // Applies to mitochrondial and chloroplast chromosomes
+    // Applies to mitochrondrial and chloroplast chromosomes
     return;
   }
 
@@ -965,6 +1025,17 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
       "l " + (width - bump/2) + " 0 " +
       "l 0 " + chrWidth + " " +
       "l -" + (width - bump/2) + " 0 z");
+
+  console.log(chrModel)
+  if ("centromere" in chrModel) {
+    var centromere = chrModel.centromere;
+    centromere.name = "p-cen";
+    pTerPad = bump + centromere.px.start;
+    var d = ideo.getCentromerePath(centromere, chrModel);
+    chr.append('path')
+      .attr("class", "p-cen acen band")
+      .attr("d", d);
+  }
 }
 
 /**
@@ -1032,42 +1103,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
         curveTweak = 0;
 
         if (d.stain == "acen") {
-          // Pericentromeric bands get curved
-          if (ideo.adjustedBump) {
-            curveTweak = 0.35;
-            x = 0.2;
-            left -= 0.1;
-            if (d.name[0] === "q") {
-              left += 1.2;
-            }
-          } else {
-            x -= bump/2;
-          }
-
-          curveStart = chrMargin + curveTweak;
-          curveMid = chrWidth/2 - curveTweak*2;
-          curveEnd = chrWidth - curveTweak*2;
-
-          if (d.name[0] == "p") {
-            // p arm
-            d =
-              "M " + left + " " + curveStart + " " +
-              "l " + x + " 0 " +
-              "q " + bump + " " + curveMid + " 0 " + curveEnd + " " +
-              "l -" + x + " 0 z";
-          } else {
-
-            if (ideo.adjustedBump) {
-              x += 0.2;
-            }
-
-            // q arm
-            d =
-              "M " + (left + x + bump/2) + " " + curveStart + " " +
-              "l -" + x + " 0 " +
-              "q -" + (bump + 0.5) + " " + curveMid + " 0 " + curveEnd + " " +
-              "l " + x + " 0 z";
-          }
+          return ideo.getCentromerePath(d, chrModel);
         } else {
           // Normal bands
 
@@ -1393,7 +1429,7 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
 * convertBpToPx, for chromosomes that lack band data, i.e. not human or mouse
 */
 Ideogram.prototype.convertBpToPxNoBands = function(chr, bp) {
-  return bp/chr.length;
+  return bp * chr.scale.bp;
 }
 
 /**
@@ -2277,6 +2313,9 @@ Ideogram.prototype.getTaxids = function(callback) {
         return promise
           .then(
             function(data) {
+              // Check if chromosome data exists locally.
+              // This is used for pre-processed centromere data,
+              // which is not accessible via EUtils.  See get_chromosomes.py.
               console.log(data);
               var asmAndChrArray = [],
                   chromosomes;
