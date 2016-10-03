@@ -20,12 +20,34 @@ function HorizontalLayout(config, ideo) {
      * @member {Object}
      */
     this._margin = {
-        left : 25
+        left : 25,
+        top : 30
     };
 }
 
 
 HorizontalLayout.prototype = Object.create(Layout.prototype);
+
+
+/**
+ * @override
+ */
+HorizontalLayout.prototype.getHeight = function(taxId) {
+    /*
+     * Get last chromosome set offset.
+     */
+    var lastSetOffset = this.getChromosomeSetYTranslate(this._config.chromosomes[taxId].length - 1);
+    /*
+     * Get last chromosome set size.
+     */
+    var lastSetSize = this._getChromosomeSetSize(this._config.chromosomes[taxId].length - 1);
+    /*
+     * Increase offset by last chromosome set size.
+     */
+    lastSetOffset += lastSetSize;
+
+    return lastSetOffset + this._getAdditionalOffset() * 2;
+};
 
 
 /**
@@ -93,13 +115,10 @@ HorizontalLayout.prototype.getChromosomeSetTranslate = function(setNumber) {
  * @override
  */
 HorizontalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
-
-    var annotationHeight = this._config.annotationHeight || 0;
-    var additionalPadding = 0;
-
-    if (this._config.annotationHeight) {
-        additionalPadding = this._config.annotationHeight * (this._config.numAnnotTracks || 1);
-    }
+    /*
+     * Get additional padding caused by annotation tracks.
+     */
+    var additionalPadding = this._getAdditionalOffset();
     /*
      * If no detailed description provided just use one formula for all cases.
      */
@@ -119,14 +138,7 @@ HorizontalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
          * Loop through description set.
          */
         for (var i = 1; i < this._config.ploidyDesc.length; i ++) {
-            /*
-             * Get set size.
-             */
-            var setSize = this._description.getSetSize(i - 1);
-            /*
-             * Add new offset into translate array.
-             */
-            this._translate[i] = this._translate[i - 1] + setSize * this._config.chrWidth * 2 + (this._config.ploidy > 1 ? 20 : 0);
+            this._translate[i] = this._translate[i - 1] + this._getChromosomeSetSize(i - 1);
         };
     }
 

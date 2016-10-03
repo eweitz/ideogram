@@ -2020,25 +2020,15 @@ Ideogram.prototype.init = function() {
       svgClass += "faint";
     }
 
-    var ideoHeight;
-
-    if (ideo.config.orientation === "vertical") {
-      ideoHeight = ideo.config.chrHeight + 30;
-      if (ideo.config.rows > 1) {
-        ideoHeight = ideo.config.rows * (ideoHeight - 30);
-      }
-    } else {
-      ideoHeight = ideo.config.chrMargin * ideo.numChromosomes * ideo.config.ploidy + 30 + (ideo.config.ploidy > 1 ? 20 * ideo.config.chromosomes[taxid].length : 0);
-    }
-
     var gradients = ideo.getBandColorGradients();
+    var svgHeight = ideo._layout.getHeight(taxid);
 
     var svg = d3.select(ideo.config.container)
       .append("svg")
         .attr("id", "ideogram")
         .attr("class", svgClass)
         .attr("width", "97%")
-        .attr("height", ideoHeight)
+        .attr("height", svgHeight)
         .html(gradients);
 
     finishInit();

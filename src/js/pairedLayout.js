@@ -31,6 +31,15 @@ PairedLayout.prototype = Object.create(Layout.prototype);
 /**
  * @override
  */
+PairedLayout.prototype.getHeight = function(taxId) {
+
+    return this._config.chrHeight + this._margin.left * 1.5
+};
+
+
+/**
+ * @override
+ */
 PairedLayout.prototype.getChromosomeBandTickY1 = function(chrNumber) {
 
     return chrNumber % 2 ? this._config.chrWidth : this._config.chrWidth * 2;

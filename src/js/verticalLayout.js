@@ -20,12 +20,22 @@ function VerticalLayout(config, ideo) {
      * @member {Object}
      */
     this._margin = {
-        left : 30
+        top : 30,
+        left : 15
     };
 }
 
 
 VerticalLayout.prototype = Object.create(Layout.prototype);
+
+
+/**
+ * @override
+ */
+VerticalLayout.prototype.getHeight = function(taxId) {
+
+    return this._config.chrHeight + this._margin.top * 1.5;
+};
 
 
 /**
@@ -50,7 +60,7 @@ VerticalLayout.prototype.getChromosomeSetLabelTranslate = function() {
  */
 VerticalLayout.prototype.getChromosomeSetTranslate = function(setNumber) {
 
-    return 'rotate(90) translate(' + this._margin.left + ', -' + this.getChromosomeSetYTranslate(setNumber) + ')';
+    return 'rotate(90) translate(' + this._margin.top + ', -' + this.getChromosomeSetYTranslate(setNumber) + ')';
 };
 
 
@@ -58,13 +68,10 @@ VerticalLayout.prototype.getChromosomeSetTranslate = function(setNumber) {
  * @override
  */
 VerticalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
-
-    var annotationHeight = this._config.annotationHeight || 0;
-    var additionalPadding = 0;
-
-    if (this._config.annotationHeight) {
-        additionalPadding = this._config.annotationHeight * (this._config.numAnnotTracks || 1);
-    }
+    /*
+     * Get additional padding caused by annotation tracks.
+     */
+    var additionalPadding = this._getAdditionalOffset();
     /*
      * If no detailed description provided just use one formula for all cases.
      */
@@ -76,26 +83,19 @@ VerticalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
         return 10 + 35 * (setNumber) + this._config.chrWidth + additionalPadding * 2 + additionalPadding * setNumber;
     }
     /*
-     * Id detailed description provided start to calculate offsets
+     * If detailed description provided start to calculate offsets
      * for each chromosome set separately. This should be done only once.
      */
     if (! this._translate) {
         /*
          * First offset equals to zero.
          */
-        this._translate = [this._description.getSetSize(0) * 20 + (this._config.ploidy > 1 ? 20 : 0)];
+        this._translate = [this._description.getSetSize(0) * this._config.chrWidth * 2];
         /*
          * Loop through description set.
          */
         for (var i = 1; i < this._config.ploidyDesc.length; i ++) {
-            /*
-             * Get set size.
-             */
-            var setSize = this._description.getSetSize(i);
-            /*
-             * Add new offset into translate array.
-             */
-            this._translate[i] = this._translate[i - 1] + setSize * 20 + (this._config.ploidy > 1 ? 20 : 0);
+            this._translate[i] = this._translate[i - 1] + this._getChromosomeSetSize(i - 1);
         };
     }
 
