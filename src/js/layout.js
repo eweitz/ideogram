@@ -54,6 +54,24 @@ Layout.getInstance = function(config, ideo) {
 };
 
 
+Layout.prototype._getAdditionalOffset = function() {
+
+    return (this._config.annotationHeight || 0) * (this._config.numAnnotTracks || 1);
+};
+
+
+Layout.prototype._getChromosomeSetSize = function(chrSetNumber) {
+    /*
+     * Get last chromosome set size.
+     */
+    var setSize = this._description.getSetSize(chrSetNumber);
+    /*
+     * Increase offset by last chromosome set size.
+     */
+    return setSize * this._config.chrWidth * 2 + (this._config.ploidy > 1 ? 20 : 0);
+};
+
+
 /**
  * Get layout margin.
  * @public
@@ -62,6 +80,18 @@ Layout.getInstance = function(config, ideo) {
 Layout.prototype.getMargin = function() {
 
     return this._margin;
+};
+
+
+/**
+ * Get SVG element height.
+ * @public
+ * @param {Integer} taxId
+ * @return {Number}
+ */
+Layout.prototype.getHeight = function(taxId) {
+
+    throw new Error(this._class + '#getHeight not implemented');
 };
 
 
