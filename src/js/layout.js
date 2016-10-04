@@ -29,6 +29,12 @@ function Layout(config, ideo) {
      * @member {Number}
      */
     this._tickSize = 8;
+    /**
+     * Chromosome rotation state.
+     * @private
+     * @member {Boolean}
+     */
+    this._isRotated = false;
 };
 
 
@@ -50,6 +56,70 @@ Layout.getInstance = function(config, ideo) {
         return new VerticalLayout(config, ideo);
     } else {
         return new HorizontalLayout(config, ideo);
+    }
+};
+
+
+/**
+ * Rotate chromosome to original position.
+ * @public
+ * @param chrElement
+ */
+Layout.prototype.rotateBack = function(chrSetNumber, chrNumber, chrElement) {
+
+    throw new Error(this._class + '#rotateBack not implemented');
+};
+
+
+/**
+ * Rotate chromosome to opposite position.
+ * @public
+ * @param chrElement
+ */
+Layout.prototype.rotateForward = function(chrSetNumber, chrNumber, chrElement) {
+
+    throw new Error(this._class + '#rotateForward not implemented');
+};
+
+
+/**
+ * @public
+ * @param {SVGElement} chrElement
+ */
+Layout.prototype.rotate = function(chrSetNumber, chrNumber, chrElement) {
+    /*
+     * Find chromosomes which should be hidden.
+     */
+    var otherChrs = d3.selectAll("g.chromosome").filter(function(d, i) {
+        return this !== chrElement;
+    });
+
+    if (this._isRotated) {
+        /*
+         * Reset _isRotated flag.
+         */
+        this._isRotated = false;
+        /*
+         * Show all other chromosomes.
+         */
+        otherChrs.style("display", null);
+        /*
+         * Rotate chromosome back.
+         */
+        this.rotateBack(chrSetNumber, chrNumber, chrElement);
+    } else {
+        /*
+         * Set _isRotated flag.
+         */
+        this._isRotated = true;
+        /*
+         * Hide all other chromosomes/
+         */
+        otherChrs.style("display", "none");
+        /*
+         * Rotate chromosome.
+         */
+        this.rotateForward(chrSetNumber, chrNumber, chrElement);
     }
 };
 
