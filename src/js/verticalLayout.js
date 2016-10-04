@@ -32,6 +32,33 @@ VerticalLayout.prototype = Object.create(Layout.prototype);
 /**
  * @override
  */
+VerticalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement) {
+
+    var layout = new HorizontalLayout(this._config, this._ideo);
+    var translate = layout.getChromosomeSetTranslate(0);
+
+    d3.select(chrElement.parentNode)
+        .transition()
+        .attr("transform", translate);
+};
+
+
+/**
+ * @override
+ */
+VerticalLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement) {
+
+    var translate = this.getChromosomeSetTranslate(setNumber);
+
+    d3.select(chrElement.parentNode)
+        .transition()
+        .attr("transform", translate);
+};
+
+
+/**
+ * @override
+ */
 VerticalLayout.prototype.getHeight = function(taxId) {
 
     return this._config.chrHeight + this._margin.top * 1.5;
