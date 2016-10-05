@@ -993,17 +993,6 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
   }
 
   if ("centromere" in chrModel === false) {
-    chr.append('path')
-      .attr("class", "upstream chromosomeBorder")
-      .attr("d",
-        "M " + (bump - bump/2 + 0.1) + " " + chrMargin + " " +
-        "q -" + bump + " " + (chrWidth/2) + " 0 " + chrWidth);
-
-    chr.append('path')
-      .attr("class", "downstream chromosomeBorder")
-      .attr("d",
-        "M " + width + " " + chrMargin + " " +
-        "q " + bump + " " +  chrWidth/2 + " 0 " + chrWidth);
 
     chr.append('line')
       .attr("class", "cb-top chromosomeBorder")
@@ -1019,6 +1008,7 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
       .attr('x2', width)
       .attr("y2", chrWidth + chrMargin);
 
+
     chr.append('path')
       .attr("class", "chromosomeBody")
       .attr("d",
@@ -1030,7 +1020,7 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
   } else {
 
     var centromere = chrModel.centromere;
-    
+
     var pArmWidth = centromere.px.start;
 
     var borderTweak = 0;
@@ -1047,6 +1037,19 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
       .attr("class", "p-cen acen band")
       .attr("d", d);
   }
+
+  chr.append('path')
+    .attr("class", "upstream chromosomeBorder")
+    .attr("d",
+      "M " + (bump - bump/2 + 0.1) + " " + chrMargin + " " +
+      "q -" + bump + " " + (chrWidth/2) + " 0 " + chrWidth);
+
+  chr.append('path')
+    .attr("class", "downstream chromosomeBorder")
+    .attr("d",
+      "M " + width + " " + chrMargin + " " +
+      "q " + bump + " " +  chrWidth/2 + " 0 " + chrWidth);
+
 }
 
 Ideogram.prototype.drawChromosomeBorders = function(chr, bump, chrMargin, pArmWidth, chrWidth, qArmStart, qArmEnd) {
