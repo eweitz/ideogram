@@ -31,6 +31,87 @@ PairedLayout.prototype = Object.create(Layout.prototype);
 /**
  * @override
  */
+PairedLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement, callback) {
+    /*
+     * Get ideo container and chromosome set dimensions.
+     */
+    var ideoBox = d3.select("#ideogram").node().getBoundingClientRect();
+    var chrBox = chrElement.getBoundingClientRect();
+    /*
+     * Evaluate dimensions scale coefficients.
+     */
+    var scaleX = (ideoBox.width / chrBox.height) * 0.97;
+    var scaleY = 50 / this._config.chrWidth;
+    /*
+     * Evaluate y offset of chromosome. It is different for first and the second one.
+     */
+    var yOffset = setNumber ? 150 : 10;
+    /*
+     * Define transformation string
+     */
+    var transform = 'translate(10, ' + yOffset + ') scale(' + scaleX + ', ' + scaleY + ')';
+    console.log(transform, chrElement.parentNode);
+    /*
+     * Run rotation procedure.
+     */
+    d3.select(chrElement.parentNode)
+        .transition()
+        .attr("transform", transform)
+        .each('end', function() {
+            /*
+             * Run callback fnuction if provided.
+             */
+            callback && callback();
+            /*
+             * Rotate band labels.
+             */
+            d3.select(chrElement.parentNode).selectAll('g.bandLabel text')
+                .attr('transform', 'rotate(90) translate(0, ' + (6 * Number(! setNumber)) + ')')
+                .attr("text-anchor", "middle");
+            /*
+             * Hide syntenic regions.
+             */
+            d3.selectAll('.syntenicRegion').style("display", 'none');
+        });
+};
+
+
+/**
+ * @override
+ */
+PairedLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, callback) {
+    /*
+     * Get intial transformation string for chromosome set.
+     */
+    var translate = this.getChromosomeSetTranslate(setNumber);
+    /*
+     * Run rotation procedure.
+     */
+    d3.select(chrElement.parentNode)
+        .transition()
+        .attr("transform", translate)
+        .each('end', function() {
+            /*
+             * Run callback fnuction if provided.
+             */
+            callback();
+            /*
+             * Show syntenic regions.
+             */
+            d3.selectAll('.syntenicRegion').style("display", null);
+            /*
+             * Reset changed attributes to original state.
+             */
+            d3.select(chrElement.parentNode).selectAll('g.bandLabel text')
+                .attr('transform', null)
+                .attr("text-anchor", setNumber ? null : 'end');
+        });
+};
+
+
+/**
+ * @override
+ */
 PairedLayout.prototype.getHeight = function(taxId) {
 
     return this._config.chrHeight + this._margin.left * 1.5

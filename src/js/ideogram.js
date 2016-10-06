@@ -833,179 +833,31 @@ Ideogram.prototype.initTransformChromosome = function(chr, chrIndex) {
 * Useful for focusing or defocusing a particular chromosome
 */
 Ideogram.prototype.rotateAndToggleDisplay = function(chromosome) {
-
-//  var id = chromosome.id;
-//  var model = this.chromosomes[this.config.taxid][id.split("-")[0].split("chr")[1]];
-//
-//  var chrSetNumber = model["chrIndex"] - 1;
-//  var chrNumber = d3.select(chromosome.parentNode)
-//      .selectAll("g.chromosome")[0]
-//      .indexOf(chromosome);
-//
-//  return this._layout.rotate(chrSetNumber, chrNumber, chromosome);
-//
-//  var id, chr, chrModel, chrIndex, chrMargin, chrWidth,
-//      chrHeight, ideoBox, ideoWidth, ideoHeight, scaleX, scaleY,
-//      initOrientation, currentOrientation,
-//      cx, cy, cy2,
-//      ideo = this;
-//
-//  id = chromosome.id;
-//
-//  chr = d3.select("#" + id);
-//
-//  chrModel = ideo.chromosomes[ideo.config.taxid][id.split("-")[0].split("chr")[1]];
-//
-//  chrIndex = chrModel["chrIndex"];
-//
-//  otherChrs = d3.selectAll("g.chromosome").filter(function(d, i) {
-//      return this !== chromosome;
-//  });
-//
-//  initOrientation = ideo.config.orientation;
-//  currentOrientation = chr.attr("data-orientation");
-//
-//  chrMargin = this.config.chrMargin * chrIndex;
-//  chrWidth = this.config.chrWidth;
-//
-//  ideoBox = d3.select("#ideogram")[0][0].getBoundingClientRect();
-//  ideoHeight = ideoBox.height;
-//  ideoWidth = ideoBox.width;
-//
-//  if (initOrientation == "vertical") {
-//
-//    chrLength = chr[0][0].getBoundingClientRect().height;
-//
-//    scaleX = (ideoWidth/chrLength)*0.97;
-//    scaleY = 1.5;
-//    scale = "scale(" + scaleX + ", " + scaleY + ")";
-//
-//    inverseScaleX = 2/scaleX;
-//    inverseScaleY = 1;
-//
-//    if (!this.config.showBandLabels) {
-//      chrIndex += 2;
-//    }
-//
-//    cx = chrMargin + (chrWidth-4)*(chrIndex - 1) - 30;
-//    cy = cx + 30;
-//
-//    verticalTransform = "rotate(90, " + cx + ", " + cy + ")";
-//
-//    cy2 = -1*(chrMargin - this.config.annotTracksHeight)*scaleY;
-//
-//    if (this.config.showBandLabels) {
-//      cy2 += 25;
-//    }
-//
-//    horizontalTransform =
-//      "rotate(0)" +
-//      "translate(20, " + cy2 + ")" +
-//      scale;
-//
-//  } else {
-//
-//    chrLength = chr[0][0].getBoundingClientRect().width;
-//
-//    scaleX = (ideoHeight/chrLength)*0.97;
-//    scaleY = 1.5;
-//    scale = "scale(" + scaleX + ", " + scaleY + ")";
-//
-//    inverseScaleX = 2/scaleX;
-//    inverseScaleY = 1;
-//
-//    var bandPad = 20;
-//    if (!this.config.showBandLabels) {
-//      chrIndex += 2;
-//      bandPad = 15;
-//    }
-//    cx = chrMargin + (chrWidth-bandPad)*(chrIndex - 2);
-//    cy = cx + 5;
-//
-//    if (!this.config.showBandLabels) {
-//      cx += bandPad;
-//      cy += bandPad;
-//    }
-//
-//    verticalTransform = (
-//      "rotate(90, " + cx + ", " + cy + ")" +
-//      scale
-//    );
-//    horizontalTransform = "";
-//
-//  }
-//
-//  inverseScale = "scale(" + inverseScaleX + "," + inverseScaleY + ")";
-//
-//  if (currentOrientation != "vertical") {
-//
-//    if (initOrientation == "horizontal") {
-//      otherChrs.style("display", "none");
-//
-//    }
-//
-//    chr.selectAll(".annot>path")
-//      .attr("transform", (initOrientation == "vertical" ? "" : inverseScale));
-//
-//    chr
-//      .attr("data-orientation", "vertical")
-//      .transition()
-//      .attr("transform", verticalTransform)
-//      .each("end", function() {
-//
-//        if (initOrientation == "vertical") {
-//          scale = "";
-//        } else {
-//          scale = {"x": inverseScaleY, "y": inverseScaleX};
-//        }
-//
-//        ideo.rotateBandLabels(chr, chrIndex, scale);
-//        ideo.rotateChromosomeLabels(chr, chrIndex, "horizontal", scale);
-//
-//        if (initOrientation == "vertical") {
-//          otherChrs.style("display", "");
-//        }
-//
-//      });
-//
-//  } else {
-//
-//    chr.attr("data-orientation", "");
-//
-//    if (initOrientation == "vertical") {
-//      otherChrs.style("display", "none");
-//    }
-//
-//    chr.selectAll(".annot>path")
-//      .transition()
-//      .attr("transform", (initOrientation == "vertical" ? inverseScale : ""));
-//
-//    chr
-//      .transition()
-//      .attr("transform", horizontalTransform)
-//      .each("end", function() {
-//
-//        if (initOrientation == "horizontal") {
-//          if (currentOrientation == "vertical") {
-//            inverseScale = {"x": 1, "y": 1};
-//          } else {
-//            inverseScale = "";
-//          }
-//        } else {
-//          inverseScale = {"x": inverseScaleX, "y": inverseScaleY};
-//        }
-//
-//        ideo.rotateBandLabels(chr, chrIndex, inverseScale);
-//        ideo.rotateChromosomeLabels(chr, chrIndex, "", inverseScale);
-//
-//        if (initOrientation == "horizontal") {
-//          otherChrs.style("display", "");
-//        }
-//
-//      });
-//
-//
-//  }
+  /*
+   * Do nothing if taxId not defined. But it should be defined.
+   * To fix that bug we should have a way to find chromosome set number.
+   */
+  if (! this.config.taxid) {
+      return;
+  }
+  /*
+   * Get model by chroosome id.
+   */
+  var model = this.chromosomes[this.config.taxid][chromosome.id.split("-")[0].split("chr")[1]];
+  /*
+   * Get chromosome set number.
+   */
+  var chrSetNumber = model["chrIndex"] - 1;
+  /*
+   * Get chromosome number.
+   */
+  var chrNumber = d3.select(chromosome.parentNode)
+      .selectAll("g.chromosome")[0]
+      .indexOf(chromosome);
+  /*
+   * Run rotation procedure.
+   */
+  return this._layout.rotate(chrSetNumber, chrNumber, chromosome);
 };
 
 

@@ -32,6 +32,44 @@ HorizontalLayout.prototype = Object.create(Layout.prototype);
 /**
  * @override
  */
+HorizontalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement, callback) {
+
+    var xOffset = 20;
+
+    var ideoBox = d3.select("#ideogram").node().getBoundingClientRect();
+    var chrBox = chrElement.getBoundingClientRect();
+
+    var scaleX = (ideoBox.height / (chrBox.width + xOffset / 2)) * 0.97;
+    var scaleY = 50 / this._config.chrWidth;
+
+    var yOffset = (chrNumber + 1) * ((this._config.chrWidth * 2) * scaleY);
+
+    var transform = 'rotate(90) translate(' + xOffset + ', -' + yOffset + ') scale(' + scaleX + ', ' + scaleY + ')';
+
+    d3.select(chrElement.parentNode)
+        .transition()
+        .attr("transform", transform)
+        .each('end', callback);
+};
+
+
+/**
+ * @override
+ */
+HorizontalLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, callback) {
+
+    var translate = this.getChromosomeSetTranslate(setNumber);
+
+    d3.select(chrElement.parentNode)
+        .transition()
+        .attr("transform", translate)
+        .each('end', callback);
+};
+
+
+/**
+ * @override
+ */
 HorizontalLayout.prototype.getHeight = function(taxId) {
     /*
      * Get last chromosome set offset.

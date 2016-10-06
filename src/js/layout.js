@@ -63,9 +63,12 @@ Layout.getInstance = function(config, ideo) {
 /**
  * Rotate chromosome to original position.
  * @public
- * @param chrElement
+ * @param {Integer} chrSetNumber
+ * @param {Integer} chrNumber
+ * @param {SVGElement} chrElement
+ * @param {Function} callback
  */
-Layout.prototype.rotateBack = function(chrSetNumber, chrNumber, chrElement) {
+Layout.prototype.rotateBack = function(chrSetNumber, chrNumber, chrElement, callback) {
 
     throw new Error(this._class + '#rotateBack not implemented');
 };
@@ -74,9 +77,12 @@ Layout.prototype.rotateBack = function(chrSetNumber, chrNumber, chrElement) {
 /**
  * Rotate chromosome to opposite position.
  * @public
- * @param chrElement
+ * @param {Integer} chrSetNumber
+ * @param {Integer} chrNumber
+ * @param {SVGElement} chrElement
+ * @param {Function} callback
  */
-Layout.prototype.rotateForward = function(chrSetNumber, chrNumber, chrElement) {
+Layout.prototype.rotateForward = function(chrSetNumber, chrNumber, chrElement, callback) {
 
     throw new Error(this._class + '#rotateForward not implemented');
 };
@@ -100,22 +106,25 @@ Layout.prototype.rotate = function(chrSetNumber, chrNumber, chrElement) {
          */
         this._isRotated = false;
         /*
-         * Show all other chromosomes.
-         */
-        otherChrs.style("display", null);
-        /*
          * Rotate chromosome back.
          */
-        this.rotateBack(chrSetNumber, chrNumber, chrElement);
+        this.rotateBack(chrSetNumber, chrNumber, chrElement, function() {
+            /*
+             * Show all other chromosomes and chromosome labels.
+             */
+            otherChrs.style("display", null);
+            d3.selectAll(".chrSetLabel, .chrLabel").style("display", null);
+        });
     } else {
         /*
          * Set _isRotated flag.
          */
         this._isRotated = true;
         /*
-         * Hide all other chromosomes/
+         * Hide all other chromosomes and chromosome labels.
          */
         otherChrs.style("display", "none");
+        d3.selectAll(".chrSetLabel, .chrLabel").style("display", "none");
         /*
          * Rotate chromosome.
          */

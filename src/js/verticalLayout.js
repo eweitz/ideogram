@@ -32,27 +32,34 @@ VerticalLayout.prototype = Object.create(Layout.prototype);
 /**
  * @override
  */
-VerticalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement) {
+VerticalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement, callback) {
 
-    var layout = new HorizontalLayout(this._config, this._ideo);
-    var translate = layout.getChromosomeSetTranslate(0);
+    var ideoBox = d3.select("#ideogram").node().getBoundingClientRect();
+    var chrBox = chrElement.getBoundingClientRect();
+
+    var scaleX = (ideoBox.width / chrBox.height) * 0.97;
+    var scaleY = 50 / this._config.chrWidth;
+
+    var transform = "translate(10, 25) scale(" + scaleX + ", " + scaleY + ")";
 
     d3.select(chrElement.parentNode)
         .transition()
-        .attr("transform", translate);
+        .attr("transform", transform)
+        .each('end', callback);
 };
 
 
 /**
  * @override
  */
-VerticalLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement) {
+VerticalLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, callback) {
 
     var translate = this.getChromosomeSetTranslate(setNumber);
 
     d3.select(chrElement.parentNode)
         .transition()
-        .attr("transform", translate);
+        .attr("transform", translate)
+        .each('end', callback);
 };
 
 
