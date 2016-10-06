@@ -32,6 +32,40 @@ SmallLayout.prototype = Object.create(Layout.prototype);
 /**
  * @override
  */
+SmallLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement, callback) {
+
+    var ideoBox = d3.select("#ideogram").node().getBoundingClientRect();
+    var chrBox = chrElement.getBoundingClientRect();
+
+    var scaleX = (ideoBox.width / chrBox.height) * 0.97;
+    var scaleY = 50 / this._config.chrWidth;
+
+    transform = "translate(5, 25) scale(" + scaleX + ", " + scaleY + ")";
+
+    d3.select(chrElement.parentNode)
+        .transition()
+        .attr("transform", transform)
+        .each('end', callback);
+};
+
+
+/**
+ * @override
+ */
+SmallLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, callback) {
+
+    var translate = this.getChromosomeSetTranslate(setNumber);
+
+    d3.select(chrElement.parentNode)
+        .transition()
+        .attr("transform", translate)
+        .each('end', callback);
+};
+
+
+/**
+ * @override
+ */
 SmallLayout.prototype.getHeight = function(taxId) {
 
     return this._config.rows * (this._config.chrHeight + this._margin.top * 1.5)
