@@ -41,7 +41,7 @@ PairedLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement
      * Evaluate dimensions scale coefficients.
      */
     var scaleX = (ideoBox.width / chrBox.height) * 0.97;
-    var scaleY = 50 / this._config.chrWidth;
+    var scaleY = this._getYScale();
     /*
      * Evaluate y offset of chromosome. It is different for first and the second one.
      */
@@ -50,7 +50,6 @@ PairedLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement
      * Define transformation string
      */
     var transform = 'translate(10, ' + yOffset + ') scale(' + scaleX + ', ' + scaleY + ')';
-    console.log(transform, chrElement.parentNode);
     /*
      * Run rotation procedure.
      */

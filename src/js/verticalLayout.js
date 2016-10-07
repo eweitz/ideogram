@@ -38,7 +38,7 @@ VerticalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrEleme
     var chrBox = chrElement.getBoundingClientRect();
 
     var scaleX = (ideoBox.width / chrBox.height) * 0.97;
-    var scaleY = 50 / this._config.chrWidth;
+    var scaleY = this._getYScale();
 
     var transform = "translate(10, 25) scale(" + scaleX + ", " + scaleY + ")";
 

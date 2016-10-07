@@ -40,7 +40,7 @@ HorizontalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrEle
     var chrBox = chrElement.getBoundingClientRect();
 
     var scaleX = (ideoBox.height / (chrBox.width + xOffset / 2)) * 0.97;
-    var scaleY = 50 / this._config.chrWidth;
+    var scaleY = this._getYScale();
 
     var yOffset = (chrNumber + 1) * ((this._config.chrWidth * 2) * scaleY);
 
