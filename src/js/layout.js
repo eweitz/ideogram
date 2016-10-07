@@ -61,6 +61,19 @@ Layout.getInstance = function(config, ideo) {
 
 
 /**
+ * Get rotated chromosome y scale.
+ * @protected
+ * @returns {Number}
+ */
+Layout.prototype._getYScale = function() {
+    /*
+     * 20 is width of rotated chromosome.
+     */
+    return 20 / this._config.chrWidth;
+};
+
+
+/**
  * Rotate chromosome to original position.
  * @public
  * @param {Integer} chrSetNumber

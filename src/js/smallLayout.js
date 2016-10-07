@@ -38,7 +38,7 @@ SmallLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement,
     var chrBox = chrElement.getBoundingClientRect();
 
     var scaleX = (ideoBox.width / chrBox.height) * 0.97;
-    var scaleY = 50 / this._config.chrWidth;
+    var scaleY = this._getYScale();
 
     transform = "translate(5, 25) scale(" + scaleX + ", " + scaleY + ")";
 
