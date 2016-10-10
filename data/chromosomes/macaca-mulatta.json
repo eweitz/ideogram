@@ -1,6 +1,5 @@
 {
     "assemblyaccession": "GCF_000772875.2",
-    "assemblyname": "Mmul_8.0.1",
     "chromosomes": [
         {
             "type": "nuclear",
@@ -129,16 +128,27 @@
             "name": "X"
         },
         {
-            "type": "nuclear",
-            "centromere": {
-                "bp": {
-                    "length": 499999,
-                    "start": 11253683
-                }
-            },
             "length": 11753682,
+            "type": "nuclear",
+            "centromere": [
+                {
+                    "bp": {
+                        "start": 11253683,
+                        "length": 250000
+                    },
+                    "name": "p-cen"
+                },
+                {
+                    "bp": {
+                        "start": 11503682,
+                        "length": 249999
+                    },
+                    "name": "q-cen"
+                }
+            ],
             "accession": "NC_027914.1",
             "name": "Y"
         }
-    ]
+    ],
+    "assemblyname": "Mmul_8.0.1"
 }

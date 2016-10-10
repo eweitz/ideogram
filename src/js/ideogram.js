@@ -481,14 +481,17 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
 
   if ("centromere" in chr) {
     // Includes some non-human non-mouse organisms, e.g. Pan troglodytes (chimpanzee)
-    var cenStart = chr.centromere.bp.start;
-    var cenStop = cenStart + chr.centromere.bp.length;
-    var cenStartPx = ideo.convertBpToPxNoBands(chr, cenStart);
-    var cenStopPx = ideo.convertBpToPxNoBands(chr, cenStop);
-    chr["centromere"]["px"] = {
-      "start": cenStartPx,
-      "stop": cenStopPx,
-      "width": cenStopPx - cenStartPx
+    for (var i = 0; i < chr.centromere.length; i++) {
+      band = chr.centromere[i]
+      var cenBandStart = band.bp.start;
+      var cenBandStop = cenBandStart + band.bp.length;
+      var cenBandStartPx = ideo.convertBpToPxNoBands(chr, cenBandStart);
+      var cenBandStopPx = ideo.convertBpToPxNoBands(chr, cenBandStop);
+      chr["centromere"][i]["px"] = {
+        "start": cenBandStartPx,
+        "stop": cenBandStopPx,
+        "width": cenBandStopPx - cenBandStartPx
+      }
     }
   }
 
@@ -1008,7 +1011,6 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
       .attr('x2', width)
       .attr("y2", chrWidth + chrMargin);
 
-
     chr.append('path')
       .attr("class", "chromosomeBody")
       .attr("d",
@@ -1021,21 +1023,23 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
 
     var centromere = chrModel.centromere;
 
-    var pArmWidth = centromere.px.start;
+    var pArmWidth = centromere[0].px.start;
 
     var borderTweak = 0;
-    var qArmStart = centromere.px.stop + borderTweak;
+    var qArmStart = centromere[1].px.stop + borderTweak;
     var qArmWidth = chrModel.width - qArmStart + borderTweak*1.3;
-    var qArmEnd = qArmStart + qArmWidth - bump/2 - 0.5;
+    var qArmEnd = qArmStart + qArmWidth;
 
     ideo.drawChromosomeBorders(chr, bump, chrMargin, pArmWidth, chrWidth, qArmStart, qArmEnd);
 
-    centromere.name = "p-cen";
-    pTerPad = bump + centromere.px.start;
-    var d = ideo.getCentromerePath(centromere, chrModel);
-    chr.append('path')
-      .attr("class", "p-cen acen band")
-      .attr("d", d);
+    for (var i = 0; i < centromere.length; i++) {
+      band = centromere[i];
+      pTerPad = bump + band.px.start;
+      var d = ideo.getCentromerePath(band, chrModel);
+      chr.append('path')
+        .attr("class", band.name + " acen band")
+        .attr("d", d);
+    }
   }
 
   chr.append('path')

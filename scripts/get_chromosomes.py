@@ -64,19 +64,20 @@ def get_chromosome_object(agp):
             chr['accession'] = acc
             chr['type'] = 'nuclear'
         if comp_type == 'centromere':
+            cen_length = (stop - start)/2
             chr['centromere'] = [
                 {
                     'name': 'p-cen',
                     'bp': {
                         'start': start,
-                        'length': math.ceil((stop - start)/2)
+                        'length': math.ceil(cen_length)
                     }
                 },
                 {
                     'name': 'q-cen',
                     'bp': {
-                        'start': stop - start + 1,
-                        'length': math.floor((stop - start)/2)
+                        'start': start + math.floor(cen_length),
+                        'length': math.floor(cen_length)
                     }
                 }
             ]
