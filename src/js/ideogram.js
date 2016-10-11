@@ -382,6 +382,47 @@ Ideogram.prototype.colorArms = function(pArmColor, qArmColor) {
 
 };
 
+Ideogram.prototype.getCentromereModel = function(chromosome) {
+
+  var ideo = this,
+      chr = chromosome,
+      start = chr.centromere.start,
+      cenArmLength = chr.centromere.length/2,
+      cenArm, cenArmStart, cenArmStop, cenArmStartPx, cenArmStopPx;
+
+  centromere = [
+      {
+          'name': 'p-cen',
+          'bp': {
+              'start': start,
+              'length': Math.ceil(cenArmLength)
+          }
+      },
+      {
+          'name': 'q-cen',
+          'bp': {
+              'start': start + Math.floor(cenArmLength),
+              'length': Math.floor(cenArmLength)
+          }
+      }
+  ];
+
+  for (var i = 0; i < centromere.length; i++) {
+    cenArm = centromere[i]
+    cenArmStart = cenArm.bp.start;
+    cenArmStop = cenArmStart + cenArm.bp.length;
+    cenArmStartPx = ideo.convertBpToPxNoBands(chr, cenArmStart);
+    cenArmStopPx = ideo.convertBpToPxNoBands(chr, cenArmStop);
+    centromere[i]["px"] = {
+      "start": cenArmStartPx,
+      "stop": cenArmStopPx,
+      "width": cenArmStopPx - cenArmStartPx
+    }
+  }
+
+  return centromere;
+}
+
 /**
 * Generates a model object for each chromosome
 * containing information on its name, DOM ID,
@@ -480,19 +521,7 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
 
 
   if ("centromere" in chr) {
-    // Includes some non-human non-mouse organisms, e.g. Pan troglodytes (chimpanzee)
-    for (var i = 0; i < chr.centromere.length; i++) {
-      band = chr.centromere[i]
-      var cenBandStart = band.bp.start;
-      var cenBandStop = cenBandStart + band.bp.length;
-      var cenBandStartPx = ideo.convertBpToPxNoBands(chr, cenBandStart);
-      var cenBandStopPx = ideo.convertBpToPxNoBands(chr, cenBandStop);
-      chr["centromere"][i]["px"] = {
-        "start": cenBandStartPx,
-        "stop": cenBandStopPx,
-        "width": cenBandStopPx - cenBandStartPx
-      }
-    }
+    chr["centromere"] = ideo.getCentromereModel(chr);
   }
 
   return chr;

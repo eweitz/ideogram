@@ -2,515 +2,239 @@
     "assemblyaccession": "GCF_000001545.4",
     "chromosomes": [
         {
+            "centromere": {
+                "length": 2239999,
+                "start": 103354831
+            },
             "length": 229942017,
-            "type": "nuclear",
-            "centromere": [
-                {
-                    "bp": {
-                        "start": 103354831,
-                        "length": 1120000
-                    },
-                    "name": "p-cen"
-                },
-                {
-                    "bp": {
-                        "start": 104474830,
-                        "length": 1119999
-                    },
-                    "name": "q-cen"
-                }
-            ],
             "accession": "NC_012591.1",
+            "type": "nuclear",
             "name": "1"
         },
         {
+            "centromere": {
+                "length": 2379999,
+                "start": 38715910
+            },
             "length": 133410057,
-            "type": "nuclear",
-            "centromere": [
-                {
-                    "bp": {
-                        "start": 38715910,
-                        "length": 1190000
-                    },
-                    "name": "p-cen"
-                },
-                {
-                    "bp": {
-                        "start": 39905909,
-                        "length": 1189999
-                    },
-                    "name": "q-cen"
-                }
-            ],
             "accession": "NC_012601.1",
+            "type": "nuclear",
             "name": "10"
         },
         {
+            "centromere": {
+                "length": 1394999,
+                "start": 1915619
+            },
             "length": 132107971,
-            "type": "nuclear",
-            "centromere": [
-                {
-                    "bp": {
-                        "start": 1915619,
-                        "length": 697500
-                    },
-                    "name": "p-cen"
-                },
-                {
-                    "bp": {
-                        "start": 2613118,
-                        "length": 697499
-                    },
-                    "name": "q-cen"
-                }
-            ],
             "accession": "NC_012602.1",
+            "type": "nuclear",
             "name": "11"
         },
         {
+            "centromere": {
+                "length": 1394999,
+                "start": 35812857
+            },
             "length": 136387465,
-            "type": "nuclear",
-            "centromere": [
-                {
-                    "bp": {
-                        "start": 35812857,
-                        "length": 697500
-                    },
-                    "name": "p-cen"
-                },
-                {
-                    "bp": {
-                        "start": 36510356,
-                        "length": 697499
-                    },
-                    "name": "q-cen"
-                }
-            ],
             "accession": "NC_012603.1",
+            "type": "nuclear",
             "name": "12"
         },
         {
+            "centromere": {
+                "length": 1867999,
+                "start": 16000001
+            },
             "length": 117095149,
-            "type": "nuclear",
-            "centromere": [
-                {
-                    "bp": {
-                        "start": 16000001,
-                        "length": 934000
-                    },
-                    "name": "p-cen"
-                },
-                {
-                    "bp": {
-                        "start": 16934000,
-                        "length": 933999
-                    },
-                    "name": "q-cen"
-                }
-            ],
             "accession": "NC_012604.1",
+            "type": "nuclear",
             "name": "13"
         },
         {
+            "centromere": {
+                "length": 2999999,
+                "start": 15070001
+            },
             "length": 108868599,
-            "type": "nuclear",
-            "centromere": [
-                {
-                    "bp": {
-                        "start": 15070001,
-                        "length": 1500000
-                    },
-                    "name": "p-cen"
-                },
-                {
-                    "bp": {
-                        "start": 16570000,
-                        "length": 1499999
-                    },
-                    "name": "q-cen"
-                }
-            ],
             "accession": "NC_012605.1",
+            "type": "nuclear",
             "name": "14"
         },
         {
+            "centromere": {
+                "length": 2999999,
+                "start": 15260001
+            },
             "length": 99152023,
-            "type": "nuclear",
-            "centromere": [
-                {
-                    "bp": {
-                        "start": 15260001,
-                        "length": 1500000
-                    },
-                    "name": "p-cen"
-                },
-                {
-                    "bp": {
-                        "start": 16760000,
-                        "length": 1499999
-                    },
-                    "name": "q-cen"
-                }
-            ],
             "accession": "NC_012606.1",
+            "type": "nuclear",
             "name": "15"
         },
         {
+            "centromere": {
+                "length": 1799999,
+                "start": 31828421
+            },
             "length": 77800216,
-            "type": "nuclear",
-            "centromere": [
-                {
-                    "bp": {
-                        "start": 31828421,
-                        "length": 900000
-                    },
-                    "name": "p-cen"
-                },
-                {
-                    "bp": {
-                        "start": 32728420,
-                        "length": 899999
-                    },
-                    "name": "q-cen"
-                }
-            ],
             "accession": "NC_012607.1",
+            "type": "nuclear",
             "name": "16"
         },
         {
+            "centromere": {
+                "length": 99999,
+                "start": 21255512
+            },
             "length": 73212453,
-            "type": "nuclear",
-            "centromere": [
-                {
-                    "bp": {
-                        "start": 21255512,
-                        "length": 50000
-                    },
-                    "name": "p-cen"
-                },
-                {
-                    "bp": {
-                        "start": 21305511,
-                        "length": 49999
-                    },
-                    "name": "q-cen"
-                }
-            ],
             "accession": "NC_012608.1",
+            "type": "nuclear",
             "name": "17"
         },
         {
+            "centromere": {
+                "length": 1363997,
+                "start": 16000001
+            },
             "length": 94050890,
-            "type": "nuclear",
-            "centromere": [
-                {
-                    "bp": {
-                        "start": 16000001,
-                        "length": 681999
-                    },
-                    "name": "p-cen"
-                },
-                {
-                    "bp": {
-                        "start": 16681999,
-                        "length": 681998
-                    },
-                    "name": "q-cen"
-                }
-            ],
             "accession": "NC_012609.1",
+            "type": "nuclear",
             "name": "18"
         },
         {
+            "centromere": {
+                "length": 2999999,
+                "start": 24659627
+            },
             "length": 60714840,
-            "type": "nuclear",
-            "centromere": [
-                {
-                    "bp": {
-                        "start": 24659627,
-                        "length": 1500000
-                    },
-                    "name": "p-cen"
-                },
-                {
-                    "bp": {
-                        "start": 26159626,
-                        "length": 1499999
-                    },
-                    "name": "q-cen"
-                }
-            ],
             "accession": "NC_012610.1",
+            "type": "nuclear",
             "name": "19"
         },
         {
+            "centromere": {
+                "length": 1765660,
+                "start": 20922067
+            },
             "length": 62736349,
-            "type": "nuclear",
-            "centromere": [
-                {
-                    "bp": {
-                        "start": 20922067,
-                        "length": 882830
-                    },
-                    "name": "p-cen"
-                },
-                {
-                    "bp": {
-                        "start": 21804897,
-                        "length": 882830
-                    },
-                    "name": "q-cen"
-                }
-            ],
             "accession": "NC_012611.1",
+            "type": "nuclear",
             "name": "20"
         },
         {
+            "centromere": {
+                "length": 2999999,
+                "start": 10260001
+            },
             "length": 48394510,
-            "type": "nuclear",
-            "centromere": [
-                {
-                    "bp": {
-                        "start": 10260001,
-                        "length": 1500000
-                    },
-                    "name": "p-cen"
-                },
-                {
-                    "bp": {
-                        "start": 11760000,
-                        "length": 1499999
-                    },
-                    "name": "q-cen"
-                }
-            ],
             "accession": "NC_012612.1",
+            "type": "nuclear",
             "name": "21"
         },
         {
+            "centromere": {
+                "length": 2239999,
+                "start": 11330001
+            },
             "length": 46535552,
-            "type": "nuclear",
-            "centromere": [
-                {
-                    "bp": {
-                        "start": 11330001,
-                        "length": 1120000
-                    },
-                    "name": "p-cen"
-                },
-                {
-                    "bp": {
-                        "start": 12450000,
-                        "length": 1119999
-                    },
-                    "name": "q-cen"
-                }
-            ],
             "accession": "NC_012613.1",
+            "type": "nuclear",
             "name": "22"
         },
         {
+            "centromere": {
+                "length": 2999999,
+                "start": 1
+            },
             "length": 113028656,
-            "type": "nuclear",
-            "centromere": [
-                {
-                    "bp": {
-                        "start": 1,
-                        "length": 1500000
-                    },
-                    "name": "p-cen"
-                },
-                {
-                    "bp": {
-                        "start": 1500000,
-                        "length": 1499999
-                    },
-                    "name": "q-cen"
-                }
-            ],
             "accession": "NC_012592.1",
+            "type": "nuclear",
             "name": "2A"
         },
         {
+            "centromere": {
+                "length": 2999999,
+                "start": 1
+            },
             "length": 135000294,
-            "type": "nuclear",
-            "centromere": [
-                {
-                    "bp": {
-                        "start": 1,
-                        "length": 1500000
-                    },
-                    "name": "p-cen"
-                },
-                {
-                    "bp": {
-                        "start": 1500000,
-                        "length": 1499999
-                    },
-                    "name": "q-cen"
-                }
-            ],
             "accession": "NC_012593.1",
+            "type": "nuclear",
             "name": "2B"
         },
         {
+            "centromere": {
+                "length": 2899999,
+                "start": 39352819
+            },
             "length": 202140232,
-            "type": "nuclear",
-            "centromere": [
-                {
-                    "bp": {
-                        "start": 39352819,
-                        "length": 1450000
-                    },
-                    "name": "p-cen"
-                },
-                {
-                    "bp": {
-                        "start": 40802818,
-                        "length": 1449999
-                    },
-                    "name": "q-cen"
-                }
-            ],
             "accession": "NC_012594.1",
+            "type": "nuclear",
             "name": "3"
         },
         {
+            "centromere": {
+                "length": 2999999,
+                "start": 68477070
+            },
             "length": 198332218,
-            "type": "nuclear",
-            "centromere": [
-                {
-                    "bp": {
-                        "start": 68477070,
-                        "length": 1500000
-                    },
-                    "name": "p-cen"
-                },
-                {
-                    "bp": {
-                        "start": 69977069,
-                        "length": 1499999
-                    },
-                    "name": "q-cen"
-                }
-            ],
             "accession": "NC_012595.1",
+            "type": "nuclear",
             "name": "4"
         },
         {
+            "centromere": {
+                "length": 2999999,
+                "start": 49297897
+            },
             "length": 183952662,
-            "type": "nuclear",
-            "centromere": [
-                {
-                    "bp": {
-                        "start": 49297897,
-                        "length": 1500000
-                    },
-                    "name": "p-cen"
-                },
-                {
-                    "bp": {
-                        "start": 50797896,
-                        "length": 1499999
-                    },
-                    "name": "q-cen"
-                }
-            ],
             "accession": "NC_012596.1",
+            "type": "nuclear",
             "name": "5"
         },
         {
+            "centromere": {
+                "length": 2999999,
+                "start": 58655357
+            },
             "length": 174210431,
-            "type": "nuclear",
-            "centromere": [
-                {
-                    "bp": {
-                        "start": 58655357,
-                        "length": 1500000
-                    },
-                    "name": "p-cen"
-                },
-                {
-                    "bp": {
-                        "start": 60155356,
-                        "length": 1499999
-                    },
-                    "name": "q-cen"
-                }
-            ],
             "accession": "NC_012597.1",
+            "type": "nuclear",
             "name": "6"
         },
         {
+            "centromere": {
+                "length": 2999999,
+                "start": 24126751
+            },
             "length": 157549271,
-            "type": "nuclear",
-            "centromere": [
-                {
-                    "bp": {
-                        "start": 24126751,
-                        "length": 1500000
-                    },
-                    "name": "p-cen"
-                },
-                {
-                    "bp": {
-                        "start": 25626750,
-                        "length": 1499999
-                    },
-                    "name": "q-cen"
-                }
-            ],
             "accession": "NC_012598.1",
+            "type": "nuclear",
             "name": "7"
         },
         {
+            "centromere": {
+                "length": 2999999,
+                "start": 44522794
+            },
             "length": 153482349,
-            "type": "nuclear",
-            "centromere": [
-                {
-                    "bp": {
-                        "start": 44522794,
-                        "length": 1500000
-                    },
-                    "name": "p-cen"
-                },
-                {
-                    "bp": {
-                        "start": 46022793,
-                        "length": 1499999
-                    },
-                    "name": "q-cen"
-                }
-            ],
             "accession": "NC_012599.1",
+            "type": "nuclear",
             "name": "8"
         },
         {
+            "centromere": {
+                "length": 2999999,
+                "start": 16000001
+            },
             "length": 135191526,
-            "type": "nuclear",
-            "centromere": [
-                {
-                    "bp": {
-                        "start": 16000001,
-                        "length": 1500000
-                    },
-                    "name": "p-cen"
-                },
-                {
-                    "bp": {
-                        "start": 17500000,
-                        "length": 1499999
-                    },
-                    "name": "q-cen"
-                }
-            ],
             "accession": "NC_012600.1",
+            "type": "nuclear",
             "name": "9"
         },
         {
-            "type": "nuclear",
             "length": 156195299,
             "accession": "NC_012614.1",
+            "type": "nuclear",
             "name": "X"
         }
     ],

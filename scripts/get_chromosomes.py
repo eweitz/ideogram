@@ -12,7 +12,6 @@ import io
 import gzip
 import subprocess
 import logging
-import math
 
 output_dir = 'data/chromosomes/'
 
@@ -64,23 +63,10 @@ def get_chromosome_object(agp):
             chr['accession'] = acc
             chr['type'] = 'nuclear'
         if comp_type == 'centromere':
-            cen_length = (stop - start)/2
-            chr['centromere'] = [
-                {
-                    'name': 'p-cen',
-                    'bp': {
-                        'start': start,
-                        'length': math.ceil(cen_length)
-                    }
-                },
-                {
-                    'name': 'q-cen',
-                    'bp': {
-                        'start': start + math.floor(cen_length),
-                        'length': math.floor(cen_length)
-                    }
-                }
-            ]
+            chr['centromere'] = {
+                'start': start,
+                'length': stop - start
+            }
         if i == len(agp) - 2:
             chr['length'] = stop
     return chr
