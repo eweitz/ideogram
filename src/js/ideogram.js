@@ -388,7 +388,8 @@ Ideogram.prototype.getCentromereModel = function(chromosome) {
       chr = chromosome,
       start = chr.centromere.start,
       cenArmLength = chr.centromere.length/2,
-      cenArm, cenArmStart, cenArmStop, cenArmStartPx, cenArmStopPx;
+      cenArm, cenArmStart, cenArmStop, cenArmStartPx, cenArmStopPx,
+      cenStartPx, cenStopPx, cenWidth;
 
   centromere = [
       {
@@ -417,6 +418,24 @@ Ideogram.prototype.getCentromereModel = function(chromosome) {
       "start": cenArmStartPx,
       "stop": cenArmStopPx,
       "width": cenArmStopPx - cenArmStartPx
+    }
+  }
+
+  cenStopPx = centromere[1].px.stop;
+  cenStartPx = centromere[0].px.start;
+  cenWidthPx = cenStopPx - cenStartPx;
+  if (ideo.bump > cenWidthPx) {
+    // Make very small, non-telocentric centromeres discernible
+    // Applies to e.g. cat (Felis catus)
+    centromere[0].px = {
+      "start": centromere[0].px.start - ideo.bump,
+      "stop": centromere[0].px.stop,
+      "width": centromere[0].px.width + ideo.bump
+    }
+    centromere[1].px = {
+      "start": centromere[1].px.start,
+      "stop": centromere[1].px.stop + ideo.bump,
+      "width": centromere[1].px.width + ideo.bump
     }
   }
 
