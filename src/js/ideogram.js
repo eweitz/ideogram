@@ -386,6 +386,7 @@ Ideogram.prototype.getCentromereModel = function(chromosome) {
 
   var ideo = this,
       chr = chromosome,
+      centromere,
       start = chr.centromere.start,
       cenArmLength = chr.centromere.length/2,
       cenArm, cenArmStart, cenArmStop, cenArmStartPx, cenArmStopPx,
@@ -1088,6 +1089,22 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
         .attr("class", band.name + " acen band")
         .attr("d", d);
     }
+
+    chr.append('path')
+      .attr("class", "chromosomeBody")
+      .attr("d",
+        "M " + bump/2 + " " + chrMargin + " " +
+        "l " + (pArmWidth - bump/2) + " 0 " +
+        "l 0 " + chrWidth + " " +
+        "l -" + (pArmWidth - bump/2) + " 0 z");
+
+    chr.append('path')
+      .attr("class", "chromosomeBody")
+      .attr("d",
+        "M " + qArmStart + " " + chrMargin + " " +
+        "l " + qArmWidth + " 0 " +
+        "l 0 " + chrWidth + " " +
+        "l -" + qArmWidth + " 0 z");
   }
 
   chr.append('path')
@@ -2490,7 +2507,7 @@ Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
       ideo.esearch +
       "&db=assembly" +
       "&term=%22" + organism + "%22[organism]" +
-      "AND%20(%22latest%20refseq%22[filter])%20AND%20%22chromosome%20level%22[filter]";
+      "AND%20(%22latest%20refseq%22[filter])%20AND%20(%22chromosome%20level%22[filter]%20OR%20%22complete%20genome%22[filter])";
 
     var promise = d3.promise.json(asmSearch);
 
