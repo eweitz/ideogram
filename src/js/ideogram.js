@@ -1072,14 +1072,14 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
 
     var centromere = chrModel.centromere;
 
-    var pArmWidth = centromere[0].px.start;
+    var pArmStart = centromere[0].px.start;
 
     var borderTweak = 0;
     var qArmStart = centromere[1].px.stop + borderTweak;
     var qArmWidth = chrModel.width - qArmStart + borderTweak*1.3;
     var qArmEnd = qArmStart + qArmWidth;
 
-    ideo.drawChromosomeBorders(chr, bump, chrMargin, pArmWidth, chrWidth, qArmStart, qArmEnd);
+    ideo.drawChromosomeBorders(chr, bump, chrMargin, pArmStart, chrWidth, qArmStart, qArmEnd);
 
     for (var i = 0; i < centromere.length; i++) {
       band = centromere[i];
@@ -1094,9 +1094,9 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
       .attr("class", "chromosomeBody")
       .attr("d",
         "M " + bump/2 + " " + chrMargin + " " +
-        "l " + (pArmWidth - bump/2) + " 0 " +
+        "l " + (pArmStart - bump/2) + " 0 " +
         "l 0 " + chrWidth + " " +
-        "l -" + (pArmWidth - bump/2) + " 0 z");
+        "l -" + (pArmStart - bump/2) + " 0 z");
 
     chr.append('path')
       .attr("class", "chromosomeBody")
@@ -1294,12 +1294,12 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
   // Answer: because of a bug in the data.  Hack removed; won't work
   // for human 550 resolution until data is fixed.
   if (pcenIndex > 0) {
-    pArmWidth = pcen.px.start;
+    pArmStart = pcen.px.start;
     qArmStart = qcen.px.stop + borderTweak;
     pBump = bump;
   } else {
     // For telocentric centromeres, as in many mouse chromosomes
-    pArmWidth = 2;
+    pArmStart = 2;
     pBump = 0;
     qArmStart = document.querySelectorAll("#" + chrModel.id + " .band")[0].getBBox().x;
   }
@@ -1307,7 +1307,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
   qArmWidth = chrModel.width - qArmStart + borderTweak*1.3;
   qArmEnd = qArmStart + qArmWidth - bump/2 - 0.5;
 
-  ideogram.drawChromosomeBorders(chr, bump, chrMargin, pArmWidth, chrWidth, qArmStart, qArmEnd);
+  ideogram.drawChromosomeBorders(chr, bump, chrMargin, pArmStart, chrWidth, qArmStart, qArmEnd);
 
   chr.append('path')
     .attr("class", "q-ter chromosomeBorder " + chrModel.bands[chrModel.bands.length - 1].stain)

@@ -148,7 +148,7 @@ def download_genome_agp(asm):
             'chromosomes': chrs
         }
         with open(output_path, "w") as f:
-            f.write(json.dumps(chrs, indent=4))
+            f.write(json.dumps(chrs, indent=4, sort_keys=True))
 
     shutil.rmtree(output_dir + organism + '/')
 
@@ -209,7 +209,7 @@ elink = eutils + 'elink.fcgi?retmode=json';
 asms = []
 
 term = quote(
-    '("latest refseq"[filter] AND "chromosome level"[filter]) AND ' +
+    '("latest refseq"[filter] AND ("chromosome level"[filter] OR "complete genome"[filter]) AND ' +
     '(animals[filter] OR plants[filter] OR fungi[filter] OR protists[filter])'
 )
 

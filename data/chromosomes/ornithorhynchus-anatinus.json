@@ -1,196 +1,196 @@
 {
     "assemblyaccession": "GCF_000002275.2",
+    "assemblyname": "Ornithorhynchus_anatinus-5.0.1",
     "chromosomes": [
         {
+            "accession": "NC_009094.1",
             "centromere": {
                 "length": 9999,
                 "start": 18155718
             },
             "length": 47594283,
-            "accession": "NC_009094.1",
-            "type": "nuclear",
-            "name": "1"
+            "name": "1",
+            "type": "nuclear"
         },
         {
+            "accession": "NC_009103.1",
             "centromere": {
                 "length": 9999,
                 "start": 9212795
             },
             "length": 11243762,
-            "accession": "NC_009103.1",
-            "type": "nuclear",
-            "name": "10"
+            "name": "10",
+            "type": "nuclear"
         },
         {
+            "accession": "NC_009104.1",
             "centromere": {
                 "length": 9999,
                 "start": 1
             },
             "length": 6809224,
-            "accession": "NC_009104.1",
-            "type": "nuclear",
-            "name": "11"
+            "name": "11",
+            "type": "nuclear"
         },
         {
+            "accession": "NC_009105.1",
             "centromere": {
                 "length": 9999,
                 "start": 3441876
             },
             "length": 15872666,
-            "accession": "NC_009105.1",
-            "type": "nuclear",
-            "name": "12"
+            "name": "12",
+            "type": "nuclear"
         },
         {
+            "accession": "NC_009107.1",
             "centromere": {
                 "length": 9999,
                 "start": 1
             },
             "length": 2696122,
-            "accession": "NC_009107.1",
-            "type": "nuclear",
-            "name": "14"
+            "name": "14",
+            "type": "nuclear"
         },
         {
+            "accession": "NC_009108.1",
             "centromere": {
                 "length": 9999,
                 "start": 1
             },
             "length": 3786880,
-            "accession": "NC_009108.1",
-            "type": "nuclear",
-            "name": "15"
+            "name": "15",
+            "type": "nuclear"
         },
         {
+            "accession": "NC_009110.1",
             "centromere": {
                 "length": 9999,
                 "start": 1
             },
             "length": 1399469,
-            "accession": "NC_009110.1",
-            "type": "nuclear",
-            "name": "17"
+            "name": "17",
+            "type": "nuclear"
         },
         {
+            "accession": "NC_009111.1",
             "centromere": {
                 "length": 9999,
                 "start": 1
             },
             "length": 6611290,
-            "accession": "NC_009111.1",
-            "type": "nuclear",
-            "name": "18"
+            "name": "18",
+            "type": "nuclear"
         },
         {
+            "accession": "NC_009095.1",
             "centromere": {
                 "length": 9999,
                 "start": 36873659
             },
             "length": 54797317,
-            "accession": "NC_009095.1",
-            "type": "nuclear",
-            "name": "2"
+            "name": "2",
+            "type": "nuclear"
         },
         {
+            "accession": "NC_009112.1",
             "centromere": {
                 "length": 9999,
                 "start": 1
             },
             "length": 1816412,
-            "accession": "NC_009112.1",
-            "type": "nuclear",
-            "name": "20"
+            "name": "20",
+            "type": "nuclear"
         },
         {
+            "accession": "NC_009096.1",
             "centromere": {
                 "length": 9999,
                 "start": 21203139
             },
             "length": 59581953,
-            "accession": "NC_009096.1",
-            "type": "nuclear",
-            "name": "3"
+            "name": "3",
+            "type": "nuclear"
         },
         {
+            "accession": "NC_009097.1",
             "centromere": {
                 "length": 9999,
                 "start": 12287474
             },
             "length": 58987262,
-            "accession": "NC_009097.1",
-            "type": "nuclear",
-            "name": "4"
+            "name": "4",
+            "type": "nuclear"
         },
         {
+            "accession": "NC_009098.1",
             "centromere": {
                 "length": 9999,
                 "start": 1801772
             },
             "length": 24609220,
-            "accession": "NC_009098.1",
-            "type": "nuclear",
-            "name": "5"
+            "name": "5",
+            "type": "nuclear"
         },
         {
+            "accession": "NC_009099.1",
             "centromere": {
                 "length": 9999,
                 "start": 10436600
             },
             "length": 16302927,
-            "accession": "NC_009099.1",
-            "type": "nuclear",
-            "name": "6"
+            "name": "6",
+            "type": "nuclear"
         },
         {
+            "accession": "NC_009100.1",
             "centromere": {
                 "length": 9999,
                 "start": 18635623
             },
             "length": 40039088,
-            "accession": "NC_009100.1",
-            "type": "nuclear",
-            "name": "7"
+            "name": "7",
+            "type": "nuclear"
         },
         {
+            "accession": "NC_009114.1",
             "centromere": {
                 "length": 9999,
                 "start": 32920540
             },
             "length": 45541551,
-            "accession": "NC_009114.1",
-            "type": "nuclear",
-            "name": "X1"
+            "name": "X1",
+            "type": "nuclear"
         },
         {
+            "accession": "NC_009115.1",
             "centromere": {
                 "length": 9999,
                 "start": 5642502
             },
             "length": 5652501,
-            "accession": "NC_009115.1",
-            "type": "nuclear",
-            "name": "X2"
+            "name": "X2",
+            "type": "nuclear"
         },
         {
+            "accession": "NC_009116.1",
             "centromere": {
                 "length": 9999,
                 "start": 5941359
             },
             "length": 5951358,
-            "accession": "NC_009116.1",
-            "type": "nuclear",
-            "name": "X3"
+            "name": "X3",
+            "type": "nuclear"
         },
         {
+            "accession": "NC_009118.1",
             "centromere": {
                 "length": 9999,
                 "start": 9250299
             },
             "length": 27786739,
-            "accession": "NC_009118.1",
-            "type": "nuclear",
-            "name": "X5"
+            "name": "X5",
+            "type": "nuclear"
         }
-    ],
-    "assemblyname": "Ornithorhynchus_anatinus-5.0.1"
+    ]
 }
