@@ -1025,8 +1025,10 @@ Ideogram.prototype.getCentromerePath = function(d, chrModel) {
 Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
 
   var chr,
+      ideo = this,
       bump, chrMargin, chrWidth, width,
-      ideo = this;
+      telocentricPCen = false,
+      telocentricQCen = false;
 
   bump = ideo.bump;
 
@@ -1045,6 +1047,8 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
   }
 
   if ("centromere" in chrModel === false) {
+    // For assemblies that lack centromere data, e.g.
+    // http://localhost/ideogram/examples/eukaryotes.html?org=rattus-norvegicus
 
     chr.append('line')
       .attr("class", "cb-top chromosomeBorder")
@@ -1074,68 +1078,90 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
 
     var pArmStart = centromere[0].px.start;
 
-    var borderTweak = 0;
-    var qArmStart = centromere[1].px.stop + borderTweak;
-    var qArmWidth = chrModel.width - qArmStart + borderTweak*1.3;
+    var qArmStart = centromere[1].px.stop;
+    var qArmWidth = chrModel.width - qArmStart
     var qArmEnd = qArmStart + qArmWidth;
-
-    ideo.drawChromosomeBorders(chr, bump, chrMargin, pArmStart, chrWidth, qArmStart, qArmEnd);
 
     for (var i = 0; i < centromere.length; i++) {
       band = centromere[i];
-      pTerPad = bump + band.px.start;
+      if (band.name == "p-cen" && band.bp.start == 1) {
+        telocentricPCen = true;
+        continue;
+      }
+      if (band.name == "q-cen" && band.bp.start + band.bp.length == chrModel.length - 1) {
+        telocentricQCen = true;
+        continue;
+      }
       var d = ideo.getCentromerePath(band, chrModel);
       chr.append('path')
         .attr("class", band.name + " acen band")
         .attr("d", d);
     }
 
-    chr.append('path')
-      .attr("class", "chromosomeBody")
-      .attr("d",
-        "M " + bump/2 + " " + chrMargin + " " +
-        "l " + (pArmStart - bump/2) + " 0 " +
-        "l 0 " + chrWidth + " " +
-        "l -" + (pArmStart - bump/2) + " 0 z");
+    if (telocentricPCen) {
+      // E.g. Ornithorhynchus anatinus chr14
+      // http://localhost/ideogram/examples/eukaryotes.html?org=ornithorhynchus-anatinus
+      pArmStart += bump + qArmStart;
+    } else {
+      // More typical case
+      chr.append('path')
+        .attr("class", "chromosomeBody")
+        .attr("d",
+          "M " + bump/2 + " " + chrMargin + " " +
+          "l " + (pArmStart - bump/2) + " 0 " +
+          "l 0 " + chrWidth + " " +
+          "l -" + (pArmStart - bump/2) + " 0 z");
+    }
 
-    chr.append('path')
-      .attr("class", "chromosomeBody")
-      .attr("d",
-        "M " + qArmStart + " " + chrMargin + " " +
-        "l " + qArmWidth + " 0 " +
-        "l 0 " + chrWidth + " " +
-        "l -" + qArmWidth + " 0 z");
+    if (telocentricQCen) {
+      // E.g. Ornithorhynchus anatinus chrX1
+      qArmEnd += bump;
+    } else {
+      // More typical case
+      chr.append('path')
+        .attr("class", "chromosomeBody")
+        .attr("d",
+          "M " + qArmStart + " " + chrMargin + " " +
+          "l " + qArmWidth + " 0 " +
+          "l 0 " + chrWidth + " " +
+          "l -" + qArmWidth + " 0 z");
+    }
+
+    ideo.drawChromosomeBorders(chr, bump, chrMargin, pArmStart, chrWidth, qArmStart, qArmEnd);
   }
 
-  chr.append('path')
-    .attr("class", "upstream chromosomeBorder")
-    .attr("d",
-      "M " + (bump - bump/2 + 0.1) + " " + chrMargin + " " +
-      "q -" + bump + " " + (chrWidth/2) + " 0 " + chrWidth);
+  if (telocentricPCen == false) {
+    chr.append('path')
+      .attr("class", "upstream chromosomeBorder")
+      .attr("d",
+        "M " + (bump - bump/2 + 0.1) + " " + chrMargin + " " +
+        "q -" + bump + " " + (chrWidth/2) + " 0 " + chrWidth);
+  }
 
-  chr.append('path')
-    .attr("class", "downstream chromosomeBorder")
-    .attr("d",
-      "M " + width + " " + chrMargin + " " +
-      "q " + bump + " " +  chrWidth/2 + " 0 " + chrWidth);
-
+  if (telocentricQCen == false) {
+    chr.append('path')
+      .attr("class", "downstream chromosomeBorder")
+      .attr("d",
+        "M " + width + " " + chrMargin + " " +
+        "q " + bump + " " +  chrWidth/2 + " 0 " + chrWidth);
+  }
 }
 
-Ideogram.prototype.drawChromosomeBorders = function(chr, bump, chrMargin, pArmWidth, chrWidth, qArmStart, qArmEnd) {
+Ideogram.prototype.drawChromosomeBorders = function(chr, bump, chrMargin, pArmStart, chrWidth, qArmStart, qArmEnd) {
 
 
   chr.append('line')
     .attr("class", "cb-p-arm-top chromosomeBorder")
     .attr('x1', bump/2)
     .attr('y1', chrMargin)
-    .attr('x2', pArmWidth)
+    .attr('x2', pArmStart)
     .attr("y2", chrMargin);
 
   chr.append('line')
     .attr("class", "cb-p-arm-bottom chromosomeBorder")
     .attr('x1', bump/2)
     .attr('y1', chrWidth + chrMargin)
-    .attr('x2', pArmWidth)
+    .attr('x2', pArmStart)
     .attr("y2", chrWidth + chrMargin);
 
   chr.append('line')
