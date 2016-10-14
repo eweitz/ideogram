@@ -972,7 +972,8 @@ Ideogram.prototype.getCentromerePath = function(d, chrModel) {
 
   var ideo = this,
       left = ideo.round(d.px.start),
-      x = ideo.round(d.px.width),
+      cenWidth = ideo.round(d.px.width),
+      cenWidthTweak = 0,
       bump = ideo.bump,
       innerBump = bump,
       chrWidth = ideo.config.chrWidth,
@@ -985,13 +986,18 @@ Ideogram.prototype.getCentromerePath = function(d, chrModel) {
   // Pericentromeric bands get curved
   if (ideo.adjustedBump) {
     curveTweak = 0.35;
-    x = 0.2;
+    cenWidth = 0.2;
     left -= 0.1;
     if (d.name[0] === "q") {
       left += 1.2;
     }
   } else {
-    x -= bump/2;
+    cenWidth -= bump/2;
+  }
+
+  if ("centromere" in chrModel) {
+    cenWidthTweak += cenWidth;
+    left -= cenWidthTweak/2 + 0.5;
   }
 
   curveStart = chrMargin + curveTweak;
@@ -999,12 +1005,13 @@ Ideogram.prototype.getCentromerePath = function(d, chrModel) {
   curveEnd = chrWidth - curveTweak*2;
 
   if (d.name[0] == "p") {
+
     // p arm
     d =
       "M " + left + " " + curveStart + " " +
-      "l " + x + " 0 " +
+      "l " + cenWidth + " 0 " +
       "q " + bump + " " + curveMid + " 0 " + curveEnd + " " +
-      "l -" + x + " 0 z";
+      "l -" + cenWidth + " 0 z";
   } else {
 
     if (ideo.adjustedBump) {
@@ -1013,10 +1020,10 @@ Ideogram.prototype.getCentromerePath = function(d, chrModel) {
 
     // q arm
     d =
-      "M " + (left + x + bump/2) + " " + curveStart + " " +
-      "l -" + x + " 0 " +
+      "M " + (left + cenWidth + bump/2) + " " + curveStart + " " +
+      "l -" + (cenWidth + cenWidthTweak) + " 0 " +
       "q -" + (bump + 0.5) + " " + curveMid + " 0 " + curveEnd + " " +
-      "l " + x + " 0 z";
+      "l " + (cenWidth + cenWidthTweak) + " 0 z";
   }
 
   return d;
@@ -1073,13 +1080,15 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
         "l -" + (width - bump/2) + " 0 z");
 
   } else {
+    // For assemblies that have centromere data, e.g.
+    // http://localhost/ideogram/examples/eukaryotes.html?org=falis-catus
 
     var centromere = chrModel.centromere;
 
     var pArmStart = centromere[0].px.start;
 
     var qArmStart = centromere[1].px.stop;
-    var qArmWidth = chrModel.width - qArmStart
+    var qArmWidth = chrModel.width - qArmStart;
     var qArmEnd = qArmStart + qArmWidth;
 
     for (var i = 0; i < centromere.length; i++) {
@@ -1101,6 +1110,8 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
     if (telocentricPCen) {
       // E.g. Ornithorhynchus anatinus chr14
       // http://localhost/ideogram/examples/eukaryotes.html?org=ornithorhynchus-anatinus
+      // See also Pan troglodytes chr13
+      // http://localhost/ideogram/examples/eukaryotes.html?org=pan-troglodytes
       pArmStart += bump + qArmStart;
     } else {
       // More typical case
@@ -1134,7 +1145,7 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
     chr.append('path')
       .attr("class", "upstream chromosomeBorder")
       .attr("d",
-        "M " + (bump - bump/2 + 0.1) + " " + chrMargin + " " +
+        "M " + (bump/2 + 0.1) + " " + chrMargin + " " +
         "q -" + bump + " " + (chrWidth/2) + " 0 " + chrWidth);
   }
 
