@@ -1004,31 +1004,37 @@ Ideogram.prototype.getCentromerePath = function(d, chrModel) {
       left += 1.2;
     }
   } else {
-    cenWidth -= bump/2;
+    //cenWidth -= bump/2;
   }
 
   if ("centromere" in chrModel) {
     cenWidthTweak += cenWidth + 0.2;
-    left -= cenWidthTweak/2 + 0.5;
+
   }
 
   curveStart = chrMargin + curveTweak;
   curveMid = chrWidth/2 - curveTweak*2;
   curveEnd = chrWidth - curveTweak*2;
 
-  if (d.name[0] == "p") {
+  cenWidthTweak = 0;
 
+  if (d.name[0] == "p") {
     // p arm
     d =
-      "M " + left + " " + curveStart + " " +
-      "l " + cenWidth + " 0 " +
+      "M " + (left - cenWidth) + " " + curveStart + " " +
+      "l " + (cenWidth + cenWidthTweak) + " 0 " +
       "q " + bump + " " + curveMid + " 0 " + curveEnd + " " +
-      "l -" + cenWidth + " 0 z";
+      "l -" + (cenWidth + cenWidthTweak) + " 0 z";
   } else {
 
     if (ideo.adjustedBump) {
       x += 0.2;
     }
+
+    if (chrModel.centromerePosition == "telocentricPCen") {
+      left -= 1;
+    }
+
 
     // q arm
     d =
@@ -1110,6 +1116,8 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
         band.name == "p-cen" && cenPosition == "telocentricPCen" ||
         band.name == "q-cen" && cenPosition == "telocentricQCen"
       ) {
+        // If the chromosome is lacking a p arm or q arm,
+        // then don't draw that side of the pericentromeric heterochromatin
         continue;
       }
       var d = ideo.getCentromerePath(band, chrModel);
@@ -1117,13 +1125,18 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
         .attr("class", band.name + " acen band")
         .attr("d", d);
     }
+    var cenTweak = centromere[0].px.width - bump/2;
+    qArmStart -= cenTweak;
+    qArmWidth += cenTweak;
+
+    pArmStart -= cenTweak*4;
 
     if (cenPosition == "telocentricPCen") {
       // E.g. Ornithorhynchus anatinus chr14
       // http://localhost/ideogram/examples/eukaryotes.html?org=ornithorhynchus-anatinus
       // See also Pan troglodytes chr13
       // http://localhost/ideogram/examples/eukaryotes.html?org=pan-troglodytes
-      pArmStart += bump + qArmStart;
+
     } else {
       // More typical case
       chr.append('path')
@@ -1174,7 +1187,7 @@ Ideogram.prototype.drawChromosomeBorders = function(chr, chrModel, bump, chrMarg
   var cenPosition = chrModel.centromerePosition;
 
   if (cenPosition !== "telocentricPCen") {
-    console.log(chrModel);
+
     chr.append('line')
       .attr("class", "cb-p-arm-top chromosomeBorder")
       .attr('x1', bump/2)
