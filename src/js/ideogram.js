@@ -458,8 +458,8 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
       startType, stopType,
       chrHeight = this.config.chrHeight,
       maxLength = this.maxLength,
-      chrLength,
-      cs, hasBands;
+      pcenIndex, chrLength,
+      cs, hasBands, start, stop;
 
   cs = ideo.coordinateSystem;
   hasBands = (typeof bands !== "undefined");
@@ -486,6 +486,7 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
   pxStop = 0;
 
   if (hasBands) {
+
     for (var i = 0; i < bands.length; i++) {
       band = bands[i];
 
@@ -495,10 +496,19 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
 
       pxStop = bands[i].px.stop;
 
-      if (hasBands && band.stain === "acen" && band.name[0] === "p") {
+      if (band.stain === "acen" && band.name[0] === "p") {
         chr["pcenIndex"] = i;
       }
     }
+
+    if ("pcenIndex" in chr) {
+      pcenIndex = chr.pcenIndex;
+      chr["centromere"] = {
+        "start": bands[pcenIndex].bp.start,
+        "length": bands[pcenIndex + 1].bp.stop - bands[pcenIndex].bp.start
+      }
+    }
+
   } else {
     pxStop = chrHeight * chr["length"]/maxLength[cs];
   }
@@ -544,16 +554,24 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
     chr["centromere"] = ideo.getCentromereModel(chr);
 
     for (var i = 0; i < chr.centromere.length; i++) {
-      var band = chr.centromere[i];
-      if (band.name == "p-cen" && band.bp.start == 1) {
+      band = chr.centromere[i];
+      start = band.bp.start;
+      stop = start + band.bp.length;
+      if (band.name == "p-cen" && start == 1) {
         chr["centromerePosition"] = "telocentricPCen";
-        continue;
-      }
-      if (band.name == "q-cen" && band.bp.start + band.bp.length == chr.length - 1) {
+      } else if (band.name == "q-cen" && stop == chr.length - 1) {
         chr["centromerePosition"] = "telocentricQCen";
-        continue;
       }
     }
+
+    if (
+      chr["centromerePosition"] == "" &&
+      chr.centromere[0].px.start < ideo.bump * 2
+    ) {
+      // e.g. Pan troglodytes chr18
+      chr["centromerePosition"]
+    }
+
   }
 
   return chr;
@@ -1041,9 +1059,7 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
 
   var chr,
       ideo = this,
-      bump, chrMargin, chrWidth, width,
-      telocentricPCen = false,
-      telocentricQCen = false;
+      bump, chrMargin, chrWidth, width;
 
   bump = ideo.bump;
 
@@ -1094,9 +1110,11 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
     var centromere = chrModel.centromere;
     var cenPosition = chrModel.centromerePosition;
 
-    var pCenStart = centromere[0].px.start;
+    var cenTweak = centromere[0].px.width - bump/2;
 
-    var qArmStart = centromere[1].px.stop + ideo.bump/2;
+    var pCenStart = centromere[0].px.start - cenTweak;
+
+    var qArmStart = centromere[1].px.stop + bump/2 - cenTweak;
     var qArmWidth = chrModel.width - qArmStart;
     var qArmEnd = qArmStart + qArmWidth;
 
@@ -1118,11 +1136,6 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
         .attr("class", band.name + " acen band")
         .attr("d", d);
     }
-    var cenTweak = centromere[0].px.width - bump/2;
-    qArmStart -= cenTweak;
-    qArmWidth += cenTweak;
-
-    pCenStart -= cenTweak;
 
     if (cenPosition == "telocentricPCen") {
       // E.g. Ornithorhynchus anatinus chr14
@@ -1354,8 +1367,8 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
   // Answer: because of a bug in the data.  Hack removed; won't work
   // for human 550 resolution until data is fixed.
   if (pcenIndex > 0) {
-    pArmStart = pcen.px.start;
-    qArmStart = qcen.px.stop + borderTweak;
+    pArmStart = chrModel.centromere[0].px.start;
+    qArmStart = chrModel.centromere[1].px.stop + bump/2;
     pBump = bump;
   } else {
     // For telocentric centromeres, as in many mouse chromosomes
@@ -1364,8 +1377,8 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
     qArmStart = document.querySelectorAll("#" + chrModel.id + " .band")[0].getBBox().x;
   }
 
-  qArmWidth = chrModel.width - qArmStart + borderTweak*1.3;
-  qArmEnd = qArmStart + qArmWidth - bump/2 - 0.5;
+  qArmWidth = chrModel.width - qArmStart;
+  qArmEnd = qArmStart + qArmWidth;
 
   ideogram.drawChromosomeBorders(chr, chrModel, bump, chrMargin, pArmStart, chrWidth, qArmStart, qArmEnd);
 
