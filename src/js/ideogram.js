@@ -388,37 +388,64 @@ Ideogram.prototype.getCentromereModel = function(chromosome) {
       chr = chromosome,
       centromere,
       start = chr.centromere.start,
-      cenArmLength = chr.centromere.length/2,
+      length = Math.ceil(chr.centromere.length/2),
       cenArm, cenArmStart, cenArmStop, cenArmStartPx, cenArmStopPx,
-      cenStartPx, cenStopPx, cenWidth;
+      cenStartPx, cenStopPx, cenWidth,
+      cs;
 
   centromere = [
       {
           'name': 'p-cen',
           'bp': {
               'start': start,
-              'length': Math.ceil(cenArmLength)
+              'length': length
           }
       },
       {
           'name': 'q-cen',
           'bp': {
-              'start': start + Math.floor(cenArmLength),
-              'length': Math.floor(cenArmLength)
+              'start': start + length,
+              'length': length
           }
       }
   ];
 
-  for (var i = 0; i < centromere.length; i++) {
-    cenArm = centromere[i]
-    cenArmStart = cenArm.bp.start;
-    cenArmStop = cenArmStart + cenArm.bp.length;
-    cenArmStartPx = ideo.convertBpToPxNoBands(chr, cenArmStart);
-    cenArmStopPx = ideo.convertBpToPxNoBands(chr, cenArmStop);
-    centromere[i]["px"] = {
-      "start": cenArmStartPx,
-      "stop": cenArmStopPx,
-      "width": cenArmStopPx - cenArmStartPx
+  if ("iscnStart" in chr.centromere) {
+
+    // In human reference genome (e.g. GRCh38)
+    cs = 'iscn';
+    start = chr.centromere.iscnStart;
+    length = Math.ceil(chr.centromere.iscnLength/2);
+
+    centromere[0]['iscn'] = {
+      'start': start,
+      'length': length
+    }
+    centromere[0].px = chr.centromere.pcenPx;
+
+    centromere[1]['iscn'] = {
+      'start': start,
+      'length': start + length
+    }
+    centromere[1].px = chr.centromere.qcenPx;
+
+  } else {
+    // In other genomes, e.g. for cat, chimpanzee, etc.
+    cs = 'bp';
+  }
+
+  if (cs == 'bp') {
+    for (var i = 0; i < centromere.length; i++) {
+      cenArm = centromere[i];
+      cenArmStart = cenArm.bp.start;
+      cenArmStop = cenArmStart + cenArm.bp.length;
+      cenArmStartPx = ideo.convertBpToPxNoBands(chr, cenArmStart);
+      cenArmStopPx = ideo.convertBpToPxNoBands(chr, cenArmStop);
+      centromere[i]["px"] = {
+        "start": cenArmStartPx,
+        "stop": cenArmStopPx,
+        "width": cenArmStopPx - cenArmStartPx
+      }
     }
   }
 
@@ -505,8 +532,12 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
       pcenIndex = chr.pcenIndex;
       chr["centromere"] = {
         "start": bands[pcenIndex].bp.start,
-        "length": bands[pcenIndex + 1].bp.stop - bands[pcenIndex].bp.start
-      }
+        "length": bands[pcenIndex + 1].bp.stop - bands[pcenIndex].bp.start,
+        "iscnStart": bands[pcenIndex].iscn.start,
+        "iscnLength": bands[pcenIndex + 1].iscn.stop - bands[pcenIndex].iscn.start,
+        "pcenPx": bands[pcenIndex].px,
+        "qcenPx": bands[pcenIndex + 1].px
+      };
       bands.splice(pcenIndex, 2);
     }
 
@@ -1032,13 +1063,23 @@ Ideogram.prototype.getCentromerePath = function(d, chrModel) {
   curveMid = chrWidth/2 - curveTweak*2;
   curveEnd = chrWidth - curveTweak*2;
 
+  mx = left - cenWidth;
+  my = curveStart;
+  ldx = cenWidth + cenWidthTweak;
+  q = (bump + 1) + " " + curveMid + " 0 " + curveEnd + " ";
+
+  // mx = left + cenWidth;
+  // my = curveStart;
+  // ldx = cenWidth - bump/2;
+  // q = bump + " " + curveMid + " 0 " + curveEnd + " ";
+
   if (d.name[0] == "p") {
     // p arm
     d =
-      "M " + (left - cenWidth) + " " + curveStart + " " +
-      "l " + (cenWidth + cenWidthTweak) + " 0 " +
-      "q " + (bump + 1) + " " + curveMid + " 0 " + curveEnd + " " +
-      "l -" + (cenWidth + cenWidthTweak) + " 0 z";
+      "M " + mx + " " + my + " " +
+      "l " + ldx + " 0 " +
+      "q " + q +
+      "l -" + ldx + " 0 z";
   } else {
 
     if (ideo.adjustedBump) {
@@ -1046,15 +1087,15 @@ Ideogram.prototype.getCentromerePath = function(d, chrModel) {
     }
 
     if (chrModel.centromerePosition == "telocentricPCen") {
-      left -= 1;
+      mx += 1;
     }
 
     // q arm
     d =
-      "M " + (left + cenWidth + bump/2) + " " + curveStart + " " +
-      "l -" + (cenWidth + cenWidthTweak) + " 0 " +
-      "q -" + (bump + 1) + " " + curveMid + " 0 " + curveEnd + " " +
-      "l " + (cenWidth + cenWidthTweak) + " 0 z";
+      "M " + (mx + (bump + 1) + ldx) + " " + my + " " +
+      "l -" + ldx + " 0 " +
+      "q -" + q +
+      "l " + ldx + " 0 z";
   }
 
   return d;
