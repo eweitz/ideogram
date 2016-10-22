@@ -1041,7 +1041,7 @@ Ideogram.prototype.getCentromerePath = function(d, chrModel) {
       cenWidth = ideo.round(d.px.width),
       cenWidthTweak = 0,
       bump = ideo.bump,
-      innerBump = bump,
+      hasBands = "bands" in chrModel,
       chrWidth = ideo.config.chrWidth,
       chrMargin = ideo.config.chrMargin * chrModel.chrIndex,
       curveStart, curveMid, curveEnd,
@@ -1063,15 +1063,17 @@ Ideogram.prototype.getCentromerePath = function(d, chrModel) {
   curveMid = chrWidth/2 - curveTweak*2;
   curveEnd = chrWidth - curveTweak*2;
 
-  mx = left - cenWidth;
-  my = curveStart;
-  ldx = cenWidth + cenWidthTweak;
-  q = (bump + 1) + " " + curveMid + " 0 " + curveEnd + " ";
-
-  // mx = left + cenWidth;
-  // my = curveStart;
-  // ldx = cenWidth - bump/2;
-  // q = bump + " " + curveMid + " 0 " + curveEnd + " ";
+  if (hasBands) {
+    mx = left;
+    my = curveStart;
+    ldx = cenWidth - bump/2;
+    q = bump + " " + curveMid + " 0 " + curveEnd + " ";
+  } else {
+    mx = left - cenWidth;
+    my = curveStart;
+    ldx = cenWidth + cenWidthTweak;
+    q = (bump + 1) + " " + curveMid + " 0 " + curveEnd + " ";
+  }
 
   if (d.name[0] == "p") {
     // p arm
@@ -1090,9 +1092,16 @@ Ideogram.prototype.getCentromerePath = function(d, chrModel) {
       mx += 1;
     }
 
+    if (hasBands) {
+      mx = left + cenWidth;
+      q = (bump + 0.5) + " " + curveMid + " 0 " + curveEnd + " ";
+    } else {
+      mx = mx + (bump + 1) + ldx;
+    }
+
     // q arm
     d =
-      "M " + (mx + (bump + 1) + ldx) + " " + my + " " +
+      "M " + mx + " " + my + " " +
       "l -" + ldx + " 0 " +
       "q -" + q +
       "l " + ldx + " 0 z";
@@ -1116,15 +1125,16 @@ Ideogram.prototype.drawChromosomeBordersAndCentromeres = function(chrModel, chr)
   centromere = chrModel.centromere;
   cenPosition = chrModel.centromerePosition;
 
-  console.log(chrModel)
-  console.log('cenPosition')
-  console.log(cenPosition)
-
   cenTweak = centromere[0].px.width - bump/2;
 
-  pCenStart = centromere[0].px.start - cenTweak;
+  pCenStart = centromere[0].px.start;
+  qArmStart = centromere[1].px.stop + bump/2;
 
-  qArmStart = centromere[1].px.stop + bump/2 - cenTweak;
+  if ("bands" in chrModel == false) {
+    pCenStart -= cenTweak;
+    qArmStart -= cenTweak;
+  }
+
   qArmWidth = chrModel.width - qArmStart;
   qArmEnd = qArmStart + qArmWidth;
 
