@@ -1116,6 +1116,7 @@ Ideogram.prototype.drawChromosomeBordersAndCentromeres = function(chrModel, chr)
       bump = ideo.bump,
       chrMargin, chrWidth,
       centromere, cenPosition, cenTweak,
+      pCen, qCen,
       pCenStart, qArmStart, qArmWidth, qArmEnd,
       pCenWidth, qCenWidth,
       hasBands = "bands" in chrModel;
@@ -1126,10 +1127,13 @@ Ideogram.prototype.drawChromosomeBordersAndCentromeres = function(chrModel, chr)
   centromere = chrModel.centromere;
   cenPosition = chrModel.centromerePosition;
 
-  cenTweak = centromere[0].px.width - bump/2;
+  pCen = centromere[0];
+  qCen = centromere[1];
 
-  pCenStart = centromere[0].px.start;
-  qArmStart = centromere[1].px.stop + bump/2 - cenTweak;
+  cenTweak = pCen.px.width - bump/2;
+
+  pCenStart = pCen.px.start;
+  qArmStart = qCen.px.stop + bump/2 - cenTweak;
   qArmWidth = chrModel.width - qArmStart;
   qArmEnd = qArmStart + qArmWidth - bump/2;
 
@@ -1138,8 +1142,8 @@ Ideogram.prototype.drawChromosomeBordersAndCentromeres = function(chrModel, chr)
     qArmEnd += bump/2;
   }
 
-  pCenWidth = centromere[0].px.stop - centromere[0].px.start;
-  qCenWidth = centromere[1].px.stop - centromere[1].px.start;
+  pCenWidth = pCen.px.stop - pCen.px.start;
+  qCenWidth = qCen.px.stop - qCen.px.start;
 
   for (var i = 0; i < centromere.length; i++) {
     band = centromere[i];
