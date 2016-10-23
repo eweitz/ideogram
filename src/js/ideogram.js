@@ -1116,9 +1116,9 @@ Ideogram.prototype.drawChromosomeBordersAndCentromeres = function(chrModel, chr)
       bump = ideo.bump,
       chrMargin, chrWidth,
       centromere, cenPosition, cenTweak,
-      pCen, qCen,
-      pCenStart, qArmStart, qArmWidth, qArmEnd,
-      pCenWidth, qCenWidth,
+      pcen, qcen,
+      pcenStart, qArmStart, qArmWidth, qArmEnd,
+      pcenWidth, qcenWidth,
       hasBands = "bands" in chrModel;
 
   chrMargin = ideo.config.chrMargin * chrModel.chrIndex;
@@ -1127,23 +1127,23 @@ Ideogram.prototype.drawChromosomeBordersAndCentromeres = function(chrModel, chr)
   centromere = chrModel.centromere;
   cenPosition = chrModel.centromerePosition;
 
-  pCen = centromere[0];
-  qCen = centromere[1];
+  pcen = centromere[0];
+  qcen = centromere[1];
 
-  cenTweak = pCen.px.width - bump/2;
+  cenTweak = pcen.px.width - bump/2;
 
-  pCenStart = pCen.px.start;
-  qArmStart = qCen.px.stop + bump/2 - cenTweak;
+  pcenStart = pcen.px.start;
+  qArmStart = qcen.px.stop + bump/2 - cenTweak;
   qArmWidth = chrModel.width - qArmStart;
   qArmEnd = qArmStart + qArmWidth - bump/2;
 
   if (hasBands == false) {
-    pCenStart -= cenTweak;
+    pcenStart -= cenTweak;
     qArmEnd += bump/2;
   }
 
-  pCenWidth = pCen.px.stop - pCen.px.start;
-  qCenWidth = qCen.px.stop - qCen.px.start;
+  pcenWidth = pcen.px.stop - pcen.px.start;
+  qcenWidth = qcen.px.stop - qcen.px.start;
 
   for (var i = 0; i < centromere.length; i++) {
     band = centromere[i];
@@ -1174,9 +1174,9 @@ Ideogram.prototype.drawChromosomeBordersAndCentromeres = function(chrModel, chr)
         .attr("class", "p-arm chromosomeBody")
         .attr("d",
           "M " + bump/2 + " " + chrMargin + " " +
-          "l " + (pCenStart - bump/2) + " 0 " +
+          "l " + (pcenStart - bump/2) + " 0 " +
           "l 0 " + chrWidth + " " +
-          "l -" + (pCenStart - bump/2) + " 0 z");
+          "l -" + (pcenStart - bump/2) + " 0 z");
     }
 
     if (cenPosition == "telocentricQCen") {
@@ -1194,7 +1194,7 @@ Ideogram.prototype.drawChromosomeBordersAndCentromeres = function(chrModel, chr)
     }
   }
 
-  ideo.drawChromosomeBorders(chr, chrModel, bump, chrMargin, pCenStart, chrWidth, qArmStart, qArmEnd);
+  ideo.drawChromosomeBorders(chr, chrModel, bump, chrMargin, pcenStart, chrWidth, qArmStart, qArmEnd);
 }
 
 Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
@@ -1271,7 +1271,7 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
   }
 }
 
-Ideogram.prototype.drawChromosomeBorders = function(chr, chrModel, bump, chrMargin, pCenStart, chrWidth, qArmStart, qArmEnd) {
+Ideogram.prototype.drawChromosomeBorders = function(chr, chrModel, bump, chrMargin, pcenStart, chrWidth, qArmStart, qArmEnd) {
 
   var cenPosition = chrModel.centromerePosition;
 
@@ -1281,14 +1281,14 @@ Ideogram.prototype.drawChromosomeBorders = function(chr, chrModel, bump, chrMarg
       .attr("class", "cb-p-arm-top chromosomeBorder")
       .attr('x1', bump/2)
       .attr('y1', chrMargin)
-      .attr('x2', pCenStart)
+      .attr('x2', pcenStart)
       .attr("y2", chrMargin);
 
     chr.append('line')
       .attr("class", "cb-p-arm-bottom chromosomeBorder")
       .attr('x1', bump/2)
       .attr('y1', chrWidth + chrMargin)
-      .attr('x2', pCenStart)
+      .attr('x2', pcenStart)
       .attr("y2", chrWidth + chrMargin);
   }
 
