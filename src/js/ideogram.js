@@ -1127,40 +1127,49 @@ Ideogram.prototype.drawChromosomeBordersAndCentromeres = function(chrModel, chr)
   centromere = chrModel.centromere;
   cenPosition = chrModel.centromerePosition;
 
-  pcen = centromere[0];
-  qcen = centromere[1];
+  if (cenPosition !== "telocentricPCen") {
 
-  cenTweak = pcen.px.width - bump/2;
+    pcen = centromere[0];
+    qcen = centromere[1];
 
-  pcenStart = pcen.px.start;
-  qArmStart = qcen.px.stop + bump/2 - cenTweak;
+    cenTweak = pcen.px.width - bump/2;
+
+    pcenStart = pcen.px.start;
+    qArmStart = qcen.px.stop + bump/2 - cenTweak;
+    qArmWidth = chrModel.width - qArmStart;
+    qArmEnd = qArmStart + qArmWidth - bump/2;
+
+  } else {
+    pcenStart = 2;
+    qArmStart = 6;
+  }
+
   qArmWidth = chrModel.width - qArmStart;
   qArmEnd = qArmStart + qArmWidth - bump/2;
 
-  if (hasBands == false) {
-    pcenStart -= cenTweak;
-    qArmEnd += bump/2;
-  } else {
-    qArmStart = qcen.px.stop
-  }
-
-  pcenWidth = pcen.px.stop - pcen.px.start;
-  qcenWidth = qcen.px.stop - qcen.px.start;
-
-  for (var i = 0; i < centromere.length; i++) {
-    band = centromere[i];
-    if (
-      band.name == "p-cen" && cenPosition == "telocentricPCen" ||
-      band.name == "q-cen" && cenPosition == "telocentricQCen"
-    ) {
-      // If the chromosome is lacking a p arm or q arm,
-      // then don't draw that side of the pericentromeric heterochromatin
-      continue;
+  if (cenPosition !== "telocentricPCen") {
+    if (hasBands) {
+      qArmStart = qcen.px.stop;
+    } else {
+      pcenStart -= cenTweak;
+      qArmEnd += bump/2;
     }
-    var d = ideo.getCentromerePath(band, chrModel);
-    chr.append('path')
-      .attr("class", band.name + " acen band")
-      .attr("d", d);
+
+    for (var i = 0; i < centromere.length; i++) {
+      band = centromere[i];
+      if (
+        band.name == "p-cen" && cenPosition == "telocentricPCen" ||
+        band.name == "q-cen" && cenPosition == "telocentricQCen"
+      ) {
+        // If the chromosome is lacking a p arm or q arm,
+        // then don't draw that side of the pericentromeric heterochromatin
+        continue;
+      }
+      var d = ideo.getCentromerePath(band, chrModel);
+      chr.append('path')
+        .attr("class", band.name + " acen band")
+        .attr("d", d);
+    }
   }
 
   if ("bands" in chrModel === false) {
