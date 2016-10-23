@@ -1085,7 +1085,7 @@ Ideogram.prototype.getCentromerePath = function(d, chrModel) {
   } else {
 
     if (ideo.adjustedBump) {
-      x += 0.2;
+      cenWidth += 0.2;
     }
 
     if (chrModel.centromerePosition == "telocentricPCen") {
