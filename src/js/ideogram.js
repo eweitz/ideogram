@@ -1117,7 +1117,8 @@ Ideogram.prototype.drawChromosomeBordersAndCentromeres = function(chrModel, chr)
       chrMargin, chrWidth,
       centromere, cenPosition, cenTweak,
       pCenStart, qArmStart, qArmWidth, qArmEnd,
-      pCenWidth, qCenWidth;
+      pCenWidth, qCenWidth,
+      hasBands = "bands" in chrModel;
 
   chrMargin = ideo.config.chrMargin * chrModel.chrIndex;
   chrWidth = ideo.config.chrWidth;
@@ -1128,15 +1129,14 @@ Ideogram.prototype.drawChromosomeBordersAndCentromeres = function(chrModel, chr)
   cenTweak = centromere[0].px.width - bump/2;
 
   pCenStart = centromere[0].px.start;
-  qArmStart = centromere[1].px.stop + bump/2;
-
-  if ("bands" in chrModel == false) {
-    pCenStart -= cenTweak;
-    qArmStart -= cenTweak;
-  }
-
+  qArmStart = centromere[1].px.stop + bump/2 - cenTweak;
   qArmWidth = chrModel.width - qArmStart;
-  qArmEnd = qArmStart + qArmWidth;
+  qArmEnd = qArmStart + qArmWidth - bump/2;
+
+  if (hasBands == false) {
+    pCenStart -= cenTweak;
+    qArmEnd += bump/2;
+  }
 
   pCenWidth = centromere[0].px.stop - centromere[0].px.start;
   qCenWidth = centromere[1].px.stop - centromere[1].px.start;
@@ -1244,7 +1244,7 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
 
   } else {
     // For assemblies that have centromere data, e.g.
-    // http://localhost/ideogram/examples/eukaryotes.html?org=falis-catus
+    // http://localhost/ideogram/examples/eukaryotes.html?org=felis-catus
     ideo.drawChromosomeBordersAndCentromeres(chrModel, chr);
   }
 
@@ -1429,40 +1429,9 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
 
   }
 
-  /*
-  if (ideo.adjustedBump) {
-    borderTweak = 1.8;
-  } else {
-    borderTweak = 0;
-  }
-
-  var pcenIndex = chrModel["pcenIndex"],
-      pcen = chrModel.bands[pcenIndex],
-      qcen = chrModel.bands[pcenIndex + 1],
-      pBump, qArmEnd;
-
-  // Why does human chromosome 11 lack a centromeric p-arm band?
-  // Answer: because of a bug in the data.  Hack removed; won't work
-  // for human 550 resolution until data is fixed.
-  if (pcenIndex > 0) {
-    pArmStart = chrModel.centromere[0].px.start;
-    qArmStart = chrModel.centromere[1].px.stop + bump/2;
-    pBump = bump;
-  } else {
-    // For telocentric centromeres, as in many mouse chromosomes
-    pArmStart = 2;
-    pBump = 0;
-    qArmStart = document.querySelectorAll("#" + chrModel.id + " .band")[0].getBBox().x;
-  }
-
-  qArmWidth = chrModel.width - qArmStart;
-  qArmEnd = qArmStart + qArmWidth;
-
-  ideogram.drawChromosomeBorders(chr, chrModel, bump, chrMargin, pArmStart, chrWidth, qArmStart, qArmEnd);
-  */
-
   ideo.drawChromosomeBordersAndCentromeres(chrModel, chr);
 
+  width -= bump/2;
 
   chr.append('path')
     .attr("class", "downstream chromosomeBorder " + chrModel.bands[chrModel.bands.length - 1].stain)
@@ -3060,7 +3029,7 @@ Ideogram.prototype.init = function() {
 
 function finishInit() {
 
-    // try {
+    try {
 
     var t0_a = new Date().getTime();
 
@@ -3198,10 +3167,10 @@ function finishInit() {
       d3.selectAll(".chromosome").style("cursor", "default");
     }
 
-    //  } catch (e) {
-    //    console.log(e.stack)
-    //   //  throw e;
-    // }
+     } catch (e) {
+       console.log(e.stack)
+      //  throw e;
+    }
 
   }
 
