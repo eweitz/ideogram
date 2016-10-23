@@ -1140,6 +1140,8 @@ Ideogram.prototype.drawChromosomeBordersAndCentromeres = function(chrModel, chr)
   if (hasBands == false) {
     pcenStart -= cenTweak;
     qArmEnd += bump/2;
+  } else {
+    qArmStart = qcen.px.stop
   }
 
   pcenWidth = pcen.px.stop - pcen.px.start;
