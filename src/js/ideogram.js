@@ -538,7 +538,6 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
         "pcenPx": bands[pcenIndex].px,
         "qcenPx": bands[pcenIndex + 1].px
       };
-      bands.splice(pcenIndex, 2);
     }
 
   } else {
