@@ -34,7 +34,7 @@ SmallLayout.prototype = Object.create(Layout.prototype);
  */
 SmallLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement, callback) {
 
-    var ideoBox = d3.select("#ideogram").node().getBoundingClientRect();
+    var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
     var chrBox = chrElement.getBoundingClientRect();
 
     var scaleX = (ideoBox.width / chrBox.height) * 0.97;
@@ -45,7 +45,7 @@ SmallLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement,
     d3.select(chrElement.parentNode)
         .transition()
         .attr("transform", transform)
-        .each('end', callback);
+        .on('end', callback);
 };
 
 
@@ -59,7 +59,7 @@ SmallLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, ca
     d3.select(chrElement.parentNode)
         .transition()
         .attr("transform", translate)
-        .each('end', callback);
+        .on('end', callback);
 };
 
 
@@ -96,7 +96,10 @@ SmallLayout.prototype.getChromosomeSetTranslate = function(setNumber) {
     /*
      * Get organisms id list.
      */
-    var organisms =  this._ideo.getTaxids();
+    var organisms = [];
+    this._ideo.getTaxids(function(taxIdList) {
+        organisms = taxIdList;
+    });
     /*
      * Get first organism chromosomes amount.
      */

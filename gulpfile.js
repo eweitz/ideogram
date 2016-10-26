@@ -8,8 +8,8 @@ gulp.task('default', function () {
     .src('test/web-runner.html')
     .pipe(mochaPhantomJS({reporter: 'spec', dump:'test.log'}))
 
-  gulp.src('test/cli-test.js', {read: false})
-    // gulp-mocha needs filepaths so you can't have any plugins before it
-    .pipe(mocha({reporter: 'spec'}));
+  // gulp.src('test/cli-test.js', {read: false})
+    //// gulp-mocha needs filepaths so you can't have any plugins before it
+    // .pipe(mocha({reporter: 'spec'}));
 
 });

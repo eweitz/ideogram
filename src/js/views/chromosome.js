@@ -2,13 +2,14 @@
  * Chromosome view class.
  * @public
  * @class
- * @param {Object} model
+ * @param {ModelAdapter} adapter
  * @param {Object} config
  * @param {Ideogram} ideo
  */
-function Chromosome(model, config, ideo) {
+function Chromosome(adapter, config, ideo) {
 
-    this._model = model;
+    this._adapter = adapter;
+    this._model = this._adapter.getModel();
     this._config = config;
     this._ideo = ideo;
     this._color = new Color(this._config);
@@ -20,17 +21,47 @@ function Chromosome(model, config, ideo) {
  * Factory method.
  * @public
  * @static
- * @param {Object} model
+ * @param {ModelAdapter} adapter
  * @param {Object} config
  * @param {Ideogram} ideo
  * @return {Chromosome}
  */
-Chromosome.getInstance = function(model, config, ideo) {
+Chromosome.getInstance = function(adapter, config, ideo) {
 
-    if (model.centromerePosition == 'telocentric') {
-        return new TelocentricChromosome(model, config, ideo);
+    if (adapter.getModel().centromerePosition == 'telocentric') {
+        return new TelocentricChromosome(adapter, config, ideo);
     } else {
-        return new MetacentricChromosome(model, config, ideo);
+        return new MetacentricChromosome(adapter, config, ideo);
+    }
+};
+
+
+/**
+ * @param {String[]} clipPath
+ * @param {Boolean} isPArmRendered
+ * @returns {String[]}
+ */
+Chromosome.prototype._addPArmShape = function(clipPath, isPArmRendered) {
+
+    if (isPArmRendered) {
+        return clipPath.concat(this._getPArmShape());
+    } else {
+         return clipPath;
+    }
+};
+
+
+/**
+ * @param {String[]} clipPath
+ * @param {Boolean} isPArmRendered
+ * @returns {String[]}
+ */
+Chromosome.prototype._addQArmShape = function(clipPath, isQArmRendered) {
+
+    if (isQArmRendered) {
+        return clipPath.concat(this._getQArmShape());
+    } else {
+        return clipPath;
     }
 };
 
@@ -53,14 +84,14 @@ Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
     /*
      * Render chromosome arms.
      */
-    this._renderPArm(container, chrSetNumber, chrNumber);
-    this._renderQArm(container, chrSetNumber, chrNumber);
+    var isPArmRendered = this._renderPArm(container, chrSetNumber, chrNumber);
+    var isQArmRendered = this._renderQArm(container, chrSetNumber, chrNumber);
     /*
      * Push p arm shape string path.
      */
     var clipPath = [];
-    clipPath = clipPath.concat(this._getPArmShape());
-    clipPath = clipPath.concat(this._getQArmShape());
+    clipPath = this._addPArmShape(clipPath, isPArmRendered);
+    clipPath = this._addQArmShape(clipPath, isQArmRendered);
     /*
      * Render shapes.
      */
@@ -91,6 +122,16 @@ Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
  */
 Chromosome.prototype._getShapeData = function() {
     /*
+     * First q band from bands sequence.
+     */
+    var firstQBand = this._model.bands.find(function(band) {
+        return band.name[0] == 'q';
+    });
+    /*
+     * Chromosome's right position.
+     */
+    var rightTerminalPosition = this._model.bands[this._model.bands.length - 1].px.stop;
+    /*
      * Properties description.
      * x1 - left terminal start position
      * x2 - centromere position
@@ -100,10 +141,8 @@ Chromosome.prototype._getShapeData = function() {
      */
     return {
         x1 : 0,
-        x2 : this._model.bands.find(function(band) {
-                return band.name[0] == 'q';
-            }).px.start,
-        x3 : this._model.bands[this._model.bands.length - 1].px.stop,
+        x2 : firstQBand ? firstQBand.px.start : rightTerminalPosition,
+        x3 : rightTerminalPosition,
         w : this._config.chrWidth,
         b : this._config.chrWidth / this._bumpCoefficient
     };
@@ -145,7 +184,7 @@ Chromosome.prototype._getQArmShape = function() {
  * @param {Selection} container
  * @param {Integer} chrSetNumber
  * @param {Integer} chrNumber
- * @param {Object} position
+ * @param {Object[]} bands
  * @param {'p'|'q'} arm
  * @returns {Number}
  */
@@ -163,7 +202,7 @@ Chromosome.prototype._renderBands = function(container, chrSetNumber, chrNumber,
             return 'band ' + arm + '-band ' + d.stain;
         }).attr("d", function(d, i) {
 
-            var start = self._ideo.round(d.px.start);// + position.offset;
+            var start = self._ideo.round(d.px.start);
             var length = self._ideo.round(d.px.width);
 
             x = start + length;
@@ -180,10 +219,12 @@ Chromosome.prototype._renderBands = function(container, chrSetNumber, chrNumber,
 
 /**
  * Render chromosome's p arm.
+ * Returns boolean which indicates is any bands was rendered.
  * @private
  * @param {Selection} container
  * @param {Integer} chrSetNumber
  * @param {Integer} chrNumber
+ * @return {Boolean}
  */
 Chromosome.prototype._renderPArm = function(container, chrSetNumber, chrNumber) {
 
@@ -192,15 +233,19 @@ Chromosome.prototype._renderPArm = function(container, chrSetNumber, chrNumber) 
     });
 
     this._renderBands(container, chrSetNumber, chrNumber, bands, 'p');
+
+    return Boolean(bands.length);
 };
 
 
 /**
  * Render chromosome's q arm.
+ * Returns boolean which indicates is any bands was rendered.
  * @private
  * @param {Selection} container
  * @param {Integer} chrSetNumber
  * @param {Integer} chrNumber
+ * @return {Boolean}
  */
 Chromosome.prototype._renderQArm = function(container, chrSetNumber, chrNumber) {
 
@@ -209,4 +254,6 @@ Chromosome.prototype._renderQArm = function(container, chrSetNumber, chrNumber) 
     });
 
     this._renderBands(container, chrSetNumber, chrNumber, bands, 'q');
+
+    return Boolean(bands.length);
 };

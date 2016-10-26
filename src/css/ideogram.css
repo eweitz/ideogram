@@ -64,12 +64,17 @@ path.band {
 	stroke-width:1;
 }
 
-.brush .extent {
+.brush .selection {
 	fill: #F00;
 	stroke: #F00;
   fill-opacity: .3;
   shape-rendering: crispEdges;
 }
+
+.noBands {
+	fill: #AAA;
+}
+
 /* NCBI stain density colors */
 .gneg {fill: #FFF}
 .gpos25 {fill: #BBB}

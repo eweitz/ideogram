@@ -36,7 +36,7 @@ HorizontalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrEle
 
     var xOffset = 20;
 
-    var ideoBox = d3.select("#ideogram").node().getBoundingClientRect();
+    var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
     var chrBox = chrElement.getBoundingClientRect();
 
     var scaleX = (ideoBox.height / (chrBox.width + xOffset / 2)) * 0.97;
@@ -49,7 +49,7 @@ HorizontalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrEle
     d3.select(chrElement.parentNode)
         .transition()
         .attr("transform", transform)
-        .each('end', callback);
+        .on('end', callback);
 };
 
 
@@ -63,7 +63,7 @@ HorizontalLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElemen
     d3.select(chrElement.parentNode)
         .transition()
         .attr("transform", translate)
-        .each('end', callback);
+        .on('end', callback);
 };
 
 

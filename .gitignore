@@ -4,6 +4,7 @@ screenshots/
 images/
 .DS_Store
 crossfilter.min.js
+data/analysis/
 #
 # Eclipse IDE service files.
 #

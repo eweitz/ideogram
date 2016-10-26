@@ -34,7 +34,7 @@ VerticalLayout.prototype = Object.create(Layout.prototype);
  */
 VerticalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement, callback) {
 
-    var ideoBox = d3.select("#ideogram").node().getBoundingClientRect();
+    var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
     var chrBox = chrElement.getBoundingClientRect();
 
     var scaleX = (ideoBox.width / chrBox.height) * 0.97;
@@ -45,7 +45,7 @@ VerticalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrEleme
     d3.select(chrElement.parentNode)
         .transition()
         .attr("transform", transform)
-        .each('end', callback);
+        .on('end', callback);
 };
 
 
@@ -59,7 +59,7 @@ VerticalLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement,
     d3.select(chrElement.parentNode)
         .transition()
         .attr("transform", translate)
-        .each('end', callback);
+        .on('end', callback);
 };
 
 

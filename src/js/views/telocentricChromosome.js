@@ -20,6 +20,15 @@ TelocentricChromosome.prototype = Object.create(Chromosome.prototype);
 /**
  * @override
  */
+TelocentricChromosome.prototype._addPArmShape = function(clipPath, isPArmRendered) {
+
+    return clipPath.concat(this._getPArmShape());
+};
+
+
+/**
+ * @override
+ */
 TelocentricChromosome.prototype._getPArmShape = function() {
 
     var d = this._getShapeData();

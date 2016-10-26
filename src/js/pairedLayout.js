@@ -35,7 +35,7 @@ PairedLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement
     /*
      * Get ideo container and chromosome set dimensions.
      */
-    var ideoBox = d3.select("#ideogram").node().getBoundingClientRect();
+    var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
     var chrBox = chrElement.getBoundingClientRect();
     /*
      * Evaluate dimensions scale coefficients.
@@ -56,7 +56,7 @@ PairedLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement
     d3.select(chrElement.parentNode)
         .transition()
         .attr("transform", transform)
-        .each('end', function() {
+        .on('end', function() {
             /*
              * Run callback fnuction if provided.
              */
@@ -89,7 +89,7 @@ PairedLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, c
     d3.select(chrElement.parentNode)
         .transition()
         .attr("transform", translate)
-        .each('end', function() {
+        .on('end', function() {
             /*
              * Run callback fnuction if provided.
              */
