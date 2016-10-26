@@ -1052,9 +1052,9 @@ Ideogram.prototype.getCentromerePath = function(d, chrModel) {
   if (ideo.adjustedBump) {
     curveTweak = 0.35;
     cenWidth = 0.2;
-    left -= 0.1;
-    if (d.name[0] === "q") {
-      left += 1.2;
+    left += 3.3;
+    if (d.name[0] === "p") {
+      left += 0.7;
     }
   }
 
@@ -1072,6 +1072,10 @@ Ideogram.prototype.getCentromerePath = function(d, chrModel) {
     my = curveStart;
     ldx = cenWidth + cenWidthTweak;
     q = (bump + 1) + " " + curveMid + " 0 " + curveEnd + " ";
+  }
+
+  if (ideo.adjustedBump) {
+    ldx = 0.2;
   }
 
   if (d.name[0] == "p") {
@@ -1113,7 +1117,7 @@ Ideogram.prototype.getCenAndArmParameters = function(chrModel, chr) {
 
   var ideo = this,
       bump = ideo.bump,
-      centromere, cenPosition, cenTweak,
+      centromere, cenPosition, cenTweak, borderTweak,
       pcen, qcen,
       pcenStart, qArmStart, qArmWidth, qArmEnd,
       hasBands = "bands" in chrModel;
@@ -1130,8 +1134,6 @@ Ideogram.prototype.getCenAndArmParameters = function(chrModel, chr) {
 
     pcenStart = pcen.px.start;
     qArmStart = qcen.px.stop + bump/2 - cenTweak;
-    qArmWidth = chrModel.width - qArmStart;
-    qArmEnd = qArmStart + qArmWidth - bump/2;
 
   } else {
     pcenStart = 2;
@@ -1141,6 +1143,7 @@ Ideogram.prototype.getCenAndArmParameters = function(chrModel, chr) {
   qArmWidth = chrModel.width - qArmStart;
   qArmEnd = qArmStart + qArmWidth - bump/2;
 
+
   if (cenPosition !== "telocentricPCen") {
     if (hasBands) {
       qArmStart = qcen.px.stop;
@@ -1148,6 +1151,13 @@ Ideogram.prototype.getCenAndArmParameters = function(chrModel, chr) {
       pcenStart -= cenTweak;
       qArmEnd += bump/2;
     }
+  }
+
+  if (ideo.adjustedBump) {
+    borderTweak = 1.8;
+    // qArmStart -= borderTweak;
+    // qArmWidth -= borderTweak;
+    qArmEnd -= borderTweak*1.3;
   }
 
   return [
@@ -1164,9 +1174,6 @@ Ideogram.prototype.drawChromosomeBordersAndCentromeres = function(chrModel, chr)
       bump = ideo.bump,
       chrMargin, chrWidth,
       centromere, cenPosition, cenTweak,
-      pcen, qcen,
-      pcenStart, qArmStart, qArmWidth, qArmEnd,
-      pcenWidth, qcenWidth,
       hasBands = "bands" in chrModel;
 
   chrMargin = ideo.config.chrMargin * chrModel.chrIndex;
@@ -1175,11 +1182,11 @@ Ideogram.prototype.drawChromosomeBordersAndCentromeres = function(chrModel, chr)
   centromere = chrModel.centromere;
   cenPosition = chrModel.centromerePosition;
 
-  var cap = ideo.getCenAndArmParameters(chrModel, chr);
-  pcenStart = cap[0];
-  qArmStart = cap[1];
-  qArmWidth = cap[2];
-  qArmEnd = cap[3];
+  var cap = ideo.getCenAndArmParameters(chrModel, chr),
+      pcenStart = cap[0],
+      qArmStart = cap[1],
+      qArmWidth = cap[2],
+      qArmEnd = cap[3];
 
   if (cenPosition !== "telocentricPCen") {
 
@@ -1312,7 +1319,17 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
 
 Ideogram.prototype.drawChromosomeBorders = function(chr, chrModel, bump, chrMargin, pcenStart, chrWidth, qArmStart, qArmEnd) {
 
-  var cenPosition = chrModel.centromerePosition;
+  var ideo = this,
+      borderTweak,
+      cenPosition = chrModel.centromerePosition;
+
+
+  if (ideo.adjustedBump) {
+    borderTweak = 2;
+    pcenStart += borderTweak*2;
+    qArmStart -= borderTweak;
+    qArmEnd += borderTweak*2;
+  }
 
   if (cenPosition !== "telocentricPCen") {
 
@@ -1358,7 +1375,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
       pTerPad, chrClass,
       annotHeight, numAnnotTracks, annotTracksHeight,
       bump, ideo,
-      bumpTweak, borderTweak,
+      bumpTweak,
       ideo = this;
 
   if (typeof chrModel.bands === "undefined") {
@@ -1413,6 +1430,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
         curveTweak = 0;
 
         if (d.stain == "acen") {
+          return;
           //return ideo.getCentromerePath(d, chrModel);
         } else {
           // Normal bands
@@ -1475,6 +1493,11 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
   ideo.drawChromosomeBordersAndCentromeres(chrModel, chr);
 
   width -= bump/2;
+
+  if (ideo.adjustedBump) {
+    borderTweak = 2;
+    width += borderTweak - 0.4;
+  }
 
   chr.append('path')
     .attr("class", "downstream chromosomeBorder " + chrModel.bands[chrModel.bands.length - 1].stain)
