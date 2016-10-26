@@ -54,8 +54,10 @@ Layout.getInstance = function(config, ideo) {
         return new SmallLayout(config, ideo);
     } else if (config.orientation === 'vertical') {
         return new VerticalLayout(config, ideo);
-    } else {
+    } else if (config.orientation === 'horizontal') {
         return new HorizontalLayout(config, ideo);
+    } else {
+        return new VerticalLayout(config, ideo);
     }
 };
 
