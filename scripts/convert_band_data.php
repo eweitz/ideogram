@@ -1,6 +1,5 @@
 <?php
 
-
 $file = 'data/bands/ncbi/ideogram_banana_v0.1.tsv';
 $maxSvgLength = 10000;
 
@@ -25,14 +24,10 @@ $maxChrLength = max(array_column($bands, 'bp_stop'));
 echo 'chrBands = [', "\n";
 foreach ($bands as $band) {
     if ($band['arm'] == 'p') {
-        echo '    "' . $band['#chromosome'] . ' ' . $band['arm'] . ' 1 0 50 gneg",',
-             '"' . $band['#chromosome'] . ' ' . $band['arm'] . ' 2 50 100 gpos",',
-             '"' . $band['#chromosome'] . ' ' . $band['arm'] . ' 3 100 ' . round($band['bp_stop'] / $maxChrLength * $maxSvgLength) . ' 0 0 acen",',
+        echo '    "' . $band['#chromosome'] . ' ' . $band['arm'] . ' 1 0 ' . round($band['bp_stop'] / $maxChrLength * $maxSvgLength) . '",',
              "\n";
     } else {
-        echo '    "' . $band['#chromosome'] . ' ' . $band['arm'] . ' 1 0 50 acen",',
-             '"' . $band['#chromosome'] . ' ' . $band['arm'] . ' 2 50 100 gvar",',
-             '"' . $band['#chromosome'] . ' ' . $band['arm'] . ' 3 100 ' . round($band['bp_stop'] / $maxChrLength * $maxSvgLength) . ' 0 0 gneg",',
+        echo '    "' . $band['#chromosome'] . ' ' . $band['arm'] . ' 1 0 ' . round($band['bp_stop'] / $maxChrLength * $maxSvgLength) . '",',
              "\n";
     }
 }
