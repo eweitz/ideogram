@@ -104,7 +104,7 @@ Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
         .append('path')
         .attr('fill', 'transparent')
         .attr('stroke', function(d, i) {
-            return self._ideo._color.getBorderColor(chrSetNumber, chrNumber, i);
+            return self._color.getBorderColor(chrSetNumber, chrNumber, i);
         }).attr('stroke-width', 1)
         .attr('d', function(d) {
             return d.path;
