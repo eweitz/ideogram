@@ -485,6 +485,7 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
       startType, stopType,
       chrHeight = this.config.chrHeight,
       maxLength = this.maxLength,
+      bump = this.bump,
       pcenIndex, chrLength,
       cs, hasBands, start, stop;
 
@@ -530,13 +531,22 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
 
     if ("pcenIndex" in chr) {
       pcenIndex = chr.pcenIndex;
+      var pcenPx = bands[pcenIndex].px;
+      var qcenPx = bands[pcenIndex + 1].px;
+      if (ideo.adjustedBump && pcenPx.width + qcenPx.width > bump) {
+        // e.g. human chr14 and chr15 in small layout (chrHeight = 200)
+        pcenPx["stop"] = pcenPx.stop + (bump/2 - pcenPx.width) - 0.3;
+        pcenPx["width"] = bump/2;
+        qcenPx["stop"] = qcenPx.stop + (bump/2 - qcenPx.width) - 0.3;
+        qcenPx["width"] = bump/2;
+      }
       chr["centromere"] = {
         "start": bands[pcenIndex].bp.start,
         "length": bands[pcenIndex + 1].bp.stop - bands[pcenIndex].bp.start,
         "iscnStart": bands[pcenIndex].iscn.start,
         "iscnLength": bands[pcenIndex + 1].iscn.stop - bands[pcenIndex].iscn.start,
-        "pcenPx": bands[pcenIndex].px,
-        "qcenPx": bands[pcenIndex + 1].px
+        "pcenPx": pcenPx,
+        "qcenPx": qcenPx
       };
     }
 
