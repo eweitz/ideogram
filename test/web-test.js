@@ -451,12 +451,12 @@ describe("Ideogram", function() {
     // Tests use case from ../examples/annotations_histogram.html
     // TODO: Add class to annots indicating track
 
-    function getTerEnd(arm) {
+    function getTerEnd(end) {
       // Helper function to get the x coordinate of the outermost
       // edge of the p or q arm of chromosome 1
 
-      var ter = d3.select("." + arm + "-ter"),
-          terBox = ter.nodes()[0].getBBox(),
+      var ter = d3.select(end),
+          terBox = ter.nodes(end + ".chromosomeBorder")[0].getBBox(),
           terX = terBox.x,
           terWidth = terBox.width,
           terEnd,
@@ -466,7 +466,7 @@ describe("Ideogram", function() {
 
           terStroke = parseFloat(ter.style("stroke-width").slice(0, -2));
 
-          if (arm == "p") {
+          if (end == "upstream") {
             terEnd = terX + terWidth + terCurve + terCurveX - terStroke;
           } else {
             terEnd = terCurve + terCurveX - terStroke;
@@ -479,9 +479,9 @@ describe("Ideogram", function() {
 
     function onIdeogramLoadAnnots() {
 
-      var pterEnd = getTerEnd("p"),
+      var upstreamEnd = getTerEnd(".upstream"),
           firstAnnotEnd = d3.selectAll("#chr1-9606 .annot").nodes()[0].getBBox().x,
-          qterEnd = getTerEnd("q"),
+          downstreamEnd = getTerEnd(".downstream"),
           tmp = d3.selectAll("#chr1-9606 .annot").nodes(),
           tmp = tmp[tmp.length - 1].getBBox(),
           bump = ideogram.bump,
@@ -489,8 +489,8 @@ describe("Ideogram", function() {
 
           //console.log("pterEnd - firstAnnotEnd: " + (pterEnd - firstAnnotEnd));
           //console.log("qterEnd - lastAnnotEnd: " + (qterEnd - lastAnnotEnd));
-          assert.isBelow(pterEnd - firstAnnotEnd - bump, 1);
-          assert.isAbove(qterEnd - lastAnnotEnd - bump, -1);
+          assert.isBelow(upstreamEnd - firstAnnotEnd - bump, 1);
+          assert.isAbove(downstreamEnd - lastAnnotEnd - bump, -1);
 
       done();
     }

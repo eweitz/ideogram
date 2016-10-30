@@ -395,20 +395,27 @@ Ideogram.prototype.getCentromereModel = function(chromosome) {
 
   centromere = [
       {
-          'name': 'p-cen',
           'bp': {
               'start': start,
               'length': length
           }
       },
       {
-          'name': 'q-cen',
           'bp': {
               'start': start + length,
               'length': length
           }
       }
   ];
+
+  if ("pcenBandName" in chr.centromere) {
+    // Has bands
+    centromere[0].name = chr.centromere.pcenBandName;
+    centromere[1].name = chr.centromere.qcenBandName;
+  } else {
+    centromere[0].name = "p11";
+    centromere[1].name = "q11";
+  }
 
   if ("iscnStart" in chr.centromere) {
 
@@ -531,8 +538,10 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
 
     if ("pcenIndex" in chr) {
       pcenIndex = chr.pcenIndex;
-      var pcenPx = bands[pcenIndex].px;
-      var qcenPx = bands[pcenIndex + 1].px;
+      var pcen = bands[pcenIndex];
+      var qcen = bands[pcenIndex + 1];
+      var pcenPx = pcen.px;
+      var qcenPx = qcen.px;
       if (ideo.adjustedBump && pcenPx.width + qcenPx.width > bump) {
         // e.g. human chr14 and chr15 in small layout (chrHeight = 200)
         pcenPx["stop"] = pcenPx.stop + (bump/2 - pcenPx.width) - 0.3;
@@ -541,12 +550,14 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
         qcenPx["width"] = bump/2;
       }
       chr["centromere"] = {
-        "start": bands[pcenIndex].bp.start,
-        "length": bands[pcenIndex + 1].bp.stop - bands[pcenIndex].bp.start,
-        "iscnStart": bands[pcenIndex].iscn.start,
-        "iscnLength": bands[pcenIndex + 1].iscn.stop - bands[pcenIndex].iscn.start,
+        "start": pcen.bp.start,
+        "length": qcen.bp.stop - pcen.bp.start,
+        "iscnStart": pcen.iscn.start,
+        "iscnLength": qcen.iscn.stop - pcen.iscn.start,
         "pcenPx": pcenPx,
-        "qcenPx": qcenPx
+        "qcenPx": qcenPx,
+        "pcenBandName": pcen.name,
+        "qcenBandName": qcen.name
       };
     }
 
@@ -602,9 +613,9 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
       band = chr.centromere[i];
       start = band.bp.start;
       stop = start + band.bp.length;
-      if (band.name == "p-cen" && start == 1) {
+      if (band.name[0] == "p" && start == 1) {
         chr["centromerePosition"] = "telocentricPCen";
-      } else if (band.name == "q-cen" && stop == chr.length - 1) {
+      } else if (band.name[0] == "q" && stop == chr.length - 1) {
         chr["centromerePosition"] = "telocentricQCen";
       }
     }
@@ -1062,9 +1073,9 @@ Ideogram.prototype.getCentromerePath = function(d, chrModel) {
   if (ideo.adjustedBump) {
     curveTweak = 0.35;
     cenWidth = 0.2;
-    left += 3.3;
-    if (d.name[0] === "p") {
-      left += 0.7;
+    left += bump;
+    if (d.name[0] === "q") {
+      left -= 0.7;
     }
   }
 
@@ -1098,7 +1109,7 @@ Ideogram.prototype.getCentromerePath = function(d, chrModel) {
   } else {
 
     if (ideo.adjustedBump) {
-      cenWidth += 0.2;
+      cenWidth -= 0.2;
     }
 
     if (chrModel.centromerePosition == "telocentricPCen") {
@@ -1153,7 +1164,6 @@ Ideogram.prototype.getCenAndArmParameters = function(chrModel, chr) {
   qArmWidth = chrModel.width - qArmStart;
   qArmEnd = qArmStart + qArmWidth - bump/2;
 
-
   if (cenPosition !== "telocentricPCen") {
     if (hasBands) {
       qArmStart = qcen.px.stop;
@@ -1203,15 +1213,17 @@ Ideogram.prototype.drawChromosomeBordersAndCentromeres = function(chrModel, chr)
     for (var i = 0; i < centromere.length; i++) {
       band = centromere[i];
       if (
-        band.name == "p-cen" && cenPosition == "telocentricPCen" ||
-        band.name == "q-cen" && cenPosition == "telocentricQCen"
+        band.name[0] == "p" && cenPosition == "telocentricPCen" ||
+        band.name[0] == "q" && cenPosition == "telocentricQCen"
       ) {
         // If the chromosome is lacking a p arm or q arm,
         // then don't draw that side of the pericentromeric heterochromatin
         continue;
       }
       var d = ideo.getCentromerePath(band, chrModel);
+      var cenID = chrModel.id + "-" + band.name;
       chr.append('path')
+        .attr("id", cenID)
         .attr("class", band.name + " acen band")
         .attr("d", d);
     }
@@ -1335,7 +1347,7 @@ Ideogram.prototype.drawChromosomeBorders = function(chr, chrModel, bump, chrMarg
 
 
   if (ideo.adjustedBump) {
-    borderTweak = 2;
+    borderTweak = bump/2;
     pcenStart += borderTweak*2;
     qArmStart -= borderTweak;
     qArmEnd += borderTweak*2;
