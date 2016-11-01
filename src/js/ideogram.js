@@ -112,6 +112,13 @@ var Ideogram = function(config) {
     this.config.showNonNuclearChromosomes = false;
   }
 
+  if (!this.config.showCentromeres) {
+    this.config.showCentromeres = true;
+  }
+  if (this.config.armColors) {
+    this.config.showCentromeres = false;
+  }
+
   this.initAnnotSettings();
 
   this.config.chrMargin = (
@@ -342,8 +349,8 @@ Ideogram.prototype.colorArms = function(pArmColor, qArmColor) {
   ideo.chromosomesArray.forEach(function(chr, chrIndex){
 
     var bands = chr.bands,
-        pcen = bands[chr.pcenIndex],
-        qcen = bands[chr.pcenIndex + 1],
+        pcen = chr.centromere[0],
+        qcen = chr.centromere[1],
         chrID = chr.id,
         chrMargin = ideo.config.chrMargin * (chrIndex + 1),
         chrWidth = ideo.config.chrWidth;
@@ -370,15 +377,16 @@ Ideogram.prototype.colorArms = function(pArmColor, qArmColor) {
     d3.selectAll("#" + chrID + " .band")
       .data(chr.bands)
       .style("fill", function(d, i) {
-        if (i <= chr.pcenIndex) {
-          return pArmColor;
-        } else {
-          return qArmColor;
-        }
+        return (i <= chr.pcenIndex) ? pArmColor : qArmColor;
       });
+    d3.selectAll("#" + chrID + " .acen")
+      .data(chr.centromere)
+      .style("fill", function(d, i) {
+        return (d.name[0] == "p") ? pArmColor : qArmColor;
+      })
   });
-  d3.selectAll(".p-ter.chromosomeBorder").style("fill", pArmColor);
-  d3.selectAll(".q-ter.chromosomeBorder").style("fill", qArmColor);
+  d3.selectAll(".upstream.chromosomeBorder").style("fill", pArmColor);
+  d3.selectAll(".downstream.chromosomeBorder").style("fill", qArmColor);
 
 };
 
@@ -531,8 +539,11 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
 
       pxStop = bands[i].px.stop;
 
-      if (band.stain === "acen" && band.name[0] === "p") {
-        chr["pcenIndex"] = i;
+      if (band.stain === "acen") {
+        bands[i]["stain"] = ""; // Revised data model assigns acen later
+        if (band.name[0] === "p") {
+          chr["pcenIndex"] = i;
+        }
       }
     }
 
@@ -1193,7 +1204,7 @@ Ideogram.prototype.drawChromosomeBordersAndCentromeres = function(chrModel, chr)
   var ideo = this,
       bump = ideo.bump,
       chrMargin, chrWidth,
-      centromere, cenPosition, cenTweak,
+      centromere, cenPosition, cenTweak, d, cenID,
       hasBands = "bands" in chrModel;
 
   chrMargin = ideo.config.chrMargin * chrModel.chrIndex;
@@ -1220,8 +1231,8 @@ Ideogram.prototype.drawChromosomeBordersAndCentromeres = function(chrModel, chr)
         // then don't draw that side of the pericentromeric heterochromatin
         continue;
       }
-      var d = ideo.getCentromerePath(band, chrModel);
-      var cenID = chrModel.id + "-" + band.name;
+      d = ideo.getCentromerePath(band, chrModel);
+      cenID = chrModel.id + "-" + band.name;
       chr.append('path')
         .attr("id", cenID)
         .attr("class", band.name + " acen band")
