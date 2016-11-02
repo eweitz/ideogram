@@ -540,7 +540,6 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
       pxStop = bands[i].px.stop;
 
       if (band.stain === "acen") {
-        bands[i]["stain"] = ""; // Revised data model assigns acen later
         if (band.name[0] === "p") {
           chr["pcenIndex"] = i;
         }
@@ -1246,7 +1245,6 @@ Ideogram.prototype.drawChromosomeBordersAndCentromeres = function(chrModel, chr)
       // http://localhost/ideogram/examples/eukaryotes.html?org=ornithorhynchus-anatinus
       // See also Pan troglodytes chr13
       // http://localhost/ideogram/examples/eukaryotes.html?org=pan-troglodytes
-
     } else {
       // More typical case
       chr.append('path')
@@ -1448,6 +1446,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
       .attr("class", function(d) {
         var cls = "band " + d.stain;
         if (d.stain == "acen") {
+          return;
           var arm = d.name[0]; // e.g. p in p11
           cls += " " + arm + "-cen";
         }
