@@ -615,7 +615,6 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
     chr["bands"] = chr["bands"].slice(1);
   }
 
-
   if ("centromere" in chr) {
     chr["centromere"] = ideo.getCentromereModel(chr);
 
@@ -635,10 +634,16 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
       chr.centromere[0].px.start < ideo.bump * 2
     ) {
       // e.g. Pan troglodytes chr18
-      chr["centromerePosition"]
+      chr["centromerePosition"];
     }
 
   }
+
+  var cap = ideo.getCenAndArmParameters(chr);
+  chr.pcenStart = cap[0];
+  chr.qArmStart = cap[1];
+  chr.qArmWidth = cap[2];
+  chr.qArmEnd = cap[3];
 
   return chr;
 };
@@ -1144,7 +1149,7 @@ Ideogram.prototype.getCentromerePath = function(d, chrModel) {
   return d;
 }
 
-Ideogram.prototype.getCenAndArmParameters = function(chrModel, chr) {
+Ideogram.prototype.getCenAndArmParameters = function(chrModel) {
 
   var ideo = this,
       bump = ideo.bump,
@@ -1156,7 +1161,7 @@ Ideogram.prototype.getCenAndArmParameters = function(chrModel, chr) {
   centromere = chrModel.centromere;
   cenPosition = chrModel.centromerePosition;
 
-  if (cenPosition !== "telocentricPCen") {
+  if (cenPosition !== "telocentricPCen" && "centromere" in chrModel) {
 
     pcen = centromere[0];
     qcen = centromere[1];
@@ -1212,11 +1217,10 @@ Ideogram.prototype.drawChromosomeBordersAndCentromeres = function(chrModel, chr)
   centromere = chrModel.centromere;
   cenPosition = chrModel.centromerePosition;
 
-  var cap = ideo.getCenAndArmParameters(chrModel, chr),
-      pcenStart = cap[0],
-      qArmStart = cap[1],
-      qArmWidth = cap[2],
-      qArmEnd = cap[3];
+  pcenStart = chrModel.pcenStart;
+  qArmStart = chrModel.qArmStart;
+  qArmWidth = chrModel.qArmWidth;
+  qArmEnd = chrModel.qArmEnd;
 
   if (cenPosition !== "telocentricPCen") {
 
