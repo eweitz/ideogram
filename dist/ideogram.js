@@ -1633,9 +1633,13 @@ Chromosome.prototype._getShapeData = function() {
     /*
      * First q band from bands sequence.
      */
-    var firstQBand = this._model.bands.find(function(band) {
-        return band.name[0] == 'q';
-    });
+    var firstQBand;
+    for (var i = 0; i < this._model.bands.length; i ++) {
+        if (this._model.bands[i].name[0] == 'q') {
+            firstQBand = this._model.bands[i];
+            break;
+        }
+    }
     /*
      * Chromosome's right position.
      */
