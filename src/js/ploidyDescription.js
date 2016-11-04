@@ -42,7 +42,7 @@ PloidyDescription.prototype._normilize = function(description) {
         if (typeof description[key] == 'string') {
             normalized.push({
                 ancestors : description[key],
-                existance : new Array(description[key].length).fill('11')
+                existance : this._getExistanceArray(description[key].length)
             });
         } else {
             normalized.push({
@@ -53,6 +53,23 @@ PloidyDescription.prototype._normilize = function(description) {
     }
 
     return normalized;
+};
+
+
+/**
+ * Get array filled by '11' elements.
+ * @private
+ * @param length
+ */
+PloidyDescription.prototype._getExistanceArray = function(length) {
+
+    var array = [];
+
+    for (var i = 0; i < length; i ++) {
+        array.push('11');
+    }
+
+    return array;
 };
 
 
