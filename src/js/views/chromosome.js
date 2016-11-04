@@ -87,13 +87,17 @@ Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
     var isPArmRendered = this._renderPArm(container, chrSetNumber, chrNumber);
     var isQArmRendered = this._renderQArm(container, chrSetNumber, chrNumber);
     /*
-     * Push p arm shape string path.
+     * Render range set.
+     */
+    this._renderRangeSet(container, chrSetNumber, chrNumber);
+    /*
+     * Push arms shape string into clipPath array.
      */
     var clipPath = [];
     clipPath = this._addPArmShape(clipPath, isPArmRendered);
     clipPath = this._addQArmShape(clipPath, isQArmRendered);
     /*
-     * Render shapes.
+     * Render chromosome border.
      */
     var self = this;
     container.append('g')
@@ -113,6 +117,43 @@ Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
         });
 
     return clipPath;
+};
+
+
+/**
+ * 
+ */
+Chromosome.prototype._renderRangeSet = function(container, chrSetNumber, chrNumber) {
+
+    if (! ('rangeSet' in this._config)) {
+        return;
+    };
+
+    var rangeSet = this._config.rangeSet.filter(function(range) {
+        return range.chr == chrSetNumber;
+    }).map(function(range) {
+        return new Range(range);
+    });
+
+//    console.log(chrSetNumber, ranges.length)
+    var rangesContainer = container.append('g')
+        .attr('class', 'range-set');
+
+    var self = this;
+    rangesContainer.selectAll('rect.range')
+        .data(rangeSet)
+        .enter()
+        .append('rect')
+        .attr('class', 'range')
+        .attr('x', function(range) {
+            return self._ideo.convertBpToPx(self._model, range.getStart());
+        }).attr('y', 0)
+        .attr('width', function(range) {
+            return self._ideo.convertBpToPx(self._model, range.getLength());
+        }).attr('height', this._config.chrWidth)
+        .style('fill', function(range) {
+            return range.getColor(chrNumber);
+        });
 };
 
 
