@@ -177,7 +177,7 @@ HorizontalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
          */
         for (var i = 1; i < this._config.ploidyDesc.length; i ++) {
             this._translate[i] = this._translate[i - 1] + this._getChromosomeSetSize(i - 1);
-        };
+        }
     }
 
     return this._translate[setNumber];

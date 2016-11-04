@@ -60,7 +60,9 @@ PairedLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement
             /*
              * Run callback fnuction if provided.
              */
-            callback && callback();
+            if (callback) {
+                callback();
+            }
             /*
              * Rotate band labels.
              */
@@ -113,7 +115,7 @@ PairedLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, c
  */
 PairedLayout.prototype.getHeight = function(taxId) {
 
-    return this._config.chrHeight + this._margin.left * 1.5
+    return this._config.chrHeight + this._margin.left * 1.5;
 };
 
 

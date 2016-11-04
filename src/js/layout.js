@@ -35,7 +35,7 @@ function Layout(config, ideo) {
      * @member {Boolean}
      */
     this._isRotated = false;
-};
+}
 
 
 /**
@@ -229,7 +229,7 @@ Layout.prototype.getChromosomeBandLabelAnchor = function(chrNumber) {
 Layout.prototype.getChromosomeLabelXPosition = function(i) {
 
     throw new Error(this._class + '#getChromosomeLabelXPosition not implemented');
-}
+};
 
 
 Layout.prototype.getChromosomeLabelYPosition = function(i) {
@@ -265,7 +265,7 @@ Layout.prototype.getChromosomeSetLabelTranslate = function() {
 Layout.prototype.getChromosomeSetTranslate = function(setNumber) {
 
     throw new Error(this._class + '#getChromosomeSetTranslate not implemented');
-}
+};
 
 
 /**
@@ -277,4 +277,4 @@ Layout.prototype.getChromosomeSetTranslate = function(setNumber) {
 Layout.prototype.getChromosomeSetYTranslate = function(setNumber) {
 
     throw new Error(this._class + '#getChromosomeSetYTranslate not implemented');
-}
+};

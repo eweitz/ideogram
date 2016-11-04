@@ -7,7 +7,7 @@ function ModelAdapter(model) {
 
     this._model = model;
     this._class = 'ModelAdapter';
-};
+}
 
 
 /**
@@ -54,7 +54,7 @@ function ModelNoBandsAdapter(model) {
      */
     ModelAdapter.call(this, model);
     this._class = 'ModelNoBandsAdapter';
-};
+}
 
 
 ModelNoBandsAdapter.prototype = Object.create(ModelAdapter.prototype);
@@ -130,7 +130,7 @@ function Layout(config, ideo) {
      * @member {Boolean}
      */
     this._isRotated = false;
-};
+}
 
 
 /**
@@ -324,7 +324,7 @@ Layout.prototype.getChromosomeBandLabelAnchor = function(chrNumber) {
 Layout.prototype.getChromosomeLabelXPosition = function(i) {
 
     throw new Error(this._class + '#getChromosomeLabelXPosition not implemented');
-}
+};
 
 
 Layout.prototype.getChromosomeLabelYPosition = function(i) {
@@ -360,7 +360,7 @@ Layout.prototype.getChromosomeSetLabelTranslate = function() {
 Layout.prototype.getChromosomeSetTranslate = function(setNumber) {
 
     throw new Error(this._class + '#getChromosomeSetTranslate not implemented');
-}
+};
 
 
 /**
@@ -372,7 +372,7 @@ Layout.prototype.getChromosomeSetTranslate = function(setNumber) {
 Layout.prototype.getChromosomeSetYTranslate = function(setNumber) {
 
     throw new Error(this._class + '#getChromosomeSetYTranslate not implemented');
-}
+};
 /**
  * @public
  * @class
@@ -552,7 +552,7 @@ HorizontalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
          */
         for (var i = 1; i < this._config.ploidyDesc.length; i ++) {
             this._translate[i] = this._translate[i - 1] + this._getChromosomeSetSize(i - 1);
-        };
+        }
     }
 
     return this._translate[setNumber];
@@ -725,7 +725,7 @@ VerticalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
          */
         for (var i = 1; i < this._config.ploidyDesc.length; i ++) {
             this._translate[i] = this._translate[i - 1] + this._getChromosomeSetSize(i - 1);
-        };
+        }
     }
 
     return this._translate[setNumber];
@@ -828,7 +828,9 @@ PairedLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement
             /*
              * Run callback fnuction if provided.
              */
-            callback && callback();
+            if (callback) {
+                callback();
+            }
             /*
              * Rotate band labels.
              */
@@ -881,7 +883,7 @@ PairedLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, c
  */
 PairedLayout.prototype.getHeight = function(taxId) {
 
-    return this._config.chrHeight + this._margin.left * 1.5
+    return this._config.chrHeight + this._margin.left * 1.5;
 };
 
 
@@ -1059,7 +1061,7 @@ SmallLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, ca
  */
 SmallLayout.prototype.getHeight = function(taxId) {
 
-    return this._config.rows * (this._config.chrHeight + this._margin.top * 1.5)
+    return this._config.rows * (this._config.chrHeight + this._margin.top * 1.5);
 };
 
 
@@ -1360,7 +1362,7 @@ PloidyDescription.prototype.getAncestor = function(chrSetNumber, chrNumber) {
     } else {
         return '';
     }
-}
+};
 
 
 /**
@@ -1462,7 +1464,7 @@ Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
      */
     container = container.append('g')
         .attr('class', 'bands')
-        .attr("clip-path", "url(#" + this._model.id + "-chromosome-set-clippath)")
+        .attr("clip-path", "url(#" + this._model.id + "-chromosome-set-clippath)");
     /*
      * Render chromosome arms.
      */
@@ -1486,7 +1488,7 @@ Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
         .append('path')
         .attr('fill', 'transparent')
         .attr('stroke', function(d, i) {
-            return self._ideo._color.getBorderColor(chrSetNumber, chrNumber, i);
+            return self._color.getBorderColor(chrSetNumber, chrNumber, i);
         }).attr('stroke-width', 1)
         .attr('d', function(d) {
             return d.path;
@@ -1739,12 +1741,6 @@ var Ideogram = function(config) {
   // Clone the config object, to allow multiple instantiations
   // without picking up prior ideogram's settings
   this.config = JSON.parse(JSON.stringify(config));
-  /**
-   * Color provider.
-   * @private
-   * @member {Color}
-   */
-  this._color = new Color(this.config);
   this._ploidy = new Ploidy(this.config);
   this._layout = Layout.getInstance(this.config, this);
   this._description = new PloidyDescription(this.config.ploidyDesc);
@@ -4100,7 +4096,7 @@ Ideogram.prototype.unpackAnnots = function() {
 
   return unpackedAnnots;
 
-}
+};
 
 /*
   Compresses annots back to default state.  Inverse of unpackAnnots.
@@ -4112,18 +4108,18 @@ Ideogram.prototype.packAnnots = function(unpackedAnnots) {
       ideo = this,
       chrs = ideo.annots;
 
-  for (var chr in chrs) {
+  for (chr in chrs) {
     annots.push({'chr': chrs[chr].chr, annots: []});
   }
 
   for (i = 0; i < unpackedAnnots.length; i++) {
     annot = unpackedAnnots[i];
-    annots[annot.chrIndex]['annots'].push(annot);
+    annots[annot.chrIndex].annots.push(annot);
   }
 
   return annots;
 
-}
+};
 
 /*
   Initializes crossfilter.  Needed for client-side filtering.
@@ -4147,9 +4143,9 @@ Ideogram.prototype.initCrossFilter = function() {
       ideo.crossfilter
         .dimension(function(d) {
           return d[facet];
-        })
+        });
   }
-}
+};
 
 /*
   Filters annotations based on the given selections
@@ -4184,7 +4180,7 @@ Ideogram.prototype.filterAnnots = function(selections) {
       counts = {},
       ideo = this;
 
-  if (Object.keys(selections).length == 0) {
+  if (Object.keys(selections).length === 0) {
     results = ideo.unpackedAnnots;
   } else {
     for (i = 0; i < ideo.facets.length; i++) {
@@ -4217,4 +4213,4 @@ Ideogram.prototype.filterAnnots = function(selections) {
   console.log("Time in filterAnnots: " + (Date.now() - t0) + " ms");
 
   return counts;
-}
+};

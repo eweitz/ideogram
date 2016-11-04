@@ -7,7 +7,7 @@ function ModelNoBandsAdapter(model) {
      */
     ModelAdapter.call(this, model);
     this._class = 'ModelNoBandsAdapter';
-};
+}
 
 
 ModelNoBandsAdapter.prototype = Object.create(ModelAdapter.prototype);

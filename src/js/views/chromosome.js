@@ -80,7 +80,7 @@ Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
      */
     container = container.append('g')
         .attr('class', 'bands')
-        .attr("clip-path", "url(#" + this._model.id + "-chromosome-set-clippath)")
+        .attr("clip-path", "url(#" + this._model.id + "-chromosome-set-clippath)");
     /*
      * Render chromosome arms.
      */
