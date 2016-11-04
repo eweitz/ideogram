@@ -79,7 +79,6 @@ Range.prototype.getColor = function(chrNumber) {
 Range.prototype._getColor = function(chrNumber) {
 
     if (Array.isArray(this._data.color)) {
-        console.log(this._data.color, chrNumber, this._data.color[chrNumber]);
         return this._data.color[chrNumber];
     } else {
         return this._data.color;
