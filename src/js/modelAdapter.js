@@ -7,7 +7,7 @@ function ModelAdapter(model) {
 
     this._model = model;
     this._class = 'ModelAdapter';
-};
+}
 
 
 /**

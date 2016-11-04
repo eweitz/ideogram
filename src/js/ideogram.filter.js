@@ -28,7 +28,7 @@ Ideogram.prototype.unpackAnnots = function() {
 
   return unpackedAnnots;
 
-}
+};
 
 /*
   Compresses annots back to default state.  Inverse of unpackAnnots.
@@ -40,18 +40,18 @@ Ideogram.prototype.packAnnots = function(unpackedAnnots) {
       ideo = this,
       chrs = ideo.annots;
 
-  for (var chr in chrs) {
+  for (chr in chrs) {
     annots.push({'chr': chrs[chr].chr, annots: []});
   }
 
   for (i = 0; i < unpackedAnnots.length; i++) {
     annot = unpackedAnnots[i];
-    annots[annot.chrIndex]['annots'].push(annot);
+    annots[annot.chrIndex].annots.push(annot);
   }
 
   return annots;
 
-}
+};
 
 /*
   Initializes crossfilter.  Needed for client-side filtering.
@@ -75,9 +75,9 @@ Ideogram.prototype.initCrossFilter = function() {
       ideo.crossfilter
         .dimension(function(d) {
           return d[facet];
-        })
+        });
   }
-}
+};
 
 /*
   Filters annotations based on the given selections
@@ -112,7 +112,7 @@ Ideogram.prototype.filterAnnots = function(selections) {
       counts = {},
       ideo = this;
 
-  if (Object.keys(selections).length == 0) {
+  if (Object.keys(selections).length === 0) {
     results = ideo.unpackedAnnots;
   } else {
     for (i = 0; i < ideo.facets.length; i++) {
@@ -145,4 +145,4 @@ Ideogram.prototype.filterAnnots = function(selections) {
   console.log("Time in filterAnnots: " + (Date.now() - t0) + " ms");
 
   return counts;
-}
+};

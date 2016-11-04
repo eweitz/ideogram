@@ -83,7 +83,7 @@ PloidyDescription.prototype.getAncestor = function(chrSetNumber, chrNumber) {
     } else {
         return '';
     }
-}
+};
 
 
 /**

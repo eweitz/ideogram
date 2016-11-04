@@ -68,7 +68,7 @@ SmallLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, ca
  */
 SmallLayout.prototype.getHeight = function(taxId) {
 
-    return this._config.rows * (this._config.chrHeight + this._margin.top * 1.5)
+    return this._config.rows * (this._config.chrHeight + this._margin.top * 1.5);
 };
 
 

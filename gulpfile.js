@@ -6,6 +6,7 @@ var concat = require('gulp-concat');
 var flatten = require('gulp-flatten');
 var ignore = require('gulp-ignore');
 var order = require('gulp-order');
+var jshint = require('gulp-jshint');
 
 gulp.task('default', function () {
 
@@ -17,6 +18,14 @@ gulp.task('default', function () {
     //// gulp-mocha needs filepaths so you can't have any plugins before it
     // .pipe(mocha({reporter: 'spec'}));
 
+});
+
+gulp.task('lint', function() {
+  return gulp.src('src/js/**/*.js')
+    .pipe(flatten())
+    .pipe(ignore.exclude(['ideogram.min.js']))
+    .pipe(jshint())
+    .pipe(jshint.reporter('default'));
 });
 
 gulp.task('dist', function() {
