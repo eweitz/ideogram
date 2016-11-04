@@ -24,6 +24,7 @@ gulp.task('dist', function() {
     .pipe(flatten())
     .pipe(ignore.exclude(['ideogram.min.js']))
     .pipe(order([
+        'range.js',
         'modelAdapter.js',
         'modelNoBandsAdapter.js',
         'layout.js',
