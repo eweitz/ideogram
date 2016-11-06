@@ -154,14 +154,10 @@ HorizontalLayout.prototype.getChromosomeSetTranslate = function(setNumber) {
  */
 HorizontalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
     /*
-     * Get additional padding caused by annotation tracks.
-     */
-    var additionalPadding = this._getAdditionalOffset();
-    /*
      * If no detailed description provided just use one formula for all cases.
      */
     if (! this._config.ploidyDesc) {
-        return 30 * (setNumber) + this._config.chrWidth + additionalPadding * 2 + additionalPadding * setNumber;
+        return this._config.chrMargin * (setNumber + 1);
     }
     /*
      * Id detailed description provided start to calculate offsets
