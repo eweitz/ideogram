@@ -332,7 +332,7 @@ Layout.prototype.rotate = function(chrSetNumber, chrNumber, chrElement) {
 Layout.prototype.getChromosomeLabelClass = function() {
 
     if (this._config.ploidy === 1) {
-        return null;
+        return 'chrLabel';
     } else {
         return 'chrSetLabel';
     }
