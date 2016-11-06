@@ -1618,10 +1618,10 @@ Chromosome.prototype._renderRangeSet = function(container, chrSetNumber, chrNumb
         .append('rect')
         .attr('class', 'range')
         .attr('x', function(range) {
-            return self._ideo.convertBpToPx(self._model, range.getStart());
+            return self._ideo.convertBpToPx(self._model, range.getStart()) - self._ideo._bandsXOffset;
         }).attr('y', 0)
         .attr('width', function(range) {
-            return self._ideo.convertBpToPx(self._model, range.getLength());
+            return self._ideo.convertBpToPx(self._model, range.getLength()) - self._ideo._bandsXOffset;
         }).attr('height', this._config.chrWidth)
         .style('fill', function(range) {
             return range.getColor(chrNumber);
@@ -1877,6 +1877,10 @@ var Ideogram = function(config) {
   this._ploidy = new Ploidy(this.config);
   this._layout = Layout.getInstance(this.config, this);
   this._description = new PloidyDescription(this.config.ploidyDesc);
+  /**
+   * TODO: What is it? Get rid of it!
+   */
+  this._bandsXOffset = 30;
 
   this.debug = false;
 
@@ -2797,10 +2801,8 @@ Ideogram.prototype.convertBpToPx = function(chr, bp) {
 
       bpToIscnScale = (band.iscn.stop - band.iscn.start)/(band.bp.stop - band.bp.start);
       iscn = band.iscn.start + (bp - band.bp.start) * bpToIscnScale;
-      /*
-       * TODO: What is 30 magic number??
-       */
-      px = 30 + band.px.start + (band.px.width * (iscn - band.iscn.start)/(band.iscn.stop - band.iscn.start));
+
+      px = this._bandsXOffset + band.px.start + (band.px.width * (iscn - band.iscn.start)/(band.iscn.stop - band.iscn.start));
 
       return px;
     }

@@ -146,10 +146,10 @@ Chromosome.prototype._renderRangeSet = function(container, chrSetNumber, chrNumb
         .append('rect')
         .attr('class', 'range')
         .attr('x', function(range) {
-            return self._ideo.convertBpToPx(self._model, range.getStart());
+            return self._ideo.convertBpToPx(self._model, range.getStart()) - self._ideo._bandsXOffset;
         }).attr('y', 0)
         .attr('width', function(range) {
-            return self._ideo.convertBpToPx(self._model, range.getLength());
+            return self._ideo.convertBpToPx(self._model, range.getLength()) - self._ideo._bandsXOffset;
         }).attr('height', this._config.chrWidth)
         .style('fill', function(range) {
             return range.getColor(chrNumber);
