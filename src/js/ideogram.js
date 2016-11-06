@@ -18,6 +18,10 @@ var Ideogram = function(config) {
   this._ploidy = new Ploidy(this.config);
   this._layout = Layout.getInstance(this.config, this);
   this._description = new PloidyDescription(this.config.ploidyDesc);
+  /**
+   * TODO: What is it? Get rid of it!
+   */
+  this._bandsXOffset = 30;
 
   this.debug = false;
 
@@ -938,10 +942,8 @@ Ideogram.prototype.convertBpToPx = function(chr, bp) {
 
       bpToIscnScale = (band.iscn.stop - band.iscn.start)/(band.bp.stop - band.bp.start);
       iscn = band.iscn.start + (bp - band.bp.start) * bpToIscnScale;
-      /*
-       * TODO: What is 30 magic number??
-       */
-      px = 30 + band.px.start + (band.px.width * (iscn - band.iscn.start)/(band.iscn.stop - band.iscn.start));
+
+      px = this._bandsXOffset + band.px.start + (band.px.width * (iscn - band.iscn.start)/(band.iscn.stop - band.iscn.start));
 
       return px;
     }
