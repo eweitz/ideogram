@@ -457,7 +457,7 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
     d3.selectAll(".chromosome-set-container")
         .append("text")
         .data(ideo.chromosomesArray)
-        .attr("class", "chrSetLabel")
+        .attr("class", ideo._layout.getChromosomeLabelClass())
         .attr("transform", ideo._layout.getChromosomeSetLabelTranslate())
         .attr("x", function(d, i) {
             return ideo._layout.getChromosomeSetLabelXPosition(i);
@@ -465,7 +465,7 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
             return ideo._layout.getChromosomeSetLabelYPosition(i);
         }).text(function(d, i) {
             return d.name;
-        }).attr("text-anchor", "middle");
+        }).attr("text-anchor", ideo._layout.getChromosomeSetLabelAnchor());
     /*
      * Append chromosomes labels.
      */

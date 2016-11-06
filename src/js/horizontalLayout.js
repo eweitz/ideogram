@@ -20,7 +20,7 @@ function HorizontalLayout(config, ideo) {
      * @member {Object}
      */
     this._margin = {
-        left : 25,
+        left : 35,
         top : 30
     };
 }
@@ -85,6 +85,15 @@ HorizontalLayout.prototype.getHeight = function(taxId) {
     lastSetOffset += lastSetSize;
 
     return lastSetOffset + this._getAdditionalOffset() * 2;
+};
+
+
+/**
+ * @override
+ */
+HorizontalLayout.prototype.getChromosomeSetLabelAnchor = function() {
+
+    return 'end';
 };
 
 
@@ -185,7 +194,11 @@ HorizontalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
  */
 HorizontalLayout.prototype.getChromosomeSetLabelXPosition = function(i) {
 
-    return -20;
+    if (this._config.ploidy === 1) {
+        return this.getChromosomeLabelXPosition(i);
+    } else {
+        return -20;
+    }
 };
 
 
@@ -194,7 +207,11 @@ HorizontalLayout.prototype.getChromosomeSetLabelXPosition = function(i) {
  */
 HorizontalLayout.prototype.getChromosomeSetLabelYPosition = function(i) {
 
-    return this._description.getSetSize(i) * this._config.chrWidth;
+    if (this._config.ploidy === 1) {
+        return (this._description.getSetSize(i) * this._config.chrWidth) / 2 + 3;
+    } else {
+        return this._description.getSetSize(i) * this._config.chrWidth;
+    }
 };
 
 
