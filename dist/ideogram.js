@@ -1,4 +1,90 @@
 /**
+ * Chromosome range.
+ * @public
+ * @class
+ * @param {Object} data - range data.
+ * @param {Integer} data.chr - chromosome index.
+ * @param {Integer[]} [data.ploidy] - array which controls on which chromosomes range should appear in case of ploidy.
+ * @param {Integer} data.start - range start.
+ * @param {Integer} data.stop - range end.
+ * @param {String} data.color - range color.
+ */
+function Range(data) {
+    /**
+     * @private
+     * @member {Object}
+     */
+    this._data = data;
+};
+
+
+/**
+ * Get range start.
+ * @public
+ * @returns {Integer}.
+ */
+Range.prototype.getStart = function() {
+
+    return this._data.start;
+};
+
+
+/**
+ * Get range end.
+ * @public
+ * @returns {Integer}.
+ */
+Range.prototype.getStop = function() {
+
+    return this._data.stop;
+};
+
+
+/**
+ * Get range length.
+ * @public
+ * @returns {Integer}
+ */
+Range.prototype.getLength = function() {
+
+    return this._data.stop - this._data.start;
+};
+
+
+/**
+ * Get range color.
+ * @public
+ * @param {Intger} chrNumber - chromosome number.
+ * @returns {String}
+ */
+Range.prototype.getColor = function(chrNumber) {
+
+    if (! ('ploidy' in this._data)) {
+        return this._getColor(chrNumber);
+    } else if ('ploidy' in this._data && this._data.ploidy[chrNumber]) {
+        return this._getColor(chrNumber);
+    } else {
+        return 'transparent';
+    }
+
+};
+
+
+/**
+ * Get range color.
+ * @private
+ * @param {Intger} chrNumber - chromosome number.
+ * @returns {String}
+ */
+Range.prototype._getColor = function(chrNumber) {
+
+    if (Array.isArray(this._data.color)) {
+        return this._data.color[chrNumber];
+    } else {
+        return this._data.color;
+    }
+};
+/**
  * @public
  * @class
  * @param {Object} model
@@ -1321,7 +1407,7 @@ PloidyDescription.prototype._normilize = function(description) {
         if (typeof description[key] == 'string') {
             normalized.push({
                 ancestors : description[key],
-                existance : new Array(description[key].length).fill('11')
+                existance : this._getExistanceArray(description[key].length)
             });
         } else {
             normalized.push({
@@ -1332,6 +1418,23 @@ PloidyDescription.prototype._normilize = function(description) {
     }
 
     return normalized;
+};
+
+
+/**
+ * Get array filled by '11' elements.
+ * @private
+ * @param length
+ */
+PloidyDescription.prototype._getExistanceArray = function(length) {
+
+    var array = [];
+
+    for (var i = 0; i < length; i ++) {
+        array.push('11');
+    }
+
+    return array;
 };
 
 
@@ -1471,13 +1574,17 @@ Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
     var isPArmRendered = this._renderPArm(container, chrSetNumber, chrNumber);
     var isQArmRendered = this._renderQArm(container, chrSetNumber, chrNumber);
     /*
-     * Push p arm shape string path.
+     * Render range set.
+     */
+    this._renderRangeSet(container, chrSetNumber, chrNumber);
+    /*
+     * Push arms shape string into clipPath array.
      */
     var clipPath = [];
     clipPath = this._addPArmShape(clipPath, isPArmRendered);
     clipPath = this._addQArmShape(clipPath, isQArmRendered);
     /*
-     * Render shapes.
+     * Render chromosome border.
      */
     var self = this;
     container.append('g')
@@ -1501,6 +1608,43 @@ Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
 
 
 /**
+ * 
+ */
+Chromosome.prototype._renderRangeSet = function(container, chrSetNumber, chrNumber) {
+
+    if (! ('rangeSet' in this._config)) {
+        return;
+    };
+
+    var rangeSet = this._config.rangeSet.filter(function(range) {
+        return range.chr == chrSetNumber;
+    }).map(function(range) {
+        return new Range(range);
+    });
+
+//    console.log(chrSetNumber, ranges.length)
+    var rangesContainer = container.append('g')
+        .attr('class', 'range-set');
+
+    var self = this;
+    rangesContainer.selectAll('rect.range')
+        .data(rangeSet)
+        .enter()
+        .append('rect')
+        .attr('class', 'range')
+        .attr('x', function(range) {
+            return self._ideo.convertBpToPx(self._model, range.getStart());
+        }).attr('y', 0)
+        .attr('width', function(range) {
+            return self._ideo.convertBpToPx(self._model, range.getLength());
+        }).attr('height', this._config.chrWidth)
+        .style('fill', function(range) {
+            return range.getColor(chrNumber);
+        });
+};
+
+
+/**
  * Get chromosome's shape main values.
  * @returns {Object}
  */
@@ -1508,9 +1652,13 @@ Chromosome.prototype._getShapeData = function() {
     /*
      * First q band from bands sequence.
      */
-    var firstQBand = this._model.bands.find(function(band) {
-        return band.name[0] == 'q';
-    });
+    var firstQBand;
+    for (var i = 0; i < this._model.bands.length; i ++) {
+        if (this._model.bands[i].name[0] == 'q') {
+            firstQBand = this._model.bands[i];
+            break;
+        }
+    }
     /*
      * Chromosome's right position.
      */
@@ -2664,7 +2812,9 @@ Ideogram.prototype.convertBpToPx = function(chr, bp) {
 
       bpToIscnScale = (band.iscn.stop - band.iscn.start)/(band.bp.stop - band.bp.start);
       iscn = band.iscn.start + (bp - band.bp.start) * bpToIscnScale;
-
+      /*
+       * TODO: What is 30 magic number??
+       */
       px = 30 + band.px.start + (band.px.width * (iscn - band.iscn.start)/(band.iscn.stop - band.iscn.start));
 
       return px;
@@ -4214,3 +4364,14 @@ Ideogram.prototype.filterAnnots = function(selections) {
 
   return counts;
 };
+
+/**
+ * Chromosome model.
+ * @public
+ * @class
+ * @param {Object} model.
+ */
+function Model(model) {
+
+    this._model = model;
+}

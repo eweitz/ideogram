@@ -9,7 +9,7 @@
   <script type="text/javascript" src="../data/bands/native/ideogram_banana_v0.1.js"></script>
 </head>
 <body>
-  <h1>Polyploidy, chromosomal rearrangement | Ideogram</h1>
+  <h1>Recombination | Ideogram</h1>
   <a href=".">Back to overview</a>
 
   <script type="text/javascript">
@@ -26,18 +26,36 @@
         "B": "#7396be"
       },
       ploidyDesc: [
-        {'AABB': ['11', '11', '11', '02']},
-        {'AAB': ['01', '11', '11']},
+        'AAB',
+        'AAB',
         'BAB',
-        {'AABB': ['11', '11', '11', '20']},
+        'AAB',
         'AAB',
         'BBB',
-        {'AAB': ['01', '11', '11']},
+        'AAB',
         'AAB',
         'AAB',
         'AAB',
         'AAB'
-      ]
+      ],
+      rangeSet: [{
+            chr: 0,
+            ploidy: [0, 1, 0],
+            start: 17120000,
+            stop: 25120000,
+            color: [0, '#7396be', 0,]
+        }, {
+            chr: 1,
+            ploidy: [0, 1, 1],
+            start: 12120000,
+            stop: 15120000,
+            color: [0, '#7396be', '#dea673']
+        }, {
+            chr: 1,
+            start: 0,
+            stop: 1712000,
+            color: 'red'
+        }]
     };
 
     var ideogram = new Ideogram(config);
