@@ -142,16 +142,10 @@ VerticalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
  */
 VerticalLayout.prototype.getChromosomeSetLabelXPosition = function(setNumber) {
 
-    return ((this._description.getSetSize(setNumber) * this._config.chrWidth + 20) / - 2) + (this._config.ploidy > 1 ? 0 : this._config.chrWidth);
-};
-
-
-/**
- * @override
- */
-VerticalLayout.prototype.getChromosomeSetLabelYPosition = function(i) {
-
-    return -2 * this._config.chrWidth;
+    return this._config.chrWidth / -2;
+//    return this._description.getSetSize(i) * this._config.chrWidth;
+//    return ((this._description.getSetSize(setNumber) * this._config.chrWidth + 20) / - 2);
+        //+ (this._config.ploidy > 1 ? 0 : this._config.chrWidth);
 };
 
 
@@ -161,13 +155,4 @@ VerticalLayout.prototype.getChromosomeSetLabelYPosition = function(i) {
 VerticalLayout.prototype.getChromosomeLabelXPosition = function(i) {
 
     return this._config.chrWidth / - 2;
-};
-
-
-/**
- * @override
- */
-VerticalLayout.prototype.getChromosomeLabelYPosition = function(i) {
-
-    return -5;
 };

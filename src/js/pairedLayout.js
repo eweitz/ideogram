@@ -172,24 +172,6 @@ PairedLayout.prototype.getChromosomeLabelXPosition = function(i) {
 /**
  * @override
  */
-PairedLayout.prototype.getChromosomeLabelYPosition = function(i) {
-
-    return this._config.chrWidth;
-};
-
-
-/**
- * @override
- */
-PairedLayout.prototype.getChromosomeSetLabelYPosition = function(i) {
-
-    return -2 * this._config.chrWidth;
-};
-
-
-/**
- * @override
- */
 PairedLayout.prototype.getChromosomeSetLabelXPosition = function(i) {
 
     return this._config.chrWidth / - 2;

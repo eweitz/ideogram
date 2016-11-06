@@ -329,6 +329,16 @@ Layout.prototype.rotate = function(chrSetNumber, chrNumber, chrElement) {
 };
 
 
+Layout.prototype.getChromosomeLabelClass = function() {
+
+    if (this._config.ploidy === 1) {
+        return null;
+    } else {
+        return 'chrSetLabel';
+    }
+};
+
+
 Layout.prototype._getAdditionalOffset = function() {
 
     return (this._config.annotationHeight || 0) * (this._config.numAnnotTracks || 1);
@@ -396,6 +406,17 @@ Layout.prototype.getChromosomeBandLabelTranslate = function(band, chrNumber) {
 
 
 /**
+ * Get chromosome set label anchor property.
+ * @public
+ * @returns {String}
+ */
+Layout.prototype.getChromosomeSetLabelAnchor = function() {
+
+    return 'middle';
+};
+
+
+/**
  * Get chromosome's band label text-anchor value.
  * @public
  * @param {Integer} chrNumber
@@ -415,13 +436,17 @@ Layout.prototype.getChromosomeLabelXPosition = function(i) {
 
 Layout.prototype.getChromosomeLabelYPosition = function(i) {
 
-    throw new Error(this._class + '#getChromosomeLabelYPosition not implemented');
+    return -5;
 };
 
 
 Layout.prototype.getChromosomeSetLabelYPosition = function(i) {
 
-    throw new Error(this._class + '#getChromosomeSetLabelYPosition not implemented');
+    if (this._config.ploidy === 1) {
+        return this.getChromosomeLabelYPosition(i);
+    } else {
+        return -2 * this._config.chrWidth;
+    }
 };
 
 
@@ -481,7 +506,7 @@ function HorizontalLayout(config, ideo) {
      * @member {Object}
      */
     this._margin = {
-        left : 25,
+        left : 35,
         top : 30
     };
 }
@@ -546,6 +571,15 @@ HorizontalLayout.prototype.getHeight = function(taxId) {
     lastSetOffset += lastSetSize;
 
     return lastSetOffset + this._getAdditionalOffset() * 2;
+};
+
+
+/**
+ * @override
+ */
+HorizontalLayout.prototype.getChromosomeSetLabelAnchor = function() {
+
+    return 'end';
 };
 
 
@@ -646,7 +680,11 @@ HorizontalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
  */
 HorizontalLayout.prototype.getChromosomeSetLabelXPosition = function(i) {
 
-    return -20;
+    if (this._config.ploidy === 1) {
+        return this.getChromosomeLabelXPosition(i);
+    } else {
+        return -20;
+    }
 };
 
 
@@ -655,7 +693,11 @@ HorizontalLayout.prototype.getChromosomeSetLabelXPosition = function(i) {
  */
 HorizontalLayout.prototype.getChromosomeSetLabelYPosition = function(i) {
 
-    return this._description.getSetSize(i) * this._config.chrWidth;
+    if (this._config.ploidy === 1) {
+        return (this._description.getSetSize(i) * this._config.chrWidth) / 2 + 3;
+    } else {
+        return this._description.getSetSize(i) * this._config.chrWidth;
+    }
 };
 
 
@@ -819,16 +861,10 @@ VerticalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
  */
 VerticalLayout.prototype.getChromosomeSetLabelXPosition = function(setNumber) {
 
-    return ((this._description.getSetSize(setNumber) * this._config.chrWidth + 20) / - 2) + (this._config.ploidy > 1 ? 0 : this._config.chrWidth);
-};
-
-
-/**
- * @override
- */
-VerticalLayout.prototype.getChromosomeSetLabelYPosition = function(i) {
-
-    return -2 * this._config.chrWidth;
+    return this._config.chrWidth / -2;
+//    return this._description.getSetSize(i) * this._config.chrWidth;
+//    return ((this._description.getSetSize(setNumber) * this._config.chrWidth + 20) / - 2);
+        //+ (this._config.ploidy > 1 ? 0 : this._config.chrWidth);
 };
 
 
@@ -838,15 +874,6 @@ VerticalLayout.prototype.getChromosomeSetLabelYPosition = function(i) {
 VerticalLayout.prototype.getChromosomeLabelXPosition = function(i) {
 
     return this._config.chrWidth / - 2;
-};
-
-
-/**
- * @override
- */
-VerticalLayout.prototype.getChromosomeLabelYPosition = function(i) {
-
-    return -5;
 };
 /**
  * @public
@@ -1016,24 +1043,6 @@ PairedLayout.prototype.getChromosomeBandLabelTranslate = function(band, chrNumbe
 PairedLayout.prototype.getChromosomeLabelXPosition = function(i) {
 
     return - this._tickSize;
-};
-
-
-/**
- * @override
- */
-PairedLayout.prototype.getChromosomeLabelYPosition = function(i) {
-
-    return this._config.chrWidth;
-};
-
-
-/**
- * @override
- */
-PairedLayout.prototype.getChromosomeSetLabelYPosition = function(i) {
-
-    return -2 * this._config.chrWidth;
 };
 
 
@@ -1224,27 +1233,9 @@ SmallLayout.prototype.getChromosomeSetLabelXPosition = function(setNumber) {
 /**
  * @override
  */
-SmallLayout.prototype.getChromosomeSetLabelYPosition = function(i) {
-
-    return -2 * this._config.chrWidth;
-};
-
-
-/**
- * @override
- */
 SmallLayout.prototype.getChromosomeLabelXPosition = function(i) {
 
     return this._config.chrWidth / - 2;
-};
-
-
-/**
- * @override
- */
-SmallLayout.prototype.getChromosomeLabelYPosition = function(i) {
-
-    return -5;
 };
 /**
  * @public
@@ -2325,7 +2316,7 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
     d3.selectAll(".chromosome-set-container")
         .append("text")
         .data(ideo.chromosomesArray)
-        .attr("class", "chrSetLabel")
+        .attr("class", ideo._layout.getChromosomeLabelClass())
         .attr("transform", ideo._layout.getChromosomeSetLabelTranslate())
         .attr("x", function(d, i) {
             return ideo._layout.getChromosomeSetLabelXPosition(i);
@@ -2333,7 +2324,7 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
             return ideo._layout.getChromosomeSetLabelYPosition(i);
         }).text(function(d, i) {
             return d.name;
-        }).attr("text-anchor", "middle");
+        }).attr("text-anchor", ideo._layout.getChromosomeSetLabelAnchor());
     /*
      * Append chromosomes labels.
      */
