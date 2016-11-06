@@ -23,12 +23,13 @@ $maxChrLength = max(array_column($bands, 'bp_stop'));
 
 echo 'chrBands = [', "\n";
 foreach ($bands as $band) {
-    if ($band['arm'] == 'p') {
-        echo '    "' . $band['#chromosome'] . ' ' . $band['arm'] . ' 1 0 ' . round($band['bp_stop'] / $maxChrLength * $maxSvgLength) . '",',
-             "\n";
-    } else {
-        echo '    "' . $band['#chromosome'] . ' ' . $band['arm'] . ' 1 0 ' . round($band['bp_stop'] / $maxChrLength * $maxSvgLength) . '",',
-             "\n";
-    }
+    echo '    "' . 
+        $band['#chromosome'] . ' ' .
+        $band['arm'] .
+        ' 1 0 ' .
+        round(($band['bp_stop'] - $band['bp_start']) / $maxChrLength * $maxSvgLength) . ' ' .
+        $band['bp_start'] . ' ' .
+        $band['bp_stop'] . ' ' .
+        '",', "\n";
 }
 echo '];', "\n";

@@ -938,7 +938,9 @@ Ideogram.prototype.convertBpToPx = function(chr, bp) {
 
       bpToIscnScale = (band.iscn.stop - band.iscn.start)/(band.bp.stop - band.bp.start);
       iscn = band.iscn.start + (bp - band.bp.start) * bpToIscnScale;
-
+      /*
+       * TODO: What is 30 magic number??
+       */
       px = 30 + band.px.start + (band.px.width * (iscn - band.iscn.start)/(band.iscn.stop - band.iscn.start));
 
       return px;
