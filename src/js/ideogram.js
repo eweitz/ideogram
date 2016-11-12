@@ -1222,8 +1222,7 @@ Ideogram.prototype.drawChromosomeBordersAndCentromeres = function(chrModel, chr)
   qArmWidth = chrModel.qArmWidth;
   qArmEnd = chrModel.qArmEnd;
 
-  if (cenPosition !== "telocentricPCen") {
-
+  if (centromere) {
     for (var i = 0; i < centromere.length; i++) {
       band = centromere[i];
       if (
@@ -1241,7 +1240,29 @@ Ideogram.prototype.drawChromosomeBordersAndCentromeres = function(chrModel, chr)
         .attr("class", band.name + " acen band")
         .attr("d", d);
     }
+  } else {
+    // With telocentric chromosomes, e.g. mouse
+
+    var pTerPad = Math.round(bump/4) + 3;
+
+
+    chr.append('path')
+      .attr("class", "upstream chromosomeBorder " + chrModel.bands[0].stain)
+      .attr("d",
+        "M " + (pTerPad - 3) + " " + chrMargin + " " +
+        "l -" + (pTerPad - 2) + " 0 " +
+        "l 0 " + chrWidth + " " +
+        "l " + (pTerPad - 2) + " 0 z");
+
+    chr.insert('path', ':first-child')
+      .attr("class", "acen")
+      .attr("d",
+        "M " + (pTerPad - 3) + " " + (chrMargin + chrWidth * 0.1) + " " +
+        "l " + (pTerPad + bump/2 + 1) + " 0 " +
+        "l 0 " + chrWidth * 0.8 + " " +
+        "l -" + (pTerPad + bump/2 + 1) + " 0 z");
   }
+
 
   if ("bands" in chrModel === false) {
     if (cenPosition == "telocentricPCen") {
@@ -1506,24 +1527,6 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
       .attr("d",
         "M " + (pTerPad - bump/2 + 0.1) + " " + chrMargin + " " +
         "q -" + pTerPad + " " + (chrWidth/2) + " 0 " + chrWidth);
-  } else {
-    // As in mouse
-    chr.append('path')
-      .attr("class", "downstream chromosomeBorder " + chrModel.bands[0].stain)
-      .attr("d",
-        "M " + (pTerPad - 3) + " " + chrMargin + " " +
-        "l -" + (pTerPad - 2) + " 0 " +
-        "l 0 " + chrWidth + " " +
-        "l " + (pTerPad - 2) + " 0 z");
-
-    chr.insert('path', ':first-child')
-      .attr("class", "acen")
-      .attr("d",
-        "M " + (pTerPad - 3) + " " + (chrMargin + chrWidth * 0.1) + " " +
-        "l " + (pTerPad + bump/2 + 1) + " 0 " +
-        "l 0 " + chrWidth * 0.8 + " " +
-        "l -" + (pTerPad + bump/2 + 1) + " 0 z");
-
   }
 
   ideo.drawChromosomeBordersAndCentromeres(chrModel, chr);
