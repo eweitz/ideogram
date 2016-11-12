@@ -1222,7 +1222,7 @@ Ideogram.prototype.drawChromosomeBordersAndCentromeres = function(chrModel, chr)
   qArmWidth = chrModel.qArmWidth;
   qArmEnd = chrModel.qArmEnd;
 
-  if (centromere) {
+  if (centromere && cenPosition != "telocentricPCen") {
     for (var i = 0; i < centromere.length; i++) {
       band = centromere[i];
       if (
@@ -1241,13 +1241,17 @@ Ideogram.prototype.drawChromosomeBordersAndCentromeres = function(chrModel, chr)
         .attr("d", d);
     }
   } else {
-    // With telocentric chromosomes, e.g. mouse
+    // With telocentric chromosomes, e.g. mouse (banded) or chimpanzee (unbanded)
 
     var pTerPad = Math.round(bump/4) + 3;
+    var stain = "";
 
+    if ("bands" in chrModel) {
+      stain = chrModel.bands[0].stain;
+    }
 
     chr.append('path')
-      .attr("class", "upstream chromosomeBorder " + chrModel.bands[0].stain)
+      .attr("class", "upstream chromosomeBorder " + stain)
       .attr("d",
         "M " + (pTerPad - 3) + " " + chrMargin + " " +
         "l -" + (pTerPad - 2) + " 0 " +
