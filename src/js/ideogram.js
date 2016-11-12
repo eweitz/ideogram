@@ -634,7 +634,7 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
       chr.centromere[0].px.start < ideo.bump * 2
     ) {
       // e.g. Pan troglodytes chr18
-      chr["centromerePosition"];
+      chr["centromerePosition"] = "telocentricPCen";
     }
 
   }
@@ -3280,7 +3280,5 @@ function finishInit() {
        console.log(e.stack)
       //  throw e;
     }
-
   }
-
 };
