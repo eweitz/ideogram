@@ -686,5 +686,63 @@ describe("Ideogram", function() {
       var ideogram = new Ideogram(config);
     });
 
+    it("should work for eukaryotic chromosomes", function(done) {
+      // Tests use case from ../examples/eukaryotes.html
+
+      function callback() {
+        var numChromosomes = d3.selectAll(".chromosome").nodes().length;
+        // 1, 2A, 2B, 3-22, X, Y
+        assert.equal(numChromosomes, 25);
+        // Revert monkey-patch
+        Ideogram.prototype.getTaxidFromEutils = original;
+        done();
+      }
+
+      var original = Ideogram.getTaxidFromEutils;
+      Ideogram.prototype.getTaxidFromEutils = function(callback) {
+        return callback(9598);
+      }
+
+      var config = {
+        organism: "pan troglodytes"
+      };
+      config.onLoad = callback;
+      var ideogram = new Ideogram(config);
+    });
+
+    it("should work for unbanded chromosomes, with non-nuclear chromosomes", function(done) {
+      // Tests use case from ../examples/eukaryotes.html
+
+      function callback() {
+        var numChromosomes = d3.selectAll(".chromosome").nodes().length;
+        assert.equal(numChromosomes, 12);
+        // Revert monkey-patches
+        Ideogram.prototype.getTaxidFromEutils = original1;
+        Ideogram.prototype.getAssemblyAndChromosomesFromEutils = original2;
+        done();
+      }
+
+
+      var original1 = Ideogram.getTaxidFromEutils;
+      Ideogram.prototype.getTaxidFromEutils = function(callback) {
+        return callback(4577);
+      }
+
+      var original2 = Ideogram.getAssemblyAndChromosomesFromEutils;
+      Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
+        // Hard-coding data is not ideal, but 'var fs = require("fs")' throws error
+        //asmAndChrArray = fs.read("mock-data/maize_getassemblyandchromosomesfromeutils.json");
+        asmAndChrArray = ["GCF_000005005.1",[{"name":"1","length":301433382,"type":"nuclear"},{"name":"2","length":237893627,"type":"nuclear"},{"name":"3","length":232227970,"type":"nuclear"},{"name":"4","length":242029974,"type":"nuclear"},{"name":"5","length":217928451,"type":"nuclear"},{"name":"6","length":169381756,"type":"nuclear"},{"name":"7","length":176810253,"type":"nuclear"},{"name":"8","length":175347686,"type":"nuclear"},{"name":"9","length":157021084,"type":"nuclear"},{"name":"10","length":149627545,"type":"nuclear"},{"name":"CP","length":140384,"type":"chloroplast"},{"name":"MT","length":569630,"type":"mitochondrion"}]];
+        return callback(asmAndChrArray);
+      }
+
+      var config = {
+        organism: "zea mays",
+        showNonNuclearChromosomes: true
+      };
+      config.onLoad = callback;
+      var ideogram = new Ideogram(config);
+    });
+
 
 });

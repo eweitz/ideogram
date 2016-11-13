@@ -2637,7 +2637,7 @@ Ideogram.prototype.getTaxids = function(callback) {
               // Check if chromosome data exists locally.
               // This is used for pre-processed centromere data,
               // which is not accessible via EUtils.  See get_chromosomes.py.
-              console.log(data);
+
               var asmAndChrArray = [],
                   chromosomes;
               asmAndChrArray.push(data.assemblyaccession);
@@ -2648,6 +2648,7 @@ Ideogram.prototype.getTaxids = function(callback) {
             },
             function(error) {
               return new Promise(function(resolve, reject) {
+                ideo.coordinateSystem = "bp";
                 ideo.getAssemblyAndChromosomesFromEutils(resolve);
               })
             }
@@ -2838,8 +2839,6 @@ Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
 
         chromosomes = chromosomes.sort(ideo.sortChromosomes);
         asmAndChrArray.push(chromosomes)
-
-        ideo.coordinateSystem = "bp";
 
         return callback(asmAndChrArray);
     });
