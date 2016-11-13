@@ -20,7 +20,7 @@ function HorizontalLayout(config, ideo) {
      * @member {Object}
      */
     this._margin = {
-        left : 25,
+        left : 35,
         top : 30
     };
 }
@@ -91,6 +91,15 @@ HorizontalLayout.prototype.getHeight = function(taxId) {
 /**
  * @override
  */
+HorizontalLayout.prototype.getChromosomeSetLabelAnchor = function() {
+
+    return 'end';
+};
+
+
+/**
+ * @override
+ */
 HorizontalLayout.prototype.getChromosomeBandLabelAnchor = function(chrNumber) {
 
     return null;
@@ -154,14 +163,10 @@ HorizontalLayout.prototype.getChromosomeSetTranslate = function(setNumber) {
  */
 HorizontalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
     /*
-     * Get additional padding caused by annotation tracks.
-     */
-    var additionalPadding = this._getAdditionalOffset();
-    /*
      * If no detailed description provided just use one formula for all cases.
      */
     if (! this._config.ploidyDesc) {
-        return 30 * (setNumber) + this._config.chrWidth + additionalPadding * 2 + additionalPadding * setNumber;
+        return this._config.chrMargin * (setNumber + 1);
     }
     /*
      * Id detailed description provided start to calculate offsets
@@ -189,7 +194,11 @@ HorizontalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
  */
 HorizontalLayout.prototype.getChromosomeSetLabelXPosition = function(i) {
 
-    return -20;
+    if (this._config.ploidy === 1) {
+        return this.getChromosomeLabelXPosition(i);
+    } else {
+        return -20;
+    }
 };
 
 
@@ -198,7 +207,11 @@ HorizontalLayout.prototype.getChromosomeSetLabelXPosition = function(i) {
  */
 HorizontalLayout.prototype.getChromosomeSetLabelYPosition = function(i) {
 
-    return this._description.getSetSize(i) * this._config.chrWidth;
+    if (this._config.ploidy === 1) {
+        return (this._description.getSetSize(i) * this._config.chrWidth) / 2 + 3;
+    } else {
+        return this._description.getSetSize(i) * this._config.chrWidth;
+    }
 };
 
 

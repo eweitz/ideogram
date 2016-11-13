@@ -148,6 +148,16 @@ Layout.prototype.rotate = function(chrSetNumber, chrNumber, chrElement) {
 };
 
 
+Layout.prototype.getChromosomeLabelClass = function() {
+
+    if (this._config.ploidy === 1) {
+        return 'chrLabel';
+    } else {
+        return 'chrSetLabel';
+    }
+};
+
+
 Layout.prototype._getAdditionalOffset = function() {
 
     return (this._config.annotationHeight || 0) * (this._config.numAnnotTracks || 1);
@@ -215,6 +225,17 @@ Layout.prototype.getChromosomeBandLabelTranslate = function(band, chrNumber) {
 
 
 /**
+ * Get chromosome set label anchor property.
+ * @public
+ * @returns {String}
+ */
+Layout.prototype.getChromosomeSetLabelAnchor = function() {
+
+    return 'middle';
+};
+
+
+/**
  * Get chromosome's band label text-anchor value.
  * @public
  * @param {Integer} chrNumber
@@ -234,13 +255,17 @@ Layout.prototype.getChromosomeLabelXPosition = function(i) {
 
 Layout.prototype.getChromosomeLabelYPosition = function(i) {
 
-    throw new Error(this._class + '#getChromosomeLabelYPosition not implemented');
+    return -5;
 };
 
 
 Layout.prototype.getChromosomeSetLabelYPosition = function(i) {
 
-    throw new Error(this._class + '#getChromosomeSetLabelYPosition not implemented');
+    if (this._config.ploidy === 1) {
+        return this.getChromosomeLabelYPosition(i);
+    } else {
+        return -2 * this._config.chrWidth;
+    }
 };
 
 

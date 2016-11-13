@@ -151,25 +151,7 @@ SmallLayout.prototype.getChromosomeSetLabelXPosition = function(setNumber) {
 /**
  * @override
  */
-SmallLayout.prototype.getChromosomeSetLabelYPosition = function(i) {
-
-    return -2 * this._config.chrWidth;
-};
-
-
-/**
- * @override
- */
 SmallLayout.prototype.getChromosomeLabelXPosition = function(i) {
 
     return this._config.chrWidth / - 2;
-};
-
-
-/**
- * @override
- */
-SmallLayout.prototype.getChromosomeLabelYPosition = function(i) {
-
-    return -5;
 };
