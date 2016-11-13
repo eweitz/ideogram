@@ -817,62 +817,6 @@ Ideogram.prototype.round = function(coord) {
   return Math.round(coord * 100) / 100;
 };
 
-Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
-
-  var chr,
-      bump, chrMargin, chrWidth, width,
-      ideo = this;
-
-  bump = ideo.bump;
-
-  chrMargin = ideo.config.chrMargin * chrIndex;
-  chrWidth = ideo.config.chrWidth;
-  width = chrModel.width;
-
-  chr = d3.select("svg")
-    .append("g")
-      .attr("id", chrModel.id)
-      .attr("class", "chromosome noBands");
-
-  if (width < 1) {
-    // Applies to mitochrondial and chloroplast chromosomes
-    return;
-  }
-
-  chr.append('path')
-    .attr("class", "upstream chromosomeBorder")
-    .attr("d",
-      "M " + (bump - bump/2 + 0.1) + " " + chrMargin + " " +
-      "q -" + bump + " " + (chrWidth/2) + " 0 " + chrWidth);
-
-  chr.append('path')
-    .attr("class", "downstream chromosomeBorder")
-    .attr("d",
-      "M " + width + " " + chrMargin + " " +
-      "q " + bump + " " +  chrWidth/2 + " 0 " + chrWidth);
-
-  chr.append('line')
-    .attr("class", "cb-top chromosomeBorder")
-    .attr('x1', bump/2)
-    .attr('y1', chrMargin)
-    .attr('x2', width)
-    .attr("y2", chrMargin);
-
-  chr.append('line')
-    .attr("class", "cb-bottom chromosomeBorder")
-    .attr('x1', bump/2)
-    .attr('y1', chrWidth + chrMargin)
-    .attr('x2', width)
-    .attr("y2", chrWidth + chrMargin);
-
-  chr.append('path')
-    .attr("class", "chromosomeBody")
-    .attr("d",
-      "M " + bump/2 + " " + chrMargin + " " +
-      "l " + (width - bump/2) + " 0 " +
-      "l 0 " + chrWidth + " " +
-      "l -" + (width - bump/2) + " 0 z");
-}
 
 /**
 * Renders all the bands and outlining boundaries of a chromosome.
