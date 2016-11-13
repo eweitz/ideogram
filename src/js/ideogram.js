@@ -18,8 +18,12 @@ var Ideogram = function(config) {
 
   this.debug = false;
 
+  if (!this.config.dataDir) {
+    this.config.dataDir = "../data/";
+  }
+
   if (!this.config.bandDir) {
-    this.config.bandDir = "../data/bands/";
+    this.config.bandDir = this.config.dataDir + "bands/";
   }
 
   if (!this.config.container) {
@@ -106,6 +110,13 @@ var Ideogram = function(config) {
 
   if (!this.config.showNonNuclearChromosomes) {
     this.config.showNonNuclearChromosomes = false;
+  }
+
+  if (!this.config.showCentromeres) {
+    this.config.showCentromeres = true;
+  }
+  if (this.config.armColors) {
+    this.config.showCentromeres = false;
   }
 
   this.initAnnotSettings();
@@ -338,8 +349,8 @@ Ideogram.prototype.colorArms = function(pArmColor, qArmColor) {
   ideo.chromosomesArray.forEach(function(chr, chrIndex){
 
     var bands = chr.bands,
-        pcen = bands[chr.pcenIndex],
-        qcen = bands[chr.pcenIndex + 1],
+        pcen = chr.centromere[0],
+        qcen = chr.centromere[1],
         chrID = chr.id,
         chrMargin = ideo.config.chrMargin * (chrIndex + 1),
         chrWidth = ideo.config.chrWidth;
@@ -366,17 +377,113 @@ Ideogram.prototype.colorArms = function(pArmColor, qArmColor) {
     d3.selectAll("#" + chrID + " .band")
       .data(chr.bands)
       .style("fill", function(d, i) {
-        if (i <= chr.pcenIndex) {
-          return pArmColor;
-        } else {
-          return qArmColor;
-        }
+        return (i <= chr.pcenIndex) ? pArmColor : qArmColor;
       });
+    d3.selectAll("#" + chrID + " .acen")
+      .data(chr.centromere)
+      .style("fill", function(d, i) {
+        return (d.name[0] == "p") ? pArmColor : qArmColor;
+      })
   });
-  d3.selectAll(".p-ter.chromosomeBorder").style("fill", pArmColor);
-  d3.selectAll(".q-ter.chromosomeBorder").style("fill", qArmColor);
+  d3.selectAll(".upstream.chromosomeBorder").style("fill", pArmColor);
+  d3.selectAll(".downstream.chromosomeBorder").style("fill", qArmColor);
 
 };
+
+Ideogram.prototype.getCentromereModel = function(chromosome) {
+
+  var ideo = this,
+      chr = chromosome,
+      centromere,
+      start = chr.centromere.start,
+      length = Math.ceil(chr.centromere.length/2),
+      cenArm, cenArmStart, cenArmStop, cenArmStartPx, cenArmStopPx,
+      cenStartPx, cenStopPx, cenWidth,
+      cs;
+
+  centromere = [
+      {
+          'bp': {
+              'start': start,
+              'length': length
+          }
+      },
+      {
+          'bp': {
+              'start': start + length,
+              'length': length
+          }
+      }
+  ];
+
+  if ("pcenBandName" in chr.centromere) {
+    // Has bands
+    centromere[0].name = chr.centromere.pcenBandName;
+    centromere[1].name = chr.centromere.qcenBandName;
+  } else {
+    centromere[0].name = "p11";
+    centromere[1].name = "q11";
+  }
+
+  if ("iscnStart" in chr.centromere) {
+
+    // In human reference genome (e.g. GRCh38)
+    cs = 'iscn';
+    start = chr.centromere.iscnStart;
+    length = Math.ceil(chr.centromere.iscnLength/2);
+
+    centromere[0]['iscn'] = {
+      'start': start,
+      'length': length
+    }
+    centromere[0].px = chr.centromere.pcenPx;
+
+    centromere[1]['iscn'] = {
+      'start': start,
+      'length': start + length
+    }
+    centromere[1].px = chr.centromere.qcenPx;
+
+  } else {
+    // In other genomes, e.g. for cat, chimpanzee, etc.
+    cs = 'bp';
+  }
+
+  if (cs == 'bp') {
+    for (var i = 0; i < centromere.length; i++) {
+      cenArm = centromere[i];
+      cenArmStart = cenArm.bp.start;
+      cenArmStop = cenArmStart + cenArm.bp.length;
+      cenArmStartPx = ideo.convertBpToPxNoBands(chr, cenArmStart);
+      cenArmStopPx = ideo.convertBpToPxNoBands(chr, cenArmStop);
+      centromere[i]["px"] = {
+        "start": cenArmStartPx,
+        "stop": cenArmStopPx,
+        "width": cenArmStopPx - cenArmStartPx
+      }
+    }
+  }
+
+  cenStopPx = centromere[1].px.stop;
+  cenStartPx = centromere[0].px.start;
+  cenWidthPx = cenStopPx - cenStartPx;
+  if (ideo.bump > cenWidthPx) {
+    // Make very small, non-telocentric centromeres discernible
+    // Applies to e.g. cat (Felis catus)
+    centromere[0].px = {
+      "start": centromere[0].px.start - ideo.bump,
+      "stop": centromere[0].px.stop,
+      "width": centromere[0].px.width + ideo.bump
+    }
+    centromere[1].px = {
+      "start": centromere[1].px.start,
+      "stop": centromere[1].px.stop + ideo.bump,
+      "width": centromere[1].px.width + ideo.bump
+    }
+  }
+
+  return centromere;
+}
 
 /**
 * Generates a model object for each chromosome
@@ -387,15 +494,17 @@ Ideogram.prototype.colorArms = function(pArmColor, qArmColor) {
 Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIndex) {
 
   var chr = {},
+      ideo = this,
       band, scale,
       width, pxStop,
       startType, stopType,
       chrHeight = this.config.chrHeight,
       maxLength = this.maxLength,
-      chrLength,
-      cs, hasBands;
+      bump = this.bump,
+      pcenIndex, chrLength,
+      cs, hasBands, start, stop;
 
-  cs = this.coordinateSystem;
+  cs = ideo.coordinateSystem;
   hasBands = (typeof bands !== "undefined");
 
   if (hasBands) {
@@ -410,8 +519,8 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
 
   chr["id"] = "chr" + chr.name + "-" + taxid;
 
-  if (this.config.fullChromosomeLabels === true) {
-    var orgName = this.organisms[taxid].scientificNameAbbr;
+  if (ideo.config.fullChromosomeLabels === true) {
+    var orgName = ideo.organisms[taxid].scientificNameAbbr;
     chr["name"] = orgName + " chr" + chr.name;
   }
 
@@ -420,6 +529,7 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
   pxStop = 0;
 
   if (hasBands) {
+
     for (var i = 0; i < bands.length; i++) {
       band = bands[i];
 
@@ -429,10 +539,38 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
 
       pxStop = bands[i].px.stop;
 
-      if (hasBands && band.stain === "acen" && band.name[0] === "p") {
-        chr["pcenIndex"] = i;
+      if (band.stain === "acen") {
+        if (band.name[0] === "p") {
+          chr["pcenIndex"] = i;
+        }
       }
     }
+
+    if ("pcenIndex" in chr) {
+      pcenIndex = chr.pcenIndex;
+      var pcen = bands[pcenIndex];
+      var qcen = bands[pcenIndex + 1];
+      var pcenPx = pcen.px;
+      var qcenPx = qcen.px;
+      if (ideo.adjustedBump && pcenPx.width + qcenPx.width > bump) {
+        // e.g. human chr14 and chr15 in small layout (chrHeight = 200)
+        pcenPx["stop"] = pcenPx.stop + (bump/2 - pcenPx.width) - 0.3;
+        pcenPx["width"] = bump/2;
+        qcenPx["stop"] = qcenPx.stop + (bump/2 - qcenPx.width) - 0.3;
+        qcenPx["width"] = bump/2;
+      }
+      chr["centromere"] = {
+        "start": pcen.bp.start,
+        "length": qcen.bp.stop - pcen.bp.start,
+        "iscnStart": pcen.iscn.start,
+        "iscnLength": qcen.iscn.stop - pcen.iscn.start,
+        "pcenPx": pcenPx,
+        "qcenPx": qcenPx,
+        "pcenBandName": pcen.name,
+        "qcenBandName": qcen.name
+      };
+    }
+
   } else {
     pxStop = chrHeight * chr["length"]/maxLength[cs];
   }
@@ -462,16 +600,50 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
       chr["scale"].iscn = chrHeight / maxLength.iscn;
     }
   }
-  chr["bands"] = bands;
+
+  if (hasBands) {
+    // Avoids setting undefined "bands" property
+    chr["bands"] = bands;
+  }
 
   chr["centromerePosition"] = "";
   if (hasBands && bands[0].bp.stop - bands[0].bp.start == 1) {
     // As with mouse
-    chr["centromerePosition"] = "telocentric";
+    chr["centromerePosition"] = "telocentricPCen";
 
     // Remove placeholder pter band
     chr["bands"] = chr["bands"].slice(1);
   }
+
+  if ("centromere" in chr) {
+    chr["centromere"] = ideo.getCentromereModel(chr);
+
+    for (var i = 0; i < chr.centromere.length; i++) {
+      band = chr.centromere[i];
+      start = band.bp.start;
+      stop = start + band.bp.length;
+      if (band.name[0] == "p" && start == 1) {
+        chr["centromerePosition"] = "telocentricPCen";
+      } else if (band.name[0] == "q" && stop == chr.length - 1) {
+        chr["centromerePosition"] = "telocentricQCen";
+      }
+    }
+
+    if (
+      chr["centromerePosition"] == "" &&
+      chr.centromere[0].px.start < ideo.bump * 2
+    ) {
+      // e.g. Pan troglodytes chr18
+      chr["centromerePosition"] = "telocentricPCen";
+    }
+
+  }
+
+  var cap = ideo.getCenAndArmParameters(chr);
+  chr.pcenStart = cap[0];
+  chr.qArmStart = cap[1];
+  chr.qArmWidth = cap[2];
+  chr.qArmEnd = cap[3];
 
   return chr;
 };
@@ -897,11 +1069,246 @@ Ideogram.prototype.round = function(coord) {
   return Math.round(coord * 100) / 100;
 };
 
+Ideogram.prototype.getCentromerePath = function(d, chrModel) {
+
+  var ideo = this,
+      left = ideo.round(d.px.start),
+      cenWidth = ideo.round(d.px.width),
+      cenWidthTweak = 0,
+      bump = ideo.bump,
+      hasBands = "bands" in chrModel,
+      chrWidth = ideo.config.chrWidth,
+      chrMargin = ideo.config.chrMargin * chrModel.chrIndex,
+      curveStart, curveMid, curveEnd,
+      curveTweak;
+
+  curveTweak = 0;
+
+  // Pericentromeric bands get curved
+  if (ideo.adjustedBump) {
+    curveTweak = 0.35;
+    cenWidth = 0.2;
+    left += bump;
+    if (d.name[0] === "q") {
+      left -= 0.7;
+    }
+  }
+
+  curveStart = chrMargin + curveTweak;
+  curveMid = chrWidth/2 - curveTweak*2;
+  curveEnd = chrWidth - curveTweak*2;
+
+  if (hasBands) {
+    mx = left;
+    my = curveStart;
+    ldx = cenWidth - bump/2;
+    q = bump + " " + curveMid + " 0 " + curveEnd + " ";
+  } else {
+    mx = left - cenWidth;
+    my = curveStart;
+    ldx = cenWidth + cenWidthTweak;
+    q = (bump + 1) + " " + curveMid + " 0 " + curveEnd + " ";
+  }
+
+  if (ideo.adjustedBump) {
+    ldx = 0.2;
+  }
+
+  if (d.name[0] == "p") {
+    // p arm
+    d =
+      "M " + mx + " " + my + " " +
+      "l " + ldx + " 0 " +
+      "q " + q +
+      "l -" + ldx + " 0 z";
+  } else {
+
+    if (ideo.adjustedBump) {
+      cenWidth -= 0.2;
+    }
+
+    if (chrModel.centromerePosition == "telocentricPCen") {
+      mx += 1;
+    }
+
+    if (hasBands) {
+      mx = left + cenWidth;
+      q = (bump + 0.5) + " " + curveMid + " 0 " + curveEnd + " ";
+    } else {
+      mx = mx + (bump + 1) + ldx;
+    }
+
+    // q arm
+    d =
+      "M " + mx + " " + my + " " +
+      "l -" + ldx + " 0 " +
+      "q -" + q +
+      "l " + ldx + " 0 z";
+  }
+
+  return d;
+}
+
+Ideogram.prototype.getCenAndArmParameters = function(chrModel) {
+
+  var ideo = this,
+      bump = ideo.bump,
+      centromere, cenPosition, cenTweak, borderTweak,
+      pcen, qcen,
+      pcenStart, qArmStart, qArmWidth, qArmEnd,
+      hasBands = "bands" in chrModel;
+
+  centromere = chrModel.centromere;
+  cenPosition = chrModel.centromerePosition;
+
+  if (cenPosition !== "telocentricPCen" && "centromere" in chrModel) {
+
+    pcen = centromere[0];
+    qcen = centromere[1];
+
+    cenTweak = pcen.px.width - bump/2;
+
+    pcenStart = pcen.px.start;
+    qArmStart = qcen.px.stop + bump/2 - cenTweak;
+
+  } else {
+    pcenStart = 2;
+    qArmStart = 6;
+  }
+
+  qArmWidth = chrModel.width - qArmStart;
+  qArmEnd = qArmStart + qArmWidth - bump/2;
+
+  if (cenPosition !== "telocentricPCen") {
+    if (hasBands) {
+      qArmStart = qcen.px.stop;
+    } else {
+      pcenStart -= cenTweak;
+      qArmEnd += bump/2;
+    }
+  }
+
+  if (ideo.adjustedBump) {
+    borderTweak = 1.8;
+    // qArmStart -= borderTweak;
+    // qArmWidth -= borderTweak;
+    qArmEnd -= borderTweak*1.3;
+  }
+
+  return [
+    pcenStart,
+    qArmStart,
+    qArmWidth,
+    qArmEnd
+  ];
+}
+
+Ideogram.prototype.drawChromosomeBordersAndCentromeres = function(chrModel, chr) {
+
+  var ideo = this,
+      bump = ideo.bump,
+      chrMargin, chrWidth,
+      centromere, cenPosition, cenTweak, d, cenID,
+      hasBands = "bands" in chrModel;
+
+  chrMargin = ideo.config.chrMargin * chrModel.chrIndex;
+  chrWidth = ideo.config.chrWidth;
+
+  centromere = chrModel.centromere;
+  cenPosition = chrModel.centromerePosition;
+
+  pcenStart = chrModel.pcenStart;
+  qArmStart = chrModel.qArmStart;
+  qArmWidth = chrModel.qArmWidth;
+  qArmEnd = chrModel.qArmEnd;
+
+  if (centromere && cenPosition != "telocentricPCen") {
+    for (var i = 0; i < centromere.length; i++) {
+      band = centromere[i];
+      if (
+        band.name[0] == "p" && cenPosition == "telocentricPCen" ||
+        band.name[0] == "q" && cenPosition == "telocentricQCen"
+      ) {
+        // If the chromosome is lacking a p arm or q arm,
+        // then don't draw that side of the pericentromeric heterochromatin
+        continue;
+      }
+      d = ideo.getCentromerePath(band, chrModel);
+      cenID = chrModel.id + "-" + band.name;
+      chr.append('path')
+        .attr("id", cenID)
+        .attr("class", band.name + " acen band")
+        .attr("d", d);
+    }
+  } else {
+    // With telocentric chromosomes, e.g. mouse (banded) or chimpanzee (unbanded)
+
+    var pTerPad = Math.round(bump/4) + 3;
+    var stain = "";
+
+    if ("bands" in chrModel) {
+      stain = chrModel.bands[0].stain;
+    }
+
+    chr.append('path')
+      .attr("class", "upstream chromosomeBorder " + stain)
+      .attr("d",
+        "M " + (pTerPad - 3) + " " + chrMargin + " " +
+        "l -" + (pTerPad - 2) + " 0 " +
+        "l 0 " + chrWidth + " " +
+        "l " + (pTerPad - 2) + " 0 z");
+
+    chr.insert('path', ':first-child')
+      .attr("class", "acen")
+      .attr("d",
+        "M " + (pTerPad - 3) + " " + (chrMargin + chrWidth * 0.1) + " " +
+        "l " + (pTerPad + bump/2 + 1) + " 0 " +
+        "l 0 " + chrWidth * 0.8 + " " +
+        "l -" + (pTerPad + bump/2 + 1) + " 0 z");
+  }
+
+
+  if ("bands" in chrModel === false) {
+    if (cenPosition == "telocentricPCen") {
+      // E.g. Ornithorhynchus anatinus chr14
+      // http://localhost/ideogram/examples/eukaryotes.html?org=ornithorhynchus-anatinus
+      // See also Pan troglodytes chr13
+      // http://localhost/ideogram/examples/eukaryotes.html?org=pan-troglodytes
+    } else {
+      // More typical case
+      chr.append('path')
+        .attr("class", "p-arm chromosomeBody")
+        .attr("d",
+          "M " + bump/2 + " " + chrMargin + " " +
+          "l " + (pcenStart - bump/2) + " 0 " +
+          "l 0 " + chrWidth + " " +
+          "l -" + (pcenStart - bump/2) + " 0 z");
+    }
+
+    if (cenPosition == "telocentricQCen") {
+      // E.g. Ornithorhynchus anatinus chrX1
+      qArmEnd += bump;
+    } else {
+      // More typical case
+      chr.append('path')
+        .attr("class", "q-arm chromosomeBody")
+        .attr("d",
+          "M " + qArmStart + " " + chrMargin + " " +
+          "l " + qArmWidth + " 0 " +
+          "l 0 " + chrWidth + " " +
+          "l -" + qArmWidth + " 0 z");
+    }
+  }
+
+  ideo.drawChromosomeBorders(chr, chrModel, bump, chrMargin, pcenStart, chrWidth, qArmStart, qArmEnd);
+}
+
 Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
 
   var chr,
+      ideo = this,
       bump, chrMargin, chrWidth, width,
-      ideo = this;
+      cenPosition;
 
   bump = ideo.bump;
 
@@ -915,43 +1322,107 @@ Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
       .attr("class", "chromosome noBands");
 
   if (width < 1) {
-    // Applies to mitochrondial and chloroplast chromosomes
+    // Applies to mitochrondrial and chloroplast chromosomes
     return;
   }
 
-  chr.append('path')
-    .attr("class", "upstream chromosomeBorder")
-    .attr("d",
-      "M " + (bump - bump/2 + 0.1) + " " + chrMargin + " " +
-      "q -" + bump + " " + (chrWidth/2) + " 0 " + chrWidth);
+  if ("centromere" in chrModel === false) {
+    // For assemblies that lack centromere data, e.g.
+    // http://localhost/ideogram/examples/eukaryotes.html?org=rattus-norvegicus
 
-  chr.append('path')
-    .attr("class", "downstream chromosomeBorder")
-    .attr("d",
-      "M " + width + " " + chrMargin + " " +
-      "q " + bump + " " +  chrWidth/2 + " 0 " + chrWidth);
+    chr.append('line')
+      .attr("class", "cb-top chromosomeBorder")
+      .attr('x1', bump/2)
+      .attr('y1', chrMargin)
+      .attr('x2', width)
+      .attr("y2", chrMargin);
 
-  chr.append('line')
-    .attr("class", "cb-top chromosomeBorder")
-    .attr('x1', bump/2)
-    .attr('y1', chrMargin)
-    .attr('x2', width)
-    .attr("y2", chrMargin);
+    chr.append('line')
+      .attr("class", "cb-bottom chromosomeBorder")
+      .attr('x1', bump/2)
+      .attr('y1', chrWidth + chrMargin)
+      .attr('x2', width)
+      .attr("y2", chrWidth + chrMargin);
 
-  chr.append('line')
-    .attr("class", "cb-bottom chromosomeBorder")
-    .attr('x1', bump/2)
-    .attr('y1', chrWidth + chrMargin)
-    .attr('x2', width)
-    .attr("y2", chrWidth + chrMargin);
+    chr.append('path')
+      .attr("class", "chromosomeBody")
+      .attr("d",
+        "M " + bump/2 + " " + chrMargin + " " +
+        "l " + (width - bump/2) + " 0 " +
+        "l 0 " + chrWidth + " " +
+        "l -" + (width - bump/2) + " 0 z");
 
-  chr.append('path')
-    .attr("class", "chromosomeBody")
-    .attr("d",
-      "M " + bump/2 + " " + chrMargin + " " +
-      "l " + (width - bump/2) + " 0 " +
-      "l 0 " + chrWidth + " " +
-      "l -" + (width - bump/2) + " 0 z");
+  } else {
+    // For assemblies that have centromere data, e.g.
+    // http://localhost/ideogram/examples/eukaryotes.html?org=felis-catus
+    ideo.drawChromosomeBordersAndCentromeres(chrModel, chr);
+  }
+
+  cenPosition = chrModel.centromerePosition;
+
+  if (cenPosition !== "telocentricPCen") {
+    chr.append('path')
+      .attr("class", "upstream chromosomeBorder")
+      .attr("d",
+        "M " + (bump/2 + 0.1) + " " + chrMargin + " " +
+        "q -" + bump + " " + (chrWidth/2) + " 0 " + chrWidth);
+  }
+
+  if (cenPosition !== "telocentricQCen") {
+    chr.append('path')
+      .attr("class", "downstream chromosomeBorder")
+      .attr("d",
+        "M " + width + " " + chrMargin + " " +
+        "q " + bump + " " +  chrWidth/2 + " 0 " + chrWidth);
+  }
+}
+
+Ideogram.prototype.drawChromosomeBorders = function(chr, chrModel, bump, chrMargin, pcenStart, chrWidth, qArmStart, qArmEnd) {
+
+  var ideo = this,
+      borderTweak,
+      cenPosition = chrModel.centromerePosition;
+
+
+  if (ideo.adjustedBump) {
+    borderTweak = bump/2;
+    pcenStart += borderTweak*2;
+    qArmStart -= borderTweak;
+    qArmEnd += borderTweak*2;
+  }
+
+  if (cenPosition !== "telocentricPCen") {
+
+    chr.append('line')
+      .attr("class", "cb-p-arm-top chromosomeBorder")
+      .attr('x1', bump/2)
+      .attr('y1', chrMargin)
+      .attr('x2', pcenStart)
+      .attr("y2", chrMargin);
+
+    chr.append('line')
+      .attr("class", "cb-p-arm-bottom chromosomeBorder")
+      .attr('x1', bump/2)
+      .attr('y1', chrWidth + chrMargin)
+      .attr('x2', pcenStart)
+      .attr("y2", chrWidth + chrMargin);
+  }
+
+  if (cenPosition !== "telocentricQCen") {
+    chr.append('line')
+      .attr("class", "cb-q-arm-top chromosomeBorder")
+      .attr('x1', qArmStart)
+      .attr('y1', chrMargin)
+      .attr('x2', qArmEnd)
+      .attr("y2", chrMargin);
+
+    chr.append('line')
+      .attr("class", "cb-q-arm-bottom chromosomeBorder")
+      .attr('x1', qArmStart)
+      .attr('y1', chrWidth + chrMargin)
+      .attr('x2', qArmEnd)
+      .attr("y2", chrWidth + chrMargin);
+  }
 }
 
 /**
@@ -964,7 +1435,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
       pTerPad, chrClass,
       annotHeight, numAnnotTracks, annotTracksHeight,
       bump, ideo,
-      bumpTweak, borderTweak,
+      bumpTweak,
       ideo = this;
 
   if (typeof chrModel.bands === "undefined") {
@@ -975,7 +1446,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
   bump = ideo.bump;
 
   // p-terminal band padding
-  if (chrModel.centromerePosition != "telocentric") {
+  if (chrModel.centromerePosition != "telocentricPCen") {
     pTerPad = bump;
   } else {
     pTerPad = Math.round(bump/4) + 3;
@@ -1004,6 +1475,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
       .attr("class", function(d) {
         var cls = "band " + d.stain;
         if (d.stain == "acen") {
+          return;
           var arm = d.name[0]; // e.g. p in p11
           cls += " " + arm + "-cen";
         }
@@ -1019,42 +1491,8 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
         curveTweak = 0;
 
         if (d.stain == "acen") {
-          // Pericentromeric bands get curved
-          if (ideo.adjustedBump) {
-            curveTweak = 0.35;
-            x = 0.2;
-            left -= 0.1;
-            if (d.name[0] === "q") {
-              left += 1.2;
-            }
-          } else {
-            x -= bump/2;
-          }
-
-          curveStart = chrMargin + curveTweak;
-          curveMid = chrWidth/2 - curveTweak*2;
-          curveEnd = chrWidth - curveTweak*2;
-
-          if (d.name[0] == "p") {
-            // p arm
-            d =
-              "M " + left + " " + curveStart + " " +
-              "l " + x + " 0 " +
-              "q " + bump + " " + curveMid + " 0 " + curveEnd + " " +
-              "l -" + x + " 0 z";
-          } else {
-
-            if (ideo.adjustedBump) {
-              x += 0.2;
-            }
-
-            // q arm
-            d =
-              "M " + (left + x + bump/2) + " " + curveStart + " " +
-              "l -" + x + " 0 " +
-              "q -" + (bump + 0.5) + " " + curveMid + " 0 " + curveEnd + " " +
-              "l " + x + " 0 z";
-          }
+          return;
+          //return ideo.getCentromerePath(d, chrModel);
         } else {
           // Normal bands
 
@@ -1067,7 +1505,6 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
               left += pTerPad;
             }
           }
-
 
           if (ideo.adjustedBump && d.name[0] === "q") {
             left += 1.8;
@@ -1087,96 +1524,29 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex) {
         return d;
       });
 
-  if (chrModel.centromerePosition != "telocentric") {
+  if (chrModel.centromerePosition != "telocentricPCen") {
     // As in human
     chr.append('path')
-      .attr("class", "p-ter chromosomeBorder " + chrModel.bands[0].stain)
+      .attr("class", "upstream chromosomeBorder " + chrModel.bands[0].stain)
       .attr("d",
         "M " + (pTerPad - bump/2 + 0.1) + " " + chrMargin + " " +
         "q -" + pTerPad + " " + (chrWidth/2) + " 0 " + chrWidth);
-  } else {
-    // As in mouse
-    chr.append('path')
-      .attr("class", "p-ter chromosomeBorder " + chrModel.bands[0].stain)
-      .attr("d",
-        "M " + (pTerPad - 3) + " " + chrMargin + " " +
-        "l -" + (pTerPad - 2) + " 0 " +
-        "l 0 " + chrWidth + " " +
-        "l " + (pTerPad - 2) + " 0 z");
-
-    chr.insert('path', ':first-child')
-      .attr("class", "acen")
-      .attr("d",
-        "M " + (pTerPad - 3) + " " + (chrMargin + chrWidth * 0.1) + " " +
-        "l " + (pTerPad + bump/2 + 1) + " 0 " +
-        "l 0 " + chrWidth * 0.8 + " " +
-        "l -" + (pTerPad + bump/2 + 1) + " 0 z");
-
   }
 
+  ideo.drawChromosomeBordersAndCentromeres(chrModel, chr);
+
+  width -= bump/2;
 
   if (ideo.adjustedBump) {
-    borderTweak = 1.8;
-  } else {
-    borderTweak = 0;
+    borderTweak = 2;
+    width += borderTweak - 0.4;
   }
-
-  var pcenIndex = chrModel["pcenIndex"],
-      pcen = chrModel.bands[pcenIndex],
-      qcen = chrModel.bands[pcenIndex + 1],
-      pBump, qArmEnd;
-
-  // Why does human chromosome 11 lack a centromeric p-arm band?
-  // Answer: because of a bug in the data.  Hack removed; won't work
-  // for human 550 resolution until data is fixed.
-  if (pcenIndex > 0) {
-    pArmWidth = pcen.px.start;
-    qArmStart = qcen.px.stop + borderTweak;
-    pBump = bump;
-  } else {
-    // For telocentric centromeres, as in many mouse chromosomes
-    pArmWidth = 2;
-    pBump = 0;
-    qArmStart = document.querySelectorAll("#" + chrModel.id + " .band")[0].getBBox().x;
-  }
-
-  qArmWidth = chrModel.width - qArmStart + borderTweak*1.3;
-  qArmEnd = qArmStart + qArmWidth - bump/2 - 0.5;
-
-  chr.append('line')
-    .attr("class", "cb-p-arm-top chromosomeBorder")
-    .attr('x1', bump/2)
-    .attr('y1', chrMargin)
-    .attr('x2', pArmWidth)
-    .attr("y2", chrMargin);
-
-  chr.append('line')
-    .attr("class", "cb-p-arm-bottom chromosomeBorder")
-    .attr('x1', bump/2)
-    .attr('y1', chrWidth + chrMargin)
-    .attr('x2', pArmWidth)
-    .attr("y2", chrWidth + chrMargin);
-
-  chr.append('line')
-    .attr("class", "cb-q-arm-top chromosomeBorder")
-    .attr('x1', qArmStart)
-    .attr('y1', chrMargin)
-    .attr('x2', qArmEnd)
-    .attr("y2", chrMargin);
-
-  chr.append('line')
-    .attr("class", "cb-q-arm-bottom chromosomeBorder")
-    .attr('x1', qArmStart)
-    .attr('y1', chrWidth + chrMargin)
-    .attr('x2', qArmEnd)
-    .attr("y2", chrWidth + chrMargin);
 
   chr.append('path')
-    .attr("class", "q-ter chromosomeBorder " + chrModel.bands[chrModel.bands.length - 1].stain)
+    .attr("class", "downstream chromosomeBorder " + chrModel.bands[chrModel.bands.length - 1].stain)
     .attr("d",
-      "M " + qArmEnd + " " + chrMargin + " " +
-      "q " + bump + " " +  chrWidth/2 + " 0 " + chrWidth
-    );
+      "M " + width + " " + chrMargin + " " +
+      "q " + bump + " " +  chrWidth/2 + " 0 " + chrWidth);
 
 };
 
@@ -1373,12 +1743,15 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosomeID) {
         }
 
       });
-
-
   }
 };
 
-
+/**
+* convertBpToPx, for chromosomes that lack band data, i.e. not human or mouse
+*/
+Ideogram.prototype.convertBpToPxNoBands = function(chr, bp) {
+  return bp * chr.scale.bp;
+}
 
 /**
 * Converts base pair coordinates to pixel offsets.
@@ -2239,18 +2612,47 @@ Ideogram.prototype.getTaxids = function(callback) {
         ideo.getTaxidFromEutils(resolve);
       })
       promise.then(function(data){
+
+        var organism = ideo.config.organism,
+            dataDir = ideo.config.dataDir,
+            urlOrg = organism.replace(" ", "-");
+
         taxid = data;
         taxids.push(taxid);
 
         ideo.config.taxids = taxids;
         ideo.organisms[taxid] = {
           "commonName": "",
-          "scientificName": ideo.config.organism,
+          "scientificName": organism,
           "scientificNameAbbr": "",
         }
-        return new Promise(function(resolve, reject) {
-          ideo.getAssemblyAndChromosomesFromEutils(resolve);
-        })
+
+        var chromosomesUrl = dataDir + "chromosomes/" + urlOrg + ".json";
+
+        var promise = d3.promise.json(chromosomesUrl);
+
+        return promise
+          .then(
+            function(data) {
+              // Check if chromosome data exists locally.
+              // This is used for pre-processed centromere data,
+              // which is not accessible via EUtils.  See get_chromosomes.py.
+
+              var asmAndChrArray = [],
+                  chromosomes;
+              asmAndChrArray.push(data.assemblyaccession);
+              chromosomes = data.chromosomes.sort(ideo.sortChromosomes);
+              asmAndChrArray.push(chromosomes);
+              ideo.coordinateSystem = "bp";
+              return asmAndChrArray
+            },
+            function(error) {
+              return new Promise(function(resolve, reject) {
+                ideo.coordinateSystem = "bp";
+                ideo.getAssemblyAndChromosomesFromEutils(resolve);
+              })
+            }
+          )
       })
       .then(function(asmChrArray) {
         assembly = asmChrArray[0];
@@ -2338,7 +2740,7 @@ Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
       ideo.esearch +
       "&db=assembly" +
       "&term=%22" + organism + "%22[organism]" +
-      "AND%20(%22latest%20refseq%22[filter])%20AND%20%22chromosome%20level%22[filter]";
+      "AND%20(%22latest%20refseq%22[filter])%20AND%20(%22chromosome%20level%22[filter]%20OR%20%22complete%20genome%22[filter])";
 
     var promise = d3.promise.json(asmSearch);
 
@@ -2437,8 +2839,6 @@ Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
 
         chromosomes = chromosomes.sort(ideo.sortChromosomes);
         asmAndChrArray.push(chromosomes)
-
-        ideo.coordinateSystem = "bp";
 
         return callback(asmAndChrArray);
     });
@@ -2879,7 +3279,5 @@ function finishInit() {
        console.log(e.stack)
       //  throw e;
     }
-
   }
-
 };
