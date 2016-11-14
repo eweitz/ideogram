@@ -377,7 +377,7 @@ Ideogram.prototype.colorArms = function(pArmColor, qArmColor) {
     d3.selectAll("#" + chrID + " .band")
       .data(chr.bands)
       .style("fill", function(d, i) {
-        return (i <= chr.pcenIndex) ? pArmColor : qArmColor;
+        return (i <= chr.pcenIndex - 1) ? pArmColor : qArmColor;
       });
     d3.selectAll("#" + chrID + " .acen")
       .data(chr.centromere)
