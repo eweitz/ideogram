@@ -637,6 +637,10 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
       chr["centromerePosition"] = "telocentricPCen";
     }
 
+    if (ideo.config.taxid == "9606") {
+      chr["centromerePosition"] = "";
+    }
+
   }
 
   var cap = ideo.getCenAndArmParameters(chr);
