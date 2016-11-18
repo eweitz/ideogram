@@ -63,6 +63,17 @@ Layout.getInstance = function(config, ideo) {
 
 
 /**
+ * Get chart left margin.
+ * @protected
+ * @returns {Number}
+ */
+Layout.prototype._getLeftMargin = function() {
+
+    return this._margin.left;
+};
+
+
+/**
  * Get rotated chromosome y scale.
  * @protected
  * @returns {Number}

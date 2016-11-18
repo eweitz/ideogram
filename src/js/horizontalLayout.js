@@ -20,13 +20,27 @@ function HorizontalLayout(config, ideo) {
      * @member {Object}
      */
     this._margin = {
-        left : 35,
+        left : 20,
         top : 30
     };
 }
 
 
 HorizontalLayout.prototype = Object.create(Layout.prototype);
+
+
+/**
+ * @override
+ */
+HorizontalLayout.prototype._getLeftMargin = function() {
+
+    var margin = Layout.prototype._getLeftMargin.call(this);
+    if (this._config.ploidy > 1) {
+        margin = margin * 1.8;
+    }
+
+    return margin;
+};
 
 
 /**
@@ -154,7 +168,7 @@ HorizontalLayout.prototype.getChromosomeSetLabelTranslate = function() {
  */
 HorizontalLayout.prototype.getChromosomeSetTranslate = function(setNumber) {
 
-    return "translate(" + this._margin.left + ", " + this.getChromosomeSetYTranslate(setNumber) + ")";
+    return "translate(" + this._getLeftMargin() + ", " + this.getChromosomeSetYTranslate(setNumber) + ")";
 };
 
 

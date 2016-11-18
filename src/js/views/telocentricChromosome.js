@@ -10,7 +10,7 @@ function TelocentricChromosome(model, config, ideo) {
 
     Chromosome.call(this, model, config, ideo);
     this._class = 'TelocentricChromosome';
-    this._pArmOffset = 4;
+    this._pArmOffset = 3;
 }
 
 
@@ -37,8 +37,8 @@ TelocentricChromosome.prototype._getPArmShape = function() {
     return [{
         'class' : 'acen',
         'path' : 'M' + d.x2 + ',1' +
-            'L' + (d.x2 - d.o + 1) + ',1 ' + 
-            'L' + (d.x2 - d.o + 1) + ',' + (d.w - 1) + ' ' +
+            'L' + (d.x2 - d.o) + ',1 ' + 
+            'L' + (d.x2 - d.o) + ',' + (d.w - 1) + ' ' +
             'L' + d.x2 + ',' + (d.w - 1)
     }, {
         'class' : 'gpos100',
