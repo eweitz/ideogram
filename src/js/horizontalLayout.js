@@ -53,7 +53,7 @@ HorizontalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrEle
     var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
     var chrBox = chrElement.getBoundingClientRect();
 
-    var scaleX = (ideoBox.height / (chrBox.width + xOffset / 2)) * 0.97;
+    var scaleX = (ideoBox.height / (chrBox.width + xOffset / 2)) * 0.9;
     var scaleY = this._getYScale();
 
     var yOffset = (chrNumber + 1) * ((this._config.chrWidth * 2) * scaleY);
