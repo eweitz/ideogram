@@ -103,7 +103,7 @@ VerticalLayout.prototype.getChromosomeSetTranslate = function(setNumber) {
  */
 VerticalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
     /*
-     * Get additional padding caused by annotation tracks.
+     * Get additional padding caused by annotation/histogram tracks.
      */
     var additionalPadding = this._getAdditionalOffset();
     /*
@@ -111,10 +111,23 @@ VerticalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
      */
     if (! this._config.ploidyDesc) {
         /*
-         * TODO: Here is we have magic number 10. It is simpliy adjusted to accomodate bars on histogramm view.
-         * But it should be replaced with bar's maximum height...
+         * TODO: This part of code contains a lot magic numbers and if statements for exactly corresponing to
+         * original ideogram examples. But all this stuff should be removed. Calculation of translate should be a simple
+         * formula applied for all cases listed bellow. Now they are diffirent because of Layout:_getAdditionalOffset do
+         * not meet for cases when no annotation, when annotation exists and when histogram used.
          */
-        return 10 + 35 * (setNumber) + this._config.chrWidth + additionalPadding * 2 + additionalPadding * setNumber;
+        var translate;
+        if (this._config.annotationsLayout === "histogram") {
+            translate = this._config.chrMargin / 2 + setNumber * (this._config.chrMargin + this._config.chrWidth + 2) + additionalPadding * 2
+            + 1;
+        } else if (additionalPadding > 0) {
+            translate = this._config.chrWidth + setNumber * (this._config.chrMargin + this._config.chrWidth ) + additionalPadding * 2;
+        } else {
+            translate = this._config.chrWidth + setNumber * (this._config.chrMargin + this._config.chrWidth) + additionalPadding * 2
+                + 4 + (2 * setNumber);
+        }
+
+        return translate;
     }
     /*
      * If detailed description provided start to calculate offsets

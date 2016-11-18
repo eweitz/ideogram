@@ -253,9 +253,14 @@ Layout.prototype.getChromosomeLabelXPosition = function(i) {
 }
 
 
+/**
+ * Get chromosome label y position.
+ * @param i - chromosome number.
+ * @returns {Number}
+ */
 Layout.prototype.getChromosomeLabelYPosition = function(i) {
 
-    return -5;
+    return -5.5;
 };
 
 
