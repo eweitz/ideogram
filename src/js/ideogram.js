@@ -467,9 +467,31 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
             return ideo._layout.getChromosomeSetLabelXPosition(i);
         }).attr("y", function(d, i) {
             return ideo._layout.getChromosomeSetLabelYPosition(i);
-        }).text(function(d, i) {
-            return d.name;
-        }).attr("text-anchor", ideo._layout.getChromosomeSetLabelAnchor());
+        }).attr("text-anchor", ideo._layout.getChromosomeSetLabelAnchor())
+        .each(function(d, i) {
+            /*
+             * Get label lines.
+             */
+            var lines;
+            if (d.name.indexOf(' ') === -1) {
+                lines = [ d.name ];
+            } else {
+                lines = d.name.match(/^(.*)\s+([^\s]+)$/).slice(1).reverse();
+            }
+            /*
+             * Render label lines.
+             */
+            d3.select(this).selectAll('tspan')
+                .data(lines)
+                .enter()
+                .append('tspan')
+                .attr('dy', function(d, i) {
+                    return i * -1.2 + 'em';
+                }).attr('x', ideo._layout.getChromosomeSetLabelXPosition(i))
+                .attr('class', function(a, i) {
+                    return i == 1 && ideo.config.fullChromosomeLabels ? 'italic' : null;
+                }).text(String);
+        })
     /*
      * Append chromosomes labels.
      */
