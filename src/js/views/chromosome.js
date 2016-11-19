@@ -127,7 +127,7 @@ Chromosome.prototype._renderRangeSet = function(container, chrSetNumber, chrNumb
 
     if (! ('rangeSet' in this._config)) {
         return;
-    };
+    }
 
     var rangeSet = this._config.rangeSet.filter(function(range) {
         return range.chr - 1 == chrSetNumber;

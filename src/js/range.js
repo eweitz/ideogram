@@ -15,7 +15,7 @@ function Range(data) {
      * @member {Object}
      */
     this._data = data;
-};
+}
 
 
 /**

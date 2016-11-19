@@ -15,7 +15,7 @@ function Range(data) {
      * @member {Object}
      */
     this._data = data;
-};
+}
 
 
 /**
@@ -244,6 +244,17 @@ Layout.getInstance = function(config, ideo) {
 
 
 /**
+ * Get chart left margin.
+ * @protected
+ * @returns {Number}
+ */
+Layout.prototype._getLeftMargin = function() {
+
+    return this._margin.left;
+};
+
+
+/**
  * Get rotated chromosome y scale.
  * @protected
  * @returns {Number}
@@ -434,9 +445,14 @@ Layout.prototype.getChromosomeLabelXPosition = function(i) {
 };
 
 
+/**
+ * Get chromosome label y position.
+ * @param i - chromosome number.
+ * @returns {Number}
+ */
 Layout.prototype.getChromosomeLabelYPosition = function(i) {
 
-    return -5;
+    return -5.5;
 };
 
 
@@ -506,13 +522,27 @@ function HorizontalLayout(config, ideo) {
      * @member {Object}
      */
     this._margin = {
-        left : 35,
+        left : 20,
         top : 30
     };
 }
 
 
 HorizontalLayout.prototype = Object.create(Layout.prototype);
+
+
+/**
+ * @override
+ */
+HorizontalLayout.prototype._getLeftMargin = function() {
+
+    var margin = Layout.prototype._getLeftMargin.call(this);
+    if (this._config.ploidy > 1) {
+        margin = margin * 1.8;
+    }
+
+    return margin;
+};
 
 
 /**
@@ -525,7 +555,7 @@ HorizontalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrEle
     var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
     var chrBox = chrElement.getBoundingClientRect();
 
-    var scaleX = (ideoBox.height / (chrBox.width + xOffset / 2)) * 0.97;
+    var scaleX = (ideoBox.height / (chrBox.width + xOffset / 2)) * 0.9;
     var scaleY = this._getYScale();
 
     var yOffset = (chrNumber + 1) * ((this._config.chrWidth * 2) * scaleY);
@@ -640,7 +670,7 @@ HorizontalLayout.prototype.getChromosomeSetLabelTranslate = function() {
  */
 HorizontalLayout.prototype.getChromosomeSetTranslate = function(setNumber) {
 
-    return "translate(" + this._margin.left + ", " + this.getChromosomeSetYTranslate(setNumber) + ")";
+    return "translate(" + this._getLeftMargin() + ", " + this.getChromosomeSetYTranslate(setNumber) + ")";
 };
 
 
@@ -822,7 +852,7 @@ VerticalLayout.prototype.getChromosomeSetTranslate = function(setNumber) {
  */
 VerticalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
     /*
-     * Get additional padding caused by annotation tracks.
+     * Get additional padding caused by annotation/histogram tracks.
      */
     var additionalPadding = this._getAdditionalOffset();
     /*
@@ -830,10 +860,21 @@ VerticalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
      */
     if (! this._config.ploidyDesc) {
         /*
-         * TODO: Here is we have magic number 10. It is simpliy adjusted to accomodate bars on histogramm view.
-         * But it should be replaced with bar's maximum height...
+         * TODO: This part of code contains a lot magic numbers and if statements for exactly corresponing to
+         * original ideogram examples. But all this stuff should be removed. Calculation of translate should be a simple
+         * formula applied for all cases listed bellow. Now they are diffirent because of Layout:_getAdditionalOffset do
+         * not meet for cases when no annotation, when annotation exists and when histogram used.
          */
-        return 10 + 35 * (setNumber) + this._config.chrWidth + additionalPadding * 2 + additionalPadding * setNumber;
+        var translate;
+        if (this._config.annotationsLayout === "histogram") {
+            translate = this._config.chrMargin / 2 + setNumber * (this._config.chrMargin + this._config.chrWidth + 2) + additionalPadding * 2 + 1;
+        } else if (additionalPadding > 0) {
+            translate = this._config.chrWidth + setNumber * (this._config.chrMargin + this._config.chrWidth) + additionalPadding * 2;
+        } else {
+            translate = this._config.chrWidth + setNumber * (this._config.chrMargin + this._config.chrWidth) + additionalPadding * 2 + 4 + (2 * setNumber);
+        }
+
+        return translate;
     }
     /*
      * If detailed description provided start to calculate offsets
@@ -1601,15 +1642,14 @@ Chromosome.prototype._renderRangeSet = function(container, chrSetNumber, chrNumb
 
     if (! ('rangeSet' in this._config)) {
         return;
-    };
+    }
 
     var rangeSet = this._config.rangeSet.filter(function(range) {
-        return range.chr == chrSetNumber;
+        return range.chr - 1 == chrSetNumber;
     }).map(function(range) {
         return new Range(range);
     });
 
-//    console.log(chrSetNumber, ranges.length)
     var rangesContainer = container.append('g')
         .attr('class', 'range-set');
 
@@ -1788,7 +1828,7 @@ function TelocentricChromosome(model, config, ideo) {
 
     Chromosome.call(this, model, config, ideo);
     this._class = 'TelocentricChromosome';
-    this._pArmOffset = 4;
+    this._pArmOffset = 3;
 }
 
 
@@ -1815,8 +1855,8 @@ TelocentricChromosome.prototype._getPArmShape = function() {
     return [{
         'class' : 'acen',
         'path' : 'M' + d.x2 + ',1' +
-            'L' + (d.x2 - d.o + 1) + ',1 ' + 
-            'L' + (d.x2 - d.o + 1) + ',' + (d.w - 1) + ' ' +
+            'L' + (d.x2 - d.o) + ',1 ' + 
+            'L' + (d.x2 - d.o) + ',' + (d.w - 1) + ' ' +
             'L' + d.x2 + ',' + (d.w - 1)
     }, {
         'class' : 'gpos100',
@@ -2328,9 +2368,31 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
             return ideo._layout.getChromosomeSetLabelXPosition(i);
         }).attr("y", function(d, i) {
             return ideo._layout.getChromosomeSetLabelYPosition(i);
-        }).text(function(d, i) {
-            return d.name;
-        }).attr("text-anchor", ideo._layout.getChromosomeSetLabelAnchor());
+        }).attr("text-anchor", ideo._layout.getChromosomeSetLabelAnchor())
+        .each(function(d, i) {
+            /*
+             * Get label lines.
+             */
+            var lines;
+            if (d.name.indexOf(' ') === -1) {
+                lines = [ d.name ];
+            } else {
+                lines = d.name.match(/^(.*)\s+([^\s]+)$/).slice(1).reverse();
+            }
+            /*
+             * Render label lines.
+             */
+            d3.select(this).selectAll('tspan')
+                .data(lines)
+                .enter()
+                .append('tspan')
+                .attr('dy', function(d, i) {
+                    return i * -1.2 + 'em';
+                }).attr('x', ideo._layout.getChromosomeSetLabelXPosition(i))
+                .attr('class', function(a, i) {
+                    return i == 1 && ideo.config.fullChromosomeLabels ? 'italic' : null;
+                }).text(String);
+        })
     /*
      * Append chromosomes labels.
      */
@@ -2678,62 +2740,6 @@ Ideogram.prototype.round = function(coord) {
   return Math.round(coord * 100) / 100;
 };
 
-Ideogram.prototype.drawChromosomeNoBands = function(chrModel, chrIndex) {
-
-  var chr,
-      bump, chrMargin, chrWidth, width,
-      ideo = this;
-
-  bump = ideo.bump;
-
-  chrMargin = ideo.config.chrMargin * chrIndex;
-  chrWidth = ideo.config.chrWidth;
-  width = chrModel.width;
-
-  chr = d3.select("svg")
-    .append("g")
-      .attr("id", chrModel.id)
-      .attr("class", "chromosome noBands");
-
-  if (width < 1) {
-    // Applies to mitochrondial and chloroplast chromosomes
-    return;
-  }
-
-  chr.append('path')
-    .attr("class", "upstream chromosomeBorder")
-    .attr("d",
-      "M " + (bump - bump/2 + 0.1) + " " + chrMargin + " " +
-      "q -" + bump + " " + (chrWidth/2) + " 0 " + chrWidth);
-
-  chr.append('path')
-    .attr("class", "downstream chromosomeBorder")
-    .attr("d",
-      "M " + width + " " + chrMargin + " " +
-      "q " + bump + " " +  chrWidth/2 + " 0 " + chrWidth);
-
-  chr.append('line')
-    .attr("class", "cb-top chromosomeBorder")
-    .attr('x1', bump/2)
-    .attr('y1', chrMargin)
-    .attr('x2', width)
-    .attr("y2", chrMargin);
-
-  chr.append('line')
-    .attr("class", "cb-bottom chromosomeBorder")
-    .attr('x1', bump/2)
-    .attr('y1', chrWidth + chrMargin)
-    .attr('x2', width)
-    .attr("y2", chrWidth + chrMargin);
-
-  chr.append('path')
-    .attr("class", "chromosomeBody")
-    .attr("d",
-      "M " + bump/2 + " " + chrMargin + " " +
-      "l " + (width - bump/2) + " 0 " +
-      "l 0 " + chrWidth + " " +
-      "l -" + (width - bump/2) + " 0 z");
-}
 
 /**
 * Renders all the bands and outlining boundaries of a chromosome.

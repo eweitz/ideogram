@@ -118,13 +118,11 @@ VerticalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
          */
         var translate;
         if (this._config.annotationsLayout === "histogram") {
-            translate = this._config.chrMargin / 2 + setNumber * (this._config.chrMargin + this._config.chrWidth + 2) + additionalPadding * 2
-            + 1;
+            translate = this._config.chrMargin / 2 + setNumber * (this._config.chrMargin + this._config.chrWidth + 2) + additionalPadding * 2 + 1;
         } else if (additionalPadding > 0) {
-            translate = this._config.chrWidth + setNumber * (this._config.chrMargin + this._config.chrWidth ) + additionalPadding * 2;
+            translate = this._config.chrWidth + setNumber * (this._config.chrMargin + this._config.chrWidth) + additionalPadding * 2;
         } else {
-            translate = this._config.chrWidth + setNumber * (this._config.chrMargin + this._config.chrWidth) + additionalPadding * 2
-                + 4 + (2 * setNumber);
+            translate = this._config.chrWidth + setNumber * (this._config.chrMargin + this._config.chrWidth) + additionalPadding * 2 + 4 + (2 * setNumber);
         }
 
         return translate;
