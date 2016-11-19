@@ -195,9 +195,9 @@ function Layout(config, ideo) {
     this._ideo = ideo;
     /**
      * @private
-     * @member {PloidyDescription}
+     * @member {Ploidy}
      */
-    this._description = new PloidyDescription(config.ploidyDesc);
+    this._ploidy = this._ideo._ploidy;
     /**
      * Chromosome set's offset array.
      * @private
@@ -360,7 +360,7 @@ Layout.prototype._getChromosomeSetSize = function(chrSetNumber) {
     /*
      * Get last chromosome set size.
      */
-    var setSize = this._description.getSetSize(chrSetNumber);
+    var setSize = this._ploidy.getSetSize(chrSetNumber);
     /*
      * Increase offset by last chromosome set size.
      */
@@ -724,9 +724,9 @@ HorizontalLayout.prototype.getChromosomeSetLabelXPosition = function(i) {
 HorizontalLayout.prototype.getChromosomeSetLabelYPosition = function(i) {
 
     if (this._config.ploidy === 1) {
-        return (this._description.getSetSize(i) * this._config.chrWidth) / 2 + 3;
+        return (this._ploidy.getSetSize(i) * this._config.chrWidth) / 2 + 3;
     } else {
-        return this._description.getSetSize(i) * this._config.chrWidth;
+        return this._ploidy.getSetSize(i) * this._config.chrWidth;
     }
 };
 
@@ -884,7 +884,7 @@ VerticalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
         /*
          * First offset equals to zero.
          */
-        this._translate = [this._description.getSetSize(0) * this._config.chrWidth * 2];
+        this._translate = [this._ploidy.getSetSize(0) * this._config.chrWidth * 2];
         /*
          * Loop through description set.
          */
@@ -903,9 +903,6 @@ VerticalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
 VerticalLayout.prototype.getChromosomeSetLabelXPosition = function(setNumber) {
 
     return this._config.chrWidth / -2;
-//    return this._description.getSetSize(i) * this._config.chrWidth;
-//    return ((this._description.getSetSize(setNumber) * this._config.chrWidth + 20) / - 2);
-        //+ (this._config.ploidy > 1 ? 0 : this._config.chrWidth);
 };
 
 
@@ -1269,7 +1266,7 @@ SmallLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
  */
 SmallLayout.prototype.getChromosomeSetLabelXPosition = function(setNumber) {
 
-    return ((this._description.getSetSize(setNumber) * this._config.chrWidth + 20) / - 2) + (this._config.ploidy > 1 ? 0 : this._config.chrWidth);
+    return ((this._ploidy.getSetSize(setNumber) * this._config.chrWidth + 20) / - 2) + (this._config.ploidy > 1 ? 0 : this._config.chrWidth);
 };
 
 
@@ -1281,22 +1278,29 @@ SmallLayout.prototype.getChromosomeLabelXPosition = function(i) {
     return this._config.chrWidth / - 2;
 };
 /**
+ * Ploidy description class.
  * @public
  * @class
- * @param {Object} config
+ * @param {Object} config - ideogram config
  */
 function Ploidy(config) {
     /**
-     * Ideo config.
+     * Ideogram config.
      * @private
      * @member {Object}
      */
     this._config = config;
+    /**
+     * Ploidy description.
+     * @private
+     * @member {undefined|Object[]}
+     */
+    this._description = this._normilize(this._config.ploidyDesc);
 }
 
 
 /**
- * Get amount of chromosomes within set.
+ * Get amount of chromosomes within a set.
  * @param {Integer} setNumber
  * @returns {Integer}
  */
@@ -1313,102 +1317,6 @@ Ploidy.prototype.getChromosomesNumber = function(setNumber) {
         return this._config.ploidy || 1;
     }
 };
-/**
- * Color provider class.
- * @public
- * @class
- * @param {Object} config
- */
-function Color(config) {
-    /**
-     * Ideogram config.
-     * @private
-     * @member {Object}
-     */
-    this._config = config;
-    /**
-     * Ploidy description.
-     * @private
-     * @member {PloidyDescription}
-     */
-    this._description = new PloidyDescription(config.ploidyDesc);
-}
-
-
-/**
- * Get chromosome's arm color.
- * @public
- * @param {Integer} chrSetNumber
- * @param {Integer} chrNmber
- * @param {Integer} armNumber
- * @returns {String}
- */
-Color.prototype.getArmColor = function(chrSetNumber, chrNmber, armNumber) {
-
-    if (this._config.armColors) {
-        return this._config.armColors[armNumber];
-    } else if (this._config.ancestors) {
-        return this._getPolyploidArmColor(chrSetNumber, chrNmber, armNumber);
-    } else {
-        return null;
-    }
-};
-
-
-/**
- * Get chromosome's arm border color.
- * @public
- * @param {Integer} chrSetNumber
- * @param {Integer} chrNmber
- * @param {0|1} armNumber
- * @returns {String}
- */
-Color.prototype.getBorderColor = function(chrSetNumber, chrNmber, armNumber) {
-
-    if (chrNmber < this._config.ploidy) {
-        return '#000';
-    } else if (this._description.isExists(chrSetNumber, chrNmber, armNumber)) {
-        return '#000';
-    } else {
-        return '#fff';
-    }
-};
-
-
-/**
- * Get polyploid organism chromosome arm's color.
- * @private
- * @param chrSetNumber
- * @param chrNmber
- * @param armNumber
- * @returns {String}
- */
-Color.prototype._getPolyploidArmColor = function(chrSetNumber, chrNmber, armNumber) {
-
-    if (! this._description.isExists(chrSetNumber, chrNmber, armNumber)) {
-        return 'transparent';
-    } else {
-        return this._config.ancestors[this._description.getAncestor(chrSetNumber, chrNmber, armNumber)];
-    }
-};
-/**
- * Ploidy description class.
- * @public
- * @class
- */
-function PloidyDescription(description) {
-    /**
-     * @private
-     * @member {Object[]}
-     */
-    this._description = this._normilize(description);
-}
-
-
-PloidyDescription.prototype.hasDescription = function() {
-
-    
-};
 
 
 /**
@@ -1417,7 +1325,7 @@ PloidyDescription.prototype.hasDescription = function() {
  * @param {Mixed[]}
  * @returns {Object[]}
  */
-PloidyDescription.prototype._normilize = function(description) {
+Ploidy.prototype._normilize = function(description) {
     /*
      * Return the same if no description provided.
      */
@@ -1454,7 +1362,7 @@ PloidyDescription.prototype._normilize = function(description) {
  * @private
  * @param length
  */
-PloidyDescription.prototype._getExistanceArray = function(length) {
+Ploidy.prototype._getExistanceArray = function(length) {
 
     var array = [];
 
@@ -1470,7 +1378,7 @@ PloidyDescription.prototype._getExistanceArray = function(length) {
  * @public
  * @param chrSetNumber
  */
-PloidyDescription.prototype.getSetSize = function(chrSetNumber) {
+Ploidy.prototype.getSetSize = function(chrSetNumber) {
 
     if (this._description) {
         return this._description[chrSetNumber].ancestors.length;
@@ -1486,7 +1394,7 @@ PloidyDescription.prototype.getSetSize = function(chrSetNumber) {
  * @param {Integer} chrNumber
  * @returns {String}
  */
-PloidyDescription.prototype.getAncestor = function(chrSetNumber, chrNumber) {
+Ploidy.prototype.getAncestor = function(chrSetNumber, chrNumber) {
 
     if (this._description) {
         return this._description[chrSetNumber].ancestors[chrNumber];
@@ -1505,12 +1413,90 @@ PloidyDescription.prototype.getAncestor = function(chrSetNumber, chrNumber) {
  * @param armNumber
  * @returns {Boolean}
  */
-PloidyDescription.prototype.isExists = function(chrSetNumber, chrNumber, armNumber) {
+Ploidy.prototype.isExists = function(chrSetNumber, chrNumber, armNumber) {
 
     if (this._description) {
         return Number(this._description[chrSetNumber].existance[chrNumber][armNumber]) > 0;
     } else {
         return true;
+    }
+};
+/**
+ * Color provider class.
+ * @public
+ * @class
+ * @param {Object} config
+ */
+function Color(config) {
+    /**
+     * Ideogram config.
+     * @private
+     * @member {Object}
+     */
+    this._config = config;
+    /**
+     * Ploidy description.
+     * @private
+     * @member {Ploidy}
+     */
+    this._ploidy = new Ploidy(this._config);
+}
+
+
+/**
+ * Get chromosome's arm color.
+ * @public
+ * @param {Integer} chrSetNumber
+ * @param {Integer} chrNmber
+ * @param {Integer} armNumber
+ * @returns {String}
+ */
+Color.prototype.getArmColor = function(chrSetNumber, chrNmber, armNumber) {
+
+    if (this._config.armColors) {
+        return this._config.armColors[armNumber];
+    } else if (this._config.ancestors) {
+        return this._getPolyploidArmColor(chrSetNumber, chrNmber, armNumber);
+    } else {
+        return null;
+    }
+};
+
+
+/**
+ * Get chromosome's arm border color.
+ * @public
+ * @param {Integer} chrSetNumber
+ * @param {Integer} chrNmber
+ * @param {0|1} armNumber
+ * @returns {String}
+ */
+Color.prototype.getBorderColor = function(chrSetNumber, chrNmber, armNumber) {
+
+    if (chrNmber < this._config.ploidy) {
+        return '#000';
+    } else if (this._ploidy.isExists(chrSetNumber, chrNmber, armNumber)) {
+        return '#000';
+    } else {
+        return '#fff';
+    }
+};
+
+
+/**
+ * Get polyploid organism chromosome arm's color.
+ * @private
+ * @param chrSetNumber
+ * @param chrNmber
+ * @param armNumber
+ * @returns {String}
+ */
+Color.prototype._getPolyploidArmColor = function(chrSetNumber, chrNmber, armNumber) {
+
+    if (! this._ploidy.isExists(chrSetNumber, chrNmber, armNumber)) {
+        return 'transparent';
+    } else {
+        return this._config.ancestors[this._ploidy.getAncestor(chrSetNumber, chrNmber, armNumber)];
     }
 };
 /**
@@ -1916,9 +1902,18 @@ var Ideogram = function(config) {
   // Clone the config object, to allow multiple instantiations
   // without picking up prior ideogram's settings
   this.config = JSON.parse(JSON.stringify(config));
+  /**
+   * Organism ploidy description.
+   * @private
+   * @member {Ploidy}
+   */
   this._ploidy = new Ploidy(this.config);
+  /**
+   * Chromosome's layout.
+   * @private
+   * @member {Layout}
+   */
   this._layout = Layout.getInstance(this.config, this);
-  this._description = new PloidyDescription(this.config.ploidyDesc);
   /**
    * TODO: What is it? Get rid of it!
    */
@@ -2407,7 +2402,7 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
                 }).attr("y", function(d, i) {
                     return ideo._layout.getChromosomeLabelYPosition(i);
                 }).text(function(d, chrNumber) {
-                    return ideo._description.getAncestor(chrSetNumber, chrNumber);
+                    return ideo._ploidy.getAncestor(chrSetNumber, chrNumber);
                 }).attr("text-anchor", "middle");
         });
 };
@@ -4359,14 +4354,3 @@ Ideogram.prototype.filterAnnots = function(selections) {
 
   return counts;
 };
-
-/**
- * Chromosome model.
- * @public
- * @class
- * @param {Object} model.
- */
-function Model(model) {
-
-    this._model = model;
-}

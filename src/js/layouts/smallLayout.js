@@ -144,7 +144,7 @@ SmallLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
  */
 SmallLayout.prototype.getChromosomeSetLabelXPosition = function(setNumber) {
 
-    return ((this._description.getSetSize(setNumber) * this._config.chrWidth + 20) / - 2) + (this._config.ploidy > 1 ? 0 : this._config.chrWidth);
+    return ((this._ploidy.getSetSize(setNumber) * this._config.chrWidth + 20) / - 2) + (this._config.ploidy > 1 ? 0 : this._config.chrWidth);
 };
 
 

@@ -14,9 +14,9 @@ function Color(config) {
     /**
      * Ploidy description.
      * @private
-     * @member {PloidyDescription}
+     * @member {Ploidy}
      */
-    this._description = new PloidyDescription(config.ploidyDesc);
+    this._ploidy = new Ploidy(this._config);
 }
 
 
@@ -52,7 +52,7 @@ Color.prototype.getBorderColor = function(chrSetNumber, chrNmber, armNumber) {
 
     if (chrNmber < this._config.ploidy) {
         return '#000';
-    } else if (this._description.isExists(chrSetNumber, chrNmber, armNumber)) {
+    } else if (this._ploidy.isExists(chrSetNumber, chrNmber, armNumber)) {
         return '#000';
     } else {
         return '#fff';
@@ -70,9 +70,9 @@ Color.prototype.getBorderColor = function(chrSetNumber, chrNmber, armNumber) {
  */
 Color.prototype._getPolyploidArmColor = function(chrSetNumber, chrNmber, armNumber) {
 
-    if (! this._description.isExists(chrSetNumber, chrNmber, armNumber)) {
+    if (! this._ploidy.isExists(chrSetNumber, chrNmber, armNumber)) {
         return 'transparent';
     } else {
-        return this._config.ancestors[this._description.getAncestor(chrSetNumber, chrNmber, armNumber)];
+        return this._config.ancestors[this._ploidy.getAncestor(chrSetNumber, chrNmber, armNumber)];
     }
 };

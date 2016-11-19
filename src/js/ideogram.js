@@ -15,9 +15,18 @@ var Ideogram = function(config) {
   // Clone the config object, to allow multiple instantiations
   // without picking up prior ideogram's settings
   this.config = JSON.parse(JSON.stringify(config));
+  /**
+   * Organism ploidy description.
+   * @private
+   * @member {Ploidy}
+   */
   this._ploidy = new Ploidy(this.config);
+  /**
+   * Chromosome's layout.
+   * @private
+   * @member {Layout}
+   */
   this._layout = Layout.getInstance(this.config, this);
-  this._description = new PloidyDescription(this.config.ploidyDesc);
   /**
    * TODO: What is it? Get rid of it!
    */
@@ -506,7 +515,7 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
                 }).attr("y", function(d, i) {
                     return ideo._layout.getChromosomeLabelYPosition(i);
                 }).text(function(d, chrNumber) {
-                    return ideo._description.getAncestor(chrSetNumber, chrNumber);
+                    return ideo._ploidy.getAncestor(chrSetNumber, chrNumber);
                 }).attr("text-anchor", "middle");
         });
 };

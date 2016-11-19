@@ -222,9 +222,9 @@ HorizontalLayout.prototype.getChromosomeSetLabelXPosition = function(i) {
 HorizontalLayout.prototype.getChromosomeSetLabelYPosition = function(i) {
 
     if (this._config.ploidy === 1) {
-        return (this._description.getSetSize(i) * this._config.chrWidth) / 2 + 3;
+        return (this._ploidy.getSetSize(i) * this._config.chrWidth) / 2 + 3;
     } else {
-        return this._description.getSetSize(i) * this._config.chrWidth;
+        return this._ploidy.getSetSize(i) * this._config.chrWidth;
     }
 };
 

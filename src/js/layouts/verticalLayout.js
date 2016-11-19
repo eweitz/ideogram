@@ -135,7 +135,7 @@ VerticalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
         /*
          * First offset equals to zero.
          */
-        this._translate = [this._description.getSetSize(0) * this._config.chrWidth * 2];
+        this._translate = [this._ploidy.getSetSize(0) * this._config.chrWidth * 2];
         /*
          * Loop through description set.
          */
@@ -154,9 +154,6 @@ VerticalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
 VerticalLayout.prototype.getChromosomeSetLabelXPosition = function(setNumber) {
 
     return this._config.chrWidth / -2;
-//    return this._description.getSetSize(i) * this._config.chrWidth;
-//    return ((this._description.getSetSize(setNumber) * this._config.chrWidth + 20) / - 2);
-        //+ (this._config.ploidy > 1 ? 0 : this._config.chrWidth);
 };
 
 

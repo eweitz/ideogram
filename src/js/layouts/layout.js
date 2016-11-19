@@ -14,9 +14,9 @@ function Layout(config, ideo) {
     this._ideo = ideo;
     /**
      * @private
-     * @member {PloidyDescription}
+     * @member {Ploidy}
      */
-    this._description = new PloidyDescription(config.ploidyDesc);
+    this._ploidy = this._ideo._ploidy;
     /**
      * Chromosome set's offset array.
      * @private
@@ -179,7 +179,7 @@ Layout.prototype._getChromosomeSetSize = function(chrSetNumber) {
     /*
      * Get last chromosome set size.
      */
-    var setSize = this._description.getSetSize(chrSetNumber);
+    var setSize = this._ploidy.getSetSize(chrSetNumber);
     /*
      * Increase offset by last chromosome set size.
      */
