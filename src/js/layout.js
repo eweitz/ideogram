@@ -63,6 +63,17 @@ Layout.getInstance = function(config, ideo) {
 
 
 /**
+ * Get chart left margin.
+ * @protected
+ * @returns {Number}
+ */
+Layout.prototype._getLeftMargin = function() {
+
+    return this._margin.left;
+};
+
+
+/**
  * Get rotated chromosome y scale.
  * @protected
  * @returns {Number}
@@ -253,9 +264,14 @@ Layout.prototype.getChromosomeLabelXPosition = function(i) {
 };
 
 
+/**
+ * Get chromosome label y position.
+ * @param i - chromosome number.
+ * @returns {Number}
+ */
 Layout.prototype.getChromosomeLabelYPosition = function(i) {
 
-    return -5;
+    return -5.5;
 };
 
 

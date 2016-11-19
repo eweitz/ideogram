@@ -130,12 +130,11 @@ Chromosome.prototype._renderRangeSet = function(container, chrSetNumber, chrNumb
     };
 
     var rangeSet = this._config.rangeSet.filter(function(range) {
-        return range.chr == chrSetNumber;
+        return range.chr - 1 == chrSetNumber;
     }).map(function(range) {
         return new Range(range);
     });
 
-//    console.log(chrSetNumber, ranges.length)
     var rangesContainer = container.append('g')
         .attr('class', 'range-set');
 

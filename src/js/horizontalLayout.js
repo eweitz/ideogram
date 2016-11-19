@@ -20,13 +20,27 @@ function HorizontalLayout(config, ideo) {
      * @member {Object}
      */
     this._margin = {
-        left : 35,
+        left : 20,
         top : 30
     };
 }
 
 
 HorizontalLayout.prototype = Object.create(Layout.prototype);
+
+
+/**
+ * @override
+ */
+HorizontalLayout.prototype._getLeftMargin = function() {
+
+    var margin = Layout.prototype._getLeftMargin.call(this);
+    if (this._config.ploidy > 1) {
+        margin = margin * 1.8;
+    }
+
+    return margin;
+};
 
 
 /**
@@ -39,7 +53,7 @@ HorizontalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrEle
     var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
     var chrBox = chrElement.getBoundingClientRect();
 
-    var scaleX = (ideoBox.height / (chrBox.width + xOffset / 2)) * 0.97;
+    var scaleX = (ideoBox.height / (chrBox.width + xOffset / 2)) * 0.9;
     var scaleY = this._getYScale();
 
     var yOffset = (chrNumber + 1) * ((this._config.chrWidth * 2) * scaleY);
@@ -154,7 +168,7 @@ HorizontalLayout.prototype.getChromosomeSetLabelTranslate = function() {
  */
 HorizontalLayout.prototype.getChromosomeSetTranslate = function(setNumber) {
 
-    return "translate(" + this._margin.left + ", " + this.getChromosomeSetYTranslate(setNumber) + ")";
+    return "translate(" + this._getLeftMargin() + ", " + this.getChromosomeSetYTranslate(setNumber) + ")";
 };
 
 
