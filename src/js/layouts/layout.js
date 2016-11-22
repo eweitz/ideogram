@@ -87,6 +87,22 @@ Layout.prototype._getYScale = function() {
 
 
 /**
+ * Get chromosome lables.
+ * @public
+ * @param {SVGElement} - chromosome container.
+ * @returns {String[]}
+ */
+Layout.prototype.getChromosomeLabels = function(chrElement) {
+
+    var util = new ChromosomeUtil(chrElement);
+
+    return [util.getSetLabel(), util.getLabel()].filter(function(d) {
+        return d.length > 0;
+    });
+};
+
+
+/**
  * Rotate chromosome to original position.
  * @public
  * @param {Integer} chrSetNumber

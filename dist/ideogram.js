@@ -268,6 +268,22 @@ Layout.prototype._getYScale = function() {
 
 
 /**
+ * Get chromosome lables.
+ * @public
+ * @param {SVGElement} - chromosome container.
+ * @returns {String[]}
+ */
+Layout.prototype.getChromosomeLabels = function(chrElement) {
+
+    var util = new ChromosomeUtil(chrElement);
+
+    return [util.getSetLabel(), util.getLabel()].filter(function(d) {
+        return d.length > 0;
+    });
+};
+
+
+/**
  * Rotate chromosome to original position.
  * @public
  * @param {Integer} chrSetNumber
@@ -549,8 +565,12 @@ HorizontalLayout.prototype._getLeftMargin = function() {
  * @override
  */
 HorizontalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement, callback) {
+    /*
+     * Stash reference to this object.
+     */
+    var self = this;
 
-    var xOffset = 20;
+    var xOffset = 30;
 
     var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
     var chrBox = chrElement.getBoundingClientRect();
@@ -566,6 +586,28 @@ HorizontalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrEle
         .transition()
         .attr("transform", transform)
         .on('end', callback);
+    /*
+     * Append new chromosome labels.
+     */
+    var labels = this.getChromosomeLabels(chrElement);
+    d3.select(this._ideo.getSvg())
+        .append('g')
+        .attr('class', 'tmp')
+        .selectAll('text')
+        .data(labels)
+        .enter()
+        .append('text')
+        .attr('class', function(d, i) {
+            return i === 0 && labels.length === 2 ? 'chrSetLabel' : null;
+        }).attr('x', function(d, i) {
+            return 30;
+        }).attr('y', function(d, i) {
+            return (i + 1 + labels.length % 2) * 12;
+        }).style('text-anchor', 'middle')
+        .style('opacity', 0)
+        .text(String)
+        .transition()
+        .style('opacity', 1);
 };
 
 
@@ -580,6 +622,10 @@ HorizontalLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElemen
         .transition()
         .attr("transform", translate)
         .on('end', callback);
+
+    d3.selectAll('g.tmp')
+        .style('opacity', 0)
+        .remove();
 };
 
 
@@ -782,6 +828,12 @@ VerticalLayout.prototype = Object.create(Layout.prototype);
  * @override
  */
 VerticalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement, callback) {
+    /*
+     * Stash reference to this object.
+     */
+    var self = this;
+
+    var xOffset = 20;
 
     var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
     var chrBox = chrElement.getBoundingClientRect();
@@ -789,12 +841,33 @@ VerticalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrEleme
     var scaleX = (ideoBox.width / chrBox.height) * 0.97;
     var scaleY = this._getYScale();
 
-    var transform = "translate(10, 25) scale(" + scaleX + ", " + scaleY + ")";
+    var transform = "translate(" + xOffset + ", 25) scale(" + scaleX + ", " + scaleY + ")";
 
     d3.select(chrElement.parentNode)
         .transition()
         .attr("transform", transform)
         .on('end', callback);
+    /*
+     * Append new chromosome labels.
+     */
+    var labels = this.getChromosomeLabels(chrElement);
+    d3.select(this._ideo.getSvg())
+        .append('g')
+        .attr('class', 'tmp')
+        .selectAll('text')
+        .data(labels)
+        .enter()
+        .append('text')
+        .attr('class', function(d, i) {
+            return i === 0 && labels.length === 2 ? 'chrSetLabel' : null;
+        }).attr('x', function(d, i) {
+            return 0;
+        }).attr('y', function(d, i) {
+            return (xOffset + self._config.chrWidth) * 1.3;
+        }).style('opacity', 0)
+        .text(String)
+        .transition()
+        .style('opacity', 1);
 };
 
 
@@ -809,6 +882,10 @@ VerticalLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement,
         .transition()
         .attr("transform", translate)
         .on('end', callback);
+
+    d3.selectAll('g.tmp')
+        .style('opacity', 0)
+        .remove();
 };
 
 
@@ -948,6 +1025,10 @@ PairedLayout.prototype = Object.create(Layout.prototype);
  */
 PairedLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement, callback) {
     /*
+     * Stash reference to this object.
+     */
+    var self = this;
+    /*
      * Get ideo container and chromosome set dimensions.
      */
     var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
@@ -960,11 +1041,11 @@ PairedLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement
     /*
      * Evaluate y offset of chromosome. It is different for first and the second one.
      */
-    var yOffset = setNumber ? 150 : 10;
+    var yOffset = setNumber ? 150 : 25;
     /*
      * Define transformation string
      */
-    var transform = 'translate(10, ' + yOffset + ') scale(' + scaleX + ', ' + scaleY + ')';
+    var transform = 'translate(15, ' + yOffset + ') scale(' + scaleX + ', ' + scaleY + ')';
     /*
      * Run rotation procedure.
      */
@@ -989,6 +1070,27 @@ PairedLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement
              */
             d3.selectAll('.syntenicRegion').style("display", 'none');
         });
+    /*
+     * Append new chromosome labels.
+     */
+    var labels = this.getChromosomeLabels(chrElement);
+    d3.select(this._ideo.getSvg())
+        .append('g')
+        .attr('class', 'tmp')
+        .selectAll('text')
+        .data(this.getChromosomeLabels(chrElement))
+        .enter()
+        .append('text')
+        .attr('class', function(d, i) {
+            return i === 0 && labels.length === 2 ? 'chrSetLabel' : null;
+        }).attr('x', function(d, i) {
+            return 0;
+        }).attr('y', function(d, i) {
+            return yOffset + (self._config.chrWidth * scaleX / 2) * 1.15;
+        }).style('opacity', 0)
+        .text(String)
+        .transition()
+        .style('opacity', 1);
 };
 
 
@@ -1022,6 +1124,10 @@ PairedLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, c
                 .attr('transform', null)
                 .attr("text-anchor", setNumber ? null : 'end');
         });
+
+    d3.selectAll('g.tmp')
+        .style('opacity', 0)
+        .remove();
 };
 
 
@@ -2357,7 +2463,7 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
     d3.selectAll(".chromosome-set-container")
         .append("text")
         .data(ideo.chromosomesArray)
-        .attr("class", ideo._layout.getChromosomeLabelClass())
+        .attr("class", 'chromosome-set-label ' + ideo._layout.getChromosomeLabelClass())
         .attr("transform", ideo._layout.getChromosomeSetLabelTranslate())
         .attr("x", function(d, i) {
             return ideo._layout.getChromosomeSetLabelXPosition(i);
@@ -3856,6 +3962,17 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
 
 
 /**
+ * Get ideogram SVG container.
+ * @public
+ * @returns {SVGSVGElement}
+ */
+Ideogram.prototype.getSvg = function() {
+
+    return d3.select('#_ideogram').node();
+};
+
+
+/**
 * Initializes an ideogram.
 * Sets some high-level properties based on instance configuration,
 * fetches band and annotation data if needed, and
@@ -4353,4 +4470,40 @@ Ideogram.prototype.filterAnnots = function(selections) {
   console.log("Time in filterAnnots: " + (Date.now() - t0) + " ms");
 
   return counts;
+};
+
+/**
+ * Chromosome's view utility class.
+ * @public
+ * @class
+ * @param {SVGElement} node - chromosome "g" container.
+ */
+function ChromosomeUtil(node) {
+    /**
+     * @private
+     * @member {SVGElement}
+     */
+    this._node = node;
+}
+
+
+/**
+ * Get chromosome label.
+ * @public
+ * @returns {String}
+ */
+ChromosomeUtil.prototype.getLabel = function() {
+
+    return d3.select(this._node).select('text.chrLabel').text();
+};
+
+
+/**
+ * Get chromosome set label.
+ * @public
+ * @returns {String}
+ */
+ChromosomeUtil.prototype.getSetLabel = function() {
+
+    return d3.select(this._node.parentNode).select('text.chromosome-set-label').text();
 };

@@ -470,7 +470,7 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
     d3.selectAll(".chromosome-set-container")
         .append("text")
         .data(ideo.chromosomesArray)
-        .attr("class", ideo._layout.getChromosomeLabelClass())
+        .attr("class", 'chromosome-set-label ' + ideo._layout.getChromosomeLabelClass())
         .attr("transform", ideo._layout.getChromosomeSetLabelTranslate())
         .attr("x", function(d, i) {
             return ideo._layout.getChromosomeSetLabelXPosition(i);
@@ -1965,6 +1965,17 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
     }
 
   }
+};
+
+
+/**
+ * Get ideogram SVG container.
+ * @public
+ * @returns {SVGSVGElement}
+ */
+Ideogram.prototype.getSvg = function() {
+
+    return d3.select('#_ideogram').node();
 };
 
 

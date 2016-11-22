@@ -33,6 +33,10 @@ PairedLayout.prototype = Object.create(Layout.prototype);
  */
 PairedLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement, callback) {
     /*
+     * Stash reference to this object.
+     */
+    var self = this;
+    /*
      * Get ideo container and chromosome set dimensions.
      */
     var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
@@ -45,11 +49,11 @@ PairedLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement
     /*
      * Evaluate y offset of chromosome. It is different for first and the second one.
      */
-    var yOffset = setNumber ? 150 : 10;
+    var yOffset = setNumber ? 150 : 25;
     /*
      * Define transformation string
      */
-    var transform = 'translate(10, ' + yOffset + ') scale(' + scaleX + ', ' + scaleY + ')';
+    var transform = 'translate(15, ' + yOffset + ') scale(' + scaleX + ', ' + scaleY + ')';
     /*
      * Run rotation procedure.
      */
@@ -74,6 +78,27 @@ PairedLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement
              */
             d3.selectAll('.syntenicRegion').style("display", 'none');
         });
+    /*
+     * Append new chromosome labels.
+     */
+    var labels = this.getChromosomeLabels(chrElement);
+    d3.select(this._ideo.getSvg())
+        .append('g')
+        .attr('class', 'tmp')
+        .selectAll('text')
+        .data(this.getChromosomeLabels(chrElement))
+        .enter()
+        .append('text')
+        .attr('class', function(d, i) {
+            return i === 0 && labels.length === 2 ? 'chrSetLabel' : null;
+        }).attr('x', function(d, i) {
+            return 0;
+        }).attr('y', function(d, i) {
+            return yOffset + (self._config.chrWidth * scaleX / 2) * 1.15;
+        }).style('opacity', 0)
+        .text(String)
+        .transition()
+        .style('opacity', 1);
 };
 
 
@@ -107,6 +132,10 @@ PairedLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, c
                 .attr('transform', null)
                 .attr("text-anchor", setNumber ? null : 'end');
         });
+
+    d3.selectAll('g.tmp')
+        .style('opacity', 0)
+        .remove();
 };
 
 

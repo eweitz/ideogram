@@ -47,8 +47,12 @@ HorizontalLayout.prototype._getLeftMargin = function() {
  * @override
  */
 HorizontalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement, callback) {
+    /*
+     * Stash reference to this object.
+     */
+    var self = this;
 
-    var xOffset = 20;
+    var xOffset = 30;
 
     var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
     var chrBox = chrElement.getBoundingClientRect();
@@ -64,6 +68,28 @@ HorizontalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrEle
         .transition()
         .attr("transform", transform)
         .on('end', callback);
+    /*
+     * Append new chromosome labels.
+     */
+    var labels = this.getChromosomeLabels(chrElement);
+    d3.select(this._ideo.getSvg())
+        .append('g')
+        .attr('class', 'tmp')
+        .selectAll('text')
+        .data(labels)
+        .enter()
+        .append('text')
+        .attr('class', function(d, i) {
+            return i === 0 && labels.length === 2 ? 'chrSetLabel' : null;
+        }).attr('x', function(d, i) {
+            return 30;
+        }).attr('y', function(d, i) {
+            return (i + 1 + labels.length % 2) * 12;
+        }).style('text-anchor', 'middle')
+        .style('opacity', 0)
+        .text(String)
+        .transition()
+        .style('opacity', 1);
 };
 
 
@@ -78,6 +104,10 @@ HorizontalLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElemen
         .transition()
         .attr("transform", translate)
         .on('end', callback);
+
+    d3.selectAll('g.tmp')
+        .style('opacity', 0)
+        .remove();
 };
 
 
