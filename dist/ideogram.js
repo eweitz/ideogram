@@ -1,3 +1,1996 @@
+/**
+ * Chromosome range.
+ * @public
+ * @class
+ * @param {Object} data - range data.
+ * @param {Integer} data.chr - chromosome index.
+ * @param {Integer[]} [data.ploidy] - array which controls on which chromosomes range should appear in case of ploidy.
+ * @param {Integer} data.start - range start.
+ * @param {Integer} data.stop - range end.
+ * @param {String} data.color - range color.
+ */
+function Range(data) {
+    /**
+     * @private
+     * @member {Object}
+     */
+    this._data = data;
+}
+
+
+/**
+ * Get range start.
+ * @public
+ * @returns {Integer}.
+ */
+Range.prototype.getStart = function() {
+
+    return this._data.start;
+};
+
+
+/**
+ * Get range end.
+ * @public
+ * @returns {Integer}.
+ */
+Range.prototype.getStop = function() {
+
+    return this._data.stop;
+};
+
+
+/**
+ * Get range length.
+ * @public
+ * @returns {Integer}
+ */
+Range.prototype.getLength = function() {
+
+    return this._data.stop - this._data.start;
+};
+
+
+/**
+ * Get range color.
+ * @public
+ * @param {Intger} chrNumber - chromosome number.
+ * @returns {String}
+ */
+Range.prototype.getColor = function(chrNumber) {
+
+    if (! ('ploidy' in this._data)) {
+        return this._getColor(chrNumber);
+    } else if ('ploidy' in this._data && this._data.ploidy[chrNumber]) {
+        return this._getColor(chrNumber);
+    } else {
+        return 'transparent';
+    }
+
+};
+
+
+/**
+ * Get range color.
+ * @private
+ * @param {Intger} chrNumber - chromosome number.
+ * @returns {String}
+ */
+Range.prototype._getColor = function(chrNumber) {
+
+    if (Array.isArray(this._data.color)) {
+        return this._data.color[chrNumber];
+    } else {
+        return this._data.color;
+    }
+};
+/**
+ * @public
+ * @class
+ * @param {Object} model
+ */
+function ModelAdapter(model) {
+
+    this._model = model;
+    this._class = 'ModelAdapter';
+}
+
+
+/**
+ * @public
+ * @static
+ * @param {Object} model
+ * @returns {ModelAdapter}
+ */
+ModelAdapter.getInstance = function(model) {
+
+    if (model.bands) {
+        return new ModelAdapter(model);
+    } else {
+        return new ModelNoBandsAdapter(model);
+    }
+};
+
+
+/**
+ * Get model.
+ * @public
+ * @returns {Object}
+ */
+ModelAdapter.prototype.getModel = function() {
+
+    return this._model;
+};
+
+
+/**
+ * Get chromosome CSS class.
+ * @returns {String}
+ */
+ModelAdapter.prototype.getCssClass = function() {
+
+    return '';
+};
+/**
+ * 
+ */
+function ModelNoBandsAdapter(model) {
+    /*
+     * Call parent constructor.
+     */
+    ModelAdapter.call(this, model);
+    this._class = 'ModelNoBandsAdapter';
+}
+
+
+ModelNoBandsAdapter.prototype = Object.create(ModelAdapter.prototype);
+
+
+/**
+ * @override
+ */
+ModelNoBandsAdapter.prototype.getModel = function() {
+    /*
+     * Define bands as empty array.
+     */
+    this._model.bands = [];
+    /*
+     * If chromosome width more than 1 add single band to bands array.
+     */
+    if (this._model.width > 1) {
+        this._model.bands.push({
+            name: 'p',
+            px : {
+                start : 0,
+                stop : this._model.width,
+                width : this._model.width
+            }
+        });
+    }
+
+    return this._model;
+};
+
+
+/**
+ * @override
+ */
+ModelNoBandsAdapter.prototype.getCssClass = function() {
+
+    return 'noBands';
+};
+/**
+ * 
+ */
+function Layout(config, ideo) {
+    /**
+     * @private
+     * @member {Object}
+     */
+    this._config = config;
+    /**
+     * @private
+     * @member {Ideogram}
+     */
+    this._ideo = ideo;
+    /**
+     * @private
+     * @member {Ploidy}
+     */
+    this._ploidy = this._ideo._ploidy;
+    /**
+     * Chromosome set's offset array.
+     * @private
+     * @member {Number[]}
+     */
+    this._translate = undefined;
+    /**
+     * Chromosome band's size.
+     * @private
+     * @member {Number}
+     */
+    this._tickSize = 8;
+    /**
+     * Chromosome rotation state.
+     * @private
+     * @member {Boolean}
+     */
+    this._isRotated = false;
+}
+
+
+/**
+ * Factory method.
+ * @public
+ * @static
+ * @param {Object} config
+ * @param {Ideogram} ideo
+ * @return {Layout}
+ */
+Layout.getInstance = function(config, ideo) {
+
+    if ("perspective" in config && config.perspective == "comparative") {
+        return new PairedLayout(config, ideo);
+    } else if ("rows" in config && config.rows > 1) {
+        return new SmallLayout(config, ideo);
+    } else if (config.orientation === 'vertical') {
+        return new VerticalLayout(config, ideo);
+    } else if (config.orientation === 'horizontal') {
+        return new HorizontalLayout(config, ideo);
+    } else {
+        return new VerticalLayout(config, ideo);
+    }
+};
+
+
+/**
+ * Get chart left margin.
+ * @protected
+ * @returns {Number}
+ */
+Layout.prototype._getLeftMargin = function() {
+
+    return this._margin.left;
+};
+
+
+/**
+ * Get rotated chromosome y scale.
+ * @protected
+ * @returns {Number}
+ */
+Layout.prototype._getYScale = function() {
+    /*
+     * 20 is width of rotated chromosome.
+     */
+    return 20 / this._config.chrWidth;
+};
+
+
+/**
+ * Get chromosome lables.
+ * @public
+ * @param {SVGElement} - chromosome container.
+ * @returns {String[]}
+ */
+Layout.prototype.getChromosomeLabels = function(chrElement) {
+
+    var util = new ChromosomeUtil(chrElement);
+
+    return [util.getSetLabel(), util.getLabel()].filter(function(d) {
+        return d.length > 0;
+    });
+};
+
+
+/**
+ * Rotate chromosome to original position.
+ * @public
+ * @param {Integer} chrSetNumber
+ * @param {Integer} chrNumber
+ * @param {SVGElement} chrElement
+ * @param {Function} callback
+ */
+Layout.prototype.rotateBack = function(chrSetNumber, chrNumber, chrElement, callback) {
+
+    throw new Error(this._class + '#rotateBack not implemented');
+};
+
+
+/**
+ * Rotate chromosome to opposite position.
+ * @public
+ * @param {Integer} chrSetNumber
+ * @param {Integer} chrNumber
+ * @param {SVGElement} chrElement
+ * @param {Function} callback
+ */
+Layout.prototype.rotateForward = function(chrSetNumber, chrNumber, chrElement, callback) {
+
+    throw new Error(this._class + '#rotateForward not implemented');
+};
+
+
+/**
+ * @public
+ * @param {SVGElement} chrElement
+ */
+Layout.prototype.rotate = function(chrSetNumber, chrNumber, chrElement) {
+    /*
+     * Find chromosomes which should be hidden.
+     */
+    var otherChrs = d3.selectAll("g.chromosome").filter(function(d, i) {
+        return this !== chrElement;
+    });
+
+    if (this._isRotated) {
+        /*
+         * Reset _isRotated flag.
+         */
+        this._isRotated = false;
+        /*
+         * Rotate chromosome back.
+         */
+        this.rotateBack(chrSetNumber, chrNumber, chrElement, function() {
+            /*
+             * Show all other chromosomes and chromosome labels.
+             */
+            otherChrs.style("display", null);
+            d3.selectAll(".chrSetLabel, .chrLabel").style("display", null);
+        });
+    } else {
+        /*
+         * Set _isRotated flag.
+         */
+        this._isRotated = true;
+        /*
+         * Hide all other chromosomes and chromosome labels.
+         */
+        otherChrs.style("display", "none");
+        d3.selectAll(".chrSetLabel, .chrLabel").style("display", "none");
+        /*
+         * Rotate chromosome.
+         */
+        this.rotateForward(chrSetNumber, chrNumber, chrElement);
+    }
+};
+
+
+Layout.prototype.getChromosomeLabelClass = function() {
+
+    if (this._config.ploidy === 1) {
+        return 'chrLabel';
+    } else {
+        return 'chrSetLabel';
+    }
+};
+
+
+Layout.prototype._getAdditionalOffset = function() {
+
+    return (this._config.annotationHeight || 0) * (this._config.numAnnotTracks || 1);
+};
+
+
+Layout.prototype._getChromosomeSetSize = function(chrSetNumber) {
+    /*
+     * Get last chromosome set size.
+     */
+    var setSize = this._ploidy.getSetSize(chrSetNumber);
+    /*
+     * Increase offset by last chromosome set size.
+     */
+    return setSize * this._config.chrWidth * 2 + (this._config.ploidy > 1 ? 20 : 0);
+};
+
+
+/**
+ * Get layout margin.
+ * @public
+ * @returns {Object}
+ */
+Layout.prototype.getMargin = function() {
+
+    return this._margin;
+};
+
+
+/**
+ * Get SVG element height.
+ * @public
+ * @param {Integer} taxId
+ * @return {Number}
+ */
+Layout.prototype.getHeight = function(taxId) {
+
+    throw new Error(this._class + '#getHeight not implemented');
+};
+
+
+Layout.prototype.getChromosomeBandTickY1 = function(chrNumber) {
+
+    throw new Error(this._class + '#getChromosomeBandTickY1 not implemented');
+};
+
+
+Layout.prototype.getChromosomeBandTickY2 = function(chrNumber) {
+
+    throw new Error(this._class + '#getChromosomeBandTickY2 not implemented');
+};
+
+
+/**
+ * Get chromosome's band translate attribute.
+ * @public
+ * @param {Object} band
+ * @param {Integer} chrNumber
+ * @return {Object}
+ */
+Layout.prototype.getChromosomeBandLabelTranslate = function(band, chrNumber) {
+
+    throw new Error(this._class + '#getChromosomeBandLabelTranslate not implemented');
+};
+
+
+/**
+ * Get chromosome set label anchor property.
+ * @public
+ * @returns {String}
+ */
+Layout.prototype.getChromosomeSetLabelAnchor = function() {
+
+    return 'middle';
+};
+
+
+/**
+ * Get chromosome's band label text-anchor value.
+ * @public
+ * @param {Integer} chrNumber
+ * @return {String|null}
+ */
+Layout.prototype.getChromosomeBandLabelAnchor = function(chrNumber) {
+
+    throw new Error(this._class + '#getChromosomeBandLabelAnchor not implemented');
+};
+
+
+Layout.prototype.getChromosomeLabelXPosition = function(i) {
+
+    throw new Error(this._class + '#getChromosomeLabelXPosition not implemented');
+};
+
+
+/**
+ * Get chromosome label y position.
+ * @param i - chromosome number.
+ * @returns {Number}
+ */
+Layout.prototype.getChromosomeLabelYPosition = function(i) {
+
+    return -5.5;
+};
+
+
+Layout.prototype.getChromosomeSetLabelYPosition = function(i) {
+
+    if (this._config.ploidy === 1) {
+        return this.getChromosomeLabelYPosition(i);
+    } else {
+        return -2 * this._config.chrWidth;
+    }
+};
+
+
+Layout.prototype.getChromosomeSetLabelXPosition = function(i) {
+
+    throw new Error(this._class + '#getChromosomeSetLabelXPosition not implemented');
+};
+
+
+Layout.prototype.getChromosomeSetLabelTranslate = function() {
+
+    throw new Error(this._class + '#getChromosomeSetLabelTranslate not implemented');
+};
+
+
+/**
+ * Get chromosome set translate attribute.
+ * @public
+ * @param {Integer} setNumber - chromosome set number
+ * @return {String}
+ */
+Layout.prototype.getChromosomeSetTranslate = function(setNumber) {
+
+    throw new Error(this._class + '#getChromosomeSetTranslate not implemented');
+};
+
+
+/**
+ * Get chromosome set translate's y offset.
+ * @public
+ * @param {Integer} setNumber - chromosome set number
+ * @return {Number}
+ */
+Layout.prototype.getChromosomeSetYTranslate = function(setNumber) {
+
+    throw new Error(this._class + '#getChromosomeSetYTranslate not implemented');
+};
+/**
+ * @public
+ * @class
+ * @param {Object} config
+ * @param {Ideogram} ideo
+ */
+function HorizontalLayout(config, ideo) {
+    /*
+     * 
+     */
+    Layout.call(this, config, ideo);
+    /**
+     * @private
+     * @member {String}
+     */
+    this._class = 'HorizontalLayout';
+    /**
+     * Layout margins.
+     * @private
+     * @member {Object}
+     */
+    this._margin = {
+        left : 20,
+        top : 30
+    };
+}
+
+
+HorizontalLayout.prototype = Object.create(Layout.prototype);
+
+
+/**
+ * @override
+ */
+HorizontalLayout.prototype._getLeftMargin = function() {
+
+    var margin = Layout.prototype._getLeftMargin.call(this);
+    if (this._config.ploidy > 1) {
+        margin = margin * 1.8;
+    }
+
+    return margin;
+};
+
+
+/**
+ * @override
+ */
+HorizontalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement, callback) {
+    /*
+     * Stash reference to this object.
+     */
+    var self = this;
+
+    var xOffset = 30;
+
+    var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
+    var chrBox = chrElement.getBoundingClientRect();
+
+    var scaleX = (ideoBox.height / (chrBox.width + xOffset / 2)) * 0.9;
+    var scaleY = this._getYScale();
+
+    var yOffset = (chrNumber + 1) * ((this._config.chrWidth * 2) * scaleY);
+
+    var transform = 'rotate(90) translate(' + xOffset + ', -' + yOffset + ') scale(' + scaleX + ', ' + scaleY + ')';
+
+    d3.select(chrElement.parentNode)
+        .transition()
+        .attr("transform", transform)
+        .on('end', callback);
+    /*
+     * Append new chromosome labels.
+     */
+    var labels = this.getChromosomeLabels(chrElement);
+    d3.select(this._ideo.getSvg())
+        .append('g')
+        .attr('class', 'tmp')
+        .selectAll('text')
+        .data(labels)
+        .enter()
+        .append('text')
+        .attr('class', function(d, i) {
+            return i === 0 && labels.length === 2 ? 'chrSetLabel' : null;
+        }).attr('x', function(d, i) {
+            return 30;
+        }).attr('y', function(d, i) {
+            return (i + 1 + labels.length % 2) * 12;
+        }).style('text-anchor', 'middle')
+        .style('opacity', 0)
+        .text(String)
+        .transition()
+        .style('opacity', 1);
+};
+
+
+/**
+ * @override
+ */
+HorizontalLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, callback) {
+
+    var translate = this.getChromosomeSetTranslate(setNumber);
+
+    d3.select(chrElement.parentNode)
+        .transition()
+        .attr("transform", translate)
+        .on('end', callback);
+
+    d3.selectAll('g.tmp')
+        .style('opacity', 0)
+        .remove();
+};
+
+
+/**
+ * @override
+ */
+HorizontalLayout.prototype.getHeight = function(taxId) {
+    /*
+     * Get last chromosome set offset.
+     */
+    var lastSetOffset = this.getChromosomeSetYTranslate(this._config.chromosomes[taxId].length - 1);
+    /*
+     * Get last chromosome set size.
+     */
+    var lastSetSize = this._getChromosomeSetSize(this._config.chromosomes[taxId].length - 1);
+    /*
+     * Increase offset by last chromosome set size.
+     */
+    lastSetOffset += lastSetSize;
+
+    return lastSetOffset + this._getAdditionalOffset() * 2;
+};
+
+
+/**
+ * @override
+ */
+HorizontalLayout.prototype.getChromosomeSetLabelAnchor = function() {
+
+    return 'end';
+};
+
+
+/**
+ * @override
+ */
+HorizontalLayout.prototype.getChromosomeBandLabelAnchor = function(chrNumber) {
+
+    return null;
+};
+
+
+/**
+ * @override
+ */
+HorizontalLayout.prototype.getChromosomeBandTickY1 = function(chrNumber) {
+
+    return 2;
+};
+
+
+/**
+ * @override
+ */
+HorizontalLayout.prototype.getChromosomeBandTickY2 = function(chrNumber) {
+
+    return 10;
+};
+
+
+/**
+ * @override
+ */
+HorizontalLayout.prototype.getChromosomeBandLabelTranslate = function(band) {
+
+    var x = this._ideo.round(- this._tickSize + band.px.start + band.px.width / 2);
+    var y = -10;
+
+    return {
+        x : x,
+        y : y,
+        translate : 'translate(' + x + ',' + y + ')'
+    };
+};
+
+
+/**
+ * @override
+ */
+HorizontalLayout.prototype.getChromosomeSetLabelTranslate = function() {
+
+    return null;
+};
+
+
+/**
+ * @override
+ */
+HorizontalLayout.prototype.getChromosomeSetTranslate = function(setNumber) {
+
+    return "translate(" + this._getLeftMargin() + ", " + this.getChromosomeSetYTranslate(setNumber) + ")";
+};
+
+
+/**
+ * @override
+ */
+HorizontalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
+    /*
+     * If no detailed description provided just use one formula for all cases.
+     */
+    if (! this._config.ploidyDesc) {
+        return this._config.chrMargin * (setNumber + 1);
+    }
+    /*
+     * Id detailed description provided start to calculate offsets
+     * for each chromosome set separately. This should be done only once.
+     */
+    if (! this._translate) {
+        /*
+         * First offset equals to zero.
+         */
+        this._translate = [1];
+        /*
+         * Loop through description set.
+         */
+        for (var i = 1; i < this._config.ploidyDesc.length; i ++) {
+            this._translate[i] = this._translate[i - 1] + this._getChromosomeSetSize(i - 1);
+        }
+    }
+
+    return this._translate[setNumber];
+};
+
+
+/**
+ * @override
+ */
+HorizontalLayout.prototype.getChromosomeSetLabelXPosition = function(i) {
+
+    if (this._config.ploidy === 1) {
+        return this.getChromosomeLabelXPosition(i);
+    } else {
+        return -20;
+    }
+};
+
+
+/**
+ * @override
+ */
+HorizontalLayout.prototype.getChromosomeSetLabelYPosition = function(i) {
+
+    if (this._config.ploidy === 1) {
+        return (this._ploidy.getSetSize(i) * this._config.chrWidth) / 2 + 3;
+    } else {
+        return this._ploidy.getSetSize(i) * this._config.chrWidth;
+    }
+};
+
+
+/**
+ * @override
+ */
+HorizontalLayout.prototype.getChromosomeLabelXPosition = function(i) {
+
+    return -8;
+};
+
+
+/**
+ * @override
+ */
+HorizontalLayout.prototype.getChromosomeLabelYPosition = function(i) {
+
+    return this._config.chrWidth;
+};
+/**
+ * @public
+ * @class
+ * @param {Object} config
+ * @param {Ideogram} ideo
+ */
+function VerticalLayout(config, ideo) {
+    /*
+     * 
+     */
+    Layout.call(this, config, ideo);
+    /**
+     * @private
+     * @member {String}
+     */
+    this._class = 'VerticalLayout';
+    /**
+     * Layout margins.
+     * @private
+     * @member {Object}
+     */
+    this._margin = {
+        top : 30,
+        left : 15
+    };
+}
+
+
+VerticalLayout.prototype = Object.create(Layout.prototype);
+
+
+/**
+ * @override
+ */
+VerticalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement, callback) {
+    /*
+     * Stash reference to this object.
+     */
+    var self = this;
+
+    var xOffset = 20;
+
+    var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
+    var chrBox = chrElement.getBoundingClientRect();
+
+    var scaleX = (ideoBox.width / chrBox.height) * 0.97;
+    var scaleY = this._getYScale();
+
+    var transform = "translate(" + xOffset + ", 25) scale(" + scaleX + ", " + scaleY + ")";
+
+    d3.select(chrElement.parentNode)
+        .transition()
+        .attr("transform", transform)
+        .on('end', callback);
+    /*
+     * Append new chromosome labels.
+     */
+    var labels = this.getChromosomeLabels(chrElement);
+    d3.select(this._ideo.getSvg())
+        .append('g')
+        .attr('class', 'tmp')
+        .selectAll('text')
+        .data(labels)
+        .enter()
+        .append('text')
+        .attr('class', function(d, i) {
+            return i === 0 && labels.length === 2 ? 'chrSetLabel' : null;
+        }).attr('x', function(d, i) {
+            return 0;
+        }).attr('y', function(d, i) {
+            return (xOffset + self._config.chrWidth) * 1.3;
+        }).style('opacity', 0)
+        .text(String)
+        .transition()
+        .style('opacity', 1);
+};
+
+
+/**
+ * @override
+ */
+VerticalLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, callback) {
+
+    var translate = this.getChromosomeSetTranslate(setNumber);
+
+    d3.select(chrElement.parentNode)
+        .transition()
+        .attr("transform", translate)
+        .on('end', callback);
+
+    d3.selectAll('g.tmp')
+        .style('opacity', 0)
+        .remove();
+};
+
+
+/**
+ * @override
+ */
+VerticalLayout.prototype.getHeight = function(taxId) {
+
+    return this._config.chrHeight + this._margin.top * 1.5;
+};
+
+
+/**
+ * @override
+ */
+VerticalLayout.prototype.getChromosomeBandLabelTranslate = function(band) {
+
+};
+
+
+/**
+ * @override
+ */
+VerticalLayout.prototype.getChromosomeSetLabelTranslate = function() {
+
+    return 'rotate(-90)';
+};
+
+
+/**
+ * @override
+ */
+VerticalLayout.prototype.getChromosomeSetTranslate = function(setNumber) {
+
+    return 'rotate(90) translate(' + this._margin.top + ', -' + this.getChromosomeSetYTranslate(setNumber) + ')';
+};
+
+
+/**
+ * @override
+ */
+VerticalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
+    /*
+     * Get additional padding caused by annotation/histogram tracks.
+     */
+    var additionalPadding = this._getAdditionalOffset();
+    /*
+     * If no detailed description provided just use one formula for all cases.
+     */
+    if (! this._config.ploidyDesc) {
+        /*
+         * TODO: This part of code contains a lot magic numbers and if statements for exactly corresponing to
+         * original ideogram examples. But all this stuff should be removed. Calculation of translate should be a simple
+         * formula applied for all cases listed bellow. Now they are diffirent because of Layout:_getAdditionalOffset do
+         * not meet for cases when no annotation, when annotation exists and when histogram used.
+         */
+        var translate;
+        if (this._config.annotationsLayout === "histogram") {
+            translate = this._config.chrMargin / 2 + setNumber * (this._config.chrMargin + this._config.chrWidth + 2) + additionalPadding * 2 + 1;
+        } else if (additionalPadding > 0) {
+            translate = this._config.chrWidth + setNumber * (this._config.chrMargin + this._config.chrWidth) + additionalPadding * 2;
+        } else {
+            translate = this._config.chrWidth + setNumber * (this._config.chrMargin + this._config.chrWidth) + additionalPadding * 2 + 4 + (2 * setNumber);
+        }
+
+        return translate;
+    }
+    /*
+     * If detailed description provided start to calculate offsets
+     * for each chromosome set separately. This should be done only once.
+     */
+    if (! this._translate) {
+        /*
+         * First offset equals to zero.
+         */
+        this._translate = [this._ploidy.getSetSize(0) * this._config.chrWidth * 2];
+        /*
+         * Loop through description set.
+         */
+        for (var i = 1; i < this._config.ploidyDesc.length; i ++) {
+            this._translate[i] = this._translate[i - 1] + this._getChromosomeSetSize(i - 1);
+        }
+    }
+
+    return this._translate[setNumber];
+};
+
+
+/**
+ * @override
+ */
+VerticalLayout.prototype.getChromosomeSetLabelXPosition = function(setNumber) {
+
+    return this._config.chrWidth / -2;
+};
+
+
+/**
+ * @override
+ */
+VerticalLayout.prototype.getChromosomeLabelXPosition = function(i) {
+
+    return this._config.chrWidth / - 2;
+};
+/**
+ * @public
+ * @class
+ * @param {Object} config
+ * @param {Ideogram} ideo
+ */
+function PairedLayout(config, ideo) {
+    /*
+     * 
+     */
+    Layout.call(this, config, ideo);
+    /**
+     * @private
+     * @member {String}
+     */
+    this._class = 'PairedLayout';
+    /**
+     * Layout margins.
+     * @private
+     * @member {Object}
+     */
+    this._margin = {
+        left : 30
+    };
+}
+
+
+PairedLayout.prototype = Object.create(Layout.prototype);
+
+
+/**
+ * @override
+ */
+PairedLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement, callback) {
+    /*
+     * Stash reference to this object.
+     */
+    var self = this;
+    /*
+     * Get ideo container and chromosome set dimensions.
+     */
+    var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
+    var chrBox = chrElement.getBoundingClientRect();
+    /*
+     * Evaluate dimensions scale coefficients.
+     */
+    var scaleX = (ideoBox.width / chrBox.height) * 0.97;
+    var scaleY = this._getYScale();
+    /*
+     * Evaluate y offset of chromosome. It is different for first and the second one.
+     */
+    var yOffset = setNumber ? 150 : 25;
+    /*
+     * Define transformation string
+     */
+    var transform = 'translate(15, ' + yOffset + ') scale(' + scaleX + ', ' + scaleY + ')';
+    /*
+     * Run rotation procedure.
+     */
+    d3.select(chrElement.parentNode)
+        .transition()
+        .attr("transform", transform)
+        .on('end', function() {
+            /*
+             * Run callback fnuction if provided.
+             */
+            if (callback) {
+                callback();
+            }
+            /*
+             * Rotate band labels.
+             */
+            d3.select(chrElement.parentNode).selectAll('g.bandLabel text')
+                .attr('transform', 'rotate(90) translate(0, ' + (6 * Number(! setNumber)) + ')')
+                .attr("text-anchor", "middle");
+            /*
+             * Hide syntenic regions.
+             */
+            d3.selectAll('.syntenicRegion').style("display", 'none');
+        });
+    /*
+     * Append new chromosome labels.
+     */
+    var labels = this.getChromosomeLabels(chrElement);
+    d3.select(this._ideo.getSvg())
+        .append('g')
+        .attr('class', 'tmp')
+        .selectAll('text')
+        .data(this.getChromosomeLabels(chrElement))
+        .enter()
+        .append('text')
+        .attr('class', function(d, i) {
+            return i === 0 && labels.length === 2 ? 'chrSetLabel' : null;
+        }).attr('x', function(d, i) {
+            return 0;
+        }).attr('y', function(d, i) {
+            return yOffset + (self._config.chrWidth * scaleX / 2) * 1.15;
+        }).style('opacity', 0)
+        .text(String)
+        .transition()
+        .style('opacity', 1);
+};
+
+
+/**
+ * @override
+ */
+PairedLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, callback) {
+    /*
+     * Get intial transformation string for chromosome set.
+     */
+    var translate = this.getChromosomeSetTranslate(setNumber);
+    /*
+     * Run rotation procedure.
+     */
+    d3.select(chrElement.parentNode)
+        .transition()
+        .attr("transform", translate)
+        .on('end', function() {
+            /*
+             * Run callback fnuction if provided.
+             */
+            callback();
+            /*
+             * Show syntenic regions.
+             */
+            d3.selectAll('.syntenicRegion').style("display", null);
+            /*
+             * Reset changed attributes to original state.
+             */
+            d3.select(chrElement.parentNode).selectAll('g.bandLabel text')
+                .attr('transform', null)
+                .attr("text-anchor", setNumber ? null : 'end');
+        });
+
+    d3.selectAll('g.tmp')
+        .style('opacity', 0)
+        .remove();
+};
+
+
+/**
+ * @override
+ */
+PairedLayout.prototype.getHeight = function(taxId) {
+
+    return this._config.chrHeight + this._margin.left * 1.5;
+};
+
+
+/**
+ * @override
+ */
+PairedLayout.prototype.getChromosomeBandTickY1 = function(chrNumber) {
+
+    return chrNumber % 2 ? this._config.chrWidth : this._config.chrWidth * 2;
+};
+
+
+/**
+ * @override
+ */
+PairedLayout.prototype.getChromosomeBandTickY2 = function(chrNumber) {
+
+    return chrNumber % 2 ? this._config.chrWidth - this._tickSize : this._config.chrWidth * 2 + this._tickSize;
+};
+
+
+/**
+ * @override
+ */
+PairedLayout.prototype.getChromosomeBandLabelAnchor = function(chrNumber) {
+
+    return chrNumber % 2 ? null : 'end';
+};
+
+
+/**
+ * @override
+ */
+PairedLayout.prototype.getChromosomeBandLabelTranslate = function(band, chrNumber) {
+
+    var x = chrNumber % 2 ? 10 : - this._config.chrWidth - 10;
+    var y = this._ideo.round(band.px.start + band.px.width / 2) + 3;
+
+    return {
+        x : y,
+        y : y,
+        translate : 'rotate(-90) translate(' + x + ', ' + y + ')'
+    };
+};
+
+
+/**
+ * @override
+ */
+PairedLayout.prototype.getChromosomeLabelXPosition = function(i) {
+
+    return - this._tickSize;
+};
+
+
+/**
+ * @override
+ */
+PairedLayout.prototype.getChromosomeSetLabelXPosition = function(i) {
+
+    return this._config.chrWidth / - 2;
+};
+
+
+/**
+ * @override
+ */
+PairedLayout.prototype.getChromosomeSetLabelTranslate = function() {
+
+    return 'rotate(-90)';
+};
+
+
+/**
+ * @override
+ */
+PairedLayout.prototype.getChromosomeSetTranslate = function(setNumber) {
+
+    return 'rotate(90) translate(' + this._margin.left + ', -' + this.getChromosomeSetYTranslate(setNumber) + ')';
+};
+
+
+/**
+ * @override
+ */
+PairedLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
+
+    return 200 * (setNumber + 1);
+};
+/**
+ * @public
+ * @class
+ * @param {Object} config
+ * @param {Ideogram} ideo
+ */
+function SmallLayout(config, ideo) {
+    /*
+     * 
+     */
+    Layout.call(this, config, ideo);
+    /**
+     * @private
+     * @member {String}
+     */
+    this._class = 'SmallLayout';
+    /**
+     * Layout margins.
+     * @private
+     * @member {Object}
+     */
+    this._margin = {
+        left : 36.5,
+        top : 10
+    };
+}
+
+
+SmallLayout.prototype = Object.create(Layout.prototype);
+
+
+/**
+ * @override
+ */
+SmallLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement, callback) {
+
+    var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
+    var chrBox = chrElement.getBoundingClientRect();
+
+    var scaleX = (ideoBox.width / chrBox.height) * 0.97;
+    var scaleY = this._getYScale();
+
+    transform = "translate(5, 25) scale(" + scaleX + ", " + scaleY + ")";
+
+    d3.select(chrElement.parentNode)
+        .transition()
+        .attr("transform", transform)
+        .on('end', callback);
+};
+
+
+/**
+ * @override
+ */
+SmallLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, callback) {
+
+    var translate = this.getChromosomeSetTranslate(setNumber);
+
+    d3.select(chrElement.parentNode)
+        .transition()
+        .attr("transform", translate)
+        .on('end', callback);
+};
+
+
+/**
+ * @override
+ */
+SmallLayout.prototype.getHeight = function(taxId) {
+
+    return this._config.rows * (this._config.chrHeight + this._margin.top * 1.5);
+};
+
+
+/**
+ * @override
+ */
+SmallLayout.prototype.getChromosomeBandLabelTranslate = function(band) {
+
+};
+
+
+/**
+ * @override
+ */
+SmallLayout.prototype.getChromosomeSetLabelTranslate = function() {
+
+    return 'rotate(-90)';
+};
+
+
+/**
+ * @override
+ */
+SmallLayout.prototype.getChromosomeSetTranslate = function(setNumber) {
+    /*
+     * Get organisms id list.
+     */
+    var organisms = [];
+    this._ideo.getTaxids(function(taxIdList) {
+        organisms = taxIdList;
+    });
+    /*
+     * Get first organism chromosomes amount.
+     */
+    var size = this._ideo.config.chromosomes[organisms[0]].length;
+    /*
+     * Amount of chromosomes per number.
+     */
+    var rowSize = size / this._config.rows;
+
+    var xOffset;
+    var yOffset;
+
+    if (setNumber > rowSize - 1) {
+        xOffset = this._margin.left + this._config.chrHeight * 1.4;
+        yOffset = this.getChromosomeSetYTranslate(setNumber - rowSize);
+    } else {
+        xOffset = this._margin.left;
+        yOffset = this.getChromosomeSetYTranslate(setNumber);
+    }
+
+    return 'rotate(90) translate(' + xOffset + ', -' + yOffset + ')';
+};
+
+
+/**
+ * @override
+ */
+SmallLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
+    /*
+     * Get additional padding caused by annotation tracks.
+     */
+    var additionalPadding = this._getAdditionalOffset();
+    /*
+     * If no detailed description provided just use one formula for all cases.
+     */
+    return this._margin.left * (setNumber) + this._config.chrWidth + additionalPadding * 2 + additionalPadding * setNumber;
+};
+
+
+/**
+ * @override
+ */
+SmallLayout.prototype.getChromosomeSetLabelXPosition = function(setNumber) {
+
+    return ((this._ploidy.getSetSize(setNumber) * this._config.chrWidth + 20) / - 2) + (this._config.ploidy > 1 ? 0 : this._config.chrWidth);
+};
+
+
+/**
+ * @override
+ */
+SmallLayout.prototype.getChromosomeLabelXPosition = function(i) {
+
+    return this._config.chrWidth / - 2;
+};
+/**
+ * Ploidy description class.
+ * @public
+ * @class
+ * @param {Object} config - ideogram config
+ */
+function Ploidy(config) {
+    /**
+     * Ideogram config.
+     * @private
+     * @member {Object}
+     */
+    this._config = config;
+    /**
+     * Ploidy description.
+     * @private
+     * @member {undefined|Object[]}
+     */
+    this._description = this._normilize(this._config.ploidyDesc);
+}
+
+
+/**
+ * Get amount of chromosomes within a set.
+ * @param {Integer} setNumber
+ * @returns {Integer}
+ */
+Ploidy.prototype.getChromosomesNumber = function(setNumber) {
+
+    if (this._config.ploidyDesc) {
+        var chrSetCode = this._config.ploidyDesc[setNumber];
+        if (chrSetCode instanceof Object) {
+            return Object.keys(chrSetCode)[0].length;
+        } else {
+            return chrSetCode.length;
+        }
+    } else {
+        return this._config.ploidy || 1;
+    }
+};
+
+
+/**
+ * Normalize use defined description.
+ * @private
+ * @param {Mixed[]}
+ * @returns {Object[]}
+ */
+Ploidy.prototype._normilize = function(description) {
+    /*
+     * Return the same if no description provided.
+     */
+    if (! description) {
+        return description;
+    }
+    /*
+     * Array of normalized description objects.
+     */
+    var normalized = [];
+    /*
+     * Loop through description and normalize.
+     */
+    for (var key in description) {
+        if (typeof description[key] == 'string') {
+            normalized.push({
+                ancestors : description[key],
+                existance : this._getExistanceArray(description[key].length)
+            });
+        } else {
+            normalized.push({
+                ancestors : Object.keys(description[key])[0],
+                existance : description[key][Object.keys(description[key])[0]]
+            });
+        }
+    }
+
+    return normalized;
+};
+
+
+/**
+ * Get array filled by '11' elements.
+ * @private
+ * @param length
+ */
+Ploidy.prototype._getExistanceArray = function(length) {
+
+    var array = [];
+
+    for (var i = 0; i < length; i ++) {
+        array.push('11');
+    }
+
+    return array;
+};
+
+
+/**
+ * @public
+ * @param chrSetNumber
+ */
+Ploidy.prototype.getSetSize = function(chrSetNumber) {
+
+    if (this._description) {
+        return this._description[chrSetNumber].ancestors.length;
+    } else {
+        return 1;
+    }
+};
+
+
+/**
+ * Get ancestor letter.
+ * @param {Integer} chrSetNumber
+ * @param {Integer} chrNumber
+ * @returns {String}
+ */
+Ploidy.prototype.getAncestor = function(chrSetNumber, chrNumber) {
+
+    if (this._description) {
+        return this._description[chrSetNumber].ancestors[chrNumber];
+    } else {
+        return '';
+    }
+};
+
+
+/**
+ * Check chromosome's arm should be rendered.
+ * If no description was provided method will always returns true and
+ * something another depending on user provided description.
+ * @param chrSetNumber
+ * @param chrNumber
+ * @param armNumber
+ * @returns {Boolean}
+ */
+Ploidy.prototype.isExists = function(chrSetNumber, chrNumber, armNumber) {
+
+    if (this._description) {
+        return Number(this._description[chrSetNumber].existance[chrNumber][armNumber]) > 0;
+    } else {
+        return true;
+    }
+};
+/**
+ * Color provider class.
+ * @public
+ * @class
+ * @param {Object} config
+ */
+function Color(config) {
+    /**
+     * Ideogram config.
+     * @private
+     * @member {Object}
+     */
+    this._config = config;
+    /**
+     * Ploidy description.
+     * @private
+     * @member {Ploidy}
+     */
+    this._ploidy = new Ploidy(this._config);
+}
+
+
+/**
+ * Get chromosome's arm color.
+ * @public
+ * @param {Integer} chrSetNumber
+ * @param {Integer} chrNmber
+ * @param {Integer} armNumber
+ * @returns {String}
+ */
+Color.prototype.getArmColor = function(chrSetNumber, chrNmber, armNumber) {
+
+    if (this._config.armColors) {
+        return this._config.armColors[armNumber];
+    } else if (this._config.ancestors) {
+        return this._getPolyploidArmColor(chrSetNumber, chrNmber, armNumber);
+    } else {
+        return null;
+    }
+};
+
+
+/**
+ * Get chromosome's arm border color.
+ * @public
+ * @param {Integer} chrSetNumber
+ * @param {Integer} chrNmber
+ * @param {0|1} armNumber
+ * @returns {String}
+ */
+Color.prototype.getBorderColor = function(chrSetNumber, chrNmber, armNumber) {
+
+    if (chrNmber < this._config.ploidy) {
+        return '#000';
+    } else if (this._ploidy.isExists(chrSetNumber, chrNmber, armNumber)) {
+        return '#000';
+    } else {
+        return '#fff';
+    }
+};
+
+
+/**
+ * Get polyploid organism chromosome arm's color.
+ * @private
+ * @param chrSetNumber
+ * @param chrNmber
+ * @param armNumber
+ * @returns {String}
+ */
+Color.prototype._getPolyploidArmColor = function(chrSetNumber, chrNmber, armNumber) {
+
+    if (! this._ploidy.isExists(chrSetNumber, chrNmber, armNumber)) {
+        return 'transparent';
+    } else {
+        return this._config.ancestors[this._ploidy.getAncestor(chrSetNumber, chrNmber, armNumber)];
+    }
+};
+/**
+ * Chromosome view class.
+ * @public
+ * @class
+ * @param {ModelAdapter} adapter
+ * @param {Object} config
+ * @param {Ideogram} ideo
+ */
+function Chromosome(adapter, config, ideo) {
+
+    this._adapter = adapter;
+    this._model = this._adapter.getModel();
+    this._config = config;
+    this._ideo = ideo;
+    this._color = new Color(this._config);
+    this._bumpCoefficient = 5;
+}
+
+
+/**
+ * Factory method.
+ * @public
+ * @static
+ * @param {ModelAdapter} adapter
+ * @param {Object} config
+ * @param {Ideogram} ideo
+ * @return {Chromosome}
+ */
+Chromosome.getInstance = function(adapter, config, ideo) {
+
+    if (adapter.getModel().centromerePosition == 'telocentric') {
+        return new TelocentricChromosome(adapter, config, ideo);
+    } else {
+        return new MetacentricChromosome(adapter, config, ideo);
+    }
+};
+
+
+/**
+ * @param {String[]} clipPath
+ * @param {Boolean} isPArmRendered
+ * @returns {String[]}
+ */
+Chromosome.prototype._addPArmShape = function(clipPath, isPArmRendered) {
+
+    if (isPArmRendered) {
+        return clipPath.concat(this._getPArmShape());
+    } else {
+         return clipPath;
+    }
+};
+
+
+/**
+ * @param {String[]} clipPath
+ * @param {Boolean} isPArmRendered
+ * @returns {String[]}
+ */
+Chromosome.prototype._addQArmShape = function(clipPath, isQArmRendered) {
+
+    if (isQArmRendered) {
+        return clipPath.concat(this._getQArmShape());
+    } else {
+        return clipPath;
+    }
+};
+
+
+/**
+ * Render chromosome.
+ * @public
+ * @param {Selection} container
+ * @param {Integer} chrSetNumber
+ * @param {Integer} chrNumber
+ * @return {String[]}
+ */
+Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
+    /*
+     * Append bands container and apply clip-path on it.
+     */
+    container = container.append('g')
+        .attr('class', 'bands')
+        .attr("clip-path", "url(#" + this._model.id + "-chromosome-set-clippath)");
+    /*
+     * Render chromosome arms.
+     */
+    var isPArmRendered = this._renderPArm(container, chrSetNumber, chrNumber);
+    var isQArmRendered = this._renderQArm(container, chrSetNumber, chrNumber);
+    /*
+     * Render range set.
+     */
+    this._renderRangeSet(container, chrSetNumber, chrNumber);
+    /*
+     * Push arms shape string into clipPath array.
+     */
+    var clipPath = [];
+    clipPath = this._addPArmShape(clipPath, isPArmRendered);
+    clipPath = this._addQArmShape(clipPath, isQArmRendered);
+    /*
+     * Render chromosome border.
+     */
+    var self = this;
+    container.append('g')
+        .attr('class', 'chromosome-border')
+        .selectAll('path')
+        .data(clipPath)
+        .enter()
+        .append('path')
+        .attr('fill', 'transparent')
+        .attr('stroke', function(d, i) {
+            return self._color.getBorderColor(chrSetNumber, chrNumber, i);
+        }).attr('stroke-width', 1)
+        .attr('d', function(d) {
+            return d.path;
+        }).attr('class', function(d) {
+            return d['class'];
+        });
+
+    return clipPath;
+};
+
+
+/**
+ * 
+ */
+Chromosome.prototype._renderRangeSet = function(container, chrSetNumber, chrNumber) {
+
+    if (! ('rangeSet' in this._config)) {
+        return;
+    }
+
+    var rangeSet = this._config.rangeSet.filter(function(range) {
+        return range.chr - 1 == chrSetNumber;
+    }).map(function(range) {
+        return new Range(range);
+    });
+
+    var rangesContainer = container.append('g')
+        .attr('class', 'range-set');
+
+    var self = this;
+    rangesContainer.selectAll('rect.range')
+        .data(rangeSet)
+        .enter()
+        .append('rect')
+        .attr('class', 'range')
+        .attr('x', function(range) {
+            return self._ideo.convertBpToPx(self._model, range.getStart()) - self._ideo._bandsXOffset;
+        }).attr('y', 0)
+        .attr('width', function(range) {
+            return self._ideo.convertBpToPx(self._model, range.getLength()) - self._ideo._bandsXOffset;
+        }).attr('height', this._config.chrWidth)
+        .style('fill', function(range) {
+            return range.getColor(chrNumber);
+        });
+};
+
+
+/**
+ * Get chromosome's shape main values.
+ * @returns {Object}
+ */
+Chromosome.prototype._getShapeData = function() {
+    /*
+     * First q band from bands sequence.
+     */
+    var firstQBand;
+    for (var i = 0; i < this._model.bands.length; i ++) {
+        if (this._model.bands[i].name[0] == 'q') {
+            firstQBand = this._model.bands[i];
+            break;
+        }
+    }
+    /*
+     * Chromosome's right position.
+     */
+    var rightTerminalPosition = this._model.bands[this._model.bands.length - 1].px.stop;
+    /*
+     * Properties description.
+     * x1 - left terminal start position
+     * x2 - centromere position
+     * x3 - right terminal end position
+     * w - chromosome width
+     * b - bump size
+     */
+    return {
+        x1 : 0,
+        x2 : firstQBand ? firstQBand.px.start : rightTerminalPosition,
+        x3 : rightTerminalPosition,
+        w : this._config.chrWidth,
+        b : this._config.chrWidth / this._bumpCoefficient
+    };
+};
+
+
+Chromosome.prototype._getPArmShape = function() {
+
+    var d = this._getShapeData();
+
+    return {
+        'class' : '',
+        'path' : 'M' + d.b + ',0 ' +
+            'L' + (d.x2 - d.b) + ',0 ' +
+            'Q' + (d.x2 + d.b) + ',' + (d.w / 2) + ',' + (d.x2 - d.b) + ',' + d.w + ' ' +
+            'L' + d.b + ',' + d.w + ' ' +
+            'Q-' + d.b + ',' + (d.w / 2) + ',' + d.b + ',0'
+    };
+};
+
+
+Chromosome.prototype._getQArmShape = function() {
+
+    var d = this._getShapeData();
+
+    return {
+        'class' : '',
+        'path' : 'M' + (d.x2 + d.b) + ',0 ' +
+            'L' + (d.x3 - d.b) + ',0 ' +
+            'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + (d.x3 - d.b) + ',' + d.w + ' ' +
+            'L' + (d.x2 + d.b) + ',' + d.w + ' ' +
+            'Q' + (d.x2 - d.b) + ',' + (d.w / 2) + ',' + (d.x2 + d.b) + ',0'
+    };
+};
+
+
+/**
+ * Render arm bands.
+ * @param {Selection} container
+ * @param {Integer} chrSetNumber
+ * @param {Integer} chrNumber
+ * @param {Object[]} bands
+ * @param {'p'|'q'} arm
+ * @returns {Number}
+ */
+Chromosome.prototype._renderBands = function(container, chrSetNumber, chrNumber, bands, arm) {
+
+    var self = this;
+
+    container.selectAll("path.band." + arm)
+        .data(bands)
+        .enter()
+        .append("path")
+        .attr("id", function(d, i) {
+            return self._model.id + "-" + d.name.replace(".", "-");
+        }).attr("class", function(d, i) {
+            return 'band ' + arm + '-band ' + d.stain;
+        }).attr("d", function(d, i) {
+
+            var start = self._ideo.round(d.px.start);
+            var length = self._ideo.round(d.px.width);
+
+            x = start + length;
+
+            return "M " + start + ", 0" +
+                "l " + length + " 0 " +
+                "l 0 " + self._config.chrWidth + " " +
+                "l -" + length + " 0 z";
+        }).style('fill', function(d) {
+            return self._color.getArmColor(chrSetNumber, chrNumber, arm == 'p' ? 0 : 1);
+        });
+};
+
+
+/**
+ * Render chromosome's p arm.
+ * Returns boolean which indicates is any bands was rendered.
+ * @private
+ * @param {Selection} container
+ * @param {Integer} chrSetNumber
+ * @param {Integer} chrNumber
+ * @return {Boolean}
+ */
+Chromosome.prototype._renderPArm = function(container, chrSetNumber, chrNumber) {
+
+    var bands = this._model.bands.filter(function(band) {
+        return band.name[0] == 'p';
+    });
+
+    this._renderBands(container, chrSetNumber, chrNumber, bands, 'p');
+
+    return Boolean(bands.length);
+};
+
+
+/**
+ * Render chromosome's q arm.
+ * Returns boolean which indicates is any bands was rendered.
+ * @private
+ * @param {Selection} container
+ * @param {Integer} chrSetNumber
+ * @param {Integer} chrNumber
+ * @return {Boolean}
+ */
+Chromosome.prototype._renderQArm = function(container, chrSetNumber, chrNumber) {
+
+    var bands = this._model.bands.filter(function(band) {
+        return band.name[0] == 'q';
+    });
+
+    this._renderBands(container, chrSetNumber, chrNumber, bands, 'q');
+
+    return Boolean(bands.length);
+};
+/**
+ * Telocentric chromosome view class.
+ * @public
+ * @class
+ * @param {Object} model
+ * @param {Object} config
+ * @param {Ideogram} ideo
+ */
+function TelocentricChromosome(model, config, ideo) {
+
+    Chromosome.call(this, model, config, ideo);
+    this._class = 'TelocentricChromosome';
+    this._pArmOffset = 3;
+}
+
+
+TelocentricChromosome.prototype = Object.create(Chromosome.prototype);
+
+
+/**
+ * @override
+ */
+TelocentricChromosome.prototype._addPArmShape = function(clipPath, isPArmRendered) {
+
+    return clipPath.concat(this._getPArmShape());
+};
+
+
+/**
+ * @override
+ */
+TelocentricChromosome.prototype._getPArmShape = function() {
+
+    var d = this._getShapeData();
+    d.o = this._pArmOffset;
+
+    return [{
+        'class' : 'acen',
+        'path' : 'M' + d.x2 + ',1' +
+            'L' + (d.x2 - d.o) + ',1 ' + 
+            'L' + (d.x2 - d.o) + ',' + (d.w - 1) + ' ' +
+            'L' + d.x2 + ',' + (d.w - 1)
+    }, {
+        'class' : 'gpos100',
+        'path' : 'M' + (d.x2 - d.o + 1) + ',0' +
+        'L' + (d.x2 - d.o) + ',0 ' + 
+        'L' + (d.x2 - d.o) + ',' + d.w + ' ' +
+        'L' + (d.x2 - d.o + 1) + ',' + d.w
+    }];
+};
+
+
+/**
+ * @override
+ */
+TelocentricChromosome.prototype._getQArmShape = function() {
+
+    var d = this._getShapeData();
+
+    return {
+        'class' : '',
+        'path' : 'M' + d.x2 + ',0 ' + 
+            'L' + (d.x3 - d.b) + ',0 ' +
+            'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + (d.x3 - d.b) + ',' + d.w + ' ' +
+            'L' + d.x2 + ',' + d.w
+    };
+};
+/**
+ * Metacentric chromosome view class.
+ * @public
+ * @class
+ * @param {Object} model
+ * @param {Object} config
+ * @param {Ideogram} ideo
+ */
+function MetacentricChromosome(model, config, ideo) {
+
+    Chromosome.call(this, model, config, ideo);
+    this._class = 'MetacentricChromosome';
+}
+
+
+MetacentricChromosome.prototype = Object.create(Chromosome.prototype);
 // Developed by Eric Weitz (https://github.com/eweitz)
 
 // https://github.com/stefanpenner/es6-promise
@@ -2328,4 +4321,189 @@ function finishInit() {
 
   }
 
+};
+
+/* Decompresses ideogram's annotations for crossfilter initialization
+By default, annotations are clustered by chromosome, e.g.
+[
+  {"chr": "1", "annots": [{"from": 100, "to", 101, "chr": "1", ...}, ...]},
+  {"chr": "2", "annots": [{"from": 500, "to", 501, "chr": "2", ...}, ...]},
+  ...
+]
+This method flattens that structure to e.g.
+[
+  {"from": 100, "to": 101, "chr": "1", ...},
+  ...
+  {"from": 500, "to": 501, "chr": "2", ...},
+]
+See also: packAnnots
+*/
+Ideogram.prototype.unpackAnnots = function() {
+
+  var chr, annots, i,
+      unpackedAnnots = [],
+      ideo = this,
+      chrs = ideo.annots;
+
+  for (i = 0; i < chrs.length; i++) {
+    chr = chrs[i];
+    annots = chr.annots;
+    unpackedAnnots = unpackedAnnots.concat(annots);
+  }
+
+  return unpackedAnnots;
+
+};
+
+/*
+  Compresses annots back to default state.  Inverse of unpackAnnots.
+*/
+Ideogram.prototype.packAnnots = function(unpackedAnnots) {
+
+  var chr, annot, i,
+      annots = [],
+      ideo = this,
+      chrs = ideo.annots;
+
+  for (chr in chrs) {
+    annots.push({'chr': chrs[chr].chr, annots: []});
+  }
+
+  for (i = 0; i < unpackedAnnots.length; i++) {
+    annot = unpackedAnnots[i];
+    annots[annot.chrIndex].annots.push(annot);
+  }
+
+  return annots;
+
+};
+
+/*
+  Initializes crossfilter.  Needed for client-side filtering.
+  More: https://github.com/square/crossfilter/wiki/API-Reference
+*/
+Ideogram.prototype.initCrossFilter = function() {
+  var ideo = this,
+      keys = ideo.rawAnnots.keys,
+      i, facet;
+
+  ideo.unpackedAnnots = ideo.unpackAnnots();
+  ideo.crossfilter = crossfilter(ideo.unpackedAnnots);
+
+  ideo.annotsByFacet = {};
+
+  ideo.facets = keys.slice(3, keys.length);
+
+  for (i = 0; i < ideo.facets.length; i++) {
+    facet = ideo.facets[i];
+    ideo.annotsByFacet[facet] =
+      ideo.crossfilter
+        .dimension(function(d) {
+          return d[facet];
+        });
+  }
+};
+
+/*
+  Filters annotations based on the given selections
+  "selections" is an object of objects, e.g.
+
+    {
+      "tissue-type": {          <-- a facet
+        "cerebral-cortex": 1,   <-- a filter; "1" means it is selected
+        "liver": 1
+      },
+      "gene-type": {
+        mirna": 1
+      }
+    }
+
+  Translation:
+  select where:
+      (tissue-type is cerebral-cortex OR liver) and (gene-type is mirna)
+
+  TODO:
+    * Filter counts
+    * Range filters
+    * Integrate server-side filtering for very large datasets
+*/
+Ideogram.prototype.filterAnnots = function(selections) {
+
+  var t0 = Date.now();
+
+  var i, facet,
+      prevFacet = null,
+      results, fn,
+      counts = {},
+      ideo = this;
+
+  if (Object.keys(selections).length === 0) {
+    results = ideo.unpackedAnnots;
+  } else {
+    for (i = 0; i < ideo.facets.length; i++) {
+      facet = ideo.facets[i];
+      if (facet in selections) {
+        fn = function(d) {
+          if (d in selections[facet]) {
+            return true;
+          }
+        };
+      } else {
+        fn = null;
+      }
+      ideo.annotsByFacet[facet].filter(fn);
+      counts[facet] = ideo.annotsByFacet[facet].group().top(Infinity);
+    }
+
+    results = ideo.annotsByFacet[facet].top(Infinity);
+  }
+
+  for (i < 0; i < ideo.facets.length; i++) {
+    ideo.annotsByFacet[facet].filterAll(); // clear filters
+  }
+
+  results = ideo.packAnnots(results);
+
+  d3.selectAll("polygon.annot").remove();
+  ideo.drawAnnots(results);
+
+  console.log("Time in filterAnnots: " + (Date.now() - t0) + " ms");
+
+  return counts;
+};
+
+/**
+ * Chromosome's view utility class.
+ * @public
+ * @class
+ * @param {SVGElement} node - chromosome "g" container.
+ */
+function ChromosomeUtil(node) {
+    /**
+     * @private
+     * @member {SVGElement}
+     */
+    this._node = node;
+}
+
+
+/**
+ * Get chromosome label.
+ * @public
+ * @returns {String}
+ */
+ChromosomeUtil.prototype.getLabel = function() {
+
+    return d3.select(this._node).select('text.chrLabel').text();
+};
+
+
+/**
+ * Get chromosome set label.
+ * @public
+ * @returns {String}
+ */
+ChromosomeUtil.prototype.getSetLabel = function() {
+
+    return d3.select(this._node.parentNode).select('text.chromosome-set-label').text();
 };

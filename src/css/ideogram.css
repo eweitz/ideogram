@@ -38,6 +38,10 @@ text {
 	cursor: pointer;
 }
 
+.chrSetLabel{
+    font-weight: bolder;
+}
+
 .ghost {
 	opacity: 0.2;
 }
@@ -46,14 +50,13 @@ text {
 	display: none;
 }
 
+path.band {
+	/* opacity: 0.5; */
+}
+
 .bandLabelStalk line {
 	stroke: #AAA;
 	stroke-width: 1;
-}
-
-.chromosomeBorder, .acen {
-    stroke: #000;
-    stroke-width:0.5;
 }
 
 .syntenyBorder {
