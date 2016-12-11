@@ -1,24 +1,10 @@
-/**
- * @public
- * @class
- * @param {Object} config
- * @param {Ideogram} ideo
- */
+
 function SmallLayout(config, ideo) {
-    /*
-     * 
-     */
+
     Layout.call(this, config, ideo);
-    /**
-     * @private
-     * @member {String}
-     */
+
     this._class = 'SmallLayout';
-    /**
-     * Layout margins.
-     * @private
-     * @member {Object}
-     */
+
     this._margin = {
         left : 36.5,
         top : 10
@@ -29,9 +15,6 @@ function SmallLayout(config, ideo) {
 SmallLayout.prototype = Object.create(Layout.prototype);
 
 
-/**
- * @override
- */
 SmallLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement, callback) {
 
     var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
@@ -49,9 +32,6 @@ SmallLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement,
 };
 
 
-/**
- * @override
- */
 SmallLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, callback) {
 
     var translate = this.getChromosomeSetTranslate(setNumber);
@@ -63,50 +43,32 @@ SmallLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, ca
 };
 
 
-/**
- * @override
- */
 SmallLayout.prototype.getHeight = function(taxId) {
 
     return this._config.rows * (this._config.chrHeight + this._margin.top * 1.5);
 };
 
 
-/**
- * @override
- */
 SmallLayout.prototype.getChromosomeBandLabelTranslate = function(band) {
 
 };
 
 
-/**
- * @override
- */
 SmallLayout.prototype.getChromosomeSetLabelTranslate = function() {
 
     return 'rotate(-90)';
 };
 
 
-/**
- * @override
- */
 SmallLayout.prototype.getChromosomeSetTranslate = function(setNumber) {
-    /*
-     * Get organisms id list.
-     */
+    // Get organisms id list
     var organisms = [];
     this._ideo.getTaxids(function(taxIdList) {
         organisms = taxIdList;
     });
-    /*
-     * Get first organism chromosomes amount.
-     */
+    // Get first organism chromosomes amount
     var size = this._ideo.config.chromosomes[organisms[0]].length;
-    /*
-     * Amount of chromosomes per number.
-     */
+    // Amount of chromosomes per number
     var rowSize = size / this._config.rows;
 
     var xOffset;
@@ -124,33 +86,20 @@ SmallLayout.prototype.getChromosomeSetTranslate = function(setNumber) {
 };
 
 
-/**
- * @override
- */
 SmallLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
-    /*
-     * Get additional padding caused by annotation tracks.
-     */
+    // Get additional padding caused by annotation tracks
     var additionalPadding = this._getAdditionalOffset();
-    /*
-     * If no detailed description provided just use one formula for all cases.
-     */
+    // If no detailed description provided just use one formula for all cases
     return this._margin.left * (setNumber) + this._config.chrWidth + additionalPadding * 2 + additionalPadding * setNumber;
 };
 
 
-/**
- * @override
- */
 SmallLayout.prototype.getChromosomeSetLabelXPosition = function(setNumber) {
 
     return ((this._ploidy.getSetSize(setNumber) * this._config.chrWidth + 20) / - 2) + (this._config.ploidy > 1 ? 0 : this._config.chrWidth);
 };
 
 
-/**
- * @override
- */
 SmallLayout.prototype.getChromosomeLabelXPosition = function(i) {
 
     return this._config.chrWidth / - 2;

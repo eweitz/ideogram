@@ -1,11 +1,4 @@
-/**
- * Chromosome view class.
- * @public
- * @class
- * @param {ModelAdapter} adapter
- * @param {Object} config
- * @param {Ideogram} ideo
- */
+// Chromosome view class
 function Chromosome(adapter, config, ideo) {
 
     this._adapter = adapter;
@@ -17,15 +10,7 @@ function Chromosome(adapter, config, ideo) {
 }
 
 
-/**
- * Factory method.
- * @public
- * @static
- * @param {ModelAdapter} adapter
- * @param {Object} config
- * @param {Ideogram} ideo
- * @return {Chromosome}
- */
+// Factory method
 Chromosome.getInstance = function(adapter, config, ideo) {
 
     if (adapter.getModel().centromerePosition == 'telocentric') {
@@ -36,11 +21,6 @@ Chromosome.getInstance = function(adapter, config, ideo) {
 };
 
 
-/**
- * @param {String[]} clipPath
- * @param {Boolean} isPArmRendered
- * @returns {String[]}
- */
 Chromosome.prototype._addPArmShape = function(clipPath, isPArmRendered) {
 
     if (isPArmRendered) {
@@ -51,11 +31,6 @@ Chromosome.prototype._addPArmShape = function(clipPath, isPArmRendered) {
 };
 
 
-/**
- * @param {String[]} clipPath
- * @param {Boolean} isPArmRendered
- * @returns {String[]}
- */
 Chromosome.prototype._addQArmShape = function(clipPath, isQArmRendered) {
 
     if (isQArmRendered) {
@@ -66,39 +41,26 @@ Chromosome.prototype._addQArmShape = function(clipPath, isQArmRendered) {
 };
 
 
-/**
- * Render chromosome.
- * @public
- * @param {Selection} container
- * @param {Integer} chrSetNumber
- * @param {Integer} chrNumber
- * @return {String[]}
- */
 Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
-    /*
-     * Append bands container and apply clip-path on it.
-     */
+
+    // Append bands container and apply clip-path on it
     container = container.append('g')
         .attr('class', 'bands')
         .attr("clip-path", "url(#" + this._model.id + "-chromosome-set-clippath)");
-    /*
-     * Render chromosome arms.
-     */
+
+    // Render chromosome arms
     var isPArmRendered = this._renderPArm(container, chrSetNumber, chrNumber);
     var isQArmRendered = this._renderQArm(container, chrSetNumber, chrNumber);
-    /*
-     * Render range set.
-     */
+
+    // Render range set
     this._renderRangeSet(container, chrSetNumber, chrNumber);
-    /*
-     * Push arms shape string into clipPath array.
-     */
+
+    // Push arms shape string into clipPath array
     var clipPath = [];
     clipPath = this._addPArmShape(clipPath, isPArmRendered);
     clipPath = this._addQArmShape(clipPath, isQArmRendered);
-    /*
-     * Render chromosome border.
-     */
+
+    // Render chromosome border
     var self = this;
     container.append('g')
         .attr('class', 'chromosome-border')
@@ -120,9 +82,6 @@ Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
 };
 
 
-/**
- * 
- */
 Chromosome.prototype._renderRangeSet = function(container, chrSetNumber, chrNumber) {
 
     if (! ('rangeSet' in this._config)) {
@@ -156,14 +115,10 @@ Chromosome.prototype._renderRangeSet = function(container, chrSetNumber, chrNumb
 };
 
 
-/**
- * Get chromosome's shape main values.
- * @returns {Object}
- */
+// Get chromosome's shape main values
 Chromosome.prototype._getShapeData = function() {
-    /*
-     * First q band from bands sequence.
-     */
+
+    // First q band from bands sequence
     var firstQBand;
     for (var i = 0; i < this._model.bands.length; i ++) {
         if (this._model.bands[i].name[0] == 'q') {
@@ -171,18 +126,16 @@ Chromosome.prototype._getShapeData = function() {
             break;
         }
     }
-    /*
-     * Chromosome's right position.
-     */
+
+    // Chromosome's right position
     var rightTerminalPosition = this._model.bands[this._model.bands.length - 1].px.stop;
-    /*
-     * Properties description.
-     * x1 - left terminal start position
-     * x2 - centromere position
-     * x3 - right terminal end position
-     * w - chromosome width
-     * b - bump size
-     */
+
+    // Properties description:
+    // x1 - left terminal start position
+    // x2 - centromere position
+    // x3 - right terminal end position
+    // w - chromosome width
+    // b - bump size
     return {
         x1 : 0,
         x2 : firstQBand ? firstQBand.px.start : rightTerminalPosition,
@@ -223,15 +176,7 @@ Chromosome.prototype._getQArmShape = function() {
 };
 
 
-/**
- * Render arm bands.
- * @param {Selection} container
- * @param {Integer} chrSetNumber
- * @param {Integer} chrNumber
- * @param {Object[]} bands
- * @param {'p'|'q'} arm
- * @returns {Number}
- */
+// Render arm bands
 Chromosome.prototype._renderBands = function(container, chrSetNumber, chrNumber, bands, arm) {
 
     var self = this;
@@ -261,15 +206,8 @@ Chromosome.prototype._renderBands = function(container, chrSetNumber, chrNumber,
 };
 
 
-/**
- * Render chromosome's p arm.
- * Returns boolean which indicates is any bands was rendered.
- * @private
- * @param {Selection} container
- * @param {Integer} chrSetNumber
- * @param {Integer} chrNumber
- * @return {Boolean}
- */
+// Render chromosome's p arm.
+// Returns boolean which indicates is any bands was rendered
 Chromosome.prototype._renderPArm = function(container, chrSetNumber, chrNumber) {
 
     var bands = this._model.bands.filter(function(band) {
@@ -282,15 +220,8 @@ Chromosome.prototype._renderPArm = function(container, chrSetNumber, chrNumber) 
 };
 
 
-/**
- * Render chromosome's q arm.
- * Returns boolean which indicates is any bands was rendered.
- * @private
- * @param {Selection} container
- * @param {Integer} chrSetNumber
- * @param {Integer} chrNumber
- * @return {Boolean}
- */
+// Render chromosome's q arm.
+// Returns boolean which indicates is any bands was rendered
 Chromosome.prototype._renderQArm = function(container, chrSetNumber, chrNumber) {
 
     var bands = this._model.bands.filter(function(band) {

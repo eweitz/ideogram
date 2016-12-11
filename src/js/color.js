@@ -1,33 +1,12 @@
-/**
- * Color provider class.
- * @public
- * @class
- * @param {Object} config
- */
+
 function Color(config) {
-    /**
-     * Ideogram config.
-     * @private
-     * @member {Object}
-     */
+    // Ideogram config
     this._config = config;
-    /**
-     * Ploidy description.
-     * @private
-     * @member {Ploidy}
-     */
     this._ploidy = new Ploidy(this._config);
 }
 
 
-/**
- * Get chromosome's arm color.
- * @public
- * @param {Integer} chrSetNumber
- * @param {Integer} chrNmber
- * @param {Integer} armNumber
- * @returns {String}
- */
+// Get chromosome's arm color
 Color.prototype.getArmColor = function(chrSetNumber, chrNmber, armNumber) {
 
     if (this._config.armColors) {
@@ -40,14 +19,7 @@ Color.prototype.getArmColor = function(chrSetNumber, chrNmber, armNumber) {
 };
 
 
-/**
- * Get chromosome's arm border color.
- * @public
- * @param {Integer} chrSetNumber
- * @param {Integer} chrNmber
- * @param {0|1} armNumber
- * @returns {String}
- */
+// Get chromosome's arm border color
 Color.prototype.getBorderColor = function(chrSetNumber, chrNmber, armNumber) {
 
     if (chrNmber < this._config.ploidy) {
@@ -60,14 +32,7 @@ Color.prototype.getBorderColor = function(chrSetNumber, chrNmber, armNumber) {
 };
 
 
-/**
- * Get polyploid organism chromosome arm's color.
- * @private
- * @param chrSetNumber
- * @param chrNmber
- * @param armNumber
- * @returns {String}
- */
+// Get polyploid organism chromosome arm's color
 Color.prototype._getPolyploidArmColor = function(chrSetNumber, chrNmber, armNumber) {
 
     if (! this._ploidy.isExists(chrSetNumber, chrNmber, armNumber)) {

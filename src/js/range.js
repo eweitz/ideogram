@@ -10,55 +10,29 @@
  * @param {String} data.color - range color.
  */
 function Range(data) {
-    /**
-     * @private
-     * @member {Object}
-     */
     this._data = data;
 }
 
 
-/**
- * Get range start.
- * @public
- * @returns {Integer}.
- */
+// Get range start
 Range.prototype.getStart = function() {
-
     return this._data.start;
 };
 
 
-/**
- * Get range end.
- * @public
- * @returns {Integer}.
- */
+// Get range end
 Range.prototype.getStop = function() {
-
     return this._data.stop;
 };
 
-
-/**
- * Get range length.
- * @public
- * @returns {Integer}
- */
+// Get range length
 Range.prototype.getLength = function() {
-
     return this._data.stop - this._data.start;
 };
 
 
-/**
- * Get range color.
- * @public
- * @param {Intger} chrNumber - chromosome number.
- * @returns {String}
- */
+// Get range color
 Range.prototype.getColor = function(chrNumber) {
-
     if (! ('ploidy' in this._data)) {
         return this._getColor(chrNumber);
     } else if ('ploidy' in this._data && this._data.ploidy[chrNumber]) {
@@ -66,18 +40,11 @@ Range.prototype.getColor = function(chrNumber) {
     } else {
         return 'transparent';
     }
-
 };
 
 
-/**
- * Get range color.
- * @private
- * @param {Intger} chrNumber - chromosome number.
- * @returns {String}
- */
+// Get range color
 Range.prototype._getColor = function(chrNumber) {
-
     if (Array.isArray(this._data.color)) {
         return this._data.color[chrNumber];
     } else {

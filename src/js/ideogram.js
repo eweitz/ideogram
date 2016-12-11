@@ -15,21 +15,14 @@ var Ideogram = function(config) {
   // Clone the config object, to allow multiple instantiations
   // without picking up prior ideogram's settings
   this.config = JSON.parse(JSON.stringify(config));
-  /**
-   * Organism ploidy description.
-   * @private
-   * @member {Ploidy}
-   */
+
+  // Organism ploidy description
   this._ploidy = new Ploidy(this.config);
-  /**
-   * Chromosome's layout.
-   * @private
-   * @member {Layout}
-   */
+
+  // Chromosome's layout
   this._layout = Layout.getInstance(this.config, this);
-  /**
-   * TODO: What is it? Get rid of it!
-   */
+
+  // TODO: Document this
   this._bandsXOffset = 30;
 
   this.debug = false;
@@ -690,9 +683,7 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
 
 };
 
-/**
-* Rotates chromosome labels by 90 degrees, e.g. upon clicking a chromosome to focus.
-*/
+// Rotates chromosome labels by 90 degrees, e.g. upon clicking a chromosome to focus.
 Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation, scale) {
 
   var chrMargin, chrWidth, ideo, x, y,
@@ -1968,13 +1959,8 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
 };
 
 
-/**
- * Get ideogram SVG container.
- * @public
- * @returns {SVGSVGElement}
- */
+// Get ideogram SVG container
 Ideogram.prototype.getSvg = function() {
-
     return d3.select('#_ideogram').node();
 };
 

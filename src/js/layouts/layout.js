@@ -1,51 +1,19 @@
-/**
- * 
- */
+
 function Layout(config, ideo) {
-    /**
-     * @private
-     * @member {Object}
-     */
     this._config = config;
-    /**
-     * @private
-     * @member {Ideogram}
-     */
     this._ideo = ideo;
-    /**
-     * @private
-     * @member {Ploidy}
-     */
     this._ploidy = this._ideo._ploidy;
-    /**
-     * Chromosome set's offset array.
-     * @private
-     * @member {Number[]}
-     */
     this._translate = undefined;
-    /**
-     * Chromosome band's size.
-     * @private
-     * @member {Number}
-     */
+
+     // Chromosome band's size.
     this._tickSize = 8;
-    /**
-     * Chromosome rotation state.
-     * @private
-     * @member {Boolean}
-     */
+
+    // Chromosome rotation state.
     this._isRotated = false;
 }
 
 
-/**
- * Factory method.
- * @public
- * @static
- * @param {Object} config
- * @param {Ideogram} ideo
- * @return {Layout}
- */
+// Factory method
 Layout.getInstance = function(config, ideo) {
 
     if ("perspective" in config && config.perspective == "comparative") {
@@ -62,36 +30,20 @@ Layout.getInstance = function(config, ideo) {
 };
 
 
-/**
- * Get chart left margin.
- * @protected
- * @returns {Number}
- */
+// Get chart left margin
 Layout.prototype._getLeftMargin = function() {
-
     return this._margin.left;
 };
 
 
-/**
- * Get rotated chromosome y scale.
- * @protected
- * @returns {Number}
- */
+// Get rotated chromosome y scale
 Layout.prototype._getYScale = function() {
-    /*
-     * 20 is width of rotated chromosome.
-     */
+    // 20 is width of rotated chromosome.
     return 20 / this._config.chrWidth;
 };
 
 
-/**
- * Get chromosome lables.
- * @public
- * @param {SVGElement} - chromosome container.
- * @returns {String[]}
- */
+// Get chromosome labels
 Layout.prototype.getChromosomeLabels = function(chrElement) {
 
     var util = new ChromosomeUtil(chrElement);
@@ -102,74 +54,45 @@ Layout.prototype.getChromosomeLabels = function(chrElement) {
 };
 
 
-/**
- * Rotate chromosome to original position.
- * @public
- * @param {Integer} chrSetNumber
- * @param {Integer} chrNumber
- * @param {SVGElement} chrElement
- * @param {Function} callback
- */
+// Rotate chromosome to original position
 Layout.prototype.rotateBack = function(chrSetNumber, chrNumber, chrElement, callback) {
 
     throw new Error(this._class + '#rotateBack not implemented');
 };
 
 
-/**
- * Rotate chromosome to opposite position.
- * @public
- * @param {Integer} chrSetNumber
- * @param {Integer} chrNumber
- * @param {SVGElement} chrElement
- * @param {Function} callback
- */
+// Rotate chromosome to opposite position
 Layout.prototype.rotateForward = function(chrSetNumber, chrNumber, chrElement, callback) {
 
     throw new Error(this._class + '#rotateForward not implemented');
 };
 
 
-/**
- * @public
- * @param {SVGElement} chrElement
- */
 Layout.prototype.rotate = function(chrSetNumber, chrNumber, chrElement) {
-    /*
-     * Find chromosomes which should be hidden.
-     */
+    // Find chromosomes which should be hidden
     var otherChrs = d3.selectAll("g.chromosome").filter(function(d, i) {
         return this !== chrElement;
     });
 
     if (this._isRotated) {
-        /*
-         * Reset _isRotated flag.
-         */
+
+        // Reset _isRotated flag
         this._isRotated = false;
-        /*
-         * Rotate chromosome back.
-         */
+        // Rotate chromosome back
         this.rotateBack(chrSetNumber, chrNumber, chrElement, function() {
-            /*
-             * Show all other chromosomes and chromosome labels.
-             */
+            // Show all other chromosomes and chromosome labels
             otherChrs.style("display", null);
             d3.selectAll(".chrSetLabel, .chrLabel").style("display", null);
         });
     } else {
-        /*
-         * Set _isRotated flag.
-         */
+        // Set _isRotated flag
         this._isRotated = true;
-        /*
-         * Hide all other chromosomes and chromosome labels.
-         */
+
+        // Hide all other chromosomes and chromosome labels
         otherChrs.style("display", "none");
         d3.selectAll(".chrSetLabel, .chrLabel").style("display", "none");
-        /*
-         * Rotate chromosome.
-         */
+
+        // Rotate chromosome
         this.rotateForward(chrSetNumber, chrNumber, chrElement);
     }
 };
@@ -192,34 +115,23 @@ Layout.prototype._getAdditionalOffset = function() {
 
 
 Layout.prototype._getChromosomeSetSize = function(chrSetNumber) {
-    /*
-     * Get last chromosome set size.
-     */
+
+    // Get last chromosome set size.
     var setSize = this._ploidy.getSetSize(chrSetNumber);
-    /*
-     * Increase offset by last chromosome set size.
-     */
+
+    // Increase offset by last chromosome set size
     return setSize * this._config.chrWidth * 2 + (this._config.ploidy > 1 ? 20 : 0);
 };
 
 
-/**
- * Get layout margin.
- * @public
- * @returns {Object}
- */
+// Get layout margin
 Layout.prototype.getMargin = function() {
 
     return this._margin;
 };
 
 
-/**
- * Get SVG element height.
- * @public
- * @param {Integer} taxId
- * @return {Number}
- */
+// Get SVG element height
 Layout.prototype.getHeight = function(taxId) {
 
     throw new Error(this._class + '#getHeight not implemented');
@@ -238,36 +150,21 @@ Layout.prototype.getChromosomeBandTickY2 = function(chrNumber) {
 };
 
 
-/**
- * Get chromosome's band translate attribute.
- * @public
- * @param {Object} band
- * @param {Integer} chrNumber
- * @return {Object}
- */
+// Get chromosome's band translate attribute
 Layout.prototype.getChromosomeBandLabelTranslate = function(band, chrNumber) {
 
     throw new Error(this._class + '#getChromosomeBandLabelTranslate not implemented');
 };
 
 
-/**
- * Get chromosome set label anchor property.
- * @public
- * @returns {String}
- */
+// Get chromosome set label anchor property
 Layout.prototype.getChromosomeSetLabelAnchor = function() {
 
     return 'middle';
 };
 
 
-/**
- * Get chromosome's band label text-anchor value.
- * @public
- * @param {Integer} chrNumber
- * @return {String|null}
- */
+// Get chromosome's band label text-anchor value
 Layout.prototype.getChromosomeBandLabelAnchor = function(chrNumber) {
 
     throw new Error(this._class + '#getChromosomeBandLabelAnchor not implemented');
@@ -280,11 +177,7 @@ Layout.prototype.getChromosomeLabelXPosition = function(i) {
 };
 
 
-/**
- * Get chromosome label y position.
- * @param i - chromosome number.
- * @returns {Number}
- */
+// Get chromosome label y position. "i" is chromosome number
 Layout.prototype.getChromosomeLabelYPosition = function(i) {
 
     return -5.5;
@@ -313,24 +206,15 @@ Layout.prototype.getChromosomeSetLabelTranslate = function() {
 };
 
 
-/**
- * Get chromosome set translate attribute.
- * @public
- * @param {Integer} setNumber - chromosome set number
- * @return {String}
- */
+
+// Get chromosome set translate attribute.
 Layout.prototype.getChromosomeSetTranslate = function(setNumber) {
 
     throw new Error(this._class + '#getChromosomeSetTranslate not implemented');
 };
 
 
-/**
- * Get chromosome set translate's y offset.
- * @public
- * @param {Integer} setNumber - chromosome set number
- * @return {Number}
- */
+// Get chromosome set translate's y offset
 Layout.prototype.getChromosomeSetYTranslate = function(setNumber) {
 
     throw new Error(this._class + '#getChromosomeSetYTranslate not implemented');

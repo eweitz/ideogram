@@ -1,24 +1,7 @@
-/**
- * @public
- * @class
- * @param {Object} config
- * @param {Ideogram} ideo
- */
+
 function HorizontalLayout(config, ideo) {
-    /*
-     * 
-     */
     Layout.call(this, config, ideo);
-    /**
-     * @private
-     * @member {String}
-     */
     this._class = 'HorizontalLayout';
-    /**
-     * Layout margins.
-     * @private
-     * @member {Object}
-     */
     this._margin = {
         left : 20,
         top : 30
@@ -28,10 +11,6 @@ function HorizontalLayout(config, ideo) {
 
 HorizontalLayout.prototype = Object.create(Layout.prototype);
 
-
-/**
- * @override
- */
 HorizontalLayout.prototype._getLeftMargin = function() {
 
     var margin = Layout.prototype._getLeftMargin.call(this);
@@ -42,10 +21,6 @@ HorizontalLayout.prototype._getLeftMargin = function() {
     return margin;
 };
 
-
-/**
- * @override
- */
 HorizontalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement, callback) {
     /*
      * Stash reference to this object.
@@ -93,9 +68,6 @@ HorizontalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrEle
 };
 
 
-/**
- * @override
- */
 HorizontalLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, callback) {
 
     var translate = this.getChromosomeSetTranslate(setNumber);
@@ -111,66 +83,40 @@ HorizontalLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElemen
 };
 
 
-/**
- * @override
- */
 HorizontalLayout.prototype.getHeight = function(taxId) {
-    /*
-     * Get last chromosome set offset.
-     */
+
+    // Get last chromosome set offset.
     var lastSetOffset = this.getChromosomeSetYTranslate(this._config.chromosomes[taxId].length - 1);
-    /*
-     * Get last chromosome set size.
-     */
+
+    // Get last chromosome set size.
     var lastSetSize = this._getChromosomeSetSize(this._config.chromosomes[taxId].length - 1);
-    /*
-     * Increase offset by last chromosome set size.
-     */
+
+    // Increase offset by last chromosome set size
     lastSetOffset += lastSetSize;
 
     return lastSetOffset + this._getAdditionalOffset() * 2;
 };
 
 
-/**
- * @override
- */
 HorizontalLayout.prototype.getChromosomeSetLabelAnchor = function() {
-
     return 'end';
 };
 
 
-/**
- * @override
- */
 HorizontalLayout.prototype.getChromosomeBandLabelAnchor = function(chrNumber) {
-
     return null;
 };
 
-
-/**
- * @override
- */
 HorizontalLayout.prototype.getChromosomeBandTickY1 = function(chrNumber) {
-
     return 2;
 };
 
 
-/**
- * @override
- */
 HorizontalLayout.prototype.getChromosomeBandTickY2 = function(chrNumber) {
-
     return 10;
 };
 
 
-/**
- * @override
- */
 HorizontalLayout.prototype.getChromosomeBandLabelTranslate = function(band) {
 
     var x = this._ideo.round(- this._tickSize + band.px.start + band.px.width / 2);
@@ -184,46 +130,30 @@ HorizontalLayout.prototype.getChromosomeBandLabelTranslate = function(band) {
 };
 
 
-/**
- * @override
- */
 HorizontalLayout.prototype.getChromosomeSetLabelTranslate = function() {
-
     return null;
 };
 
 
-/**
- * @override
- */
 HorizontalLayout.prototype.getChromosomeSetTranslate = function(setNumber) {
-
     return "translate(" + this._getLeftMargin() + ", " + this.getChromosomeSetYTranslate(setNumber) + ")";
 };
 
-
-/**
- * @override
- */
 HorizontalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
-    /*
-     * If no detailed description provided just use one formula for all cases.
-     */
+
+    // If no detailed description provided just use one formula for all cases.
     if (! this._config.ploidyDesc) {
         return this._config.chrMargin * (setNumber + 1);
     }
-    /*
-     * Id detailed description provided start to calculate offsets
-     * for each chromosome set separately. This should be done only once.
-     */
+
+    // Id detailed description provided start to calculate offsets
+    //  for each chromosome set separately. This should be done only once.
     if (! this._translate) {
-        /*
-         * First offset equals to zero.
-         */
+
+        // First offset equals to zero.
         this._translate = [1];
-        /*
-         * Loop through description set.
-         */
+
+        // Loop through description set
         for (var i = 1; i < this._config.ploidyDesc.length; i ++) {
             this._translate[i] = this._translate[i - 1] + this._getChromosomeSetSize(i - 1);
         }
@@ -233,11 +163,7 @@ HorizontalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
 };
 
 
-/**
- * @override
- */
 HorizontalLayout.prototype.getChromosomeSetLabelXPosition = function(i) {
-
     if (this._config.ploidy === 1) {
         return this.getChromosomeLabelXPosition(i);
     } else {
@@ -246,9 +172,6 @@ HorizontalLayout.prototype.getChromosomeSetLabelXPosition = function(i) {
 };
 
 
-/**
- * @override
- */
 HorizontalLayout.prototype.getChromosomeSetLabelYPosition = function(i) {
 
     if (this._config.ploidy === 1) {
@@ -259,19 +182,11 @@ HorizontalLayout.prototype.getChromosomeSetLabelYPosition = function(i) {
 };
 
 
-/**
- * @override
- */
 HorizontalLayout.prototype.getChromosomeLabelXPosition = function(i) {
-
     return -8;
 };
 
 
-/**
- * @override
- */
 HorizontalLayout.prototype.getChromosomeLabelYPosition = function(i) {
-
     return this._config.chrWidth;
 };

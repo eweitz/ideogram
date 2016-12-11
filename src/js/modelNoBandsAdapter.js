@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 function ModelNoBandsAdapter(model) {
     /*
@@ -13,21 +13,15 @@ function ModelNoBandsAdapter(model) {
 ModelNoBandsAdapter.prototype = Object.create(ModelAdapter.prototype);
 
 
-/**
- * @override
- */
 ModelNoBandsAdapter.prototype.getModel = function() {
-    /*
-     * Define bands as empty array.
-     */
+
     this._model.bands = [];
-    /*
-     * If chromosome width more than 1 add single band to bands array.
-     */
+
+    // If chromosome width more, then 1 add single band to bands array
     if (this._model.width > 1) {
         this._model.bands.push({
             name: 'p',
-            px : {
+            px: {
                 start : 0,
                 stop : this._model.width,
                 width : this._model.width

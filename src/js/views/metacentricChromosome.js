@@ -1,11 +1,4 @@
-/**
- * Metacentric chromosome view class.
- * @public
- * @class
- * @param {Object} model
- * @param {Object} config
- * @param {Ideogram} ideo
- */
+// Metacentric chromosome view class
 function MetacentricChromosome(model, config, ideo) {
 
     Chromosome.call(this, model, config, ideo);
