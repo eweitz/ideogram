@@ -454,19 +454,25 @@ describe("Ideogram", function() {
     function getTerEnd(arm) {
       // Helper function to get the x coordinate of the outermost
       // edge of the p or q arm of chromosome 1
-
-      var ter = d3.select("." + arm + "-ter"),
+        var armIndex = (arm === 'p') ? 1 : 2,
+          ter = d3.selectAll('.chromosome-border path:nth-child(' + armIndex + ')'),
           terBox = ter.nodes()[0].getBBox(),
           terX = terBox.x,
           terWidth = terBox.width,
           terEnd,
-
-          terCurve = parseInt(ter.attr("d").split(" ")[4]),
-          terCurveX = parseInt(ter.attr("d").split(" ")[1]),
-
+          inst = ter.attr('d').split(' '), // Path instructions in description ('d')
+          terCurve = parseInt(inst[4].replace('Q', '').split(',')[0]),
+          terCurveX = parseInt(inst[0].replace('M', '').split(',')[0]),
           terStroke = parseFloat(ter.style("stroke-width").slice(0, -2));
 
-          if (arm == "p") {
+          console.log('inst')
+          console.log(inst)
+          console.log('terCurve')
+          console.log(terCurve)
+          console.log('terCurveX')
+          console.log(terCurveX)
+
+          if (arm === "p") {
             terEnd = terX + terWidth + terCurve + terCurveX - terStroke;
           } else {
             terEnd = terCurve + terCurveX - terStroke;
