@@ -588,7 +588,7 @@ describe("Ideogram", function() {
             chrLabel, chrLabelMiddle;
 
         band = d3.selectAll(".chromosome .band").nodes()[0].getBoundingClientRect();
-        chrLabel = d3.selectAll(".chromosome .chrLabel").nodes()[0].getBoundingClientRect();
+        chrLabel = d3.selectAll(".chromosome-set-label").nodes()[0].getBoundingClientRect();
 
         bandMiddle = band.top + band.height/2;
         chrLabelMiddle = chrLabel.top + chrLabel.height/2;
@@ -625,7 +625,7 @@ describe("Ideogram", function() {
             chrLabel, chrLabelMiddle;
 
         band = d3.selectAll(".chromosome .band").nodes()[0].getBoundingClientRect();
-        chrLabel = d3.selectAll(".chromosome .chrLabel").nodes()[0].getBoundingClientRect();
+        chrLabel = d3.selectAll(".chromosome-set-label").nodes()[0].getBoundingClientRect();
 
         bandMiddle = band.left + band.width/2;
         chrLabelMiddle = chrLabel.left + chrLabel.width/2;
