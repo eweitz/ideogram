@@ -515,11 +515,13 @@ describe("Ideogram", function() {
 
       function callback() {
 
-        lastChrRow1Transform = d3.select("#chr12-9606").attr("transform");
-        firstChrRow2Transform = d3.select("#chr13-9606").attr("transform");
+        t1 = d3.select("#chr12-9606-chromosome-set").attr("transform");
+        t2 = d3.select("#chr13-9606-chromosome-set").attr("transform");
 
-        assert.equal(/translate/.test(lastChrRow1Transform), false);
-        assert.equal(/translate/.test(firstChrRow2Transform), true);
+        lastChrRow1Y = parseInt(t1.split('translate(')[1].split(',')[0], 10);
+        firstChrRow2Y = parseInt(t2.split('translate(')[1].split(',')[0], 10);
+
+        assert.isTrue(firstChrRow2Y > lastChrRow1Y + config.chrHeight);
 
         done();
       }
