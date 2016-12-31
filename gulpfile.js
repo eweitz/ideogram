@@ -34,21 +34,21 @@ gulp.task('dist', function() {
     .pipe(ignore.exclude(['ideogram.min.js']))
     .pipe(order([
         'range.js',
-        'modelAdapter.js',
-        'modelNoBandsAdapter.js',
+        'model-adapter.js',
+        'model-no-bands-adapter.js',
         'layout.js',
-        'horizontalLayout.js',
-        'verticalLayout.js',
-        'pairedLayout.js',
-        'smallLayout.js',
+        'horizontal-layout.js',
+        'vertical-layout.js',
+        'paired-layout.js',
+        'small-layout.js',
         'ploidy.js',
         'color.js',
-        'ploidyDescription.js',
+        'ploidy-description.js',
         'chromosome.js',
-        'telocentricChromosome.js',
-        'metacentricChromosome.js',
+        'telocentric-chromosome.js',
+        'metacentric-chromosome.js',
         'ideogram.js',
-        'ideogram.filter.js'
+        'filter.js'
     ]))
     .pipe(concat('ideogram.js'))
     .pipe(minify({
