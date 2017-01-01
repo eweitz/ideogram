@@ -64,6 +64,8 @@ output = []
 
 rsids = {}
 
+bed = []
+
 clinallele_re = re.compile("CLNALLE=(-?\d+)")
 disease_re = re.compile("CLNDBN=([^;]*)")
 clinsig_re = re.compile("CLNSIG=([^;]*)")
@@ -155,6 +157,36 @@ def get_snpedia_comment(name, allele1, allele2):
 
     return []
 
+def convert_to_bed(ancestry_dna_columns):
+    '''
+    From https://www.biostars.org/p/153805/#153946:
+
+    So here's what my original data from AncestryDNA would have looked like:
+    rs4477212    1    82154    T    T
+    rs3131972    1    752721    G    G
+    rs12562034    1    768448    A    G
+
+    And here's what it would look like in bed detail format:
+
+    chr1    82153    82154    rs4477212    0    +    82153    82154    0,0,255    1    1    0    rs4477212    TT
+    chr1    752720    752721    rs3131972    0    +    752720    752721    0,0,255    1    1    0    rs3131972    GG
+    chr1    768447    768448    rs12562034    0    +    768447    768448    0,0,255    1    1    0    rs12562034    AG
+    '''
+    columns = ancestry_dna_columns
+    bed_line = [
+        "chr" + columns[1],
+        columns[2],
+        str(int(columns[2]) + 1),
+        columns[0],
+        "0\t+",
+        columns[2],
+        str(int(columns[2]) + 1),
+        "0,0,255\t1\t1\t0",
+        columns[0],
+        columns[3] + columns[4]
+    ]
+    bed_line = "\t".join(bed_line)
+    return bed_line
 
 # Column headers of VCF file:
 # #CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO
@@ -238,6 +270,9 @@ for line in ancestrydna_sample:
     num_ancestrydna_rsids += 1
 
     columns = line.strip().split("\t")
+
+    bed_line = convert_to_bed(columns)
+    bed.append(bed_line)
 
     name = columns[0] # rsid
     chr_index = int(columns[1])
@@ -363,6 +398,9 @@ top_annots["keys"] = [
 top_annots["annots"] = clin_annots
 annots = json.dumps(top_annots)
 open(data_dir + "ancestrydna_tracks.json", "w").write(annots)
+
+bed = "\n".join(bed)
+open(data_dir + "ancestrydna.bed", "w").write(bed)
 
 output.append("Number variants in AncestryDNA sample:")
 output.append(str(num_ancestrydna_rsids) + "\n")

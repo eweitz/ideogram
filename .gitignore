@@ -5,8 +5,8 @@ images/
 .DS_Store
 crossfilter.min.js
 data/analysis/
-#
-# Eclipse IDE service files.
-#
+*.log
+
+# Eclipse IDE files
 .project
 .settings
