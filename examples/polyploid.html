@@ -1,28 +1,54 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Human | Ideogram</title>
+  <title>Annotations, colored arms | Ideogram</title>
+  <meta charset="utf-8">
   <link type="text/css" rel="stylesheet" href="../src/css/ideogram.css"/>
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.1.1/d3.min.js"></script>
   <script type="text/javascript" src="../src/js/model-adapter.js"></script>
   <script type="text/javascript" src="../src/js/layouts/layout.js"></script>
-  <script type="text/javascript" src="../src/js/layouts/vertical-layout.js"></script>
+  <script type="text/javascript" src="../src/js/layouts/horizontal-layout.js"></script>
   <script type="text/javascript" src="../src/js/ploidy.js"></script>
   <script type="text/javascript" src="../src/js/color.js"></script>
   <script type="text/javascript" src="../src/js/views/chromosome.js"></script>
   <script type="text/javascript" src="../src/js/views/chromosome-util.js"></script>
   <script type="text/javascript" src="../src/js/views/metacentric-chromosome.js"></script>
   <script type="text/javascript" src="../src/js/ideogram.js"></script>
+  <script type="text/javascript" src="../data/bands/native/ideogram_banana_v0.1.js"></script>
 </head>
 <body>
-  <h1>Human | Ideogram</h1>
+  <h1>Polyploidy, basic | Ideogram</h1>
   <a href=".">Back to overview</a>
+
   <script type="text/javascript">
 
-    var ideogram = new Ideogram({
-      organism: "human",
-      orientation: "vertical"
-    });
+    var config = {
+      organism: "banana",
+      // armColors: ["#D00", "#CCC"],
+      // armColors: ["#fff", "#fff"],
+      // armColors: ["#dea673", "#7396be"],
+      orientation: "horizontal",
+      ploidy: 3,
+      ancestors: {
+        "A": "#dea673",
+        "B": "#7396be"
+      },
+      ploidyDesc: [
+        'AAB',
+        'AAB',
+        'BAB',
+        'AAB',
+        'AAB',
+        'BBB',
+        'AAB',
+        'AAB',
+        'AAB',
+        'AAB',
+        'AAB'
+      ]
+    };
+
+    var ideogram = new Ideogram(config);
 
   </script>
 </body>
