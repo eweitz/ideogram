@@ -1,12 +1,19 @@
 var gulp = require('gulp');
 var mochaPhantomJS = require('gulp-mocha-phantomjs');
 var mocha = require('gulp-mocha');
-var minify = require('gulp-minify');
+var uglify = require('gulp-uglify');
+var rename = require('gulp-rename');
 var concat = require('gulp-concat');
 var flatten = require('gulp-flatten');
 var ignore = require('gulp-ignore');
 var order = require('gulp-order');
 var jshint = require('gulp-jshint');
+var sourcemaps = require('gulp-sourcemaps');
+
+var paths = {
+  scripts: 'src/js/**/*.js',
+  styles: 'src/css/**/*.css'
+}
 
 gulp.task('default', function () {
 
@@ -21,41 +28,41 @@ gulp.task('default', function () {
 });
 
 gulp.task('lint', function() {
-  return gulp.src('src/js/**/*.js')
+  return gulp.src(paths.scripts)
     .pipe(flatten())
-    .pipe(ignore.exclude(['ideogram.min.js']))
     .pipe(jshint())
     .pipe(jshint.reporter('default'));
 });
 
 gulp.task('dist', function() {
-  gulp.src('src/js/**/*.js')
-    .pipe(flatten())
-    .pipe(ignore.exclude(['ideogram.min.js']))
-    .pipe(order([
-        'range.js',
-        'model-adapter.js',
-        'model-no-bands-adapter.js',
-        'layout.js',
-        'horizontal-layout.js',
-        'vertical-layout.js',
-        'paired-layout.js',
-        'small-layout.js',
-        'ploidy.js',
-        'color.js',
-        'ploidy-description.js',
-        'chromosome.js',
-        'telocentric-chromosome.js',
-        'metacentric-chromosome.js',
-        'ideogram.js',
-        'filter.js'
-    ]))
-    .pipe(concat('ideogram.js'))
-    .pipe(minify({
-        ext:{
-            src:'.js',
-            min:'.min.js'
-        }
-    }))
-    .pipe(gulp.dest('dist'))
+  gulp.src(paths.scripts)
+      .pipe(sourcemaps.init())
+      .pipe(flatten())
+      .pipe(order([
+          'range.js',
+          'model-adapter.js',
+          'model-no-bands-adapter.js',
+          'layout.js',
+          'horizontal-layout.js',
+          'vertical-layout.js',
+          'paired-layout.js',
+          'small-layout.js',
+          'ploidy.js',
+          'color.js',
+          'ploidy-description.js',
+          'chromosome.js',
+          'telocentric-chromosome.js',
+          'metacentric-chromosome.js',
+          'core.js',
+          'filter.js'
+      ]))
+      .pipe(concat('ideogram.js'))
+      .pipe(gulp.dest('dist/js'))
+      .pipe(uglify())
+      .pipe(rename({ extname: '.min.js'}))
+      .pipe(sourcemaps.write('.'))
+      .pipe(gulp.dest('dist/js'))
+
+  gulp.src(paths.styles)
+    .pipe(gulp.dest('dist/css'))
 });

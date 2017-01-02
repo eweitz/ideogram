@@ -1,0 +1,99 @@
+/*
+Developed by Eric Weitz (https://github.com/eweitz)
+*/
+
+body {
+	font: 12px Arial;
+	line-height: 19.6px;
+}
+
+svg {
+	padding-left: 5px;
+}
+
+svg.labeled {
+	padding-left: 15px;
+}
+
+svg.labeledLeft {
+	padding-left: 15px;
+	padding-top: 15px;
+}
+
+text {
+	/*
+	Tahoma has excellent readability and
+	space utilization at small sizes.
+	More: http://ux.stackexchange.com/a/3334
+	*/
+	font: 9px Tahoma;
+	fill: #000;
+}
+
+.italic {
+	font-style: italic;
+}
+
+.chromosome {
+	cursor: pointer;
+}
+
+.chrSetLabel{
+    font-weight: bolder;
+}
+
+.ghost {
+	opacity: 0.2;
+}
+
+.hidden {
+	display: none;
+}
+
+path.band {
+	/* opacity: 0.5; */
+}
+
+.bandLabelStalk line {
+	stroke: #AAA;
+	stroke-width: 1;
+}
+
+.syntenyBorder {
+	stroke:#AAA;
+	stroke-width:1;
+}
+
+.brush .selection {
+	fill: #F00;
+	stroke: #F00;
+  fill-opacity: .3;
+  shape-rendering: crispEdges;
+}
+
+.noBands {
+	fill: #AAA;
+}
+
+/* NCBI stain density colors */
+.gneg {fill: #FFF}
+.gpos25 {fill: #BBB}
+.gpos33 {fill: #AAA}
+.gpos50 {fill: #888}
+.gpos66 {fill: #666}
+.gpos75 {fill: #444}
+.gpos100 {fill: #000}
+.acen {fill: #FDD}
+.stalk {fill: #CCE;}
+.gvar {fill: #DDF}
+/* Used when overlaid with annotations */
+.faint .gneg {fill: #FFF}
+.faint .gpos25 {fill: #EEE}
+.faint .gpos33 {fill: #EEE}
+.faint .gpos50 {fill: #EEE}
+.faint .gpos66 {fill: #EEE}
+.faint .gpos75 {fill: #EEE}
+.faint .gpos100 {fill: #DDD}
+.faint .acen {fill: #FEE}
+.faint .stalk {fill: #EEF;}
+.faint .gvar {fill: #EEF}
