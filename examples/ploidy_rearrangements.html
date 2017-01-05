@@ -1,17 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Annotations, colored arms | Ideogram</title>
+  <title>Ploidy, rearrangement | Ideogram</title>
   <meta charset="utf-8">
   <link type="text/css" rel="stylesheet" href="../dist/css/ideogram.css"/>
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.1.1/d3.min.js"></script>
-  <script type="text/javascript" src="../dist/js/ideogram.js"></script>
+  <script type="text/javascript" src="../dist/js/ideogram.min.js"></script>
   <script type="text/javascript" src="../data/bands/native/ideogram_banana_v0.1.js"></script>
 </head>
 <body>
-  <h1>Recombination | Ideogram</h1>
+  <h1>Ploidy, rearrangement | Ideogram</h1>
   <a href=".">Back to overview</a>
-
+  <p>
+    The triploid genome of the banana species <i>Musa acuminata</i> shown below
+    has chromosomal rearrangements including:
+    <ul>
+      <li>Arm gained in a copy of chromosome 1</li>
+      <li>Arm lost in a copy of chromosome 2</li>
+      <li>Unequal number of ancestral copies in various chromosomes</li>
+    </ul>
+  </p>
   <script type="text/javascript">
 
     var config = {
@@ -26,36 +34,18 @@
         "B": "#7396be"
       },
       ploidyDesc: [
-        'AAB',
-        'AAB',
+        {'AABB': ['11', '11', '11', '02']},
+        {'AAB': ['01', '11', '11']},
         'BAB',
-        'AAB',
+        {'AABB': ['11', '11', '11', '20']},
         'AAB',
         'BBB',
-        'AAB',
+        {'AAB': ['01', '11', '11']},
         'AAB',
         'AAB',
         'AAB',
         'AAB'
-      ],
-      rangeSet: [{
-            chr: 1,
-            ploidy: [0, 1, 0],
-            start: 17120000,
-            stop: 25120000,
-            color: [0, '#7396be', 0,]
-        }, {
-            chr: 2,
-            ploidy: [0, 1, 1],
-            start: 12120000,
-            stop: 15120000,
-            color: [0, '#7396be', '#dea673']
-        }, {
-            chr: 2,
-            start: 0,
-            stop: 1712000,
-            color: 'red'
-        }]
+      ]
     };
 
     var ideogram = new Ideogram(config);
