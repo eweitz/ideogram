@@ -1,9 +1,5 @@
 // Chromosome's view utility class
 function ChromosomeUtil(node) {
-    /**
-     * @private
-     * @member {SVGElement}
-     */
     this._node = node;
 }
 

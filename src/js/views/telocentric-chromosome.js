@@ -1,4 +1,3 @@
-// Telocentric chromosome view class
 function TelocentricChromosome(model, config, ideo) {
 
     Chromosome.call(this, model, config, ideo);

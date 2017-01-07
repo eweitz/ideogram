@@ -457,9 +457,8 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
 Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
 
     var ideo = this;
-    /*
-     * Append chromosomes set's labels.
-     */
+
+    // Append chromosomes set's labels
     d3.selectAll(".chromosome-set-container")
         .append("text")
         .data(ideo.chromosomesArray)
@@ -471,18 +470,16 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
             return ideo._layout.getChromosomeSetLabelYPosition(i);
         }).attr("text-anchor", ideo._layout.getChromosomeSetLabelAnchor())
         .each(function(d, i) {
-            /*
-             * Get label lines.
-             */
+
+            // Get label lines
             var lines;
             if (d.name.indexOf(' ') === -1) {
                 lines = [ d.name ];
             } else {
                 lines = d.name.match(/^(.*)\s+([^\s]+)$/).slice(1).reverse();
             }
-            /*
-             * Render label lines.
-             */
+
+            // Render label lines
             d3.select(this).selectAll('tspan')
                 .data(lines)
                 .enter()
@@ -494,9 +491,8 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
                     return i == 1 && ideo.config.fullChromosomeLabels ? 'italic' : null;
                 }).text(String);
         })
-    /*
-     * Append chromosomes labels.
-     */
+
+    // Append chromosomes labels
     d3.selectAll(".chromosome-set-container")
         .each(function(a, chrSetNumber) {
             d3.select(this).selectAll(".chromosome")
@@ -844,21 +840,18 @@ Ideogram.prototype.round = function(coord) {
 * Renders all the bands and outlining boundaries of a chromosome.
 */
 Ideogram.prototype.drawChromosome = function(chrModel, chrIndex, container, k) {
-    /*
-     * Get chromosome model adapter class.
-     */
+
+    // Get chromosome model adapter class
     var adapter = ModelAdapter.getInstance(chrModel);
-    /*
-     * Append chromosome's container.
-     */
+
+    // Append chromosome's container
     var chromosome = container
         .append("g")
         .attr("id", chrModel.id)
         .attr("class", "chromosome " + adapter.getCssClass())
         .attr("transform", "translate(0, " + k * 20 + ")");
-    /*
-     * Render chromosome.
-     */
+
+    // Render chromosome
     return Chromosome.getInstance(adapter, this.config, this)
         .render(chromosome, chrIndex, k);
 };
@@ -876,19 +869,13 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosome) {
   if (! this.config.taxid) {
       return;
   }
-  /*
-   * Get chromosome set number.
-   */
+
   var chrSetNumber = Number(d3.select(chromosome.parentNode).attr('data-set-number'));
-  /*
-   * Get chromosome number.
-   */
+
   var chrNumber = Array.prototype.slice.call(
           d3.select(chromosome.parentNode).selectAll("g.chromosome")._groups[0]
       ).indexOf(chromosome);
-  /*
-   * Run rotation procedure.
-   */
+
   return this._layout.rotate(chrSetNumber, chrNumber, chromosome);
 };
 
@@ -1923,9 +1910,7 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
       ideo.chromosomes[taxid][chromosome] = chromosomeModel;
       ideo.chromosomesArray.push(chromosomeModel);
 
-      /*
-       * Append cromosome set container.
-       */
+      // Append chromosome set container
       var container = d3.select("svg")
         .append("g")
         .attr("class", "chromosome-set-container")

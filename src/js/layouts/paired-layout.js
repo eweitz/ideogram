@@ -1,4 +1,3 @@
-
 function PairedLayout(config, ideo) {
 
     Layout.call(this, config, ideo);

@@ -1,4 +1,3 @@
-
 function Color(config) {
     // Ideogram config
     this._config = config;
@@ -6,7 +5,6 @@ function Color(config) {
 }
 
 
-// Get chromosome's arm color
 Color.prototype.getArmColor = function(chrSetNumber, chrNmber, armNumber) {
 
     if (this._config.armColors) {
@@ -19,7 +17,6 @@ Color.prototype.getArmColor = function(chrSetNumber, chrNmber, armNumber) {
 };
 
 
-// Get chromosome's arm border color
 Color.prototype.getBorderColor = function(chrSetNumber, chrNmber, armNumber) {
 
     if (chrNmber < this._config.ploidy) {
@@ -32,7 +29,6 @@ Color.prototype.getBorderColor = function(chrSetNumber, chrNmber, armNumber) {
 };
 
 
-// Get polyploid organism chromosome arm's color
 Color.prototype._getPolyploidArmColor = function(chrSetNumber, chrNmber, armNumber) {
 
     if (! this._ploidy.isExists(chrSetNumber, chrNmber, armNumber)) {

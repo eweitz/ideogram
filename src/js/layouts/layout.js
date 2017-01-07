@@ -1,4 +1,3 @@
-
 function Layout(config, ideo) {
     this._config = config;
     this._ideo = ideo;

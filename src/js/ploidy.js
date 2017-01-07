@@ -1,4 +1,3 @@
-// Ploidy description class.
 function Ploidy(config) {
     this._config = config;
     this._description = this._normilize(this._config.ploidyDesc);

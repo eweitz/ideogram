@@ -1,4 +1,3 @@
-
 function SmallLayout(config, ideo) {
 
     Layout.call(this, config, ideo);

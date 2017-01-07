@@ -1,6 +1,3 @@
-/**
- *
- */
 function ModelNoBandsAdapter(model) {
     /*
      * Call parent constructor.
@@ -33,10 +30,6 @@ ModelNoBandsAdapter.prototype.getModel = function() {
 };
 
 
-/**
- * @override
- */
 ModelNoBandsAdapter.prototype.getCssClass = function() {
-
     return 'noBands';
 };

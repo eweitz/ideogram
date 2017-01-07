@@ -13,25 +13,18 @@ function Range(data) {
     this._data = data;
 }
 
-
-// Get range start
 Range.prototype.getStart = function() {
     return this._data.start;
 };
 
-
-// Get range end
 Range.prototype.getStop = function() {
     return this._data.stop;
 };
 
-// Get range length
 Range.prototype.getLength = function() {
     return this._data.stop - this._data.start;
 };
 
-
-// Get range color
 Range.prototype.getColor = function(chrNumber) {
     if (! ('ploidy' in this._data)) {
         return this._getColor(chrNumber);
@@ -42,8 +35,6 @@ Range.prototype.getColor = function(chrNumber) {
     }
 };
 
-
-// Get range color
 Range.prototype._getColor = function(chrNumber) {
     if (Array.isArray(this._data.color)) {
         return this._data.color[chrNumber];

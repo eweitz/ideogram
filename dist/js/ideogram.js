@@ -13,25 +13,18 @@ function Range(data) {
     this._data = data;
 }
 
-
-// Get range start
 Range.prototype.getStart = function() {
     return this._data.start;
 };
 
-
-// Get range end
 Range.prototype.getStop = function() {
     return this._data.stop;
 };
 
-// Get range length
 Range.prototype.getLength = function() {
     return this._data.stop - this._data.start;
 };
 
-
-// Get range color
 Range.prototype.getColor = function(chrNumber) {
     if (! ('ploidy' in this._data)) {
         return this._getColor(chrNumber);
@@ -42,8 +35,6 @@ Range.prototype.getColor = function(chrNumber) {
     }
 };
 
-
-// Get range color
 Range.prototype._getColor = function(chrNumber) {
     if (Array.isArray(this._data.color)) {
         return this._data.color[chrNumber];
@@ -73,9 +64,6 @@ ModelAdapter.prototype.getCssClass = function() {
     return '';
 };
 
-/**
- *
- */
 function ModelNoBandsAdapter(model) {
     /*
      * Call parent constructor.
@@ -108,14 +96,9 @@ ModelNoBandsAdapter.prototype.getModel = function() {
 };
 
 
-/**
- * @override
- */
 ModelNoBandsAdapter.prototype.getCssClass = function() {
-
     return 'noBands';
 };
-
 
 function Layout(config, ideo) {
     this._config = config;
@@ -338,7 +321,6 @@ Layout.prototype.getChromosomeSetYTranslate = function(setNumber) {
     throw new Error(this._class + '#getChromosomeSetYTranslate not implemented');
 };
 
-
 function HorizontalLayout(config, ideo) {
     Layout.call(this, config, ideo);
     this._class = 'HorizontalLayout';
@@ -362,9 +344,7 @@ HorizontalLayout.prototype._getLeftMargin = function() {
 };
 
 HorizontalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement, callback) {
-    /*
-     * Stash reference to this object.
-     */
+
     var self = this;
 
     var xOffset = 30;
@@ -383,9 +363,8 @@ HorizontalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrEle
         .transition()
         .attr("transform", transform)
         .on('end', callback);
-    /*
-     * Append new chromosome labels.
-     */
+
+    // Append new chromosome labels
     var labels = this.getChromosomeLabels(chrElement);
     d3.select(this._ideo.getSvg())
         .append('g')
@@ -463,9 +442,9 @@ HorizontalLayout.prototype.getChromosomeBandLabelTranslate = function(band) {
     var y = -10;
 
     return {
-        x : x,
-        y : y,
-        translate : 'translate(' + x + ',' + y + ')'
+        x: x,
+        y: y,
+        translate: 'translate(' + x + ',' + y + ')'
     };
 };
 
@@ -537,8 +516,8 @@ function VerticalLayout(config, ideo) {
     this._class = 'VerticalLayout';
     // Layout margins
     this._margin = {
-        top : 30,
-        left : 15
+        top: 30,
+        left: 15
     };
 }
 
@@ -676,7 +655,6 @@ VerticalLayout.prototype.getChromosomeLabelXPosition = function(i) {
 
     return this._config.chrWidth / - 2;
 };
-
 
 function PairedLayout(config, ideo) {
 
@@ -839,7 +817,6 @@ PairedLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
     return 200 * (setNumber + 1);
 };
 
-
 function SmallLayout(config, ideo) {
 
     Layout.call(this, config, ideo);
@@ -946,7 +923,6 @@ SmallLayout.prototype.getChromosomeLabelXPosition = function(i) {
     return this._config.chrWidth / - 2;
 };
 
-// Ploidy description class.
 function Ploidy(config) {
     this._config = config;
     this._description = this._normilize(this._config.ploidyDesc);
@@ -1044,7 +1020,6 @@ Ploidy.prototype.isExists = function(chrSetNumber, chrNumber, armNumber) {
     }
 };
 
-
 function Color(config) {
     // Ideogram config
     this._config = config;
@@ -1052,7 +1027,6 @@ function Color(config) {
 }
 
 
-// Get chromosome's arm color
 Color.prototype.getArmColor = function(chrSetNumber, chrNmber, armNumber) {
 
     if (this._config.armColors) {
@@ -1065,7 +1039,6 @@ Color.prototype.getArmColor = function(chrSetNumber, chrNmber, armNumber) {
 };
 
 
-// Get chromosome's arm border color
 Color.prototype.getBorderColor = function(chrSetNumber, chrNmber, armNumber) {
 
     if (chrNmber < this._config.ploidy) {
@@ -1078,7 +1051,6 @@ Color.prototype.getBorderColor = function(chrSetNumber, chrNmber, armNumber) {
 };
 
 
-// Get polyploid organism chromosome arm's color
 Color.prototype._getPolyploidArmColor = function(chrSetNumber, chrNmber, armNumber) {
 
     if (! this._ploidy.isExists(chrSetNumber, chrNmber, armNumber)) {
@@ -1088,7 +1060,6 @@ Color.prototype._getPolyploidArmColor = function(chrSetNumber, chrNmber, armNumb
     }
 };
 
-// Chromosome view class
 function Chromosome(adapter, config, ideo) {
 
     this._adapter = adapter;
@@ -1227,11 +1198,11 @@ Chromosome.prototype._getShapeData = function() {
     // w - chromosome width
     // b - bump size
     return {
-        x1 : 0,
-        x2 : firstQBand ? firstQBand.px.start : rightTerminalPosition,
-        x3 : rightTerminalPosition,
-        w : this._config.chrWidth,
-        b : this._config.chrWidth / this._bumpCoefficient
+        x1: 0,
+        x2: firstQBand ? firstQBand.px.start : rightTerminalPosition,
+        x3: rightTerminalPosition,
+        w: this._config.chrWidth,
+        b: this._config.chrWidth / this._bumpCoefficient
     };
 };
 
@@ -1323,7 +1294,6 @@ Chromosome.prototype._renderQArm = function(container, chrSetNumber, chrNumber) 
     return Boolean(bands.length);
 };
 
-// Telocentric chromosome view class
 function TelocentricChromosome(model, config, ideo) {
 
     Chromosome.call(this, model, config, ideo);
@@ -1374,9 +1344,7 @@ TelocentricChromosome.prototype._getQArmShape = function() {
     };
 };
 
-// Metacentric chromosome view class
 function MetacentricChromosome(model, config, ideo) {
-
     Chromosome.call(this, model, config, ideo);
     this._class = 'MetacentricChromosome';
 }
@@ -1843,9 +1811,8 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
 Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
 
     var ideo = this;
-    /*
-     * Append chromosomes set's labels.
-     */
+
+    // Append chromosomes set's labels
     d3.selectAll(".chromosome-set-container")
         .append("text")
         .data(ideo.chromosomesArray)
@@ -1857,18 +1824,16 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
             return ideo._layout.getChromosomeSetLabelYPosition(i);
         }).attr("text-anchor", ideo._layout.getChromosomeSetLabelAnchor())
         .each(function(d, i) {
-            /*
-             * Get label lines.
-             */
+
+            // Get label lines
             var lines;
             if (d.name.indexOf(' ') === -1) {
                 lines = [ d.name ];
             } else {
                 lines = d.name.match(/^(.*)\s+([^\s]+)$/).slice(1).reverse();
             }
-            /*
-             * Render label lines.
-             */
+
+            // Render label lines
             d3.select(this).selectAll('tspan')
                 .data(lines)
                 .enter()
@@ -1880,9 +1845,8 @@ Ideogram.prototype.drawChromosomeLabels = function(chromosomes) {
                     return i == 1 && ideo.config.fullChromosomeLabels ? 'italic' : null;
                 }).text(String);
         })
-    /*
-     * Append chromosomes labels.
-     */
+
+    // Append chromosomes labels
     d3.selectAll(".chromosome-set-container")
         .each(function(a, chrSetNumber) {
             d3.select(this).selectAll(".chromosome")
@@ -2230,21 +2194,18 @@ Ideogram.prototype.round = function(coord) {
 * Renders all the bands and outlining boundaries of a chromosome.
 */
 Ideogram.prototype.drawChromosome = function(chrModel, chrIndex, container, k) {
-    /*
-     * Get chromosome model adapter class.
-     */
+
+    // Get chromosome model adapter class
     var adapter = ModelAdapter.getInstance(chrModel);
-    /*
-     * Append chromosome's container.
-     */
+
+    // Append chromosome's container
     var chromosome = container
         .append("g")
         .attr("id", chrModel.id)
         .attr("class", "chromosome " + adapter.getCssClass())
         .attr("transform", "translate(0, " + k * 20 + ")");
-    /*
-     * Render chromosome.
-     */
+
+    // Render chromosome
     return Chromosome.getInstance(adapter, this.config, this)
         .render(chromosome, chrIndex, k);
 };
@@ -2262,19 +2223,13 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosome) {
   if (! this.config.taxid) {
       return;
   }
-  /*
-   * Get chromosome set number.
-   */
+
   var chrSetNumber = Number(d3.select(chromosome.parentNode).attr('data-set-number'));
-  /*
-   * Get chromosome number.
-   */
+
   var chrNumber = Array.prototype.slice.call(
           d3.select(chromosome.parentNode).selectAll("g.chromosome")._groups[0]
       ).indexOf(chromosome);
-  /*
-   * Run rotation procedure.
-   */
+
   return this._layout.rotate(chrSetNumber, chrNumber, chromosome);
 };
 
@@ -3309,9 +3264,7 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
       ideo.chromosomes[taxid][chromosome] = chromosomeModel;
       ideo.chromosomesArray.push(chromosomeModel);
 
-      /*
-       * Append cromosome set container.
-       */
+      // Append chromosome set container
       var container = d3.select("svg")
         .append("g")
         .attr("class", "chromosome-set-container")
@@ -3853,10 +3806,6 @@ Ideogram.prototype.filterAnnots = function(selections) {
 
 // Chromosome's view utility class
 function ChromosomeUtil(node) {
-    /**
-     * @private
-     * @member {SVGElement}
-     */
     this._node = node;
 }
 

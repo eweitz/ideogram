@@ -1,4 +1,3 @@
-
 function HorizontalLayout(config, ideo) {
     Layout.call(this, config, ideo);
     this._class = 'HorizontalLayout';
@@ -22,9 +21,7 @@ HorizontalLayout.prototype._getLeftMargin = function() {
 };
 
 HorizontalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement, callback) {
-    /*
-     * Stash reference to this object.
-     */
+
     var self = this;
 
     var xOffset = 30;
@@ -43,9 +40,8 @@ HorizontalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrEle
         .transition()
         .attr("transform", transform)
         .on('end', callback);
-    /*
-     * Append new chromosome labels.
-     */
+
+    // Append new chromosome labels
     var labels = this.getChromosomeLabels(chrElement);
     d3.select(this._ideo.getSvg())
         .append('g')
@@ -123,9 +119,9 @@ HorizontalLayout.prototype.getChromosomeBandLabelTranslate = function(band) {
     var y = -10;
 
     return {
-        x : x,
-        y : y,
-        translate : 'translate(' + x + ',' + y + ')'
+        x: x,
+        y: y,
+        translate: 'translate(' + x + ',' + y + ')'
     };
 };
 

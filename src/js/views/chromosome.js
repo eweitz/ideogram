@@ -1,4 +1,3 @@
-// Chromosome view class
 function Chromosome(adapter, config, ideo) {
 
     this._adapter = adapter;
@@ -137,11 +136,11 @@ Chromosome.prototype._getShapeData = function() {
     // w - chromosome width
     // b - bump size
     return {
-        x1 : 0,
-        x2 : firstQBand ? firstQBand.px.start : rightTerminalPosition,
-        x3 : rightTerminalPosition,
-        w : this._config.chrWidth,
-        b : this._config.chrWidth / this._bumpCoefficient
+        x1: 0,
+        x2: firstQBand ? firstQBand.px.start : rightTerminalPosition,
+        x3: rightTerminalPosition,
+        w: this._config.chrWidth,
+        b: this._config.chrWidth / this._bumpCoefficient
     };
 };
 

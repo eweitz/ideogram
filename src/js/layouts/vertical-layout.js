@@ -4,8 +4,8 @@ function VerticalLayout(config, ideo) {
     this._class = 'VerticalLayout';
     // Layout margins
     this._margin = {
-        top : 30,
-        left : 15
+        top: 30,
+        left: 15
     };
 }
 
