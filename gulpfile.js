@@ -53,6 +53,7 @@ gulp.task('dist', function() {
           'chromosome.js',
           'telocentric-chromosome.js',
           'metacentric-chromosome.js',
+          'lib.js',
           'core.js',
           'filter.js'
       ]))
