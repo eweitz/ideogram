@@ -134,8 +134,8 @@ var Ideogram = function(config) {
   this.coordinateSystem = "iscn";
 
   this.maxLength = {
-    "bp": 0,
-    "iscn": 0
+    bp: 0,
+    iscn: 0
   };
 
   // The E-Utilies In Depth: Parameters, Syntax and More:
@@ -146,35 +146,35 @@ var Ideogram = function(config) {
   this.elink = eutils + "elink.fcgi?retmode=json";
 
   this.organisms = {
-    "9606": {
-      "commonName": "Human",
-      "scientificName": "Homo sapiens",
-      "scientificNameAbbr": "H. sapiens",
-      "assemblies": { // technically, primary assembly unit of assembly
-        "default": "GCF_000001305.14", // GRCh38
-        "GRCh38": "GCF_000001305.14",
-        "GRCh37": "GCF_000001305.13"
+    9606: {
+      commonName: "Human",
+      scientificName: "Homo sapiens",
+      scientificNameAbbr: "H. sapiens",
+      assemblies: { // technically, primary assembly unit of assembly
+        default: "GCF_000001305.14", // GRCh38
+        GRCh38: "GCF_000001305.14",
+        GRCh37: "GCF_000001305.13"
       }
     },
-    "10090": {
-      "commonName": "Mouse",
-      "scientificName": "Mus musculus",
-      "scientificNameAbbr": "M. musculus",
-      "assemblies": {
-        "default": "GCF_000000055.19"
+    10090: {
+      commonName: "Mouse",
+      scientificName: "Mus musculus",
+      scientificNameAbbr: "M. musculus",
+      assemblies: {
+        default: "GCF_000000055.19"
       }
     },
-    "7227": {
-      "commonName": "Fly",
-      "scientificName": "Drosophlia melanogaster",
-      "scientificNameAbbr": "D. melanogaster"
+    7227: {
+      commonName: "Fly",
+      scientificName: "Drosophlia melanogaster",
+      scientificNameAbbr: "D. melanogaster"
     },
-    "4641": {
-      "commonName": "banana",
-      "scientificName": "Musa acuminata",
-      "scientificNameAbbr": "M. acuminata",
-      "assemblies": {
-        "default": "mock"
+    4641: {
+      commonName: "banana",
+      scientificName: "Musa acuminata",
+      scientificNameAbbr: "M. acuminata",
+      assemblies: {
+        default: "mock"
       }
     }
   };
@@ -266,23 +266,23 @@ Ideogram.prototype.getBands = function(content, taxid, chromosomes) {
       }
 
       line = {
-        "chr": chr,
-        "bp": {
-          "start": parseInt(columns[5], 10),
-          "stop": parseInt(columns[6], 10)
+        chr: chr,
+        bp: {
+          start: parseInt(columns[5], 10),
+          stop: parseInt(columns[6], 10)
         },
-        "iscn": {
-          "start": parseInt(columns[3], 10),
-          "stop": parseInt(columns[4], 10)
+        iscn: {
+          start: parseInt(columns[3], 10),
+          stop: parseInt(columns[4], 10)
         },
-        "px": {
-          "start": -1,
-          "stop": -1,
-          "width": -1
+        px: {
+          start: -1,
+          stop: -1,
+          width: -1
         },
-        "name": columns[1] + columns[2],
-        "stain": stain,
-        "taxid": taxid
+        name: columns[1] + columns[2],
+        stain: stain,
+        taxid: taxid
       };
 
       lines[chr].push(line);
@@ -306,23 +306,23 @@ Ideogram.prototype.getBands = function(content, taxid, chromosomes) {
       stop = parseInt(columns[2], 10);
 
       line = {
-        "chr": columns[0].split('chr')[1],
-        "bp": {
-          "start": start,
-          "stop": stop
+        chr: columns[0].split('chr')[1],
+        bp: {
+          start: start,
+          stop: stop
         },
-        "iscn": {
-          "start": start,
-          "stop": stop
+        iscn: {
+          start: start,
+          stop: stop
         },
-        "px": {
-          "start": -1,
-          "stop": -1,
-          "width": -1
+        px: {
+          start: -1,
+          stop: -1,
+          width: -1
         },
-        "name": columns[3],
-        "stain": stain,
-        "taxid": taxid
+        name: columns[3],
+        stain: stain,
+        taxid: taxid
       };
 
       lines[chr].push(line);
@@ -378,7 +378,7 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
 
       width = chrHeight * chr["length"] / maxLength[cs] * (band[cs].stop - band[cs].start) / chrLength;
 
-      bands[i]["px"] = {"start": pxStop, "stop": pxStop + width, "width": width};
+      bands[i]["px"] = {start: pxStop, stop: pxStop + width, width: width};
 
       pxStop = bands[i].px.stop;
 
@@ -669,7 +669,7 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation,
   } else {
     x = -8;
     y = -16;
-    scale = {"x": 1, "y": 1};
+    scale = {x: 1, y: 1};
     scaleSvg = "";
   }
 
@@ -1041,7 +1041,7 @@ Ideogram.prototype.drawAnnots = function(friendlyAnnots) {
   }
 
   for (chr in chrs) {
-    rawAnnots.push({"chr": chr, "annots": []});
+    rawAnnots.push({chr: chr, annots: []});
   }
 
   for (i = 0; i < friendlyAnnots.length; i++) {
@@ -1073,7 +1073,7 @@ Ideogram.prototype.drawAnnots = function(friendlyAnnots) {
   if ("shape" in friendlyAnnots[0]) {
     keys.push("shape");
   }
-  ideo.rawAnnots = {"keys": keys, "annots": rawAnnots};
+  ideo.rawAnnots = {keys: keys, annots: rawAnnots};
 
   ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
 
@@ -1104,7 +1104,7 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
   for (i = 0; i < rawAnnots.length; i++) {
     annotsByChr = rawAnnots[i];
 
-    annots.push({"chr": annotsByChr.chr, "annots": []});
+    annots.push({chr: annotsByChr.chr, annots: []});
 
     for (j = 0; j < annotsByChr.annots.length; j++) {
       chr = annotsByChr.chr;
@@ -1186,18 +1186,18 @@ Ideogram.prototype.getHistogramBars = function(annots) {
     lastBand = chrModel["bands"][chrModel["bands"].length - 1];
     chrPxStop = lastBand.px.stop;
     numBins = Math.round(chrPxStop / barWidth);
-    bar = {"chr": chr, "annots": []};
+    bar = {chr: chr, annots: []};
     for (i = 0; i < numBins; i++) {
       px = i * barWidth - ideo.bump;
       bp = ideo.convertPxToBp(chrModel, px + ideo.bump);
       bar["annots"].push({
-        "bp": bp,
-        "px": px - ideo.bump,
-        "count": 0,
-        "chrIndex": chrIndex,
-        "chrName": chr,
-        "color": color,
-        "annots": []
+        bp: bp,
+        px: px - ideo.bump,
+        count: 0,
+        chrIndex: chrIndex,
+        chrName: chr,
+        color: color,
+        annots: []
       });
     }
     bars.push(bar);
@@ -1408,7 +1408,7 @@ Ideogram.prototype.createBrush = function(from, to) {
   x0 = ideo.convertBpToPx(chr, from);
   x1 = ideo.convertBpToPx(chr, to);
 
-  ideo.selectedRegion = {"from": from, "to": to, "extent": (to - from)};
+  ideo.selectedRegion = {from: from, to: to, extent: (to - from)};
 
   ideo.brush = d3.brushX()
     .extent([[xOffset, 0], [length + xOffset, width]])
@@ -1426,7 +1426,7 @@ Ideogram.prototype.createBrush = function(from, to) {
       from = Math.floor(extent[0]),
       to = Math.ceil(extent[1]);
 
-    ideo.selectedRegion = {"from": from, "to": to, "extent": (to - from)};
+    ideo.selectedRegion = {from: from, to: to, extent: (to - from)};
 
     if (ideo.onBrushMove) {
       ideo.onBrushMoveCallback();
@@ -1595,9 +1595,9 @@ Ideogram.prototype.getTaxids = function(callback) {
 
         ideo.config.taxids = taxids;
         ideo.organisms[taxid] = {
-          "commonName": "",
-          "scientificName": ideo.config.organism,
-          "scientificNameAbbr": ""
+          commonName: "",
+          scientificName: ideo.config.organism,
+          scientificNameAbbr: ""
         };
         return new Promise(function(resolve, reject) {
           ideo.getAssemblyAndChromosomesFromEutils(resolve);
@@ -1609,7 +1609,7 @@ Ideogram.prototype.getTaxids = function(callback) {
 
         ideo.config.chromosomes = chromosomes;
         ideo.organisms[taxid]["assemblies"] = {
-          "default": assembly
+          default: assembly
         };
 
         callback(taxids);
@@ -1738,9 +1738,9 @@ Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
               } else {
                 // Seen in e.g. rice genome IRGSP-1.0 (GCF_001433935.1),
                 // From https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?retmode=json&db=nucleotide&id=996703432,996703431,996703430,996703429,996703428,996703427,996703426,996703425,996703424,996703423,996703422,996703421,194033210,11466763,7524755
-                  // "genome": "mitochondrion",
-                  // "subtype": "cell_line|plasmid",
-                  // "subname": "A-58 CMS|B1",
+                  // genome: "mitochondrion",
+                  // subtype: "cell_line|plasmid",
+                  // subname: "A-58 CMS|B1",
                 chrName = result.subname.split("|")[cnIndex];
               }
             } else {
@@ -1768,9 +1768,9 @@ Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
           chrLength = result.slen;
 
           chromosome = {
-            "name": chrName,
-            "length": chrLength,
-            "type": type
+            name: chrName,
+            length: chrLength,
+            type: type
           };
 
           chromosomes.push(chromosome);
@@ -1889,14 +1889,14 @@ Ideogram.prototype.init = function() {
 
       bandDataFileNames = {
       // Homo sapiens (human)
-        "9606": "native/ideogram_9606_" + accession + "_" + resolution + "_V1.js",
-      // "9606": "ncbi/ideogram_9606_" + accession + "_" + resolution + "_V1.tsv",
+        9606: "native/ideogram_9606_" + accession + "_" + resolution + "_V1.js",
+      // 9606: "ncbi/ideogram_9606_" + accession + "_" + resolution + "_V1.tsv",
 
       // Mus musculus (mouse)
-        "10090": "native/ideogram_10090_" + accession + "_NA_V2.js"
+        10090: "native/ideogram_10090_" + accession + "_NA_V2.js"
 
       // Drosophila melanogaster (fly)
-      // "7227": "ucsc/drosophila_melanogaster_dm6.tsv"
+      // 7227: "ucsc/drosophila_melanogaster_dm6.tsv"
       };
 
       if (typeof chrBands === "undefined" && taxid in bandDataFileNames) {
@@ -2036,8 +2036,8 @@ Ideogram.prototype.init = function() {
           bandsArray.push(bands);
 
           chrLength = {
-            "iscn": bands[bands.length - 1].iscn.stop,
-            "bp": bands[bands.length - 1].bp.stop
+            iscn: bands[bands.length - 1].iscn.stop,
+            bp: bands[bands.length - 1].bp.stop
           };
 
           if (chrLength.iscn > ideo.maxLength.iscn) {
