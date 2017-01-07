@@ -1,5 +1,9 @@
 ''' Converts cytogenetic band data from TSV to JSONP
 
+Example:
+cd ideogram
+python3 scripts/convert_band_data.py
+
 NCBI and UCSC provide cytogenetic band data as a TSV file.
 This script parses those TSVs into JSON, and assigns that to
 a global variable in any HTML document that includes the output
