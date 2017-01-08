@@ -7,7 +7,7 @@ var concat = require('gulp-concat');
 var flatten = require('gulp-flatten');
 var ignore = require('gulp-ignore');
 var order = require('gulp-order');
-var jshint = require('gulp-jshint');
+var eslint = require('gulp-eslint');
 var sourcemaps = require('gulp-sourcemaps');
 
 var paths = {
@@ -28,10 +28,9 @@ gulp.task('default', function () {
 });
 
 gulp.task('lint', function() {
-  return gulp.src(paths.scripts)
-    .pipe(flatten())
-    .pipe(jshint())
-    .pipe(jshint.reporter('default'));
+  return gulp.src([paths.scripts, '!src/js/lib.js'])
+    .pipe(eslint())
+    .pipe(eslint.format())
 });
 
 gulp.task('dist', function() {
