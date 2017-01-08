@@ -1715,23 +1715,23 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
   hasBands = (typeof bands !== "undefined");
 
   if (hasBands) {
-    chr["name"] = chromosome;
-    chr["length"] = bands[bands.length - 1][cs].stop;
-    chr["type"] = "nuclear";
+    chr.name = chromosome;
+    chr.length = bands[bands.length - 1][cs].stop;
+    chr.type = "nuclear";
   } else {
     chr = chromosome;
   }
 
-  chr["chrIndex"] = chrIndex;
+  chr.chrIndex = chrIndex;
 
-  chr["id"] = "chr" + chr.name + "-" + taxid;
+  chr.id = "chr" + chr.name + "-" + taxid;
 
   if (this.config.fullChromosomeLabels === true) {
     var orgName = this.organisms[taxid].scientificNameAbbr;
-    chr["name"] = orgName + " chr" + chr.name;
+    chr.name = orgName + " chr" + chr.name;
   }
 
-  chrLength = chr["length"];
+  chrLength = chr.length;
 
   pxStop = 0;
 
@@ -1739,23 +1739,23 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
     for (var i = 0; i < bands.length; i++) {
       band = bands[i];
 
-      width = chrHeight * chr["length"] / maxLength[cs] * (band[cs].stop - band[cs].start) / chrLength;
+      width = chrHeight * chr.length / maxLength[cs] * (band[cs].stop - band[cs].start) / chrLength;
 
-      bands[i]["px"] = {start: pxStop, stop: pxStop + width, width: width};
+      bands[i].px = {start: pxStop, stop: pxStop + width, width: width};
 
       pxStop = bands[i].px.stop;
 
       if (hasBands && band.stain === "acen" && band.name[0] === "p") {
-        chr["pcenIndex"] = i;
+        chr.pcenIndex = i;
       }
     }
   } else {
-    pxStop = chrHeight * chr["length"] / maxLength[cs];
+    pxStop = chrHeight * chr.length / maxLength[cs];
   }
 
-  chr["width"] = pxStop;
+  chr.width = pxStop;
 
-  chr["scale"] = {};
+  chr.scale = {};
 
   // TODO:
   //
@@ -1769,24 +1769,24 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid, chrIn
   //
   // This needs further review.
   if (this.config.multiorganism === true) {
-    chr["scale"].bp = 1;
-    // chr["scale"].bp = band.iscn.stop / band.bp.stop;
-    chr["scale"].iscn = chrHeight * chrLength / maxLength.bp;
+    chr.scale.bp = 1;
+    // chr.scale.bp = band.iscn.stop / band.bp.stop;
+    chr.scale.iscn = chrHeight * chrLength / maxLength.bp;
   } else {
-    chr["scale"].bp = chrHeight / maxLength.bp;
+    chr.scale.bp = chrHeight / maxLength.bp;
     if (hasBands) {
-      chr["scale"].iscn = chrHeight / maxLength.iscn;
+      chr.scale.iscn = chrHeight / maxLength.iscn;
     }
   }
-  chr["bands"] = bands;
+  chr.bands = bands;
 
-  chr["centromerePosition"] = "";
+  chr.centromerePosition = "";
   if (hasBands && bands[0].bp.stop - bands[0].bp.start === 1) {
     // As with mouse
-    chr["centromerePosition"] = "telocentric";
+    chr.centromerePosition = "telocentric";
 
     // Remove placeholder pter band
-    chr["bands"] = chr["bands"].slice(1);
+    chr.bands = chr.bands.slice(1);
   }
 
   return chr;
@@ -2423,7 +2423,7 @@ Ideogram.prototype.drawAnnots = function(friendlyAnnots) {
         if ("shape" in annot) {
           rawAnnot.push(annot.shape);
         }
-        rawAnnots[j]["annots"].push(rawAnnot);
+        rawAnnots[j].annots.push(rawAnnot);
         break;
       }
     }
@@ -2478,7 +2478,7 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
         annot[keys[k]] = ra[k];
       }
 
-      annot['stop'] = annot.start + annot.length;
+      annot.stop = annot.start + annot.length;
 
       chrModel = ideo.chromosomes["9606"][chr];
 
@@ -2489,22 +2489,22 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
 
       color = ideo.config.annotationsColor;
       if (ideo.config.annotationTracks) {
-        annot['trackIndex'] = ra[3];
+        annot.trackIndex = ra[3];
         color = ideo.config.annotationTracks[annot.trackIndex].color;
       } else {
-        annot['trackIndex'] = 0;
+        annot.trackIndex = 0;
       }
 
       if ('color' in annot) {
-        color = annot['color'];
+        color = annot.color;
       }
 
-      annot['chr'] = chr;
-      annot['chrIndex'] = i;
-      annot['px'] = px;
-      annot['color'] = color;
+      annot.chr = chr;
+      annot.chrIndex = i;
+      annot.px = px;
+      annot.color = color;
 
-      annots[i]["annots"].push(annot);
+      annots[i].annots.push(annot);
     }
   }
 
@@ -2546,14 +2546,14 @@ Ideogram.prototype.getHistogramBars = function(annots) {
   for (chr in chrModels) {
     chrModel = chrModels[chr];
     chrIndex = chrModel.chrIndex;
-    lastBand = chrModel["bands"][chrModel["bands"].length - 1];
+    lastBand = chrModel.bands[chrModel.bands.length - 1];
     chrPxStop = lastBand.px.stop;
     numBins = Math.round(chrPxStop / barWidth);
     bar = {chr: chr, annots: []};
     for (i = 0; i < numBins; i++) {
       px = i * barWidth - ideo.bump;
       bp = ideo.convertPxToBp(chrModel, px + ideo.bump);
-      bar["annots"].push({
+      bar.annots.push({
         bp: bp,
         px: px - ideo.bump,
         count: 0,
@@ -2571,7 +2571,7 @@ Ideogram.prototype.getHistogramBars = function(annots) {
     chrName = annots[chr].chr;
     chrModel = chrModels[chrName];
     chrIndex = chrModel.chrIndex - 1;
-    barAnnots = bars[chrIndex]["annots"];
+    barAnnots = bars[chrIndex].annots;
     for (i = 0; i < chrAnnots.length; i++) {
       annot = chrAnnots[i];
       px = annot.px - ideo.bump;
@@ -2582,8 +2582,8 @@ Ideogram.prototype.getHistogramBars = function(annots) {
           nextBarPx += barWidth;
         }
         if (px >= barPx && px < nextBarPx) {
-          bars[chrIndex]["annots"][j]["count"] += 1;
-          bars[chrIndex]["annots"][j]["annots"].push(annot);
+          bars[chrIndex].annots[j].count += 1;
+          bars[chrIndex].annots[j].annots.push(annot);
           break;
         }
       }
@@ -2593,9 +2593,9 @@ Ideogram.prototype.getHistogramBars = function(annots) {
   if (firstGet === true || histogramScaling === "relative") {
     maxAnnotsPerBar = 0;
     for (i = 0; i < bars.length; i++) {
-      annots = bars[i]["annots"];
+      annots = bars[i].annots;
       for (j = 0; j < annots.length; j++) {
-        barCount = annots[j]["count"];
+        barCount = annots[j].count;
         if (barCount > maxAnnotsPerBar) {
           maxAnnotsPerBar = barCount;
         }
@@ -2607,12 +2607,12 @@ Ideogram.prototype.getHistogramBars = function(annots) {
   // Set each bar's height to be proportional to
   // the height of the bar with the most annotations
   for (i = 0; i < bars.length; i++) {
-    annots = bars[i]["annots"];
+    annots = bars[i].annots;
     for (j = 0; j < annots.length; j++) {
-      barCount = annots[j]["count"];
+      barCount = annots[j].count;
       height = (barCount / ideo.maxAnnotsPerBar[chr]) * ideo.config.chrMargin;
       // console.log(height)
-      bars[i]["annots"][j]["height"] = height;
+      bars[i].annots[j].height = height;
     }
   }
 
@@ -2668,7 +2668,7 @@ Ideogram.prototype.drawProcessedAnnots = function(annots) {
     .data(annots)
       .selectAll("path.annot")
       .data(function(d) {
-        return d["annots"];
+        return d.annots;
       })
       .enter();
 
@@ -2937,7 +2937,7 @@ Ideogram.prototype.getTaxids = function(callback) {
       // Gets a list of taxids from common organism names
       org = orgs[i];
       for (taxid in ideo.organisms) {
-        if (ideo.organisms[taxid]["commonName"].toLowerCase() === org) {
+        if (ideo.organisms[taxid].commonName.toLowerCase() === org) {
           taxids.push(taxid);
           if (multiorganism) {
             // Adjusts 'chromosomes' configuration parameter to make object
@@ -2971,7 +2971,7 @@ Ideogram.prototype.getTaxids = function(callback) {
         chromosomes = asmChrArray[1];
 
         ideo.config.chromosomes = chromosomes;
-        ideo.organisms[taxid]["assemblies"] = {
+        ideo.organisms[taxid].assemblies = {
           default: assembly
         };
 
@@ -3196,7 +3196,7 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
         .attr('d', function(d) {
           return d.path;
         }).attr('class', function(d) {
-          return d['class'];
+          return d.class;
         });
     }
 
@@ -3248,7 +3248,7 @@ Ideogram.prototype.init = function() {
       if (!ideo.config.assembly) {
         ideo.config.assembly = "default";
       }
-      accession = ideo.organisms[taxid]["assemblies"][ideo.config.assembly];
+      accession = ideo.organisms[taxid].assemblies[ideo.config.assembly];
 
       bandDataFileNames = {
       // Homo sapiens (human)
