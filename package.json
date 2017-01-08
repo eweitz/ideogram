@@ -48,6 +48,7 @@
     "gulp-concat": "^2.6.0",
     "gulp-eslint": "^3.0.1",
     "gulp-flatten": "^0.3.1",
+    "gulp-if": "^2.0.2",
     "gulp-ignore": "^2.0.1",
     "gulp-mocha": "*",
     "gulp-mocha-phantomjs": "^0.11",

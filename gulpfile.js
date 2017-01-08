@@ -8,11 +8,17 @@ var flatten = require('gulp-flatten');
 var ignore = require('gulp-ignore');
 var order = require('gulp-order');
 var eslint = require('gulp-eslint');
+var gulpIf = require('gulp-if');
 var sourcemaps = require('gulp-sourcemaps');
 
 var paths = {
   scripts: 'src/js/**/*.js',
   styles: 'src/css/**/*.css'
+}
+
+function isFixed(file) {
+	// Has ESLint fixed the file contents?
+	return file.eslint != null && file.eslint.fixed;
 }
 
 gulp.task('default', function () {
@@ -29,8 +35,12 @@ gulp.task('default', function () {
 
 gulp.task('lint', function() {
   return gulp.src([paths.scripts, '!src/js/lib.js'])
-    .pipe(eslint())
-    .pipe(eslint.format())
+    .pipe(eslint({
+      fix: true
+    }))
+    .pipe(eslint.format()) // write style issues to stdout
+    // if fixed, write the file to dest
+    .pipe(gulpIf(isFixed, gulp.dest('src/js')));
 });
 
 gulp.task('dist', function() {

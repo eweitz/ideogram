@@ -66,7 +66,7 @@ var Ideogram = function(config) {
   if (!this.config.chrWidth) {
     var chrWidth = 10,
       chrHeight = this.config.chrHeight;
-    if (900 > chrHeight && chrHeight > 500) {
+    if (chrHeight < 900 && chrHeight > 500) {
       chrWidth = Math.round(chrHeight / 40);
     } else if (chrHeight >= 900) {
       chrWidth = Math.round(chrHeight / 45);
@@ -494,7 +494,6 @@ Ideogram.prototype.drawChromosomeLabels = function() {
 * Stalks are small lines that visually connect labels to their bands.
 */
 Ideogram.prototype.drawBandLabels = function(chromosomes) {
-
   var i, chr, chrs, taxid, ideo, chrModel;
 
   ideo = this;
@@ -538,12 +537,14 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
       .data(chrModel.bands)
       .enter()
       .append("g")
-        .attr("class", function(d, i) { return "bandLabel bsbsl-" + i; })
+        .attr("class", function(d, i) {
+          return "bandLabel bsbsl-" + i;
+        })
         .attr("transform", function(d) {
           var transform = ideo._layout.getChromosomeBandLabelTranslate(d, i);
 
           var x = transform.x;
-          //var y = transform.y;
+          // var y = transform.y;
 
           textOffsets[chrModel.id].push(x + 13);
 
@@ -551,16 +552,20 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
         })
         .append("text")
         .attr('text-anchor', ideo._layout.getChromosomeBandLabelAnchor(i))
-        .text(function(d) { return d.name; });
+        .text(function(d) {
+          return d.name;
+        });
 
-    //var adapter = ModelAdapter.getInstance(ideo.chromosomesArray[i]);
-    //var view = Chromosome.getInstance(adapter, ideo.config, ideo);
+    // var adapter = ModelAdapter.getInstance(ideo.chromosomesArray[i]);
+    // var view = Chromosome.getInstance(adapter, ideo.config, ideo);
 
     chr.selectAll("line.bandLabelStalk")
       .data(chrModel.bands)
       .enter()
       .append("g")
-      .attr("class", function(d, i) { return "bandLabelStalk bsbsl-" + i; })
+      .attr("class", function(d, i) {
+        return "bandLabelStalk bsbsl-" + i;
+      })
       .attr("transform", function(d) {
         var x, y;
 
@@ -671,7 +676,6 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation,
   }
 
   if (orientation === "vertical" || orientation === "") {
-
     var ci = chrIndex - 1;
 
     if (numAnnotTracks > 1 || orientation === "") {
@@ -706,12 +710,12 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation,
 
     tracksHeight = ideo.config.annotTracksHeight;
     if (ideo.config.annotationsLayout !== "overlay") {
-      tracksHeight = tracksHeight * 2;
+      tracksHeight *= 2;
     }
 
     chrMargin = ideo.config.chrMargin * chrIndex;
     x = -(chrMargin + chrMargin2) + 3 + tracksHeight;
-    x = x / scale.x;
+    x /= scale.x;
 
     chr.selectAll("text.chrLabel")
       .attr("transform", "rotate(-90)" + scaleSvg)
@@ -991,8 +995,8 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
 * Initializes various annotation settings.  Constructor help function.
 */
 Ideogram.prototype.initAnnotSettings = function() {
-  if (this.config.annotationsPath || this.config.localAnnotationsPath
-    || this.annots || this.config.annotations) {
+  if (this.config.annotationsPath || this.config.localAnnotationsPath ||
+    this.annots || this.config.annotations) {
     if (!this.config.annotationHeight) {
       var annotHeight = Math.round(this.config.chrHeight / 100);
       this.config.annotationHeight = annotHeight;
@@ -1305,7 +1309,9 @@ Ideogram.prototype.drawProcessedAnnots = function(annots) {
   if (layout === "tracks") {
     chrAnnot
       .append("g")
-      .attr("id", function(d) { return d.id; })
+      .attr("id", function(d) {
+        return d.id;
+      })
       .attr("class", "annot")
       .attr("transform", function(d) {
         var y = ideo.config.chrWidth + (d.trackIndex * annotHeight * 2);
@@ -1319,12 +1325,16 @@ Ideogram.prototype.drawProcessedAnnots = function(annots) {
           return circle;
         }
       })
-      .attr("fill", function(d) { return d.color; });
+      .attr("fill", function(d) {
+        return d.color;
+      });
   } else if (layout === "overlay") {
       // Overlaid annotations appear directly on chromosomes
 
     chrAnnot.append("polygon")
-        .attr("id", function(d) { return d.id; })
+        .attr("id", function(d) {
+          return d.id;
+        })
         .attr("class", "annot")
         .attr("points", function(d) {
           x1 = d.px - 0.5;
@@ -1339,7 +1349,9 @@ Ideogram.prototype.drawProcessedAnnots = function(annots) {
             x1 + "," + y2
           );
         })
-        .attr("fill", function(d) { return d.color; });
+        .attr("fill", function(d) {
+          return d.color;
+        });
   } else if (layout === "histogram") {
     chrAnnot.append("polygon")
         // .attr("id", function(d, i) { return d.id; })
@@ -1363,7 +1375,9 @@ Ideogram.prototype.drawProcessedAnnots = function(annots) {
             x1 + "," + y2
           );
         })
-        .attr("fill", function(d) { return d.color; });
+        .attr("fill", function(d) {
+          return d.color;
+        });
   }
 
   if (ideo.onDrawAnnotsCallback) {
@@ -1638,8 +1652,8 @@ Ideogram.prototype.sortChromosomes = function(a, b) {
     bIsCP = b.type === "chloroplast",
     aIsMT = a.type === "mitochondrion",
     bIsMT = b.type === "mitochondrion";
-    //aIsPlastid = aIsMT && a.name !== "MT", // e.g. B1 in rice genome GCF_001433935.1
-    //bIsPlastid = bIsMT && b.name !== "MT";
+    // aIsPlastid = aIsMT && a.name !== "MT", // e.g. B1 in rice genome GCF_001433935.1
+    // bIsPlastid = bIsMT && b.name !== "MT";
 
   if (aIsNuclear && bIsNuclear) {
     return naturalSort(a.name, b.name);

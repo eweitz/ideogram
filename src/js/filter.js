@@ -14,11 +14,10 @@ This method flattens that structure to e.g.
 See also: packAnnots
 */
 Ideogram.prototype.unpackAnnots = function() {
-
   var chr, annots, i,
-      unpackedAnnots = [],
-      ideo = this,
-      chrs = ideo.annots;
+    unpackedAnnots = [],
+    ideo = this,
+    chrs = ideo.annots;
 
   for (i = 0; i < chrs.length; i++) {
     chr = chrs[i];
@@ -27,21 +26,19 @@ Ideogram.prototype.unpackAnnots = function() {
   }
 
   return unpackedAnnots;
-
 };
 
 /*
   Compresses annots back to default state.  Inverse of unpackAnnots.
 */
 Ideogram.prototype.packAnnots = function(unpackedAnnots) {
-
   var chr, annot, i,
-      annots = [],
-      ideo = this,
-      chrs = ideo.annots;
+    annots = [],
+    ideo = this,
+    chrs = ideo.annots;
 
   for (chr in chrs) {
-    annots.push({'chr': chrs[chr].chr, annots: []});
+    annots.push({chr: chrs[chr].chr, annots: []});
   }
 
   for (i = 0; i < unpackedAnnots.length; i++) {
@@ -50,7 +47,6 @@ Ideogram.prototype.packAnnots = function(unpackedAnnots) {
   }
 
   return annots;
-
 };
 
 /*
@@ -59,8 +55,8 @@ Ideogram.prototype.packAnnots = function(unpackedAnnots) {
 */
 Ideogram.prototype.initCrossFilter = function() {
   var ideo = this,
-      keys = ideo.rawAnnots.keys,
-      i, facet;
+    keys = ideo.rawAnnots.keys,
+    i, facet;
 
   ideo.unpackedAnnots = ideo.unpackAnnots();
   ideo.crossfilter = crossfilter(ideo.unpackedAnnots);
@@ -103,14 +99,13 @@ Ideogram.prototype.initCrossFilter = function() {
     * Integrate server-side filtering for very large datasets
 */
 Ideogram.prototype.filterAnnots = function(selections) {
-
   var t0 = Date.now();
 
   var i, facet,
-      prevFacet = null,
-      results, fn,
-      counts = {},
-      ideo = this;
+    prevFacet = null,
+    results, fn,
+    counts = {},
+    ideo = this;
 
   if (Object.keys(selections).length === 0) {
     results = ideo.unpackedAnnots;

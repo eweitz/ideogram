@@ -10,363 +10,309 @@
  * @param {String} data.color - range color.
  */
 function Range(data) {
-    this._data = data;
+  this._data = data;
 }
 
 Range.prototype.getStart = function() {
-    return this._data.start;
+  return this._data.start;
 };
 
 Range.prototype.getStop = function() {
-    return this._data.stop;
+  return this._data.stop;
 };
 
 Range.prototype.getLength = function() {
-    return this._data.stop - this._data.start;
+  return this._data.stop - this._data.start;
 };
 
 Range.prototype.getColor = function(chrNumber) {
-    if (! ('ploidy' in this._data)) {
-        return this._getColor(chrNumber);
-    } else if ('ploidy' in this._data && this._data.ploidy[chrNumber]) {
-        return this._getColor(chrNumber);
-    } else {
-        return 'transparent';
-    }
+  if (!('ploidy' in this._data)) {
+    return this._getColor(chrNumber);
+  } else if ('ploidy' in this._data && this._data.ploidy[chrNumber]) {
+    return this._getColor(chrNumber);
+  } else {
+    return 'transparent';
+  }
 };
 
 Range.prototype._getColor = function(chrNumber) {
-    if (Array.isArray(this._data.color)) {
-        return this._data.color[chrNumber];
-    } else {
-        return this._data.color;
-    }
+  if (Array.isArray(this._data.color)) {
+    return this._data.color[chrNumber];
+  } else {
+    return this._data.color;
+  }
 };
 
 function ModelAdapter(model) {
-    this._model = model;
-    this._class = 'ModelAdapter';
+  this._model = model;
+  this._class = 'ModelAdapter';
 }
 
 ModelAdapter.getInstance = function(model) {
-    if (model.bands) {
-        return new ModelAdapter(model);
-    } else {
-        return new ModelNoBandsAdapter(model);
-    }
+  if (model.bands) {
+    return new ModelAdapter(model);
+  } else {
+    return new ModelNoBandsAdapter(model);
+  }
 };
 
 ModelAdapter.prototype.getModel = function() {
-    return this._model;
+  return this._model;
 };
 
 ModelAdapter.prototype.getCssClass = function() {
-    return '';
+  return '';
 };
 
 function ModelNoBandsAdapter(model) {
     /*
      * Call parent constructor.
      */
-    ModelAdapter.call(this, model);
-    this._class = 'ModelNoBandsAdapter';
+  ModelAdapter.call(this, model);
+  this._class = 'ModelNoBandsAdapter';
 }
-
 
 ModelNoBandsAdapter.prototype = Object.create(ModelAdapter.prototype);
 
-
 ModelNoBandsAdapter.prototype.getModel = function() {
-
-    this._model.bands = [];
+  this._model.bands = [];
 
     // If chromosome width more, then 1 add single band to bands array
-    if (this._model.width > 1) {
-        this._model.bands.push({
-            name: 'p',
-            px: {
-                start : 0,
-                stop : this._model.width,
-                width : this._model.width
-            }
-        });
-    }
+  if (this._model.width > 1) {
+    this._model.bands.push({
+      name: 'p',
+      px: {
+        start: 0,
+        stop: this._model.width,
+        width: this._model.width
+      }
+    });
+  }
 
-    return this._model;
+  return this._model;
 };
 
-
 ModelNoBandsAdapter.prototype.getCssClass = function() {
-    return 'noBands';
+  return 'noBands';
 };
 
 function Layout(config, ideo) {
-    this._config = config;
-    this._ideo = ideo;
-    this._ploidy = this._ideo._ploidy;
-    this._translate = undefined;
+  this._config = config;
+  this._ideo = ideo;
+  this._ploidy = this._ideo._ploidy;
+  this._translate = undefined;
 
      // Chromosome band's size.
-    this._tickSize = 8;
+  this._tickSize = 8;
 
     // Chromosome rotation state.
-    this._isRotated = false;
+  this._isRotated = false;
 }
-
 
 // Factory method
 Layout.getInstance = function(config, ideo) {
-
-    if ("perspective" in config && config.perspective == "comparative") {
-        return new PairedLayout(config, ideo);
-    } else if ("rows" in config && config.rows > 1) {
-        return new SmallLayout(config, ideo);
-    } else if (config.orientation === 'vertical') {
-        return new VerticalLayout(config, ideo);
-    } else if (config.orientation === 'horizontal') {
-        return new HorizontalLayout(config, ideo);
-    } else {
-        return new VerticalLayout(config, ideo);
-    }
+  if ("perspective" in config && config.perspective == "comparative") {
+    return new PairedLayout(config, ideo);
+  } else if ("rows" in config && config.rows > 1) {
+    return new SmallLayout(config, ideo);
+  } else if (config.orientation === 'vertical') {
+    return new VerticalLayout(config, ideo);
+  } else if (config.orientation === 'horizontal') {
+    return new HorizontalLayout(config, ideo);
+  } else {
+    return new VerticalLayout(config, ideo);
+  }
 };
-
 
 // Get chart left margin
 Layout.prototype._getLeftMargin = function() {
-    return this._margin.left;
+  return this._margin.left;
 };
-
 
 // Get rotated chromosome y scale
 Layout.prototype._getYScale = function() {
     // 20 is width of rotated chromosome.
-    return 20 / this._config.chrWidth;
+  return 20 / this._config.chrWidth;
 };
-
 
 // Get chromosome labels
 Layout.prototype.getChromosomeLabels = function(chrElement) {
+  var util = new ChromosomeUtil(chrElement);
 
-    var util = new ChromosomeUtil(chrElement);
-
-    return [util.getSetLabel(), util.getLabel()].filter(function(d) {
-        return d.length > 0;
-    });
+  return [util.getSetLabel(), util.getLabel()].filter(function(d) {
+    return d.length > 0;
+  });
 };
-
 
 // Rotate chromosome to original position
 Layout.prototype.rotateBack = function(chrSetNumber, chrNumber, chrElement, callback) {
-
-    throw new Error(this._class + '#rotateBack not implemented');
+  throw new Error(this._class + '#rotateBack not implemented');
 };
-
 
 // Rotate chromosome to opposite position
 Layout.prototype.rotateForward = function(chrSetNumber, chrNumber, chrElement, callback) {
-
-    throw new Error(this._class + '#rotateForward not implemented');
+  throw new Error(this._class + '#rotateForward not implemented');
 };
-
 
 Layout.prototype.rotate = function(chrSetNumber, chrNumber, chrElement) {
     // Find chromosomes which should be hidden
-    var otherChrs = d3.selectAll("g.chromosome").filter(function(d, i) {
-        return this !== chrElement;
-    });
+  var otherChrs = d3.selectAll("g.chromosome").filter(function(d, i) {
+    return this !== chrElement;
+  });
 
-    if (this._isRotated) {
-
+  if (this._isRotated) {
         // Reset _isRotated flag
-        this._isRotated = false;
+    this._isRotated = false;
         // Rotate chromosome back
-        this.rotateBack(chrSetNumber, chrNumber, chrElement, function() {
+    this.rotateBack(chrSetNumber, chrNumber, chrElement, function() {
             // Show all other chromosomes and chromosome labels
-            otherChrs.style("display", null);
-            d3.selectAll(".chrSetLabel, .chrLabel").style("display", null);
-        });
-    } else {
+      otherChrs.style("display", null);
+      d3.selectAll(".chrSetLabel, .chrLabel").style("display", null);
+    });
+  } else {
         // Set _isRotated flag
-        this._isRotated = true;
+    this._isRotated = true;
 
         // Hide all other chromosomes and chromosome labels
-        otherChrs.style("display", "none");
-        d3.selectAll(".chrSetLabel, .chrLabel").style("display", "none");
+    otherChrs.style("display", "none");
+    d3.selectAll(".chrSetLabel, .chrLabel").style("display", "none");
 
         // Rotate chromosome
-        this.rotateForward(chrSetNumber, chrNumber, chrElement);
-    }
+    this.rotateForward(chrSetNumber, chrNumber, chrElement);
+  }
 };
-
 
 Layout.prototype.getChromosomeLabelClass = function() {
-
-    if (this._config.ploidy === 1) {
-        return 'chrLabel';
-    } else {
-        return 'chrSetLabel';
-    }
+  if (this._config.ploidy === 1) {
+    return 'chrLabel';
+  } else {
+    return 'chrSetLabel';
+  }
 };
-
 
 Layout.prototype._getAdditionalOffset = function() {
-
-    return (this._config.annotationHeight || 0) * (this._config.numAnnotTracks || 1);
+  return (this._config.annotationHeight || 0) * (this._config.numAnnotTracks || 1);
 };
-
 
 Layout.prototype._getChromosomeSetSize = function(chrSetNumber) {
-
     // Get last chromosome set size.
-    var setSize = this._ploidy.getSetSize(chrSetNumber);
+  var setSize = this._ploidy.getSetSize(chrSetNumber);
 
     // Increase offset by last chromosome set size
-    return setSize * this._config.chrWidth * 2 + (this._config.ploidy > 1 ? 20 : 0);
+  return setSize * this._config.chrWidth * 2 + (this._config.ploidy > 1 ? 20 : 0);
 };
-
 
 // Get layout margin
 Layout.prototype.getMargin = function() {
-
-    return this._margin;
+  return this._margin;
 };
-
 
 // Get SVG element height
 Layout.prototype.getHeight = function(taxId) {
-
-    throw new Error(this._class + '#getHeight not implemented');
+  throw new Error(this._class + '#getHeight not implemented');
 };
-
 
 Layout.prototype.getChromosomeBandTickY1 = function(chrNumber) {
-
-    throw new Error(this._class + '#getChromosomeBandTickY1 not implemented');
+  throw new Error(this._class + '#getChromosomeBandTickY1 not implemented');
 };
-
 
 Layout.prototype.getChromosomeBandTickY2 = function(chrNumber) {
-
-    throw new Error(this._class + '#getChromosomeBandTickY2 not implemented');
+  throw new Error(this._class + '#getChromosomeBandTickY2 not implemented');
 };
-
 
 // Get chromosome's band translate attribute
 Layout.prototype.getChromosomeBandLabelTranslate = function(band, chrNumber) {
-
-    throw new Error(this._class + '#getChromosomeBandLabelTranslate not implemented');
+  throw new Error(this._class + '#getChromosomeBandLabelTranslate not implemented');
 };
-
 
 // Get chromosome set label anchor property
 Layout.prototype.getChromosomeSetLabelAnchor = function() {
-
-    return 'middle';
+  return 'middle';
 };
-
 
 // Get chromosome's band label text-anchor value
 Layout.prototype.getChromosomeBandLabelAnchor = function(chrNumber) {
-
-    throw new Error(this._class + '#getChromosomeBandLabelAnchor not implemented');
+  throw new Error(this._class + '#getChromosomeBandLabelAnchor not implemented');
 };
-
 
 Layout.prototype.getChromosomeLabelXPosition = function(i) {
-
-    throw new Error(this._class + '#getChromosomeLabelXPosition not implemented');
+  throw new Error(this._class + '#getChromosomeLabelXPosition not implemented');
 };
-
 
 // Get chromosome label y position. "i" is chromosome number
 Layout.prototype.getChromosomeLabelYPosition = function(i) {
-
-    return -5.5;
+  return -5.5;
 };
-
 
 Layout.prototype.getChromosomeSetLabelYPosition = function(i) {
-
-    if (this._config.ploidy === 1) {
-        return this.getChromosomeLabelYPosition(i);
-    } else {
-        return -2 * this._config.chrWidth;
-    }
+  if (this._config.ploidy === 1) {
+    return this.getChromosomeLabelYPosition(i);
+  } else {
+    return -2 * this._config.chrWidth;
+  }
 };
-
 
 Layout.prototype.getChromosomeSetLabelXPosition = function(i) {
-
-    throw new Error(this._class + '#getChromosomeSetLabelXPosition not implemented');
+  throw new Error(this._class + '#getChromosomeSetLabelXPosition not implemented');
 };
-
 
 Layout.prototype.getChromosomeSetLabelTranslate = function() {
-
-    throw new Error(this._class + '#getChromosomeSetLabelTranslate not implemented');
+  throw new Error(this._class + '#getChromosomeSetLabelTranslate not implemented');
 };
-
-
 
 // Get chromosome set translate attribute.
 Layout.prototype.getChromosomeSetTranslate = function(setNumber) {
-
-    throw new Error(this._class + '#getChromosomeSetTranslate not implemented');
+  throw new Error(this._class + '#getChromosomeSetTranslate not implemented');
 };
-
 
 // Get chromosome set translate's y offset
 Layout.prototype.getChromosomeSetYTranslate = function(setNumber) {
-
-    throw new Error(this._class + '#getChromosomeSetYTranslate not implemented');
+  throw new Error(this._class + '#getChromosomeSetYTranslate not implemented');
 };
 
 function HorizontalLayout(config, ideo) {
-    Layout.call(this, config, ideo);
-    this._class = 'HorizontalLayout';
-    this._margin = {
-        left : 20,
-        top : 30
-    };
+  Layout.call(this, config, ideo);
+  this._class = 'HorizontalLayout';
+  this._margin = {
+    left: 20,
+    top: 30
+  };
 }
-
 
 HorizontalLayout.prototype = Object.create(Layout.prototype);
 
 HorizontalLayout.prototype._getLeftMargin = function() {
+  var margin = Layout.prototype._getLeftMargin.call(this);
+  if (this._config.ploidy > 1) {
+    margin *= 1.8;
+  }
 
-    var margin = Layout.prototype._getLeftMargin.call(this);
-    if (this._config.ploidy > 1) {
-        margin = margin * 1.8;
-    }
-
-    return margin;
+  return margin;
 };
 
 HorizontalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement, callback) {
+  var self = this;
 
-    var self = this;
+  var xOffset = 30;
 
-    var xOffset = 30;
+  var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
+  var chrBox = chrElement.getBoundingClientRect();
 
-    var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
-    var chrBox = chrElement.getBoundingClientRect();
+  var scaleX = (ideoBox.height / (chrBox.width + xOffset / 2)) * 0.9;
+  var scaleY = this._getYScale();
 
-    var scaleX = (ideoBox.height / (chrBox.width + xOffset / 2)) * 0.9;
-    var scaleY = this._getYScale();
+  var yOffset = (chrNumber + 1) * ((this._config.chrWidth * 2) * scaleY);
 
-    var yOffset = (chrNumber + 1) * ((this._config.chrWidth * 2) * scaleY);
+  var transform = 'rotate(90) translate(' + xOffset + ', -' + yOffset + ') scale(' + scaleX + ', ' + scaleY + ')';
 
-    var transform = 'rotate(90) translate(' + xOffset + ', -' + yOffset + ') scale(' + scaleX + ', ' + scaleY + ')';
-
-    d3.select(chrElement.parentNode)
+  d3.select(chrElement.parentNode)
         .transition()
         .attr("transform", transform)
         .on('end', callback);
 
     // Append new chromosome labels
-    var labels = this.getChromosomeLabels(chrElement);
-    d3.select(this._ideo.getSvg())
+  var labels = this.getChromosomeLabels(chrElement);
+  d3.select(this._ideo.getSvg())
         .append('g')
         .attr('class', 'tmp')
         .selectAll('text')
@@ -374,11 +320,11 @@ HorizontalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrEle
         .enter()
         .append('text')
         .attr('class', function(d, i) {
-            return i === 0 && labels.length === 2 ? 'chrSetLabel' : null;
+          return i === 0 && labels.length === 2 ? 'chrSetLabel' : null;
         }).attr('x', function(d, i) {
-            return 30;
+          return 30;
         }).attr('y', function(d, i) {
-            return (i + 1 + labels.length % 2) * 12;
+          return (i + 1 + labels.length % 2) * 12;
         }).style('text-anchor', 'middle')
         .style('opacity', 0)
         .text(String)
@@ -386,167 +332,146 @@ HorizontalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrEle
         .style('opacity', 1);
 };
 
-
 HorizontalLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, callback) {
+  var translate = this.getChromosomeSetTranslate(setNumber);
 
-    var translate = this.getChromosomeSetTranslate(setNumber);
-
-    d3.select(chrElement.parentNode)
+  d3.select(chrElement.parentNode)
         .transition()
         .attr("transform", translate)
         .on('end', callback);
 
-    d3.selectAll('g.tmp')
+  d3.selectAll('g.tmp')
         .style('opacity', 0)
         .remove();
 };
 
-
 HorizontalLayout.prototype.getHeight = function(taxId) {
-
     // Get last chromosome set offset.
-    var lastSetOffset = this.getChromosomeSetYTranslate(this._config.chromosomes[taxId].length - 1);
+  var lastSetOffset = this.getChromosomeSetYTranslate(this._config.chromosomes[taxId].length - 1);
 
     // Get last chromosome set size.
-    var lastSetSize = this._getChromosomeSetSize(this._config.chromosomes[taxId].length - 1);
+  var lastSetSize = this._getChromosomeSetSize(this._config.chromosomes[taxId].length - 1);
 
     // Increase offset by last chromosome set size
-    lastSetOffset += lastSetSize;
+  lastSetOffset += lastSetSize;
 
-    return lastSetOffset + this._getAdditionalOffset() * 2;
+  return lastSetOffset + this._getAdditionalOffset() * 2;
 };
-
 
 HorizontalLayout.prototype.getChromosomeSetLabelAnchor = function() {
-    return 'end';
+  return 'end';
 };
 
-
 HorizontalLayout.prototype.getChromosomeBandLabelAnchor = function(chrNumber) {
-    return null;
+  return null;
 };
 
 HorizontalLayout.prototype.getChromosomeBandTickY1 = function(chrNumber) {
-    return 2;
+  return 2;
 };
-
 
 HorizontalLayout.prototype.getChromosomeBandTickY2 = function(chrNumber) {
-    return 10;
+  return 10;
 };
-
 
 HorizontalLayout.prototype.getChromosomeBandLabelTranslate = function(band) {
+  var x = this._ideo.round(-this._tickSize + band.px.start + band.px.width / 2);
+  var y = -10;
 
-    var x = this._ideo.round(- this._tickSize + band.px.start + band.px.width / 2);
-    var y = -10;
-
-    return {
-        x: x,
-        y: y,
-        translate: 'translate(' + x + ',' + y + ')'
-    };
+  return {
+    x: x,
+    y: y,
+    translate: 'translate(' + x + ',' + y + ')'
+  };
 };
-
 
 HorizontalLayout.prototype.getChromosomeSetLabelTranslate = function() {
-    return null;
+  return null;
 };
 
-
 HorizontalLayout.prototype.getChromosomeSetTranslate = function(setNumber) {
-    return "translate(" + this._getLeftMargin() + ", " + this.getChromosomeSetYTranslate(setNumber) + ")";
+  return "translate(" + this._getLeftMargin() + ", " + this.getChromosomeSetYTranslate(setNumber) + ")";
 };
 
 HorizontalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
-
     // If no detailed description provided just use one formula for all cases.
-    if (! this._config.ploidyDesc) {
-        return this._config.chrMargin * (setNumber + 1);
-    }
+  if (!this._config.ploidyDesc) {
+    return this._config.chrMargin * (setNumber + 1);
+  }
 
     // Id detailed description provided start to calculate offsets
     //  for each chromosome set separately. This should be done only once.
-    if (! this._translate) {
-
+  if (!this._translate) {
         // First offset equals to zero.
-        this._translate = [1];
+    this._translate = [1];
 
         // Loop through description set
-        for (var i = 1; i < this._config.ploidyDesc.length; i ++) {
-            this._translate[i] = this._translate[i - 1] + this._getChromosomeSetSize(i - 1);
-        }
+    for (var i = 1; i < this._config.ploidyDesc.length; i++) {
+      this._translate[i] = this._translate[i - 1] + this._getChromosomeSetSize(i - 1);
     }
+  }
 
-    return this._translate[setNumber];
+  return this._translate[setNumber];
 };
-
 
 HorizontalLayout.prototype.getChromosomeSetLabelXPosition = function(i) {
-    if (this._config.ploidy === 1) {
-        return this.getChromosomeLabelXPosition(i);
-    } else {
-        return -20;
-    }
+  if (this._config.ploidy === 1) {
+    return this.getChromosomeLabelXPosition(i);
+  } else {
+    return -20;
+  }
 };
-
 
 HorizontalLayout.prototype.getChromosomeSetLabelYPosition = function(i) {
-
-    if (this._config.ploidy === 1) {
-        return (this._ploidy.getSetSize(i) * this._config.chrWidth) / 2 + 3;
-    } else {
-        return this._ploidy.getSetSize(i) * this._config.chrWidth;
-    }
+  if (this._config.ploidy === 1) {
+    return (this._ploidy.getSetSize(i) * this._config.chrWidth) / 2 + 3;
+  } else {
+    return this._ploidy.getSetSize(i) * this._config.chrWidth;
+  }
 };
-
 
 HorizontalLayout.prototype.getChromosomeLabelXPosition = function(i) {
-    return -8;
+  return -8;
 };
 
-
 HorizontalLayout.prototype.getChromosomeLabelYPosition = function(i) {
-    return this._config.chrWidth;
+  return this._config.chrWidth;
 };
 
 
 function VerticalLayout(config, ideo) {
-    Layout.call(this, config, ideo);
-    this._class = 'VerticalLayout';
+  Layout.call(this, config, ideo);
+  this._class = 'VerticalLayout';
     // Layout margins
-    this._margin = {
-        top: 30,
-        left: 15
-    };
+  this._margin = {
+    top: 30,
+    left: 15
+  };
 }
-
 
 VerticalLayout.prototype = Object.create(Layout.prototype);
 
-
 VerticalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement, callback) {
+  var self = this;
 
-    var self = this;
+  var xOffset = 20;
 
-    var xOffset = 20;
+  var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
+  var chrBox = chrElement.getBoundingClientRect();
 
-    var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
-    var chrBox = chrElement.getBoundingClientRect();
+  var scaleX = (ideoBox.width / chrBox.height) * 0.97;
+  var scaleY = this._getYScale();
 
-    var scaleX = (ideoBox.width / chrBox.height) * 0.97;
-    var scaleY = this._getYScale();
+  var transform = "translate(" + xOffset + ", 25) scale(" + scaleX + ", " + scaleY + ")";
 
-    var transform = "translate(" + xOffset + ", 25) scale(" + scaleX + ", " + scaleY + ")";
-
-    d3.select(chrElement.parentNode)
+  d3.select(chrElement.parentNode)
         .transition()
         .attr("transform", transform)
         .on('end', callback);
 
     // Append new chromosome labels
-    var labels = this.getChromosomeLabels(chrElement);
-    d3.select(this._ideo.getSvg())
+  var labels = this.getChromosomeLabels(chrElement);
+  d3.select(this._ideo.getSvg())
         .append('g')
         .attr('class', 'tmp')
         .selectAll('text')
@@ -554,62 +479,51 @@ VerticalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrEleme
         .enter()
         .append('text')
         .attr('class', function(d, i) {
-            return i === 0 && labels.length === 2 ? 'chrSetLabel' : null;
+          return i === 0 && labels.length === 2 ? 'chrSetLabel' : null;
         }).attr('x', function(d, i) {
-            return 0;
+          return 0;
         }).attr('y', function(d, i) {
-            return (xOffset + self._config.chrWidth) * 1.3;
+          return (xOffset + self._config.chrWidth) * 1.3;
         }).style('opacity', 0)
         .text(String)
         .transition()
         .style('opacity', 1);
 };
 
-
 VerticalLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, callback) {
+  var translate = this.getChromosomeSetTranslate(setNumber);
 
-    var translate = this.getChromosomeSetTranslate(setNumber);
-
-    d3.select(chrElement.parentNode)
+  d3.select(chrElement.parentNode)
         .transition()
         .attr("transform", translate)
         .on('end', callback);
 
-    d3.selectAll('g.tmp')
+  d3.selectAll('g.tmp')
         .style('opacity', 0)
         .remove();
 };
 
-
 VerticalLayout.prototype.getHeight = function(taxId) {
-
-    return this._config.chrHeight + this._margin.top * 1.5;
+  return this._config.chrHeight + this._margin.top * 1.5;
 };
-
 
 VerticalLayout.prototype.getChromosomeBandLabelTranslate = function(band) {
 
 };
 
-
 VerticalLayout.prototype.getChromosomeSetLabelTranslate = function() {
-
-    return 'rotate(-90)';
+  return 'rotate(-90)';
 };
-
 
 VerticalLayout.prototype.getChromosomeSetTranslate = function(setNumber) {
-
-    return 'rotate(90) translate(' + this._margin.top + ', -' + this.getChromosomeSetYTranslate(setNumber) + ')';
+  return 'rotate(90) translate(' + this._margin.top + ', -' + this.getChromosomeSetYTranslate(setNumber) + ')';
 };
-
 
 VerticalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
     // Get additional padding caused by annotation/histogram tracks
-    var additionalPadding = this._getAdditionalOffset();
+  var additionalPadding = this._getAdditionalOffset();
     // If no detailed description provided just use one formula for all cases
-    if (! this._config.ploidyDesc) {
-
+  if (!this._config.ploidyDesc) {
          // TODO:
          // This part of code contains a lot magic numbers and if
          // statements for exactly corresponing to original ideogram examples.
@@ -618,94 +532,86 @@ VerticalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
          // Now they are diffirent because of Layout:_getAdditionalOffset do
          // not meet for cases when no annotation, when annotation exists and
          // when histogram used
-        var translate;
-        if (this._config.annotationsLayout === "histogram") {
-            translate = this._config.chrMargin / 2 + setNumber * (this._config.chrMargin + this._config.chrWidth + 2) + additionalPadding * 2 + 1;
-        } else if (additionalPadding > 0) {
-            translate = this._config.chrWidth + setNumber * (this._config.chrMargin + this._config.chrWidth) + additionalPadding * 2;
-        } else {
-            translate = this._config.chrWidth + setNumber * (this._config.chrMargin + this._config.chrWidth) + additionalPadding * 2 + 4 + (2 * setNumber);
-        }
-
-        return translate;
+    var translate;
+    if (this._config.annotationsLayout === "histogram") {
+      translate = this._config.chrMargin / 2 + setNumber * (this._config.chrMargin + this._config.chrWidth + 2) + additionalPadding * 2 + 1;
+    } else if (additionalPadding > 0) {
+      translate = this._config.chrWidth + setNumber * (this._config.chrMargin + this._config.chrWidth) + additionalPadding * 2;
+    } else {
+      translate = this._config.chrWidth + setNumber * (this._config.chrMargin + this._config.chrWidth) + additionalPadding * 2 + 4 + (2 * setNumber);
     }
+
+    return translate;
+  }
 
     // If detailed description provided start to calculate offsets
     // for each chromosome set separately. This should be done only once
-    if (! this._translate) {
+  if (!this._translate) {
         // First offset equals to zero
-        this._translate = [this._ploidy.getSetSize(0) * this._config.chrWidth * 2];
+    this._translate = [this._ploidy.getSetSize(0) * this._config.chrWidth * 2];
         // Loop through description set
-        for (var i = 1; i < this._config.ploidyDesc.length; i ++) {
-            this._translate[i] = this._translate[i - 1] + this._getChromosomeSetSize(i - 1);
-        }
+    for (var i = 1; i < this._config.ploidyDesc.length; i++) {
+      this._translate[i] = this._translate[i - 1] + this._getChromosomeSetSize(i - 1);
     }
+  }
 
-    return this._translate[setNumber];
+  return this._translate[setNumber];
 };
-
 
 VerticalLayout.prototype.getChromosomeSetLabelXPosition = function(setNumber) {
-
-    return this._config.chrWidth / -2;
+  return this._config.chrWidth / -2;
 };
 
-
 VerticalLayout.prototype.getChromosomeLabelXPosition = function(i) {
-
-    return this._config.chrWidth / - 2;
+  return this._config.chrWidth / -2;
 };
 
 function PairedLayout(config, ideo) {
+  Layout.call(this, config, ideo);
 
-    Layout.call(this, config, ideo);
+  this._class = 'PairedLayout';
 
-    this._class = 'PairedLayout';
-
-    this._margin = {
-        left : 30
-    };
+  this._margin = {
+    left: 30
+  };
 }
-
 
 PairedLayout.prototype = Object.create(Layout.prototype);
 
-
 PairedLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement, callback) {
-
-    var self = this;
+  var self = this;
 
     // Get ideo container and chromosome set dimensions
-    var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
-    var chrBox = chrElement.getBoundingClientRect();
+  var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
+  var chrBox = chrElement.getBoundingClientRect();
     // Evaluate dimensions scale coefficients
-    var scaleX = (ideoBox.width / chrBox.height) * 0.97;
-    var scaleY = this._getYScale();
+  var scaleX = (ideoBox.width / chrBox.height) * 0.97;
+  var scaleY = this._getYScale();
     // Evaluate y offset of chromosome. It is different for first and the second one
-    var yOffset = setNumber ? 150 : 25;
+  var yOffset = setNumber ? 150 : 25;
 
-    var transform = 'translate(15, ' + yOffset + ') scale(' + scaleX + ', ' + scaleY + ')';
+  var transform = 'translate(15, ' + yOffset + ') scale(' + scaleX + ', ' + scaleY + ')';
 
     // Run rotation procedure
-    d3.select(chrElement.parentNode)
+  d3.select(chrElement.parentNode)
         .transition()
         .attr("transform", transform)
         .on('end', function() {
             // Run callback function if provided
-            if (callback) {
-                callback();
-            }
+          if (callback) {
+            callback();
+          }
             // Rotate band labels
-            d3.select(chrElement.parentNode).selectAll('g.bandLabel text')
-                .attr('transform', 'rotate(90) translate(0, ' + (6 * Number(! setNumber)) + ')')
+          d3.select(chrElement.parentNode).selectAll('g.bandLabel text')
+                .attr('transform', 'rotate(90) translate(0, ' + (6 * Number(!setNumber)) + ')')
                 .attr("text-anchor", "middle");
             // Hide syntenic regions
-            d3.selectAll('.syntenicRegion').style("display", 'none');
+          d3.selectAll('.syntenicRegion').style("display", 'none');
         });
 
     // Append new chromosome labels
-    var labels = this.getChromosomeLabels(chrElement);
-    d3.select(this._ideo.getSvg())
+  var labels = this.getChromosomeLabels(chrElement);
+  d3.select(this._ideo.getSvg())
         .append('g')
         .attr('class', 'tmp')
         .selectAll('text')
@@ -713,417 +619,352 @@ PairedLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement
         .enter()
         .append('text')
         .attr('class', function(d, i) {
-            return i === 0 && labels.length === 2 ? 'chrSetLabel' : null;
+          return i === 0 && labels.length === 2 ? 'chrSetLabel' : null;
         }).attr('x', function(d, i) {
-            return 0;
+          return 0;
         }).attr('y', function(d, i) {
-            return yOffset + (self._config.chrWidth * scaleX / 2) * 1.15;
+          return yOffset + (self._config.chrWidth * scaleX / 2) * 1.15;
         }).style('opacity', 0)
         .text(String)
         .transition()
         .style('opacity', 1);
 };
 
-
 PairedLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, callback) {
-
     // Get intial transformation string for chromosome set
-    var translate = this.getChromosomeSetTranslate(setNumber);
+  var translate = this.getChromosomeSetTranslate(setNumber);
 
     // Run rotation procedure
-    d3.select(chrElement.parentNode)
+  d3.select(chrElement.parentNode)
         .transition()
         .attr("transform", translate)
         .on('end', function() {
             // Run callback fnuction if provided
-            callback();
+          callback();
             // Show syntenic regions
-            d3.selectAll('.syntenicRegion').style("display", null);
+          d3.selectAll('.syntenicRegion').style("display", null);
             // Reset changed attributes to original state
-            d3.select(chrElement.parentNode).selectAll('g.bandLabel text')
+          d3.select(chrElement.parentNode).selectAll('g.bandLabel text')
                 .attr('transform', null)
                 .attr("text-anchor", setNumber ? null : 'end');
         });
 
-    d3.selectAll('g.tmp')
+  d3.selectAll('g.tmp')
         .style('opacity', 0)
         .remove();
 };
 
-
 PairedLayout.prototype.getHeight = function(taxId) {
-
-    return this._config.chrHeight + this._margin.left * 1.5;
+  return this._config.chrHeight + this._margin.left * 1.5;
 };
-
 
 PairedLayout.prototype.getChromosomeBandTickY1 = function(chrNumber) {
-
-    return chrNumber % 2 ? this._config.chrWidth : this._config.chrWidth * 2;
+  return chrNumber % 2 ? this._config.chrWidth : this._config.chrWidth * 2;
 };
-
 
 PairedLayout.prototype.getChromosomeBandTickY2 = function(chrNumber) {
-
-    return chrNumber % 2 ? this._config.chrWidth - this._tickSize : this._config.chrWidth * 2 + this._tickSize;
+  return chrNumber % 2 ? this._config.chrWidth - this._tickSize : this._config.chrWidth * 2 + this._tickSize;
 };
-
 
 PairedLayout.prototype.getChromosomeBandLabelAnchor = function(chrNumber) {
-
-    return chrNumber % 2 ? null : 'end';
+  return chrNumber % 2 ? null : 'end';
 };
-
 
 PairedLayout.prototype.getChromosomeBandLabelTranslate = function(band, chrNumber) {
+  var x = chrNumber % 2 ? 10 : -this._config.chrWidth - 10;
+  var y = this._ideo.round(band.px.start + band.px.width / 2) + 3;
 
-    var x = chrNumber % 2 ? 10 : - this._config.chrWidth - 10;
-    var y = this._ideo.round(band.px.start + band.px.width / 2) + 3;
-
-    return {
-        x : y,
-        y : y,
-        translate : 'rotate(-90) translate(' + x + ', ' + y + ')'
-    };
+  return {
+    x: y,
+    y: y,
+    translate: 'rotate(-90) translate(' + x + ', ' + y + ')'
+  };
 };
-
 
 PairedLayout.prototype.getChromosomeLabelXPosition = function(i) {
-
-    return - this._tickSize;
+  return -this._tickSize;
 };
-
 
 PairedLayout.prototype.getChromosomeSetLabelXPosition = function(i) {
-
-    return this._config.chrWidth / - 2;
+  return this._config.chrWidth / -2;
 };
-
 
 PairedLayout.prototype.getChromosomeSetLabelTranslate = function() {
-
-    return 'rotate(-90)';
+  return 'rotate(-90)';
 };
-
 
 PairedLayout.prototype.getChromosomeSetTranslate = function(setNumber) {
-
-    return 'rotate(90) translate(' + this._margin.left + ', -' + this.getChromosomeSetYTranslate(setNumber) + ')';
+  return 'rotate(90) translate(' + this._margin.left + ', -' + this.getChromosomeSetYTranslate(setNumber) + ')';
 };
 
-
 PairedLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
-
-    return 200 * (setNumber + 1);
+  return 200 * (setNumber + 1);
 };
 
 function SmallLayout(config, ideo) {
+  Layout.call(this, config, ideo);
 
-    Layout.call(this, config, ideo);
+  this._class = 'SmallLayout';
 
-    this._class = 'SmallLayout';
-
-    this._margin = {
-        left : 36.5,
-        top : 10
-    };
+  this._margin = {
+    left: 36.5,
+    top: 10
+  };
 }
-
 
 SmallLayout.prototype = Object.create(Layout.prototype);
 
-
 SmallLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement, callback) {
+  var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
+  var chrBox = chrElement.getBoundingClientRect();
 
-    var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
-    var chrBox = chrElement.getBoundingClientRect();
+  var scaleX = (ideoBox.width / chrBox.height) * 0.97;
+  var scaleY = this._getYScale();
 
-    var scaleX = (ideoBox.width / chrBox.height) * 0.97;
-    var scaleY = this._getYScale();
+  transform = "translate(5, 25) scale(" + scaleX + ", " + scaleY + ")";
 
-    transform = "translate(5, 25) scale(" + scaleX + ", " + scaleY + ")";
-
-    d3.select(chrElement.parentNode)
+  d3.select(chrElement.parentNode)
         .transition()
         .attr("transform", transform)
         .on('end', callback);
 };
 
-
 SmallLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, callback) {
+  var translate = this.getChromosomeSetTranslate(setNumber);
 
-    var translate = this.getChromosomeSetTranslate(setNumber);
-
-    d3.select(chrElement.parentNode)
+  d3.select(chrElement.parentNode)
         .transition()
         .attr("transform", translate)
         .on('end', callback);
 };
 
-
 SmallLayout.prototype.getHeight = function(taxId) {
-
-    return this._config.rows * (this._config.chrHeight + this._margin.top * 1.5);
+  return this._config.rows * (this._config.chrHeight + this._margin.top * 1.5);
 };
-
 
 SmallLayout.prototype.getChromosomeBandLabelTranslate = function(band) {
 
 };
 
-
 SmallLayout.prototype.getChromosomeSetLabelTranslate = function() {
-
-    return 'rotate(-90)';
+  return 'rotate(-90)';
 };
-
 
 SmallLayout.prototype.getChromosomeSetTranslate = function(setNumber) {
     // Get organisms id list
-    var organisms = [];
-    this._ideo.getTaxids(function(taxIdList) {
-        organisms = taxIdList;
-    });
+  var organisms = [];
+  this._ideo.getTaxids(function(taxIdList) {
+    organisms = taxIdList;
+  });
     // Get first organism chromosomes amount
-    var size = this._ideo.config.chromosomes[organisms[0]].length;
+  var size = this._ideo.config.chromosomes[organisms[0]].length;
     // Amount of chromosomes per number
-    var rowSize = size / this._config.rows;
+  var rowSize = size / this._config.rows;
 
-    var xOffset;
-    var yOffset;
+  var xOffset;
+  var yOffset;
 
-    if (setNumber > rowSize - 1) {
-        xOffset = this._margin.left + this._config.chrHeight * 1.4;
-        yOffset = this.getChromosomeSetYTranslate(setNumber - rowSize);
-    } else {
-        xOffset = this._margin.left;
-        yOffset = this.getChromosomeSetYTranslate(setNumber);
-    }
+  if (setNumber > rowSize - 1) {
+    xOffset = this._margin.left + this._config.chrHeight * 1.4;
+    yOffset = this.getChromosomeSetYTranslate(setNumber - rowSize);
+  } else {
+    xOffset = this._margin.left;
+    yOffset = this.getChromosomeSetYTranslate(setNumber);
+  }
 
-    return 'rotate(90) translate(' + xOffset + ', -' + yOffset + ')';
+  return 'rotate(90) translate(' + xOffset + ', -' + yOffset + ')';
 };
-
 
 SmallLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
     // Get additional padding caused by annotation tracks
-    var additionalPadding = this._getAdditionalOffset();
+  var additionalPadding = this._getAdditionalOffset();
     // If no detailed description provided just use one formula for all cases
-    return this._margin.left * (setNumber) + this._config.chrWidth + additionalPadding * 2 + additionalPadding * setNumber;
+  return this._margin.left * (setNumber) + this._config.chrWidth + additionalPadding * 2 + additionalPadding * setNumber;
 };
-
 
 SmallLayout.prototype.getChromosomeSetLabelXPosition = function(setNumber) {
-
-    return ((this._ploidy.getSetSize(setNumber) * this._config.chrWidth + 20) / - 2) + (this._config.ploidy > 1 ? 0 : this._config.chrWidth);
+  return ((this._ploidy.getSetSize(setNumber) * this._config.chrWidth + 20) / -2) + (this._config.ploidy > 1 ? 0 : this._config.chrWidth);
 };
 
-
 SmallLayout.prototype.getChromosomeLabelXPosition = function(i) {
-
-    return this._config.chrWidth / - 2;
+  return this._config.chrWidth / -2;
 };
 
 function Ploidy(config) {
-    this._config = config;
-    this._description = this._normilize(this._config.ploidyDesc);
+  this._config = config;
+  this._description = this._normilize(this._config.ploidyDesc);
 }
-
 
 // Get number of chromosomes in a chromosome set
 Ploidy.prototype.getChromosomesNumber = function(setNumber) {
-
-    if (this._config.ploidyDesc) {
-        var chrSetCode = this._config.ploidyDesc[setNumber];
-        if (chrSetCode instanceof Object) {
-            return Object.keys(chrSetCode)[0].length;
-        } else {
-            return chrSetCode.length;
-        }
+  if (this._config.ploidyDesc) {
+    var chrSetCode = this._config.ploidyDesc[setNumber];
+    if (chrSetCode instanceof Object) {
+      return Object.keys(chrSetCode)[0].length;
     } else {
-        return this._config.ploidy || 1;
+      return chrSetCode.length;
     }
+  } else {
+    return this._config.ploidy || 1;
+  }
 };
-
 
 // Normalize use defined description
 Ploidy.prototype._normilize = function(description) {
-
     // Return the same if no description provided
-    if (! description) {
-        return description;
-    }
+  if (!description) {
+    return description;
+  }
 
     // Array of normalized description objects
-    var normalized = [];
+  var normalized = [];
 
      // Loop through description and normalize
-    for (var key in description) {
-        if (typeof description[key] == 'string') {
-            normalized.push({
-                ancestors : description[key],
-                existance : this._getExistanceArray(description[key].length)
-            });
-        } else {
-            normalized.push({
-                ancestors : Object.keys(description[key])[0],
-                existance : description[key][Object.keys(description[key])[0]]
-            });
-        }
+  for (var key in description) {
+    if (typeof description[key] === 'string') {
+      normalized.push({
+        ancestors: description[key],
+        existance: this._getExistanceArray(description[key].length)
+      });
+    } else {
+      normalized.push({
+        ancestors: Object.keys(description[key])[0],
+        existance: description[key][Object.keys(description[key])[0]]
+      });
     }
+  }
 
-    return normalized;
+  return normalized;
 };
-
 
 // Get array filled by '11' elements
 Ploidy.prototype._getExistanceArray = function(length) {
+  var array = [];
 
-    var array = [];
+  for (var i = 0; i < length; i++) {
+    array.push('11');
+  }
 
-    for (var i = 0; i < length; i ++) {
-        array.push('11');
-    }
-
-    return array;
+  return array;
 };
 
 Ploidy.prototype.getSetSize = function(chrSetNumber) {
-
-    if (this._description) {
-        return this._description[chrSetNumber].ancestors.length;
-    } else {
-        return 1;
-    }
+  if (this._description) {
+    return this._description[chrSetNumber].ancestors.length;
+  } else {
+    return 1;
+  }
 };
-
 
 // Get ancestor letter
 Ploidy.prototype.getAncestor = function(chrSetNumber, chrNumber) {
-
-    if (this._description) {
-        return this._description[chrSetNumber].ancestors[chrNumber];
-    } else {
-        return '';
-    }
+  if (this._description) {
+    return this._description[chrSetNumber].ancestors[chrNumber];
+  } else {
+    return '';
+  }
 };
-
 
 // Check if chromosome's arm should be rendered.
 // If no description was provided, method returns true and
 // something another depending on user provided description.
 Ploidy.prototype.isExists = function(chrSetNumber, chrNumber, armNumber) {
-
-    if (this._description) {
-        return Number(this._description[chrSetNumber].existance[chrNumber][armNumber]) > 0;
-    } else {
-        return true;
-    }
+  if (this._description) {
+    return Number(this._description[chrSetNumber].existance[chrNumber][armNumber]) > 0;
+  } else {
+    return true;
+  }
 };
 
 function Color(config) {
     // Ideogram config
-    this._config = config;
-    this._ploidy = new Ploidy(this._config);
+  this._config = config;
+  this._ploidy = new Ploidy(this._config);
 }
 
-
 Color.prototype.getArmColor = function(chrSetNumber, chrNmber, armNumber) {
-
-    if (this._config.armColors) {
-        return this._config.armColors[armNumber];
-    } else if (this._config.ancestors) {
-        return this._getPolyploidArmColor(chrSetNumber, chrNmber, armNumber);
-    } else {
-        return null;
-    }
+  if (this._config.armColors) {
+    return this._config.armColors[armNumber];
+  } else if (this._config.ancestors) {
+    return this._getPolyploidArmColor(chrSetNumber, chrNmber, armNumber);
+  } else {
+    return null;
+  }
 };
-
 
 Color.prototype.getBorderColor = function(chrSetNumber, chrNmber, armNumber) {
-
-    if (chrNmber < this._config.ploidy) {
-        return '#000';
-    } else if (this._ploidy.isExists(chrSetNumber, chrNmber, armNumber)) {
-        return '#000';
-    } else {
-        return '#fff';
-    }
+  if (chrNmber < this._config.ploidy) {
+    return '#000';
+  } else if (this._ploidy.isExists(chrSetNumber, chrNmber, armNumber)) {
+    return '#000';
+  } else {
+    return '#fff';
+  }
 };
 
-
 Color.prototype._getPolyploidArmColor = function(chrSetNumber, chrNmber, armNumber) {
-
-    if (! this._ploidy.isExists(chrSetNumber, chrNmber, armNumber)) {
-        return 'transparent';
-    } else {
-        return this._config.ancestors[this._ploidy.getAncestor(chrSetNumber, chrNmber, armNumber)];
-    }
+  if (!this._ploidy.isExists(chrSetNumber, chrNmber, armNumber)) {
+    return 'transparent';
+  } else {
+    return this._config.ancestors[this._ploidy.getAncestor(chrSetNumber, chrNmber, armNumber)];
+  }
 };
 
 function Chromosome(adapter, config, ideo) {
-
-    this._adapter = adapter;
-    this._model = this._adapter.getModel();
-    this._config = config;
-    this._ideo = ideo;
-    this._color = new Color(this._config);
-    this._bumpCoefficient = 5;
+  this._adapter = adapter;
+  this._model = this._adapter.getModel();
+  this._config = config;
+  this._ideo = ideo;
+  this._color = new Color(this._config);
+  this._bumpCoefficient = 5;
 }
-
 
 // Factory method
 Chromosome.getInstance = function(adapter, config, ideo) {
-
-    if (adapter.getModel().centromerePosition == 'telocentric') {
-        return new TelocentricChromosome(adapter, config, ideo);
-    } else {
-        return new MetacentricChromosome(adapter, config, ideo);
-    }
+  if (adapter.getModel().centromerePosition == 'telocentric') {
+    return new TelocentricChromosome(adapter, config, ideo);
+  } else {
+    return new MetacentricChromosome(adapter, config, ideo);
+  }
 };
-
 
 Chromosome.prototype._addPArmShape = function(clipPath, isPArmRendered) {
-
-    if (isPArmRendered) {
-        return clipPath.concat(this._getPArmShape());
-    } else {
-         return clipPath;
-    }
+  if (isPArmRendered) {
+    return clipPath.concat(this._getPArmShape());
+  } else {
+    return clipPath;
+  }
 };
-
 
 Chromosome.prototype._addQArmShape = function(clipPath, isQArmRendered) {
-
-    if (isQArmRendered) {
-        return clipPath.concat(this._getQArmShape());
-    } else {
-        return clipPath;
-    }
+  if (isQArmRendered) {
+    return clipPath.concat(this._getQArmShape());
+  } else {
+    return clipPath;
+  }
 };
 
-
 Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
-
     // Append bands container and apply clip-path on it
-    container = container.append('g')
+  container = container.append('g')
         .attr('class', 'bands')
         .attr("clip-path", "url(#" + this._model.id + "-chromosome-set-clippath)");
 
     // Render chromosome arms
-    var isPArmRendered = this._renderPArm(container, chrSetNumber, chrNumber);
-    var isQArmRendered = this._renderQArm(container, chrSetNumber, chrNumber);
+  var isPArmRendered = this._renderPArm(container, chrSetNumber, chrNumber);
+  var isQArmRendered = this._renderQArm(container, chrSetNumber, chrNumber);
 
     // Render range set
-    this._renderRangeSet(container, chrSetNumber, chrNumber);
+  this._renderRangeSet(container, chrSetNumber, chrNumber);
 
     // Push arms shape string into clipPath array
-    var clipPath = [];
-    clipPath = this._addPArmShape(clipPath, isPArmRendered);
-    clipPath = this._addQArmShape(clipPath, isQArmRendered);
+  var clipPath = [];
+  clipPath = this._addPArmShape(clipPath, isPArmRendered);
+  clipPath = this._addQArmShape(clipPath, isQArmRendered);
 
     // Render chromosome border
-    var self = this;
-    container.append('g')
+  var self = this;
+  container.append('g')
         .attr('class', 'chromosome-border')
         .selectAll('path')
         .data(clipPath)
@@ -1131,65 +972,61 @@ Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
         .append('path')
         .attr('fill', 'transparent')
         .attr('stroke', function(d, i) {
-            return self._color.getBorderColor(chrSetNumber, chrNumber, i);
+          return self._color.getBorderColor(chrSetNumber, chrNumber, i);
         }).attr('stroke-width', 1)
         .attr('d', function(d) {
-            return d.path;
+          return d.path;
         }).attr('class', function(d) {
-            return d['class'];
+          return d.class;
         });
 
-    return clipPath;
+  return clipPath;
 };
 
-
 Chromosome.prototype._renderRangeSet = function(container, chrSetNumber, chrNumber) {
+  if (!('rangeSet' in this._config)) {
+    return;
+  }
 
-    if (! ('rangeSet' in this._config)) {
-        return;
-    }
+  var rangeSet = this._config.rangeSet.filter(function(range) {
+    return range.chr - 1 == chrSetNumber;
+  }).map(function(range) {
+    return new Range(range);
+  });
 
-    var rangeSet = this._config.rangeSet.filter(function(range) {
-        return range.chr - 1 == chrSetNumber;
-    }).map(function(range) {
-        return new Range(range);
-    });
-
-    var rangesContainer = container.append('g')
+  var rangesContainer = container.append('g')
         .attr('class', 'range-set');
 
-    var self = this;
-    rangesContainer.selectAll('rect.range')
+  var self = this;
+  rangesContainer.selectAll('rect.range')
         .data(rangeSet)
         .enter()
         .append('rect')
         .attr('class', 'range')
         .attr('x', function(range) {
-            return self._ideo.convertBpToPx(self._model, range.getStart()) - self._ideo._bandsXOffset;
+          return self._ideo.convertBpToPx(self._model, range.getStart()) - self._ideo._bandsXOffset;
         }).attr('y', 0)
         .attr('width', function(range) {
-            return self._ideo.convertBpToPx(self._model, range.getLength()) - self._ideo._bandsXOffset;
+          return self._ideo.convertBpToPx(self._model, range.getLength()) - self._ideo._bandsXOffset;
         }).attr('height', this._config.chrWidth)
         .style('fill', function(range) {
-            return range.getColor(chrNumber);
+          return range.getColor(chrNumber);
         });
 };
 
-
 // Get chromosome's shape main values
 Chromosome.prototype._getShapeData = function() {
-
     // First q band from bands sequence
-    var firstQBand;
-    for (var i = 0; i < this._model.bands.length; i ++) {
-        if (this._model.bands[i].name[0] == 'q') {
-            firstQBand = this._model.bands[i];
-            break;
-        }
+  var firstQBand;
+  for (var i = 0; i < this._model.bands.length; i++) {
+    if (this._model.bands[i].name[0] == 'q') {
+      firstQBand = this._model.bands[i];
+      break;
     }
+  }
 
     // Chromosome's right position
-    var rightTerminalPosition = this._model.bands[this._model.bands.length - 1].px.stop;
+  var rightTerminalPosition = this._model.bands[this._model.bands.length - 1].px.stop;
 
     // Properties description:
     // x1 - left terminal start position
@@ -1197,158 +1034,139 @@ Chromosome.prototype._getShapeData = function() {
     // x3 - right terminal end position
     // w - chromosome width
     // b - bump size
-    return {
-        x1: 0,
-        x2: firstQBand ? firstQBand.px.start : rightTerminalPosition,
-        x3: rightTerminalPosition,
-        w: this._config.chrWidth,
-        b: this._config.chrWidth / this._bumpCoefficient
-    };
+  return {
+    x1: 0,
+    x2: firstQBand ? firstQBand.px.start : rightTerminalPosition,
+    x3: rightTerminalPosition,
+    w: this._config.chrWidth,
+    b: this._config.chrWidth / this._bumpCoefficient
+  };
 };
 
-
 Chromosome.prototype._getPArmShape = function() {
+  var d = this._getShapeData();
 
-    var d = this._getShapeData();
-
-    return {
-        'class' : '',
-        'path' : 'M' + d.b + ',0 ' +
+  return {
+    class: '',
+    path: 'M' + d.b + ',0 ' +
             'L' + (d.x2 - d.b) + ',0 ' +
             'Q' + (d.x2 + d.b) + ',' + (d.w / 2) + ',' + (d.x2 - d.b) + ',' + d.w + ' ' +
             'L' + d.b + ',' + d.w + ' ' +
             'Q-' + d.b + ',' + (d.w / 2) + ',' + d.b + ',0'
-    };
+  };
 };
 
-
 Chromosome.prototype._getQArmShape = function() {
+  var d = this._getShapeData();
 
-    var d = this._getShapeData();
-
-    return {
-        'class' : '',
-        'path' : 'M' + (d.x2 + d.b) + ',0 ' +
+  return {
+    class: '',
+    path: 'M' + (d.x2 + d.b) + ',0 ' +
             'L' + (d.x3 - d.b) + ',0 ' +
             'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + (d.x3 - d.b) + ',' + d.w + ' ' +
             'L' + (d.x2 + d.b) + ',' + d.w + ' ' +
             'Q' + (d.x2 - d.b) + ',' + (d.w / 2) + ',' + (d.x2 + d.b) + ',0'
-    };
+  };
 };
-
 
 // Render arm bands
 Chromosome.prototype._renderBands = function(container, chrSetNumber, chrNumber, bands, arm) {
+  var self = this;
 
-    var self = this;
-
-    container.selectAll("path.band." + arm)
+  container.selectAll("path.band." + arm)
         .data(bands)
         .enter()
         .append("path")
         .attr("id", function(d, i) {
-            return self._model.id + "-" + d.name.replace(".", "-");
+          return self._model.id + "-" + d.name.replace(".", "-");
         }).attr("class", function(d, i) {
-            return 'band ' + arm + '-band ' + d.stain;
+          return 'band ' + arm + '-band ' + d.stain;
         }).attr("d", function(d, i) {
+          var start = self._ideo.round(d.px.start);
+          var length = self._ideo.round(d.px.width);
 
-            var start = self._ideo.round(d.px.start);
-            var length = self._ideo.round(d.px.width);
+          x = start + length;
 
-            x = start + length;
-
-            return "M " + start + ", 0" +
+          return "M " + start + ", 0" +
                 "l " + length + " 0 " +
                 "l 0 " + self._config.chrWidth + " " +
                 "l -" + length + " 0 z";
         }).style('fill', function(d) {
-            return self._color.getArmColor(chrSetNumber, chrNumber, arm == 'p' ? 0 : 1);
+          return self._color.getArmColor(chrSetNumber, chrNumber, arm == 'p' ? 0 : 1);
         });
 };
-
 
 // Render chromosome's p arm.
 // Returns boolean which indicates is any bands was rendered
 Chromosome.prototype._renderPArm = function(container, chrSetNumber, chrNumber) {
+  var bands = this._model.bands.filter(function(band) {
+    return band.name[0] == 'p';
+  });
 
-    var bands = this._model.bands.filter(function(band) {
-        return band.name[0] == 'p';
-    });
+  this._renderBands(container, chrSetNumber, chrNumber, bands, 'p');
 
-    this._renderBands(container, chrSetNumber, chrNumber, bands, 'p');
-
-    return Boolean(bands.length);
+  return Boolean(bands.length);
 };
-
 
 // Render chromosome's q arm.
 // Returns boolean which indicates is any bands was rendered
 Chromosome.prototype._renderQArm = function(container, chrSetNumber, chrNumber) {
+  var bands = this._model.bands.filter(function(band) {
+    return band.name[0] == 'q';
+  });
 
-    var bands = this._model.bands.filter(function(band) {
-        return band.name[0] == 'q';
-    });
+  this._renderBands(container, chrSetNumber, chrNumber, bands, 'q');
 
-    this._renderBands(container, chrSetNumber, chrNumber, bands, 'q');
-
-    return Boolean(bands.length);
+  return Boolean(bands.length);
 };
 
 function TelocentricChromosome(model, config, ideo) {
-
-    Chromosome.call(this, model, config, ideo);
-    this._class = 'TelocentricChromosome';
-    this._pArmOffset = 3;
+  Chromosome.call(this, model, config, ideo);
+  this._class = 'TelocentricChromosome';
+  this._pArmOffset = 3;
 }
-
 
 TelocentricChromosome.prototype = Object.create(Chromosome.prototype);
 
-
 TelocentricChromosome.prototype._addPArmShape = function(clipPath, isPArmRendered) {
-    return clipPath.concat(this._getPArmShape());
+  return clipPath.concat(this._getPArmShape());
 };
 
-
 TelocentricChromosome.prototype._getPArmShape = function() {
+  var d = this._getShapeData();
+  d.o = this._pArmOffset;
 
-    var d = this._getShapeData();
-    d.o = this._pArmOffset;
-
-    return [{
-        'class' : 'acen',
-        'path' : 'M' + d.x2 + ',1' +
+  return [{
+    class: 'acen',
+    path: 'M' + d.x2 + ',1' +
             'L' + (d.x2 - d.o) + ',1 ' +
             'L' + (d.x2 - d.o) + ',' + (d.w - 1) + ' ' +
             'L' + d.x2 + ',' + (d.w - 1)
-    }, {
-        'class' : 'gpos100',
-        'path' : 'M' + (d.x2 - d.o + 1) + ',0' +
+  }, {
+    class: 'gpos100',
+    path: 'M' + (d.x2 - d.o + 1) + ',0' +
         'L' + (d.x2 - d.o) + ',0 ' +
         'L' + (d.x2 - d.o) + ',' + d.w + ' ' +
         'L' + (d.x2 - d.o + 1) + ',' + d.w
-    }];
+  }];
 };
 
-
 TelocentricChromosome.prototype._getQArmShape = function() {
+  var d = this._getShapeData();
 
-    var d = this._getShapeData();
-
-    return {
-        'class' : '',
-        'path' : 'M' + d.x2 + ',0 ' +
+  return {
+    class: '',
+    path: 'M' + d.x2 + ',0 ' +
             'L' + (d.x3 - d.b) + ',0 ' +
             'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + (d.x3 - d.b) + ',' + d.w + ' ' +
             'L' + d.x2 + ',' + d.w
-    };
+  };
 };
 
 function MetacentricChromosome(model, config, ideo) {
-    Chromosome.call(this, model, config, ideo);
-    this._class = 'MetacentricChromosome';
+  Chromosome.call(this, model, config, ideo);
+  this._class = 'MetacentricChromosome';
 }
-
 
 MetacentricChromosome.prototype = Object.create(Chromosome.prototype);
 
@@ -1429,7 +1247,7 @@ var Ideogram = function(config) {
   if (!this.config.chrWidth) {
     var chrWidth = 10,
       chrHeight = this.config.chrHeight;
-    if (900 > chrHeight && chrHeight > 500) {
+    if (chrHeight < 900 && chrHeight > 500) {
       chrWidth = Math.round(chrHeight / 40);
     } else if (chrHeight >= 900) {
       chrWidth = Math.round(chrHeight / 45);
@@ -1857,7 +1675,6 @@ Ideogram.prototype.drawChromosomeLabels = function() {
 * Stalks are small lines that visually connect labels to their bands.
 */
 Ideogram.prototype.drawBandLabels = function(chromosomes) {
-
   var i, chr, chrs, taxid, ideo, chrModel;
 
   ideo = this;
@@ -1901,12 +1718,14 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
       .data(chrModel.bands)
       .enter()
       .append("g")
-        .attr("class", function(d, i) { return "bandLabel bsbsl-" + i; })
+        .attr("class", function(d, i) {
+          return "bandLabel bsbsl-" + i;
+        })
         .attr("transform", function(d) {
           var transform = ideo._layout.getChromosomeBandLabelTranslate(d, i);
 
           var x = transform.x;
-          //var y = transform.y;
+          // var y = transform.y;
 
           textOffsets[chrModel.id].push(x + 13);
 
@@ -1914,16 +1733,20 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
         })
         .append("text")
         .attr('text-anchor', ideo._layout.getChromosomeBandLabelAnchor(i))
-        .text(function(d) { return d.name; });
+        .text(function(d) {
+          return d.name;
+        });
 
-    //var adapter = ModelAdapter.getInstance(ideo.chromosomesArray[i]);
-    //var view = Chromosome.getInstance(adapter, ideo.config, ideo);
+    // var adapter = ModelAdapter.getInstance(ideo.chromosomesArray[i]);
+    // var view = Chromosome.getInstance(adapter, ideo.config, ideo);
 
     chr.selectAll("line.bandLabelStalk")
       .data(chrModel.bands)
       .enter()
       .append("g")
-      .attr("class", function(d, i) { return "bandLabelStalk bsbsl-" + i; })
+      .attr("class", function(d, i) {
+        return "bandLabelStalk bsbsl-" + i;
+      })
       .attr("transform", function(d) {
         var x, y;
 
@@ -2034,7 +1857,6 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation,
   }
 
   if (orientation === "vertical" || orientation === "") {
-
     var ci = chrIndex - 1;
 
     if (numAnnotTracks > 1 || orientation === "") {
@@ -2069,12 +1891,12 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex, orientation,
 
     tracksHeight = ideo.config.annotTracksHeight;
     if (ideo.config.annotationsLayout !== "overlay") {
-      tracksHeight = tracksHeight * 2;
+      tracksHeight *= 2;
     }
 
     chrMargin = ideo.config.chrMargin * chrIndex;
     x = -(chrMargin + chrMargin2) + 3 + tracksHeight;
-    x = x / scale.x;
+    x /= scale.x;
 
     chr.selectAll("text.chrLabel")
       .attr("transform", "rotate(-90)" + scaleSvg)
@@ -2354,8 +2176,8 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
 * Initializes various annotation settings.  Constructor help function.
 */
 Ideogram.prototype.initAnnotSettings = function() {
-  if (this.config.annotationsPath || this.config.localAnnotationsPath
-    || this.annots || this.config.annotations) {
+  if (this.config.annotationsPath || this.config.localAnnotationsPath ||
+    this.annots || this.config.annotations) {
     if (!this.config.annotationHeight) {
       var annotHeight = Math.round(this.config.chrHeight / 100);
       this.config.annotationHeight = annotHeight;
@@ -2668,7 +2490,9 @@ Ideogram.prototype.drawProcessedAnnots = function(annots) {
   if (layout === "tracks") {
     chrAnnot
       .append("g")
-      .attr("id", function(d) { return d.id; })
+      .attr("id", function(d) {
+        return d.id;
+      })
       .attr("class", "annot")
       .attr("transform", function(d) {
         var y = ideo.config.chrWidth + (d.trackIndex * annotHeight * 2);
@@ -2682,12 +2506,16 @@ Ideogram.prototype.drawProcessedAnnots = function(annots) {
           return circle;
         }
       })
-      .attr("fill", function(d) { return d.color; });
+      .attr("fill", function(d) {
+        return d.color;
+      });
   } else if (layout === "overlay") {
       // Overlaid annotations appear directly on chromosomes
 
     chrAnnot.append("polygon")
-        .attr("id", function(d) { return d.id; })
+        .attr("id", function(d) {
+          return d.id;
+        })
         .attr("class", "annot")
         .attr("points", function(d) {
           x1 = d.px - 0.5;
@@ -2702,7 +2530,9 @@ Ideogram.prototype.drawProcessedAnnots = function(annots) {
             x1 + "," + y2
           );
         })
-        .attr("fill", function(d) { return d.color; });
+        .attr("fill", function(d) {
+          return d.color;
+        });
   } else if (layout === "histogram") {
     chrAnnot.append("polygon")
         // .attr("id", function(d, i) { return d.id; })
@@ -2726,7 +2556,9 @@ Ideogram.prototype.drawProcessedAnnots = function(annots) {
             x1 + "," + y2
           );
         })
-        .attr("fill", function(d) { return d.color; });
+        .attr("fill", function(d) {
+          return d.color;
+        });
   }
 
   if (ideo.onDrawAnnotsCallback) {
@@ -3001,8 +2833,8 @@ Ideogram.prototype.sortChromosomes = function(a, b) {
     bIsCP = b.type === "chloroplast",
     aIsMT = a.type === "mitochondrion",
     bIsMT = b.type === "mitochondrion";
-    //aIsPlastid = aIsMT && a.name !== "MT", // e.g. B1 in rice genome GCF_001433935.1
-    //bIsPlastid = bIsMT && b.name !== "MT";
+    // aIsPlastid = aIsMT && a.name !== "MT", // e.g. B1 in rice genome GCF_001433935.1
+    // bIsPlastid = bIsMT && b.name !== "MT";
 
   if (aIsNuclear && bIsNuclear) {
     return naturalSort(a.name, b.name);
@@ -3542,11 +3374,10 @@ This method flattens that structure to e.g.
 See also: packAnnots
 */
 Ideogram.prototype.unpackAnnots = function() {
-
   var chr, annots, i,
-      unpackedAnnots = [],
-      ideo = this,
-      chrs = ideo.annots;
+    unpackedAnnots = [],
+    ideo = this,
+    chrs = ideo.annots;
 
   for (i = 0; i < chrs.length; i++) {
     chr = chrs[i];
@@ -3555,21 +3386,19 @@ Ideogram.prototype.unpackAnnots = function() {
   }
 
   return unpackedAnnots;
-
 };
 
 /*
   Compresses annots back to default state.  Inverse of unpackAnnots.
 */
 Ideogram.prototype.packAnnots = function(unpackedAnnots) {
-
   var chr, annot, i,
-      annots = [],
-      ideo = this,
-      chrs = ideo.annots;
+    annots = [],
+    ideo = this,
+    chrs = ideo.annots;
 
   for (chr in chrs) {
-    annots.push({'chr': chrs[chr].chr, annots: []});
+    annots.push({chr: chrs[chr].chr, annots: []});
   }
 
   for (i = 0; i < unpackedAnnots.length; i++) {
@@ -3578,7 +3407,6 @@ Ideogram.prototype.packAnnots = function(unpackedAnnots) {
   }
 
   return annots;
-
 };
 
 /*
@@ -3587,8 +3415,8 @@ Ideogram.prototype.packAnnots = function(unpackedAnnots) {
 */
 Ideogram.prototype.initCrossFilter = function() {
   var ideo = this,
-      keys = ideo.rawAnnots.keys,
-      i, facet;
+    keys = ideo.rawAnnots.keys,
+    i, facet;
 
   ideo.unpackedAnnots = ideo.unpackAnnots();
   ideo.crossfilter = crossfilter(ideo.unpackedAnnots);
@@ -3631,14 +3459,13 @@ Ideogram.prototype.initCrossFilter = function() {
     * Integrate server-side filtering for very large datasets
 */
 Ideogram.prototype.filterAnnots = function(selections) {
-
   var t0 = Date.now();
 
   var i, facet,
-      prevFacet = null,
-      results, fn,
-      counts = {},
-      ideo = this;
+    prevFacet = null,
+    results, fn,
+    counts = {},
+    ideo = this;
 
   if (Object.keys(selections).length === 0) {
     results = ideo.unpackedAnnots;
@@ -3677,16 +3504,14 @@ Ideogram.prototype.filterAnnots = function(selections) {
 
 // Chromosome's view utility class
 function ChromosomeUtil(node) {
-    this._node = node;
+  this._node = node;
 }
 
-
 ChromosomeUtil.prototype.getLabel = function() {
-    return d3.select(this._node).select('text.chrLabel').text();
+  return d3.select(this._node).select('text.chrLabel').text();
 };
-
 
 // Get chromosome set label
 ChromosomeUtil.prototype.getSetLabel = function() {
-    return d3.select(this._node.parentNode).select('text.chromosome-set-label').text();
+  return d3.select(this._node.parentNode).select('text.chromosome-set-label').text();
 };
