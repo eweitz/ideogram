@@ -2,6 +2,11 @@
 
 /* Constructs a prototypal Ideogram class */
 var Ideogram = function(config) {
+
+  var orientation,
+    chrWidth, chrHeight,
+    container, rect;
+
   // Clone the config object, to allow multiple instantiations
   // without picking up prior ideogram's settings
   this.config = JSON.parse(JSON.stringify(config));
@@ -42,14 +47,13 @@ var Ideogram = function(config) {
   }
 
   if (!this.config.orientation) {
-    var orientation = "vertical";
+    orientation = "vertical";
     this.config.orientation = orientation;
   }
 
   if (!this.config.chrHeight) {
-    var chrHeight,
-      container = this.config.container,
-      rect = document.querySelector(container).getBoundingClientRect();
+    container = this.config.container;
+    rect = document.querySelector(container).getBoundingClientRect();
 
     if (orientation === "vertical") {
       chrHeight = rect.height;
@@ -64,8 +68,9 @@ var Ideogram = function(config) {
   }
 
   if (!this.config.chrWidth) {
-    var chrWidth = 10,
-      chrHeight = this.config.chrHeight;
+    chrWidth = 10;
+    chrHeight = this.config.chrHeight;
+
     if (chrHeight < 900 && chrHeight > 500) {
       chrWidth = Math.round(chrHeight / 40);
     } else if (chrHeight >= 900) {
@@ -140,10 +145,10 @@ var Ideogram = function(config) {
 
   // The E-Utilies In Depth: Parameters, Syntax and More:
   // https://www.ncbi.nlm.nih.gov/books/NBK25499/
-  var eutils = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/";
-  this.esearch = eutils + "esearch.fcgi?retmode=json";
-  this.esummary = eutils + "esummary.fcgi?retmode=json";
-  this.elink = eutils + "elink.fcgi?retmode=json";
+  this.eutils = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/";
+  this.esearch = this.eutils + "esearch.fcgi?retmode=json";
+  this.esummary = this.eutils + "esummary.fcgi?retmode=json";
+  this.elink = this.eutils + "elink.fcgi?retmode=json";
 
   this.organisms = {
     9606: {

@@ -3,6 +3,7 @@ module.exports = {
   "rules": {
     "no-undef": "off",
     "require-jsdoc": "off",
-    "valid-jsdoc": "off"
+    "valid-jsdoc": "off",
+    "one-var": "off"
   }
 }
