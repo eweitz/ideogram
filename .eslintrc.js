@@ -4,6 +4,7 @@ module.exports = {
     "no-undef": "off",
     "require-jsdoc": "off",
     "valid-jsdoc": "off",
-    "one-var": "off"
+    "one-var": "off",
+    "guard-for-in": "off"
   }
 }
