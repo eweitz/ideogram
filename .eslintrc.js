@@ -5,6 +5,7 @@ module.exports = {
     "require-jsdoc": "off",
     "valid-jsdoc": "off",
     "one-var": "off",
-    "guard-for-in": "off"
+    "guard-for-in": "off",
+    "no-loop-func": "off"
   }
 }
