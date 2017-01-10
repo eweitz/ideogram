@@ -520,7 +520,7 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
   var textOffsets = {};
 
   chrIndex = 0;
-  for (var i = 0; i < chrs.length; i++) {
+  for (i = 0; i < chrs.length; i++) {
     chrIndex += 1;
 
     chrModel = chrs[i];
@@ -528,8 +528,7 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
     chr = d3.select("#" + chrModel.id);
 
     var chrMargin = this.config.chrMargin * chrIndex,
-      lineY1, lineY2,
-      ideo = this;
+      lineY1, lineY2;
 
     lineY1 = chrMargin;
     lineY2 = chrMargin - 8;
@@ -597,7 +596,7 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
         });
   }
 
-  for (var i = 0; i < chrs.length; i++) {
+  for (i = 0; i < chrs.length; i++) {
     chrModel = chrs[i];
 
     var textsLength = textOffsets[chrModel.id].length,
@@ -703,7 +702,7 @@ Ideogram.prototype.rotateChromosomeLabels = function(chr, chrIndex,
       chrMargin2 = ideo.config.chrMargin + chrWidth + 26;
     }
 
-    var chrMargin = ideo.config.chrMargin * ci;
+    chrMargin = ideo.config.chrMargin * ci;
 
     if (numAnnotTracks > 1 === false) {
       chrMargin += 1;
