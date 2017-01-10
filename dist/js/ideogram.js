@@ -3257,7 +3257,7 @@ Ideogram.prototype.init = function() {
 
     ideo.config.chromosomes = {};
 
-    var t0_b = new Date().getTime();
+    var t0B = new Date().getTime();
 
     for (j = 0; j < taxids.length; j++) {
       taxid = taxids[j];
@@ -3309,15 +3309,15 @@ Ideogram.prototype.init = function() {
       }
     }
 
-    var t1_b = new Date().getTime();
+    var t1B = new Date().getTime();
     if (ideo.debug) {
-      console.log("Time in processBandData: " + (t1_b - t0_b) + " ms");
+      console.log("Time in processBandData: " + (t1B - t0B) + " ms");
     }
   }
 
   function finishInit() {
     try {
-      var t0_a = new Date().getTime();
+      var t0A = new Date().getTime();
 
       var i;
 
@@ -3365,12 +3365,12 @@ Ideogram.prototype.init = function() {
       // Most bands are hidden, so we can optimize by
       // Hiding all bands, then QSA'ing and displaying the
       // relatively few bands that are shown.
-        var t0_c = new Date().getTime();
+        var t0C = new Date().getTime();
         d3.selectAll(".bandLabel, .bandLabelStalk").style("display", "none");
         d3.selectAll(bandsToShow).style("display", "");
-        var t1_c = new Date().getTime();
+        var t1C = new Date().getTime();
         if (ideo.debug) {
-          console.log("Time in showing bands: " + (t1_c - t0_c) + " ms");
+          console.log("Time in showing bands: " + (t1C - t0C) + " ms");
         }
 
         if (ideo.config.orientation === "vertical") {
@@ -3394,9 +3394,9 @@ Ideogram.prototype.init = function() {
         ideo.drawAnnots(ideo.config.annotations);
       }
 
-      var t1_a = new Date().getTime();
+      var t1A = new Date().getTime();
       if (ideo.debug) {
-        console.log("Time in drawChromosome: " + (t1_a - t0_a) + " ms");
+        console.log("Time in drawChromosome: " + (t1A - t0A) + " ms");
       }
 
       var t1 = new Date().getTime();
