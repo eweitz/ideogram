@@ -654,7 +654,7 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
       ithLength = indexesToShow.length,
       j;
 
-    for (var j = 0; j < ithLength; j++) {
+    for (j = 0; j < ithLength; j++) {
       index = indexesToShow[j];
       selectorsToShow.push("#" + chrModel.id + " .bsbsl-" + index);
     }
@@ -1130,14 +1130,16 @@ Ideogram.prototype.drawAnnots = function(friendlyAnnots) {
 * Also adds pixel offset information.
 */
 Ideogram.prototype.processAnnotData = function(rawAnnots) {
-  var keys = rawAnnots.keys,
-    rawAnnots = rawAnnots.annots,
+  var keys,
     i, j, annot, annots, annotsByChr,
     chr,
     chrModel, ra,
     startPx, stopPx, px,
     color,
     ideo = this;
+
+  keys = rawAnnots.keys;
+  rawAnnots = rawAnnots.annots;
 
   annots = [];
 
@@ -2046,7 +2048,7 @@ Ideogram.prototype.init = function() {
   function processBandData() {
     var j, k, chromosome, bands,
       chrLength, chr,
-      bandData, bands, bandsByChr,
+      bandData, bandsByChr,
       taxid, taxids, chrs, chrsByTaxid;
 
     bandsArray = [];
@@ -2194,7 +2196,7 @@ Ideogram.prototype.init = function() {
 
         if (ideo.config.orientation === "vertical") {
           var chrID;
-          for (var i = 0; i < ideo.chromosomesArray.length; i++) {
+          for (i = 0; i < ideo.chromosomesArray.length; i++) {
             chrID = "#" + ideo.chromosomesArray[i].id;
             ideo.rotateChromosomeLabels(d3.select(chrID), i);
           }
