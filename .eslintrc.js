@@ -7,6 +7,10 @@ module.exports = {
     "one-var": "off",
     "guard-for-in": "off",
     "no-loop-func": "off",
-    "no-negated-condition": "off"
+    "no-negated-condition": "off",
+    "no-inner-declaration": "off",
+    "no-warning-comments": "off",
+    "no-eval": "off",
+    "no-inner-declarations": "off"
   }
 }

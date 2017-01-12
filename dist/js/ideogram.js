@@ -1183,7 +1183,6 @@ function naturalSort(a,b){var q,r,c=/(^([+\-]?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?(?=
 
 /* Constructs a prototypal Ideogram class */
 var Ideogram = function(config) {
-
   var orientation,
     chrWidth, chrHeight,
     container, rect;
@@ -1269,7 +1268,7 @@ var Ideogram = function(config) {
   }
 
   if (!this.config.rows) {
-  	this.config.rows = 1;
+    this.config.rows = 1;
   }
 
   this.bump = Math.round(this.config.chrHeight / 125);
@@ -2041,9 +2040,8 @@ Ideogram.prototype.rotateAndToggleDisplay = function(chromosome) {
 * Bp-to-pixel scales differ among cytogenetic bands.
 */
 Ideogram.prototype.convertBpToPx = function(chr, bp) {
-
   var i, band, bpToIscnScale, iscn, px, offset, pxStart, pxLength, iscnStart,
-      iscnStop, iscnLength, bpStart, bpStop, bpLength;
+    iscnStop, iscnLength, bpStart, bpStop, bpLength;
 
   for (i = 0; i < chr.bands.length; i++) {
     band = chr.bands[i];
@@ -2074,14 +2072,13 @@ Ideogram.prototype.convertBpToPx = function(chr, bp) {
   );
 };
 
-
 /**
 * Converts base pair coordinates to pixel offsets.
 * Bp-to-pixel scales differ among cytogenetic bands.
 */
 Ideogram.prototype.convertPxToBp = function(chr, px) {
   var i, band, pxToIscnScale, iscn,
-      pxStart, pxStop, iscnStart, iscnStop, bpLength, iscnLength;
+    pxStart, pxStop, iscnStart, iscnStop, bpLength, iscnLength;
 
   for (i = 0; i < chr.bands.length; i++) {
     band = chr.bands[i];
@@ -2092,7 +2089,6 @@ Ideogram.prototype.convertPxToBp = function(chr, px) {
     iscnStop = band.iscn.stop;
 
     if (px >= pxStart && px <= pxStop) {
-
       iscnLength = iscnStop - iscnStart;
       pxLength = pxStop - pxStart;
       bpLength = band.bp.stop - band.bp.start;
