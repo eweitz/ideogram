@@ -6,7 +6,7 @@ function TelocentricChromosome(model, config, ideo) {
 
 TelocentricChromosome.prototype = Object.create(Chromosome.prototype);
 
-TelocentricChromosome.prototype._addPArmShape = function(clipPath, isPArmRendered) {
+TelocentricChromosome.prototype._addPArmShape = function(clipPath) {
   return clipPath.concat(this._getPArmShape());
 };
 
@@ -30,13 +30,15 @@ TelocentricChromosome.prototype._getPArmShape = function() {
 };
 
 TelocentricChromosome.prototype._getQArmShape = function() {
-  var d = this._getShapeData();
+  var d = this._getShapeData(),
+    x = d.x3 - d.b;
 
   return {
     class: '',
-    path: 'M' + d.x2 + ',0 ' +
-            'L' + (d.x3 - d.b) + ',0 ' +
-            'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + (d.x3 - d.b) + ',' + d.w + ' ' +
-            'L' + d.x2 + ',' + d.w
+    path:
+      'M' + d.x2 + ',0 ' +
+      'L' + x + ',0 ' +
+      'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + x + ',' + d.w + ' ' +
+      'L' + d.x2 + ',' + d.w
   };
 };
