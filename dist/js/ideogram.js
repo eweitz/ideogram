@@ -849,7 +849,7 @@ SmallLayout.prototype.getChromosomeLabelXPosition = function() {
 
 function Ploidy(config) {
   this._config = config;
-  this._description = this._normilize(this._config.ploidyDesc);
+  this._description = this._normalize(this._config.ploidyDesc);
 }
 
 // Get number of chromosomes in a chromosome set
@@ -867,7 +867,7 @@ Ploidy.prototype.getChromosomesNumber = function(setNumber) {
 };
 
 // Normalize use defined description
-Ploidy.prototype._normilize = function(description) {
+Ploidy.prototype._normalize = function(description) {
     // Return the same if no description provided
   if (!description) {
     return description;
@@ -881,12 +881,12 @@ Ploidy.prototype._normilize = function(description) {
     if (typeof description[key] === 'string') {
       normalized.push({
         ancestors: description[key],
-        existance: this._getExistanceArray(description[key].length)
+        existence: this._getexistenceArray(description[key].length)
       });
     } else {
       normalized.push({
         ancestors: Object.keys(description[key])[0],
-        existance: description[key][Object.keys(description[key])[0]]
+        existence: description[key][Object.keys(description[key])[0]]
       });
     }
   }
@@ -895,7 +895,7 @@ Ploidy.prototype._normilize = function(description) {
 };
 
 // Get array filled by '11' elements
-Ploidy.prototype._getExistanceArray = function(length) {
+Ploidy.prototype._getexistenceArray = function(length) {
   var array = [];
 
   for (var i = 0; i < length; i++) {
@@ -925,9 +925,9 @@ Ploidy.prototype.getAncestor = function(chrSetNumber, chrNumber) {
 // Check if chromosome's arm should be rendered.
 // If no description was provided, method returns true and
 // something another depending on user provided description.
-Ploidy.prototype.isExists = function(chrSetNumber, chrNumber, armNumber) {
+Ploidy.prototype.exists = function(chrSetNumber, chrNumber, armNumber) {
   if (this._description) {
-    return Number(this._description[chrSetNumber].existance[chrNumber][armNumber]) > 0;
+    return Number(this._description[chrSetNumber].existence[chrNumber][armNumber]) > 0;
   } else {
     return true;
   }
@@ -952,7 +952,7 @@ Color.prototype.getArmColor = function(chrSetNumber, chrNmber, armNumber) {
 Color.prototype.getBorderColor = function(chrSetNumber, chrNmber, armNumber) {
   if (chrNmber < this._config.ploidy) {
     return '#000';
-  } else if (this._ploidy.isExists(chrSetNumber, chrNmber, armNumber)) {
+  } else if (this._ploidy.exists(chrSetNumber, chrNmber, armNumber)) {
     return '#000';
   } else {
     return '#fff';
@@ -960,7 +960,7 @@ Color.prototype.getBorderColor = function(chrSetNumber, chrNmber, armNumber) {
 };
 
 Color.prototype._getPolyploidArmColor = function(chrSetNumber, chrNmber, armNumber) {
-  if (!this._ploidy.isExists(chrSetNumber, chrNmber, armNumber)) {
+  if (!this._ploidy.exists(chrSetNumber, chrNmber, armNumber)) {
     return 'transparent';
   } else {
     return this._config.ancestors[this._ploidy.getAncestor(chrSetNumber, chrNmber, armNumber)];
