@@ -11,6 +11,7 @@ module.exports = {
     "no-inner-declaration": "off",
     "no-warning-comments": "off",
     "no-eval": "off",
-    "no-inner-declarations": "off"
+    "no-inner-declarations": "off",
+    "no-else-return": "off"
   }
 }
