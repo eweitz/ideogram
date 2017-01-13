@@ -728,7 +728,8 @@ function SmallLayout(config, ideo) {
 
 SmallLayout.prototype = Object.create(Layout.prototype);
 
-SmallLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement, callback) {
+SmallLayout.prototype.rotateForward = function(setNumber, chrNumber,
+  chrElement, callback) {
   var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
   var chrBox = chrElement.getBoundingClientRect();
 
@@ -743,7 +744,8 @@ SmallLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement,
         .on('end', callback);
 };
 
-SmallLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, callback) {
+SmallLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement,
+  callback) {
   var translate = this.getChromosomeSetTranslate(setNumber);
 
   d3.select(chrElement.parentNode)
@@ -752,11 +754,11 @@ SmallLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, ca
         .on('end', callback);
 };
 
-SmallLayout.prototype.getHeight = function(taxId) {
+SmallLayout.prototype.getHeight = function() {
   return this._config.rows * (this._config.chrHeight + this._margin.top * 1.5);
 };
 
-SmallLayout.prototype.getChromosomeBandLabelTranslate = function(band) {
+SmallLayout.prototype.getChromosomeBandLabelTranslate = function() {
 
 };
 
@@ -793,14 +795,20 @@ SmallLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
     // Get additional padding caused by annotation tracks
   var additionalPadding = this._getAdditionalOffset();
     // If no detailed description provided just use one formula for all cases
-  return this._margin.left * (setNumber) + this._config.chrWidth + additionalPadding * 2 + additionalPadding * setNumber;
+  return (
+    this._margin.left * (setNumber) + this._config.chrWidth +
+    additionalPadding * 2 + additionalPadding * setNumber
+  );
 };
 
 SmallLayout.prototype.getChromosomeSetLabelXPosition = function(setNumber) {
-  return ((this._ploidy.getSetSize(setNumber) * this._config.chrWidth + 20) / -2) + (this._config.ploidy > 1 ? 0 : this._config.chrWidth);
+  return (
+    ((this._ploidy.getSetSize(setNumber) * this._config.chrWidth + 20) / -2) +
+    (this._config.ploidy > 1 ? 0 : this._config.chrWidth)
+  );
 };
 
-SmallLayout.prototype.getChromosomeLabelXPosition = function(i) {
+SmallLayout.prototype.getChromosomeLabelXPosition = function() {
   return this._config.chrWidth / -2;
 };
 
