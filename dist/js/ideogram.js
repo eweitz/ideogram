@@ -303,9 +303,8 @@ HorizontalLayout.prototype._getLeftMargin = function() {
   return margin;
 };
 
-HorizontalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement, callback) {
-  var self = this;
-
+HorizontalLayout.prototype.rotateForward = function(setNumber, chrNumber,
+  chrElement, callback) {
   var xOffset = 30;
 
   var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
@@ -316,7 +315,11 @@ HorizontalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrEle
 
   var yOffset = (chrNumber + 1) * ((this._config.chrWidth * 2) * scaleY);
 
-  var transform = 'rotate(90) translate(' + xOffset + ', -' + yOffset + ') scale(' + scaleX + ', ' + scaleY + ')';
+  var transform = (
+    'rotate(90) ' +
+    'translate(' + xOffset + ', -' + yOffset + ') ' +
+    'scale(' + scaleX + ', ' + scaleY + ')'
+  );
 
   d3.select(chrElement.parentNode)
         .transition()
@@ -334,18 +337,20 @@ HorizontalLayout.prototype.rotateForward = function(setNumber, chrNumber, chrEle
         .append('text')
         .attr('class', function(d, i) {
           return i === 0 && labels.length === 2 ? 'chrSetLabel' : null;
-        }).attr('x', function(d, i) {
-          return 30;
-        }).attr('y', function(d, i) {
+        })
+        .attr('x', 30)
+        .attr('y', function(d, i) {
           return (i + 1 + labels.length % 2) * 12;
-        }).style('text-anchor', 'middle')
+        })
+        .style('text-anchor', 'middle')
         .style('opacity', 0)
         .text(String)
         .transition()
         .style('opacity', 1);
 };
 
-HorizontalLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, callback) {
+HorizontalLayout.prototype.rotateBack = function(setNumber, chrNumber,
+  chrElement, callback) {
   var translate = this.getChromosomeSetTranslate(setNumber);
 
   d3.select(chrElement.parentNode)
@@ -360,10 +365,11 @@ HorizontalLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElemen
 
 HorizontalLayout.prototype.getHeight = function(taxId) {
     // Get last chromosome set offset.
-  var lastSetOffset = this.getChromosomeSetYTranslate(this._config.chromosomes[taxId].length - 1);
+  var numChromosomes = this._config.chromosomes[taxId].length;
+  var lastSetOffset = this.getChromosomeSetYTranslate(numChromosomes - 1);
 
     // Get last chromosome set size.
-  var lastSetSize = this._getChromosomeSetSize(this._config.chromosomes[taxId].length - 1);
+  var lastSetSize = this._getChromosomeSetSize(numChromosomes - 1);
 
     // Increase offset by last chromosome set size
   lastSetOffset += lastSetSize;
@@ -375,15 +381,15 @@ HorizontalLayout.prototype.getChromosomeSetLabelAnchor = function() {
   return 'end';
 };
 
-HorizontalLayout.prototype.getChromosomeBandLabelAnchor = function(chrNumber) {
+HorizontalLayout.prototype.getChromosomeBandLabelAnchor = function() {
   return null;
 };
 
-HorizontalLayout.prototype.getChromosomeBandTickY1 = function(chrNumber) {
+HorizontalLayout.prototype.getChromosomeBandTickY1 = function() {
   return 2;
 };
 
-HorizontalLayout.prototype.getChromosomeBandTickY2 = function(chrNumber) {
+HorizontalLayout.prototype.getChromosomeBandTickY2 = function() {
   return 10;
 };
 
@@ -403,24 +409,27 @@ HorizontalLayout.prototype.getChromosomeSetLabelTranslate = function() {
 };
 
 HorizontalLayout.prototype.getChromosomeSetTranslate = function(setNumber) {
-  return "translate(" + this._getLeftMargin() + ", " + this.getChromosomeSetYTranslate(setNumber) + ")";
+  var leftMargin = this._getLeftMargin();
+  var chromosomeSetYTranslate = this.getChromosomeSetYTranslate(setNumber);
+  return "translate(" + leftMargin + ", " + chromosomeSetYTranslate + ")";
 };
 
 HorizontalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
-    // If no detailed description provided just use one formula for all cases.
+  // If no detailed description provided just use one formula for all cases.
   if (!this._config.ploidyDesc) {
     return this._config.chrMargin * (setNumber + 1);
   }
 
-    // Id detailed description provided start to calculate offsets
-    //  for each chromosome set separately. This should be done only once.
+  // Id detailed description provided start to calculate offsets
+  //  for each chromosome set separately. This should be done only once.
   if (!this._translate) {
-        // First offset equals to zero.
+    // First offset equals to zero.
     this._translate = [1];
 
-        // Loop through description set
+    // Loop through description set
     for (var i = 1; i < this._config.ploidyDesc.length; i++) {
-      this._translate[i] = this._translate[i - 1] + this._getChromosomeSetSize(i - 1);
+      this._translate[i] =
+        this._translate[i - 1] + this._getChromosomeSetSize(i - 1);
     }
   }
 
@@ -443,11 +452,11 @@ HorizontalLayout.prototype.getChromosomeSetLabelYPosition = function(i) {
   }
 };
 
-HorizontalLayout.prototype.getChromosomeLabelXPosition = function(i) {
+HorizontalLayout.prototype.getChromosomeLabelXPosition = function() {
   return -8;
 };
 
-HorizontalLayout.prototype.getChromosomeLabelYPosition = function(i) {
+HorizontalLayout.prototype.getChromosomeLabelYPosition = function() {
   return this._config.chrWidth;
 };
 
