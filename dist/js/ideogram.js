@@ -102,16 +102,16 @@ function Layout(config, ideo) {
   this._ploidy = this._ideo._ploidy;
   this._translate = undefined;
 
-     // Chromosome band's size.
+  // Chromosome band's size.
   this._tickSize = 8;
 
-    // Chromosome rotation state.
+  // Chromosome rotation state.
   this._isRotated = false;
 }
 
 // Factory method
 Layout.getInstance = function(config, ideo) {
-  if ("perspective" in config && config.perspective == "comparative") {
+  if ("perspective" in config && config.perspective === "comparative") {
     return new PairedLayout(config, ideo);
   } else if ("rows" in config && config.rows > 1) {
     return new SmallLayout(config, ideo);
@@ -145,18 +145,18 @@ Layout.prototype.getChromosomeLabels = function(chrElement) {
 };
 
 // Rotate chromosome to original position
-Layout.prototype.rotateBack = function(chrSetNumber, chrNumber, chrElement, callback) {
+Layout.prototype.rotateBack = function() {
   throw new Error(this._class + '#rotateBack not implemented');
 };
 
 // Rotate chromosome to opposite position
-Layout.prototype.rotateForward = function(chrSetNumber, chrNumber, chrElement, callback) {
+Layout.prototype.rotateForward = function() {
   throw new Error(this._class + '#rotateForward not implemented');
 };
 
 Layout.prototype.rotate = function(chrSetNumber, chrNumber, chrElement) {
     // Find chromosomes which should be hidden
-  var otherChrs = d3.selectAll("g.chromosome").filter(function(d, i) {
+  var otherChrs = d3.selectAll("g.chromosome").filter(function() {
     return this !== chrElement;
   });
 
@@ -191,7 +191,9 @@ Layout.prototype.getChromosomeLabelClass = function() {
 };
 
 Layout.prototype._getAdditionalOffset = function() {
-  return (this._config.annotationHeight || 0) * (this._config.numAnnotTracks || 1);
+  return (
+    (this._config.annotationHeight || 0) * (this._config.numAnnotTracks || 1)
+  );
 };
 
 Layout.prototype._getChromosomeSetSize = function(chrSetNumber) {
@@ -199,7 +201,9 @@ Layout.prototype._getChromosomeSetSize = function(chrSetNumber) {
   var setSize = this._ploidy.getSetSize(chrSetNumber);
 
     // Increase offset by last chromosome set size
-  return setSize * this._config.chrWidth * 2 + (this._config.ploidy > 1 ? 20 : 0);
+  return (
+    setSize * this._config.chrWidth * 2 + (this._config.ploidy > 1 ? 20 : 0)
+  );
 };
 
 // Get layout margin
@@ -208,21 +212,23 @@ Layout.prototype.getMargin = function() {
 };
 
 // Get SVG element height
-Layout.prototype.getHeight = function(taxId) {
+Layout.prototype.getHeight = function() {
   throw new Error(this._class + '#getHeight not implemented');
 };
 
-Layout.prototype.getChromosomeBandTickY1 = function(chrNumber) {
+Layout.prototype.getChromosomeBandTickY1 = function() {
   throw new Error(this._class + '#getChromosomeBandTickY1 not implemented');
 };
 
-Layout.prototype.getChromosomeBandTickY2 = function(chrNumber) {
+Layout.prototype.getChromosomeBandTickY2 = function() {
   throw new Error(this._class + '#getChromosomeBandTickY2 not implemented');
 };
 
 // Get chromosome's band translate attribute
-Layout.prototype.getChromosomeBandLabelTranslate = function(band, chrNumber) {
-  throw new Error(this._class + '#getChromosomeBandLabelTranslate not implemented');
+Layout.prototype.getChromosomeBandLabelTranslate = function() {
+  throw new Error(
+    this._class + '#getChromosomeBandLabelTranslate not implemented'
+  );
 };
 
 // Get chromosome set label anchor property
@@ -231,19 +237,22 @@ Layout.prototype.getChromosomeSetLabelAnchor = function() {
 };
 
 // Get chromosome's band label text-anchor value
-Layout.prototype.getChromosomeBandLabelAnchor = function(chrNumber) {
-  throw new Error(this._class + '#getChromosomeBandLabelAnchor not implemented');
+Layout.prototype.getChromosomeBandLabelAnchor = function() {
+  throw (
+    new Error(this._class + '#getChromosomeBandLabelAnchor not implemented')
+  );
 };
 
-Layout.prototype.getChromosomeLabelXPosition = function(i) {
+Layout.prototype.getChromosomeLabelXPosition = function() {
   throw new Error(this._class + '#getChromosomeLabelXPosition not implemented');
 };
 
-// Get chromosome label y position. "i" is chromosome number
-Layout.prototype.getChromosomeLabelYPosition = function(i) {
+// Get chromosome label y position.
+Layout.prototype.getChromosomeLabelYPosition = function() {
   return -5.5;
 };
 
+// "i" is chromosome number
 Layout.prototype.getChromosomeSetLabelYPosition = function(i) {
   if (this._config.ploidy === 1) {
     return this.getChromosomeLabelYPosition(i);
@@ -252,21 +261,25 @@ Layout.prototype.getChromosomeSetLabelYPosition = function(i) {
   }
 };
 
-Layout.prototype.getChromosomeSetLabelXPosition = function(i) {
-  throw new Error(this._class + '#getChromosomeSetLabelXPosition not implemented');
+Layout.prototype.getChromosomeSetLabelXPosition = function() {
+  throw (
+    new Error(this._class + '#getChromosomeSetLabelXPosition not implemented')
+  );
 };
 
 Layout.prototype.getChromosomeSetLabelTranslate = function() {
-  throw new Error(this._class + '#getChromosomeSetLabelTranslate not implemented');
+  throw (
+    new Error(this._class + '#getChromosomeSetLabelTranslate not implemented')
+  );
 };
 
-// Get chromosome set translate attribute.
-Layout.prototype.getChromosomeSetTranslate = function(setNumber) {
+// Get chromosome set translate attribute
+Layout.prototype.getChromosomeSetTranslate = function() {
   throw new Error(this._class + '#getChromosomeSetTranslate not implemented');
 };
 
 // Get chromosome set translate's y offset
-Layout.prototype.getChromosomeSetYTranslate = function(setNumber) {
+Layout.prototype.getChromosomeSetYTranslate = function() {
   throw new Error(this._class + '#getChromosomeSetYTranslate not implemented');
 };
 
