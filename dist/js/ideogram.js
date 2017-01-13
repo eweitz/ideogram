@@ -592,7 +592,8 @@ function PairedLayout(config, ideo) {
 
 PairedLayout.prototype = Object.create(Layout.prototype);
 
-PairedLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement, callback) {
+PairedLayout.prototype.rotateForward = function(setNumber, chrNumber,
+  chrElement, callback) {
   var self = this;
 
     // Get ideo container and chromosome set dimensions
@@ -604,47 +605,53 @@ PairedLayout.prototype.rotateForward = function(setNumber, chrNumber, chrElement
     // Evaluate y offset of chromosome. It is different for first and the second one
   var yOffset = setNumber ? 150 : 25;
 
-  var transform = 'translate(15, ' + yOffset + ') scale(' + scaleX + ', ' + scaleY + ')';
+  var transform =
+    'translate(15, ' + yOffset + ') scale(' + scaleX + ', ' + scaleY + ')';
 
     // Run rotation procedure
   d3.select(chrElement.parentNode)
-        .transition()
-        .attr("transform", transform)
-        .on('end', function() {
-            // Run callback function if provided
-          if (callback) {
-            callback();
-          }
-            // Rotate band labels
-          d3.select(chrElement.parentNode).selectAll('g.bandLabel text')
-                .attr('transform', 'rotate(90) translate(0, ' + (6 * Number(!setNumber)) + ')')
-                .attr("text-anchor", "middle");
-            // Hide syntenic regions
-          d3.selectAll('.syntenicRegion').style("display", 'none');
-        });
+    .transition()
+    .attr("transform", transform)
+    .on('end', function() {
+        // Run callback function if provided
+      if (callback) {
+        callback();
+      }
+
+      var translateY = (6 * Number(!setNumber));
+
+      // Rotate band labels
+      d3.select(chrElement.parentNode).selectAll('g.bandLabel text')
+        .attr('transform', 'rotate(90) translate(0, ' + translateY + ')')
+        .attr("text-anchor", "middle");
+
+      // Hide syntenic regions
+      d3.selectAll('.syntenicRegion').style("display", 'none');
+    });
 
     // Append new chromosome labels
   var labels = this.getChromosomeLabels(chrElement);
+
   d3.select(this._ideo.getSvg())
-        .append('g')
-        .attr('class', 'tmp')
-        .selectAll('text')
-        .data(this.getChromosomeLabels(chrElement))
-        .enter()
-        .append('text')
-        .attr('class', function(d, i) {
-          return i === 0 && labels.length === 2 ? 'chrSetLabel' : null;
-        }).attr('x', function(d, i) {
-          return 0;
-        }).attr('y', function(d, i) {
-          return yOffset + (self._config.chrWidth * scaleX / 2) * 1.15;
-        }).style('opacity', 0)
-        .text(String)
-        .transition()
-        .style('opacity', 1);
+    .append('g')
+    .attr('class', 'tmp')
+    .selectAll('text')
+    .data(this.getChromosomeLabels(chrElement))
+    .enter()
+    .append('text')
+    .attr('class', function(d, i) {
+      return i === 0 && labels.length === 2 ? 'chrSetLabel' : null;
+    })
+    .attr('x', 0)
+    .attr('y', yOffset + (self._config.chrWidth * scaleX / 2) * 1.15)
+    .style('opacity', 0)
+    .text(String)
+    .transition()
+    .style('opacity', 1);
 };
 
-PairedLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, callback) {
+PairedLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement,
+  callback) {
     // Get intial transformation string for chromosome set
   var translate = this.getChromosomeSetTranslate(setNumber);
 
@@ -659,8 +666,8 @@ PairedLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, c
           d3.selectAll('.syntenicRegion').style("display", null);
             // Reset changed attributes to original state
           d3.select(chrElement.parentNode).selectAll('g.bandLabel text')
-                .attr('transform', null)
-                .attr("text-anchor", setNumber ? null : 'end');
+            .attr('transform', null)
+            .attr("text-anchor", setNumber ? null : 'end');
         });
 
   d3.selectAll('g.tmp')
@@ -668,7 +675,7 @@ PairedLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement, c
         .remove();
 };
 
-PairedLayout.prototype.getHeight = function(taxId) {
+PairedLayout.prototype.getHeight = function() {
   return this._config.chrHeight + this._margin.left * 1.5;
 };
 
@@ -677,14 +684,16 @@ PairedLayout.prototype.getChromosomeBandTickY1 = function(chrNumber) {
 };
 
 PairedLayout.prototype.getChromosomeBandTickY2 = function(chrNumber) {
-  return chrNumber % 2 ? this._config.chrWidth - this._tickSize : this._config.chrWidth * 2 + this._tickSize;
+  var width = this._config.chrWidth;
+  return chrNumber % 2 ? width - this._tickSize : width * 2 + this._tickSize;
 };
 
 PairedLayout.prototype.getChromosomeBandLabelAnchor = function(chrNumber) {
   return chrNumber % 2 ? null : 'end';
 };
 
-PairedLayout.prototype.getChromosomeBandLabelTranslate = function(band, chrNumber) {
+PairedLayout.prototype.getChromosomeBandLabelTranslate = function(band,
+  chrNumber) {
   var x = chrNumber % 2 ? 10 : -this._config.chrWidth - 10;
   var y = this._ideo.round(band.px.start + band.px.width / 2) + 3;
 
@@ -695,11 +704,11 @@ PairedLayout.prototype.getChromosomeBandLabelTranslate = function(band, chrNumbe
   };
 };
 
-PairedLayout.prototype.getChromosomeLabelXPosition = function(i) {
+PairedLayout.prototype.getChromosomeLabelXPosition = function() {
   return -this._tickSize;
 };
 
-PairedLayout.prototype.getChromosomeSetLabelXPosition = function(i) {
+PairedLayout.prototype.getChromosomeSetLabelXPosition = function() {
   return this._config.chrWidth / -2;
 };
 
@@ -708,7 +717,11 @@ PairedLayout.prototype.getChromosomeSetLabelTranslate = function() {
 };
 
 PairedLayout.prototype.getChromosomeSetTranslate = function(setNumber) {
-  return 'rotate(90) translate(' + this._margin.left + ', -' + this.getChromosomeSetYTranslate(setNumber) + ')';
+  var chromosomeSetYTranslate = this.getChromosomeSetYTranslate(setNumber);
+  return (
+    'rotate(90) ' +
+    'translate(' + this._margin.left + ', -' + chromosomeSetYTranslate + ')'
+  );
 };
 
 PairedLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
