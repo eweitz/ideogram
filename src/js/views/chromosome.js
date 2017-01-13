@@ -9,7 +9,7 @@ function Chromosome(adapter, config, ideo) {
 
 // Factory method
 Chromosome.getInstance = function(adapter, config, ideo) {
-  if (adapter.getModel().centromerePosition == 'telocentric') {
+  if (adapter.getModel().centromerePosition === 'telocentric') {
     return new TelocentricChromosome(adapter, config, ideo);
   } else {
     return new MetacentricChromosome(adapter, config, ideo);
@@ -35,8 +35,8 @@ Chromosome.prototype._addQArmShape = function(clipPath, isQArmRendered) {
 Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
     // Append bands container and apply clip-path on it
   container = container.append('g')
-        .attr('class', 'bands')
-        .attr("clip-path", "url(#" + this._model.id + "-chromosome-set-clippath)");
+    .attr('class', 'bands')
+    .attr("clip-path", "url(#" + this._model.id + "-chromosome-set-clippath)");
 
     // Render chromosome arms
   var isPArmRendered = this._renderPArm(container, chrSetNumber, chrNumber);
@@ -71,13 +71,14 @@ Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
   return clipPath;
 };
 
-Chromosome.prototype._renderRangeSet = function(container, chrSetNumber, chrNumber) {
+Chromosome.prototype._renderRangeSet = function(container, chrSetNumber,
+  chrNumber) {
   if (!('rangeSet' in this._config)) {
     return;
   }
 
   var rangeSet = this._config.rangeSet.filter(function(range) {
-    return range.chr - 1 == chrSetNumber;
+    return range.chr - 1 === chrSetNumber;
   }).map(function(range) {
     return new Range(range);
   });
@@ -86,16 +87,21 @@ Chromosome.prototype._renderRangeSet = function(container, chrSetNumber, chrNumb
         .attr('class', 'range-set');
 
   var self = this;
+  var ideo = self._ideo;
+  var bandsXOffset = ideo._bandsXOffset;
+
   rangesContainer.selectAll('rect.range')
         .data(rangeSet)
         .enter()
         .append('rect')
         .attr('class', 'range')
         .attr('x', function(range) {
-          return self._ideo.convertBpToPx(self._model, range.getStart()) - self._ideo._bandsXOffset;
+          var startPx = ideo.convertBpToPx(self._model, range.getStart());
+          return startPx - bandsXOffset;
         }).attr('y', 0)
         .attr('width', function(range) {
-          return self._ideo.convertBpToPx(self._model, range.getLength()) - self._ideo._bandsXOffset;
+          var lengthPx = ideo.convertBpToPx(self._model, range.getLength());
+          return lengthPx - bandsXOffset;
         }).attr('height', this._config.chrWidth)
         .style('fill', function(range) {
           return range.getColor(chrNumber);
@@ -107,14 +113,15 @@ Chromosome.prototype._getShapeData = function() {
     // First q band from bands sequence
   var firstQBand;
   for (var i = 0; i < this._model.bands.length; i++) {
-    if (this._model.bands[i].name[0] == 'q') {
+    if (this._model.bands[i].name[0] === 'q') {
       firstQBand = this._model.bands[i];
       break;
     }
   }
 
-    // Chromosome's right position
-  var rightTerminalPosition = this._model.bands[this._model.bands.length - 1].px.stop;
+  // Chromosome's right position
+  var lastBand = this._model.bands.length - 1;
+  var rightTerminalPosition = this._model.bands[lastBand].px.stop;
 
     // Properties description:
     // x1 - left terminal start position
@@ -132,63 +139,72 @@ Chromosome.prototype._getShapeData = function() {
 };
 
 Chromosome.prototype._getPArmShape = function() {
-  var d = this._getShapeData();
+  var d = this._getShapeData(),
+    x = d.x2 - d.b;
 
   return {
     class: '',
-    path: 'M' + d.b + ',0 ' +
-            'L' + (d.x2 - d.b) + ',0 ' +
-            'Q' + (d.x2 + d.b) + ',' + (d.w / 2) + ',' + (d.x2 - d.b) + ',' + d.w + ' ' +
-            'L' + d.b + ',' + d.w + ' ' +
-            'Q-' + d.b + ',' + (d.w / 2) + ',' + d.b + ',0'
+    path:
+      'M' + d.b + ',0 ' +
+      'L' + x + ',0 ' +
+      'Q' + (d.x2 + d.b) + ',' + (d.w / 2) + ',' + x + ',' + d.w + ' ' +
+      'L' + d.b + ',' + d.w + ' ' +
+      'Q-' + d.b + ',' + (d.w / 2) + ',' + d.b + ',0'
   };
 };
 
 Chromosome.prototype._getQArmShape = function() {
-  var d = this._getShapeData();
+  var d = this._getShapeData(),
+    x = d.x3 - d.b;
 
   return {
     class: '',
-    path: 'M' + (d.x2 + d.b) + ',0 ' +
-            'L' + (d.x3 - d.b) + ',0 ' +
-            'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + (d.x3 - d.b) + ',' + d.w + ' ' +
-            'L' + (d.x2 + d.b) + ',' + d.w + ' ' +
-            'Q' + (d.x2 - d.b) + ',' + (d.w / 2) + ',' + (d.x2 + d.b) + ',0'
+    path:
+      'M' + (d.x2 + d.b) + ',0 ' +
+      'L' + x + ',0 ' +
+      'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + x + ',' + d.w + ' ' +
+      'L' + (d.x2 + d.b) + ',' + d.w + ' ' +
+      'Q' + (d.x2 - d.b) + ',' + (d.w / 2) + ',' + (d.x2 + d.b) + ',0'
   };
 };
 
 // Render arm bands
-Chromosome.prototype._renderBands = function(container, chrSetNumber, chrNumber, bands, arm) {
+Chromosome.prototype._renderBands = function(container, chrSetNumber,
+  chrNumber, bands, arm) {
   var self = this;
+  var armNumber = arm === 'p' ? 0 : 1;
+  var fill = self._color.getArmColor(chrSetNumber, chrNumber, armNumber);
 
   container.selectAll("path.band." + arm)
-        .data(bands)
-        .enter()
-        .append("path")
-        .attr("id", function(d, i) {
-          return self._model.id + "-" + d.name.replace(".", "-");
-        }).attr("class", function(d, i) {
-          return 'band ' + arm + '-band ' + d.stain;
-        }).attr("d", function(d, i) {
-          var start = self._ideo.round(d.px.start);
-          var length = self._ideo.round(d.px.width);
+    .data(bands)
+    .enter()
+    .append("path")
+    .attr("id", function(d) {
+      return self._model.id + "-" + d.name.replace(".", "-");
+    })
+    .attr("class", function(d) {
+      return 'band ' + arm + '-band ' + d.stain;
+    })
+    .attr("d", function(d) {
+      var start = self._ideo.round(d.px.start);
+      var length = self._ideo.round(d.px.width);
 
-          x = start + length;
+      x = start + length;
 
-          return "M " + start + ", 0" +
-                "l " + length + " 0 " +
-                "l 0 " + self._config.chrWidth + " " +
-                "l -" + length + " 0 z";
-        }).style('fill', function(d) {
-          return self._color.getArmColor(chrSetNumber, chrNumber, arm == 'p' ? 0 : 1);
-        });
+      return "M " + start + ", 0" +
+            "l " + length + " 0 " +
+            "l 0 " + self._config.chrWidth + " " +
+            "l -" + length + " 0 z";
+    })
+    .style('fill', fill);
 };
 
 // Render chromosome's p arm.
 // Returns boolean which indicates is any bands was rendered
-Chromosome.prototype._renderPArm = function(container, chrSetNumber, chrNumber) {
+Chromosome.prototype._renderPArm = function(container, chrSetNumber,
+  chrNumber) {
   var bands = this._model.bands.filter(function(band) {
-    return band.name[0] == 'p';
+    return band.name[0] === 'p';
   });
 
   this._renderBands(container, chrSetNumber, chrNumber, bands, 'p');
@@ -198,9 +214,10 @@ Chromosome.prototype._renderPArm = function(container, chrSetNumber, chrNumber) 
 
 // Render chromosome's q arm.
 // Returns boolean which indicates is any bands was rendered
-Chromosome.prototype._renderQArm = function(container, chrSetNumber, chrNumber) {
+Chromosome.prototype._renderQArm = function(container, chrSetNumber,
+  chrNumber) {
   var bands = this._model.bands.filter(function(band) {
-    return band.name[0] == 'q';
+    return band.name[0] === 'q';
   });
 
   this._renderBands(container, chrSetNumber, chrNumber, bands, 'q');
