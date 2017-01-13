@@ -444,15 +444,17 @@ Ideogram.prototype.drawChromosomeLabels = function() {
 
   var chromosomeLabelClass = ideo._layout.getChromosomeLabelClass();
 
+  var chrSetLabelXPosition = ideo._layout.getChromosomeSetLabelXPosition();
+  var chrSetLabelTranslate = ideo._layout.getChromosomeSetLabelTranslate();
+
   // Append chromosomes set's labels
   d3.selectAll(".chromosome-set-container")
         .append("text")
         .data(ideo.chromosomesArray)
         .attr("class", 'chromosome-set-label ' + chromosomeLabelClass)
-        .attr("transform", ideo._layout.getChromosomeSetLabelTranslate())
-        .attr("x", function(d, i) {
-          return ideo._layout.getChromosomeSetLabelXPosition(i);
-        }).attr("y", function(d, i) {
+        .attr("transform", chrSetLabelTranslate)
+        .attr("x", chrSetLabelXPosition)
+        .attr("y", function(d, i) {
           return ideo._layout.getChromosomeSetLabelYPosition(i);
         }).attr("text-anchor", ideo._layout.getChromosomeSetLabelAnchor())
         .each(function(d, i) {
@@ -464,18 +466,19 @@ Ideogram.prototype.drawChromosomeLabels = function() {
             lines = d.name.match(/^(.*)\s+([^\s]+)$/).slice(1).reverse();
           }
 
-            // Render label lines
+          // Render label lines
           d3.select(this).selectAll('tspan')
-                .data(lines)
-                .enter()
-                .append('tspan')
-                .attr('dy', function(d, i) {
-                  return i * -1.2 + 'em';
-                }).attr('x', ideo._layout.getChromosomeSetLabelXPosition(i))
-                .attr('class', function(a, i) {
-                  var fullLabels = ideo.config.fullChromosomeLabels;
-                  return i === 1 && fullLabels ? 'italic' : null;
-                }).text(String);
+            .data(lines)
+            .enter()
+            .append('tspan')
+            .attr('dy', function(d, i) {
+              return i * -1.2 + 'em';
+            })
+            .attr('x', ideo._layout.getChromosomeSetLabelXPosition())
+            .attr('class', function(a, i) {
+              var fullLabels = ideo.config.fullChromosomeLabels;
+              return i === 1 && fullLabels ? 'italic' : null;
+            }).text(String);
         });
 
   var setLabelTranslate = ideo._layout.getChromosomeSetLabelTranslate();
