@@ -102,7 +102,7 @@ Ideogram.prototype.filterAnnots = function(selections) {
   var t0 = Date.now();
 
   var i, facet,
-    prevFacet = null,
+    // prevFacet = null,
     results, fn,
     counts = {},
     ideo = this;

@@ -456,8 +456,9 @@ Ideogram.prototype.drawChromosomeLabels = function() {
         .attr("x", chrSetLabelXPosition)
         .attr("y", function(d, i) {
           return ideo._layout.getChromosomeSetLabelYPosition(i);
-        }).attr("text-anchor", ideo._layout.getChromosomeSetLabelAnchor())
-        .each(function(d, i) {
+        })
+        .attr("text-anchor", ideo._layout.getChromosomeSetLabelAnchor())
+        .each(function(d) {
             // Get label lines
           var lines;
           if (d.name.indexOf(' ') === -1) {
@@ -529,19 +530,19 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
 
     chr = d3.select("#" + chrModel.id);
 
-    var chrMargin = this.config.chrMargin * chrIndex,
-      lineY1, lineY2;
-
-    lineY1 = chrMargin;
-    lineY2 = chrMargin - 8;
-
-    if (
-      chrIndex === 1 &&
-      "perspective" in this.config && this.config.perspective === "comparative"
-    ) {
-      lineY1 += 18;
-      lineY2 += 18;
-    }
+    // var chrMargin = this.config.chrMargin * chrIndex,
+    //   lineY1, lineY2;
+    //
+    // lineY1 = chrMargin;
+    // lineY2 = chrMargin - 8;
+    //
+    // if (
+    //   chrIndex === 1 &&
+    //   "perspective" in this.config && this.config.perspective === "comparative"
+    // ) {
+    //   lineY1 += 18;
+    //   lineY2 += 18;
+    // }
 
     textOffsets[chrModel.id] = [];
 

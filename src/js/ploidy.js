@@ -78,7 +78,8 @@ Ploidy.prototype.getAncestor = function(chrSetNumber, chrNumber) {
 // something another depending on user provided description.
 Ploidy.prototype.exists = function(chrSetNumber, chrNumber, armNumber) {
   if (this._description) {
-    return Number(this._description[chrSetNumber].existence[chrNumber][armNumber]) > 0;
+    var desc = this._description[chrSetNumber].existence[chrNumber][armNumber];
+    return Number(desc) > 0;
   } else {
     return true;
   }

@@ -927,7 +927,8 @@ Ploidy.prototype.getAncestor = function(chrSetNumber, chrNumber) {
 // something another depending on user provided description.
 Ploidy.prototype.exists = function(chrSetNumber, chrNumber, armNumber) {
   if (this._description) {
-    return Number(this._description[chrSetNumber].existence[chrNumber][armNumber]) > 0;
+    var desc = this._description[chrSetNumber].existence[chrNumber][armNumber];
+    return Number(desc) > 0;
   } else {
     return true;
   }
@@ -939,31 +940,33 @@ function Color(config) {
   this._ploidy = new Ploidy(this._config);
 }
 
-Color.prototype.getArmColor = function(chrSetNumber, chrNmber, armNumber) {
+Color.prototype.getArmColor = function(chrSetNumber, chrNumber, armNumber) {
   if (this._config.armColors) {
     return this._config.armColors[armNumber];
   } else if (this._config.ancestors) {
-    return this._getPolyploidArmColor(chrSetNumber, chrNmber, armNumber);
+    return this._getPolyploidArmColor(chrSetNumber, chrNumber, armNumber);
   } else {
     return null;
   }
 };
 
-Color.prototype.getBorderColor = function(chrSetNumber, chrNmber, armNumber) {
-  if (chrNmber < this._config.ploidy) {
+Color.prototype.getBorderColor = function(chrSetNumber, chrNumber, armNumber) {
+  if (chrNumber < this._config.ploidy) {
     return '#000';
-  } else if (this._ploidy.exists(chrSetNumber, chrNmber, armNumber)) {
+  } else if (this._ploidy.exists(chrSetNumber, chrNumber, armNumber)) {
     return '#000';
   } else {
     return '#fff';
   }
 };
 
-Color.prototype._getPolyploidArmColor = function(chrSetNumber, chrNmber, armNumber) {
-  if (!this._ploidy.exists(chrSetNumber, chrNmber, armNumber)) {
+Color.prototype._getPolyploidArmColor = function(chrSetNumber, chrNumber,
+  armNumber) {
+  if (!this._ploidy.exists(chrSetNumber, chrNumber, armNumber)) {
     return 'transparent';
   } else {
-    return this._config.ancestors[this._ploidy.getAncestor(chrSetNumber, chrNmber, armNumber)];
+    var ancestor = this._ploidy.getAncestor(chrSetNumber, chrNumber, armNumber);
+    return this._config.ancestors[ancestor];
   }
 };
 
@@ -1713,8 +1716,9 @@ Ideogram.prototype.drawChromosomeLabels = function() {
         .attr("x", chrSetLabelXPosition)
         .attr("y", function(d, i) {
           return ideo._layout.getChromosomeSetLabelYPosition(i);
-        }).attr("text-anchor", ideo._layout.getChromosomeSetLabelAnchor())
-        .each(function(d, i) {
+        })
+        .attr("text-anchor", ideo._layout.getChromosomeSetLabelAnchor())
+        .each(function(d) {
             // Get label lines
           var lines;
           if (d.name.indexOf(' ') === -1) {
@@ -1786,19 +1790,19 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
 
     chr = d3.select("#" + chrModel.id);
 
-    var chrMargin = this.config.chrMargin * chrIndex,
-      lineY1, lineY2;
-
-    lineY1 = chrMargin;
-    lineY2 = chrMargin - 8;
-
-    if (
-      chrIndex === 1 &&
-      "perspective" in this.config && this.config.perspective === "comparative"
-    ) {
-      lineY1 += 18;
-      lineY2 += 18;
-    }
+    // var chrMargin = this.config.chrMargin * chrIndex,
+    //   lineY1, lineY2;
+    //
+    // lineY1 = chrMargin;
+    // lineY2 = chrMargin - 8;
+    //
+    // if (
+    //   chrIndex === 1 &&
+    //   "perspective" in this.config && this.config.perspective === "comparative"
+    // ) {
+    //   lineY1 += 18;
+    //   lineY2 += 18;
+    // }
 
     textOffsets[chrModel.id] = [];
 
@@ -3603,7 +3607,7 @@ Ideogram.prototype.filterAnnots = function(selections) {
   var t0 = Date.now();
 
   var i, facet,
-    prevFacet = null,
+    // prevFacet = null,
     results, fn,
     counts = {},
     ideo = this;
