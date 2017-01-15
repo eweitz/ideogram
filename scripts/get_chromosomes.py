@@ -156,7 +156,7 @@ def download_genome_agp(asm):
                 ]
             else:
                 adapted_chromosomes.append(name + ' ' + length)
-        js_chrs = 'var chrs = ' + json.dumps(adapted_chromosomes)
+        js_chrs = 'var chrBands = ' + json.dumps(adapted_chromosomes)
 
         with open(output_path, 'w') as f:
             f.write(js_chrs)
