@@ -141,14 +141,25 @@ def download_genome_agp(asm):
             'for any chromosomes in genome assembly ' + asm_name
         )
     else:
-        output_path = output_dir + organism + ".json"
-        chrs = {
-            'assemblyname': asm_name,
-            'assemblyaccession': acc,
-            'chromosomes': chrs
-        }
-        with open(output_path, "w") as f:
-            f.write(json.dumps(chrs, indent=4, sort_keys=True))
+        output_path = output_dir + organism + ".js"
+
+        adapted_chromosomes = []
+        for chr in chrs:
+            name = chr['name']
+            length = str(chr['length'])
+            if 'centromere' in chr:
+                cen = chr['centromere']
+                midpoint = str(cen['start'] + round(cen['length']/2))
+                adapted_chromosomes += [
+                    name + ' p 0 ' + midpoint,
+                    name + ' q ' + midpoint + ' ' + length
+                ]
+            else:
+                adapted_chromosomes.append(name + ' ' + length)
+        js_chrs = 'var chrs = ' + json.dumps(adapted_chromosomes)
+
+        with open(output_path, 'w') as f:
+            f.write(js_chrs)
 
     shutil.rmtree(output_dir + organism + '/')
 
