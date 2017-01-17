@@ -33,10 +33,29 @@ for (dirpath, dirnames, filenames) in walk(in_dir):
     f.extend(filenames)
     break
 
+output_mappings = {
+    'ideogram_9606_GCF_000001305.14_850_V1': 'homo-sapiens',
+    'ideogram_9606_GCF_000001305.14_550_V1': 'homo-sapiens-550',
+    'ideogram_9606_GCF_000001305.14_400_V1': 'homo-sapiens-400',
+    'ideogram_9606_GCF_000001305.13_850_V1': 'homo-sapiens-GCF_000001405.13-850',
+    'ideogram_9606_GCF_000001305.13_550_V1': 'homo-sapiens-GCF_000001405.13-550',
+    'ideogram_10090_GCF_000000055.19_NA_V2': 'mus-musculus',
+    'ideogram_10116_GCF_000000225.4_NA_V1': 'rattus-norvegicus'
+}
+
 for input_file in f:
+
+    if input_file[-3:] != 'tsv':
+        # Skip e.g. README.md
+        continue
+
     output = []
 
-    output_file = out_dir + input_file.replace("tsv", "js")
+    fn = input_file.split('.tsv')[0]
+    if fn in output_mappings:
+        fn = output_mappings[fn]
+
+    output_file = out_dir + fn + '.js'
 
     rows = open(in_dir + input_file, "r").readlines()
 
