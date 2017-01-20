@@ -13,7 +13,8 @@ import gzip
 import subprocess
 import logging
 
-output_dir = 'data/chromosomes/'
+
+output_dir = 'data/bands/native/'
 
 if os.path.exists(output_dir) == False:
     os.mkdir(output_dir)
@@ -195,7 +196,7 @@ def find_genomes_with_centromeres(asm_summary_response):
             'Primary_Assembly/assembled_chromosomes/AGP/'
         )
 
-        asm_output_dir = 'data/chromosomes/' + organism + '/' + asm_segment + '/'
+        asm_output_dir = output_dir + organism + '/' + asm_segment + '/'
 
         asm = {
             'acc': acc,
@@ -247,5 +248,9 @@ with request.urlopen(asm_summary) as response:
 find_genomes_with_centromeres(data)
 
 ftp.quit()
+
+logger.info('Calling convert_band_data.py')
+import convert_band_data
+convert_band_data.main()
 
 logger.info('Ending get_chromosomes.py')

@@ -24,16 +24,7 @@ TODO:
 import json
 from os import walk
 
-in_dir = "data/bands/ncbi/"
-out_dir = "data/bands/native/"
-
-f = []
-for (dirpath, dirnames, filenames) in walk(in_dir):
-    print(filenames)
-    f.extend(filenames)
-    break
-
-# Those files had the following naming pattern:
+# Upstream NCBI ideogram files had the following naming pattern:
 # * ideogram_$taxonomyID_$primaryAssemblyUnitAccession_$bandResolution_$version
 #
 # Transformed data files have been renamed to use the following pattern:
@@ -53,7 +44,17 @@ output_mappings = {
     'ideogram_10116_GCF_000000225.4_NA_V1': 'rattus-norvegicus'
 }
 
-def convert_band_data():
+def main():
+    print('ok')
+    in_dir = "data/bands/ncbi/"
+    out_dir = "data/bands/native/"
+
+    f = []
+    for (dirpath, dirnames, filenames) in walk(in_dir):
+        print(filenames)
+        f.extend(filenames)
+        break
+
     for input_file in f:
 
         if input_file[-3:] != 'tsv':
@@ -109,4 +110,4 @@ def convert_band_data():
         open(output_file, "w").write(output)
 
 if __name__ == '__main__':
-    convert_band_data()
+    main()
