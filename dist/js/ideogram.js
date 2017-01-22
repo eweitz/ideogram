@@ -1258,6 +1258,9 @@ MetacentricChromosome.prototype = Object.create(Chromosome.prototype);
 // https://github.com/overset/javascript-natural-sort
 function naturalSort(a,b){var q,r,c=/(^([+\-]?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?(?=\D|\s|$))|^0x[\da-fA-F]+$|\d+)/g,d=/^\s+|\s+$/g,e=/\s+/g,f=/(^([\w ]+,?[\w ]+)?[\w ]+,?[\w ]+\d+:\d+(:\d+)?[\w ]?|^\d{1,4}[\/\-]\d{1,4}[\/\-]\d{1,4}|^\w+, \w+ \d+, \d{4})/,g=/^0x[0-9a-f]+$/i,h=/^0/,i=function(a){return(naturalSort.insensitive&&(""+a).toLowerCase()||""+a).replace(d,"")},j=i(a),k=i(b),l=j.replace(c,"\0$1\0").replace(/\0$/,"").replace(/^\0/,"").split("\0"),m=k.replace(c,"\0$1\0").replace(/\0$/,"").replace(/^\0/,"").split("\0"),n=parseInt(j.match(g),16)||1!==l.length&&Date.parse(j),o=parseInt(k.match(g),16)||n&&k.match(f)&&Date.parse(k)||null,p=function(a,b){return(!a.match(h)||1==b)&&parseFloat(a)||a.replace(e," ").replace(d,"")||0};if(o){if(n<o)return-1;if(n>o)return 1}for(var s=0,t=l.length,u=m.length,v=Math.max(t,u);s<v;s++){if(q=p(l[s]||"",t),r=p(m[s]||"",u),isNaN(q)!==isNaN(r))return isNaN(q)?1:-1;if(/[^\x00-\x80]/.test(q+r)&&q.localeCompare){var w=q.localeCompare(r);return w/Math.abs(w)}if(q<r)return-1;if(q>r)return 1}}
 
+// e.g. "Homo sapiens" -> "homo-sapiens"
+function slugify(value){return value.toLowerCase().replace(' ', '-')};
+
 // Developed by Eric Weitz (https://github.com/eweitz)
 
 /* Constructs a prototypal Ideogram class */
@@ -1281,12 +1284,12 @@ var Ideogram = function(config) {
 
   this.debug = false;
 
-  if (!this.config.ploidy) {
-    this.config.ploidy = 1;
+  if (!this.config.dataDir) {
+    this.config.dataDir = "../data/bands/native/";
   }
 
-  if (!this.config.bandDir) {
-    this.config.bandDir = "../data/bands/";
+  if (!this.config.ploidy) {
+    this.config.ploidy = 1;
   }
 
   if (!this.config.container) {
@@ -1414,10 +1417,10 @@ var Ideogram = function(config) {
       commonName: "Human",
       scientificName: "Homo sapiens",
       scientificNameAbbr: "H. sapiens",
-      assemblies: { // technically, primary assembly unit of assembly
-        default: "GCF_000001305.14", // GRCh38
-        GRCh38: "GCF_000001305.14",
-        GRCh37: "GCF_000001305.13"
+      assemblies: {
+        default: "GCF_000001405.26", // GRCh38
+        GRCh38: "GCF_000001405.26",
+        GRCh37: "GCF_000001405.13"
       }
     },
     10090: {
@@ -1425,13 +1428,8 @@ var Ideogram = function(config) {
       scientificName: "Mus musculus",
       scientificNameAbbr: "M. musculus",
       assemblies: {
-        default: "GCF_000000055.19"
+        default: "GCF_000001635.20"
       }
-    },
-    7227: {
-      commonName: "Fly",
-      scientificName: "Drosophlia melanogaster",
-      scientificNameAbbr: "D. melanogaster"
     },
     4641: {
       commonName: "banana",
@@ -2906,7 +2904,12 @@ Ideogram.prototype.getTaxids = function(callback) {
       promise = new Promise(function(resolve) {
         ideo.getTaxidFromEutils(resolve);
       });
+
       promise.then(function(data) {
+        var organism = ideo.config.organism,
+          dataDir = ideo.config.dataDir,
+          urlOrg = organism.replace(" ", "-");
+
         taxid = data;
         taxids.push(taxid);
 
@@ -2916,9 +2919,33 @@ Ideogram.prototype.getTaxids = function(callback) {
           scientificName: ideo.config.organism,
           scientificNameAbbr: ""
         };
-        return new Promise(function(resolve) {
-          ideo.getAssemblyAndChromosomesFromEutils(resolve);
-        });
+
+        var chromosomesUrl = dataDir + urlOrg + ".js";
+
+        var promise = d3.promise.json(chromosomesUrl);
+
+        return promise
+          .then(
+            function(data) {
+              // Check if chromosome data exists locally.
+              // This is used for pre-processed centromere data,
+              // which is not accessible via EUtils.  See get_chromosomes.py.
+
+              var asmAndChrArray = [],
+                chromosomes;
+              asmAndChrArray.push(data.assemblyaccession);
+              chromosomes = data.chromosomes.sort(ideo.sortChromosomes);
+              asmAndChrArray.push(chromosomes);
+              ideo.coordinateSystem = "bp";
+              return asmAndChrArray;
+            },
+            function() {
+              return new Promise(function(resolve) {
+                ideo.coordinateSystem = "bp";
+                ideo.getAssemblyAndChromosomesFromEutils(resolve);
+              });
+            }
+          );
       })
       .then(function(asmChrArray) {
         assembly = asmChrArray[0];
@@ -3289,8 +3316,7 @@ Ideogram.prototype.processBandData = function() {
 *
 */
 Ideogram.prototype.init = function() {
-  var bandDataFileNames,
-    taxid, i, svgClass;
+  var taxid, i, svgClass;
 
   var ideo = this;
 
@@ -3310,28 +3336,41 @@ Ideogram.prototype.init = function() {
     ideo.config.taxid = taxid;
     ideo.config.taxids = taxids;
 
+    var assemblies,
+      bandFileName;
+
+    var bandDataFileNames = {
+      9606: '',
+      10090: ''
+    };
+
     for (i = 0; i < taxids.length; i++) {
-      taxid = taxids[i];
+      taxid = '' + taxids[i];
 
       if (!ideo.config.assembly) {
         ideo.config.assembly = "default";
       }
-      accession = ideo.organisms[taxid].assemblies[ideo.config.assembly];
+      assemblies = ideo.organisms[taxid].assemblies;
+      accession = assemblies[ideo.config.assembly];
 
-      bandDataFileNames = {
-      // Homo sapiens (human)
-        9606: "native/ideogram_9606_" + accession + "_" + resolution + "_V1.js",
-      // 9606: "ncbi/ideogram_9606_" + accession + "_" + resolution + "_V1.tsv",
+      bandFileName = slugify(ideo.organisms[taxid].scientificName);
+      if (accession !== assemblies.default) {
+        bandFileName += '-' + accession + '-';
+      }
+      if (taxid === '9606' && resolution !== 850) {
+        if (accession === assemblies.default) {
+          bandFileName += '-';
+        }
+        bandFileName += resolution;
+      }
+      bandFileName += '.js';
 
-      // Mus musculus (mouse)
-        10090: "native/ideogram_10090_" + accession + "_NA_V2.js"
-
-      // Drosophila melanogaster (fly)
-      // 7227: "ucsc/drosophila_melanogaster_dm6.tsv"
-      };
+      if (taxid === '9606' || taxid === '10090') {
+        bandDataFileNames[taxid] = bandFileName;
+      }
 
       if (typeof chrBands === "undefined" && taxid in bandDataFileNames) {
-        d3.request(ideo.config.bandDir + bandDataFileNames[taxid])
+        d3.request(ideo.config.dataDir + bandDataFileNames[taxid])
         .on("beforesend", function(data) {
           // Ensures correct taxid is processed in response callback; using
           // simply 'taxid' variable gives the last *requested* taxid, which
@@ -3349,8 +3388,8 @@ Ideogram.prototype.init = function() {
         });
       } else {
         if (typeof chrBands !== "undefined") {
-        // If bands already available,
-        // e.g. via <script> tag in initial page load
+          // If bands already available,
+          // e.g. via <script> tag in initial page load
           ideo.bandData[taxid] = chrBands;
         }
         bandsArray = ideo.processBandData();

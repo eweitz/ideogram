@@ -21,12 +21,12 @@ var Ideogram = function(config) {
 
   this.debug = false;
 
-  if (!this.config.ploidy) {
-    this.config.ploidy = 1;
+  if (!this.config.dataDir) {
+    this.config.dataDir = "../data/bands/native/";
   }
 
-  if (!this.config.bandDir) {
-    this.config.bandDir = "../data/bands/";
+  if (!this.config.ploidy) {
+    this.config.ploidy = 1;
   }
 
   if (!this.config.container) {
@@ -154,10 +154,10 @@ var Ideogram = function(config) {
       commonName: "Human",
       scientificName: "Homo sapiens",
       scientificNameAbbr: "H. sapiens",
-      assemblies: { // technically, primary assembly unit of assembly
-        default: "GCF_000001305.14", // GRCh38
-        GRCh38: "GCF_000001305.14",
-        GRCh37: "GCF_000001305.13"
+      assemblies: {
+        default: "GCF_000001405.26", // GRCh38
+        GRCh38: "GCF_000001405.26",
+        GRCh37: "GCF_000001405.13"
       }
     },
     10090: {
@@ -165,13 +165,8 @@ var Ideogram = function(config) {
       scientificName: "Mus musculus",
       scientificNameAbbr: "M. musculus",
       assemblies: {
-        default: "GCF_000000055.19"
+        default: "GCF_000001635.20"
       }
-    },
-    7227: {
-      commonName: "Fly",
-      scientificName: "Drosophlia melanogaster",
-      scientificNameAbbr: "D. melanogaster"
     },
     4641: {
       commonName: "banana",
@@ -1646,7 +1641,12 @@ Ideogram.prototype.getTaxids = function(callback) {
       promise = new Promise(function(resolve) {
         ideo.getTaxidFromEutils(resolve);
       });
+
       promise.then(function(data) {
+        var organism = ideo.config.organism,
+          dataDir = ideo.config.dataDir,
+          urlOrg = organism.replace(" ", "-");
+
         taxid = data;
         taxids.push(taxid);
 
@@ -1656,9 +1656,33 @@ Ideogram.prototype.getTaxids = function(callback) {
           scientificName: ideo.config.organism,
           scientificNameAbbr: ""
         };
-        return new Promise(function(resolve) {
-          ideo.getAssemblyAndChromosomesFromEutils(resolve);
-        });
+
+        var chromosomesUrl = dataDir + urlOrg + ".js";
+
+        var promise = d3.promise.json(chromosomesUrl);
+
+        return promise
+          .then(
+            function(data) {
+              // Check if chromosome data exists locally.
+              // This is used for pre-processed centromere data,
+              // which is not accessible via EUtils.  See get_chromosomes.py.
+
+              var asmAndChrArray = [],
+                chromosomes;
+              asmAndChrArray.push(data.assemblyaccession);
+              chromosomes = data.chromosomes.sort(ideo.sortChromosomes);
+              asmAndChrArray.push(chromosomes);
+              ideo.coordinateSystem = "bp";
+              return asmAndChrArray;
+            },
+            function() {
+              return new Promise(function(resolve) {
+                ideo.coordinateSystem = "bp";
+                ideo.getAssemblyAndChromosomesFromEutils(resolve);
+              });
+            }
+          );
       })
       .then(function(asmChrArray) {
         assembly = asmChrArray[0];
@@ -2029,8 +2053,7 @@ Ideogram.prototype.processBandData = function() {
 *
 */
 Ideogram.prototype.init = function() {
-  var bandDataFileNames,
-    taxid, i, svgClass;
+  var taxid, i, svgClass;
 
   var ideo = this;
 
@@ -2050,28 +2073,41 @@ Ideogram.prototype.init = function() {
     ideo.config.taxid = taxid;
     ideo.config.taxids = taxids;
 
+    var assemblies,
+      bandFileName;
+
+    var bandDataFileNames = {
+      9606: '',
+      10090: ''
+    };
+
     for (i = 0; i < taxids.length; i++) {
-      taxid = taxids[i];
+      taxid = String(taxids[i]);
 
       if (!ideo.config.assembly) {
         ideo.config.assembly = "default";
       }
-      accession = ideo.organisms[taxid].assemblies[ideo.config.assembly];
+      assemblies = ideo.organisms[taxid].assemblies;
+      accession = assemblies[ideo.config.assembly];
 
-      bandDataFileNames = {
-      // Homo sapiens (human)
-        9606: "native/ideogram_9606_" + accession + "_" + resolution + "_V1.js",
-      // 9606: "ncbi/ideogram_9606_" + accession + "_" + resolution + "_V1.tsv",
+      bandFileName = slugify(ideo.organisms[taxid].scientificName);
+      if (accession !== assemblies.default) {
+        bandFileName += '-' + accession + '-';
+      }
+      if (taxid === '9606' && resolution !== 850) {
+        if (accession === assemblies.default) {
+          bandFileName += '-';
+        }
+        bandFileName += resolution;
+      }
+      bandFileName += '.js';
 
-      // Mus musculus (mouse)
-        10090: "native/ideogram_10090_" + accession + "_NA_V2.js"
-
-      // Drosophila melanogaster (fly)
-      // 7227: "ucsc/drosophila_melanogaster_dm6.tsv"
-      };
+      if (taxid === '9606' || taxid === '10090') {
+        bandDataFileNames[taxid] = bandFileName;
+      }
 
       if (typeof chrBands === "undefined" && taxid in bandDataFileNames) {
-        d3.request(ideo.config.bandDir + bandDataFileNames[taxid])
+        d3.request(ideo.config.dataDir + bandDataFileNames[taxid])
         .on("beforesend", function(data) {
           // Ensures correct taxid is processed in response callback; using
           // simply 'taxid' variable gives the last *requested* taxid, which
@@ -2089,8 +2125,8 @@ Ideogram.prototype.init = function() {
         });
       } else {
         if (typeof chrBands !== "undefined") {
-        // If bands already available,
-        // e.g. via <script> tag in initial page load
+          // If bands already available,
+          // e.g. via <script> tag in initial page load
           ideo.bandData[taxid] = chrBands;
         }
         bandsArray = ideo.processBandData();
