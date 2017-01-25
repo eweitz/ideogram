@@ -178,7 +178,7 @@ def find_genomes_with_centromeres(asm_summary_response):
             continue
 
         result = data['result'][uid]
-        acc = result['assemblyaccession'] # RefSeq accession
+        acc = result['assemblyaccession'] # RefSeq accession.version
         name = result['assemblyname']
         rs_uid = result['rsuid']
         taxid = result['taxid']
@@ -189,9 +189,15 @@ def find_genomes_with_centromeres(asm_summary_response):
 
         asm_segment = acc + '_' + name.replace(' ', '_').replace('-', '_')
 
-        # Example: ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF_000001515.7_Pan_tro_3.0/GCF_000001515.7_Pan_tro_3.0_assembly_structure/Primary_Assembly/assembled_chromosomes/AGP/chr1.agp.gz
+        split_acc = ''
+        for i, char in enumerate(acc.split('.')[0].replace('_', '')):
+            split_acc += char
+            if (i + 1) % 3 == 0:
+                split_acc += '/'
+
+        # Example: ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/515/GCF_000001515.7_Pan_tro_3.0/GCF_000001515.7_Pan_tro_3.0_assembly_structure/Primary_Assembly/assembled_chromosomes/AGP/chr1.agp.gz
         agp_ftp_wd = (
-            '/genomes/all/' +
+            '/genomes/all/' + split_acc +
             asm_segment + '/' + asm_segment + '_assembly_structure/' +
             'Primary_Assembly/assembled_chromosomes/AGP/'
         )
