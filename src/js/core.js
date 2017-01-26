@@ -208,10 +208,18 @@ Ideogram.prototype.getBands = function(content, taxid, chromosomes) {
   var lines = {},
     delimiter, tsvLines, columns, line, stain, chr,
     i, init, tsvLinesLength, source,
-    start, stop, firstColumn;
+    start, stop, firstColumn, tmp;
 
   if (content.slice(0, 8) === "chrBands") {
     source = "native";
+  }
+
+  if (typeof chromosomes === "object") {
+    tmp = [];
+    for (i = 0; i < chromosomes.length; i++) {
+      tmp.push(chromosomes[i].name)
+    }
+    chromosomes = tmp;
   }
 
   if (typeof chrBands === "undefined" && source !== "native") {
@@ -1659,7 +1667,14 @@ Ideogram.prototype.getTaxids = function(callback) {
 
         var chromosomesUrl = dataDir + urlOrg + ".js";
 
-        var promise = d3.promise.json(chromosomesUrl);
+        var promise = new Promise(function(resolve, reject) {
+          d3.request(chromosomesUrl).get(function(error, data) {
+            if (error) {
+              reject(Error(error));
+            }
+            resolve(data);
+          });
+        })
 
         return promise
           .then(
@@ -1669,11 +1684,26 @@ Ideogram.prototype.getTaxids = function(callback) {
               // which is not accessible via EUtils.  See get_chromosomes.py.
 
               var asmAndChrArray = [],
-                chromosomes;
-              asmAndChrArray.push(data.assemblyaccession);
-              chromosomes = data.chromosomes.sort(ideo.sortChromosomes);
+                chromosomes = [],
+                seenChrs = {},
+                chr;
+
+              eval(data.response);
+
+              asmAndChrArray.push('');
+
+              for (var i = 0; i < chrBands.length; i++) {
+                chr = chrBands[i].split(' ')[0];
+                if (chr in seenChrs) {
+                  continue;
+                } else {
+                  chromosomes.push({'name': chr, 'type': 'nuclear'})
+                  seenChrs[chr] = 1;
+                }
+              }
+              chromsomes = chromosomes.sort(ideo.sortChromosomes);
               asmAndChrArray.push(chromosomes);
-              ideo.coordinateSystem = "bp";
+              ideo.coordinateSystem = "iscn";
               return asmAndChrArray;
             },
             function() {
@@ -2276,8 +2306,8 @@ Ideogram.prototype.init = function() {
         d3.selectAll(".chromosome").style("cursor", "default");
       }
     } catch (e) {
-      console.log(e);
-      //  throw e;
+      // console.log(e);
+      throw e;
     }
   }
 };
