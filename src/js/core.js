@@ -433,7 +433,7 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid,
     chr.bands = chr.bands.slice(1);
   }
 
-  if (chr.bands.length === 1) {
+  if (hasBands && chr.bands.length === 1) {
     // Encountered when processing an assembly that has chromosomes with
     // centromere data, but this chromosome does not.
     // Example: chromosome F1 in Felis catus.
@@ -1576,10 +1576,12 @@ Ideogram.prototype.getBandColorGradients = function() {
     '.gpos66 {fill: url("#gpos66")} ' +
     '.gpos75 {fill: url("#gpos75")} ' +
     '.gpos100 {fill: url("#gpos100")} ' +
+    '.gpos {fill: url("#gpos100")} ' +
     '.acen {fill: url("#acen")} ' +
     '.stalk {fill: url("#stalk")} ' +
     '.gvar {fill: url("#gvar")} ' +
     '.noBands {fill: url("#noBands")} ' +
+    '.chromosome {fill: url("#noBands")} ' +
   '</style>';
   gradients = css + gradients;
 
