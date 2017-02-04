@@ -154,24 +154,26 @@ def download_genome_agp(asm):
         for chr in chrs:
             name = chr['name']
             length = chr['length']
+
+            iscn_stop_q = str(round(length) / max_chr_length * 10000)
+            length = str(length)
+
             if 'centromere' in chr:
                 cen = chr['centromere']
                 midpoint = cen['start'] + round(cen['length']/2)
 
-                iscn_stop_p = str(midpoint / max_chr_length * 10000)
-                iscn_stop_q = str(round(length - midpoint) / max_chr_length * 10000)
+                iscn_stop_p = str(round(midpoint / max_chr_length * 10000))
 
-                length = str(length)
                 midpoint = str(midpoint)
 
-                adapted_chromosomes += [
-                    name + ' p 1 0 ' + iscn_stop_p + ' 0 ' + midpoint,
-                    name + ' q 1 0 ' + iscn_stop_q + ' ' + midpoint + ' ' + length
-                ]
-            else:
-                iscn_stop_q = str(length / max_chr_length * 10000)
-                length = str(length)
+                p = name + ' p 1 0 ' + iscn_stop_p + ' 0 ' + midpoint;
+                q = (
+                    name + ' q 1 ' + str(int(iscn_stop_p) + 1) + ' ' + iscn_stop_q +
+                    ' ' + midpoint + ' ' + length
+                )
 
+                adapted_chromosomes += [p, q]
+            else:
                 adapted_chromosomes.append(
                     name + ' n 1 0 ' + iscn_stop_q + ' 0 ' + length
                 )
