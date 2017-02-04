@@ -3302,7 +3302,9 @@ Ideogram.prototype.processBandData = function() {
 
       bandsByChr = ideo.getBands(bandData, taxid, chrs);
 
-      chrs = Object.keys(bandsByChr);
+      chrs = Object.keys(bandsByChr).sort(function(a, b) {
+        return naturalSort(a, b)
+      });
 
       ideo.config.chromosomes[taxid] = chrs.slice();
       ideo.numChromosomes += ideo.config.chromosomes[taxid].length;
