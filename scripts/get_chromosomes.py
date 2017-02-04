@@ -169,8 +169,12 @@ def download_genome_agp(asm):
                     name + ' q 1 0 ' + iscn_stop_q + ' ' + midpoint + ' ' + length
                 ]
             else:
+                iscn_stop_q = str(length / max_chr_length * 10000)
                 length = str(length)
-                adapted_chromosomes.append(name + ' ' + length)
+
+                adapted_chromosomes.append(
+                    name + ' n 1 0 ' + iscn_stop_q + ' 0 ' + length
+                )
         js_chrs = 'chrBands = ' + json.dumps(adapted_chromosomes)
 
         with open(output_path, 'w') as f:

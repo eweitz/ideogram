@@ -1696,6 +1696,10 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid,
     chr.bands = chr.bands.slice(1);
   }
 
+  if (chr.bands.length === 1) {
+    delete chr.bands;
+  }
+
   return chr;
 };
 
@@ -3174,6 +3178,7 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
     taxid,
     chrIndex = 0,
     chrSetNumber = 0,
+    bands,
     i, j, chrs, chromosome, chrModel,
     defs, transform;
 
