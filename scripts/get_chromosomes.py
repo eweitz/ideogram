@@ -145,17 +145,31 @@ def download_genome_agp(asm):
         output_path = output_dir + organism + ".js"
 
         adapted_chromosomes = []
+
+        max_chr_length = 0
+        for chr in chrs:
+            if chr['length'] > max_chr_length:
+                max_chr_length = chr['length']
+
         for chr in chrs:
             name = chr['name']
-            length = str(chr['length'])
+            length = chr['length']
             if 'centromere' in chr:
                 cen = chr['centromere']
-                midpoint = str(cen['start'] + round(cen['length']/2))
+                midpoint = cen['start'] + round(cen['length']/2)
+
+                iscn_stop_p = str(midpoint / max_chr_length * 10000)
+                iscn_stop_q = str(round(length - midpoint) / max_chr_length * 10000)
+
+                length = str(length)
+                midpoint = str(midpoint)
+
                 adapted_chromosomes += [
-                    name + ' p 0 ' + midpoint,
-                    name + ' q ' + midpoint + ' ' + length
+                    name + ' p 1 0 ' + iscn_stop_p + ' 0 ' + midpoint,
+                    name + ' q 1 0 ' + iscn_stop_q + ' ' + midpoint + ' ' + length
                 ]
             else:
+                length = str(length)
                 adapted_chromosomes.append(name + ' ' + length)
         js_chrs = 'chrBands = ' + json.dumps(adapted_chromosomes)
 
