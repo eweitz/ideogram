@@ -14,7 +14,7 @@ ModelNoBandsAdapter.prototype.getModel = function() {
     // If chromosome width more, then 1 add single band to bands array
   if (this._model.width > 1) {
     this._model.bands.push({
-      name: 'p',
+      name: 'q',
       px: {
         start: 0,
         stop: this._model.width,

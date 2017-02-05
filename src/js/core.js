@@ -425,8 +425,8 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid,
   chr.bands = bands;
 
   chr.centromerePosition = "";
-  if (hasBands && bands[0].bp.stop - bands[0].bp.start === 1) {
-    // As with mouse
+  if (hasBands && bands[0].name[0] === 'p' && bands[1].name[0] == 'q' && bands[0].bp.stop - bands[0].bp.start < 2E6) {
+    // As with almost all mouse chromosome, chimpanzee chr22
     chr.centromerePosition = "telocentric";
 
     // Remove placeholder pter band
