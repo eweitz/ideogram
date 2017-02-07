@@ -50,7 +50,7 @@ Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
   clipPath = this._addPArmShape(clipPath, isPArmRendered);
   clipPath = this._addQArmShape(clipPath, isQArmRendered);
 
-    // Render chromosome border
+  // Render chromosome border
   var self = this;
   container.append('g')
         .attr('class', 'chromosome-border')
@@ -61,7 +61,10 @@ Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
         .attr('fill', 'transparent')
         .attr('stroke', function(d, i) {
           return self._color.getBorderColor(chrSetNumber, chrNumber, i);
-        }).attr('stroke-width', 1)
+        })
+        .attr('stroke-width', function(d) {
+          return ('strokeWidth' in d ? d.strokeWidth : 1);
+        })
         .attr('d', function(d) {
           return d.path;
         }).attr('class', function(d) {
