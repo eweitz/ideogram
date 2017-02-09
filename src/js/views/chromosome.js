@@ -163,7 +163,7 @@ Chromosome.prototype._getPArmShape = function() {
       path:
         'M' + d.b + ',0 ' +
         'L' + (x - 2) + ',0 ' +
-        'Q' + (d.x2 + d.b) + ',' + (d.w / 2) + ',' + (x - 2)+ ',' + d.w + ' ' +
+        'L' + (x - 2) + ',' + d.w + ' ' +
         'L' + d.b + ',' + d.w + ' ' +
         'Q-' + d.b + ',' + (d.w / 2) + ',' + d.b + ',0'
     }, {
@@ -182,7 +182,7 @@ Chromosome.prototype._getQArmShape = function() {
   var d = this._getShapeData(),
     x = d.x3 - d.b;
 
-  // if (this._model.bands && this._model.bands.length > 2) {
+  if (this._model.bands && this._model.bands.length > 2) {
     // e.g. human reference genome
 
     return {
@@ -194,26 +194,25 @@ Chromosome.prototype._getQArmShape = function() {
         'L' + (d.x2 + d.b) + ',' + d.w + ' ' +
         'Q' + (d.x2 - d.b) + ',' + (d.w / 2) + ',' + (d.x2 + d.b) + ',0'
     };
-  // } else {
-  //   // e.g. chimpanzee assembly Pan_tro 3.0
-  //   return [{
-  //     path:
-  //       'M' + (d.x2 + x) + ',0 ' +
-  //       'L' + (x + 2) + ',0 ' +
-  //       'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + (x + 2) + ',' + d.w + ' ' +
-  //       'L' + (d.x2 + d.b) + ',' + d.w + ' ' +
-  //       'Q' + (d.x2 - d.b) + ',' + (d.w / 2) + ',' + (d.x2 + d.b) + ',0'
-  //
-  //   }, {
-  //     class: 'acen',
-  //     path:
-  //       'M' + x + ',0 ' +
-  //       'Q' + (d.x2 + d.b) + ',' + (d.w / 2) + ',' + x + ',' + d.w + ' ' +
-  //       'L' + x + ',' + d.w + ' ' +
-  //       'L' + (d.x2 + d.b + 2) + ',' + d.w + ' ' +
-  //       'L' + (d.x2 + d.b + 2) + ',0'
-  //   }];
-  // }
+  } else {
+    // e.g. chimpanzee assembly Pan_tro 3.0
+    return [{
+      path:
+        'M' + (d.x2 + x) + ',0 ' +
+        'L' + (x) + ',0 ' +
+        'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + (x) + ',' + d.w + ' ' +
+        'L' + (d.x2 + d.b) + ',' + d.w + ' ' +
+        'L' + (d.x2 + d.b) + ',0'
+    }, {
+      class: 'acen',
+      path:
+        'M' + (d.x2 + d.b) + ',0' +
+        'Q' + (d.x2 - d.b) + ',' + (d.w / 2) + ',' + (d.x2 + d.b) + ',' + d.w + ' ' +
+        'L' + (d.x2 + d.b) + ',' + d.w +
+        'L' + (d.x2 + d.b + 2) + ',' + d.w +
+        'L' + (d.x2 + d.b + 2) + ',0'
+    }];
+  }
 
 };
 
