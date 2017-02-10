@@ -1154,7 +1154,7 @@ Chromosome.prototype._getQArmShape = function() {
   var d = this._getShapeData(),
     x = d.x3 - d.b;
 
-  if (this._model.bands && this._model.bands.length > 2) {
+  if (this._model.bands && this._model.bands.length !== 2) {
     // e.g. human reference genome
 
     return {
