@@ -1530,7 +1530,10 @@ Ideogram.prototype.getBands = function(content, taxid, chromosomes) {
     source = "native";
   }
 
-  if (typeof chromosomes === "object" && !(chromosomes instanceof Array)) {
+  if (
+    chromosomes instanceof Array &&
+    typeof chromosomes[0] === 'object'
+  ) {
     tmp = [];
     for (i = 0; i < chromosomes.length; i++) {
       tmp.push(chromosomes[i].name)
