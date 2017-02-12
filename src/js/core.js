@@ -214,7 +214,7 @@ Ideogram.prototype.getBands = function(content, taxid, chromosomes) {
     source = "native";
   }
 
-  if (typeof chromosomes === "object") {
+  if (typeof chromosomes === "object" && !(chromosomes instanceof Array)) {
     tmp = [];
     for (i = 0; i < chromosomes.length; i++) {
       tmp.push(chromosomes[i].name)
@@ -2157,7 +2157,10 @@ Ideogram.prototype.init = function() {
           data.taxid = taxid;
         })
         .get(function(error, data) {
-          ideo.bandData[data.taxid] = data.response;
+
+          eval(data.response);
+
+          ideo.bandData[data.taxid] = chrBands;
           numBandDataResponses += 1;
 
           if (numBandDataResponses === taxids.length) {

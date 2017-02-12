@@ -1155,7 +1155,9 @@ Chromosome.prototype._getQArmShape = function() {
     x = d.x3 - d.b;
 
   if (this._model.bands && this._model.bands.length !== 2) {
-    // e.g. human reference genome
+    // Encountered when chromosome has either:
+    //  - One placeholder "band", e.g. pig genome GCF_000003025.5
+    //  - Many (> 2) bands, e.g. human reference genome
 
     return {
       class: '',
@@ -1528,7 +1530,7 @@ Ideogram.prototype.getBands = function(content, taxid, chromosomes) {
     source = "native";
   }
 
-  if (typeof chromosomes === "object") {
+  if (typeof chromosomes === "object" && !(chromosomes instanceof Array)) {
     tmp = [];
     for (i = 0; i < chromosomes.length; i++) {
       tmp.push(chromosomes[i].name)
@@ -3471,7 +3473,10 @@ Ideogram.prototype.init = function() {
           data.taxid = taxid;
         })
         .get(function(error, data) {
-          ideo.bandData[data.taxid] = data.response;
+
+          eval(data.response);
+
+          ideo.bandData[data.taxid] = chrBands;
           numBandDataResponses += 1;
 
           if (numBandDataResponses === taxids.length) {
