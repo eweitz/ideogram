@@ -145,8 +145,14 @@ Chromosome.prototype._getPArmShape = function() {
   var d = this._getShapeData(),
     x = d.x2 - d.b;
 
-  if (this._model.bands && this._model.bands.length > 2) {
-    // e.g. human reference genome
+  if (
+    this._model.bands && this._model.bands.length > 2 ||
+    '_config' in this._color._ploidy && 'ancestors' in this._color._ploidy._config
+  ) {
+    // Encountered when chromosome has any of:
+    //  - One placeholder "band", e.g. pig genome GCF_000003025.5
+    //  - Many (> 2) bands, e.g. human reference genome
+    //  - Ancestor colors in ploidy configuration, as in ploidy_basic.html
     return {
       class: '',
       path:
@@ -182,10 +188,10 @@ Chromosome.prototype._getQArmShape = function() {
   var d = this._getShapeData(),
     x = d.x3 - d.b;
 
-  if (this._model.bands && this._model.bands.length !== 2) {
-    // Encountered when chromosome has either:
-    //  - One placeholder "band", e.g. pig genome GCF_000003025.5
-    //  - Many (> 2) bands, e.g. human reference genome
+  if (
+    this._model.bands && this._model.bands.length !== 2 ||
+    '_config' in this._color._ploidy && 'ancestors' in this._color._ploidy._config
+  ) {
 
     return {
       class: '',
