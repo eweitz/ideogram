@@ -1118,7 +1118,7 @@ Chromosome.prototype._getPArmShape = function() {
     x = d.x2 - d.b;
 
   if (
-    this._model.bands && this._model.bands.length > 2 ||
+    this._model.bands && (this._model.bands[0].name[0] === 'q' || this._model.bands.length !== 2) ||
     '_config' in this._color._ploidy && 'ancestors' in this._color._ploidy._config
   ) {
     // Encountered when chromosome has any of:
@@ -1161,7 +1161,7 @@ Chromosome.prototype._getQArmShape = function() {
     x = d.x3 - d.b;
 
   if (
-    this._model.bands && this._model.bands.length !== 2 ||
+    this._model.bands && (this._model.bands[0].name[0] === 'q' || this._model.bands.length !== 2) ||
     '_config' in this._color._ploidy && 'ancestors' in this._color._ploidy._config
   ) {
 
@@ -1750,7 +1750,10 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid,
   chr.bands = bands;
 
   chr.centromerePosition = "";
-  if (hasBands && bands[0].name[0] === 'p' && bands[1].name[0] == 'q' && bands[0].bp.stop - bands[0].bp.start < 2E6) {
+  if (
+    hasBands && bands[0].name[0] === 'p' && bands[1].name[0] == 'q' &&
+    bands[0].bp.stop - bands[0].bp.start < 2E6
+  ) {
     // As with almost all mouse chromosome, chimpanzee chr22
     chr.centromerePosition = "telocentric";
 
