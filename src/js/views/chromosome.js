@@ -146,8 +146,10 @@ Chromosome.prototype._getPArmShape = function() {
     x = d.x2 - d.b;
 
   if (
-    this._model.bands && (this._model.bands[0].name[0] === 'q' || this._model.bands.length !== 2) ||
-    '_config' in this._color._ploidy && 'ancestors' in this._color._ploidy._config
+    this._model.bands &&
+    (this._model.bands[0].name[0] === 'q' || this._model.bands.length !== 2) ||
+    '_config' in this._color._ploidy &&
+    'ancestors' in this._color._ploidy._config
   ) {
     // Encountered when chromosome has any of:
     //  - One placeholder "band", e.g. pig genome GCF_000003025.5
@@ -186,21 +188,23 @@ Chromosome.prototype._getPArmShape = function() {
 
 Chromosome.prototype._getQArmShape = function() {
   var d = this._getShapeData(),
-    x = d.x3 - d.b;
+    x = d.x3 - d.b,
+    x2b = d.x2 + d.b;
 
   if (
-    this._model.bands && (this._model.bands[0].name[0] === 'q' || this._model.bands.length !== 2) ||
-    '_config' in this._color._ploidy && 'ancestors' in this._color._ploidy._config
+    this._model.bands &&
+    (this._model.bands[0].name[0] === 'q' || this._model.bands.length !== 2) ||
+    '_config' in this._color._ploidy &&
+    'ancestors' in this._color._ploidy._config
   ) {
-
     return {
       class: '',
       path:
-        'M' + (d.x2 + d.b) + ',0 ' +
+        'M' + x2b + ',0 ' +
         'L' + x + ',0 ' +
         'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + x + ',' + d.w + ' ' +
-        'L' + (d.x2 + d.b) + ',' + d.w + ' ' +
-        'Q' + (d.x2 - d.b) + ',' + (d.w / 2) + ',' + (d.x2 + d.b) + ',0'
+        'L' + x2b + ',' + d.w + ' ' +
+        'Q' + (d.x2 - d.b) + ',' + (d.w / 2) + ',' + x2b + ',0'
     };
   } else {
     // e.g. chimpanzee assembly Pan_tro 3.0
@@ -209,19 +213,18 @@ Chromosome.prototype._getQArmShape = function() {
         'M' + (d.x2 + x) + ',0 ' +
         'L' + (x) + ',0 ' +
         'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + (x) + ',' + d.w + ' ' +
-        'L' + (d.x2 + d.b) + ',' + d.w + ' ' +
-        'L' + (d.x2 + d.b) + ',0'
+        'L' + x2b + ',' + d.w + ' ' +
+        'L' + x2b + ',0'
     }, {
       class: 'acen',
       path:
-        'M' + (d.x2 + d.b) + ',0' +
-        'Q' + (d.x2 - d.b) + ',' + (d.w / 2) + ',' + (d.x2 + d.b) + ',' + d.w + ' ' +
-        'L' + (d.x2 + d.b) + ',' + d.w +
-        'L' + (d.x2 + d.b + 2) + ',' + d.w +
-        'L' + (d.x2 + d.b + 2) + ',0'
+        'M' + x2b + ',0' +
+        'Q' + (d.x2 - d.b) + ',' + (d.w / 2) + ',' + x2b + ',' + d.w + ' ' +
+        'L' + x2b + ',' + d.w +
+        'L' + (x2b + 2) + ',' + d.w +
+        'L' + (x2b + 2) + ',0'
     }];
   }
-
 };
 
 // Render arm bands

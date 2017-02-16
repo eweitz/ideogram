@@ -220,7 +220,7 @@ Ideogram.prototype.getBands = function(content, taxid, chromosomes) {
   ) {
     tmp = [];
     for (i = 0; i < chromosomes.length; i++) {
-      tmp.push(chromosomes[i].name)
+      tmp.push(chromosomes[i].name);
     }
     chromosomes = tmp;
   }
@@ -429,7 +429,7 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid,
 
   chr.centromerePosition = "";
   if (
-    hasBands && bands[0].name[0] === 'p' && bands[1].name[0] == 'q' &&
+    hasBands && bands[0].name[0] === 'p' && bands[1].name[0] === 'q' &&
     bands[0].bp.stop - bands[0].bp.start < 2E6
   ) {
     // As with almost all mouse chromosome, chimpanzee chr22
@@ -1666,6 +1666,7 @@ Ideogram.prototype.getTaxids = function(callback) {
       });
 
       promise.then(function(data) {
+
         var organism = ideo.config.organism,
           dataDir = ideo.config.dataDir,
           urlOrg = organism.replace(" ", "-");
@@ -1689,11 +1690,13 @@ Ideogram.prototype.getTaxids = function(callback) {
             }
             resolve(data);
           });
-        })
+        });
 
         return promise
           .then(
             function(data) {
+              console.log('foo3');
+
               // Check if chromosome data exists locally.
               // This is used for pre-processed centromere data,
               // which is not accessible via EUtils.  See get_chromosomes.py.
@@ -1712,7 +1715,7 @@ Ideogram.prototype.getTaxids = function(callback) {
                 if (chr in seenChrs) {
                   continue;
                 } else {
-                  chromosomes.push({'name': chr, 'type': 'nuclear'})
+                  chromosomes.push({name: chr, type: 'nuclear'});
                   seenChrs[chr] = 1;
                 }
               }
@@ -2046,7 +2049,7 @@ Ideogram.prototype.processBandData = function() {
       bandsByChr = ideo.getBands(bandData, taxid, chrs);
 
       chrs = Object.keys(bandsByChr).sort(function(a, b) {
-        return naturalSort(a, b)
+        return naturalSort(a, b);
       });
 
       ideo.config.chromosomes[taxid] = chrs.slice();
@@ -2163,7 +2166,6 @@ Ideogram.prototype.init = function() {
           data.taxid = taxid;
         })
         .get(function(error, data) {
-
           eval(data.response);
 
           ideo.bandData[data.taxid] = chrBands;

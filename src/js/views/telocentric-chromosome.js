@@ -35,7 +35,6 @@ TelocentricChromosome.prototype._getQArmShape = function() {
     x = d.x3 - d.b,
     o = this._pArmOffset + 3;
 
-
   return {
     class: '',
     path:
