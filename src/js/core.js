@@ -1695,8 +1695,6 @@ Ideogram.prototype.getTaxids = function(callback) {
         return promise
           .then(
             function(data) {
-              console.log('foo3');
-
               // Check if chromosome data exists locally.
               // This is used for pre-processed centromere data,
               // which is not accessible via EUtils.  See get_chromosomes.py.
@@ -1814,7 +1812,8 @@ Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
     "&db=assembly" +
     "&term=%22" + organism + "%22[organism]" +
       "AND%20(%22latest%20refseq%22[filter])%20" +
-      "AND%20%22chromosome%20level%22[filter]";
+      "AND%20(%22chromosome%20level%22[filter]%20" +
+      "OR%20%22complete%20genome%22[filter])";
 
   var promise = d3.promise.json(asmSearch);
 

@@ -1118,8 +1118,10 @@ Chromosome.prototype._getPArmShape = function() {
     x = d.x2 - d.b;
 
   if (
-    this._model.bands && (this._model.bands[0].name[0] === 'q' || this._model.bands.length !== 2) ||
-    '_config' in this._color._ploidy && 'ancestors' in this._color._ploidy._config
+    this._model.bands &&
+    (this._model.bands[0].name[0] === 'q' || this._model.bands.length !== 2) ||
+    '_config' in this._color._ploidy &&
+    'ancestors' in this._color._ploidy._config
   ) {
     // Encountered when chromosome has any of:
     //  - One placeholder "band", e.g. pig genome GCF_000003025.5
@@ -1158,21 +1160,23 @@ Chromosome.prototype._getPArmShape = function() {
 
 Chromosome.prototype._getQArmShape = function() {
   var d = this._getShapeData(),
-    x = d.x3 - d.b;
+    x = d.x3 - d.b,
+    x2b = d.x2 + d.b;
 
   if (
-    this._model.bands && (this._model.bands[0].name[0] === 'q' || this._model.bands.length !== 2) ||
-    '_config' in this._color._ploidy && 'ancestors' in this._color._ploidy._config
+    this._model.bands &&
+    (this._model.bands[0].name[0] === 'q' || this._model.bands.length !== 2) ||
+    '_config' in this._color._ploidy &&
+    'ancestors' in this._color._ploidy._config
   ) {
-
     return {
       class: '',
       path:
-        'M' + (d.x2 + d.b) + ',0 ' +
+        'M' + x2b + ',0 ' +
         'L' + x + ',0 ' +
         'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + x + ',' + d.w + ' ' +
-        'L' + (d.x2 + d.b) + ',' + d.w + ' ' +
-        'Q' + (d.x2 - d.b) + ',' + (d.w / 2) + ',' + (d.x2 + d.b) + ',0'
+        'L' + x2b + ',' + d.w + ' ' +
+        'Q' + (d.x2 - d.b) + ',' + (d.w / 2) + ',' + x2b + ',0'
     };
   } else {
     // e.g. chimpanzee assembly Pan_tro 3.0
@@ -1181,19 +1185,18 @@ Chromosome.prototype._getQArmShape = function() {
         'M' + (d.x2 + x) + ',0 ' +
         'L' + (x) + ',0 ' +
         'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + (x) + ',' + d.w + ' ' +
-        'L' + (d.x2 + d.b) + ',' + d.w + ' ' +
-        'L' + (d.x2 + d.b) + ',0'
+        'L' + x2b + ',' + d.w + ' ' +
+        'L' + x2b + ',0'
     }, {
       class: 'acen',
       path:
-        'M' + (d.x2 + d.b) + ',0' +
-        'Q' + (d.x2 - d.b) + ',' + (d.w / 2) + ',' + (d.x2 + d.b) + ',' + d.w + ' ' +
-        'L' + (d.x2 + d.b) + ',' + d.w +
-        'L' + (d.x2 + d.b + 2) + ',' + d.w +
-        'L' + (d.x2 + d.b + 2) + ',0'
+        'M' + x2b + ',0' +
+        'Q' + (d.x2 - d.b) + ',' + (d.w / 2) + ',' + x2b + ',' + d.w + ' ' +
+        'L' + x2b + ',' + d.w +
+        'L' + (x2b + 2) + ',' + d.w +
+        'L' + (x2b + 2) + ',0'
     }];
   }
-
 };
 
 // Render arm bands
@@ -1289,7 +1292,6 @@ TelocentricChromosome.prototype._getQArmShape = function() {
   var d = this._getShapeData(),
     x = d.x3 - d.b,
     o = this._pArmOffset + 3;
-
 
   return {
     class: '',
@@ -1542,7 +1544,7 @@ Ideogram.prototype.getBands = function(content, taxid, chromosomes) {
   ) {
     tmp = [];
     for (i = 0; i < chromosomes.length; i++) {
-      tmp.push(chromosomes[i].name)
+      tmp.push(chromosomes[i].name);
     }
     chromosomes = tmp;
   }
@@ -1751,7 +1753,7 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid,
 
   chr.centromerePosition = "";
   if (
-    hasBands && bands[0].name[0] === 'p' && bands[1].name[0] == 'q' &&
+    hasBands && bands[0].name[0] === 'p' && bands[1].name[0] === 'q' &&
     bands[0].bp.stop - bands[0].bp.start < 2E6
   ) {
     // As with almost all mouse chromosome, chimpanzee chr22
@@ -2988,6 +2990,7 @@ Ideogram.prototype.getTaxids = function(callback) {
       });
 
       promise.then(function(data) {
+
         var organism = ideo.config.organism,
           dataDir = ideo.config.dataDir,
           urlOrg = organism.replace(" ", "-");
@@ -3011,7 +3014,7 @@ Ideogram.prototype.getTaxids = function(callback) {
             }
             resolve(data);
           });
-        })
+        });
 
         return promise
           .then(
@@ -3034,7 +3037,7 @@ Ideogram.prototype.getTaxids = function(callback) {
                 if (chr in seenChrs) {
                   continue;
                 } else {
-                  chromosomes.push({'name': chr, 'type': 'nuclear'})
+                  chromosomes.push({name: chr, type: 'nuclear'});
                   seenChrs[chr] = 1;
                 }
               }
@@ -3133,7 +3136,8 @@ Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
     "&db=assembly" +
     "&term=%22" + organism + "%22[organism]" +
       "AND%20(%22latest%20refseq%22[filter])%20" +
-      "AND%20%22chromosome%20level%22[filter]";
+      "AND%20(%22chromosome%20level%22[filter]%20" +
+      "OR%20%22complete%20genome%22[filter])";
 
   var promise = d3.promise.json(asmSearch);
 
@@ -3368,7 +3372,7 @@ Ideogram.prototype.processBandData = function() {
       bandsByChr = ideo.getBands(bandData, taxid, chrs);
 
       chrs = Object.keys(bandsByChr).sort(function(a, b) {
-        return naturalSort(a, b)
+        return naturalSort(a, b);
       });
 
       ideo.config.chromosomes[taxid] = chrs.slice();
@@ -3485,7 +3489,6 @@ Ideogram.prototype.init = function() {
           data.taxid = taxid;
         })
         .get(function(error, data) {
-
           eval(data.response);
 
           ideo.bandData[data.taxid] = chrBands;
