@@ -210,9 +210,9 @@ Chromosome.prototype._getQArmShape = function() {
     // e.g. chimpanzee assembly Pan_tro 3.0
     return [{
       path:
-        'M' + (d.x2 + x) + ',0 ' +
-        'L' + (x) + ',0 ' +
-        'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + (x) + ',' + d.w + ' ' +
+        'M' + x2b + ',0 ' +
+        'L' + x + ',0 ' +
+        'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + x + ',' + d.w + ' ' +
         'L' + x2b + ',' + d.w + ' ' +
         'L' + x2b + ',0'
     }, {
