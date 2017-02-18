@@ -80,7 +80,7 @@ ModelNoBandsAdapter.prototype.getModel = function() {
     // If chromosome width more, then 1 add single band to bands array
   if (this._model.width > 1) {
     this._model.bands.push({
-      name: 'p',
+      name: 'q',
       px: {
         start: 0,
         stop: this._model.width,
@@ -1022,7 +1022,7 @@ Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
   clipPath = this._addPArmShape(clipPath, isPArmRendered);
   clipPath = this._addQArmShape(clipPath, isQArmRendered);
 
-    // Render chromosome border
+  // Render chromosome border
   var self = this;
   container.append('g')
         .attr('class', 'chromosome-border')
@@ -1033,7 +1033,10 @@ Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
         .attr('fill', 'transparent')
         .attr('stroke', function(d, i) {
           return self._color.getBorderColor(chrSetNumber, chrNumber, i);
-        }).attr('stroke-width', 1)
+        })
+        .attr('stroke-width', function(d) {
+          return ('strokeWidth' in d ? d.strokeWidth : 1);
+        })
         .attr('d', function(d) {
           return d.path;
         }).attr('class', function(d) {
@@ -1114,30 +1117,86 @@ Chromosome.prototype._getPArmShape = function() {
   var d = this._getShapeData(),
     x = d.x2 - d.b;
 
-  return {
-    class: '',
-    path:
-      'M' + d.b + ',0 ' +
-      'L' + x + ',0 ' +
-      'Q' + (d.x2 + d.b) + ',' + (d.w / 2) + ',' + x + ',' + d.w + ' ' +
-      'L' + d.b + ',' + d.w + ' ' +
-      'Q-' + d.b + ',' + (d.w / 2) + ',' + d.b + ',0'
-  };
+  if (
+    this._model.bands &&
+    (this._model.bands[0].name[0] === 'q' || this._model.bands.length !== 2) ||
+    '_config' in this._color._ploidy &&
+    'ancestors' in this._color._ploidy._config
+  ) {
+    // Encountered when chromosome has any of:
+    //  - One placeholder "band", e.g. pig genome GCF_000003025.5
+    //  - Many (> 2) bands, e.g. human reference genome
+    //  - Ancestor colors in ploidy configuration, as in ploidy_basic.html
+    return {
+      class: '',
+      path:
+        'M' + d.b + ',0 ' +
+        'L' + x + ',0 ' +
+        'Q' + (d.x2 + d.b) + ',' + (d.w / 2) + ',' + x + ',' + d.w + ' ' +
+        'L' + d.b + ',' + d.w + ' ' +
+        'Q-' + d.b + ',' + (d.w / 2) + ',' + d.b + ',0'
+    };
+  } else {
+    // e.g. chimpanzee assembly Pan_tro 3.0
+    return [{
+      class: '',
+      path:
+        'M' + d.b + ',0 ' +
+        'L' + (x - 2) + ',0 ' +
+        'L' + (x - 2) + ',' + d.w + ' ' +
+        'L' + d.b + ',' + d.w + ' ' +
+        'Q-' + d.b + ',' + (d.w / 2) + ',' + d.b + ',0'
+    }, {
+      class: 'acen',
+      path:
+        'M' + x + ',0 ' +
+        'Q' + (d.x2 + d.b) + ',' + (d.w / 2) + ',' + x + ',' + d.w + ' ' +
+        'L' + x + ',' + d.w + ' ' +
+        'L' + (x - 2) + ',' + d.w + ' ' +
+        'L' + (x - 2) + ',0'
+    }];
+  }
 };
 
 Chromosome.prototype._getQArmShape = function() {
   var d = this._getShapeData(),
-    x = d.x3 - d.b;
+    x = d.x3 - d.b,
+    x2b = d.x2 + d.b;
 
-  return {
-    class: '',
-    path:
-      'M' + (d.x2 + d.b) + ',0 ' +
-      'L' + x + ',0 ' +
-      'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + x + ',' + d.w + ' ' +
-      'L' + (d.x2 + d.b) + ',' + d.w + ' ' +
-      'Q' + (d.x2 - d.b) + ',' + (d.w / 2) + ',' + (d.x2 + d.b) + ',0'
-  };
+  if (
+    this._model.bands &&
+    (this._model.bands[0].name[0] === 'q' || this._model.bands.length !== 2) ||
+    '_config' in this._color._ploidy &&
+    'ancestors' in this._color._ploidy._config
+  ) {
+    return {
+      class: '',
+      path:
+        'M' + x2b + ',0 ' +
+        'L' + x + ',0 ' +
+        'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + x + ',' + d.w + ' ' +
+        'L' + x2b + ',' + d.w + ' ' +
+        'Q' + (d.x2 - d.b) + ',' + (d.w / 2) + ',' + x2b + ',0'
+    };
+  } else {
+    // e.g. chimpanzee assembly Pan_tro 3.0
+    return [{
+      path:
+        'M' + (d.x2 + x) + ',0 ' +
+        'L' + (x) + ',0 ' +
+        'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + (x) + ',' + d.w + ' ' +
+        'L' + x2b + ',' + d.w + ' ' +
+        'L' + x2b + ',0'
+    }, {
+      class: 'acen',
+      path:
+        'M' + x2b + ',0' +
+        'Q' + (d.x2 - d.b) + ',' + (d.w / 2) + ',' + x2b + ',' + d.w + ' ' +
+        'L' + x2b + ',' + d.w +
+        'L' + (x2b + 2) + ',' + d.w +
+        'L' + (x2b + 2) + ',0'
+    }];
+  }
 };
 
 // Render arm bands
@@ -1215,30 +1274,32 @@ TelocentricChromosome.prototype._getPArmShape = function() {
 
   return [{
     class: 'acen',
-    path: 'M' + d.x2 + ',1' +
-            'L' + (d.x2 - d.o) + ',1 ' +
-            'L' + (d.x2 - d.o) + ',' + (d.w - 1) + ' ' +
-            'L' + d.x2 + ',' + (d.w - 1)
+    path: 'M' + (d.x2 + 2) + ',1' +
+            'L' + (d.x2 + d.o + 3.25) + ',1 ' +
+            'L' + (d.x2 + d.o + 3.25) + ',' + (d.w - 1) + ' ' +
+            'L' + (d.x2 + 2) + ',' + (d.w - 1)
   }, {
-    class: 'gpos100',
-    path: 'M' + (d.x2 - d.o + 1) + ',0' +
-        'L' + (d.x2 - d.o) + ',0 ' +
-        'L' + (d.x2 - d.o) + ',' + d.w + ' ' +
-        'L' + (d.x2 - d.o + 1) + ',' + d.w
+    class: 'gpos66',
+    path: 'M' + (d.x2 - d.o + 5) + ',0' +
+        'L' + (d.x2 - d.o + 3) + ',0 ' +
+        'L' + (d.x2 - d.o + 3) + ',' + d.w + ' ' +
+        'L' + (d.x2 - d.o + 5) + ',' + d.w,
+    strokeWidth: 0.5
   }];
 };
 
 TelocentricChromosome.prototype._getQArmShape = function() {
   var d = this._getShapeData(),
-    x = d.x3 - d.b;
+    x = d.x3 - d.b,
+    o = this._pArmOffset + 3;
 
   return {
     class: '',
     path:
-      'M' + d.x2 + ',0 ' +
+      'M' + (d.x2 + o) + ',0 ' +
       'L' + x + ',0 ' +
       'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + x + ',' + d.w + ' ' +
-      'L' + d.x2 + ',' + d.w
+      'L' + (d.x2 + o) + ',' + d.w
   };
 };
 
@@ -1253,10 +1314,13 @@ MetacentricChromosome.prototype = Object.create(Chromosome.prototype);
 (function(){"use strict";function t(t){return"function"==typeof t||"object"==typeof t&&null!==t}function e(t){return"function"==typeof t}function n(t){G=t}function r(t){Q=t}function o(){return function(){process.nextTick(a)}}function i(){return function(){B(a)}}function s(){var t=0,e=new X(a),n=document.createTextNode("");return e.observe(n,{characterData:!0}),function(){n.data=t=++t%2}}function u(){var t=new MessageChannel;return t.port1.onmessage=a,function(){t.port2.postMessage(0)}}function c(){return function(){setTimeout(a,1)}}function a(){for(var t=0;J>t;t+=2){var e=tt[t],n=tt[t+1];e(n),tt[t]=void 0,tt[t+1]=void 0}J=0}function f(){try{var t=require,e=t("vertx");return B=e.runOnLoop||e.runOnContext,i()}catch(n){return c()}}function l(t,e){var n=this,r=new this.constructor(p);void 0===r[rt]&&k(r);var o=n._state;if(o){var i=arguments[o-1];Q(function(){x(o,r,i,n._result)})}else E(n,r,t,e);return r}function h(t){var e=this;if(t&&"object"==typeof t&&t.constructor===e)return t;var n=new e(p);return g(n,t),n}function p(){}function _(){return new TypeError("You cannot resolve a promise with itself")}function d(){return new TypeError("A promises callback cannot return that same promise.")}function v(t){try{return t.then}catch(e){return ut.error=e,ut}}function y(t,e,n,r){try{t.call(e,n,r)}catch(o){return o}}function m(t,e,n){Q(function(t){var r=!1,o=y(n,e,function(n){r||(r=!0,e!==n?g(t,n):S(t,n))},function(e){r||(r=!0,j(t,e))},"Settle: "+(t._label||" unknown promise"));!r&&o&&(r=!0,j(t,o))},t)}function b(t,e){e._state===it?S(t,e._result):e._state===st?j(t,e._result):E(e,void 0,function(e){g(t,e)},function(e){j(t,e)})}function w(t,n,r){n.constructor===t.constructor&&r===et&&constructor.resolve===nt?b(t,n):r===ut?j(t,ut.error):void 0===r?S(t,n):e(r)?m(t,n,r):S(t,n)}function g(e,n){e===n?j(e,_()):t(n)?w(e,n,v(n)):S(e,n)}function A(t){t._onerror&&t._onerror(t._result),T(t)}function S(t,e){t._state===ot&&(t._result=e,t._state=it,0!==t._subscribers.length&&Q(T,t))}function j(t,e){t._state===ot&&(t._state=st,t._result=e,Q(A,t))}function E(t,e,n,r){var o=t._subscribers,i=o.length;t._onerror=null,o[i]=e,o[i+it]=n,o[i+st]=r,0===i&&t._state&&Q(T,t)}function T(t){var e=t._subscribers,n=t._state;if(0!==e.length){for(var r,o,i=t._result,s=0;s<e.length;s+=3)r=e[s],o=e[s+n],r?x(n,r,o,i):o(i);t._subscribers.length=0}}function M(){this.error=null}function P(t,e){try{return t(e)}catch(n){return ct.error=n,ct}}function x(t,n,r,o){var i,s,u,c,a=e(r);if(a){if(i=P(r,o),i===ct?(c=!0,s=i.error,i=null):u=!0,n===i)return void j(n,d())}else i=o,u=!0;n._state!==ot||(a&&u?g(n,i):c?j(n,s):t===it?S(n,i):t===st&&j(n,i))}function C(t,e){try{e(function(e){g(t,e)},function(e){j(t,e)})}catch(n){j(t,n)}}function O(){return at++}function k(t){t[rt]=at++,t._state=void 0,t._result=void 0,t._subscribers=[]}function Y(t){return new _t(this,t).promise}function q(t){var e=this;return new e(I(t)?function(n,r){for(var o=t.length,i=0;o>i;i++)e.resolve(t[i]).then(n,r)}:function(t,e){e(new TypeError("You must pass an array to race."))})}function F(t){var e=this,n=new e(p);return j(n,t),n}function D(){throw new TypeError("You must pass a resolver function as the first argument to the promise constructor")}function K(){throw new TypeError("Failed to construct 'Promise': Please use the 'new' operator, this object constructor cannot be called as a function.")}function L(t){this[rt]=O(),this._result=this._state=void 0,this._subscribers=[],p!==t&&("function"!=typeof t&&D(),this instanceof L?C(this,t):K())}function N(t,e){this._instanceConstructor=t,this.promise=new t(p),this.promise[rt]||k(this.promise),I(e)?(this._input=e,this.length=e.length,this._remaining=e.length,this._result=new Array(this.length),0===this.length?S(this.promise,this._result):(this.length=this.length||0,this._enumerate(),0===this._remaining&&S(this.promise,this._result))):j(this.promise,U())}function U(){return new Error("Array Methods must be provided an Array")}function W(){var t;if("undefined"!=typeof global)t=global;else if("undefined"!=typeof self)t=self;else try{t=Function("return this")()}catch(e){throw new Error("polyfill failed because global object is unavailable in this environment")}var n=t.Promise;(!n||"[object Promise]"!==Object.prototype.toString.call(n.resolve())||n.cast)&&(t.Promise=pt)}var z;z=Array.isArray?Array.isArray:function(t){return"[object Array]"===Object.prototype.toString.call(t)};var B,G,H,I=z,J=0,Q=function(t,e){tt[J]=t,tt[J+1]=e,J+=2,2===J&&(G?G(a):H())},R="undefined"!=typeof window?window:void 0,V=R||{},X=V.MutationObserver||V.WebKitMutationObserver,Z="undefined"==typeof self&&"undefined"!=typeof process&&"[object process]"==={}.toString.call(process),$="undefined"!=typeof Uint8ClampedArray&&"undefined"!=typeof importScripts&&"undefined"!=typeof MessageChannel,tt=new Array(1e3);H=Z?o():X?s():$?u():void 0===R&&"function"==typeof require?f():c();var et=l,nt=h,rt=Math.random().toString(36).substring(16),ot=void 0,it=1,st=2,ut=new M,ct=new M,at=0,ft=Y,lt=q,ht=F,pt=L;L.all=ft,L.race=lt,L.resolve=nt,L.reject=ht,L._setScheduler=n,L._setAsap=r,L._asap=Q,L.prototype={constructor:L,then:et,"catch":function(t){return this.then(null,t)}};var _t=N;N.prototype._enumerate=function(){for(var t=this.length,e=this._input,n=0;this._state===ot&&t>n;n++)this._eachEntry(e[n],n)},N.prototype._eachEntry=function(t,e){var n=this._instanceConstructor,r=n.resolve;if(r===nt){var o=v(t);if(o===et&&t._state!==ot)this._settledAt(t._state,e,t._result);else if("function"!=typeof o)this._remaining--,this._result[e]=t;else if(n===pt){var i=new n(p);w(i,t,o),this._willSettleAt(i,e)}else this._willSettleAt(new n(function(e){e(t)}),e)}else this._willSettleAt(r(t),e)},N.prototype._settledAt=function(t,e,n){var r=this.promise;r._state===ot&&(this._remaining--,t===st?j(r,n):this._result[e]=n),0===this._remaining&&S(r,this._result)},N.prototype._willSettleAt=function(t,e){var n=this;E(t,void 0,function(t){n._settledAt(it,e,t)},function(t){n._settledAt(st,e,t)})};var dt=W,vt={Promise:pt,polyfill:dt};"function"==typeof define&&define.amd?define(function(){return vt}):"undefined"!=typeof module&&module.exports?module.exports=vt:"undefined"!=typeof this&&(this.ES6Promise=vt),dt()}).call(this);
 
 // https://github.com/kristw/d3.promise
-!function(a,b){"function"==typeof define&&define.amd?define(["d3"],b):"object"==typeof exports?module.exports=b(require("d3")):a.d3.promise=b(a.d3)}(this,function(a){var b=function(){function b(a,b){return function(){var c=Array.prototype.slice.call(arguments);return new Promise(function(d,e){var f=function(a,b){return a?void e(Error(a)):void d(b)};b.apply(a,c.concat(f))})}}var c={};return["csv","tsv","json","xml","text","html"].forEach(function(d){c[d]=b(a,a[d])}),c}();return a.promise=b,b});
+!function(a,b){"function"==typeof define&&define.amd?define(["d3"],b):"object"==typeof exports?module.exports=b(require("d3")):a.d3.promise=b(a.d3)}(this,function(a){var b=function(){function b(a,b){return function(){var c=Array.prototype.slice.call(arguments);return new Promise(function(d,e){var f=function(a,b){return a?void e(Error(a)):void d(b)};b.apply(a,c.concat(f))})}}var c={};return["csv","tsv","json","xml","text","html","get"].forEach(function(d){c[d]=b(a,a[d])}),c}();return a.promise=b,b});
 
 // https://github.com/overset/javascript-natural-sort
 function naturalSort(a,b){var q,r,c=/(^([+\-]?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?(?=\D|\s|$))|^0x[\da-fA-F]+$|\d+)/g,d=/^\s+|\s+$/g,e=/\s+/g,f=/(^([\w ]+,?[\w ]+)?[\w ]+,?[\w ]+\d+:\d+(:\d+)?[\w ]?|^\d{1,4}[\/\-]\d{1,4}[\/\-]\d{1,4}|^\w+, \w+ \d+, \d{4})/,g=/^0x[0-9a-f]+$/i,h=/^0/,i=function(a){return(naturalSort.insensitive&&(""+a).toLowerCase()||""+a).replace(d,"")},j=i(a),k=i(b),l=j.replace(c,"\0$1\0").replace(/\0$/,"").replace(/^\0/,"").split("\0"),m=k.replace(c,"\0$1\0").replace(/\0$/,"").replace(/^\0/,"").split("\0"),n=parseInt(j.match(g),16)||1!==l.length&&Date.parse(j),o=parseInt(k.match(g),16)||n&&k.match(f)&&Date.parse(k)||null,p=function(a,b){return(!a.match(h)||1==b)&&parseFloat(a)||a.replace(e," ").replace(d,"")||0};if(o){if(n<o)return-1;if(n>o)return 1}for(var s=0,t=l.length,u=m.length,v=Math.max(t,u);s<v;s++){if(q=p(l[s]||"",t),r=p(m[s]||"",u),isNaN(q)!==isNaN(r))return isNaN(q)?1:-1;if(/[^\x00-\x80]/.test(q+r)&&q.localeCompare){var w=q.localeCompare(r);return w/Math.abs(w)}if(q<r)return-1;if(q>r)return 1}}
+
+// e.g. "Homo sapiens" -> "homo-sapiens"
+function slugify(value){return value.toLowerCase().replace(' ', '-')};
 
 // Developed by Eric Weitz (https://github.com/eweitz)
 
@@ -1281,12 +1345,12 @@ var Ideogram = function(config) {
 
   this.debug = false;
 
-  if (!this.config.ploidy) {
-    this.config.ploidy = 1;
+  if (!this.config.dataDir) {
+    this.config.dataDir = "../data/bands/native/";
   }
 
-  if (!this.config.bandDir) {
-    this.config.bandDir = "../data/bands/";
+  if (!this.config.ploidy) {
+    this.config.ploidy = 1;
   }
 
   if (!this.config.container) {
@@ -1414,10 +1478,10 @@ var Ideogram = function(config) {
       commonName: "Human",
       scientificName: "Homo sapiens",
       scientificNameAbbr: "H. sapiens",
-      assemblies: { // technically, primary assembly unit of assembly
-        default: "GCF_000001305.14", // GRCh38
-        GRCh38: "GCF_000001305.14",
-        GRCh37: "GCF_000001305.13"
+      assemblies: {
+        default: "GCF_000001405.26", // GRCh38
+        GRCh38: "GCF_000001405.26",
+        GRCh37: "GCF_000001405.13"
       }
     },
     10090: {
@@ -1425,13 +1489,8 @@ var Ideogram = function(config) {
       scientificName: "Mus musculus",
       scientificNameAbbr: "M. musculus",
       assemblies: {
-        default: "GCF_000000055.19"
+        default: "GCF_000001635.20"
       }
-    },
-    7227: {
-      commonName: "Fly",
-      scientificName: "Drosophlia melanogaster",
-      scientificNameAbbr: "D. melanogaster"
     },
     4641: {
       commonName: "banana",
@@ -1473,10 +1532,21 @@ Ideogram.prototype.getBands = function(content, taxid, chromosomes) {
   var lines = {},
     delimiter, tsvLines, columns, line, stain, chr,
     i, init, tsvLinesLength, source,
-    start, stop, firstColumn;
+    start, stop, firstColumn, tmp;
 
   if (content.slice(0, 8) === "chrBands") {
     source = "native";
+  }
+
+  if (
+    chromosomes instanceof Array &&
+    typeof chromosomes[0] === 'object'
+  ) {
+    tmp = [];
+    for (i = 0; i < chromosomes.length; i++) {
+      tmp.push(chromosomes[i].name);
+    }
+    chromosomes = tmp;
   }
 
   if (typeof chrBands === "undefined" && source !== "native") {
@@ -1682,12 +1752,22 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid,
   chr.bands = bands;
 
   chr.centromerePosition = "";
-  if (hasBands && bands[0].bp.stop - bands[0].bp.start === 1) {
-    // As with mouse
+  if (
+    hasBands && bands[0].name[0] === 'p' && bands[1].name[0] === 'q' &&
+    bands[0].bp.stop - bands[0].bp.start < 2E6
+  ) {
+    // As with almost all mouse chromosome, chimpanzee chr22
     chr.centromerePosition = "telocentric";
 
     // Remove placeholder pter band
     chr.bands = chr.bands.slice(1);
+  }
+
+  if (hasBands && chr.bands.length === 1) {
+    // Encountered when processing an assembly that has chromosomes with
+    // centromere data, but this chromosome does not.
+    // Example: chromosome F1 in Felis catus.
+    delete chr.bands;
   }
 
   return chr;
@@ -2826,10 +2906,12 @@ Ideogram.prototype.getBandColorGradients = function() {
     '.gpos66 {fill: url("#gpos66")} ' +
     '.gpos75 {fill: url("#gpos75")} ' +
     '.gpos100 {fill: url("#gpos100")} ' +
+    '.gpos {fill: url("#gpos100")} ' +
     '.acen {fill: url("#acen")} ' +
     '.stalk {fill: url("#stalk")} ' +
     '.gvar {fill: url("#gvar")} ' +
     '.noBands {fill: url("#noBands")} ' +
+    '.chromosome {fill: url("#noBands")} ' +
   '</style>';
   gradients = css + gradients;
 
@@ -2906,7 +2988,13 @@ Ideogram.prototype.getTaxids = function(callback) {
       promise = new Promise(function(resolve) {
         ideo.getTaxidFromEutils(resolve);
       });
+
       promise.then(function(data) {
+
+        var organism = ideo.config.organism,
+          dataDir = ideo.config.dataDir,
+          urlOrg = organism.replace(" ", "-");
+
         taxid = data;
         taxids.push(taxid);
 
@@ -2916,9 +3004,55 @@ Ideogram.prototype.getTaxids = function(callback) {
           scientificName: ideo.config.organism,
           scientificNameAbbr: ""
         };
-        return new Promise(function(resolve) {
-          ideo.getAssemblyAndChromosomesFromEutils(resolve);
+
+        var chromosomesUrl = dataDir + urlOrg + ".js";
+
+        var promise = new Promise(function(resolve, reject) {
+          d3.request(chromosomesUrl).get(function(error, data) {
+            if (error) {
+              reject(Error(error));
+            }
+            resolve(data);
+          });
         });
+
+        return promise
+          .then(
+            function(data) {
+              // Check if chromosome data exists locally.
+              // This is used for pre-processed centromere data,
+              // which is not accessible via EUtils.  See get_chromosomes.py.
+
+              var asmAndChrArray = [],
+                chromosomes = [],
+                seenChrs = {},
+                chr;
+
+              eval(data.response);
+
+              asmAndChrArray.push('');
+
+              for (var i = 0; i < chrBands.length; i++) {
+                chr = chrBands[i].split(' ')[0];
+                if (chr in seenChrs) {
+                  continue;
+                } else {
+                  chromosomes.push({name: chr, type: 'nuclear'});
+                  seenChrs[chr] = 1;
+                }
+              }
+              chromsomes = chromosomes.sort(ideo.sortChromosomes);
+              asmAndChrArray.push(chromosomes);
+              ideo.coordinateSystem = "iscn";
+              return asmAndChrArray;
+            },
+            function() {
+              return new Promise(function(resolve) {
+                ideo.coordinateSystem = "bp";
+                ideo.getAssemblyAndChromosomesFromEutils(resolve);
+              });
+            }
+          );
       })
       .then(function(asmChrArray) {
         assembly = asmChrArray[0];
@@ -3002,7 +3136,8 @@ Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
     "&db=assembly" +
     "&term=%22" + organism + "%22[organism]" +
       "AND%20(%22latest%20refseq%22[filter])%20" +
-      "AND%20%22chromosome%20level%22[filter]";
+      "AND%20(%22chromosome%20level%22[filter]%20" +
+      "OR%20%22complete%20genome%22[filter])";
 
   var promise = d3.promise.json(asmSearch);
 
@@ -3117,6 +3252,7 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
     taxid,
     chrIndex = 0,
     chrSetNumber = 0,
+    bands,
     i, j, chrs, chromosome, chrModel,
     defs, transform;
 
@@ -3178,6 +3314,111 @@ Ideogram.prototype.getSvg = function() {
   return d3.select('#_ideogram').node();
 };
 
+/*
+* Completes default ideogram initialization
+* by calling downstream functions to
+* process raw band data into full JSON objects,
+* render chromosome and cytoband figures and labels,
+* apply initial graphical transformations,
+* hide overlapping band labels, and
+* execute callbacks defined by client code
+*/
+Ideogram.prototype.processBandData = function() {
+  var bandsArray, j, k, chromosome, bands,
+    chrLength, chr,
+    bandData, bandsByChr,
+    taxid, taxids, chrs, chrsByTaxid,
+    ideo = this;
+
+  bandsArray = [];
+  maxLength = 0;
+
+  if (ideo.config.multiorganism === true) {
+    ideo.coordinateSystem = "bp";
+    taxids = ideo.config.taxids;
+    for (i = 0; i < taxids.length; i++) {
+      taxid = taxids[i];
+    }
+  } else {
+    if (typeof ideo.config.taxid === "undefined") {
+      ideo.config.taxid = ideo.config.taxids[0];
+    }
+    taxid = ideo.config.taxid;
+    taxids = [taxid];
+    ideo.config.taxids = taxids;
+  }
+
+  if ("chromosomes" in ideo.config) {
+    chrs = ideo.config.chromosomes;
+  }
+  if (ideo.config.multiorganism) {
+    chrsByTaxid = chrs;
+  }
+
+  ideo.config.chromosomes = {};
+
+  var t0B = new Date().getTime();
+
+  for (j = 0; j < taxids.length; j++) {
+    taxid = taxids[j];
+
+    if (ideo.config.multiorganism) {
+      chrs = chrsByTaxid[taxid];
+    }
+
+    if (ideo.coordinateSystem === "iscn" || ideo.config.multiorganism) {
+      bandData = ideo.bandData[taxid];
+
+      bandsByChr = ideo.getBands(bandData, taxid, chrs);
+
+      chrs = Object.keys(bandsByChr).sort(function(a, b) {
+        return naturalSort(a, b);
+      });
+
+      ideo.config.chromosomes[taxid] = chrs.slice();
+      ideo.numChromosomes += ideo.config.chromosomes[taxid].length;
+
+      for (k = 0; k < chrs.length; k++) {
+        chromosome = chrs[k];
+        bands = bandsByChr[chromosome];
+        bandsArray.push(bands);
+
+        chrLength = {
+          iscn: bands[bands.length - 1].iscn.stop,
+          bp: bands[bands.length - 1].bp.stop
+        };
+
+        if (chrLength.iscn > ideo.maxLength.iscn) {
+          ideo.maxLength.iscn = chrLength.iscn;
+        }
+
+        if (chrLength.bp > ideo.maxLength.bp) {
+          ideo.maxLength.bp = chrLength.bp;
+        }
+      }
+    } else if (ideo.coordinateSystem === "bp") {
+      // If lacking band-level data
+
+      ideo.config.chromosomes[taxid] = chrs.slice();
+      ideo.numChromosomes += ideo.config.chromosomes[taxid].length;
+
+      for (k = 0; k < chrs.length; k++) {
+        chr = chrs[k];
+        if (chr.length > ideo.maxLength.bp) {
+          ideo.maxLength.bp = chr.length;
+        }
+      }
+    }
+  }
+
+  var t1B = new Date().getTime();
+  if (ideo.debug) {
+    console.log("Time in processBandData: " + (t1B - t0B) + " ms");
+  }
+
+  return bandsArray;
+};
+
 /**
 * Initializes an ideogram.
 * Sets some high-level properties based on instance configuration,
@@ -3186,8 +3427,7 @@ Ideogram.prototype.getSvg = function() {
 *
 */
 Ideogram.prototype.init = function() {
-  var bandDataFileNames,
-    taxid, i, svgClass;
+  var taxid, i, svgClass;
 
   var ideo = this;
 
@@ -3207,28 +3447,41 @@ Ideogram.prototype.init = function() {
     ideo.config.taxid = taxid;
     ideo.config.taxids = taxids;
 
+    var assemblies,
+      bandFileName;
+
+    var bandDataFileNames = {
+      9606: '',
+      10090: ''
+    };
+
     for (i = 0; i < taxids.length; i++) {
-      taxid = taxids[i];
+      taxid = String(taxids[i]);
 
       if (!ideo.config.assembly) {
         ideo.config.assembly = "default";
       }
-      accession = ideo.organisms[taxid].assemblies[ideo.config.assembly];
+      assemblies = ideo.organisms[taxid].assemblies;
+      accession = assemblies[ideo.config.assembly];
 
-      bandDataFileNames = {
-      // Homo sapiens (human)
-        9606: "native/ideogram_9606_" + accession + "_" + resolution + "_V1.js",
-      // 9606: "ncbi/ideogram_9606_" + accession + "_" + resolution + "_V1.tsv",
+      bandFileName = slugify(ideo.organisms[taxid].scientificName);
+      if (accession !== assemblies.default) {
+        bandFileName += '-' + accession + '-';
+      }
+      if (taxid === '9606' && resolution !== 850) {
+        if (accession === assemblies.default) {
+          bandFileName += '-';
+        }
+        bandFileName += resolution;
+      }
+      bandFileName += '.js';
 
-      // Mus musculus (mouse)
-        10090: "native/ideogram_10090_" + accession + "_NA_V2.js"
-
-      // Drosophila melanogaster (fly)
-      // 7227: "ucsc/drosophila_melanogaster_dm6.tsv"
-      };
+      if (taxid === '9606' || taxid === '10090') {
+        bandDataFileNames[taxid] = bandFileName;
+      }
 
       if (typeof chrBands === "undefined" && taxid in bandDataFileNames) {
-        d3.request(ideo.config.bandDir + bandDataFileNames[taxid])
+        d3.request(ideo.config.dataDir + bandDataFileNames[taxid])
         .on("beforesend", function(data) {
           // Ensures correct taxid is processed in response callback; using
           // simply 'taxid' variable gives the last *requested* taxid, which
@@ -3236,21 +3489,23 @@ Ideogram.prototype.init = function() {
           data.taxid = taxid;
         })
         .get(function(error, data) {
-          ideo.bandData[data.taxid] = data.response;
+          eval(data.response);
+
+          ideo.bandData[data.taxid] = chrBands;
           numBandDataResponses += 1;
 
           if (numBandDataResponses === taxids.length) {
-            processBandData();
+            bandsArray = ideo.processBandData();
             writeContainer();
           }
         });
       } else {
         if (typeof chrBands !== "undefined") {
-        // If bands already available,
-        // e.g. via <script> tag in initial page load
+          // If bands already available,
+          // e.g. via <script> tag in initial page load
           ideo.bandData[taxid] = chrBands;
         }
-        processBandData();
+        bandsArray = ideo.processBandData();
         writeContainer();
       }
     }
@@ -3294,106 +3549,6 @@ Ideogram.prototype.init = function() {
         .html(gradients);
 
     finishInit();
-  }
-
-  /*
-  * Completes default ideogram initialization
-  * by calling downstream functions to
-  * process raw band data into full JSON objects,
-  * render chromosome and cytoband figures and labels,
-  * apply initial graphical transformations,
-  * hide overlapping band labels, and
-  * execute callbacks defined by client code
-  */
-  function processBandData() {
-    var j, k, chromosome, bands,
-      chrLength, chr,
-      bandData, bandsByChr,
-      taxid, taxids, chrs, chrsByTaxid;
-
-    bandsArray = [];
-    maxLength = 0;
-
-    if (ideo.config.multiorganism === true) {
-      ideo.coordinateSystem = "bp";
-      taxids = ideo.config.taxids;
-      for (i = 0; i < taxids.length; i++) {
-        taxid = taxids[i];
-      }
-    } else {
-      if (typeof ideo.config.taxid === "undefined") {
-        ideo.config.taxid = ideo.config.taxids[0];
-      }
-      taxid = ideo.config.taxid;
-      taxids = [taxid];
-      ideo.config.taxids = taxids;
-    }
-
-    if ("chromosomes" in ideo.config) {
-      chrs = ideo.config.chromosomes;
-    }
-    if (ideo.config.multiorganism) {
-      chrsByTaxid = chrs;
-    }
-
-    ideo.config.chromosomes = {};
-
-    var t0B = new Date().getTime();
-
-    for (j = 0; j < taxids.length; j++) {
-      taxid = taxids[j];
-
-      if (ideo.config.multiorganism) {
-        chrs = chrsByTaxid[taxid];
-      }
-
-      if (ideo.coordinateSystem === "iscn" || ideo.config.multiorganism) {
-        bandData = ideo.bandData[taxid];
-
-        bandsByChr = ideo.getBands(bandData, taxid, chrs);
-
-        chrs = Object.keys(bandsByChr);
-
-        ideo.config.chromosomes[taxid] = chrs.slice();
-        ideo.numChromosomes += ideo.config.chromosomes[taxid].length;
-
-        for (k = 0; k < chrs.length; k++) {
-          chromosome = chrs[k];
-          bands = bandsByChr[chromosome];
-          bandsArray.push(bands);
-
-          chrLength = {
-            iscn: bands[bands.length - 1].iscn.stop,
-            bp: bands[bands.length - 1].bp.stop
-          };
-
-          if (chrLength.iscn > ideo.maxLength.iscn) {
-            ideo.maxLength.iscn = chrLength.iscn;
-          }
-
-          if (chrLength.bp > ideo.maxLength.bp) {
-            ideo.maxLength.bp = chrLength.bp;
-          }
-        }
-      } else if (ideo.coordinateSystem === "bp") {
-        // If lacking band-level data
-
-        ideo.config.chromosomes[taxid] = chrs.slice();
-        ideo.numChromosomes += ideo.config.chromosomes[taxid].length;
-
-        for (k = 0; k < chrs.length; k++) {
-          chr = chrs[k];
-          if (chr.length > ideo.maxLength.bp) {
-            ideo.maxLength.bp = chr.length;
-          }
-        }
-      }
-    }
-
-    var t1B = new Date().getTime();
-    if (ideo.debug) {
-      console.log("Time in processBandData: " + (t1B - t0B) + " ms");
-    }
   }
 
   function finishInit() {
@@ -3497,8 +3652,8 @@ Ideogram.prototype.init = function() {
         d3.selectAll(".chromosome").style("cursor", "default");
       }
     } catch (e) {
-      console.log(e);
-      //  throw e;
+      // console.log(e);
+      throw e;
     }
   }
 };

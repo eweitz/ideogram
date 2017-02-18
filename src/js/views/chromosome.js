@@ -50,7 +50,7 @@ Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
   clipPath = this._addPArmShape(clipPath, isPArmRendered);
   clipPath = this._addQArmShape(clipPath, isQArmRendered);
 
-    // Render chromosome border
+  // Render chromosome border
   var self = this;
   container.append('g')
         .attr('class', 'chromosome-border')
@@ -61,7 +61,10 @@ Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
         .attr('fill', 'transparent')
         .attr('stroke', function(d, i) {
           return self._color.getBorderColor(chrSetNumber, chrNumber, i);
-        }).attr('stroke-width', 1)
+        })
+        .attr('stroke-width', function(d) {
+          return ('strokeWidth' in d ? d.strokeWidth : 1);
+        })
         .attr('d', function(d) {
           return d.path;
         }).attr('class', function(d) {
@@ -142,30 +145,86 @@ Chromosome.prototype._getPArmShape = function() {
   var d = this._getShapeData(),
     x = d.x2 - d.b;
 
-  return {
-    class: '',
-    path:
-      'M' + d.b + ',0 ' +
-      'L' + x + ',0 ' +
-      'Q' + (d.x2 + d.b) + ',' + (d.w / 2) + ',' + x + ',' + d.w + ' ' +
-      'L' + d.b + ',' + d.w + ' ' +
-      'Q-' + d.b + ',' + (d.w / 2) + ',' + d.b + ',0'
-  };
+  if (
+    this._model.bands &&
+    (this._model.bands[0].name[0] === 'q' || this._model.bands.length !== 2) ||
+    '_config' in this._color._ploidy &&
+    'ancestors' in this._color._ploidy._config
+  ) {
+    // Encountered when chromosome has any of:
+    //  - One placeholder "band", e.g. pig genome GCF_000003025.5
+    //  - Many (> 2) bands, e.g. human reference genome
+    //  - Ancestor colors in ploidy configuration, as in ploidy_basic.html
+    return {
+      class: '',
+      path:
+        'M' + d.b + ',0 ' +
+        'L' + x + ',0 ' +
+        'Q' + (d.x2 + d.b) + ',' + (d.w / 2) + ',' + x + ',' + d.w + ' ' +
+        'L' + d.b + ',' + d.w + ' ' +
+        'Q-' + d.b + ',' + (d.w / 2) + ',' + d.b + ',0'
+    };
+  } else {
+    // e.g. chimpanzee assembly Pan_tro 3.0
+    return [{
+      class: '',
+      path:
+        'M' + d.b + ',0 ' +
+        'L' + (x - 2) + ',0 ' +
+        'L' + (x - 2) + ',' + d.w + ' ' +
+        'L' + d.b + ',' + d.w + ' ' +
+        'Q-' + d.b + ',' + (d.w / 2) + ',' + d.b + ',0'
+    }, {
+      class: 'acen',
+      path:
+        'M' + x + ',0 ' +
+        'Q' + (d.x2 + d.b) + ',' + (d.w / 2) + ',' + x + ',' + d.w + ' ' +
+        'L' + x + ',' + d.w + ' ' +
+        'L' + (x - 2) + ',' + d.w + ' ' +
+        'L' + (x - 2) + ',0'
+    }];
+  }
 };
 
 Chromosome.prototype._getQArmShape = function() {
   var d = this._getShapeData(),
-    x = d.x3 - d.b;
+    x = d.x3 - d.b,
+    x2b = d.x2 + d.b;
 
-  return {
-    class: '',
-    path:
-      'M' + (d.x2 + d.b) + ',0 ' +
-      'L' + x + ',0 ' +
-      'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + x + ',' + d.w + ' ' +
-      'L' + (d.x2 + d.b) + ',' + d.w + ' ' +
-      'Q' + (d.x2 - d.b) + ',' + (d.w / 2) + ',' + (d.x2 + d.b) + ',0'
-  };
+  if (
+    this._model.bands &&
+    (this._model.bands[0].name[0] === 'q' || this._model.bands.length !== 2) ||
+    '_config' in this._color._ploidy &&
+    'ancestors' in this._color._ploidy._config
+  ) {
+    return {
+      class: '',
+      path:
+        'M' + x2b + ',0 ' +
+        'L' + x + ',0 ' +
+        'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + x + ',' + d.w + ' ' +
+        'L' + x2b + ',' + d.w + ' ' +
+        'Q' + (d.x2 - d.b) + ',' + (d.w / 2) + ',' + x2b + ',0'
+    };
+  } else {
+    // e.g. chimpanzee assembly Pan_tro 3.0
+    return [{
+      path:
+        'M' + (d.x2 + x) + ',0 ' +
+        'L' + (x) + ',0 ' +
+        'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + (x) + ',' + d.w + ' ' +
+        'L' + x2b + ',' + d.w + ' ' +
+        'L' + x2b + ',0'
+    }, {
+      class: 'acen',
+      path:
+        'M' + x2b + ',0' +
+        'Q' + (d.x2 - d.b) + ',' + (d.w / 2) + ',' + x2b + ',' + d.w + ' ' +
+        'L' + x2b + ',' + d.w +
+        'L' + (x2b + 2) + ',' + d.w +
+        'L' + (x2b + 2) + ',0'
+    }];
+  }
 };
 
 // Render arm bands

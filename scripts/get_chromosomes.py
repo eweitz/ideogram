@@ -13,7 +13,8 @@ import gzip
 import subprocess
 import logging
 
-output_dir = 'data/chromosomes/'
+
+output_dir = 'data/bands/native/'
 
 if os.path.exists(output_dir) == False:
     os.mkdir(output_dir)
@@ -141,14 +142,45 @@ def download_genome_agp(asm):
             'for any chromosomes in genome assembly ' + asm_name
         )
     else:
-        output_path = output_dir + organism + ".json"
-        chrs = {
-            'assemblyname': asm_name,
-            'assemblyaccession': acc,
-            'chromosomes': chrs
-        }
-        with open(output_path, "w") as f:
-            f.write(json.dumps(chrs, indent=4, sort_keys=True))
+        output_path = output_dir + organism + ".js"
+
+        adapted_chromosomes = []
+
+        max_chr_length = 0
+        for chr in chrs:
+            if chr['length'] > max_chr_length:
+                max_chr_length = chr['length']
+
+        for chr in chrs:
+            name = chr['name']
+            length = chr['length']
+
+            iscn_stop_q = str(round(length) / max_chr_length * 10000)
+            length = str(length)
+
+            if 'centromere' in chr:
+                cen = chr['centromere']
+                midpoint = cen['start'] + round(cen['length']/2)
+
+                iscn_stop_p = str(round(midpoint / max_chr_length * 10000))
+
+                midpoint = str(midpoint)
+
+                p = name + ' p 1 0 ' + iscn_stop_p + ' 0 ' + midpoint;
+                q = (
+                    name + ' q 1 ' + str(int(iscn_stop_p) + 1) + ' ' + iscn_stop_q +
+                    ' ' + midpoint + ' ' + length
+                )
+
+                adapted_chromosomes += [p, q]
+            else:
+                adapted_chromosomes.append(
+                    name + ' n 1 0 ' + iscn_stop_q + ' 0 ' + length
+                )
+        js_chrs = 'chrBands = ' + json.dumps(adapted_chromosomes)
+
+        with open(output_path, 'w') as f:
+            f.write(js_chrs)
 
     shutil.rmtree(output_dir + organism + '/')
 
@@ -166,7 +198,7 @@ def find_genomes_with_centromeres(asm_summary_response):
             continue
 
         result = data['result'][uid]
-        acc = result['assemblyaccession'] # RefSeq accession
+        acc = result['assemblyaccession'] # RefSeq accession.version
         name = result['assemblyname']
         rs_uid = result['rsuid']
         taxid = result['taxid']
@@ -177,14 +209,20 @@ def find_genomes_with_centromeres(asm_summary_response):
 
         asm_segment = acc + '_' + name.replace(' ', '_').replace('-', '_')
 
-        # Example: ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF_000001515.7_Pan_tro_3.0/GCF_000001515.7_Pan_tro_3.0_assembly_structure/Primary_Assembly/assembled_chromosomes/AGP/chr1.agp.gz
+        split_acc = ''
+        for i, char in enumerate(acc.split('.')[0].replace('_', '')):
+            split_acc += char
+            if (i + 1) % 3 == 0:
+                split_acc += '/'
+
+        # Example: ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/515/GCF_000001515.7_Pan_tro_3.0/GCF_000001515.7_Pan_tro_3.0_assembly_structure/Primary_Assembly/assembled_chromosomes/AGP/chr1.agp.gz
         agp_ftp_wd = (
-            '/genomes/all/' +
+            '/genomes/all/' + split_acc +
             asm_segment + '/' + asm_segment + '_assembly_structure/' +
             'Primary_Assembly/assembled_chromosomes/AGP/'
         )
 
-        asm_output_dir = 'data/chromosomes/' + organism + '/' + asm_segment + '/'
+        asm_output_dir = output_dir + organism + '/' + asm_segment + '/'
 
         asm = {
             'acc': acc,
@@ -236,5 +274,9 @@ with request.urlopen(asm_summary) as response:
 find_genomes_with_centromeres(data)
 
 ftp.quit()
+
+logger.info('Calling convert_band_data.py')
+import convert_band_data
+convert_band_data.main()
 
 logger.info('Ending get_chromosomes.py')

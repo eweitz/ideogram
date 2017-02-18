@@ -21,12 +21,12 @@ var Ideogram = function(config) {
 
   this.debug = false;
 
-  if (!this.config.ploidy) {
-    this.config.ploidy = 1;
+  if (!this.config.dataDir) {
+    this.config.dataDir = "../data/bands/native/";
   }
 
-  if (!this.config.bandDir) {
-    this.config.bandDir = "../data/bands/";
+  if (!this.config.ploidy) {
+    this.config.ploidy = 1;
   }
 
   if (!this.config.container) {
@@ -154,10 +154,10 @@ var Ideogram = function(config) {
       commonName: "Human",
       scientificName: "Homo sapiens",
       scientificNameAbbr: "H. sapiens",
-      assemblies: { // technically, primary assembly unit of assembly
-        default: "GCF_000001305.14", // GRCh38
-        GRCh38: "GCF_000001305.14",
-        GRCh37: "GCF_000001305.13"
+      assemblies: {
+        default: "GCF_000001405.26", // GRCh38
+        GRCh38: "GCF_000001405.26",
+        GRCh37: "GCF_000001405.13"
       }
     },
     10090: {
@@ -165,13 +165,8 @@ var Ideogram = function(config) {
       scientificName: "Mus musculus",
       scientificNameAbbr: "M. musculus",
       assemblies: {
-        default: "GCF_000000055.19"
+        default: "GCF_000001635.20"
       }
-    },
-    7227: {
-      commonName: "Fly",
-      scientificName: "Drosophlia melanogaster",
-      scientificNameAbbr: "D. melanogaster"
     },
     4641: {
       commonName: "banana",
@@ -213,10 +208,21 @@ Ideogram.prototype.getBands = function(content, taxid, chromosomes) {
   var lines = {},
     delimiter, tsvLines, columns, line, stain, chr,
     i, init, tsvLinesLength, source,
-    start, stop, firstColumn;
+    start, stop, firstColumn, tmp;
 
   if (content.slice(0, 8) === "chrBands") {
     source = "native";
+  }
+
+  if (
+    chromosomes instanceof Array &&
+    typeof chromosomes[0] === 'object'
+  ) {
+    tmp = [];
+    for (i = 0; i < chromosomes.length; i++) {
+      tmp.push(chromosomes[i].name);
+    }
+    chromosomes = tmp;
   }
 
   if (typeof chrBands === "undefined" && source !== "native") {
@@ -422,12 +428,22 @@ Ideogram.prototype.getChromosomeModel = function(bands, chromosome, taxid,
   chr.bands = bands;
 
   chr.centromerePosition = "";
-  if (hasBands && bands[0].bp.stop - bands[0].bp.start === 1) {
-    // As with mouse
+  if (
+    hasBands && bands[0].name[0] === 'p' && bands[1].name[0] === 'q' &&
+    bands[0].bp.stop - bands[0].bp.start < 2E6
+  ) {
+    // As with almost all mouse chromosome, chimpanzee chr22
     chr.centromerePosition = "telocentric";
 
     // Remove placeholder pter band
     chr.bands = chr.bands.slice(1);
+  }
+
+  if (hasBands && chr.bands.length === 1) {
+    // Encountered when processing an assembly that has chromosomes with
+    // centromere data, but this chromosome does not.
+    // Example: chromosome F1 in Felis catus.
+    delete chr.bands;
   }
 
   return chr;
@@ -1566,10 +1582,12 @@ Ideogram.prototype.getBandColorGradients = function() {
     '.gpos66 {fill: url("#gpos66")} ' +
     '.gpos75 {fill: url("#gpos75")} ' +
     '.gpos100 {fill: url("#gpos100")} ' +
+    '.gpos {fill: url("#gpos100")} ' +
     '.acen {fill: url("#acen")} ' +
     '.stalk {fill: url("#stalk")} ' +
     '.gvar {fill: url("#gvar")} ' +
     '.noBands {fill: url("#noBands")} ' +
+    '.chromosome {fill: url("#noBands")} ' +
   '</style>';
   gradients = css + gradients;
 
@@ -1646,7 +1664,13 @@ Ideogram.prototype.getTaxids = function(callback) {
       promise = new Promise(function(resolve) {
         ideo.getTaxidFromEutils(resolve);
       });
+
       promise.then(function(data) {
+
+        var organism = ideo.config.organism,
+          dataDir = ideo.config.dataDir,
+          urlOrg = organism.replace(" ", "-");
+
         taxid = data;
         taxids.push(taxid);
 
@@ -1656,9 +1680,55 @@ Ideogram.prototype.getTaxids = function(callback) {
           scientificName: ideo.config.organism,
           scientificNameAbbr: ""
         };
-        return new Promise(function(resolve) {
-          ideo.getAssemblyAndChromosomesFromEutils(resolve);
+
+        var chromosomesUrl = dataDir + urlOrg + ".js";
+
+        var promise = new Promise(function(resolve, reject) {
+          d3.request(chromosomesUrl).get(function(error, data) {
+            if (error) {
+              reject(Error(error));
+            }
+            resolve(data);
+          });
         });
+
+        return promise
+          .then(
+            function(data) {
+              // Check if chromosome data exists locally.
+              // This is used for pre-processed centromere data,
+              // which is not accessible via EUtils.  See get_chromosomes.py.
+
+              var asmAndChrArray = [],
+                chromosomes = [],
+                seenChrs = {},
+                chr;
+
+              eval(data.response);
+
+              asmAndChrArray.push('');
+
+              for (var i = 0; i < chrBands.length; i++) {
+                chr = chrBands[i].split(' ')[0];
+                if (chr in seenChrs) {
+                  continue;
+                } else {
+                  chromosomes.push({name: chr, type: 'nuclear'});
+                  seenChrs[chr] = 1;
+                }
+              }
+              chromsomes = chromosomes.sort(ideo.sortChromosomes);
+              asmAndChrArray.push(chromosomes);
+              ideo.coordinateSystem = "iscn";
+              return asmAndChrArray;
+            },
+            function() {
+              return new Promise(function(resolve) {
+                ideo.coordinateSystem = "bp";
+                ideo.getAssemblyAndChromosomesFromEutils(resolve);
+              });
+            }
+          );
       })
       .then(function(asmChrArray) {
         assembly = asmChrArray[0];
@@ -1742,7 +1812,8 @@ Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
     "&db=assembly" +
     "&term=%22" + organism + "%22[organism]" +
       "AND%20(%22latest%20refseq%22[filter])%20" +
-      "AND%20%22chromosome%20level%22[filter]";
+      "AND%20(%22chromosome%20level%22[filter]%20" +
+      "OR%20%22complete%20genome%22[filter])";
 
   var promise = d3.promise.json(asmSearch);
 
@@ -1857,6 +1928,7 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
     taxid,
     chrIndex = 0,
     chrSetNumber = 0,
+    bands,
     i, j, chrs, chromosome, chrModel,
     defs, transform;
 
@@ -1918,6 +1990,111 @@ Ideogram.prototype.getSvg = function() {
   return d3.select('#_ideogram').node();
 };
 
+/*
+* Completes default ideogram initialization
+* by calling downstream functions to
+* process raw band data into full JSON objects,
+* render chromosome and cytoband figures and labels,
+* apply initial graphical transformations,
+* hide overlapping band labels, and
+* execute callbacks defined by client code
+*/
+Ideogram.prototype.processBandData = function() {
+  var bandsArray, j, k, chromosome, bands,
+    chrLength, chr,
+    bandData, bandsByChr,
+    taxid, taxids, chrs, chrsByTaxid,
+    ideo = this;
+
+  bandsArray = [];
+  maxLength = 0;
+
+  if (ideo.config.multiorganism === true) {
+    ideo.coordinateSystem = "bp";
+    taxids = ideo.config.taxids;
+    for (i = 0; i < taxids.length; i++) {
+      taxid = taxids[i];
+    }
+  } else {
+    if (typeof ideo.config.taxid === "undefined") {
+      ideo.config.taxid = ideo.config.taxids[0];
+    }
+    taxid = ideo.config.taxid;
+    taxids = [taxid];
+    ideo.config.taxids = taxids;
+  }
+
+  if ("chromosomes" in ideo.config) {
+    chrs = ideo.config.chromosomes;
+  }
+  if (ideo.config.multiorganism) {
+    chrsByTaxid = chrs;
+  }
+
+  ideo.config.chromosomes = {};
+
+  var t0B = new Date().getTime();
+
+  for (j = 0; j < taxids.length; j++) {
+    taxid = taxids[j];
+
+    if (ideo.config.multiorganism) {
+      chrs = chrsByTaxid[taxid];
+    }
+
+    if (ideo.coordinateSystem === "iscn" || ideo.config.multiorganism) {
+      bandData = ideo.bandData[taxid];
+
+      bandsByChr = ideo.getBands(bandData, taxid, chrs);
+
+      chrs = Object.keys(bandsByChr).sort(function(a, b) {
+        return naturalSort(a, b);
+      });
+
+      ideo.config.chromosomes[taxid] = chrs.slice();
+      ideo.numChromosomes += ideo.config.chromosomes[taxid].length;
+
+      for (k = 0; k < chrs.length; k++) {
+        chromosome = chrs[k];
+        bands = bandsByChr[chromosome];
+        bandsArray.push(bands);
+
+        chrLength = {
+          iscn: bands[bands.length - 1].iscn.stop,
+          bp: bands[bands.length - 1].bp.stop
+        };
+
+        if (chrLength.iscn > ideo.maxLength.iscn) {
+          ideo.maxLength.iscn = chrLength.iscn;
+        }
+
+        if (chrLength.bp > ideo.maxLength.bp) {
+          ideo.maxLength.bp = chrLength.bp;
+        }
+      }
+    } else if (ideo.coordinateSystem === "bp") {
+      // If lacking band-level data
+
+      ideo.config.chromosomes[taxid] = chrs.slice();
+      ideo.numChromosomes += ideo.config.chromosomes[taxid].length;
+
+      for (k = 0; k < chrs.length; k++) {
+        chr = chrs[k];
+        if (chr.length > ideo.maxLength.bp) {
+          ideo.maxLength.bp = chr.length;
+        }
+      }
+    }
+  }
+
+  var t1B = new Date().getTime();
+  if (ideo.debug) {
+    console.log("Time in processBandData: " + (t1B - t0B) + " ms");
+  }
+
+  return bandsArray;
+};
+
 /**
 * Initializes an ideogram.
 * Sets some high-level properties based on instance configuration,
@@ -1926,8 +2103,7 @@ Ideogram.prototype.getSvg = function() {
 *
 */
 Ideogram.prototype.init = function() {
-  var bandDataFileNames,
-    taxid, i, svgClass;
+  var taxid, i, svgClass;
 
   var ideo = this;
 
@@ -1947,28 +2123,41 @@ Ideogram.prototype.init = function() {
     ideo.config.taxid = taxid;
     ideo.config.taxids = taxids;
 
+    var assemblies,
+      bandFileName;
+
+    var bandDataFileNames = {
+      9606: '',
+      10090: ''
+    };
+
     for (i = 0; i < taxids.length; i++) {
-      taxid = taxids[i];
+      taxid = String(taxids[i]);
 
       if (!ideo.config.assembly) {
         ideo.config.assembly = "default";
       }
-      accession = ideo.organisms[taxid].assemblies[ideo.config.assembly];
+      assemblies = ideo.organisms[taxid].assemblies;
+      accession = assemblies[ideo.config.assembly];
 
-      bandDataFileNames = {
-      // Homo sapiens (human)
-        9606: "native/ideogram_9606_" + accession + "_" + resolution + "_V1.js",
-      // 9606: "ncbi/ideogram_9606_" + accession + "_" + resolution + "_V1.tsv",
+      bandFileName = slugify(ideo.organisms[taxid].scientificName);
+      if (accession !== assemblies.default) {
+        bandFileName += '-' + accession + '-';
+      }
+      if (taxid === '9606' && resolution !== 850) {
+        if (accession === assemblies.default) {
+          bandFileName += '-';
+        }
+        bandFileName += resolution;
+      }
+      bandFileName += '.js';
 
-      // Mus musculus (mouse)
-        10090: "native/ideogram_10090_" + accession + "_NA_V2.js"
-
-      // Drosophila melanogaster (fly)
-      // 7227: "ucsc/drosophila_melanogaster_dm6.tsv"
-      };
+      if (taxid === '9606' || taxid === '10090') {
+        bandDataFileNames[taxid] = bandFileName;
+      }
 
       if (typeof chrBands === "undefined" && taxid in bandDataFileNames) {
-        d3.request(ideo.config.bandDir + bandDataFileNames[taxid])
+        d3.request(ideo.config.dataDir + bandDataFileNames[taxid])
         .on("beforesend", function(data) {
           // Ensures correct taxid is processed in response callback; using
           // simply 'taxid' variable gives the last *requested* taxid, which
@@ -1976,21 +2165,23 @@ Ideogram.prototype.init = function() {
           data.taxid = taxid;
         })
         .get(function(error, data) {
-          ideo.bandData[data.taxid] = data.response;
+          eval(data.response);
+
+          ideo.bandData[data.taxid] = chrBands;
           numBandDataResponses += 1;
 
           if (numBandDataResponses === taxids.length) {
-            processBandData();
+            bandsArray = ideo.processBandData();
             writeContainer();
           }
         });
       } else {
         if (typeof chrBands !== "undefined") {
-        // If bands already available,
-        // e.g. via <script> tag in initial page load
+          // If bands already available,
+          // e.g. via <script> tag in initial page load
           ideo.bandData[taxid] = chrBands;
         }
-        processBandData();
+        bandsArray = ideo.processBandData();
         writeContainer();
       }
     }
@@ -2034,106 +2225,6 @@ Ideogram.prototype.init = function() {
         .html(gradients);
 
     finishInit();
-  }
-
-  /*
-  * Completes default ideogram initialization
-  * by calling downstream functions to
-  * process raw band data into full JSON objects,
-  * render chromosome and cytoband figures and labels,
-  * apply initial graphical transformations,
-  * hide overlapping band labels, and
-  * execute callbacks defined by client code
-  */
-  function processBandData() {
-    var j, k, chromosome, bands,
-      chrLength, chr,
-      bandData, bandsByChr,
-      taxid, taxids, chrs, chrsByTaxid;
-
-    bandsArray = [];
-    maxLength = 0;
-
-    if (ideo.config.multiorganism === true) {
-      ideo.coordinateSystem = "bp";
-      taxids = ideo.config.taxids;
-      for (i = 0; i < taxids.length; i++) {
-        taxid = taxids[i];
-      }
-    } else {
-      if (typeof ideo.config.taxid === "undefined") {
-        ideo.config.taxid = ideo.config.taxids[0];
-      }
-      taxid = ideo.config.taxid;
-      taxids = [taxid];
-      ideo.config.taxids = taxids;
-    }
-
-    if ("chromosomes" in ideo.config) {
-      chrs = ideo.config.chromosomes;
-    }
-    if (ideo.config.multiorganism) {
-      chrsByTaxid = chrs;
-    }
-
-    ideo.config.chromosomes = {};
-
-    var t0B = new Date().getTime();
-
-    for (j = 0; j < taxids.length; j++) {
-      taxid = taxids[j];
-
-      if (ideo.config.multiorganism) {
-        chrs = chrsByTaxid[taxid];
-      }
-
-      if (ideo.coordinateSystem === "iscn" || ideo.config.multiorganism) {
-        bandData = ideo.bandData[taxid];
-
-        bandsByChr = ideo.getBands(bandData, taxid, chrs);
-
-        chrs = Object.keys(bandsByChr);
-
-        ideo.config.chromosomes[taxid] = chrs.slice();
-        ideo.numChromosomes += ideo.config.chromosomes[taxid].length;
-
-        for (k = 0; k < chrs.length; k++) {
-          chromosome = chrs[k];
-          bands = bandsByChr[chromosome];
-          bandsArray.push(bands);
-
-          chrLength = {
-            iscn: bands[bands.length - 1].iscn.stop,
-            bp: bands[bands.length - 1].bp.stop
-          };
-
-          if (chrLength.iscn > ideo.maxLength.iscn) {
-            ideo.maxLength.iscn = chrLength.iscn;
-          }
-
-          if (chrLength.bp > ideo.maxLength.bp) {
-            ideo.maxLength.bp = chrLength.bp;
-          }
-        }
-      } else if (ideo.coordinateSystem === "bp") {
-        // If lacking band-level data
-
-        ideo.config.chromosomes[taxid] = chrs.slice();
-        ideo.numChromosomes += ideo.config.chromosomes[taxid].length;
-
-        for (k = 0; k < chrs.length; k++) {
-          chr = chrs[k];
-          if (chr.length > ideo.maxLength.bp) {
-            ideo.maxLength.bp = chr.length;
-          }
-        }
-      }
-    }
-
-    var t1B = new Date().getTime();
-    if (ideo.debug) {
-      console.log("Time in processBandData: " + (t1B - t0B) + " ms");
-    }
   }
 
   function finishInit() {
@@ -2237,8 +2328,8 @@ Ideogram.prototype.init = function() {
         d3.selectAll(".chromosome").style("cursor", "default");
       }
     } catch (e) {
-      console.log(e);
-      //  throw e;
+      // console.log(e);
+      throw e;
     }
   }
 };
