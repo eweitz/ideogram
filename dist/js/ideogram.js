@@ -3464,17 +3464,18 @@ Ideogram.prototype.init = function() {
       assemblies = ideo.organisms[taxid].assemblies;
       accession = assemblies[ideo.config.assembly];
 
-      bandFileName = slugify(ideo.organisms[taxid].scientificName);
+      bandFileName = [];
+      bandFileName.push(slugify(ideo.organisms[taxid].scientificName));
       if (accession !== assemblies.default) {
-        bandFileName += '-' + accession + '-';
+        bandFileName.push(accession);
       }
-      if (taxid === '9606' && resolution !== 850) {
-        if (accession === assemblies.default) {
-          bandFileName += '-';
-        }
-        bandFileName += resolution;
+      if (
+        taxid === '9606' &&
+        (accession !== assemblies.default || resolution !== 850)
+      ) {
+          bandFileName.push(resolution);
       }
-      bandFileName += '.js';
+      bandFileName = bandFileName.join('-') + '.js';
 
       if (taxid === '9606' || taxid === '10090') {
         bandDataFileNames[taxid] = bandFileName;
