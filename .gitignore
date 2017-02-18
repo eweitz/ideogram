@@ -6,6 +6,7 @@ images/
 crossfilter.min.js
 data/analysis/
 *.log
+scripts/__pycache__
 
 # Eclipse IDE files
 .project
