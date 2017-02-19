@@ -1182,9 +1182,9 @@ Chromosome.prototype._getQArmShape = function() {
     // e.g. chimpanzee assembly Pan_tro 3.0
     return [{
       path:
-        'M' + (d.x2 + x) + ',0 ' +
-        'L' + (x) + ',0 ' +
-        'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + (x) + ',' + d.w + ' ' +
+        'M' + x2b + ',0 ' +
+        'L' + x + ',0 ' +
+        'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + x + ',' + d.w + ' ' +
         'L' + x2b + ',' + d.w + ' ' +
         'L' + x2b + ',0'
     }, {
@@ -3469,10 +3469,11 @@ Ideogram.prototype.init = function() {
       if (accession !== assemblies.default) {
         bandFileName.push(accession);
       }
-      if (taxid === '9606') {
-        if (accession !== assemblies.default || resolution !== 850) {
+      if (
+        taxid === '9606' &&
+        (accession !== assemblies.default || resolution !== 850)
+      ) {
           bandFileName.push(resolution);
-        }
       }
       bandFileName = bandFileName.join('-') + '.js';
 

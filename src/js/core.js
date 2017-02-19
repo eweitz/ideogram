@@ -2145,10 +2145,11 @@ Ideogram.prototype.init = function() {
       if (accession !== assemblies.default) {
         bandFileName.push(accession);
       }
-      if (taxid === '9606') {
-        if (accession !== assemblies.default || resolution !== 850) {
+      if (
+        taxid === '9606' &&
+        (accession !== assemblies.default || resolution !== 850)
+      ) {
           bandFileName.push(resolution);
-        }
       }
       bandFileName = bandFileName.join('-') + '.js';
 
