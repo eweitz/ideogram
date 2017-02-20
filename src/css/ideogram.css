@@ -36,6 +36,7 @@ text {
 
 .chromosome {
 	cursor: pointer;
+	fill: #AAA; /* Fallback for IE11 */
 }
 
 .chrSetLabel{
