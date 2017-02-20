@@ -36,9 +36,12 @@ output_file = data_dir + "genome_analysis.txt"
 ancestrydna_sample =  open(input_file).readlines()
 
 # Download ClinVar data if not already available
-clinvar_vcf_path = data_dir + "clinvar_20160802.vcf"
+date = '20170104'
+year = date[:4]
+leaf = 'clinvar_' + date + '.vcf'
+clinvar_vcf_path = data_dir + leaf
 if os.path.exists(clinvar_vcf_path) == False:
-    url = "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/archive/2016/clinvar_20160802.vcf.gz"
+    url = "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/archive/" + year + "/" + leaf + ".gz"
     with request.urlopen(url) as response:
         gzip_file = gzip.GzipFile(fileobj=response)
         with open(clinvar_vcf_path, "w") as f:
