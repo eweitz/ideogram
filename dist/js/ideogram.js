@@ -1006,6 +1006,9 @@ Chromosome.prototype._addQArmShape = function(clipPath, isQArmRendered) {
 
 Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
     // Append bands container and apply clip-path on it
+
+  var self = this;
+
   container = container.append('g')
     .attr('class', 'bands')
     .attr("clip-path", "url(#" + this._model.id + "-chromosome-set-clippath)");
@@ -1022,15 +1025,24 @@ Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
   clipPath = this._addPArmShape(clipPath, isPArmRendered);
   clipPath = this._addQArmShape(clipPath, isQArmRendered);
 
+  var opacity = '0';
+  var fill = '';
+  if ('ancestors' in this._ideo.config && !('rangeSet' in this._ideo.config)) {
+    fill = self._color.getArmColor(chrSetNumber, chrNumber, 0);
+    if (this.isFullyBanded()) {
+      opacity = '0.5';
+    }
+  }
+
   // Render chromosome border
-  var self = this;
   container.append('g')
         .attr('class', 'chromosome-border')
         .selectAll('path')
         .data(clipPath)
         .enter()
         .append('path')
-        .attr('fill', 'transparent')
+        .style('fill', fill)
+        .style('fill-opacity', opacity)
         .attr('stroke', function(d, i) {
           return self._color.getBorderColor(chrSetNumber, chrNumber, i);
         })
@@ -1117,12 +1129,7 @@ Chromosome.prototype._getPArmShape = function() {
   var d = this._getShapeData(),
     x = d.x2 - d.b;
 
-  if (
-    this._model.bands &&
-    (this._model.bands[0].name[0] === 'q' || this._model.bands.length !== 2) ||
-    '_config' in this._color._ploidy &&
-    'ancestors' in this._color._ploidy._config
-  ) {
+  if (this.isFullyBanded() || 'ancestors' in this._ideo.config) {
     // Encountered when chromosome has any of:
     //  - One placeholder "band", e.g. pig genome GCF_000003025.5
     //  - Many (> 2) bands, e.g. human reference genome
@@ -1163,12 +1170,7 @@ Chromosome.prototype._getQArmShape = function() {
     x = d.x3 - d.b,
     x2b = d.x2 + d.b;
 
-  if (
-    this._model.bands &&
-    (this._model.bands[0].name[0] === 'q' || this._model.bands.length !== 2) ||
-    '_config' in this._color._ploidy &&
-    'ancestors' in this._color._ploidy._config
-  ) {
+  if (this.isFullyBanded() || 'ancestors' in this._ideo.config) {
     return {
       class: '',
       path:
@@ -1199,12 +1201,22 @@ Chromosome.prototype._getQArmShape = function() {
   }
 };
 
+Chromosome.prototype.isFullyBanded = function() {
+  return (
+    this._model.bands &&
+    (this._model.bands[0].name[0] === 'q' || this._model.bands.length !== 2)
+  );
+}
+
 // Render arm bands
 Chromosome.prototype._renderBands = function(container, chrSetNumber,
   chrNumber, bands, arm) {
   var self = this;
   var armNumber = arm === 'p' ? 0 : 1;
-  var fill = self._color.getArmColor(chrSetNumber, chrNumber, armNumber);
+  var fill = '';
+  if ('ancestors' in this._ideo.config && !(this.isFullyBanded())) {
+    fill = self._color.getArmColor(chrSetNumber, chrNumber, armNumber);
+  }
 
   container.selectAll("path.band." + arm)
     .data(bands)
