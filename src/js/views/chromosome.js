@@ -55,11 +55,20 @@ Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
 
   var opacity = '0';
   var fill = '';
+  var isFullyBanded = this.isFullyBanded();
   if ('ancestors' in this._ideo.config && !('rangeSet' in this._ideo.config)) {
+    // E.g. diploid human genome (with translucent overlay)
     fill = self._color.getArmColor(chrSetNumber, chrNumber, 0);
-    if (this.isFullyBanded()) {
+    if (isFullyBanded) {
       opacity = '0.5';
     }
+  } else if (isFullyBanded) {
+    // E.g. mouse reference genome
+    opacity = null;
+    fill = 'transparent';
+  } else if (!('ancestors' in this._ideo.config)) {
+    // E.g. chimpanzee assembly Pan_tro 3.0
+    opacity = '1';
   }
 
   // Render chromosome border
@@ -69,7 +78,7 @@ Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
         .data(clipPath)
         .enter()
         .append('path')
-        .style('fill', fill)
+        .attr('fill', fill)
         .style('fill-opacity', opacity)
         .attr('stroke', function(d, i) {
           return self._color.getBorderColor(chrSetNumber, chrNumber, i);
@@ -232,7 +241,7 @@ Chromosome.prototype._getQArmShape = function() {
 Chromosome.prototype.isFullyBanded = function() {
   return (
     this._model.bands &&
-    (this._model.bands[0].name[0] === 'q' || this._model.bands.length !== 2)
+    (this._model.bands.length !== 2 || this._model.bands[0].name[0] === 'q')
   );
 }
 
