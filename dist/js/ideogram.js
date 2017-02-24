@@ -202,7 +202,7 @@ Layout.prototype._getChromosomeSetSize = function(chrSetNumber) {
 
     // Increase offset by last chromosome set size
   return (
-    setSize * this._config.chrWidth * 2 + (this._config.ploidy > 1 ? 20 : 0)
+    setSize * this._config.chrWidth * 2 + (this._config.ploidy > 1 ? 10 : 0)
   );
 };
 
@@ -2189,7 +2189,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex, container, k) {
         .append("g")
         .attr("id", chrModel.id)
         .attr("class", "chromosome " + adapter.getCssClass())
-        .attr("transform", "translate(0, " + k * 20 + ")");
+        .attr("transform", "translate(0, " + k * 15 + ")");
 
     // Render chromosome
   return Chromosome.getInstance(adapter, this.config, this)

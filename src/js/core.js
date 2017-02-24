@@ -844,7 +844,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex, container, k) {
         .append("g")
         .attr("id", chrModel.id)
         .attr("class", "chromosome " + adapter.getCssClass())
-        .attr("transform", "translate(0, " + k * 20 + ")");
+        .attr("transform", "translate(0, " + k * 15 + ")");
 
     // Render chromosome
   return Chromosome.getInstance(adapter, this.config, this)

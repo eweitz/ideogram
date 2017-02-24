@@ -104,7 +104,7 @@ Layout.prototype._getChromosomeSetSize = function(chrSetNumber) {
 
     // Increase offset by last chromosome set size
   return (
-    setSize * this._config.chrWidth * 2 + (this._config.ploidy > 1 ? 20 : 0)
+    setSize * this._config.chrWidth * 2 + (this._config.ploidy > 1 ? 10 : 0)
   );
 };
 
