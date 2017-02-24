@@ -2521,6 +2521,8 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
       annot.chr = chr;
       annot.chrIndex = i;
       annot.px = px;
+      annot.startPx = startPx - 30;
+      annot.stopPx = stopPx - 30;
       annot.color = color;
 
       annots[i].annots.push(annot);
@@ -2727,6 +2729,30 @@ Ideogram.prototype.drawProcessedAnnots = function(annots) {
         .attr("points", function(d) {
           x1 = d.px - 0.5;
           x2 = d.px + 0.5;
+          y1 = chrWidth;
+          y2 = 0;
+
+          return (
+            x1 + "," + y1 + " " +
+            x2 + "," + y1 + " " +
+            x2 + "," + y2 + " " +
+            x1 + "," + y2
+          );
+        })
+        .attr("fill", function(d) {
+          return d.color;
+        });
+  } else if (layout === "overlayspan") {
+      // Overlaid annotations appear directly on chromosomes
+
+    chrAnnot.append("polygon")
+        .attr("id", function(d) {
+          return d.id;
+        })
+        .attr("class", "annot")
+        .attr("points", function(d) {
+          x1 = d.startPx;
+          x2 = d.stopPx;
           y1 = chrWidth;
           y2 = 0;
 
