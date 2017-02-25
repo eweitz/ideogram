@@ -2727,32 +2727,13 @@ Ideogram.prototype.drawProcessedAnnots = function(annots) {
         })
         .attr("class", "annot")
         .attr("points", function(d) {
-          x1 = d.px - 0.5;
-          x2 = d.px + 0.5;
-          y1 = chrWidth;
-          y2 = 0;
-
-          return (
-            x1 + "," + y1 + " " +
-            x2 + "," + y1 + " " +
-            x2 + "," + y2 + " " +
-            x1 + "," + y2
-          );
-        })
-        .attr("fill", function(d) {
-          return d.color;
-        });
-  } else if (layout === "overlayspan") {
-      // Overlaid annotations appear directly on chromosomes
-
-    chrAnnot.append("polygon")
-        .attr("id", function(d) {
-          return d.id;
-        })
-        .attr("class", "annot")
-        .attr("points", function(d) {
-          x1 = d.startPx;
-          x2 = d.stopPx;
+          if (d.stopPx - d.startPx > 1) {
+            x1 = d.startPx;
+            x2 = d.stopPx;
+          } else {
+            x1 = d.px - 0.5;
+            x2 = d.px + 0.5;
+          }
           y1 = chrWidth;
           y2 = 0;
 
