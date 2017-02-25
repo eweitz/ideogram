@@ -363,7 +363,7 @@ describe("Ideogram", function() {
 
 
   it("should have 1000 annotations in overlaid annotations example", function(done) {
-    // Tests use case from ../examples/annotations_overlaid.html
+    // Tests use case from old ../examples/annotations_overlaid.html
 
     function callback() {
       var numAnnots = document.getElementsByClassName("annot").length;
@@ -378,6 +378,40 @@ describe("Ideogram", function() {
       chrMargin: 5,
       showChromosomeLabels: true,
       annotationsPath: "../data/annotations/1000_virtual_snvs.json",
+      annotationsLayout: "overlay",
+      orientation: "horizontal",
+      onDrawAnnots: callback
+    };
+
+    ideogram = new Ideogram(config);
+  });
+
+  it("should have 10 spanning overlaid annotations in proper chromosomes", function(done) {
+    // Tests:
+    //  * https://github.com/eweitz/ideogram/issues/65
+    //  * https://github.com/eweitz/ideogram/issues/66
+
+    function callback() {
+
+      // Correct number?
+      var numAnnots = document.querySelectorAll(".annot").length;
+      assert.equal(numAnnots, 10);
+
+      // Correct order?
+      var numChr20Annots = document.querySelectorAll('#chr20-9606 .annot').length;
+      assert.equal(numChr20Annots, 1);
+
+      // Spanning, not point?
+      var chr1Annot = document.querySelectorAll('#chr1-9606 .annot')[0];
+      var chr1AnnotWidth = chr1Annot.getBBox().width;
+      assert.isAbove(chr1AnnotWidth, 3);
+
+      done();
+    }
+
+    config = {
+      organism: "human",
+      annotationsPath: "../data/annotations/10_virtual_cnvs.json",
       annotationsLayout: "overlay",
       orientation: "horizontal",
       onDrawAnnots: callback
