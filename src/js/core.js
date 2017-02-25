@@ -1324,6 +1324,35 @@ Ideogram.prototype.getHistogramBars = function(annots) {
 };
 
 /**
+* Fills out annotations data structure such that its top-level list of arrays
+* matches that of this ideogram's chromosomes list in order and number
+* Fixes https://github.com/eweitz/ideogram/issues/66
+*/
+Ideogram.prototype.fillAnnots = function(annots) {
+  var filledAnnots, chrs, chrArray, i, chr, annot, chrIndex;
+
+  filledAnnots = [];
+  chrs = [];
+  chrArray = this.chromosomesArray;
+
+  for (i = 0; i < chrArray.length; i++) {
+    chr = chrArray[i].name;
+    chrs.push(chr);
+    filledAnnots.push({chr: chr, annots: []});
+  }
+
+  for (i = 0; i < annots.length; i++) {
+    annot = annots[i];
+    chrIndex = chrs.indexOf(annot.chr);
+    if (chrIndex !== -1) {
+      filledAnnots[chrIndex] = annot;
+    }
+  }
+
+  return filledAnnots;
+};
+
+/**
 * Draws genome annotations on chromosomes.
 * Annotations can be rendered as either overlaid directly
 * on a chromosome, or along one or more "tracks"
@@ -1333,6 +1362,7 @@ Ideogram.prototype.drawProcessedAnnots = function(annots) {
   var chrWidth, layout,
     annotHeight, triangle, circle, r, chrAnnot,
     x1, x2, y1, y2,
+    filledAnnots,
     ideo = this;
 
   chrMargin = this.config.chrMargin;
@@ -1364,8 +1394,10 @@ Ideogram.prototype.drawProcessedAnnots = function(annots) {
     'a ' + r + ',' + r + ' 0 1,0 ' + (r * 2) + ',0' +
     'a ' + r + ',' + r + ' 0 1,0 -' + (r * 2) + ',0';
 
+  filledAnnots = ideo.fillAnnots(annots);
+
   chrAnnot = d3.selectAll(".chromosome")
-    .data(annots)
+    .data(filledAnnots)
       .selectAll("path.annot")
       .data(function(d) {
         return d.annots;
@@ -1673,7 +1705,6 @@ Ideogram.prototype.getTaxids = function(callback) {
       });
 
       promise.then(function(data) {
-
         var organism = ideo.config.organism,
           dataDir = ideo.config.dataDir,
           urlOrg = organism.replace(" ", "-");
@@ -2156,7 +2187,7 @@ Ideogram.prototype.init = function() {
         taxid === '9606' &&
         (accession !== assemblies.default || resolution !== 850)
       ) {
-          bandFileName.push(resolution);
+        bandFileName.push(resolution);
       }
       bandFileName = bandFileName.join('-') + '.js';
 
