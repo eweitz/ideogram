@@ -1177,7 +1177,7 @@ Ideogram.prototype.processAnnotData = function(rawAnnots) {
 
       annot.stop = annot.start + annot.length;
 
-      chrModel = ideo.chromosomes["9606"][chr];
+      chrModel = ideo.chromosomes[ideo.config.taxid][chr];
 
       startPx = ideo.convertBpToPx(chrModel, annot.start);
       stopPx = ideo.convertBpToPx(chrModel, annot.stop);
