@@ -15,7 +15,7 @@ PairedLayout.prototype.rotateForward = function(setNumber, chrNumber,
   var self = this;
 
     // Get ideo container and chromosome set dimensions
-  var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
+  var ideoBox = d3.select(this._ideo.selector).node().getBoundingClientRect();
   var chrBox = chrElement.getBoundingClientRect();
     // Evaluate dimensions scale coefficients
   var scaleX = (ideoBox.width / chrBox.height) * 0.97;

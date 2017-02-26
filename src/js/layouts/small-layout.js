@@ -13,7 +13,7 @@ SmallLayout.prototype = Object.create(Layout.prototype);
 
 SmallLayout.prototype.rotateForward = function(setNumber, chrNumber,
   chrElement, callback) {
-  var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
+  var ideoBox = d3.select(this._ideo.selector).node().getBoundingClientRect();
   var chrBox = chrElement.getBoundingClientRect();
 
   var scaleX = (ideoBox.width / chrBox.height) * 0.97;

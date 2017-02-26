@@ -307,7 +307,7 @@ HorizontalLayout.prototype.rotateForward = function(setNumber, chrNumber,
   chrElement, callback) {
   var xOffset = 30;
 
-  var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
+  var ideoBox = d3.select(this._ideo.selector).node().getBoundingClientRect();
   var chrBox = chrElement.getBoundingClientRect();
 
   var scaleX = (ideoBox.height / (chrBox.width + xOffset / 2)) * 0.9;
@@ -479,7 +479,7 @@ VerticalLayout.prototype.rotateForward = function(setNumber, chrNumber,
 
   var xOffset = 20;
 
-  var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
+  var ideoBox = d3.select(this._ideo.selector).node().getBoundingClientRect();
   var chrBox = chrElement.getBoundingClientRect();
 
   var scaleX = (ideoBox.width / chrBox.height) * 0.97;
@@ -619,7 +619,7 @@ PairedLayout.prototype.rotateForward = function(setNumber, chrNumber,
   var self = this;
 
     // Get ideo container and chromosome set dimensions
-  var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
+  var ideoBox = d3.select(this._ideo.selector).node().getBoundingClientRect();
   var chrBox = chrElement.getBoundingClientRect();
     // Evaluate dimensions scale coefficients
   var scaleX = (ideoBox.width / chrBox.height) * 0.97;
@@ -765,7 +765,7 @@ SmallLayout.prototype = Object.create(Layout.prototype);
 
 SmallLayout.prototype.rotateForward = function(setNumber, chrNumber,
   chrElement, callback) {
-  var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
+  var ideoBox = d3.select(this._ideo.selector).node().getBoundingClientRect();
   var chrBox = chrElement.getBoundingClientRect();
 
   var scaleX = (ideoBox.width / chrBox.height) * 0.97;
@@ -1357,6 +1357,8 @@ var Ideogram = function(config) {
     this.config.container = "body";
   }
 
+  this.selector = this.config.container + ' #_ideogram';
+
   if (!this.config.resolution) {
     this.config.resolution = 850;
   }
@@ -1868,7 +1870,7 @@ Ideogram.prototype.drawBandLabels = function(chromosomes) {
 
     chrModel = chrs[i];
 
-    chr = d3.select("#" + chrModel.id);
+    chr = d3.select(ideo.selector + " #" + chrModel.id);
 
     // var chrMargin = this.config.chrMargin * chrIndex,
     //   lineY1, lineY2;
@@ -2285,7 +2287,7 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
     regionID,
     ideo = this;
 
-  syntenies = d3.select("svg")
+  syntenies = d3.select(ideo.selector)
     .insert("g", ":first-child")
     .attr("class", "synteny");
 
@@ -2850,7 +2852,7 @@ Ideogram.prototype.createBrush = function(from, to) {
 
   var yTranslate = this._layout.getChromosomeSetYTranslate(0);
   var yOffset = yTranslate + (ideo.config.chrWidth - width) / 2;
-  d3.select("#_ideogram").append("g")
+  d3.select(ideo.selector).append("g")
     .attr("class", "brush")
     .attr("transform", "translate(0, " + yOffset + ")")
     .call(ideo.brush)
@@ -3294,7 +3296,7 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
     i, j, chrs, chromosome, chrModel,
     defs, transform;
 
-  defs = d3.select("defs");
+  defs = d3.select(ideo.selector + " defs");
 
   for (i = 0; i < taxids.length; i++) {
     taxid = taxids[i];
@@ -3316,7 +3318,7 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
       chrSetNumber += 1;
 
       // Append chromosome set container
-      var container = d3.select("svg")
+      var container = d3.select(ideo.selector)
         .append("g")
         .attr("class", "chromosome-set-container")
         .attr("data-set-number", j)
@@ -3349,7 +3351,7 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
 
 // Get ideogram SVG container
 Ideogram.prototype.getSvg = function() {
-  return d3.select('#_ideogram').node();
+  return d3.select(ideo.selector).node();
 };
 
 /*
@@ -3685,7 +3687,7 @@ Ideogram.prototype.init = function() {
 
       if (!("rotatable" in ideo.config && ideo.config.rotatable === false)) {
         d3.selectAll(".chromosome").on("click", function() {
-          ideogram.rotateAndToggleDisplay(this);
+          ideo.rotateAndToggleDisplay(this);
         });
       } else {
         d3.selectAll(".chromosome").style("cursor", "default");
