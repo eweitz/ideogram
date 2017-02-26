@@ -60,7 +60,7 @@ VerticalLayout.prototype.rotateBack = function(setNumber, chrNumber,
         .attr("transform", translate)
         .on('end', callback);
 
-  d3.selectAll('g.tmp')
+  d3.selectAll(this._ideo.selector + ' g.tmp')
         .style('opacity', 0)
         .remove();
 };

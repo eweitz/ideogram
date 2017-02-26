@@ -155,10 +155,14 @@ Layout.prototype.rotateForward = function() {
 };
 
 Layout.prototype.rotate = function(chrSetNumber, chrNumber, chrElement) {
+
+  var ideo = this._ideo;
+
     // Find chromosomes which should be hidden
-  var otherChrs = d3.selectAll("g.chromosome").filter(function() {
-    return this !== chrElement;
-  });
+  var otherChrs = d3.selectAll(ideo.selector + " g.chromosome")
+    .filter(function() {
+      return this !== chrElement;
+    });
 
   if (this._isRotated) {
         // Reset _isRotated flag
@@ -167,7 +171,8 @@ Layout.prototype.rotate = function(chrSetNumber, chrNumber, chrElement) {
     this.rotateBack(chrSetNumber, chrNumber, chrElement, function() {
             // Show all other chromosomes and chromosome labels
       otherChrs.style("display", null);
-      d3.selectAll(".chrSetLabel, .chrLabel").style("display", null);
+      d3.selectAll(ideo.selector + " .chrSetLabel, .chrLabel")
+        .style("display", null);
     });
   } else {
         // Set _isRotated flag
@@ -175,7 +180,8 @@ Layout.prototype.rotate = function(chrSetNumber, chrNumber, chrElement) {
 
         // Hide all other chromosomes and chromosome labels
     otherChrs.style("display", "none");
-    d3.selectAll(".chrSetLabel, .chrLabel").style("display", "none");
+    d3.selectAll(ideo.selector + " .chrSetLabel, .chrLabel")
+      .style("display", "none");
 
         // Rotate chromosome
     this.rotateForward(chrSetNumber, chrNumber, chrElement);
@@ -358,7 +364,7 @@ HorizontalLayout.prototype.rotateBack = function(setNumber, chrNumber,
         .attr("transform", translate)
         .on('end', callback);
 
-  d3.selectAll('g.tmp')
+  d3.selectAll(this._ideo.selector + ' g.tmp')
         .style('opacity', 0)
         .remove();
 };
@@ -522,7 +528,7 @@ VerticalLayout.prototype.rotateBack = function(setNumber, chrNumber,
         .attr("transform", translate)
         .on('end', callback);
 
-  d3.selectAll('g.tmp')
+  d3.selectAll(this._ideo.selector + ' g.tmp')
         .style('opacity', 0)
         .remove();
 };
@@ -617,9 +623,10 @@ PairedLayout.prototype = Object.create(Layout.prototype);
 PairedLayout.prototype.rotateForward = function(setNumber, chrNumber,
   chrElement, callback) {
   var self = this;
+  var ideo = this._ideo;
 
     // Get ideo container and chromosome set dimensions
-  var ideoBox = d3.select(this._ideo.selector).node().getBoundingClientRect();
+  var ideoBox = d3.select(ideo.selector).node().getBoundingClientRect();
   var chrBox = chrElement.getBoundingClientRect();
     // Evaluate dimensions scale coefficients
   var scaleX = (ideoBox.width / chrBox.height) * 0.97;
@@ -648,7 +655,7 @@ PairedLayout.prototype.rotateForward = function(setNumber, chrNumber,
         .attr("text-anchor", "middle");
 
       // Hide syntenic regions
-      d3.selectAll('.syntenicRegion').style("display", 'none');
+      d3.selectAll(ideo.selector + ' .syntenicRegion').style("display", 'none');
     });
 
     // Append new chromosome labels
@@ -674,6 +681,9 @@ PairedLayout.prototype.rotateForward = function(setNumber, chrNumber,
 
 PairedLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement,
   callback) {
+
+  var ideo = this._ideo;
+
     // Get intial transformation string for chromosome set
   var translate = this.getChromosomeSetTranslate(setNumber);
 
@@ -685,14 +695,14 @@ PairedLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement,
             // Run callback fnuction if provided
           callback();
             // Show syntenic regions
-          d3.selectAll('.syntenicRegion').style("display", null);
+          d3.selectAll(ideo.select + ' .syntenicRegion').style("display", null);
             // Reset changed attributes to original state
           d3.select(chrElement.parentNode).selectAll('g.bandLabel text')
             .attr('transform', null)
             .attr("text-anchor", setNumber ? null : 'end');
         });
 
-  d3.selectAll('g.tmp')
+  d3.selectAll(ideo.selector + ' g.tmp')
         .style('opacity', 0)
         .remove();
 };
@@ -1790,7 +1800,7 @@ Ideogram.prototype.drawChromosomeLabels = function() {
   var chrSetLabelTranslate = ideo._layout.getChromosomeSetLabelTranslate();
 
   // Append chromosomes set's labels
-  d3.selectAll(".chromosome-set-container")
+  d3.selectAll(ideo.selector + " .chromosome-set-container")
         .append("text")
         .data(ideo.chromosomesArray)
         .attr("class", 'chromosome-set-label ' + chromosomeLabelClass)
@@ -1827,7 +1837,7 @@ Ideogram.prototype.drawChromosomeLabels = function() {
   var setLabelTranslate = ideo._layout.getChromosomeSetLabelTranslate();
 
   // Append chromosomes labels
-  d3.selectAll(".chromosome-set-container")
+  d3.selectAll(ideo.selector + " .chromosome-set-container")
         .each(function(a, chrSetNumber) {
           d3.select(this).selectAll(".chromosome")
                 .append("text")
@@ -2323,7 +2333,7 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
       .attr("id", regionID)
       .on("click", function() {
         var activeRegion = this;
-        var others = d3.selectAll(".syntenicRegion")
+        var others = d3.selectAll(ideo.selector + " .syntenicRegion")
           .filter(function() {
             return (this !== activeRegion);
           });
@@ -2332,14 +2342,14 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
       })
       .on("mouseover", function() {
         var activeRegion = this;
-        d3.selectAll(".syntenicRegion")
+        d3.selectAll(ideo.selector + " .syntenicRegion")
           .filter(function() {
             return (this !== activeRegion);
           })
           .classed("ghost", true);
       })
       .on("mouseout", function() {
-        d3.selectAll(".syntenicRegion").classed("ghost", false);
+        d3.selectAll(ideo.selector + " .syntenicRegion").classed("ghost", false);
       });
 
     var x1 = this._layout.getChromosomeSetYTranslate(0);
@@ -2722,7 +2732,7 @@ Ideogram.prototype.drawProcessedAnnots = function(annots) {
 
   filledAnnots = ideo.fillAnnots(annots);
 
-  chrAnnot = d3.selectAll(".chromosome")
+  chrAnnot = d3.selectAll(ideo.selector + " .chromosome")
     .data(filledAnnots)
       .selectAll("path.annot")
       .data(function(d) {
@@ -3351,7 +3361,7 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
 
 // Get ideogram SVG container
 Ideogram.prototype.getSvg = function() {
-  return d3.select(ideo.selector).node();
+  return d3.select(this.selector).node();
 };
 
 /*
@@ -3643,7 +3653,8 @@ Ideogram.prototype.init = function() {
       // Hiding all bands, then QSA'ing and displaying the
       // relatively few bands that are shown.
         var t0C = new Date().getTime();
-        d3.selectAll(".bandLabel, .bandLabelStalk").style("display", "none");
+        d3.selectAll(ideo.selector + " .bandLabel, .bandLabelStalk")
+          .style("display", "none");
         d3.selectAll(bandsToShow).style("display", "");
         var t1C = new Date().getTime();
         if (ideo.debug) {
@@ -3686,11 +3697,11 @@ Ideogram.prototype.init = function() {
       }
 
       if (!("rotatable" in ideo.config && ideo.config.rotatable === false)) {
-        d3.selectAll(".chromosome").on("click", function() {
+        d3.selectAll(ideo.selector + " .chromosome").on("click", function() {
           ideo.rotateAndToggleDisplay(this);
         });
       } else {
-        d3.selectAll(".chromosome").style("cursor", "default");
+        d3.selectAll(ideo.selector + " .chromosome").style("cursor", "default");
       }
     } catch (e) {
       // console.log(e);
@@ -3835,7 +3846,7 @@ Ideogram.prototype.filterAnnots = function(selections) {
 
   results = ideo.packAnnots(results);
 
-  d3.selectAll("polygon.annot").remove();
+  d3.selectAll(ideo.selector + " polygon.annot").remove();
   ideo.drawAnnots(results);
 
   console.log("Time in filterAnnots: " + (Date.now() - t0) + " ms");
