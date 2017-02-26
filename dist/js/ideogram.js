@@ -2662,7 +2662,7 @@ Ideogram.prototype.fillAnnots = function(annots) {
   for (i = 0; i < chrArray.length; i++) {
     chr = chrArray[i].name;
     chrs.push(chr);
-    filledAnnots.push({'chr': chr, 'annots': []});
+    filledAnnots.push({chr: chr, annots: []});
   }
 
   for (i = 0; i < annots.length; i++) {
@@ -2674,7 +2674,7 @@ Ideogram.prototype.fillAnnots = function(annots) {
   }
 
   return filledAnnots;
-}
+};
 
 /**
 * Draws genome annotations on chromosomes.
@@ -3029,7 +3029,6 @@ Ideogram.prototype.getTaxids = function(callback) {
       });
 
       promise.then(function(data) {
-
         var organism = ideo.config.organism,
           dataDir = ideo.config.dataDir,
           urlOrg = organism.replace(" ", "-");
@@ -3512,7 +3511,7 @@ Ideogram.prototype.init = function() {
         taxid === '9606' &&
         (accession !== assemblies.default || resolution !== 850)
       ) {
-          bandFileName.push(resolution);
+        bandFileName.push(resolution);
       }
       bandFileName = bandFileName.join('-') + '.js';
 
