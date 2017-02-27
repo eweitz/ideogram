@@ -2300,7 +2300,7 @@ Ideogram.prototype.init = function() {
           ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
           ideo.drawProcessedAnnots(ideo.annots);
 
-          if (ideo.initCrossFilter) {
+          if (typeof crossfilter !== 'undefined' && ideo.initCrossFilter) {
             ideo.initCrossFilter();
           }
         }
