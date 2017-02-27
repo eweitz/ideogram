@@ -17,7 +17,7 @@ VerticalLayout.prototype.rotateForward = function(setNumber, chrNumber,
 
   var xOffset = 20;
 
-  var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
+  var ideoBox = d3.select(this._ideo.selector).node().getBoundingClientRect();
   var chrBox = chrElement.getBoundingClientRect();
 
   var scaleX = (ideoBox.width / chrBox.height) * 0.97;
@@ -60,7 +60,7 @@ VerticalLayout.prototype.rotateBack = function(setNumber, chrNumber,
         .attr("transform", translate)
         .on('end', callback);
 
-  d3.selectAll('g.tmp')
+  d3.selectAll(this._ideo.selector + ' g.tmp')
         .style('opacity', 0)
         .remove();
 };

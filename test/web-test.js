@@ -692,6 +692,43 @@ describe("Ideogram", function() {
     });
 
 
+    it("should show three genomes in one page", function(done) {
+      // Tests use case from ../examples/multiple_trio.html
+
+      var config, containerIDs, id, i, container
+          ideogramsLoaded = 0;
+
+      function callback() {
+        var numChromosomes;
+
+        ideogramsLoaded += 1;
+
+        if (ideogramsLoaded === 3) {
+          numChromosomes = document.querySelectorAll('.chromosome').length;
+          assert.equal(numChromosomes, 24*3);
+          done();
+        }
+      }
+
+      config = {
+        organism: "human",
+        chrHeight: 125,
+        resolution: 400,
+        orientation: "vertical",
+        onLoad: callback
+      };
+
+      containerIDs = ["mother", "father", "proband"];
+      for (i = 0; i < containerIDs.length; i++) {
+        id = containerIDs[i];
+        container = '<div id="' + id + '"></div>';
+        document.querySelector("body").innerHTML += container;
+        config.container = "#" + id;
+        new Ideogram(config);
+      }
+
+    });
+
     // it("should align chr. label with band-labeled vertical chromosome", function(done) {
     //   // Tests use case from ../examples/human.html
     //
