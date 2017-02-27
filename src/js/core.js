@@ -2293,8 +2293,8 @@ Ideogram.prototype.init = function() {
       // to be received by the client, then triggers annotation processing
       if (ideo.config.annotationsPath) {
         function pa() {
-          if (typeof timeout !== "undefined") {
-            window.clearTimeout(timeout);
+          if (typeof ideo.timeout !== "undefined") {
+            window.clearTimeout(ideo.timeout);
           }
 
           ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
@@ -2309,7 +2309,7 @@ Ideogram.prototype.init = function() {
           pa();
         } else {
           (function checkAnnotData() {
-            timeout = setTimeout(function() {
+            ideo.timeout = setTimeout(function() {
               if (!ideo.rawAnnots) {
                 checkAnnotData();
               } else {
