@@ -142,7 +142,10 @@ def download_genome_agp(asm):
             'for any chromosomes in genome assembly ' + asm_name
         )
     else:
-        output_path = output_dir + organism + ".js"
+        leaf = ''
+        if organism in set(('homo-sapiens', 'mus-musculus', 'rattus-norvegicus')):
+            leaf = '-no-bands'
+        output_path = output_dir + organism + leaf + ".js"
 
         adapted_chromosomes = []
 
@@ -202,11 +205,11 @@ def find_genomes_with_centromeres(asm_summary_response):
         name = result['assemblyname']
         rs_uid = result['rsuid']
         taxid = result['taxid']
-        organism = result['speciesname'].lower().replace(' ', '-')
+        organism = result['speciesname'].lower().replace(' ', '-').strip()
 
-        #if organism != 'homo-sapiens':
-        #    continue
-
+        # one fully banded (downstream), one not
+        # if organism != 'homo-sapiens' and organism != 'pongo-abelii':
+        #     continue
         asm_segment = acc + '_' + name.replace(' ', '_').replace('-', '_')
 
         split_acc = ''

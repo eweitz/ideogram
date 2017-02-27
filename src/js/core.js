@@ -84,6 +84,12 @@ var Ideogram = function(config) {
     this.config.showBandLabels = false;
   }
 
+  if ('showFullyBanded' in this.config) {
+    this.config.showFullyBanded = this.config.showFullyBanded;
+  } else {
+    this.config.showFullyBanded = true;
+  }
+
   if (!this.config.brush) {
     this.config.brush = false;
   }
@@ -1721,6 +1727,13 @@ Ideogram.prototype.getTaxids = function(callback) {
           scientificNameAbbr: ""
         };
 
+        var fullyBandedTaxids = ['9606', '10090', '10116'];
+        if (
+          fullyBandedTaxids.indexOf(taxid) !== -1 &&
+          ideo.config.showFullyBanded === false
+        ) {
+          urlOrg += '-no-bands';
+        }
         var chromosomesUrl = dataDir + urlOrg + ".js";
 
         var promise = new Promise(function(resolve, reject) {
