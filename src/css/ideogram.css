@@ -36,6 +36,7 @@ text {
 
 .chromosome {
 	cursor: pointer;
+	fill: #AAA; /* Fallback for IE11 */
 }
 
 .chrSetLabel{
@@ -83,6 +84,7 @@ path.band {
 .gpos66 {fill: #666}
 .gpos75 {fill: #444}
 .gpos100 {fill: #000}
+.gpos {fill: #000}
 .acen {fill: #FDD}
 .stalk {fill: #CCE;}
 .gvar {fill: #DDF}
@@ -94,6 +96,7 @@ path.band {
 .faint .gpos66 {fill: #EEE}
 .faint .gpos75 {fill: #EEE}
 .faint .gpos100 {fill: #DDD}
+.faint .gpos {fill: #DDD}
 .faint .acen {fill: #FEE}
 .faint .stalk {fill: #EEF;}
 .faint .gvar {fill: #EEF}
