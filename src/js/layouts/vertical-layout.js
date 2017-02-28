@@ -69,6 +69,10 @@ VerticalLayout.prototype.getHeight = function() {
   return this._config.chrHeight + this._margin.top * 1.5;
 };
 
+VerticalLayout.prototype.getWidth = function() {
+  return '97%';
+};
+
 VerticalLayout.prototype.getChromosomeBandLabelTranslate = function() {
 
 };

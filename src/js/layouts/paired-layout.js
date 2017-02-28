@@ -71,7 +71,6 @@ PairedLayout.prototype.rotateForward = function(setNumber, chrNumber,
 
 PairedLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement,
   callback) {
-
   var ideo = this._ideo;
 
     // Get intial transformation string for chromosome set
@@ -99,6 +98,10 @@ PairedLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement,
 
 PairedLayout.prototype.getHeight = function() {
   return this._config.chrHeight + this._margin.left * 1.5;
+};
+
+PairedLayout.prototype.getWidth = function() {
+  return '97%';
 };
 
 PairedLayout.prototype.getChromosomeBandTickY1 = function(chrNumber) {

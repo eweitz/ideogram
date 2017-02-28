@@ -1021,7 +1021,8 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
           .classed("ghost", true);
       })
       .on("mouseout", function() {
-        d3.selectAll(ideo.selector + " .syntenicRegion").classed("ghost", false);
+        d3.selectAll(ideo.selector + " .syntenicRegion")
+          .classed("ghost", false);
       });
 
     var x1 = this._layout.getChromosomeSetYTranslate(0);
@@ -2268,15 +2269,17 @@ Ideogram.prototype.init = function() {
     }
 
     var gradients = ideo.getBandColorGradients();
+    var svgWidth = ideo._layout.getWidth(taxid);
     var svgHeight = ideo._layout.getHeight(taxid);
 
     d3.select(ideo.config.container)
-      .append("svg")
-        .attr("id", "_ideogram")
-        .attr("class", svgClass)
-        .attr("width", "97%")
-        .attr("height", svgHeight)
-        .html(gradients);
+      .append("div")
+        .append("svg")
+          .attr("id", "_ideogram")
+          .attr("class", svgClass)
+          .attr("width", svgWidth)
+          .attr("height", svgHeight)
+          .html(gradients);
 
     finishInit();
   }

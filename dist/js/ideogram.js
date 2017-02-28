@@ -155,7 +155,6 @@ Layout.prototype.rotateForward = function() {
 };
 
 Layout.prototype.rotate = function(chrSetNumber, chrNumber, chrElement) {
-
   var ideo = this._ideo;
 
     // Find chromosomes which should be hidden
@@ -383,6 +382,10 @@ HorizontalLayout.prototype.getHeight = function(taxId) {
   return lastSetOffset + this._getAdditionalOffset() * 2;
 };
 
+HorizontalLayout.prototype.getWidth = function() {
+  return this._config.chrHeight + this._margin.top * 1.5;
+};
+
 HorizontalLayout.prototype.getChromosomeSetLabelAnchor = function() {
   return 'end';
 };
@@ -537,6 +540,10 @@ VerticalLayout.prototype.getHeight = function() {
   return this._config.chrHeight + this._margin.top * 1.5;
 };
 
+VerticalLayout.prototype.getWidth = function() {
+  return '97%';
+};
+
 VerticalLayout.prototype.getChromosomeBandLabelTranslate = function() {
 
 };
@@ -681,7 +688,6 @@ PairedLayout.prototype.rotateForward = function(setNumber, chrNumber,
 
 PairedLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement,
   callback) {
-
   var ideo = this._ideo;
 
     // Get intial transformation string for chromosome set
@@ -709,6 +715,10 @@ PairedLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement,
 
 PairedLayout.prototype.getHeight = function() {
   return this._config.chrHeight + this._margin.left * 1.5;
+};
+
+PairedLayout.prototype.getWidth = function() {
+  return '97%';
 };
 
 PairedLayout.prototype.getChromosomeBandTickY1 = function(chrNumber) {
@@ -801,6 +811,10 @@ SmallLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement,
 
 SmallLayout.prototype.getHeight = function() {
   return this._config.rows * (this._config.chrHeight + this._margin.top * 1.5);
+};
+
+SmallLayout.prototype.getWidth = function() {
+  return '97%';
 };
 
 SmallLayout.prototype.getChromosomeBandLabelTranslate = function() {
@@ -2355,7 +2369,8 @@ Ideogram.prototype.drawSynteny = function(syntenicRegions) {
           .classed("ghost", true);
       })
       .on("mouseout", function() {
-        d3.selectAll(ideo.selector + " .syntenicRegion").classed("ghost", false);
+        d3.selectAll(ideo.selector + " .syntenicRegion")
+          .classed("ghost", false);
       });
 
     var x1 = this._layout.getChromosomeSetYTranslate(0);
@@ -3602,15 +3617,17 @@ Ideogram.prototype.init = function() {
     }
 
     var gradients = ideo.getBandColorGradients();
+    var svgWidth = ideo._layout.getWidth(taxid);
     var svgHeight = ideo._layout.getHeight(taxid);
 
     d3.select(ideo.config.container)
-      .append("svg")
-        .attr("id", "_ideogram")
-        .attr("class", svgClass)
-        .attr("width", "97%")
-        .attr("height", svgHeight)
-        .html(gradients);
+      .append("div")
+        .append("svg")
+          .attr("id", "_ideogram")
+          .attr("class", svgClass)
+          .attr("width", svgWidth)
+          .attr("height", svgHeight)
+          .html(gradients);
 
     finishInit();
   }

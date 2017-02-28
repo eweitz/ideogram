@@ -92,6 +92,10 @@ HorizontalLayout.prototype.getHeight = function(taxId) {
   return lastSetOffset + this._getAdditionalOffset() * 2;
 };
 
+HorizontalLayout.prototype.getWidth = function() {
+  return this._config.chrHeight + this._margin.top * 1.5;
+};
+
 HorizontalLayout.prototype.getChromosomeSetLabelAnchor = function() {
   return 'end';
 };

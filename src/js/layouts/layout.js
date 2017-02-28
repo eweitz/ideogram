@@ -57,7 +57,6 @@ Layout.prototype.rotateForward = function() {
 };
 
 Layout.prototype.rotate = function(chrSetNumber, chrNumber, chrElement) {
-
   var ideo = this._ideo;
 
     // Find chromosomes which should be hidden
