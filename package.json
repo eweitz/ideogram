@@ -1,6 +1,6 @@
 {
   "name": "ideogram",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Chromosome visualization with D3.js",
   "main": "gulpfile.js",
   "directories": {
