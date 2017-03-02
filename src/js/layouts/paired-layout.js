@@ -13,9 +13,10 @@ PairedLayout.prototype = Object.create(Layout.prototype);
 PairedLayout.prototype.rotateForward = function(setNumber, chrNumber,
   chrElement, callback) {
   var self = this;
+  var ideo = this._ideo;
 
     // Get ideo container and chromosome set dimensions
-  var ideoBox = d3.select("#_ideogram").node().getBoundingClientRect();
+  var ideoBox = d3.select(ideo.selector).node().getBoundingClientRect();
   var chrBox = chrElement.getBoundingClientRect();
     // Evaluate dimensions scale coefficients
   var scaleX = (ideoBox.width / chrBox.height) * 0.97;
@@ -44,7 +45,7 @@ PairedLayout.prototype.rotateForward = function(setNumber, chrNumber,
         .attr("text-anchor", "middle");
 
       // Hide syntenic regions
-      d3.selectAll('.syntenicRegion').style("display", 'none');
+      d3.selectAll(ideo.selector + ' .syntenicRegion').style("display", 'none');
     });
 
     // Append new chromosome labels
@@ -70,6 +71,8 @@ PairedLayout.prototype.rotateForward = function(setNumber, chrNumber,
 
 PairedLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement,
   callback) {
+  var ideo = this._ideo;
+
     // Get intial transformation string for chromosome set
   var translate = this.getChromosomeSetTranslate(setNumber);
 
@@ -81,20 +84,24 @@ PairedLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement,
             // Run callback fnuction if provided
           callback();
             // Show syntenic regions
-          d3.selectAll('.syntenicRegion').style("display", null);
+          d3.selectAll(ideo.select + ' .syntenicRegion').style("display", null);
             // Reset changed attributes to original state
           d3.select(chrElement.parentNode).selectAll('g.bandLabel text')
             .attr('transform', null)
             .attr("text-anchor", setNumber ? null : 'end');
         });
 
-  d3.selectAll('g.tmp')
+  d3.selectAll(ideo.selector + ' g.tmp')
         .style('opacity', 0)
         .remove();
 };
 
 PairedLayout.prototype.getHeight = function() {
   return this._config.chrHeight + this._margin.left * 1.5;
+};
+
+PairedLayout.prototype.getWidth = function() {
+  return '97%';
 };
 
 PairedLayout.prototype.getChromosomeBandTickY1 = function(chrNumber) {

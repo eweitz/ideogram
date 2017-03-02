@@ -57,10 +57,13 @@ Layout.prototype.rotateForward = function() {
 };
 
 Layout.prototype.rotate = function(chrSetNumber, chrNumber, chrElement) {
+  var ideo = this._ideo;
+
     // Find chromosomes which should be hidden
-  var otherChrs = d3.selectAll("g.chromosome").filter(function() {
-    return this !== chrElement;
-  });
+  var otherChrs = d3.selectAll(ideo.selector + " g.chromosome")
+    .filter(function() {
+      return this !== chrElement;
+    });
 
   if (this._isRotated) {
         // Reset _isRotated flag
@@ -69,7 +72,8 @@ Layout.prototype.rotate = function(chrSetNumber, chrNumber, chrElement) {
     this.rotateBack(chrSetNumber, chrNumber, chrElement, function() {
             // Show all other chromosomes and chromosome labels
       otherChrs.style("display", null);
-      d3.selectAll(".chrSetLabel, .chrLabel").style("display", null);
+      d3.selectAll(ideo.selector + " .chrSetLabel, .chrLabel")
+        .style("display", null);
     });
   } else {
         // Set _isRotated flag
@@ -77,7 +81,8 @@ Layout.prototype.rotate = function(chrSetNumber, chrNumber, chrElement) {
 
         // Hide all other chromosomes and chromosome labels
     otherChrs.style("display", "none");
-    d3.selectAll(".chrSetLabel, .chrLabel").style("display", "none");
+    d3.selectAll(ideo.selector + " .chrSetLabel, .chrLabel")
+      .style("display", "none");
 
         // Rotate chromosome
     this.rotateForward(chrSetNumber, chrNumber, chrElement);
