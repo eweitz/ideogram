@@ -102,6 +102,13 @@ function Layout(config, ideo) {
   this._ploidy = this._ideo._ploidy;
   this._translate = undefined;
 
+  if ('chrSetMargin' in config) {
+    this.chrSetMargin = config.chrSetMargin;
+  } else {
+    var k = this._config.chrMargin;
+    this.chrSetMargin = (this._config.ploidy > 1 ? k : 0);
+  }
+
   // Chromosome band's size.
   this._tickSize = 8;
 
@@ -202,12 +209,12 @@ Layout.prototype._getAdditionalOffset = function() {
 };
 
 Layout.prototype._getChromosomeSetSize = function(chrSetNumber) {
-    // Get last chromosome set size.
+  // Get last chromosome set size.
   var setSize = this._ploidy.getSetSize(chrSetNumber);
 
-    // Increase offset by last chromosome set size
+  // Increase offset by last chromosome set size
   return (
-    setSize * this._config.chrWidth * 2 + (this._config.ploidy > 1 ? 10 : 0)
+    setSize * this._config.chrWidth * 2 + (this.chrSetMargin)
   );
 };
 
@@ -1379,12 +1386,6 @@ var Ideogram = function(config) {
   // without picking up prior ideogram's settings
   this.config = JSON.parse(JSON.stringify(config));
 
-  // Organism ploidy description
-  this._ploidy = new Ploidy(this.config);
-
-  // Chromosome's layout
-  this._layout = Layout.getInstance(this.config, this);
-
   // TODO: Document this
   this._bandsXOffset = 30;
 
@@ -1410,10 +1411,6 @@ var Ideogram = function(config) {
 
   if ("showChromosomeLabels" in this.config === false) {
     this.config.showChromosomeLabels = true;
-  }
-
-  if (!this.config.chrMargin) {
-    this.config.chrMargin = 10;
   }
 
   if (!this.config.orientation) {
@@ -1447,6 +1444,16 @@ var Ideogram = function(config) {
       chrWidth = Math.round(chrHeight / 45);
     }
     this.config.chrWidth = chrWidth;
+  }
+
+
+  if (!this.config.chrMargin) {
+    if (this.config.ploidy === 1) {
+      this.config.chrMargin = 10;
+    } else {
+      // Defaults polyploid chromosomes to relatively small interchromatid gap
+      this.config.chrMargin = Math.round(this.config.chrWidth/4);
+    }
   }
 
   if (!this.config.showBandLabels) {
@@ -1565,6 +1572,12 @@ var Ideogram = function(config) {
   this.chromosomes = {};
   this.numChromosomes = 0;
   this.bandData = {};
+
+  // Organism ploidy description
+  this._ploidy = new Ploidy(this.config);
+
+  // Chromosome's layout
+  this._layout = Layout.getInstance(this.config, this);
 
   this.init();
 };
@@ -2213,6 +2226,9 @@ Ideogram.prototype.round = function(coord) {
 * Renders all the bands and outlining boundaries of a chromosome.
 */
 Ideogram.prototype.drawChromosome = function(chrModel, chrIndex, container, k) {
+
+  var chrMargin = this.config.chrMargin;
+
     // Get chromosome model adapter class
   var adapter = ModelAdapter.getInstance(chrModel);
 
@@ -2221,7 +2237,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex, container, k) {
         .append("g")
         .attr("id", chrModel.id)
         .attr("class", "chromosome " + adapter.getCssClass())
-        .attr("transform", "translate(0, " + k * 15 + ")");
+        .attr("transform", "translate(0, " + k * chrMargin + ")");
 
     // Render chromosome
   return Chromosome.getInstance(adapter, this.config, this)

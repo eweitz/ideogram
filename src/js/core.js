@@ -10,12 +10,6 @@ var Ideogram = function(config) {
   // without picking up prior ideogram's settings
   this.config = JSON.parse(JSON.stringify(config));
 
-  // Organism ploidy description
-  this._ploidy = new Ploidy(this.config);
-
-  // Chromosome's layout
-  this._layout = Layout.getInstance(this.config, this);
-
   // TODO: Document this
   this._bandsXOffset = 30;
 
@@ -41,10 +35,6 @@ var Ideogram = function(config) {
 
   if ("showChromosomeLabels" in this.config === false) {
     this.config.showChromosomeLabels = true;
-  }
-
-  if (!this.config.chrMargin) {
-    this.config.chrMargin = 10;
   }
 
   if (!this.config.orientation) {
@@ -78,6 +68,16 @@ var Ideogram = function(config) {
       chrWidth = Math.round(chrHeight / 45);
     }
     this.config.chrWidth = chrWidth;
+  }
+
+
+  if (!this.config.chrMargin) {
+    if (this.config.ploidy === 1) {
+      this.config.chrMargin = 10;
+    } else {
+      // Defaults polyploid chromosomes to relatively small interchromatid gap
+      this.config.chrMargin = Math.round(this.config.chrWidth/4);
+    }
   }
 
   if (!this.config.showBandLabels) {
@@ -196,6 +196,12 @@ var Ideogram = function(config) {
   this.chromosomes = {};
   this.numChromosomes = 0;
   this.bandData = {};
+
+  // Organism ploidy description
+  this._ploidy = new Ploidy(this.config);
+
+  // Chromosome's layout
+  this._layout = Layout.getInstance(this.config, this);
 
   this.init();
 };
@@ -844,6 +850,9 @@ Ideogram.prototype.round = function(coord) {
 * Renders all the bands and outlining boundaries of a chromosome.
 */
 Ideogram.prototype.drawChromosome = function(chrModel, chrIndex, container, k) {
+
+  var chrMargin = this.config.chrMargin;
+
     // Get chromosome model adapter class
   var adapter = ModelAdapter.getInstance(chrModel);
 
@@ -852,7 +861,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex, container, k) {
         .append("g")
         .attr("id", chrModel.id)
         .attr("class", "chromosome " + adapter.getCssClass())
-        .attr("transform", "translate(0, " + k * 15 + ")");
+        .attr("transform", "translate(0, " + k * chrMargin + ")");
 
     // Render chromosome
   return Chromosome.getInstance(adapter, this.config, this)
