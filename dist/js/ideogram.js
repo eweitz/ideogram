@@ -1573,12 +1573,6 @@ var Ideogram = function(config) {
   this.numChromosomes = 0;
   this.bandData = {};
 
-  // Organism ploidy description
-  this._ploidy = new Ploidy(this.config);
-
-  // Chromosome's layout
-  this._layout = Layout.getInstance(this.config, this);
-
   this.init();
 };
 
@@ -3401,6 +3395,10 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
         .attr("id", chrModel.id + "-chromosome-set");
 
       var shape;
+      var numChrsInSet = 1;
+      if (ideo.ploidy > 1) {
+        numChrsInSet = this._ploidy.getChromosomesNumber(j);
+      }
       for (var k = 0; k < this._ploidy.getChromosomesNumber(j); k++) {
         shape = ideo.drawChromosome(chrModel, chrIndex - 1, container, k);
       }
@@ -3636,6 +3634,27 @@ Ideogram.prototype.init = function() {
         }
       );
     }
+
+    // If ploidy description is a string, then convert it to the canonical
+    // array format.  String ploidyDesc is used when depicting e.g. parental
+    // origin each member of chromosome pair in a human genome.
+    // See ploidy_basic.html for usage example.
+    if (
+      'ploidyDesc' in ideo.config &&
+      typeof ideo.config.ploidyDesc === "string"
+    ) {
+      var tmp = [];
+      for (var i = 0; i < ideo.numChromosomes; i++) {
+        tmp.push(ideo.config.ploidyDesc);
+      }
+      ideo.config.ploidyDesc = tmp;
+    }
+    // Organism ploidy description
+    ideo._ploidy = new Ploidy(ideo.config);
+
+    // Chromosome's layout
+    ideo._layout = Layout.getInstance(ideo.config, ideo);
+
 
     svgClass = "";
     if (ideo.config.showChromosomeLabels) {
