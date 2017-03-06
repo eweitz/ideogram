@@ -463,11 +463,14 @@ HorizontalLayout.prototype.getChromosomeSetLabelXPosition = function(i) {
 HorizontalLayout.prototype.getChromosomeSetLabelYPosition = function(i) {
 
   var setSize = this._ploidy.getSetSize(i),
-      chrMargin = this._config.chrMargin,
-      y = (setSize * chrMargin) / 2;
+      config = this._config,
+      chrMargin = config.chrMargin,
+      chrWidth = config.chrWidth;
 
-  if (this._config.showBandLabels === true) {
-    y = this._config.chrWidth/2 + 3;
+  if (config.ploidy === 1) {
+    y = chrWidth/2 + 3;
+  } else {
+    y = (setSize * chrMargin) / 2;
   }
 
   return y;
