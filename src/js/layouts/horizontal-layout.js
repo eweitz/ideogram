@@ -164,11 +164,16 @@ HorizontalLayout.prototype.getChromosomeSetLabelXPosition = function(i) {
 };
 
 HorizontalLayout.prototype.getChromosomeSetLabelYPosition = function(i) {
-  if (this._config.ploidy === 1) {
-    return (this._ploidy.getSetSize(i) * this._config.chrWidth) / 2 + 3;
-  } else {
-    return this._ploidy.getSetSize(i) * this._config.chrWidth;
+
+  var setSize = this._ploidy.getSetSize(i),
+      chrMargin = this._config.chrMargin,
+      y = (setSize * chrMargin) / 2;
+
+  if (this._config.showBandLabels === true) {
+    y = this._config.chrWidth/2 + 3;
   }
+
+  return y;
 };
 
 HorizontalLayout.prototype.getChromosomeLabelXPosition = function() {
