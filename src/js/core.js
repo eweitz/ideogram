@@ -23,6 +23,17 @@ var Ideogram = function(config) {
     this.config.ploidy = 1;
   }
 
+  if (this.config.ploidy > 1) {
+    if (!this.config.sex) {
+      // Default to 'male' per human, mouse reference genomes.
+      // TODO: The default sex value should probably be the heterogametic sex,
+      // i.e. whichever sex has allosomes that differ in morphology.
+      // In mammals and most insects that is the male.
+      // However, in birds and reptiles, that is female.
+      this.config.sex = 'male';
+    }
+  }
+
   if (!this.config.container) {
     this.config.container = "body";
   }
@@ -2050,6 +2061,32 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
 Ideogram.prototype.getSvg = function() {
   return d3.select(this.selector).node();
 };
+
+Ideogram.prototype.adjustSexChromosomes = function(chrs) {
+  // Only applicable to mammals.
+  // TODO: Make generic for all sexually reproducing taxa
+  //  - Mammalian male: XY <- heterogametic
+  //  - Mammalian female: XX
+  //  - Avian male: ZZ
+  //  - Avian female: ZW <- heterogametic
+
+  var sexChrs = {'X': 1, 'Y': 1},
+    chrToRemove = (ideo.config.sex === 'female' ? 'Y' : ''),
+    adjustedChrs = [],
+    chr, i;
+
+  for (i = 0; i < chrs.length; i++) {
+    chr = chrs[i];
+
+    if (ideo.config.sex === 'male' || chr.name in sexChrs == false) {
+      adjustedChrs.push(chr);
+    } else if (chr.name === 'X') {
+      adjustedChrs.push(chr, chr)
+    }.(
+      if (ideo.config.sex === female)
+  }
+
+}
 
 /*
 * Completes default ideogram initialization
