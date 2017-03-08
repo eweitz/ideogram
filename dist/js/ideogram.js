@@ -1414,6 +1414,18 @@ var Ideogram = function(config) {
     this.config.ploidy = 1;
   }
 
+  if (this.config.ploidy > 1) {
+    this.sexChromosomes = {};
+    if (!this.config.sex) {
+      // Default to 'male' per human, mouse reference genomes.
+      // TODO: The default sex value should probably be the heterogametic sex,
+      // i.e. whichever sex has allosomes that differ in morphology.
+      // In mammals and most insects that is the male.
+      // However, in birds and reptiles, that is female.
+      this.config.sex = 'male';
+    }
+  }
+
   if (!this.config.container) {
     this.config.container = "body";
   }
@@ -3388,6 +3400,8 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
 
     ideo.chromosomes[taxid] = {};
 
+    ideo.setSexChromosomes(chrs);
+
     for (j = 0; j < chrs.length; j++) {
       chromosome = chrs[j];
       bands = bandsArray[chrIndex];
@@ -3441,6 +3455,51 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
 Ideogram.prototype.getSvg = function() {
   return d3.select(this.selector).node();
 };
+
+Ideogram.prototype.setSexChromosomes = function(chrs) {
+  // Currently only supported for mammals
+  // TODO: Support all sexually reproducing taxa
+  //  XY sex-determination (mammals):
+  //  - Male: XY <- heterogametic
+  //  - Female: XX
+  //  ZW sex-determination (birds):
+  //  - Male: ZZ
+  //  - Female: ZW <- heterogametic
+  //  X0 sex-determination (some insects):
+  //  - Male: X0, i.e. only X <- heterogametic?
+  //  - Female: XX
+  // TODO: Support sex chromosome aneuploidies in mammals
+  //  - Turner syndrome: X0
+  //  - Klinefelter syndome: XXY
+  //  More types:
+  //  https://en.wikipedia.org/wiki/Category:Sex_chromosome_aneuploidies
+
+
+  if (!this.config.sex) return;
+
+  var ideo = this,
+    sexChrs = {'X': 1, 'Y': 1},
+    chrToRemove = (ideo.config.sex === 'female' ? 'Y' : ''),
+    adjustedChrs = [],
+    chr, i;
+
+  ideo.sexChromosomes['list'] = [];
+
+  for (i = 0; i < chrs.length; i++) {
+    chr = chrs[i];
+
+    if (ideo.config.sex === 'male' || chr.name in sexChrs) {
+      ideo.sexChromosomes.list.push(chr);
+      if (!ideo.sexChromosomes.setNumber) {
+        ideo.sexChromosomes.setNumber = i;
+      }
+    } else if (chr.name === 'X') {
+      ideo.sexChromosomes.list.push(chr, chr)
+      ideo.sexChromosomes.setNumber = i;
+    }
+  }
+
+}
 
 /*
 * Completes default ideogram initialization
