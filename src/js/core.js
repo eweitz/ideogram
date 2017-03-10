@@ -33,6 +33,10 @@ var Ideogram = function(config) {
       // However, in birds and reptiles, that is female.
       this.config.sex = 'male';
     }
+    if (this.config.ploidy === 2 && !this.config.ancestors) {
+      this.config.ancestors = {"M": "#ffb6c1", "P": "#add8e6"};
+      this.config.ploidyDesc = "MP";
+    }
   }
 
   if (!this.config.container) {
@@ -494,13 +498,21 @@ Ideogram.prototype.drawChromosomeLabels = function() {
           return ideo._layout.getChromosomeSetLabelYPosition(i);
         })
         .attr("text-anchor", ideo._layout.getChromosomeSetLabelAnchor())
-        .each(function(d) {
+        .each(function(d, i) {
             // Get label lines
           var lines;
           if (d.name.indexOf(' ') === -1) {
             lines = [d.name];
           } else {
             lines = d.name.match(/^(.*)\s+([^\s]+)$/).slice(1).reverse();
+          }
+
+          if ('sex' in ideo.config && i === ideo.sexChromosomes.index) {
+            if (ideo.config.sex === 'male') {
+              lines = ['XY'];
+            } else {
+              lines = ['XX'];
+            }
           }
 
           // Render label lines
