@@ -1991,44 +1991,37 @@ Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
       });
 };
 
-Ideogram.prototype.drawSexChromosomes = function(bandsArray, taxid, chrIndex,
-  container, defs, j, chrs) {
+Ideogram.prototype.drawSexChromosomes = function(bandsArray, taxid, container,
+  defs, j, chrs) {
 
-  var chromosome, bands, chrModel, shape,
+  var chromosome, bands, chrModel, shape, sci, k,
+    sexChromosomeIndexes,
     ideo = this;
 
+  if (ideo.config.sex === 'male') {
+    sexChromosomeIndexes = [1, 0];
+  } else {
+    sexChromosomeIndexes = [0, 0];
+  }
 
-      chromosome = chrs[j + 1]
-      bands = bandsArray[chrIndex];
-      chrModel = ideo.getChromosomeModel(bands, chromosome, taxid, chrIndex);
-      shape = ideo.drawChromosome(chrModel, chrIndex, container, 0);
-      defs.append("clipPath")
-        .attr("id", chrModel.id + "-chromosome-set-clippath")
-        .selectAll('path')
-        .data(shape)
-        .enter()
-        .append('path')
-        .attr('d', function(d) {
-          return d.path;
-        }).attr('class', function(d) {
-          return d.class;
-        });
-
-  chromosome = chrs[j]
-  bands = bandsArray[chrIndex - 1];
-  chrModel = ideo.getChromosomeModel(bands, chromosome, taxid, chrIndex + 1);
-  shape = ideo.drawChromosome(chrModel, chrIndex, container, 1);
-  defs.append("clipPath")
-    .attr("id", chrModel.id + "-chromosome-set-clippath")
-    .selectAll('path')
-    .data(shape)
-    .enter()
-    .append('path')
-    .attr('d', function(d) {
-      return d.path;
-    }).attr('class', function(d) {
-      return d.class;
-    });
+  for (k = 0; k < sexChromosomeIndexes.length; k++) {
+    sci = sexChromosomeIndexes[k] + j;
+    chromosome = chrs[sci]
+    bands = bandsArray[sci];
+    chrModel = ideo.getChromosomeModel(bands, chromosome, taxid, sci);
+    shape = ideo.drawChromosome(chrModel, j, container, k);
+    defs.append("clipPath")
+      .attr("id", chrModel.id + "-chromosome-set-clippath")
+      .selectAll('path')
+      .data(shape)
+      .enter()
+      .append('path')
+      .attr('d', function(d) {
+        return d.path;
+      }).attr('class', function(d) {
+        return d.class;
+      });
+  }
 }
 
 Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
@@ -2081,7 +2074,7 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
         .attr("id", chrModel.id + "-chromosome-set");
 
       if ('sex' in ideo.config && ideo.sexChromosomes.index + 1 === chrIndex) {
-        ideo.drawSexChromosomes(bandsArray, taxid, chrIndex, container, defs, j, chrs);
+        ideo.drawSexChromosomes(bandsArray, taxid, container, defs, j, chrs);
         continue;
       }
 
@@ -2152,7 +2145,7 @@ Ideogram.prototype.setSexChromosomes = function(chrs) {
 
     if (ideo.config.sex === 'male' && chr in sexChrs) {
       ideo.sexChromosomes.list.push(chr);
-      if (!ideo.sexChromosomes.setNumber) {
+      if (!ideo.sexChromosomes.index) {
         ideo.sexChromosomes.index = i;
       }
     } else if (chr === 'X') {
