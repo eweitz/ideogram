@@ -94,7 +94,7 @@ HorizontalLayout.prototype.getHeight = function(taxId) {
 
 HorizontalLayout.prototype.getWidth = function() {
   return this._config.chrHeight + this._margin.top * 1.5;
-}
+};
 
 HorizontalLayout.prototype.getChromosomeSetLabelAnchor = function() {
   return 'end';
@@ -164,11 +164,19 @@ HorizontalLayout.prototype.getChromosomeSetLabelXPosition = function(i) {
 };
 
 HorizontalLayout.prototype.getChromosomeSetLabelYPosition = function(i) {
-  if (this._config.ploidy === 1) {
-    return (this._ploidy.getSetSize(i) * this._config.chrWidth) / 2 + 3;
+
+  var setSize = this._ploidy.getSetSize(i),
+      config = this._config,
+      chrMargin = config.chrMargin,
+      chrWidth = config.chrWidth;
+
+  if (config.ploidy === 1) {
+    y = chrWidth/2 + 3;
   } else {
-    return this._ploidy.getSetSize(i) * this._config.chrWidth;
+    y = (setSize * chrMargin) / 2;
   }
+
+  return y;
 };
 
 HorizontalLayout.prototype.getChromosomeLabelXPosition = function() {

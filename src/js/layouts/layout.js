@@ -4,6 +4,13 @@ function Layout(config, ideo) {
   this._ploidy = this._ideo._ploidy;
   this._translate = undefined;
 
+  if ('chrSetMargin' in config) {
+    this.chrSetMargin = config.chrSetMargin;
+  } else {
+    var k = this._config.chrMargin;
+    this.chrSetMargin = (this._config.ploidy > 1 ? k : 0);
+  }
+
   // Chromosome band's size.
   this._tickSize = 8;
 
@@ -57,7 +64,6 @@ Layout.prototype.rotateForward = function() {
 };
 
 Layout.prototype.rotate = function(chrSetNumber, chrNumber, chrElement) {
-
   var ideo = this._ideo;
 
     // Find chromosomes which should be hidden
@@ -105,12 +111,12 @@ Layout.prototype._getAdditionalOffset = function() {
 };
 
 Layout.prototype._getChromosomeSetSize = function(chrSetNumber) {
-    // Get last chromosome set size.
+  // Get last chromosome set size.
   var setSize = this._ploidy.getSetSize(chrSetNumber);
 
-    // Increase offset by last chromosome set size
+  // Increase offset by last chromosome set size
   return (
-    setSize * this._config.chrWidth * 2 + (this._config.ploidy > 1 ? 20 : 0)
+    setSize * this._config.chrWidth * 2 + (this.chrSetMargin)
   );
 };
 

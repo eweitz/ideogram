@@ -71,7 +71,6 @@ PairedLayout.prototype.rotateForward = function(setNumber, chrNumber,
 
 PairedLayout.prototype.rotateBack = function(setNumber, chrNumber, chrElement,
   callback) {
-
   var ideo = this._ideo;
 
     // Get intial transformation string for chromosome set

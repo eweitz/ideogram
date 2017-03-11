@@ -41,7 +41,6 @@ SmallLayout.prototype.getHeight = function() {
   return this._config.rows * (this._config.chrHeight + this._margin.top * 1.5);
 };
 
-
 SmallLayout.prototype.getWidth = function() {
   return '97%';
 };
