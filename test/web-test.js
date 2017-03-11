@@ -785,6 +785,22 @@ describe("Ideogram", function() {
       var ideogram = new Ideogram(config);
     });
 
+    it("should omit Y chromosome in haploid human female", function(done) {
+
+      function callback() {
+        var hasChrY = d3.selectAll('#chrY-9606').nodes().length >= 1;
+        assert.isFalse(hasChrY);
+        done();
+      }
+
+      var config = {
+        organism: "human",
+        sex: "female"
+      };
+      config.onLoad = callback;
+      var ideogram = new Ideogram(config);
+    });
+
     // it("should align chr. label with band-labeled vertical chromosome", function(done) {
     //   // Tests use case from ../examples/human.html
     //

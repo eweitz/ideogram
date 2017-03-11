@@ -1898,7 +1898,11 @@ Ideogram.prototype.drawChromosomeLabels = function() {
             lines = d.name.match(/^(.*)\s+([^\s]+)$/).slice(1).reverse();
           }
 
-          if ('sex' in ideo.config && i === ideo.sexChromosomes.index) {
+          if (
+            'sex' in ideo.config &&
+            ideo.config.ploidy === 2 &&
+            i === ideo.sexChromosomes.index
+          ) {
             if (ideo.config.sex === 'male') {
               lines = ['XY'];
             } else {
@@ -3446,10 +3450,6 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
     ideo.chromosomes[taxid] = {};
 
     ideo.setSexChromosomes(chrs);
-    // if ('sex' in ideo.config && ideo.config.sex === 'male') {
-    //   chrs.splice(ideo.sexChromosomes.index, 1);
-    //   ideo.config.chromosomes[taxid] = chrs;
-    // }
 
     for (j = 0; j < chrs.length; j++) {
       chromosome = chrs[j];
@@ -3461,7 +3461,13 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
       ideo.chromosomes[taxid][chromosome] = chrModel;
       ideo.chromosomesArray.push(chrModel);
 
-      if ('sex' in ideo.config && ideo.sexChromosomes.index + 2 === chrIndex) {
+      if (
+        'sex' in ideo.config &&
+        (
+            ideo.config.ploidy === 2 && ideo.sexChromosomes.index + 2 === chrIndex ||
+            ideo.config.sex === 'female' && chrModel.name === 'Y'
+        )
+      ) {
         continue;
       }
 
@@ -3476,7 +3482,11 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
         .attr("transform", transform)
         .attr("id", chrModel.id + "-chromosome-set");
 
-      if ('sex' in ideo.config && ideo.sexChromosomes.index + 1 === chrIndex) {
+      if (
+          'sex' in ideo.config &&
+          ideo.config.ploidy === 2 &&
+          ideo.sexChromosomes.index + 1 === chrIndex
+      ) {
         ideo.drawSexChromosomes(bandsArray, taxid, container, defs, j, chrs);
         continue;
       }
@@ -3533,7 +3543,7 @@ Ideogram.prototype.setSexChromosomes = function(chrs) {
   //  https://en.wikipedia.org/wiki/Category:Sex_chromosome_aneuploidies
 
 
-  if (!this.config.sex) return;
+  if (this.config.ploidy !== 2 || !this.config.sex) return;
 
   var ideo = this,
     sexChrs = {'X': 1, 'Y': 1},
