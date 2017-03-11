@@ -3,6 +3,18 @@
 //  - http://martinfowler.com/articles/asyncJS.html
 //  - https://mochajs.org/#asynchronous-code
 
+// innerHTML doesn't work for SVG in PhantomJS.  This is a workaround.
+function getSvgText(selector) {
+  var svgText =
+    new XMLSerializer()
+      .serializeToString(
+        document.querySelector(selector)
+      )
+      .split('>')[1]
+      .split('</')[0];
+  return svgText;
+}
+
 describe("Ideogram", function() {
 
   var config = {};
@@ -727,6 +739,66 @@ describe("Ideogram", function() {
         new Ideogram(config);
       }
 
+    });
+
+
+    it("should show XX chromosomes for a diploid human female", function(done) {
+      // Tests use case from ../examples/ploidy_basic.html
+
+      function callback() {
+        var selector = '#chrX-9606-chromosome-set .chromosome-set-label tspan';
+        var chrSetLabel = getSvgText(selector);
+        assert.equal(chrSetLabel, 'XX');
+        done();
+      }
+
+      var config = {
+        organism: "human",
+        sex: "female",
+        chrHeight: 300,
+        chrWidth: 8,
+        ploidy: 2,
+        onLoad: callback
+      };
+      var ideogram = new Ideogram(config);
+    });
+
+
+    it("should show XY chromosomes for a diploid human male", function(done) {
+      // Tests use case from ../examples/ploidy_basic.html
+
+      function callback() {
+        var selector = '#chrX-9606-chromosome-set .chromosome-set-label tspan';
+        var chrSetLabel = getSvgText(selector);
+        assert.equal(chrSetLabel, 'XY');
+        done();
+      }
+
+      var config = {
+        organism: "human",
+        sex: "male",
+        chrHeight: 300,
+        chrWidth: 8,
+        ploidy: 2,
+        onLoad: callback
+      };
+      var ideogram = new Ideogram(config);
+    });
+
+    it("should omit Y chromosome in haploid human female", function(done) {
+
+      function callback() {
+        var hasChrY = d3.selectAll('#chrY-9606').nodes().length >= 1;
+        assert.isFalse(hasChrY);
+        done();
+      }
+
+      var config = {
+        organism: "human",
+        sex: "female"
+      };
+      config.onLoad = callback;
+      var ideogram = new Ideogram(config);
     });
 
     // it("should align chr. label with band-labeled vertical chromosome", function(done) {

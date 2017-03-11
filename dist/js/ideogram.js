@@ -102,6 +102,13 @@ function Layout(config, ideo) {
   this._ploidy = this._ideo._ploidy;
   this._translate = undefined;
 
+  if ('chrSetMargin' in config) {
+    this.chrSetMargin = config.chrSetMargin;
+  } else {
+    var k = this._config.chrMargin;
+    this.chrSetMargin = (this._config.ploidy > 1 ? k : 0);
+  }
+
   // Chromosome band's size.
   this._tickSize = 8;
 
@@ -202,12 +209,12 @@ Layout.prototype._getAdditionalOffset = function() {
 };
 
 Layout.prototype._getChromosomeSetSize = function(chrSetNumber) {
-    // Get last chromosome set size.
+  // Get last chromosome set size.
   var setSize = this._ploidy.getSetSize(chrSetNumber);
 
-    // Increase offset by last chromosome set size
+  // Increase offset by last chromosome set size
   return (
-    setSize * this._config.chrWidth * 2 + (this._config.ploidy > 1 ? 20 : 0)
+    setSize * this._config.chrWidth * 2 + (this.chrSetMargin)
   );
 };
 
@@ -454,11 +461,19 @@ HorizontalLayout.prototype.getChromosomeSetLabelXPosition = function(i) {
 };
 
 HorizontalLayout.prototype.getChromosomeSetLabelYPosition = function(i) {
-  if (this._config.ploidy === 1) {
-    return (this._ploidy.getSetSize(i) * this._config.chrWidth) / 2 + 3;
+
+  var setSize = this._ploidy.getSetSize(i),
+      config = this._config,
+      chrMargin = config.chrMargin,
+      chrWidth = config.chrWidth;
+
+  if (config.ploidy === 1) {
+    y = chrWidth/2 + 3;
   } else {
-    return this._ploidy.getSetSize(i) * this._config.chrWidth;
+    y = (setSize * chrMargin) / 2;
   }
+
+  return y;
 };
 
 HorizontalLayout.prototype.getChromosomeLabelXPosition = function() {
@@ -608,7 +623,7 @@ VerticalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
 };
 
 VerticalLayout.prototype.getChromosomeSetLabelXPosition = function() {
-  return this._config.chrWidth / -2;
+  return (this._config.chrWidth * this._config.ploidy) / -2;
 };
 
 VerticalLayout.prototype.getChromosomeLabelXPosition = function() {
@@ -892,25 +907,32 @@ Ploidy.prototype.getChromosomesNumber = function(setNumber) {
 
 // Normalize use defined description
 Ploidy.prototype._normalize = function(description) {
-    // Return the same if no description provided
+
+  var normalized, key, descValue;
+
+  // Return the same if no description provided
   if (!description) {
     return description;
   }
 
-    // Array of normalized description objects
-  var normalized = [];
+  // Array of normalized description objects
+  normalized = [];
 
-     // Loop through description and normalize
-  for (var key in description) {
-    if (typeof description[key] === 'string') {
+  // Loop through description and normalize
+  for (key in description) {
+    descValue = description[key];
+    if (typeof descValue === 'string') {
+      if (this._config.orientation === 'vertical') {
+        descValue = descValue.split('').reverse();
+      }
       normalized.push({
-        ancestors: description[key],
-        existence: this._getexistenceArray(description[key].length)
+        ancestors: descValue,
+        existence: this._getexistenceArray(descValue.length)
       });
     } else {
       normalized.push({
-        ancestors: Object.keys(description[key])[0],
-        existence: description[key][Object.keys(description[key])[0]]
+        ancestors: Object.keys(descValue)[0],
+        existence: descValue[Object.keys(descValue)[0]]
       });
     }
   }
@@ -1030,6 +1052,9 @@ Chromosome.prototype._addQArmShape = function(clipPath, isQArmRendered) {
 
 Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
     // Append bands container and apply clip-path on it
+
+  var self = this;
+
   container = container.append('g')
     .attr('class', 'bands')
     .attr("clip-path", "url(#" + this._model.id + "-chromosome-set-clippath)");
@@ -1046,15 +1071,33 @@ Chromosome.prototype.render = function(container, chrSetNumber, chrNumber) {
   clipPath = this._addPArmShape(clipPath, isPArmRendered);
   clipPath = this._addQArmShape(clipPath, isQArmRendered);
 
+  var opacity = '0';
+  var fill = '';
+  var isFullyBanded = this.isFullyBanded();
+  if ('ancestors' in this._ideo.config && !('rangeSet' in this._ideo.config)) {
+    // E.g. diploid human genome (with translucent overlay)
+    fill = self._color.getArmColor(chrSetNumber, chrNumber, 0);
+    if (isFullyBanded) {
+      opacity = '0.5';
+    }
+  } else if (isFullyBanded) {
+    // E.g. mouse reference genome
+    opacity = null;
+    fill = 'transparent';
+  } else if (!('ancestors' in this._ideo.config)) {
+    // E.g. chimpanzee assembly Pan_tro 3.0
+    opacity = '1';
+  }
+
   // Render chromosome border
-  var self = this;
   container.append('g')
         .attr('class', 'chromosome-border')
         .selectAll('path')
         .data(clipPath)
         .enter()
         .append('path')
-        .attr('fill', 'transparent')
+        .attr('fill', fill)
+        .style('fill-opacity', opacity)
         .attr('stroke', function(d, i) {
           return self._color.getBorderColor(chrSetNumber, chrNumber, i);
         })
@@ -1141,12 +1184,7 @@ Chromosome.prototype._getPArmShape = function() {
   var d = this._getShapeData(),
     x = d.x2 - d.b;
 
-  if (
-    this._model.bands &&
-    (this._model.bands[0].name[0] === 'q' || this._model.bands.length !== 2) ||
-    '_config' in this._color._ploidy &&
-    'ancestors' in this._color._ploidy._config
-  ) {
+  if (this.isFullyBanded() || 'ancestors' in this._ideo.config) {
     // Encountered when chromosome has any of:
     //  - One placeholder "band", e.g. pig genome GCF_000003025.5
     //  - Many (> 2) bands, e.g. human reference genome
@@ -1187,12 +1225,7 @@ Chromosome.prototype._getQArmShape = function() {
     x = d.x3 - d.b,
     x2b = d.x2 + d.b;
 
-  if (
-    this._model.bands &&
-    (this._model.bands[0].name[0] === 'q' || this._model.bands.length !== 2) ||
-    '_config' in this._color._ploidy &&
-    'ancestors' in this._color._ploidy._config
-  ) {
+  if (this.isFullyBanded() || 'ancestors' in this._ideo.config) {
     return {
       class: '',
       path:
@@ -1223,12 +1256,22 @@ Chromosome.prototype._getQArmShape = function() {
   }
 };
 
+Chromosome.prototype.isFullyBanded = function() {
+  return (
+    this._model.bands &&
+    (this._model.bands.length !== 2 || this._model.bands[0].name[0] === 'q')
+  );
+}
+
 // Render arm bands
 Chromosome.prototype._renderBands = function(container, chrSetNumber,
   chrNumber, bands, arm) {
   var self = this;
   var armNumber = arm === 'p' ? 0 : 1;
-  var fill = self._color.getArmColor(chrSetNumber, chrNumber, armNumber);
+  var fill = '';
+  if ('ancestors' in this._ideo.config && !(this.isFullyBanded())) {
+    fill = self._color.getArmColor(chrSetNumber, chrNumber, armNumber);
+  }
 
   container.selectAll("path.band." + arm)
     .data(bands)
@@ -1358,12 +1401,6 @@ var Ideogram = function(config) {
   // without picking up prior ideogram's settings
   this.config = JSON.parse(JSON.stringify(config));
 
-  // Organism ploidy description
-  this._ploidy = new Ploidy(this.config);
-
-  // Chromosome's layout
-  this._layout = Layout.getInstance(this.config, this);
-
   // TODO: Document this
   this._bandsXOffset = 30;
 
@@ -1375,6 +1412,22 @@ var Ideogram = function(config) {
 
   if (!this.config.ploidy) {
     this.config.ploidy = 1;
+  }
+
+  if (this.config.ploidy > 1) {
+    this.sexChromosomes = {};
+    if (!this.config.sex) {
+      // Default to 'male' per human, mouse reference genomes.
+      // TODO: The default sex value should probably be the heterogametic sex,
+      // i.e. whichever sex has allosomes that differ in morphology.
+      // In mammals and most insects that is the male.
+      // However, in birds and reptiles, that is female.
+      this.config.sex = 'male';
+    }
+    if (this.config.ploidy === 2 && !this.config.ancestors) {
+      this.config.ancestors = {"M": "#ffb6c1", "P": "#add8e6"};
+      this.config.ploidyDesc = "MP";
+    }
   }
 
   if (!this.config.container) {
@@ -1389,10 +1442,6 @@ var Ideogram = function(config) {
 
   if ("showChromosomeLabels" in this.config === false) {
     this.config.showChromosomeLabels = true;
-  }
-
-  if (!this.config.chrMargin) {
-    this.config.chrMargin = 10;
   }
 
   if (!this.config.orientation) {
@@ -1426,6 +1475,16 @@ var Ideogram = function(config) {
       chrWidth = Math.round(chrHeight / 45);
     }
     this.config.chrWidth = chrWidth;
+  }
+
+
+  if (!this.config.chrMargin) {
+    if (this.config.ploidy === 1) {
+      this.config.chrMargin = 10;
+    } else {
+      // Defaults polyploid chromosomes to relatively small interchromatid gap
+      this.config.chrMargin = Math.round(this.config.chrWidth/4);
+    }
   }
 
   if (!this.config.showBandLabels) {
@@ -1830,13 +1889,25 @@ Ideogram.prototype.drawChromosomeLabels = function() {
           return ideo._layout.getChromosomeSetLabelYPosition(i);
         })
         .attr("text-anchor", ideo._layout.getChromosomeSetLabelAnchor())
-        .each(function(d) {
+        .each(function(d, i) {
             // Get label lines
           var lines;
           if (d.name.indexOf(' ') === -1) {
             lines = [d.name];
           } else {
             lines = d.name.match(/^(.*)\s+([^\s]+)$/).slice(1).reverse();
+          }
+
+          if (
+            'sex' in ideo.config &&
+            ideo.config.ploidy === 2 &&
+            i === ideo.sexChromosomes.index
+          ) {
+            if (ideo.config.sex === 'male') {
+              lines = ['XY'];
+            } else {
+              lines = ['XX'];
+            }
           }
 
           // Render label lines
@@ -2192,6 +2263,9 @@ Ideogram.prototype.round = function(coord) {
 * Renders all the bands and outlining boundaries of a chromosome.
 */
 Ideogram.prototype.drawChromosome = function(chrModel, chrIndex, container, k) {
+
+  var chrMargin = this.config.chrMargin;
+
     // Get chromosome model adapter class
   var adapter = ModelAdapter.getInstance(chrModel);
 
@@ -2200,7 +2274,7 @@ Ideogram.prototype.drawChromosome = function(chrModel, chrIndex, container, k) {
         .append("g")
         .attr("id", chrModel.id)
         .attr("class", "chromosome " + adapter.getCssClass())
-        .attr("transform", "translate(0, " + k * 20 + ")");
+        .attr("transform", "translate(0, " + k * chrMargin + ")");
 
     // Render chromosome
   return Chromosome.getInstance(adapter, this.config, this)
@@ -3324,6 +3398,39 @@ Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
       });
 };
 
+Ideogram.prototype.drawSexChromosomes = function(bandsArray, taxid, container,
+  defs, j, chrs) {
+
+  var chromosome, bands, chrModel, shape, sci, k,
+    sexChromosomeIndexes,
+    ideo = this;
+
+  if (ideo.config.sex === 'male') {
+    sexChromosomeIndexes = [1, 0];
+  } else {
+    sexChromosomeIndexes = [0, 0];
+  }
+
+  for (k = 0; k < sexChromosomeIndexes.length; k++) {
+    sci = sexChromosomeIndexes[k] + j;
+    chromosome = chrs[sci]
+    bands = bandsArray[sci];
+    chrModel = ideo.getChromosomeModel(bands, chromosome, taxid, sci);
+    shape = ideo.drawChromosome(chrModel, j, container, k);
+    defs.append("clipPath")
+      .attr("id", chrModel.id + "-chromosome-set-clippath")
+      .selectAll('path')
+      .data(shape)
+      .enter()
+      .append('path')
+      .attr('d', function(d) {
+        return d.path;
+      }).attr('class', function(d) {
+        return d.class;
+      });
+  }
+}
+
 Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
   var ideo = this,
     taxids = ideo.config.taxids,
@@ -3342,6 +3449,8 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
 
     ideo.chromosomes[taxid] = {};
 
+    ideo.setSexChromosomes(chrs);
+
     for (j = 0; j < chrs.length; j++) {
       chromosome = chrs[j];
       bands = bandsArray[chrIndex];
@@ -3351,6 +3460,16 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
 
       ideo.chromosomes[taxid][chromosome] = chrModel;
       ideo.chromosomesArray.push(chrModel);
+
+      if (
+        'sex' in ideo.config &&
+        (
+            ideo.config.ploidy === 2 && ideo.sexChromosomes.index + 2 === chrIndex ||
+            ideo.config.sex === 'female' && chrModel.name === 'Y'
+        )
+      ) {
+        continue;
+      }
 
       transform = ideo._layout.getChromosomeSetTranslate(chrSetNumber);
       chrSetNumber += 1;
@@ -3363,8 +3482,21 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
         .attr("transform", transform)
         .attr("id", chrModel.id + "-chromosome-set");
 
+      if (
+          'sex' in ideo.config &&
+          ideo.config.ploidy === 2 &&
+          ideo.sexChromosomes.index + 1 === chrIndex
+      ) {
+        ideo.drawSexChromosomes(bandsArray, taxid, container, defs, j, chrs);
+        continue;
+      }
+
       var shape;
-      for (var k = 0; k < this._ploidy.getChromosomesNumber(j); k++) {
+      var numChrsInSet = 1;
+      if (ideo.config.ploidy > 1) {
+        numChrsInSet = this._ploidy.getChromosomesNumber(j);
+      }
+      for (var k = 0; k < numChrsInSet; k++) {
         shape = ideo.drawChromosome(chrModel, chrIndex - 1, container, k);
       }
 
@@ -3391,6 +3523,51 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
 Ideogram.prototype.getSvg = function() {
   return d3.select(this.selector).node();
 };
+
+Ideogram.prototype.setSexChromosomes = function(chrs) {
+  // Currently only supported for mammals
+  // TODO: Support all sexually reproducing taxa
+  //  XY sex-determination (mammals):
+  //  - Male: XY <- heterogametic
+  //  - Female: XX
+  //  ZW sex-determination (birds):
+  //  - Male: ZZ
+  //  - Female: ZW <- heterogametic
+  //  X0 sex-determination (some insects):
+  //  - Male: X0, i.e. only X <- heterogametic?
+  //  - Female: XX
+  // TODO: Support sex chromosome aneuploidies in mammals
+  //  - Turner syndrome: X0
+  //  - Klinefelter syndome: XXY
+  //  More types:
+  //  https://en.wikipedia.org/wiki/Category:Sex_chromosome_aneuploidies
+
+
+  if (this.config.ploidy !== 2 || !this.config.sex) return;
+
+  var ideo = this,
+    sexChrs = {'X': 1, 'Y': 1},
+    chrToRemove = (ideo.config.sex === 'female' ? 'Y' : ''),
+    adjustedChrs = [],
+    chr, i;
+
+  ideo.sexChromosomes['list'] = [];
+
+  for (i = 0; i < chrs.length; i++) {
+    chr = chrs[i];
+
+    if (ideo.config.sex === 'male' && chr in sexChrs) {
+      ideo.sexChromosomes.list.push(chr);
+      if (!ideo.sexChromosomes.index) {
+        ideo.sexChromosomes.index = i;
+      }
+    } else if (chr === 'X') {
+      ideo.sexChromosomes.list.push(chr, chr)
+      ideo.sexChromosomes.index = i;
+    }
+  }
+
+}
 
 /*
 * Completes default ideogram initialization
@@ -3599,6 +3776,27 @@ Ideogram.prototype.init = function() {
         }
       );
     }
+
+    // If ploidy description is a string, then convert it to the canonical
+    // array format.  String ploidyDesc is used when depicting e.g. parental
+    // origin each member of chromosome pair in a human genome.
+    // See ploidy_basic.html for usage example.
+    if (
+      'ploidyDesc' in ideo.config &&
+      typeof ideo.config.ploidyDesc === "string"
+    ) {
+      var tmp = [];
+      for (var i = 0; i < ideo.numChromosomes; i++) {
+        tmp.push(ideo.config.ploidyDesc);
+      }
+      ideo.config.ploidyDesc = tmp;
+    }
+    // Organism ploidy description
+    ideo._ploidy = new Ploidy(ideo.config);
+
+    // Chromosome's layout
+    ideo._layout = Layout.getInstance(ideo.config, ideo);
+
 
     svgClass = "";
     if (ideo.config.showChromosomeLabels) {

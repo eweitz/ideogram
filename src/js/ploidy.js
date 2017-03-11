@@ -19,25 +19,32 @@ Ploidy.prototype.getChromosomesNumber = function(setNumber) {
 
 // Normalize use defined description
 Ploidy.prototype._normalize = function(description) {
-    // Return the same if no description provided
+
+  var normalized, key, descValue;
+
+  // Return the same if no description provided
   if (!description) {
     return description;
   }
 
-    // Array of normalized description objects
-  var normalized = [];
+  // Array of normalized description objects
+  normalized = [];
 
-     // Loop through description and normalize
-  for (var key in description) {
-    if (typeof description[key] === 'string') {
+  // Loop through description and normalize
+  for (key in description) {
+    descValue = description[key];
+    if (typeof descValue === 'string') {
+      if (this._config.orientation === 'vertical') {
+        descValue = descValue.split('').reverse();
+      }
       normalized.push({
-        ancestors: description[key],
-        existence: this._getexistenceArray(description[key].length)
+        ancestors: descValue,
+        existence: this._getexistenceArray(descValue.length)
       });
     } else {
       normalized.push({
-        ancestors: Object.keys(description[key])[0],
-        existence: description[key][Object.keys(description[key])[0]]
+        ancestors: Object.keys(descValue)[0],
+        existence: descValue[Object.keys(descValue)[0]]
       });
     }
   }

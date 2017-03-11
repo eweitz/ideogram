@@ -137,7 +137,7 @@ VerticalLayout.prototype.getChromosomeSetYTranslate = function(setNumber) {
 };
 
 VerticalLayout.prototype.getChromosomeSetLabelXPosition = function() {
-  return this._config.chrWidth / -2;
+  return (this._config.chrWidth * this._config.ploidy) / -2;
 };
 
 VerticalLayout.prototype.getChromosomeLabelXPosition = function() {
