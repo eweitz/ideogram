@@ -243,7 +243,7 @@ Chromosome.prototype.isFullyBanded = function() {
     this._model.bands &&
     (this._model.bands.length !== 2 || this._model.bands[0].name[0] === 'q')
   );
-}
+};
 
 // Render arm bands
 Chromosome.prototype._renderBands = function(container, chrSetNumber,
