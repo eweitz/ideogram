@@ -26,7 +26,14 @@
 </head>
 <body>
   <h1>Annotations, histogram | Ideogram</h1>
-  <a href=".">Back to overview</a>
+  <a href=".">Back to overview</a> |
+  <a href="annotations_external_data.html">Previous</a> |
+  <a href="layout_small.html">Next</a>
+  <br/><br/>
+  <div>
+    This ideogram shows the distribution of all human genes throughout the genome.
+    You can filter all 20,000+ genes in < 100 milliseconds by clicking the boxes below.
+  </div>
   <div id="container"></div>
   <ul id="expression-level">
     Expression level
@@ -107,9 +114,9 @@
     </li>
   </ul>
   <div class="note">
-    Histogram shows all human genes.
-    Expression data from NCBI SRA (SRR562645)
-    via <a href="https://github.com/NCBI-Hackathons/rnaseqview">rnaseqview</a> pipeline.</div>
+    Expression data from NCBI SRA (<a href="https://trace.ncbi.nlm.nih.gov/Traces/sra/?run=SRR562645">SRR562645</a>, <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE40705">GSE40705</a>)
+    via <a href="https://github.com/NCBI-Hackathons/rnaseqview#rnaseqview">rnaseqview</a> pipeline.
+  </div>
   <script type="text/javascript">
 
   var counts, key, count;
@@ -181,7 +188,7 @@
     orientation: "vertical",
     organism: "human",
     assembly: "GRCh37",
-    chrHeight: 300,
+    chrHeight: 275,
     annotationsPath: "../data/annotations/SRR562646.json",
     annotationsLayout: "histogram",
     barWidth: 3

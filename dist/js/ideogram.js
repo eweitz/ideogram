@@ -1458,7 +1458,7 @@ var Ideogram = function(config) {
     }
 
     if (container === "body") {
-      chrHeight = 500;
+      chrHeight = 400;
     }
     this.config.chrHeight = chrHeight;
   }
