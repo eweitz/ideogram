@@ -164,14 +164,13 @@ HorizontalLayout.prototype.getChromosomeSetLabelXPosition = function(i) {
 };
 
 HorizontalLayout.prototype.getChromosomeSetLabelYPosition = function(i) {
-
   var setSize = this._ploidy.getSetSize(i),
-      config = this._config,
-      chrMargin = config.chrMargin,
-      chrWidth = config.chrWidth;
+    config = this._config,
+    chrMargin = config.chrMargin,
+    chrWidth = config.chrWidth;
 
   if (config.ploidy === 1) {
-    y = chrWidth/2 + 3;
+    y = chrWidth / 2 + 3;
   } else {
     y = (setSize * chrMargin) / 2;
   }

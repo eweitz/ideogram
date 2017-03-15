@@ -19,7 +19,6 @@ Ploidy.prototype.getChromosomesNumber = function(setNumber) {
 
 // Normalize use defined description
 Ploidy.prototype._normalize = function(description) {
-
   var normalized, key, descValue;
 
   // Return the same if no description provided

@@ -461,14 +461,13 @@ HorizontalLayout.prototype.getChromosomeSetLabelXPosition = function(i) {
 };
 
 HorizontalLayout.prototype.getChromosomeSetLabelYPosition = function(i) {
-
   var setSize = this._ploidy.getSetSize(i),
-      config = this._config,
-      chrMargin = config.chrMargin,
-      chrWidth = config.chrWidth;
+    config = this._config,
+    chrMargin = config.chrMargin,
+    chrWidth = config.chrWidth;
 
   if (config.ploidy === 1) {
-    y = chrWidth/2 + 3;
+    y = chrWidth / 2 + 3;
   } else {
     y = (setSize * chrMargin) / 2;
   }
@@ -907,7 +906,6 @@ Ploidy.prototype.getChromosomesNumber = function(setNumber) {
 
 // Normalize use defined description
 Ploidy.prototype._normalize = function(description) {
-
   var normalized, key, descValue;
 
   // Return the same if no description provided
@@ -1261,7 +1259,7 @@ Chromosome.prototype.isFullyBanded = function() {
     this._model.bands &&
     (this._model.bands.length !== 2 || this._model.bands[0].name[0] === 'q')
   );
-}
+};
 
 // Render arm bands
 Chromosome.prototype._renderBands = function(container, chrSetNumber,
@@ -1425,7 +1423,7 @@ var Ideogram = function(config) {
       this.config.sex = 'male';
     }
     if (this.config.ploidy === 2 && !this.config.ancestors) {
-      this.config.ancestors = {"M": "#ffb6c1", "P": "#add8e6"};
+      this.config.ancestors = {M: "#ffb6c1", P: "#add8e6"};
       this.config.ploidyDesc = "MP";
     }
   }
@@ -1460,7 +1458,7 @@ var Ideogram = function(config) {
     }
 
     if (container === "body") {
-      chrHeight = 500;
+      chrHeight = 400;
     }
     this.config.chrHeight = chrHeight;
   }
@@ -1477,13 +1475,12 @@ var Ideogram = function(config) {
     this.config.chrWidth = chrWidth;
   }
 
-
   if (!this.config.chrMargin) {
     if (this.config.ploidy === 1) {
       this.config.chrMargin = 10;
     } else {
       // Defaults polyploid chromosomes to relatively small interchromatid gap
-      this.config.chrMargin = Math.round(this.config.chrWidth/4);
+      this.config.chrMargin = Math.round(this.config.chrWidth / 4);
     }
   }
 
@@ -2263,7 +2260,6 @@ Ideogram.prototype.round = function(coord) {
 * Renders all the bands and outlining boundaries of a chromosome.
 */
 Ideogram.prototype.drawChromosome = function(chrModel, chrIndex, container, k) {
-
   var chrMargin = this.config.chrMargin;
 
     // Get chromosome model adapter class
@@ -3400,7 +3396,6 @@ Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
 
 Ideogram.prototype.drawSexChromosomes = function(bandsArray, taxid, container,
   defs, j, chrs) {
-
   var chromosome, bands, chrModel, shape, sci, k,
     sexChromosomeIndexes,
     ideo = this;
@@ -3413,7 +3408,7 @@ Ideogram.prototype.drawSexChromosomes = function(bandsArray, taxid, container,
 
   for (k = 0; k < sexChromosomeIndexes.length; k++) {
     sci = sexChromosomeIndexes[k] + j;
-    chromosome = chrs[sci]
+    chromosome = chrs[sci];
     bands = bandsArray[sci];
     chrModel = ideo.getChromosomeModel(bands, chromosome, taxid, sci);
     shape = ideo.drawChromosome(chrModel, j, container, k);
@@ -3429,11 +3424,12 @@ Ideogram.prototype.drawSexChromosomes = function(bandsArray, taxid, container,
         return d.class;
       });
   }
-}
+};
 
 Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
   var ideo = this,
     taxids = ideo.config.taxids,
+    ploidy = ideo.config.ploidy,
     taxid,
     chrIndex = 0,
     chrSetNumber = 0,
@@ -3464,8 +3460,8 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
       if (
         'sex' in ideo.config &&
         (
-            ideo.config.ploidy === 2 && ideo.sexChromosomes.index + 2 === chrIndex ||
-            ideo.config.sex === 'female' && chrModel.name === 'Y'
+          ploidy === 2 && ideo.sexChromosomes.index + 2 === chrIndex ||
+          ideo.config.sex === 'female' && chrModel.name === 'Y'
         )
       ) {
         continue;
@@ -3484,7 +3480,7 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
 
       if (
           'sex' in ideo.config &&
-          ideo.config.ploidy === 2 &&
+          ploidy === 2 &&
           ideo.sexChromosomes.index + 1 === chrIndex
       ) {
         ideo.drawSexChromosomes(bandsArray, taxid, container, defs, j, chrs);
@@ -3493,7 +3489,7 @@ Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
 
       var shape;
       var numChrsInSet = 1;
-      if (ideo.config.ploidy > 1) {
+      if (ploidy > 1) {
         numChrsInSet = this._ploidy.getChromosomesNumber(j);
       }
       for (var k = 0; k < numChrsInSet; k++) {
@@ -3542,16 +3538,15 @@ Ideogram.prototype.setSexChromosomes = function(chrs) {
   //  More types:
   //  https://en.wikipedia.org/wiki/Category:Sex_chromosome_aneuploidies
 
-
-  if (this.config.ploidy !== 2 || !this.config.sex) return;
+  if (this.config.ploidy !== 2 || !this.config.sex) {
+    return;
+  }
 
   var ideo = this,
-    sexChrs = {'X': 1, 'Y': 1},
-    chrToRemove = (ideo.config.sex === 'female' ? 'Y' : ''),
-    adjustedChrs = [],
+    sexChrs = {X: 1, Y: 1},
     chr, i;
 
-  ideo.sexChromosomes['list'] = [];
+  ideo.sexChromosomes.list = [];
 
   for (i = 0; i < chrs.length; i++) {
     chr = chrs[i];
@@ -3562,12 +3557,11 @@ Ideogram.prototype.setSexChromosomes = function(chrs) {
         ideo.sexChromosomes.index = i;
       }
     } else if (chr === 'X') {
-      ideo.sexChromosomes.list.push(chr, chr)
+      ideo.sexChromosomes.list.push(chr, chr);
       ideo.sexChromosomes.index = i;
     }
   }
-
-}
+};
 
 /*
 * Completes default ideogram initialization
@@ -3796,7 +3790,6 @@ Ideogram.prototype.init = function() {
 
     // Chromosome's layout
     ideo._layout = Layout.getInstance(ideo.config, ideo);
-
 
     svgClass = "";
     if (ideo.config.showChromosomeLabels) {
