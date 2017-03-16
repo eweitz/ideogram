@@ -10,6 +10,7 @@ var order = require('gulp-order');
 var eslint = require('gulp-eslint');
 var gulpIf = require('gulp-if');
 var sourcemaps = require('gulp-sourcemaps');
+var babel = require('gulp-babel');
 
 var paths = {
   scripts: 'src/js/**/*.js',
@@ -45,6 +46,9 @@ gulp.task('lint', function() {
 
 gulp.task('dist', function() {
   gulp.src(paths.scripts)
+      .pipe(babel({
+        presets: ['es2015']
+      }))
       .pipe(sourcemaps.init())
       .pipe(flatten())
       .pipe(order([

@@ -2541,3 +2541,5 @@ Ideogram.prototype.init = function() {
     }
   }
 };
+
+exports.default = Ideogram;
