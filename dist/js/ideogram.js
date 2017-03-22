@@ -2507,6 +2507,71 @@ Ideogram.prototype.initAnnotSettings = function() {
   }
 };
 
+Ideogram.prototype.fetchAnnots = function(annotsUrl) {
+
+  var ideo = this;
+
+  if (annotsUrl.slice(0, 4) !== 'http') {
+    d3.json(
+      ideo.config.annotationsPath,
+      function(data) {
+        ideo.rawAnnots = data;
+      }
+    );
+    return;
+  }
+
+  var tmp = annotsUrl.split('.');
+  var extension = tmp[tmp.length - 1];
+
+  if (extension !== 'bed') {
+    extesion = extension.toUpperCase();
+    alert(
+      'This Ideogram.js feature is very new, and only supports BED at the ' +
+      'moment.  Sorry, check back soon for ' + extension + ' support!'
+    );
+    return;
+  }
+
+  var annots = [];
+
+  // Horrible.  Remove hard-coding.
+  var chrs = [
+  	"1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+  	"11", "12", "13", "14", "15", "16", "17", "18", "19", "20",
+  	"21", "22", "X", "Y"
+  ];
+
+  for (var i = 0; i < chrs.length; i++) {
+    chr = chrs[i];
+  	annots.push({"chr": chr, "annots": []});
+  }
+
+  d3.request(annotsUrl, function(data) {
+    var tsvLines, i, columns, chr, start, stop, chrIndex, annot;
+
+    tsvLines = data.response.split(/\r\n|\n/);
+    for (i = 0; i < tsvLines.length; i++) {
+      columns = tsvLines[i].split(/\s/g);
+      chr = columns[0];
+      start = parseInt(columns[1], 10);
+      stop = parseInt(columns[2], 10);
+      length = stop - start;
+      chrIndex = chrs.indexOf(chr);
+      if (chrIndex === -1) {
+        continue;
+      }
+      annot = ["", start, length, 0];
+      annots[chrIndex]["annots"].push(annot);
+    }
+    ideo.rawAnnots = {
+      keys: ['name', 'start', 'length'],
+      annots: annots
+    };
+  });
+
+}
+
 /**
 * Draws annotations defined by user
 */
@@ -3762,13 +3827,9 @@ Ideogram.prototype.init = function() {
   });
 
   function writeContainer() {
+
     if (ideo.config.annotationsPath) {
-      d3.json(
-        ideo.config.annotationsPath, // URL
-        function(data) { // Callback
-          ideo.rawAnnots = data;
-        }
-      );
+      ideo.fetchAnnots(ideo.config.annotationsPath);
     }
 
     // If ploidy description is a string, then convert it to the canonical
