@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Annotations, remote URL | Ideogram</title>
+  <link type="text/css" rel="stylesheet" href="src/css/ideogram.css"/>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.1.1/d3.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter/1.3.12/crossfilter.min.js"></script>
+  <script type="text/javascript" src="dist/js/ideogram.min.js"></script>
+</head>
+<body>
+  <h1>Annotations, remote URL | Ideogram</h1>
+  <a href=".">Back to overview</a>
+  <p>
+    <label>Assembly</label><br/>
+    <input type="radio" name="asm" id="GRCh38" value="GRCh38" checked>GRCh38<br>
+    <input type="radio" name="asm" id="GRCh37" value="GRCh37">GRCh37<br>
+    <br/>
+    <label for="bed-url-input">BED URL:</label>
+    <input id="bed-url" type="text" style="width:300px">
+    <button id="display-bed">Display BED</button>
+  </p>
+  <script type="text/javascript">
+
+  d3.select('#display-bed').on('click', function() {
+    var bedUrl = d3.select("#bed-url").nodes()[0].value;
+    var asm = d3.select('input[name="asm"]:checked').nodes()[0].value;
+    console.log(bedUrl)
+    console.log(asm)
+    d3.select('div').remove();
+    delete chrBands; // TODO: this shold be deleted automatically in Ideogram.js
+    ideogram = new Ideogram({
+      organism: "human",
+      assembly: asm,
+      annotationsPath: bedUrl,
+      annotationTracks: annotsTracks,
+      annotationHeight: annotsHeight
+    });
+  });
+
+  // Parse URL parameters
+  var rawParams = document.location.search;
+  var urlParams = {};
+  var param, key, value;
+  if (rawParams !== '') {
+    rawParams = rawParams.split('?')[1].split('&');
+    for (var i = 0; i < rawParams.length; i++) {
+      param = rawParams[i].split('=');
+      key = param[0];
+      value = param[1];
+      urlParams[key] = value;
+    }
+  }
+
+  var annotsTracks = [{"id": "myTrack", "displayName": "Genome features", "color": "#F00"}];
+  var annotsHeight = 3.5;
+
+  var config = {
+    organism: "human"
+  };
+
+  if ('annotsUrl' in urlParams) {
+    // Example annotationsPath:
+    // "https://raw.githubusercontent.com/NCBI-Hackathons/Global_Screening_Arrays/master/files/output/pennTest2_gsrcCNVcall.bed",
+    config.annotationsPath = urlParams.annotsUrl;
+    config.annotationTracks = annotsTracks;
+    config.annotationHeight = annotsHeight;
+  }
+  if ('asm' in urlParams) {
+    config.assembly = urlParams.asm;
+    d3.select('#' + urlParams.asm).nodes()[0].checked = true;
+  }
+
+  var ideogram = new Ideogram(config);
+
+  </script>
+</body>
+</html>
