@@ -1158,6 +1158,12 @@ Ideogram.prototype.fetchAnnots = function(annotsUrl) {
   	annots.push({"chr": chr, "annots": []});
   }
 
+  var colorMap = {
+    "-1": "#00F",
+    "0": "#CCC",
+    "1": "#F00"
+  }
+
   d3.request(annotsUrl, function(data) {
     var tsvLines, i, columns, chr, start, stop, chrIndex, annot;
 
@@ -1167,16 +1173,26 @@ Ideogram.prototype.fetchAnnots = function(annotsUrl) {
       chr = columns[0];
       start = parseInt(columns[1], 10);
       stop = parseInt(columns[2], 10);
+      if (columns.length > 3) {
+        color = colorMap[columns[3]];
+      }
       length = stop - start;
       chrIndex = chrs.indexOf(chr);
       if (chrIndex === -1) {
         continue;
       }
       annot = ["", start, length, 0];
+      if (columns.length > 3) {
+        annot.push(color);
+      }
       annots[chrIndex]["annots"].push(annot);
     }
+    keys = ['name', 'start', 'length', 'trackIndex'];
+    if (tsvLines[1].length > 3) {
+      keys.push('color');
+    }
     ideo.rawAnnots = {
-      keys: ['name', 'start', 'length'],
+      keys: keys,
       annots: annots
     };
   });
@@ -2482,9 +2498,10 @@ Ideogram.prototype.init = function() {
     var gradients = ideo.getBandColorGradients();
     var svgWidth = ideo._layout.getWidth(taxid);
     var svgHeight = ideo._layout.getHeight(taxid);
+    var svgWidth = ideo._layout.getWidth(taxid);
 
     d3.select(ideo.config.container)
-      .append("div")
+      .append('div')
         .append("svg")
           .attr("id", "_ideogram")
           .attr("class", svgClass)
