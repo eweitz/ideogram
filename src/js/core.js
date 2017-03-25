@@ -1118,6 +1118,61 @@ Ideogram.prototype.initAnnotSettings = function() {
   }
 };
 
+
+/*
+* Parses a BED file, returns raw annotations
+*/
+Ideogram.prototype.parseBed = function(bed) {
+
+  var tsvLines, i, columns, chrs, chr, start, stop, chrIndex, annots, annot,
+    chrs, annots;
+
+  annots = [];
+
+  // Horrible.  Remove hard-coding.
+  chrs = [
+    "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+    "11", "12", "13", "14", "15", "16", "17", "18", "19", "20",
+    "21", "22", "X", "Y"
+  ];
+
+  for (i = 0; i < chrs.length; i++) {
+    chr = chrs[i];
+    annots.push({"chr": chr, "annots": []});
+  }
+
+
+  tsvLines = bed.split(/\r\n|\n/);
+  for (i = 0; i < tsvLines.length; i++) {
+    columns = tsvLines[i].split(/\s/g);
+    chr = columns[0];
+    start = parseInt(columns[1], 10);
+    stop = parseInt(columns[2], 10);
+    if (columns.length > 3) {
+      color = colorMap[columns[3]];
+    }
+    length = stop - start;
+    chrIndex = chrs.indexOf(chr);
+    if (chrIndex === -1) {
+      continue;
+    }
+    annot = ["", start, length, 0];
+    if (columns.length > 3) {
+      annot.push(color);
+    }
+    annots[chrIndex]["annots"].push(annot);
+  }
+  keys = ['name', 'start', 'length', 'trackIndex'];
+  if (tsvLines[1].length > 3) {
+    keys.push('color');
+  }
+  rawAnnots = {
+    keys: keys,
+    annots: annots
+  };
+  return rawAnnots;
+}
+
 Ideogram.prototype.fetchAnnots = function(annotsUrl) {
 
   var ideo = this;
@@ -1136,7 +1191,7 @@ Ideogram.prototype.fetchAnnots = function(annotsUrl) {
   var extension = tmp[tmp.length - 1];
 
   if (extension !== 'bed') {
-    extesion = extension.toUpperCase();
+    extension = extension.toUpperCase();
     alert(
       'This Ideogram.js feature is very new, and only supports BED at the ' +
       'moment.  Sorry, check back soon for ' + extension + ' support!'
@@ -1144,57 +1199,8 @@ Ideogram.prototype.fetchAnnots = function(annotsUrl) {
     return;
   }
 
-  var annots = [];
-
-  // Horrible.  Remove hard-coding.
-  var chrs = [
-  	"1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
-  	"11", "12", "13", "14", "15", "16", "17", "18", "19", "20",
-  	"21", "22", "X", "Y"
-  ];
-
-  for (var i = 0; i < chrs.length; i++) {
-    chr = chrs[i];
-  	annots.push({"chr": chr, "annots": []});
-  }
-
-  var colorMap = {
-    "-1": "#00F",
-    "0": "#CCC",
-    "1": "#F00"
-  }
-
   d3.request(annotsUrl, function(data) {
-    var tsvLines, i, columns, chr, start, stop, chrIndex, annot;
-
-    tsvLines = data.response.split(/\r\n|\n/);
-    for (i = 0; i < tsvLines.length; i++) {
-      columns = tsvLines[i].split(/\s/g);
-      chr = columns[0];
-      start = parseInt(columns[1], 10);
-      stop = parseInt(columns[2], 10);
-      if (columns.length > 3) {
-        color = colorMap[columns[3]];
-      }
-      length = stop - start;
-      chrIndex = chrs.indexOf(chr);
-      if (chrIndex === -1) {
-        continue;
-      }
-      annot = ["", start, length, 0];
-      if (columns.length > 3) {
-        annot.push(color);
-      }
-      annots[chrIndex]["annots"].push(annot);
-    }
-    keys = ['name', 'start', 'length', 'trackIndex'];
-    if (tsvLines[1].length > 3) {
-      keys.push('color');
-    }
-    ideo.rawAnnots = {
-      keys: keys,
-      annots: annots
-    };
+    ideo.rawAnnots = ideo.parseBed(data.response);
   });
 
 }
