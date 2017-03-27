@@ -9,3 +9,12 @@ function naturalSort(a,b){var q,r,c=/(^([+\-]?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?(?=
 
 // e.g. "Homo sapiens" -> "homo-sapiens"
 function slugify(value){return value.toLowerCase().replace(' ', '-')};
+
+// http://stackoverflow.com/a/5624139
+function componentToHex(c) {
+    var hex = parseInt(c, 10).toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+}
+function rgbToHex(r, g, b) {
+    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
