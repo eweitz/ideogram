@@ -7,20 +7,20 @@
   <script type="text/javascript" src="dist/js/ideogram.js"></script>
   <style>
 
-    #assembly-options {
+    .radio-set {
       clear: both;
       margin-bottom: 20px;
     }
 
-    #assembly-options label, #assembly-options span {
+    .radio-set label, .radio-set span {
       float: left;
       clear: none;
       display: block;
       padding: 0px 1em 0 5px;
     }
 
-    #assembly-options input[type=radio],
-    #assembly-options input.radio {
+    .radio-set input[type=radio],
+    .radio-set input.radio {
       float: left;
       clear: none;
       margin: 2px 0 0 2px;
@@ -32,12 +32,19 @@
   <h1>Annotations, remote URL | Ideogram</h1>
   <a href=".">Back to overview</a>
   <p>
-    <p id="assembly-options">
+    <p class="radio-set">
       <span>Assembly</span>
       <input type="radio" name="asm" id="GRCh38" value="GRCh38" checked>
       <label for="GRCh38">GRCh38</label>
       <input type="radio" name="asm" id="GRCh37" value="GRCh37">
       <label for="GRCh37">GRCh37</label>
+    </p>
+    <p class="radio-set">
+      <span>Annotations layout</span>
+      <input type="radio" name="annots-layout" id="basic" value="basic" checked>
+      <label for="basic">Basic</label>
+      <input type="radio" name="annots-layout" id="histogram" value="histogram">
+      <label for="histogram">Histogram</label>
     </p>
     <br/>
     <label for="bed-url-input">BED URL:</label>
@@ -66,12 +73,14 @@
   d3.select('#display-bed').on('click', function() {
     var bedUrl = d3.select("#bed-url").nodes()[0].value;
     var asm = d3.select('input[name="asm"]:checked').nodes()[0].value;
+    var annotsLayout = d3.select('input[name="annots-layout"]:checked').nodes()[0].value;
     d3.select('#ideo-container').nodes()[0].innerHTML = '';
     delete chrBands; // TODO: this shold be deleted automatically in Ideogram.js
     ideogram = new Ideogram({
       organism: "human",
       assembly: asm,
       annotationsPath: bedUrl,
+      annotationsLayout: annotsLayout,
       annotationTracks: annotsTracks,
       annotationHeight: annotsHeight,
       container: '#ideo-container',
@@ -109,6 +118,10 @@
     config.annotationHeight = annotsHeight;
     config.onDrawAnnots = displayAnnotsCaption;
   }
+  if ('annotsLayout' in urlParams) {
+    config.annotationsLayout = urlParams.annotsLayout;
+  }
+
   if ('asm' in urlParams) {
     config.assembly = urlParams.asm;
     d3.select('#' + urlParams.asm).nodes()[0].checked = true;
