@@ -81,7 +81,6 @@
       assembly: asm,
       annotationsPath: bedUrl,
       annotationsLayout: annotsLayout,
-      annotationTracks: annotsTracks,
       annotationHeight: annotsHeight,
       container: '#ideo-container',
       onDrawAnnots: displayAnnotsCaption
@@ -102,7 +101,6 @@
     }
   }
 
-  var annotsTracks = [{"id": "myTrack", "displayName": "Genome features", "color": "#F00"}];
   var annotsHeight = 3.5;
 
   var config = {
@@ -114,7 +112,6 @@
     // Example annotationsPath:
     // "https://raw.githubusercontent.com/NCBI-Hackathons/Global_Screening_Arrays/master/files/output/pennTest2_gsrcCNVcall.bed",
     config.annotationsPath = urlParams.annotsUrl;
-    config.annotationTracks = annotsTracks;
     config.annotationHeight = annotsHeight;
     config.onDrawAnnots = displayAnnotsCaption;
   }
