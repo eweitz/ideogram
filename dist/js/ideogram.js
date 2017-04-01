@@ -2516,15 +2516,13 @@ Ideogram.prototype.initAnnotSettings = function() {
   }
 };
 
-
 /*
 * Parses a BED file, returns raw annotations
 * BED documentation: https://genome.ucsc.edu/FAQ/FAQformat#format1
 */
 Ideogram.prototype.parseBed = function(bed) {
-
   var tsvLines, i, columns, chrs, chr, start, stop, chrIndex, annots, annot,
-    chrs, annots, bedStartIndex, ucscStyle, rgb, color;
+    bedStartIndex, ucscStyle, rgb, color;
 
   annots = [];
 
@@ -2537,18 +2535,18 @@ Ideogram.prototype.parseBed = function(bed) {
 
   for (i = 0; i < chrs.length; i++) {
     chr = chrs[i];
-    annots.push({"chr": chr, "annots": []});
+    annots.push({chr: chr, annots: []});
   }
 
   tsvLines = bed.split(/\r\n|\n/);
 
   bedStartIndex = 0; // 1 if BED has header (i.e. track line), 0 otherwise
   ucscStyle = true;
-  if (tsvLines[0].slice(0,3) === 'chr' || isNaN(parseInt(tsvLines[0]))) {
+  if (tsvLines[0].slice(0, 3) === 'chr' || isNaN(parseInt(tsvLines[0], 10))) {
     bedStartIndex = 1;
   }
 
-  if (isNaN(parseInt(tsvLines[bedStartIndex])) === false) {
+  if (isNaN(parseInt(tsvLines[bedStartIndex], 10)) === false) {
     ucscStyle = false;
   }
 
@@ -2579,10 +2577,10 @@ Ideogram.prototype.parseBed = function(bed) {
     if (columns.length >= 8) {
       rgb = columns[8].split(',');
       color = rgbToHex(rgb[0], rgb[1], rgb[2]);
-      annot.push(color)
+      annot.push(color);
     }
 
-    annots[chrIndex]["annots"].push(annot);
+    annots[chrIndex].annots.push(annot);
   }
   keys = ['name', 'start', 'length', 'trackIndex'];
   if (tsvLines[bedStartIndex].length >= 8) {
@@ -2593,10 +2591,9 @@ Ideogram.prototype.parseBed = function(bed) {
     annots: annots
   };
   return rawAnnots;
-}
+};
 
 Ideogram.prototype.fetchAnnots = function(annotsUrl) {
-
   var ideo = this;
 
   if (annotsUrl.slice(0, 4) !== 'http') {
@@ -2614,18 +2611,16 @@ Ideogram.prototype.fetchAnnots = function(annotsUrl) {
 
   if (extension !== 'bed') {
     extension = extension.toUpperCase();
-    alert(
+    throw new Error(
       'This Ideogram.js feature is very new, and only supports BED at the ' +
       'moment.  Sorry, check back soon for ' + extension + ' support!'
     );
-    return;
   }
 
   d3.request(annotsUrl, function(data) {
     ideo.rawAnnots = ideo.parseBed(data.response);
   });
-
-}
+};
 
 /**
 * Draws annotations defined by user
@@ -3882,7 +3877,6 @@ Ideogram.prototype.init = function() {
   });
 
   function writeContainer() {
-
     if (ideo.config.annotationsPath) {
       ideo.fetchAnnots(ideo.config.annotationsPath);
     }
@@ -3926,7 +3920,7 @@ Ideogram.prototype.init = function() {
     var gradients = ideo.getBandColorGradients();
     var svgWidth = ideo._layout.getWidth(taxid);
     var svgHeight = ideo._layout.getHeight(taxid);
-    var svgWidth = ideo._layout.getWidth(taxid);
+    svgWidth = ideo._layout.getWidth(taxid);
 
     d3.select(ideo.config.container)
       .append('div')
