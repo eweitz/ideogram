@@ -1596,6 +1596,9 @@ Ideogram.prototype.onDrawAnnots = function() {
   call(this.onDrawAnnotsCallback);
 };
 
+/*
+* Returns SVG gradients that give chromosomes a polished look
+*/
 Ideogram.prototype.getBandColorGradients = function() {
   var colors,
     stain, color1, color2, color3,
@@ -1674,7 +1677,7 @@ Ideogram.prototype.getBandColorGradients = function() {
 };
 
 /*
-  Returns an NCBI taxonomy identifier (taxid) for the configured organism
+*  Returns an NCBI taxonomy identifier (taxid) for the configured organism
 */
 Ideogram.prototype.getTaxidFromEutils = function(callback) {
   var organism, taxonomySearch, taxid,
@@ -1872,9 +1875,9 @@ Ideogram.prototype.sortChromosomes = function(a, b) {
   }
 };
 
-/**
-  Returns names and lengths of chromosomes for an organism's best-known
-  genome assembly.  Gets data from NCBI EUtils web API.
+/*
+*  Returns names and lengths of chromosomes for an organism's best-known
+*  genome assembly.  Gets data from NCBI EUtils web API.
 */
 Ideogram.prototype.getAssemblyAndChromosomesFromEutils = function(callback) {
   var asmAndChrArray, // [assembly_accession, chromosome_objects_array]
@@ -2037,6 +2040,9 @@ Ideogram.prototype.drawSexChromosomes = function(bandsArray, taxid, container,
   }
 };
 
+/*
+* Configures chromosome data and calls downstream chromosome drawing functions
+*/
 Ideogram.prototype.initDrawChromosomes = function(bandsArray) {
   var ideo = this,
     taxids = ideo.config.taxids,
@@ -2284,7 +2290,6 @@ Ideogram.prototype.processBandData = function() {
 * Sets some high-level properties based on instance configuration,
 * fetches band and annotation data if needed, and
 * writes an SVG element to the document to contain the ideogram
-*
 */
 Ideogram.prototype.init = function() {
   var taxid, i, svgClass;
