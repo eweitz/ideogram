@@ -22,7 +22,14 @@ function isFixed(file) {
 	return file.eslint != null && file.eslint.fixed;
 }
 
-gulp.task('default', function () {
+
+gulp.task('watch', function() {
+  gulp.watch(paths.scripts, ['dist'])
+})
+
+gulp.task('default', ['dist', 'watch'])
+
+gulp.task('test', function () {
 
   gulp
     .src('test/web-runner.html')
@@ -79,4 +86,5 @@ gulp.task('dist', function() {
 
   gulp.src(paths.styles)
     .pipe(gulp.dest('dist/css'))
+
 });
