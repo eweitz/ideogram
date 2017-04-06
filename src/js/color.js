@@ -1,10 +1,14 @@
-function Color(config) {
+
+class Color {
+
+
+constructor(config) {
     // Ideogram config
   this._config = config;
   this._ploidy = new Ploidy(this._config);
 }
 
-Color.prototype.getArmColor = function(chrSetNumber, chrNumber, armNumber) {
+getArmColor(chrSetNumber, chrNumber, armNumber) {
   if (this._config.armColors) {
     return this._config.armColors[armNumber];
   } else if (this._config.ancestors) {
@@ -14,7 +18,7 @@ Color.prototype.getArmColor = function(chrSetNumber, chrNumber, armNumber) {
   }
 };
 
-Color.prototype.getBorderColor = function(chrSetNumber, chrNumber, armNumber) {
+getBorderColor(chrSetNumber, chrNumber, armNumber) {
   if (chrNumber < this._config.ploidy) {
     return '#000';
   } else if (this._ploidy.exists(chrSetNumber, chrNumber, armNumber)) {
@@ -24,7 +28,7 @@ Color.prototype.getBorderColor = function(chrSetNumber, chrNumber, armNumber) {
   }
 };
 
-Color.prototype._getPolyploidArmColor = function(chrSetNumber, chrNumber,
+_getPolyploidArmColor(chrSetNumber, chrNumber,
   armNumber) {
   if (!this._ploidy.exists(chrSetNumber, chrNumber, armNumber)) {
     return 'transparent';
@@ -33,3 +37,5 @@ Color.prototype._getPolyploidArmColor = function(chrSetNumber, chrNumber,
     return this._config.ancestors[ancestor];
   }
 };
+
+}
