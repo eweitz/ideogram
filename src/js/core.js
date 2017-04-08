@@ -1,5 +1,7 @@
 // Developed by Eric Weitz (https://github.com/eweitz)
 
+import d3 from 'd3';
+
 export class Ideogram {
 
   constructor(config) {

@@ -1,31 +1,30 @@
-function ModelNoBandsAdapter(model) {
-    /*
-     * Call parent constructor.
-     */
-  ModelAdapter.call(this, model);
-  this._class = 'ModelNoBandsAdapter';
-}
+export class ModelNoBandsAdapter extends ModelAdapter {
 
-ModelNoBandsAdapter.prototype = Object.create(ModelAdapter.prototype);
-
-ModelNoBandsAdapter.prototype.getModel = function() {
-  this._model.bands = [];
-
-    // If chromosome width more, then 1 add single band to bands array
-  if (this._model.width > 1) {
-    this._model.bands.push({
-      name: 'q',
-      px: {
-        start: 0,
-        stop: this._model.width,
-        width: this._model.width
-      }
-    });
+  constructor(model) {
+    super(model);
+    this._class = 'ModelNoBandsAdapter';
   }
 
-  return this._model;
-};
+  getModel() {
+    this._model.bands = [];
 
-ModelNoBandsAdapter.prototype.getCssClass = function() {
-  return 'noBands';
-};
+      // If chromosome width more, then 1 add single band to bands array
+    if (this._model.width > 1) {
+      this._model.bands.push({
+        name: 'q',
+        px: {
+          start: 0,
+          stop: this._model.width,
+          width: this._model.width
+        }
+      });
+    }
+
+    return this._model;
+  };
+
+  getCssClass() {
+    return 'noBands';
+  };
+
+}

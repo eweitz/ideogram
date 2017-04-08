@@ -1,20 +1,23 @@
-function ModelAdapter(model) {
-  this._model = model;
-  this._class = 'ModelAdapter';
-}
+class ModelAdapter {
 
-ModelAdapter.getInstance = function(model) {
-  if (model.bands) {
-    return new ModelAdapter(model);
-  } else {
-    return new ModelNoBandsAdapter(model);
+  constructor(model) {
+    this._model = model;
+    this._class = 'ModelAdapter';
   }
-};
 
-ModelAdapter.prototype.getModel = function() {
-  return this._model;
-};
+  static getInstance(model) {
+    if (model.bands) {
+      return new ModelAdapter(model);
+    } else {
+      return new ModelNoBandsAdapter(model);
+    }
+  };
 
-ModelAdapter.prototype.getCssClass = function() {
-  return '';
-};
+  getModel() {
+    return this._model;
+  };
+
+  getCssClass() {
+    return '';
+  };
+}
