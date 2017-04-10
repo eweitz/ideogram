@@ -1,3 +1,9 @@
+/**
+* Horizontal layout class
+* Ideogram instances with horizontal layout are oriented with each chromosome
+* starting at left and ending at right, and aligned as rows.
+*/
+
 import d3 from 'd3';
 
 export class HorizontalLayout extends Layout {

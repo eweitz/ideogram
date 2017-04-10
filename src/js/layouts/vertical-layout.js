@@ -1,7 +1,13 @@
+/**
+* Vertical layout class
+* Ideogram instances with verticallayout are oriented with each chromosome
+* starting at top and ending at bottom, and aligned as columns.
+*/
+
 import d3 from 'd3';
 
 export class VerticalLayout extends Layout {
-  
+
   constructor(config, ideo) {
     super(config, ideo);
     this._class = 'VerticalLayout';
