@@ -28,8 +28,7 @@ export class SmallLayout extends Layout {
           .on('end', callback);
   };
 
-  rotateBack(setNumber, chrNumber, chrElement,
-    callback) {
+  rotateBack(setNumber, chrNumber, chrElement, callback) {
     var translate = this.getChromosomeSetTranslate(setNumber);
 
     d3.select(chrElement.parentNode)

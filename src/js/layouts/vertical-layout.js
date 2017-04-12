@@ -1,6 +1,6 @@
 /**
 * Vertical layout class
-* Ideogram instances with verticallayout are oriented with each chromosome
+* Ideogram instances with vertical layout are oriented with each chromosome
 * starting at top and ending at bottom, and aligned as columns.
 */
 
@@ -18,8 +18,7 @@ export class VerticalLayout extends Layout {
     };
   }
 
-  rotateForward(setNumber, chrNumber,
-    chrElement, callback) {
+  rotateForward(setNumber, chrNumber, chrElement, callback) {
     var self = this;
 
     var xOffset = 20;

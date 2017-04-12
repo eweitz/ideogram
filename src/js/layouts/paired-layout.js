@@ -1,7 +1,13 @@
+/*
+* Paired layout class
+* Ideograms with paired layout group each chromosome in a chromosome set.
+* This enables ploidy support beyond the default haploid; e.g. diploid genomes.
+*/
+
 import d3 from 'd3';
 
-export class PairedLayout extends {
-  
+export class PairedLayout extends Layout {
+
   constructor(config, ideo) {
     super(config, ideo);
 

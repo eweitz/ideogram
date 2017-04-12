@@ -26,8 +26,7 @@ export class HorizontalLayout extends Layout {
     return margin;
   };
 
-  rotateForward(setNumber, chrNumber,
-    chrElement, callback) {
+  rotateForward(setNumber, chrNumber, chrElement, callback) {
     var xOffset = 30;
 
     var ideoBox = d3.select(this._ideo.selector).node().getBoundingClientRect();
