@@ -30,11 +30,11 @@ export class VerticalLayout extends Layout {
     var scaleY = this._getYScale();
 
     var transform =
-      "translate(" + xOffset + ", 25) scale(" + scaleX + ", " + scaleY + ")";
+      'translate(' + xOffset + ', 25) scale(' + scaleX + ', ' + scaleY + ')';
 
     d3.select(chrElement.parentNode)
           .transition()
-          .attr("transform", transform)
+          .attr('transform', transform)
           .on('end', callback);
 
       // Append new chromosome labels
@@ -63,7 +63,7 @@ export class VerticalLayout extends Layout {
 
     d3.select(chrElement.parentNode)
           .transition()
-          .attr("transform", translate)
+          .attr('transform', translate)
           .on('end', callback);
 
     d3.selectAll(this._ideo.selector + ' g.tmp')
@@ -114,7 +114,7 @@ export class VerticalLayout extends Layout {
      // not meet for cases when no annotation, when annotation exists and
      // when histogram used
 
-      if (this._config.annotationsLayout === "histogram") {
+      if (this._config.annotationsLayout === 'histogram') {
         return margin / 2 + setNumber * (margin + width + 2) + pad * 2 + 1;
       } else {
         translate = width + setNumber * (margin + width) + pad * 2;

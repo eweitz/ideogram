@@ -21,10 +21,10 @@ export class Layout {
   }
 
   // Factory method
-  static getInstance = function(config, ideo) {
-    if ("perspective" in config && config.perspective === "comparative") {
+  static getInstance(config, ideo) {
+    if ('perspective' in config && config.perspective === 'comparative') {
       return new PairedLayout(config, ideo);
-    } else if ("rows" in config && config.rows > 1) {
+    } else if ('rows' in config && config.rows > 1) {
       return new SmallLayout(config, ideo);
     } else if (config.orientation === 'vertical') {
       return new VerticalLayout(config, ideo);
@@ -69,7 +69,7 @@ export class Layout {
     var ideo = this._ideo;
 
       // Find chromosomes which should be hidden
-    var otherChrs = d3.selectAll(ideo.selector + " g.chromosome")
+    var otherChrs = d3.selectAll(ideo.selector + ' g.chromosome')
       .filter(function() {
         return this !== chrElement;
       });
@@ -80,18 +80,18 @@ export class Layout {
           // Rotate chromosome back
       this.rotateBack(chrSetNumber, chrNumber, chrElement, function() {
               // Show all other chromosomes and chromosome labels
-        otherChrs.style("display", null);
-        d3.selectAll(ideo.selector + " .chrSetLabel, .chrLabel")
-          .style("display", null);
+        otherChrs.style('display', null);
+        d3.selectAll(ideo.selector + ' .chrSetLabel, .chrLabel')
+          .style('display', null);
       });
     } else {
           // Set _isRotated flag
       this._isRotated = true;
 
           // Hide all other chromosomes and chromosome labels
-      otherChrs.style("display", "none");
-      d3.selectAll(ideo.selector + " .chrSetLabel, .chrLabel")
-        .style("display", "none");
+      otherChrs.style('display', 'none');
+      d3.selectAll(ideo.selector + ' .chrSetLabel, .chrLabel')
+        .style('display', 'none');
 
           // Rotate chromosome
       this.rotateForward(chrSetNumber, chrNumber, chrElement);

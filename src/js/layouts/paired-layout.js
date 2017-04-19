@@ -50,10 +50,10 @@ export class PairedLayout extends Layout {
         // Rotate band labels
         d3.select(chrElement.parentNode).selectAll('g.bandLabel text')
           .attr('transform', 'rotate(90) translate(0, ' + translateY + ')')
-          .attr("text-anchor", "middle");
+          .attr('text-anchor', 'middle');
 
         // Hide syntenic regions
-        d3.selectAll(ideo.selector + ' .syntenicRegion').style("display", 'none');
+        d3.selectAll(ideo.selector + ' .syntenicRegion').style('display', 'none');
       });
 
       // Append new chromosome labels
@@ -87,16 +87,16 @@ export class PairedLayout extends Layout {
       // Run rotation procedure
     d3.select(chrElement.parentNode)
           .transition()
-          .attr("transform", translate)
+          .attr('transform', translate)
           .on('end', function() {
               // Run callback fnuction if provided
             callback();
               // Show syntenic regions
-            d3.selectAll(ideo.select + ' .syntenicRegion').style("display", null);
+            d3.selectAll(ideo.select + ' .syntenicRegion').style('display', null);
               // Reset changed attributes to original state
             d3.select(chrElement.parentNode).selectAll('g.bandLabel text')
               .attr('transform', null)
-              .attr("text-anchor", setNumber ? null : 'end');
+              .attr('text-anchor', setNumber ? null : 'end');
           });
 
     d3.selectAll(ideo.selector + ' g.tmp')

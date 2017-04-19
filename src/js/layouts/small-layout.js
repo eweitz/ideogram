@@ -20,11 +20,11 @@ export class SmallLayout extends Layout {
     var scaleX = (ideoBox.width / chrBox.height) * 0.97;
     var scaleY = this._getYScale();
 
-    transform = "translate(5, 25) scale(" + scaleX + ", " + scaleY + ")";
+    transform = 'translate(5, 25) scale(' + scaleX + ', ' + scaleY + ')';
 
     d3.select(chrElement.parentNode)
           .transition()
-          .attr("transform", transform)
+          .attr('transform', transform)
           .on('end', callback);
   };
 
@@ -33,7 +33,7 @@ export class SmallLayout extends Layout {
 
     d3.select(chrElement.parentNode)
           .transition()
-          .attr("transform", translate)
+          .attr('transform', translate)
           .on('end', callback);
   };
 

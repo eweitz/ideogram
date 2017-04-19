@@ -137,7 +137,7 @@ export class HorizontalLayout extends Layout {
   getChromosomeSetTranslate(setNumber) {
     var leftMargin = this._getLeftMargin();
     var chromosomeSetYTranslate = this.getChromosomeSetYTranslate(setNumber);
-    return "translate(" + leftMargin + ", " + chromosomeSetYTranslate + ")";
+    return 'translate(' + leftMargin + ', ' + chromosomeSetYTranslate + ')';
   };
 
   getChromosomeSetYTranslate(setNumber) {
