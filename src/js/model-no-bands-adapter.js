@@ -21,10 +21,10 @@ export class ModelNoBandsAdapter extends ModelAdapter {
     }
 
     return this._model;
-  };
+  }
 
   getCssClass() {
     return 'noBands';
-  };
+  }
 
 }

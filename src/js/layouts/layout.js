@@ -33,18 +33,18 @@ export class Layout {
     } else {
       return new VerticalLayout(config, ideo);
     }
-  };
+  }
 
   // Get chart left margin
   _getLeftMargin() {
     return this._margin.left;
-  };
+  }
 
   // Get rotated chromosome y scale
   _getYScale() {
       // 20 is width of rotated chromosome.
     return 20 / this._config.chrWidth;
-  };
+  }
 
   // Get chromosome labels
   getChromosomeLabels(chrElement) {
@@ -53,17 +53,17 @@ export class Layout {
     return [util.getSetLabel(), util.getLabel()].filter(function(d) {
       return d.length > 0;
     });
-  };
+  }
 
   // Rotate chromosome to original position
   rotateBack() {
     throw new Error(this._class + '#rotateBack not implemented');
-  };
+  }
 
   // Rotate chromosome to opposite position
   rotateForward() {
     throw new Error(this._class + '#rotateForward not implemented');
-  };
+  }
 
   rotate(chrSetNumber, chrNumber, chrElement) {
     var ideo = this._ideo;
@@ -96,7 +96,7 @@ export class Layout {
           // Rotate chromosome
       this.rotateForward(chrSetNumber, chrNumber, chrElement);
     }
-  };
+  }
 
   getChromosomeLabelClass() {
     if (this._config.ploidy === 1) {
@@ -104,13 +104,13 @@ export class Layout {
     } else {
       return 'chrSetLabel';
     }
-  };
+  }
 
   _getAdditionalOffset() {
     return (
       (this._config.annotationHeight || 0) * (this._config.numAnnotTracks || 1)
     );
-  };
+  }
 
   _getChromosomeSetSize(chrSetNumber) {
     // Get last chromosome set size.
@@ -120,53 +120,55 @@ export class Layout {
     return (
       setSize * this._config.chrWidth * 2 + (this.chrSetMargin)
     );
-  };
+  }
 
   // Get layout margin
   getMargin() {
     return this._margin;
-  };
+  }
 
   // Get SVG element height
   getHeight() {
     throw new Error(this._class + '#getHeight not implemented');
-  };
+  }
 
   getChromosomeBandTickY1() {
     throw new Error(this._class + '#getChromosomeBandTickY1 not implemented');
-  };
+  }
 
   getChromosomeBandTickY2() {
     throw new Error(this._class + '#getChromosomeBandTickY2 not implemented');
-  };
+  }
 
   // Get chromosome's band translate attribute
   getChromosomeBandLabelTranslate() {
     throw new Error(
       this._class + '#getChromosomeBandLabelTranslate not implemented'
     );
-  };
+  }
 
   // Get chromosome set label anchor property
   getChromosomeSetLabelAnchor() {
     return 'middle';
-  };
+  }
 
   // Get chromosome's band label text-anchor value
   getChromosomeBandLabelAnchor() {
     throw (
       new Error(this._class + '#getChromosomeBandLabelAnchor not implemented')
     );
-  };
+  }
 
   getChromosomeLabelXPosition() {
-    throw new Error(this._class + '#getChromosomeLabelXPosition not implemented');
-  };
+    throw new Error(
+      this._class + '#getChromosomeLabelXPosition not implemented'
+    );
+  }
 
   // Get chromosome label y position.
   getChromosomeLabelYPosition() {
     return -5.5;
-  };
+  }
 
   // "i" is chromosome number
   getChromosomeSetLabelYPosition(i) {
@@ -175,27 +177,31 @@ export class Layout {
     } else {
       return -2 * this._config.chrWidth;
     }
-  };
+  }
 
   getChromosomeSetLabelXPosition() {
     throw (
-      new Error(this._class + '#getChromosomeSetLabelXPosition not implemented')
+      new Error(
+        this._class + '#getChromosomeSetLabelXPosition not implemented'
+      )
     );
-  };
+  }
 
   getChromosomeSetLabelTranslate() {
     throw (
       new Error(this._class + '#getChromosomeSetLabelTranslate not implemented')
     );
-  };
+  }
 
   // Get chromosome set translate attribute
   getChromosomeSetTranslate() {
     throw new Error(this._class + '#getChromosomeSetTranslate not implemented');
-  };
+  }
 
   // Get chromosome set translate's y offset
   getChromosomeSetYTranslate() {
-    throw new Error(this._class + '#getChromosomeSetYTranslate not implemented');
-  };
+    throw new Error(
+      this._class + '#getChromosomeSetYTranslate not implemented'
+    );
+  }
 }

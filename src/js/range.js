@@ -17,15 +17,15 @@ export class Range {
 
   getStart() {
     return this._data.start;
-  };
+  }
 
   getStop() {
     return this._data.stop;
-  };
+  }
 
   getLength() {
     return this._data.stop - this._data.start;
-  };
+  }
 
   getColor(chrNumber) {
     if (!('ploidy' in this._data)) {
@@ -35,7 +35,7 @@ export class Range {
     } else {
       return 'transparent';
     }
-  };
+  }
 
   _getColor(chrNumber) {
     if (Array.isArray(this._data.color)) {
@@ -43,6 +43,6 @@ export class Range {
     } else {
       return this._data.color;
     }
-  };
+  }
 
 }

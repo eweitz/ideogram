@@ -68,11 +68,15 @@ var Range = exports.Range = function () {
 }();
 'use strict';
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var ModelAdapter = function () {
+var ModelAdapter = exports.ModelAdapter = function () {
   function ModelAdapter(model) {
     _classCallCheck(this, ModelAdapter);
 
@@ -201,20 +205,20 @@ var Layout = exports.Layout = function () {
     value: function _getLeftMargin() {
       return this._margin.left;
     }
-  }, {
-    key: '_getYScale',
-
 
     // Get rotated chromosome y scale
+
+  }, {
+    key: '_getYScale',
     value: function _getYScale() {
       // 20 is width of rotated chromosome.
       return 20 / this._config.chrWidth;
     }
-  }, {
-    key: 'getChromosomeLabels',
-
 
     // Get chromosome labels
+
+  }, {
+    key: 'getChromosomeLabels',
     value: function getChromosomeLabels(chrElement) {
       var util = new ChromosomeUtil(chrElement);
 
@@ -222,19 +226,19 @@ var Layout = exports.Layout = function () {
         return d.length > 0;
       });
     }
-  }, {
-    key: 'rotateBack',
-
 
     // Rotate chromosome to original position
+
+  }, {
+    key: 'rotateBack',
     value: function rotateBack() {
       throw new Error(this._class + '#rotateBack not implemented');
     }
-  }, {
-    key: 'rotateForward',
-
 
     // Rotate chromosome to opposite position
+
+  }, {
+    key: 'rotateForward',
     value: function rotateForward() {
       throw new Error(this._class + '#rotateForward not implemented');
     }
@@ -292,19 +296,19 @@ var Layout = exports.Layout = function () {
       // Increase offset by last chromosome set size
       return setSize * this._config.chrWidth * 2 + this.chrSetMargin;
     }
-  }, {
-    key: 'getMargin',
-
 
     // Get layout margin
+
+  }, {
+    key: 'getMargin',
     value: function getMargin() {
       return this._margin;
     }
-  }, {
-    key: 'getHeight',
-
 
     // Get SVG element height
+
+  }, {
+    key: 'getHeight',
     value: function getHeight() {
       throw new Error(this._class + '#getHeight not implemented');
     }
@@ -318,27 +322,27 @@ var Layout = exports.Layout = function () {
     value: function getChromosomeBandTickY2() {
       throw new Error(this._class + '#getChromosomeBandTickY2 not implemented');
     }
-  }, {
-    key: 'getChromosomeBandLabelTranslate',
-
 
     // Get chromosome's band translate attribute
+
+  }, {
+    key: 'getChromosomeBandLabelTranslate',
     value: function getChromosomeBandLabelTranslate() {
       throw new Error(this._class + '#getChromosomeBandLabelTranslate not implemented');
     }
-  }, {
-    key: 'getChromosomeSetLabelAnchor',
-
 
     // Get chromosome set label anchor property
+
+  }, {
+    key: 'getChromosomeSetLabelAnchor',
     value: function getChromosomeSetLabelAnchor() {
       return 'middle';
     }
-  }, {
-    key: 'getChromosomeBandLabelAnchor',
-
 
     // Get chromosome's band label text-anchor value
+
+  }, {
+    key: 'getChromosomeBandLabelAnchor',
     value: function getChromosomeBandLabelAnchor() {
       throw new Error(this._class + '#getChromosomeBandLabelAnchor not implemented');
     }
@@ -347,19 +351,19 @@ var Layout = exports.Layout = function () {
     value: function getChromosomeLabelXPosition() {
       throw new Error(this._class + '#getChromosomeLabelXPosition not implemented');
     }
-  }, {
-    key: 'getChromosomeLabelYPosition',
-
 
     // Get chromosome label y position.
+
+  }, {
+    key: 'getChromosomeLabelYPosition',
     value: function getChromosomeLabelYPosition() {
       return -5.5;
     }
-  }, {
-    key: 'getChromosomeSetLabelYPosition',
-
 
     // "i" is chromosome number
+
+  }, {
+    key: 'getChromosomeSetLabelYPosition',
     value: function getChromosomeSetLabelYPosition(i) {
       if (this._config.ploidy === 1) {
         return this.getChromosomeLabelYPosition(i);
@@ -377,19 +381,19 @@ var Layout = exports.Layout = function () {
     value: function getChromosomeSetLabelTranslate() {
       throw new Error(this._class + '#getChromosomeSetLabelTranslate not implemented');
     }
-  }, {
-    key: 'getChromosomeSetTranslate',
-
 
     // Get chromosome set translate attribute
+
+  }, {
+    key: 'getChromosomeSetTranslate',
     value: function getChromosomeSetTranslate() {
       throw new Error(this._class + '#getChromosomeSetTranslate not implemented');
     }
-  }, {
-    key: 'getChromosomeSetYTranslate',
-
 
     // Get chromosome set translate's y offset
+
+  }, {
+    key: 'getChromosomeSetYTranslate',
     value: function getChromosomeSetYTranslate() {
       throw new Error(this._class + '#getChromosomeSetYTranslate not implemented');
     }
@@ -833,10 +837,13 @@ var PairedLayout = exports.PairedLayout = function (_Layout) {
       // Get ideo container and chromosome set dimensions
       var ideoBox = _d2.default.select(ideo.selector).node().getBoundingClientRect();
       var chrBox = chrElement.getBoundingClientRect();
+
       // Evaluate dimensions scale coefficients
       var scaleX = ideoBox.width / chrBox.height * 0.97;
       var scaleY = this._getYScale();
-      // Evaluate y offset of chromosome. It is different for first and the second one
+
+      // Evaluate y offset of chromosome.
+      // It is different for first and the second one
       var yOffset = setNumber ? 150 : 25;
 
       var transform = 'translate(15, ' + yOffset + ') scale(' + scaleX + ', ' + scaleY + ')';
@@ -876,8 +883,10 @@ var PairedLayout = exports.PairedLayout = function (_Layout) {
       _d2.default.select(chrElement.parentNode).transition().attr('transform', translate).on('end', function () {
         // Run callback fnuction if provided
         callback();
+
         // Show syntenic regions
         _d2.default.selectAll(ideo.select + ' .syntenicRegion').style('display', null);
+
         // Reset changed attributes to original state
         _d2.default.select(chrElement.parentNode).selectAll('g.bandLabel text').attr('transform', null).attr('text-anchor', setNumber ? null : 'end');
       });
@@ -1013,7 +1022,8 @@ var SmallLayout = exports.SmallLayout = function (_Layout) {
   }, {
     key: 'getHeight',
     value: function getHeight() {
-      return this._config.rows * (this._config.chrHeight + this._margin.top * 1.5);
+      var chrHeight = this._config.chrHeight;
+      return this._config.rows * (chrHeight + this._margin.top * 1.5);
     }
   }, {
     key: 'getWidth',
@@ -1111,11 +1121,11 @@ var Ploidy = exports.Ploidy = function () {
         return this._config.ploidy || 1;
       }
     }
-  }, {
-    key: '_normalize',
-
 
     // Normalize use defined description
+
+  }, {
+    key: '_normalize',
     value: function _normalize(description) {
       var normalized, key, descValue;
 
@@ -1148,11 +1158,11 @@ var Ploidy = exports.Ploidy = function () {
 
       return normalized;
     }
-  }, {
-    key: '_getexistenceArray',
-
 
     // Get array filled by '11' elements
+
+  }, {
+    key: '_getexistenceArray',
     value: function _getexistenceArray(length) {
       var array = [];
 
@@ -1171,11 +1181,11 @@ var Ploidy = exports.Ploidy = function () {
         return 1;
       }
     }
-  }, {
-    key: 'getAncestor',
-
 
     // Get ancestor letter
+
+  }, {
+    key: 'getAncestor',
     value: function getAncestor(chrSetNumber, chrNumber) {
       if (this._description) {
         return this._description[chrSetNumber].ancestors[chrNumber];
@@ -1183,13 +1193,13 @@ var Ploidy = exports.Ploidy = function () {
         return '';
       }
     }
-  }, {
-    key: 'exists',
-
 
     // Check if chromosome's arm should be rendered.
     // If no description was provided, method returns true and
     // something another depending on user provided description.
+
+  }, {
+    key: 'exists',
     value: function exists(chrSetNumber, chrNumber, armNumber) {
       if (this._description) {
         var desc = this._description[chrSetNumber].existence[chrNumber][armNumber];
@@ -2687,10 +2697,8 @@ var Ideogram = exports.Ideogram = function () {
   }, {
     key: 'rotateAndToggleDisplay',
     value: function rotateAndToggleDisplay(chromosome) {
-      /*
-       * Do nothing if taxId not defined. But it should be defined.
-       * To fix that bug we should have a way to find chromosome set number.
-       */
+      // Do nothing if taxId not defined. But it should be defined.
+      // To fix that bug we should have a way to find chromosome set number.
       if (!this.config.taxid) {
         return;
       }
@@ -2833,9 +2841,9 @@ var Ideogram = exports.Ideogram = function () {
         }).on('mouseout', function () {
           _d2.default.selectAll(ideo.selector + ' .syntenicRegion').classed('ghost', false);
         });
-
+        var chrWidth = ideo.config.chrWidth;
         var x1 = this._layout.getChromosomeSetYTranslate(0);
-        var x2 = this._layout.getChromosomeSetYTranslate(1) - ideo.config.chrWidth;
+        var x2 = this._layout.getChromosomeSetYTranslate(1) - chrWidth;
 
         syntenicRegion.append('polygon').attr('points', x1 + ', ' + r1.startPx + ' ' + x1 + ', ' + r1.stopPx + ' ' + x2 + ', ' + r2.stopPx + ' ' + x2 + ', ' + r2.startPx).attr('style', 'fill: ' + color + '; fill-opacity: ' + opacity);
 

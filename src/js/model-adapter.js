@@ -1,4 +1,4 @@
-class ModelAdapter {
+export class ModelAdapter {
 
   constructor(model) {
     this._model = model;
@@ -11,13 +11,13 @@ class ModelAdapter {
     } else {
       return new ModelNoBandsAdapter(model);
     }
-  };
+  }
 
   getModel() {
     return this._model;
-  };
+  }
 
   getCssClass() {
     return '';
-  };
+  }
 }

@@ -9,11 +9,11 @@ export class Ideogram {
       chrWidth, chrHeight,
       container, rect;
 
-  // Clone the config object, to allow multiple instantiations
-  // without picking up prior ideogram's settings
+    // Clone the config object, to allow multiple instantiations
+    // without picking up prior ideogram's settings
     this.config = JSON.parse(JSON.stringify(config));
 
-  // TODO: Document this
+    // TODO: Document this
     this._bandsXOffset = 30;
 
     this.debug = false;
@@ -29,11 +29,11 @@ export class Ideogram {
     if (this.config.ploidy > 1) {
       this.sexChromosomes = {};
       if (!this.config.sex) {
-      // Default to 'male' per human, mouse reference genomes.
-      // TODO: The default sex value should probably be the heterogametic sex,
-      // i.e. whichever sex has allosomes that differ in morphology.
-      // In mammals and most insects that is the male.
-      // However, in birds and reptiles, that is female.
+        // Default to 'male' per human, mouse reference genomes.
+        // TODO: The default sex value should probably be the heterogametic sex,
+        // i.e. whichever sex has allosomes that differ in morphology.
+        // In mammals and most insects that is the male.
+        // However, in birds and reptiles, that is female.
         this.config.sex = 'male';
       }
       if (this.config.ploidy === 2 && !this.config.ancestors) {
@@ -93,7 +93,7 @@ export class Ideogram {
       if (this.config.ploidy === 1) {
         this.config.chrMargin = 10;
       } else {
-      // Defaults polyploid chromosomes to relatively small interchromatid gap
+        // Defaults polyploid chromosomes to relatively small interchromatid gap
         this.config.chrMargin = Math.round(this.config.chrWidth / 4);
       }
     }
@@ -168,8 +168,8 @@ export class Ideogram {
       iscn: 0
     };
 
-  // The E-Utilies In Depth: Parameters, Syntax and More:
-  // https://www.ncbi.nlm.nih.gov/books/NBK25499/
+    // The E-Utilies In Depth: Parameters, Syntax and More:
+    // https://www.ncbi.nlm.nih.gov/books/NBK25499/
     this.eutils = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/';
     this.esearch = this.eutils + 'esearch.fcgi?retmode=json';
     this.esummary = this.eutils + 'esummary.fcgi?retmode=json';
@@ -204,9 +204,9 @@ export class Ideogram {
       }
     };
 
-  // A flat array of chromosomes
-  // (this.chromosomes is an object of
-  // arrays of chromosomes, keyed by organism)
+    // A flat array of chromosomes
+    // (this.chromosomes is an object of
+    // arrays of chromosomes, keyed by organism)
     this.chromosomesArray = [];
 
     this.bandsToShow = [];
@@ -218,18 +218,18 @@ export class Ideogram {
     this.init();
   }
 
-/**
-* Gets chromosome band data from a
-* TSV file, or, if band data is prefetched, from an array
-*
-* UCSC: #chrom chromStart  chromEnd  name  gieStain
-* http://genome.ucsc.edu/cgi-bin/hgTables
-*  - group: Mapping and Sequencing
-*  - track: Chromosome Band (Ideogram)
-*
-* NCBI: #chromosome  arm band  iscn_start  iscn_stop bp_start  bp_stop stain density
-* ftp://ftp.ncbi.nlm.nih.gov/pub/gdp/ideogram_9606_GCF_000001305.14_550_V1
-*/
+  /**
+  * Gets chromosome band data from a
+  * TSV file, or, if band data is prefetched, from an array
+  *
+  * UCSC: #chrom chromStart  chromEnd  name  gieStain
+  * http://genome.ucsc.edu/cgi-bin/hgTables
+  *  - group: Mapping and Sequencing
+  *  - track: Chromosome Band (Ideogram)
+  *
+  * NCBI: #chromosome  arm band  iscn_start  iscn_stop bp_start  bp_stop stain density
+  * ftp://ftp.ncbi.nlm.nih.gov/pub/gdp/ideogram_9606_GCF_000001305.14_550_V1
+  */
   getBands(content, taxid, chromosomes) {
     var lines = {},
       delimiter, tsvLines, columns, line, stain, chr,
@@ -297,7 +297,7 @@ export class Ideogram {
 
         stain = columns[7];
         if (columns[8]) {
-        // For e.g. acen and gvar, columns[8] (density) is undefined
+          // For e.g. acen and gvar, columns[8] (density) is undefined
           stain += columns[8];
         }
 
@@ -325,9 +325,9 @@ export class Ideogram {
       }
     } else if (source === 'ucsc') {
       for (i = init; i < tsvLinesLength; i++) {
-      // #chrom chromStart  chromEnd  name  gieStain
-      // e.g. for fly:
-      // chr4	69508	108296	102A1	n/a
+        // #chrom chromStart  chromEnd  name  gieStain
+        // e.g. for fly:
+        // chr4	69508	108296	102A1	n/a
         columns = tsvLines[i].split(delimiter);
 
         if (columns[0] !== 'chr' + chromosomeName) {
@@ -368,14 +368,13 @@ export class Ideogram {
     return lines;
   }
 
-/**
-* Generates a model object for each chromosome
-* containing information on its name, DOM ID,
-* length in base pairs or ISCN coordinates,
-* cytogenetic bands, centromere position, etc.
-*/
-  getChromosomeModel(bands, chromosome, taxid,
-  chrIndex) {
+  /**
+  * Generates a model object for each chromosome
+  * containing information on its name, DOM ID,
+  * length in base pairs or ISCN coordinates,
+  * cytogenetic bands, centromere position, etc.
+  */
+  getChromosomeModel(bands, chromosome, taxid, chrIndex) {
     var chr = {},
       band,
       width, pxStop,
@@ -430,20 +429,20 @@ export class Ideogram {
 
     chr.scale = {};
 
-  // TODO:
-  //
-  // A chromosome-level scale property is likely
-  // nonsensical for any chromosomes that have cytogenetic band data.
-  // Different bands tend to have ratios between number of base pairs
-  // and physical length.
-  //
-  // However, a chromosome-level scale property is likely
-  // necessary for chromosomes that do not have band data.
-  //
-  // This needs further review.
+    // TODO:
+    //
+    // A chromosome-level scale property is likely
+    // nonsensical for any chromosomes that have cytogenetic band data.
+    // Different bands tend to have ratios between number of base pairs
+    // and physical length.
+    //
+    // However, a chromosome-level scale property is likely
+    // necessary for chromosomes that do not have band data.
+    //
+    // This needs further review.
     if (this.config.multiorganism === true) {
       chr.scale.bp = 1;
-    // chr.scale.bp = band.iscn.stop / band.bp.stop;
+      // chr.scale.bp = band.iscn.stop / band.bp.stop;
       chr.scale.iscn = chrHeight * chrLength / maxLength.bp;
     } else {
       chr.scale.bp = chrHeight / maxLength.bp;
@@ -458,29 +457,29 @@ export class Ideogram {
     hasBands && bands[0].name[0] === 'p' && bands[1].name[0] === 'q' &&
     bands[0].bp.stop - bands[0].bp.start < 2E6
   ) {
-    // As with almost all mouse chromosome, chimpanzee chr22
+      // As with almost all mouse chromosome, chimpanzee chr22
       chr.centromerePosition = 'telocentric';
 
-    // Remove placeholder pter band
+      // Remove placeholder pter band
       chr.bands = chr.bands.slice(1);
     }
 
     if (hasBands && chr.bands.length === 1) {
-    // Encountered when processing an assembly that has chromosomes with
-    // centromere data, but this chromosome does not.
-    // Example: chromosome F1 in Felis catus.
+      // Encountered when processing an assembly that has chromosomes with
+      // centromere data, but this chromosome does not.
+      // Example: chromosome F1 in Felis catus.
       delete chr.bands;
     }
 
     return chr;
   }
 
-/**
-* Draws labels for each chromosome, e.g. "1", "2", "X".
-* If ideogram configuration has 'fullChromosomeLabels: True',
-* then labels includes name of taxon, which can help when
-* depicting orthologs.
-*/
+  /**
+  * Draws labels for each chromosome, e.g. "1", "2", "X".
+  * If ideogram configuration has 'fullChromosomeLabels: True',
+  * then labels includes name of taxon, which can help when
+  * depicting orthologs.
+  */
   drawChromosomeLabels() {
     var ideo = this;
 
@@ -489,78 +488,78 @@ export class Ideogram {
     var chrSetLabelXPosition = ideo._layout.getChromosomeSetLabelXPosition();
     var chrSetLabelTranslate = ideo._layout.getChromosomeSetLabelTranslate();
 
-  // Append chromosomes set's labels
+    // Append chromosomes set's labels
     d3.selectAll(ideo.selector + ' .chromosome-set-container')
-        .append('text')
-        .data(ideo.chromosomesArray)
-        .attr('class', 'chromosome-set-label ' + chromosomeLabelClass)
-        .attr('transform', chrSetLabelTranslate)
-        .attr('x', chrSetLabelXPosition)
-        .attr('y', function(d, i) {
-          return ideo._layout.getChromosomeSetLabelYPosition(i);
-        })
-        .attr('text-anchor', ideo._layout.getChromosomeSetLabelAnchor())
-        .each(function(d, i) {
-            // Get label lines
-          var lines;
-          if (d.name.indexOf(' ') === -1) {
-            lines = [d.name];
+      .append('text')
+      .data(ideo.chromosomesArray)
+      .attr('class', 'chromosome-set-label ' + chromosomeLabelClass)
+      .attr('transform', chrSetLabelTranslate)
+      .attr('x', chrSetLabelXPosition)
+      .attr('y', function(d, i) {
+        return ideo._layout.getChromosomeSetLabelYPosition(i);
+      })
+      .attr('text-anchor', ideo._layout.getChromosomeSetLabelAnchor())
+      .each(function(d, i) {
+          // Get label lines
+        var lines;
+        if (d.name.indexOf(' ') === -1) {
+          lines = [d.name];
+        } else {
+          lines = d.name.match(/^(.*)\s+([^\s]+)$/).slice(1).reverse();
+        }
+
+        if (
+          'sex' in ideo.config &&
+          ideo.config.ploidy === 2 &&
+          i === ideo.sexChromosomes.index
+        ) {
+          if (ideo.config.sex === 'male') {
+            lines = ['XY'];
           } else {
-            lines = d.name.match(/^(.*)\s+([^\s]+)$/).slice(1).reverse();
+            lines = ['XX'];
           }
+        }
 
-          if (
-            'sex' in ideo.config &&
-            ideo.config.ploidy === 2 &&
-            i === ideo.sexChromosomes.index
-          ) {
-            if (ideo.config.sex === 'male') {
-              lines = ['XY'];
-            } else {
-              lines = ['XX'];
-            }
-          }
-
-          // Render label lines
-          d3.select(this).selectAll('tspan')
-            .data(lines)
-            .enter()
-            .append('tspan')
-            .attr('dy', function(d, i) {
-              return i * -1.2 + 'em';
-            })
-            .attr('x', ideo._layout.getChromosomeSetLabelXPosition())
-            .attr('class', function(a, i) {
-              var fullLabels = ideo.config.fullChromosomeLabels;
-              return i === 1 && fullLabels ? 'italic' : null;
-            }).text(String);
-        });
+        // Render label lines
+        d3.select(this).selectAll('tspan')
+          .data(lines)
+          .enter()
+          .append('tspan')
+          .attr('dy', function(d, i) {
+            return i * -1.2 + 'em';
+          })
+          .attr('x', ideo._layout.getChromosomeSetLabelXPosition())
+          .attr('class', function(a, i) {
+            var fullLabels = ideo.config.fullChromosomeLabels;
+            return i === 1 && fullLabels ? 'italic' : null;
+          }).text(String);
+      });
 
     var setLabelTranslate = ideo._layout.getChromosomeSetLabelTranslate();
 
-  // Append chromosomes labels
+    // Append chromosomes labels
     d3.selectAll(ideo.selector + ' .chromosome-set-container')
-        .each(function(a, chrSetNumber) {
-          d3.select(this).selectAll('.chromosome')
-                .append('text')
-                .attr('class', 'chrLabel')
-                .attr('transform', setLabelTranslate)
-                .attr('x', function(d, i) {
-                  return ideo._layout.getChromosomeLabelXPosition(i);
-                }).attr('y', function(d, i) {
-                  return ideo._layout.getChromosomeLabelYPosition(i);
-                }).text(function(d, chrNumber) {
-                  return ideo._ploidy.getAncestor(chrSetNumber, chrNumber);
-                }).attr('text-anchor', 'middle');
-        });
+      .each(function(a, chrSetNumber) {
+        d3.select(this).selectAll('.chromosome')
+          .append('text')
+          .attr('class', 'chrLabel')
+          .attr('transform', setLabelTranslate)
+          .attr('x', function(d, i) {
+            return ideo._layout.getChromosomeLabelXPosition(i);
+          }).attr('y', function(d, i) {
+            return ideo._layout.getChromosomeLabelYPosition(i);
+          }).text(function(d, chrNumber) {
+            return ideo._ploidy.getAncestor(chrSetNumber, chrNumber);
+          }).attr('text-anchor', 'middle');
+      });
   }
 
-/**
-* Draws labels and stalks for cytogenetic bands.
-*
-* Band labels are text like "p11.11".
-* Stalks are small lines that visually connect labels to their bands.
-*/
+  /**
+  * Draws labels and stalks for cytogenetic bands.
+  *
+  * Band labels are text like "p11.11".
+  * Stalks are small lines that visually connect labels to their bands.
+  */
   drawBandLabels(chromosomes) {
     var i, chr, chrs, taxid, ideo, chrModel;
 
@@ -584,19 +583,19 @@ export class Ideogram {
 
       chr = d3.select(ideo.selector + ' #' + chrModel.id);
 
-    // var chrMargin = this.config.chrMargin * chrIndex,
-    //   lineY1, lineY2;
-    //
-    // lineY1 = chrMargin;
-    // lineY2 = chrMargin - 8;
-    //
-    // if (
-    //   chrIndex === 1 &&
-    //   "perspective" in this.config && this.config.perspective === "comparative"
-    // ) {
-    //   lineY1 += 18;
-    //   lineY2 += 18;
-    // }
+      // var chrMargin = this.config.chrMargin * chrIndex,
+      //   lineY1, lineY2;
+      //
+      // lineY1 = chrMargin;
+      // lineY2 = chrMargin - 8;
+      //
+      // if (
+      //   chrIndex === 1 &&
+      //   "perspective" in this.config && this.config.perspective === "comparative"
+      // ) {
+      //   lineY1 += 18;
+      //   lineY2 += 18;
+      // }
 
       textOffsets[chrModel.id] = [];
 
@@ -623,31 +622,32 @@ export class Ideogram {
           return d.name;
         });
 
-    // var adapter = ModelAdapter.getInstance(ideo.chromosomesArray[i]);
-    // var view = Chromosome.getInstance(adapter, ideo.config, ideo);
+      // var adapter = ModelAdapter.getInstance(ideo.chromosomesArray[i]);
+      // var view = Chromosome.getInstance(adapter, ideo.config, ideo);
 
       chr.selectAll('line.bandLabelStalk')
-      .data(chrModel.bands)
-      .enter()
-      .append('g')
-      .attr('class', function(d, i) {
-        return 'bandLabelStalk bsbsl-' + i;
-      })
-      .attr('transform', function(d) {
-        var x, y;
+        .data(chrModel.bands)
+        .enter()
+        .append('g')
+        .attr('class', function(d, i) {
+          return 'bandLabelStalk bsbsl-' + i;
+        })
+        .attr('transform', function(d) {
+          var x, y;
 
-        x = ideo.round(d.px.start + d.px.width / 2);
+          x = ideo.round(d.px.start + d.px.width / 2);
 
-        textOffsets[chrModel.id].push(x + 13);
-        y = -10;
+          textOffsets[chrModel.id].push(x + 13);
+          y = -10;
 
-        return 'translate(' + x + ',' + y + ')';
-      })
+          return 'translate(' + x + ',' + y + ')';
+        })
         .append('line')
         .attr('x1', 0)
         .attr('y1', function() {
           return ideo._layout.getChromosomeBandTickY1(i);
-        }).attr('x2', 0)
+        })
+        .attr('x2', 0)
         .attr('y2', function() {
           return ideo._layout.getChromosomeBandTickY2(i);
         });
@@ -670,7 +670,7 @@ export class Ideogram {
       textPadding = 5;
 
       for (index = 0; index < textsLength; index++) {
-      // Ensures band labels don't overlap
+        // Ensures band labels don't overlap
 
         xLeft = textOffsets[chrModel.id][index];
 
@@ -683,14 +683,14 @@ export class Ideogram {
         }
 
         if (prevHiddenBoxIndex !== index) {
-        // This getBoundingClientRect() forces Chrome's
-        // 'Recalculate Style' and 'Layout', which takes 30-40 ms on Chrome.
-        // TODO: This forced synchronous layout would be nice to eliminate.
-        // prevTextBox = texts[index].getBoundingClientRect();
-        // prevLabelXRight = prevTextBox.left + prevTextBox.width;
+          // This getBoundingClientRect() forces Chrome's
+          // 'Recalculate Style' and 'Layout', which takes 30-40 ms on Chrome.
+          // TODO: This forced synchronous layout would be nice to eliminate.
+          // prevTextBox = texts[index].getBoundingClientRect();
+          // prevLabelXRight = prevTextBox.left + prevTextBox.width;
 
-        // TODO: Account for number of characters in prevTextBoxWidth,
-        // maybe also zoom.
+          // TODO: Account for number of characters in prevTextBoxWidth,
+          // maybe also zoom.
           prevTextBoxLeft = textOffsets[chrModel.id][index];
           prevTextBoxWidth = 36;
 
@@ -698,8 +698,8 @@ export class Ideogram {
         }
 
         if (
-        xLeft < prevLabelXRight + textPadding
-      ) {
+          xLeft < prevLabelXRight + textPadding
+        ) {
           prevHiddenBoxIndex = index;
           overlappingLabelXRight = prevLabelXRight;
         } else {
@@ -720,9 +720,8 @@ export class Ideogram {
     }
   }
 
-// Rotates chromosome labels by 90 degrees, e.g. upon clicking a chromosome to focus.
-  rotateChromosomeLabels(chr, chrIndex,
-  orientation, scale) {
+  // Rotates chromosome labels by 90 degrees, e.g. upon clicking a chromosome to focus.
+  rotateChromosomeLabels(chr, chrIndex, orientation, scale) {
     var chrMargin, chrWidth, ideo, x, y,
       numAnnotTracks, scaleSvg, tracksHeight;
 
@@ -768,10 +767,10 @@ export class Ideogram {
       y = chrMargin + chrMargin2;
 
       chr.selectAll('text.chrLabel')
-      .attr('transform', scaleSvg)
-      .selectAll('tspan')
-        .attr('x', x)
-        .attr('y', y);
+        .attr('transform', scaleSvg)
+        .selectAll('tspan')
+          .attr('x', x)
+          .attr('y', y);
     } else {
       chrIndex -= 1;
 
@@ -790,21 +789,21 @@ export class Ideogram {
       x /= scale.x;
 
       chr.selectAll('text.chrLabel')
-      .attr('transform', 'rotate(-90)' + scaleSvg)
-      .selectAll('tspan')
-      .attr('x', x)
-      .attr('y', y);
+        .attr('transform', 'rotate(-90)' + scaleSvg)
+        .selectAll('tspan')
+        .attr('x', x)
+        .attr('y', y);
     }
   }
 
-/**
-* Rotates band labels by 90 degrees, e.g. upon clicking a chromosome to focus.
-*
-* This method includes proportional scaling, which ensures that
-* while the parent chromosome group is scaled strongly in one dimension to fill
-* available space, the text in the chromosome's band labels is
-* not similarly distorted, and remains readable.
-*/
+  /**
+  * Rotates band labels by 90 degrees, e.g. upon clicking a chromosome to focus.
+  *
+  * This method includes proportional scaling, which ensures that
+  * while the parent chromosome group is scaled strongly in one dimension to fill
+  * available space, the text in the chromosome's band labels is
+  * not similarly distorted, and remains readable.
+  */
   rotateBandLabels(chr, chrIndex, scale) {
     var chrMargin, scaleSvg,
       orientation, bandLabels,
@@ -825,54 +824,54 @@ export class Ideogram {
     }
 
     if (
-    chrIndex === 1 &&
-    'perspective' in this.config && this.config.perspective === 'comparative'
-  ) {
+      chrIndex === 1 &&
+      'perspective' in this.config && this.config.perspective === 'comparative'
+    ) {
       bandLabels
-      .attr('transform', function(d) {
-        var x, y;
-        x = (8 - chrMargin) - 26;
-        y = ideo.round(2 + d.px.start + d.px.width / 2);
-        return 'rotate(-90)translate(' + x + ',' + y + ')';
-      })
-      .selectAll('text')
-        .attr('text-anchor', 'end');
+        .attr('transform', function(d) {
+          var x, y;
+          x = (8 - chrMargin) - 26;
+          y = ideo.round(2 + d.px.start + d.px.width / 2);
+          return 'rotate(-90)translate(' + x + ',' + y + ')';
+        })
+        .selectAll('text')
+          .attr('text-anchor', 'end');
     } else if (orientation === 'vertical') {
       bandLabels
-      .attr('transform', function(d) {
-        var x, y;
-        x = 8 - chrMargin;
-        y = ideo.round(2 + d.px.start + d.px.width / 2);
-        return 'rotate(-90)translate(' + x + ',' + y + ')';
-      })
-      .selectAll('text')
-        .attr('transform', scaleSvg);
+        .attr('transform', function(d) {
+          var x, y;
+          x = 8 - chrMargin;
+          y = ideo.round(2 + d.px.start + d.px.width / 2);
+          return 'rotate(-90)translate(' + x + ',' + y + ')';
+        })
+        .selectAll('text')
+          .attr('transform', scaleSvg);
     } else {
       bandLabels
-      .attr('transform', function(d) {
-        var x, y;
-        x = ideo.round(-8 * scale.x + d.px.start + d.px.width / 2);
-        y = chrMargin - 10;
-        return 'translate(' + x + ',' + y + ')';
-      })
-      .selectAll('text')
-        .attr('transform', scaleSvg);
+        .attr('transform', function(d) {
+          var x, y;
+          x = ideo.round(-8 * scale.x + d.px.start + d.px.width / 2);
+          y = chrMargin - 10;
+          return 'translate(' + x + ',' + y + ')';
+        })
+        .selectAll('text')
+          .attr('transform', scaleSvg);
 
       chr.selectAll('.bandLabelStalk line')
-      .attr('transform', scaleSvg);
+        .attr('transform', scaleSvg);
     }
   }
 
   round(coord) {
-  // Rounds an SVG coordinates to two decimal places
-  // e.g. 42.1234567890 -> 42.12
-  // Per http://stackoverflow.com/a/9453447, below method is fastest
+    // Rounds an SVG coordinates to two decimal places
+    // e.g. 42.1234567890 -> 42.12
+    // Per http://stackoverflow.com/a/9453447, below method is fastest
     return Math.round(coord * 100) / 100;
   }
 
-/**
-* Renders all the bands and outlining boundaries of a chromosome.
-*/
+  /**
+  * Renders all the bands and outlining boundaries of a chromosome.
+  */
   drawChromosome(chrModel, chrIndex, container, k) {
     var chrMargin = this.config.chrMargin;
 
@@ -891,21 +890,19 @@ export class Ideogram {
         .render(chromosome, chrIndex, k);
   }
 
-/**
-* Rotates a chromosome 90 degrees and shows or hides all other chromosomes
-* Useful for focusing or defocusing a particular chromosome
-*/
+  /**
+  * Rotates a chromosome 90 degrees and shows or hides all other chromosomes
+  * Useful for focusing or defocusing a particular chromosome
+  */
   rotateAndToggleDisplay(chromosome) {
-  /*
-   * Do nothing if taxId not defined. But it should be defined.
-   * To fix that bug we should have a way to find chromosome set number.
-   */
+    // Do nothing if taxId not defined. But it should be defined.
+    // To fix that bug we should have a way to find chromosome set number.
     if (!this.config.taxid) {
       return;
     }
 
     var chrSetNumber =
-    Number(d3.select(chromosome.parentNode).attr('data-set-number'));
+      Number(d3.select(chromosome.parentNode).attr('data-set-number'));
 
     var chrNumber = Array.prototype.slice.call(
           d3.select(chromosome.parentNode).selectAll('g.chromosome')._groups[0]
@@ -914,10 +911,10 @@ export class Ideogram {
     return this._layout.rotate(chrSetNumber, chrNumber, chromosome);
   }
 
-/**
-* Converts base pair coordinates to pixel offsets.
-* Bp-to-pixel scales differ among cytogenetic bands.
-*/
+  /**
+  * Converts base pair coordinates to pixel offsets.
+  * Bp-to-pixel scales differ among cytogenetic bands.
+  */
   convertBpToPx(chr, bp) {
     var i, band, bpToIscnScale, iscn, px, offset, pxStart, pxLength, iscnStart,
       iscnStop, iscnLength, bpStart, bpStop, bpLength;
@@ -946,15 +943,15 @@ export class Ideogram {
     }
 
     throw new Error(
-    'Base pair out of range.  ' +
-    'bp: ' + bp + '; length of chr' + chr.name + ': ' + band.bp.stop
-  );
+      'Base pair out of range.  ' +
+      'bp: ' + bp + '; length of chr' + chr.name + ': ' + band.bp.stop
+    );
   }
 
-/**
-* Converts base pair coordinates to pixel offsets.
-* Bp-to-pixel scales differ among cytogenetic bands.
-*/
+  /**
+  * Converts base pair coordinates to pixel offsets.
+  * Bp-to-pixel scales differ among cytogenetic bands.
+  */
   convertPxToBp(chr, px) {
     var i, band, pxToIscnScale, iscn,
       pxStart, pxStop, iscnStart, iscnStop, bpLength, iscnLength;
@@ -982,16 +979,16 @@ export class Ideogram {
     }
 
     throw new Error(
-    'Pixel out of range.  ' +
-    'px: ' + bp + '; length of chr' + chr.name + ': ' + pxStop
-  );
+      'Pixel out of range.  ' +
+      'px: ' + bp + '; length of chr' + chr.name + ': ' + pxStop
+    );
   }
 
-/**
-* Draws a trapezoid connecting a genomic range on
-* one chromosome to a genomic range on another chromosome;
-* a syntenic region.
-*/
+  /**
+  * Draws a trapezoid connecting a genomic range on
+  * one chromosome to a genomic range on another chromosome;
+  * a syntenic region.
+  */
   drawSynteny(syntenicRegions) {
     var t0 = new Date().getTime();
 
@@ -1033,55 +1030,55 @@ export class Ideogram {
     );
 
       syntenicRegion = syntenies.append('g')
-      .attr('class', 'syntenicRegion')
-      .attr('id', regionID)
-      .on('click', function() {
-        var activeRegion = this;
-        var others = d3.selectAll(ideo.selector + ' .syntenicRegion')
-          .filter(function() {
-            return (this !== activeRegion);
-          });
+        .attr('class', 'syntenicRegion')
+        .attr('id', regionID)
+        .on('click', function() {
+          var activeRegion = this;
+          var others = d3.selectAll(ideo.selector + ' .syntenicRegion')
+            .filter(function() {
+              return (this !== activeRegion);
+            });
 
-        others.classed('hidden', !others.classed('hidden'));
-      })
-      .on('mouseover', function() {
-        var activeRegion = this;
-        d3.selectAll(ideo.selector + ' .syntenicRegion')
-          .filter(function() {
-            return (this !== activeRegion);
-          })
-          .classed('ghost', true);
-      })
-      .on('mouseout', function() {
-        d3.selectAll(ideo.selector + ' .syntenicRegion')
-          .classed('ghost', false);
-      });
-
+          others.classed('hidden', !others.classed('hidden'));
+        })
+        .on('mouseover', function() {
+          var activeRegion = this;
+          d3.selectAll(ideo.selector + ' .syntenicRegion')
+            .filter(function() {
+              return (this !== activeRegion);
+            })
+            .classed('ghost', true);
+        })
+        .on('mouseout', function() {
+          d3.selectAll(ideo.selector + ' .syntenicRegion')
+            .classed('ghost', false);
+        });
+      var chrWidth = ideo.config.chrWidth;
       var x1 = this._layout.getChromosomeSetYTranslate(0);
-      var x2 = this._layout.getChromosomeSetYTranslate(1) - ideo.config.chrWidth;
+      var x2 = this._layout.getChromosomeSetYTranslate(1) - chrWidth;
 
       syntenicRegion.append('polygon')
-      .attr('points',
-        x1 + ', ' + r1.startPx + ' ' +
-        x1 + ', ' + r1.stopPx + ' ' +
-        x2 + ', ' + r2.stopPx + ' ' +
-        x2 + ', ' + r2.startPx
-      )
-      .attr('style', 'fill: ' + color + '; fill-opacity: ' + opacity);
+        .attr('points',
+          x1 + ', ' + r1.startPx + ' ' +
+          x1 + ', ' + r1.stopPx + ' ' +
+          x2 + ', ' + r2.stopPx + ' ' +
+          x2 + ', ' + r2.startPx
+        )
+        .attr('style', 'fill: ' + color + '; fill-opacity: ' + opacity);
 
       syntenicRegion.append('line')
-      .attr('class', 'syntenyBorder')
-      .attr('x1', x1)
-      .attr('x2', x2)
-      .attr('y1', r1.startPx)
-      .attr('y2', r2.startPx);
+        .attr('class', 'syntenyBorder')
+        .attr('x1', x1)
+        .attr('x2', x2)
+        .attr('y1', r1.startPx)
+        .attr('y2', r2.startPx);
 
       syntenicRegion.append('line')
-      .attr('class', 'syntenyBorder')
-      .attr('x1', x1)
-      .attr('x2', x2)
-      .attr('y1', r1.stopPx)
-      .attr('y2', r2.stopPx);
+        .attr('class', 'syntenyBorder')
+        .attr('x1', x1)
+        .attr('x2', x2)
+        .attr('y1', r1.stopPx)
+        .attr('y2', r2.stopPx);
     }
 
     var t1 = new Date().getTime();
@@ -1090,12 +1087,15 @@ export class Ideogram {
     }
   }
 
-/**
-* Initializes various annotation settings.  Constructor help function.
-*/
+  /**
+  * Initializes various annotation settings.  Constructor help function.
+  */
   initAnnotSettings() {
-    if (this.config.annotationsPath || this.config.localAnnotationsPath ||
-    this.annots || this.config.annotations) {
+    if (
+      this.config.annotationsPath ||
+      this.config.localAnnotationsPath ||
+      this.annots || this.config.annotations
+    ) {
       if (!this.config.annotationHeight) {
         var annotHeight = Math.round(this.config.chrHeight / 100);
         this.config.annotationHeight = annotHeight;
@@ -1121,9 +1121,9 @@ export class Ideogram {
     }
   }
 
-/**
-* Draws annotations defined by user
-*/
+  /**
+  * Draws annotations defined by user
+  */
   drawAnnots(friendlyAnnots) {
     var ideo = this,
       i, j, annot,
@@ -1132,7 +1132,7 @@ export class Ideogram {
       chr,
       chrs = ideo.chromosomes[ideo.config.taxid]; // TODO: multiorganism
 
-  // Occurs when filtering
+    // Occurs when filtering
     if ('annots' in friendlyAnnots[0]) {
       return ideo.drawProcessedAnnots(friendlyAnnots);
     }
@@ -1177,15 +1177,15 @@ export class Ideogram {
     ideo.drawProcessedAnnots(ideo.annots);
   }
 
-/**
-* Proccesses genome annotation data.
-* Genome annotations represent features like a gene, SNP, etc. as
-* a small graphical object on or beside a chromosome.
-* Converts raw annotation data from server, which is structured as
-* an array of arrays, into a more verbose data structure consisting
-* of an array of objects.
-* Also adds pixel offset information.
-*/
+  /**
+  * Proccesses genome annotation data.
+  * Genome annotations represent features like a gene, SNP, etc. as
+  * a small graphical object on or beside a chromosome.
+  * Converts raw annotation data from server, which is structured as
+  * an array of arrays, into a more verbose data structure consisting
+  * of an array of objects.
+  * Also adds pixel offset information.
+  */
   processAnnotData(rawAnnots) {
     var keys,
       i, j, annot, annots, annotsByChr,
@@ -1249,9 +1249,9 @@ export class Ideogram {
     return annots;
   }
 
-/*
-* Can be used for bar chart or sparkline
-*/
+  /*
+  * Can be used for bar chart or sparkline
+  */
   getHistogramBars(annots) {
     var t0 = new Date().getTime();
 
@@ -2541,7 +2541,8 @@ export class Ideogram {
             ideo.rotateAndToggleDisplay(this);
           });
         } else {
-          d3.selectAll(ideo.selector + ' .chromosome').style('cursor', 'default');
+          d3.selectAll(ideo.selector + ' .chromosome')
+            .style('cursor', 'default');
         }
       } catch (e) {
       // console.log(e);

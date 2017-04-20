@@ -26,7 +26,7 @@ export class SmallLayout extends Layout {
           .transition()
           .attr('transform', transform)
           .on('end', callback);
-  };
+  }
 
   rotateBack(setNumber, chrNumber, chrElement, callback) {
     var translate = this.getChromosomeSetTranslate(setNumber);
@@ -35,23 +35,24 @@ export class SmallLayout extends Layout {
           .transition()
           .attr('transform', translate)
           .on('end', callback);
-  };
+  }
 
   getHeight() {
-    return this._config.rows * (this._config.chrHeight + this._margin.top * 1.5);
-  };
+    var chrHeight = this._config.chrHeight;
+    return this._config.rows * (chrHeight + this._margin.top * 1.5);
+  }
 
   getWidth() {
     return '97%';
-  };
+  }
 
   getChromosomeBandLabelTranslate() {
 
-  };
+  }
 
   getChromosomeSetLabelTranslate() {
     return 'rotate(-90)';
-  };
+  }
 
   getChromosomeSetTranslate(setNumber) {
       // Get organisms id list
@@ -76,7 +77,7 @@ export class SmallLayout extends Layout {
     }
 
     return 'rotate(90) translate(' + xOffset + ', -' + yOffset + ')';
-  };
+  }
 
   getChromosomeSetYTranslate(setNumber) {
       // Get additional padding caused by annotation tracks
@@ -86,17 +87,17 @@ export class SmallLayout extends Layout {
       this._margin.left * (setNumber) + this._config.chrWidth +
       additionalPadding * 2 + additionalPadding * setNumber
     );
-  };
+  }
 
   getChromosomeSetLabelXPosition(setNumber) {
     return (
       ((this._ploidy.getSetSize(setNumber) * this._config.chrWidth + 20) / -2) +
       (this._config.ploidy > 1 ? 0 : this._config.chrWidth)
     );
-  };
+  }
 
   getChromosomeLabelXPosition() {
     return this._config.chrWidth / -2;
-  };
+  }
 
 }

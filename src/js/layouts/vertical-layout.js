@@ -55,7 +55,7 @@ export class VerticalLayout extends Layout {
       .text(String)
       .transition()
       .style('opacity', 1);
-  };
+  }
 
   rotateBack(setNumber, chrNumber,
     chrElement, callback) {
@@ -69,23 +69,23 @@ export class VerticalLayout extends Layout {
     d3.selectAll(this._ideo.selector + ' g.tmp')
           .style('opacity', 0)
           .remove();
-  };
+  }
 
   getHeight() {
     return this._config.chrHeight + this._margin.top * 1.5;
-  };
+  }
 
   getWidth() {
     return '97%';
-  };
+  }
 
   getChromosomeBandLabelTranslate() {
 
-  };
+  }
 
   getChromosomeSetLabelTranslate() {
     return 'rotate(-90)';
-  };
+  }
 
   getChromosomeSetTranslate(setNumber) {
     var marginTop = this._margin.top;
@@ -94,7 +94,7 @@ export class VerticalLayout extends Layout {
       'rotate(90) ' +
       'translate(' + marginTop + ', -' + chromosomeSetYTranslate + ')'
     );
-  };
+  }
 
   getChromosomeSetYTranslate(setNumber) {
       // Get additional padding caused by annotation/histogram tracks
@@ -140,13 +140,13 @@ export class VerticalLayout extends Layout {
     }
 
     return this._translate[setNumber];
-  };
+  }
 
   getChromosomeSetLabelXPosition() {
     return (this._config.chrWidth * this._config.ploidy) / -2;
-  };
+  }
 
   getChromosomeLabelXPosition() {
     return this._config.chrWidth / -2;
-  };
+  }
 }

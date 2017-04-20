@@ -17,7 +17,7 @@ export class Ploidy {
     } else {
       return this._config.ploidy || 1;
     }
-  };
+  }
 
   // Normalize use defined description
   _normalize(description) {
@@ -51,7 +51,7 @@ export class Ploidy {
     }
 
     return normalized;
-  };
+  }
 
   // Get array filled by '11' elements
   _getexistenceArray(length) {
@@ -62,7 +62,7 @@ export class Ploidy {
     }
 
     return array;
-  };
+  }
 
   getSetSize(chrSetNumber) {
     if (this._description) {
@@ -70,7 +70,7 @@ export class Ploidy {
     } else {
       return 1;
     }
-  };
+  }
 
   // Get ancestor letter
   getAncestor(chrSetNumber, chrNumber) {
@@ -79,18 +79,19 @@ export class Ploidy {
     } else {
       return '';
     }
-  };
+  }
 
   // Check if chromosome's arm should be rendered.
   // If no description was provided, method returns true and
   // something another depending on user provided description.
   exists(chrSetNumber, chrNumber, armNumber) {
     if (this._description) {
-      var desc = this._description[chrSetNumber].existence[chrNumber][armNumber];
+      var desc =
+        this._description[chrSetNumber].existence[chrNumber][armNumber];
       return Number(desc) > 0;
     } else {
       return true;
     }
-  };
+  }
 
 }

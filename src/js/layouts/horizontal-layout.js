@@ -24,7 +24,7 @@ export class HorizontalLayout extends Layout {
     }
 
     return margin;
-  };
+  }
 
   rotateForward(setNumber, chrNumber, chrElement, callback) {
     var xOffset = 30;
@@ -69,7 +69,7 @@ export class HorizontalLayout extends Layout {
           .text(String)
           .transition()
           .style('opacity', 1);
-  };
+  }
 
   rotateBack(setNumber, chrNumber,
     chrElement, callback) {
@@ -83,7 +83,7 @@ export class HorizontalLayout extends Layout {
     d3.selectAll(this._ideo.selector + ' g.tmp')
           .style('opacity', 0)
           .remove();
-  };
+  }
 
   getHeight(taxId) {
       // Get last chromosome set offset.
@@ -97,30 +97,31 @@ export class HorizontalLayout extends Layout {
     lastSetOffset += lastSetSize;
 
     return lastSetOffset + this._getAdditionalOffset() * 2;
-  };
+  }
 
   getWidth() {
     return this._config.chrHeight + this._margin.top * 1.5;
-  };
+  }
 
   getChromosomeSetLabelAnchor() {
     return 'end';
-  };
+  }
 
   getChromosomeBandLabelAnchor() {
     return null;
-  };
+  }
 
   getChromosomeBandTickY1() {
     return 2;
-  };
+  }
 
   getChromosomeBandTickY2() {
     return 10;
-  };
+  }
 
   getChromosomeBandLabelTranslate(band) {
-    var x = this._ideo.round(-this._tickSize + band.px.start + band.px.width / 2);
+    var x =
+      this._ideo.round(-this._tickSize + band.px.start + band.px.width / 2);
     var y = -10;
 
     return {
@@ -128,17 +129,17 @@ export class HorizontalLayout extends Layout {
       y: y,
       translate: 'translate(' + x + ',' + y + ')'
     };
-  };
+  }
 
   getChromosomeSetLabelTranslate() {
     return null;
-  };
+  }
 
   getChromosomeSetTranslate(setNumber) {
     var leftMargin = this._getLeftMargin();
     var chromosomeSetYTranslate = this.getChromosomeSetYTranslate(setNumber);
     return 'translate(' + leftMargin + ', ' + chromosomeSetYTranslate + ')';
-  };
+  }
 
   getChromosomeSetYTranslate(setNumber) {
     // If no detailed description provided just use one formula for all cases.
@@ -160,7 +161,7 @@ export class HorizontalLayout extends Layout {
     }
 
     return this._translate[setNumber];
-  };
+  }
 
   getChromosomeSetLabelXPosition(i) {
     if (this._config.ploidy === 1) {
@@ -168,7 +169,7 @@ export class HorizontalLayout extends Layout {
     } else {
       return -20;
     }
-  };
+  }
 
   getChromosomeSetLabelYPosition(i) {
     var setSize = this._ploidy.getSetSize(i),
@@ -183,14 +184,14 @@ export class HorizontalLayout extends Layout {
     }
 
     return y;
-  };
+  }
 
   getChromosomeLabelXPosition() {
     return -8;
-  };
+  }
 
   getChromosomeLabelYPosition() {
     return this._config.chrWidth;
-  };
+  }
 
 }

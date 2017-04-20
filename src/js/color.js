@@ -14,7 +14,7 @@ export class Color {
     } else {
       return null;
     }
-  };
+  }
 
   getBorderColor(chrSetNumber, chrNumber, armNumber) {
     if (chrNumber < this._config.ploidy) {
@@ -24,16 +24,16 @@ export class Color {
     } else {
       return '#fff';
     }
-  };
+  }
 
-  _getPolyploidArmColor(chrSetNumber, chrNumber,
-    armNumber) {
+  _getPolyploidArmColor(chrSetNumber, chrNumber, armNumber) {
     if (!this._ploidy.exists(chrSetNumber, chrNumber, armNumber)) {
       return 'transparent';
     } else {
-      var ancestor = this._ploidy.getAncestor(chrSetNumber, chrNumber, armNumber);
+      var ancestor =
+        this._ploidy.getAncestor(chrSetNumber, chrNumber, armNumber);
       return this._config.ancestors[ancestor];
     }
-  };
+  }
 
 }
