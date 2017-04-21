@@ -1957,9 +1957,9 @@ export class Ideogram {
               } else {
                 // Seen in e.g. rice genome IRGSP-1.0 (GCF_001433935.1),
                 // From https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?retmode=json&db=nucleotide&id=996703432,996703431,996703430,996703429,996703428,996703427,996703426,996703425,996703424,996703423,996703422,996703421,194033210,11466763,7524755
-                  // genome: 'mitochondrion',
-                  // subtype: 'cell_line|plasmid',
-                  // subname: 'A-58 CMS|B1',
+                // genome: 'mitochondrion',
+                // subtype: 'cell_line|plasmid',
+                // subname: 'A-58 CMS|B1',
                 chrName = result.subname.split('|')[cnIndex];
               }
             } else {
@@ -2011,8 +2011,7 @@ export class Ideogram {
       });
   }
 
-  drawSexChromosomes(bandsArray, taxid, container,
-  defs, j, chrs) {
+  drawSexChromosomes(bandsArray, taxid, container, defs, j, chrs) {
     var chromosome, bands, chrModel, shape, sci, k,
       sexChromosomeIndexes,
       ideo = this;
@@ -2030,22 +2029,22 @@ export class Ideogram {
       chrModel = ideo.getChromosomeModel(bands, chromosome, taxid, sci);
       shape = ideo.drawChromosome(chrModel, j, container, k);
       defs.append('clipPath')
-      .attr('id', chrModel.id + '-chromosome-set-clippath')
-      .selectAll('path')
-      .data(shape)
-      .enter()
-      .append('path')
-      .attr('d', function(d) {
-        return d.path;
-      }).attr('class', function(d) {
-        return d.class;
-      });
+        .attr('id', chrModel.id + '-chromosome-set-clippath')
+        .selectAll('path')
+        .data(shape)
+        .enter()
+        .append('path')
+        .attr('d', function(d) {
+          return d.path;
+        }).attr('class', function(d) {
+          return d.class;
+        });
     }
   }
 
-/*
-* Configures chromosome data and calls downstream chromosome drawing functions
-*/
+  /*
+  * Configures chromosome data and calls downstream chromosome drawing functions
+  */
   initDrawChromosomes(bandsArray) {
     var ideo = this,
       taxids = ideo.config.taxids,
@@ -2078,31 +2077,31 @@ export class Ideogram {
         ideo.chromosomesArray.push(chrModel);
 
         if (
-        'sex' in ideo.config &&
-        (
-          ploidy === 2 && ideo.sexChromosomes.index + 2 === chrIndex ||
-          ideo.config.sex === 'female' && chrModel.name === 'Y'
-        )
-      ) {
+          'sex' in ideo.config &&
+          (
+            ploidy === 2 && ideo.sexChromosomes.index + 2 === chrIndex ||
+            ideo.config.sex === 'female' && chrModel.name === 'Y'
+          )
+        ) {
           continue;
         }
 
         transform = ideo._layout.getChromosomeSetTranslate(chrSetNumber);
         chrSetNumber += 1;
 
-      // Append chromosome set container
+        // Append chromosome set container
         var container = d3.select(ideo.selector)
-        .append('g')
-        .attr('class', 'chromosome-set-container')
-        .attr('data-set-number', j)
-        .attr('transform', transform)
-        .attr('id', chrModel.id + '-chromosome-set');
+          .append('g')
+          .attr('class', 'chromosome-set-container')
+          .attr('data-set-number', j)
+          .attr('transform', transform)
+          .attr('id', chrModel.id + '-chromosome-set');
 
         if (
           'sex' in ideo.config &&
           ploidy === 2 &&
           ideo.sexChromosomes.index + 1 === chrIndex
-      ) {
+        ) {
           ideo.drawSexChromosomes(bandsArray, taxid, container, defs, j, chrs);
           continue;
         }
@@ -2117,16 +2116,16 @@ export class Ideogram {
         }
 
         defs.append('clipPath')
-        .attr('id', chrModel.id + '-chromosome-set-clippath')
-        .selectAll('path')
-        .data(shape)
-        .enter()
-        .append('path')
-        .attr('d', function(d) {
-          return d.path;
-        }).attr('class', function(d) {
-          return d.class;
-        });
+          .attr('id', chrModel.id + '-chromosome-set-clippath')
+          .selectAll('path')
+          .data(shape)
+          .enter()
+          .append('path')
+          .attr('d', function(d) {
+            return d.path;
+          }).attr('class', function(d) {
+            return d.class;
+          });
       }
 
       if (ideo.config.showBandLabels === true) {
@@ -2135,29 +2134,31 @@ export class Ideogram {
     }
   }
 
-// Get ideogram SVG container
+  // Get ideogram SVG container
   getSvg() {
     return d3.select(this.selector).node();
   }
 
+  /*
+  * Sets instance properties regarding sex chromosomes.
+  * Currently only supported for mammals.
+  * TODO: Support all sexually reproducing taxa
+  *   XY sex-determination (mammals):
+  *     - Male: XY <- heterogametic
+  *     - Female: XX
+  *   ZW sex-determination (birds):
+  *     - Male: ZZ
+  *     - Female: ZW <- heterogametic
+  *   X0 sex-determination (some insects):
+  *     - Male: X0, i.e. only X <- heterogametic?
+  *     - Female: XX
+  * TODO: Support sex chromosome aneuploidies in mammals
+  *     - Turner syndrome: X0
+  *     - Klinefelter syndome: XXY
+  *  More types:
+  *  https:*en.wikipedia.org/wiki/Category:Sex_chromosome_aneuploidies
+  */
   setSexChromosomes(chrs) {
-  // Currently only supported for mammals
-  // TODO: Support all sexually reproducing taxa
-  //  XY sex-determination (mammals):
-  //  - Male: XY <- heterogametic
-  //  - Female: XX
-  //  ZW sex-determination (birds):
-  //  - Male: ZZ
-  //  - Female: ZW <- heterogametic
-  //  X0 sex-determination (some insects):
-  //  - Male: X0, i.e. only X <- heterogametic?
-  //  - Female: XX
-  // TODO: Support sex chromosome aneuploidies in mammals
-  //  - Turner syndrome: X0
-  //  - Klinefelter syndome: XXY
-  //  More types:
-  //  https://en.wikipedia.org/wiki/Category:Sex_chromosome_aneuploidies
-
     if (this.config.ploidy !== 2 || !this.config.sex) {
       return;
     }
@@ -2183,15 +2184,15 @@ export class Ideogram {
     }
   }
 
-/*
-* Completes default ideogram initialization
-* by calling downstream functions to
-* process raw band data into full JSON objects,
-* render chromosome and cytoband figures and labels,
-* apply initial graphical transformations,
-* hide overlapping band labels, and
-* execute callbacks defined by client code
-*/
+  /*
+  * Completes default ideogram initialization
+  * by calling downstream functions to
+  * process raw band data into full JSON objects,
+  * render chromosome and cytoband figures and labels,
+  * apply initial graphical transformations,
+  * hide overlapping band labels, and
+  * execute callbacks defined by client code
+  */
   processBandData() {
     var bandsArray, j, k, chromosome, bands,
       chrLength, chr,
@@ -2266,7 +2267,7 @@ export class Ideogram {
           }
         }
       } else if (ideo.coordinateSystem === 'bp') {
-      // If lacking band-level data
+        // If lacking band-level data
 
         ideo.config.chromosomes[taxid] = chrs.slice();
         ideo.numChromosomes += ideo.config.chromosomes[taxid].length;
@@ -2288,12 +2289,12 @@ export class Ideogram {
     return bandsArray;
   }
 
-/**
-* Initializes an ideogram.
-* Sets some high-level properties based on instance configuration,
-* fetches band and annotation data if needed, and
-* writes an SVG element to the document to contain the ideogram
-*/
+  /**
+  * Initializes an ideogram.
+  * Sets some high-level properties based on instance configuration,
+  * fetches band and annotation data if needed, and
+  * writes an SVG element to the document to contain the ideogram
+  */
   init() {
     var taxid, i, svgClass;
 
@@ -2338,9 +2339,9 @@ export class Ideogram {
           bandFileName.push(accession);
         }
         if (
-        taxid === '9606' &&
-        (accession !== assemblies.default || resolution !== 850)
-      ) {
+          taxid === '9606' &&
+          (accession !== assemblies.default || resolution !== 850)
+        ) {
           bandFileName.push(resolution);
         }
         bandFileName = bandFileName.join('-') + '.js';
@@ -2351,23 +2352,23 @@ export class Ideogram {
 
         if (typeof chrBands === 'undefined' && taxid in bandDataFileNames) {
           d3.request(ideo.config.dataDir + bandDataFileNames[taxid])
-        .on('beforesend', function(data) {
-          // Ensures correct taxid is processed in response callback; using
-          // simply 'taxid' variable gives the last *requested* taxid, which
-          // fails when dealing with multiple taxa.
-          data.taxid = taxid;
-        })
-        .get(function(error, data) {
-          eval(data.response);
+            .on('beforesend', function(data) {
+              // Ensures correct taxid is processed in response callback; using
+              // simply 'taxid' variable gives the last *requested* taxid, which
+              // fails when dealing with multiple taxa.
+              data.taxid = taxid;
+            })
+            .get(function(error, data) {
+              eval(data.response);
 
-          ideo.bandData[data.taxid] = chrBands;
-          numBandDataResponses += 1;
+              ideo.bandData[data.taxid] = chrBands;
+              numBandDataResponses += 1;
 
-          if (numBandDataResponses === taxids.length) {
-            bandsArray = ideo.processBandData();
-            writeContainer();
-          }
-        });
+              if (numBandDataResponses === taxids.length) {
+                bandsArray = ideo.processBandData();
+                writeContainer();
+              }
+            });
         } else {
           if (typeof chrBands !== 'undefined') {
           // If bands already available,
@@ -2390,24 +2391,24 @@ export class Ideogram {
       );
       }
 
-    // If ploidy description is a string, then convert it to the canonical
-    // array format.  String ploidyDesc is used when depicting e.g. parental
-    // origin each member of chromosome pair in a human genome.
-    // See ploidy_basic.html for usage example.
+      // If ploidy description is a string, then convert it to the canonical
+      // array format.  String ploidyDesc is used when depicting e.g. parental
+      // origin each member of chromosome pair in a human genome.
+      // See ploidy_basic.html for usage example.
       if (
-      'ploidyDesc' in ideo.config &&
-      typeof ideo.config.ploidyDesc === 'string'
-    ) {
+        'ploidyDesc' in ideo.config &&
+        typeof ideo.config.ploidyDesc === 'string'
+      ) {
         var tmp = [];
         for (var i = 0; i < ideo.numChromosomes; i++) {
           tmp.push(ideo.config.ploidyDesc);
         }
         ideo.config.ploidyDesc = tmp;
       }
-    // Organism ploidy description
+      // Organism ploidy description
       ideo._ploidy = new Ploidy(ideo.config);
 
-    // Chromosome's layout
+      // Chromosome's layout
       ideo._layout = Layout.getInstance(ideo.config, ideo);
 
       svgClass = '';
@@ -2431,13 +2432,13 @@ export class Ideogram {
       var svgHeight = ideo._layout.getHeight(taxid);
 
       d3.select(ideo.config.container)
-      .append('div')
-        .append('svg')
-          .attr('id', '_ideogram')
-          .attr('class', svgClass)
-          .attr('width', svgWidth)
-          .attr('height', svgHeight)
-          .html(gradients);
+        .append('div')
+          .append('svg')
+            .attr('id', '_ideogram')
+            .attr('class', svgClass)
+            .attr('width', svgWidth)
+            .attr('height', svgHeight)
+            .html(gradients);
 
       finishInit();
     }
@@ -2450,8 +2451,8 @@ export class Ideogram {
 
         ideo.initDrawChromosomes(bandsArray);
 
-      // Waits for potentially large annotation dataset
-      // to be received by the client, then triggers annotation processing
+        // Waits for potentially large annotation dataset
+        // to be received by the client, then triggers annotation processing
         if (ideo.config.annotationsPath) {
           function pa() {
             if (typeof ideo.timeout !== 'undefined') {
@@ -2486,12 +2487,12 @@ export class Ideogram {
         if (ideo.config.showBandLabels === true) {
           var bandsToShow = ideo.bandsToShow.join(',');
 
-      // d3.selectAll resolves to querySelectorAll (QSA).
-      // QSA takes a surprisingly long time to complete,
-      // and scales with the number of selectors.
-      // Most bands are hidden, so we can optimize by
-      // Hiding all bands, then QSA'ing and displaying the
-      // relatively few bands that are shown.
+          // d3.selectAll resolves to querySelectorAll (QSA).
+          // QSA takes a surprisingly long time to complete,
+          // and scales with the number of selectors.
+          // Most bands are hidden, so we can optimize by
+          // Hiding all bands, then QSA'ing and displaying the
+          // relatively few bands that are shown.
           var t0C = new Date().getTime();
           d3.selectAll(ideo.selector + ' .bandLabel, .bandLabelStalk')
           .style('display', 'none');
@@ -2545,7 +2546,7 @@ export class Ideogram {
             .style('cursor', 'default');
         }
       } catch (e) {
-      // console.log(e);
+        // console.log(e);
         throw e;
       }
     }

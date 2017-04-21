@@ -80,34 +80,33 @@ export class PairedLayout extends Layout {
       .style('opacity', 1);
   }
 
-  rotateBack(setNumber, chrNumber, chrElement,
-    callback) {
+  rotateBack(setNumber, chrNumber, chrElement, callback) {
     var ideo = this._ideo;
 
-      // Get intial transformation string for chromosome set
+    // Get intial transformation string for chromosome set
     var translate = this.getChromosomeSetTranslate(setNumber);
 
-      // Run rotation procedure
+    // Run rotation procedure
     d3.select(chrElement.parentNode)
-          .transition()
-          .attr('transform', translate)
-          .on('end', function() {
-            // Run callback fnuction if provided
-            callback();
+      .transition()
+      .attr('transform', translate)
+      .on('end', function() {
+        // Run callback fnuction if provided
+        callback();
 
-            // Show syntenic regions
-            d3.selectAll(ideo.select + ' .syntenicRegion')
-              .style('display', null);
+        // Show syntenic regions
+        d3.selectAll(ideo.select + ' .syntenicRegion')
+          .style('display', null);
 
-            // Reset changed attributes to original state
-            d3.select(chrElement.parentNode).selectAll('g.bandLabel text')
-              .attr('transform', null)
-              .attr('text-anchor', setNumber ? null : 'end');
-          });
+        // Reset changed attributes to original state
+        d3.select(chrElement.parentNode).selectAll('g.bandLabel text')
+          .attr('transform', null)
+          .attr('text-anchor', setNumber ? null : 'end');
+      });
 
     d3.selectAll(ideo.selector + ' g.tmp')
-          .style('opacity', 0)
-          .remove();
+      .style('opacity', 0)
+      .remove();
   }
 
   getHeight() {
@@ -131,8 +130,7 @@ export class PairedLayout extends Layout {
     return chrNumber % 2 ? null : 'end';
   }
 
-  getChromosomeBandLabelTranslate(band,
-    chrNumber) {
+  getChromosomeBandLabelTranslate(band, chrNumber) {
     var x = chrNumber % 2 ? 10 : -this._config.chrWidth - 10;
     var y = this._ideo.round(band.px.start + band.px.width / 2) + 3;
 
