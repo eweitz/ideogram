@@ -16309,9 +16309,17 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _d = require('d3');
 
-var _d2 = _interopRequireDefault(_d);
+var d3 = _interopRequireWildcard(_d);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _ploidy = require('./ploidy');
+
+var _layout = require('./layouts/layout');
+
+var _modelAdapter = require('./model-adapter');
+
+var _chromosome = require('./views/chromosome');
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -16812,7 +16820,7 @@ var Ideogram = exports.Ideogram = function () {
       var chrSetLabelTranslate = ideo._layout.getChromosomeSetLabelTranslate();
 
       // Append chromosomes set's labels
-      _d2.default.selectAll(ideo.selector + ' .chromosome-set-container').append('text').data(ideo.chromosomesArray).attr('class', 'chromosome-set-label ' + chromosomeLabelClass).attr('transform', chrSetLabelTranslate).attr('x', chrSetLabelXPosition).attr('y', function (d, i) {
+      d3.selectAll(ideo.selector + ' .chromosome-set-container').append('text').data(ideo.chromosomesArray).attr('class', 'chromosome-set-label ' + chromosomeLabelClass).attr('transform', chrSetLabelTranslate).attr('x', chrSetLabelXPosition).attr('y', function (d, i) {
         return ideo._layout.getChromosomeSetLabelYPosition(i);
       }).attr('text-anchor', ideo._layout.getChromosomeSetLabelAnchor()).each(function (d, i) {
         // Get label lines
@@ -16832,7 +16840,7 @@ var Ideogram = exports.Ideogram = function () {
         }
 
         // Render label lines
-        _d2.default.select(this).selectAll('tspan').data(lines).enter().append('tspan').attr('dy', function (d, i) {
+        d3.select(this).selectAll('tspan').data(lines).enter().append('tspan').attr('dy', function (d, i) {
           return i * -1.2 + 'em';
         }).attr('x', ideo._layout.getChromosomeSetLabelXPosition()).attr('class', function (a, i) {
           var fullLabels = ideo.config.fullChromosomeLabels;
@@ -16843,8 +16851,8 @@ var Ideogram = exports.Ideogram = function () {
       var setLabelTranslate = ideo._layout.getChromosomeSetLabelTranslate();
 
       // Append chromosomes labels
-      _d2.default.selectAll(ideo.selector + ' .chromosome-set-container').each(function (a, chrSetNumber) {
-        _d2.default.select(this).selectAll('.chromosome').append('text').attr('class', 'chrLabel').attr('transform', setLabelTranslate).attr('x', function (d, i) {
+      d3.selectAll(ideo.selector + ' .chromosome-set-container').each(function (a, chrSetNumber) {
+        d3.select(this).selectAll('.chromosome').append('text').attr('class', 'chrLabel').attr('transform', setLabelTranslate).attr('x', function (d, i) {
           return ideo._layout.getChromosomeLabelXPosition(i);
         }).attr('y', function (d, i) {
           return ideo._layout.getChromosomeLabelYPosition(i);
@@ -16884,7 +16892,7 @@ var Ideogram = exports.Ideogram = function () {
 
         chrModel = chrs[i];
 
-        chr = _d2.default.select(ideo.selector + ' #' + chrModel.id);
+        chr = d3.select(ideo.selector + ' #' + chrModel.id);
 
         // var chrMargin = this.config.chrMargin * chrIndex,
         //   lineY1, lineY2;
@@ -17145,13 +17153,13 @@ var Ideogram = exports.Ideogram = function () {
       var chrMargin = this.config.chrMargin;
 
       // Get chromosome model adapter class
-      var adapter = ModelAdapter.getInstance(chrModel);
+      var adapter = _modelAdapter.ModelAdapter.getInstance(chrModel);
 
       // Append chromosome's container
       var chromosome = container.append('g').attr('id', chrModel.id).attr('class', 'chromosome ' + adapter.getCssClass()).attr('transform', 'translate(0, ' + k * chrMargin + ')');
 
       // Render chromosome
-      return Chromosome.getInstance(adapter, this.config, this).render(chromosome, chrIndex, k);
+      return _chromosome.Chromosome.getInstance(adapter, this.config, this).render(chromosome, chrIndex, k);
     }
 
     /**
@@ -17168,9 +17176,9 @@ var Ideogram = exports.Ideogram = function () {
         return;
       }
 
-      var chrSetNumber = Number(_d2.default.select(chromosome.parentNode).attr('data-set-number'));
+      var chrSetNumber = Number(d3.select(chromosome.parentNode).attr('data-set-number'));
 
-      var chrNumber = Array.prototype.slice.call(_d2.default.select(chromosome.parentNode).selectAll('g.chromosome')._groups[0]).indexOf(chromosome);
+      var chrNumber = Array.prototype.slice.call(d3.select(chromosome.parentNode).selectAll('g.chromosome')._groups[0]).indexOf(chromosome);
 
       return this._layout.rotate(chrSetNumber, chrNumber, chromosome);
     }
@@ -17266,7 +17274,7 @@ var Ideogram = exports.Ideogram = function () {
           regionID,
           ideo = this;
 
-      syntenies = _d2.default.select(ideo.selector).insert('g', ':first-child').attr('class', 'synteny');
+      syntenies = d3.select(ideo.selector).insert('g', ':first-child').attr('class', 'synteny');
 
       for (i = 0; i < syntenicRegions.length; i++) {
         regions = syntenicRegions[i];
@@ -17293,18 +17301,18 @@ var Ideogram = exports.Ideogram = function () {
 
         syntenicRegion = syntenies.append('g').attr('class', 'syntenicRegion').attr('id', regionID).on('click', function () {
           var activeRegion = this;
-          var others = _d2.default.selectAll(ideo.selector + ' .syntenicRegion').filter(function () {
+          var others = d3.selectAll(ideo.selector + ' .syntenicRegion').filter(function () {
             return this !== activeRegion;
           });
 
           others.classed('hidden', !others.classed('hidden'));
         }).on('mouseover', function () {
           var activeRegion = this;
-          _d2.default.selectAll(ideo.selector + ' .syntenicRegion').filter(function () {
+          d3.selectAll(ideo.selector + ' .syntenicRegion').filter(function () {
             return this !== activeRegion;
           }).classed('ghost', true);
         }).on('mouseout', function () {
-          _d2.default.selectAll(ideo.selector + ' .syntenicRegion').classed('ghost', false);
+          d3.selectAll(ideo.selector + ' .syntenicRegion').classed('ghost', false);
         });
         var chrWidth = ideo.config.chrWidth;
         var x1 = this._layout.getChromosomeSetYTranslate(0);
@@ -17706,7 +17714,7 @@ var Ideogram = exports.Ideogram = function () {
 
       filledAnnots = ideo.fillAnnots(annots);
 
-      chrAnnot = _d2.default.selectAll(ideo.selector + ' .chromosome').data(filledAnnots).selectAll('path.annot').data(function (d) {
+      chrAnnot = d3.selectAll(ideo.selector + ' .chromosome').data(filledAnnots).selectAll('path.annot').data(function (d) {
         return d.annots;
       }).enter();
 
@@ -17786,9 +17794,9 @@ var Ideogram = exports.Ideogram = function () {
           x0,
           x1,
           xOffset = this._layout.getMargin().left,
-          xScale = _d2.default.scaleLinear().domain([0, _d2.default.max(chr.bands, function (band) {
+          xScale = d3.scaleLinear().domain([0, d3.max(chr.bands, function (band) {
         return band.bp.stop;
-      })]).range([xOffset, _d2.default.max(chr.bands, function (band) {
+      })]).range([xOffset, d3.max(chr.bands, function (band) {
         return band.px.stop;
       }) + xOffset]);
 
@@ -17805,14 +17813,14 @@ var Ideogram = exports.Ideogram = function () {
 
       ideo.selectedRegion = { from: from, to: to, extent: to - from };
 
-      ideo.brush = _d2.default.brushX().extent([[xOffset, 0], [length + xOffset, width]]).on('brush', onBrushMove);
+      ideo.brush = d3.brushX().extent([[xOffset, 0], [length + xOffset, width]]).on('brush', onBrushMove);
 
       var yTranslate = this._layout.getChromosomeSetYTranslate(0);
       var yOffset = yTranslate + (ideo.config.chrWidth - width) / 2;
-      _d2.default.select(ideo.selector).append('g').attr('class', 'brush').attr('transform', 'translate(0, ' + yOffset + ')').call(ideo.brush).call(ideo.brush.move, [x0, x1]);
+      d3.select(ideo.selector).append('g').attr('class', 'brush').attr('transform', 'translate(0, ' + yOffset + ')').call(ideo.brush).call(ideo.brush.move, [x0, x1]);
 
       function onBrushMove() {
-        var extent = _d2.default.event.selection.map(xScale.invert),
+        var extent = d3.event.selection.map(xScale.invert),
             from = Math.floor(extent[0]),
             to = Math.ceil(extent[1]);
 
@@ -17899,7 +17907,7 @@ var Ideogram = exports.Ideogram = function () {
 
       taxonomySearch = ideo.esearch + '&db=taxonomy&term=' + organism;
 
-      _d2.default.json(taxonomySearch, function (data) {
+      d3.json(taxonomySearch, function (data) {
         taxid = data.esearchresult.idlist[0];
         return callback(taxid);
       });
@@ -17984,7 +17992,7 @@ var Ideogram = exports.Ideogram = function () {
             var chromosomesUrl = dataDir + urlOrg + '.js';
 
             var promise = new Promise(function (resolve, reject) {
-              _d2.default.request(chromosomesUrl).get(function (error, data) {
+              d3.request(chromosomesUrl).get(function (error, data) {
                 if (error) {
                   reject(Error(error));
                 }
@@ -18120,14 +18128,14 @@ var Ideogram = exports.Ideogram = function () {
 
       asmSearch = ideo.esearch + '&db=assembly' + '&term=%22' + organism + '%22[organism]' + 'AND%20(%22latest%20refseq%22[filter])%20' + 'AND%20(%22chromosome%20level%22[filter]%20' + 'OR%20%22complete%20genome%22[filter])';
 
-      var promise = _d2.default.promise.json(asmSearch);
+      var promise = d3.promise.json(asmSearch);
 
       promise.then(function (data) {
         // NCBI Assembly database's internal identifier (uid) for this assembly
         asmUid = data.esearchresult.idlist[0];
         asmSummary = ideo.esummary + '&db=assembly&id=' + asmUid;
 
-        return _d2.default.promise.json(asmSummary);
+        return d3.promise.json(asmSummary);
       }).then(function (data) {
         // RefSeq UID for this assembly
         rsUid = data.result[asmUid].rsuid;
@@ -18143,12 +18151,12 @@ var Ideogram = exports.Ideogram = function () {
         var qs = '&db=nuccore&linkname=gencoll_nuccore_chr&from_uid=' + rsUid;
         nuccoreLink = ideo.elink + qs;
 
-        return _d2.default.promise.json(nuccoreLink);
+        return d3.promise.json(nuccoreLink);
       }).then(function (data) {
         links = data.linksets[0].linksetdbs[0].links.join(',');
         ntSummary = ideo.esummary + '&db=nucleotide&id=' + links;
 
-        return _d2.default.promise.json(ntSummary);
+        return d3.promise.json(ntSummary);
       }).then(function (data) {
         results = data.result;
 
@@ -18270,7 +18278,7 @@ var Ideogram = exports.Ideogram = function () {
           defs,
           transform;
 
-      defs = _d2.default.select(ideo.selector + ' defs');
+      defs = d3.select(ideo.selector + ' defs');
 
       for (i = 0; i < taxids.length; i++) {
         taxid = taxids[i];
@@ -18298,7 +18306,7 @@ var Ideogram = exports.Ideogram = function () {
           chrSetNumber += 1;
 
           // Append chromosome set container
-          var container = _d2.default.select(ideo.selector).append('g').attr('class', 'chromosome-set-container').attr('data-set-number', j).attr('transform', transform).attr('id', chrModel.id + '-chromosome-set');
+          var container = d3.select(ideo.selector).append('g').attr('class', 'chromosome-set-container').attr('data-set-number', j).attr('transform', transform).attr('id', chrModel.id + '-chromosome-set');
 
           if ('sex' in ideo.config && ploidy === 2 && ideo.sexChromosomes.index + 1 === chrIndex) {
             ideo.drawSexChromosomes(bandsArray, taxid, container, defs, j, chrs);
@@ -18332,7 +18340,7 @@ var Ideogram = exports.Ideogram = function () {
   }, {
     key: 'getSvg',
     value: function getSvg() {
-      return _d2.default.select(this.selector).node();
+      return d3.select(this.selector).node();
     }
 
     /*
@@ -18398,6 +18406,7 @@ var Ideogram = exports.Ideogram = function () {
     key: 'processBandData',
     value: function processBandData() {
       var bandsArray,
+          maxLength,
           j,
           k,
           chromosome,
@@ -18562,7 +18571,7 @@ var Ideogram = exports.Ideogram = function () {
           }
 
           if (typeof chrBands === 'undefined' && taxid in bandDataFileNames) {
-            _d2.default.request(ideo.config.dataDir + bandDataFileNames[taxid]).on('beforesend', function (data) {
+            d3.request(ideo.config.dataDir + bandDataFileNames[taxid]).on('beforesend', function (data) {
               // Ensures correct taxid is processed in response callback; using
               // simply 'taxid' variable gives the last *requested* taxid, which
               // fails when dealing with multiple taxa.
@@ -18592,7 +18601,7 @@ var Ideogram = exports.Ideogram = function () {
 
       function writeContainer() {
         if (ideo.config.annotationsPath) {
-          _d2.default.json(ideo.config.annotationsPath, // URL
+          d3.json(ideo.config.annotationsPath, // URL
           function (data) {
             // Callback
             ideo.rawAnnots = data;
@@ -18611,10 +18620,10 @@ var Ideogram = exports.Ideogram = function () {
           ideo.config.ploidyDesc = tmp;
         }
         // Organism ploidy description
-        ideo._ploidy = new Ploidy(ideo.config);
+        ideo._ploidy = new _ploidy.Ploidy(ideo.config);
 
         // Chromosome's layout
-        ideo._layout = Layout.getInstance(ideo.config, ideo);
+        ideo._layout = _layout.Layout.getInstance(ideo.config, ideo);
 
         svgClass = '';
         if (ideo.config.showChromosomeLabels) {
@@ -18633,7 +18642,7 @@ var Ideogram = exports.Ideogram = function () {
         var svgWidth = ideo._layout.getWidth(taxid);
         var svgHeight = ideo._layout.getHeight(taxid);
 
-        _d2.default.select(ideo.config.container).append('div').append('svg').attr('id', '_ideogram').attr('class', svgClass).attr('width', svgWidth).attr('height', svgHeight).html(gradients);
+        d3.select(ideo.config.container).append('div').append('svg').attr('id', '_ideogram').attr('class', svgClass).attr('width', svgWidth).attr('height', svgHeight).html(gradients);
 
         finishInit();
       }
@@ -18687,8 +18696,8 @@ var Ideogram = exports.Ideogram = function () {
             // Hiding all bands, then QSA'ing and displaying the
             // relatively few bands that are shown.
             var t0C = new Date().getTime();
-            _d2.default.selectAll(ideo.selector + ' .bandLabel, .bandLabelStalk').style('display', 'none');
-            _d2.default.selectAll(bandsToShow).style('display', '');
+            d3.selectAll(ideo.selector + ' .bandLabel, .bandLabelStalk').style('display', 'none');
+            d3.selectAll(bandsToShow).style('display', '');
             var t1C = new Date().getTime();
             if (ideo.debug) {
               console.log('Time in showing bands: ' + (t1C - t0C) + ' ms');
@@ -18698,7 +18707,7 @@ var Ideogram = exports.Ideogram = function () {
               var chrID;
               for (i = 0; i < ideo.chromosomesArray.length; i++) {
                 chrID = '#' + ideo.chromosomesArray[i].id;
-                ideo.rotateChromosomeLabels(_d2.default.select(chrID), i);
+                ideo.rotateChromosomeLabels(d3.select(chrID), i);
               }
             }
           }
@@ -18730,11 +18739,11 @@ var Ideogram = exports.Ideogram = function () {
           }
 
           if (!('rotatable' in ideo.config && ideo.config.rotatable === false)) {
-            _d2.default.selectAll(ideo.selector + ' .chromosome').on('click', function () {
+            d3.selectAll(ideo.selector + ' .chromosome').on('click', function () {
               ideo.rotateAndToggleDisplay(this);
             });
           } else {
-            _d2.default.selectAll(ideo.selector + ' .chromosome').style('cursor', 'default');
+            d3.selectAll(ideo.selector + ' .chromosome').style('cursor', 'default');
           }
         } catch (e) {
           // console.log(e);
@@ -18747,7 +18756,7 @@ var Ideogram = exports.Ideogram = function () {
   return Ideogram;
 }();
 
-},{"d3":1}],4:[function(require,module,exports){
+},{"./layouts/layout":6,"./model-adapter":10,"./ploidy":12,"./views/chromosome":14,"d3":1}],4:[function(require,module,exports){
 'use strict';
 
 var _range = require('./range');
@@ -18778,6 +18787,57 @@ var _metacentricChromosome = require('./views/metacentric-chromosome');
 
 var _core = require('./core');
 
+// import from './filter'
+
+
+// https://github.com/stefanpenner/es6-promise
+// (function(){"use strict";function t(t){return"function"==typeof t||"object"==typeof t&&null!==t}function e(t){return"function"==typeof t}function n(t){G=t}function r(t){Q=t}function o(){return function(){process.nextTick(a)}}function i(){return function(){B(a)}}function s(){var t=0,e=new X(a),n=document.createTextNode("");return e.observe(n,{characterData:!0}),function(){n.data=t=++t%2}}function u(){var t=new MessageChannel;return t.port1.onmessage=a,function(){t.port2.postMessage(0)}}function c(){return function(){setTimeout(a,1)}}function a(){for(var t=0;J>t;t+=2){var e=tt[t],n=tt[t+1];e(n),tt[t]=void 0,tt[t+1]=void 0}J=0}function f(){try{var t=require,e=t("vertx");return B=e.runOnLoop||e.runOnContext,i()}catch(n){return c()}}function l(t,e){var n=this,r=new this.constructor(p);void 0===r[rt]&&k(r);var o=n._state;if(o){var i=arguments[o-1];Q(function(){x(o,r,i,n._result)})}else E(n,r,t,e);return r}function h(t){var e=this;if(t&&"object"==typeof t&&t.constructor===e)return t;var n=new e(p);return g(n,t),n}function p(){}function _(){return new TypeError("You cannot resolve a promise with itself")}function d(){return new TypeError("A promises callback cannot return that same promise.")}function v(t){try{return t.then}catch(e){return ut.error=e,ut}}function y(t,e,n,r){try{t.call(e,n,r)}catch(o){return o}}function m(t,e,n){Q(function(t){var r=!1,o=y(n,e,function(n){r||(r=!0,e!==n?g(t,n):S(t,n))},function(e){r||(r=!0,j(t,e))},"Settle: "+(t._label||" unknown promise"));!r&&o&&(r=!0,j(t,o))},t)}function b(t,e){e._state===it?S(t,e._result):e._state===st?j(t,e._result):E(e,void 0,function(e){g(t,e)},function(e){j(t,e)})}function w(t,n,r){n.constructor===t.constructor&&r===et&&constructor.resolve===nt?b(t,n):r===ut?j(t,ut.error):void 0===r?S(t,n):e(r)?m(t,n,r):S(t,n)}function g(e,n){e===n?j(e,_()):t(n)?w(e,n,v(n)):S(e,n)}function A(t){t._onerror&&t._onerror(t._result),T(t)}function S(t,e){t._state===ot&&(t._result=e,t._state=it,0!==t._subscribers.length&&Q(T,t))}function j(t,e){t._state===ot&&(t._state=st,t._result=e,Q(A,t))}function E(t,e,n,r){var o=t._subscribers,i=o.length;t._onerror=null,o[i]=e,o[i+it]=n,o[i+st]=r,0===i&&t._state&&Q(T,t)}function T(t){var e=t._subscribers,n=t._state;if(0!==e.length){for(var r,o,i=t._result,s=0;s<e.length;s+=3)r=e[s],o=e[s+n],r?x(n,r,o,i):o(i);t._subscribers.length=0}}function M(){this.error=null}function P(t,e){try{return t(e)}catch(n){return ct.error=n,ct}}function x(t,n,r,o){var i,s,u,c,a=e(r);if(a){if(i=P(r,o),i===ct?(c=!0,s=i.error,i=null):u=!0,n===i)return void j(n,d())}else i=o,u=!0;n._state!==ot||(a&&u?g(n,i):c?j(n,s):t===it?S(n,i):t===st&&j(n,i))}function C(t,e){try{e(function(e){g(t,e)},function(e){j(t,e)})}catch(n){j(t,n)}}function O(){return at++}function k(t){t[rt]=at++,t._state=void 0,t._result=void 0,t._subscribers=[]}function Y(t){return new _t(this,t).promise}function q(t){var e=this;return new e(I(t)?function(n,r){for(var o=t.length,i=0;o>i;i++)e.resolve(t[i]).then(n,r)}:function(t,e){e(new TypeError("You must pass an array to race."))})}function F(t){var e=this,n=new e(p);return j(n,t),n}function D(){throw new TypeError("You must pass a resolver function as the first argument to the promise constructor")}function K(){throw new TypeError("Failed to construct 'Promise': Please use the 'new' operator, this object constructor cannot be called as a function.")}function L(t){this[rt]=O(),this._result=this._state=void 0,this._subscribers=[],p!==t&&("function"!=typeof t&&D(),this instanceof L?C(this,t):K())}function N(t,e){this._instanceConstructor=t,this.promise=new t(p),this.promise[rt]||k(this.promise),I(e)?(this._input=e,this.length=e.length,this._remaining=e.length,this._result=new Array(this.length),0===this.length?S(this.promise,this._result):(this.length=this.length||0,this._enumerate(),0===this._remaining&&S(this.promise,this._result))):j(this.promise,U())}function U(){return new Error("Array Methods must be provided an Array")}function W(){var t;if("undefined"!=typeof global)t=global;else if("undefined"!=typeof self)t=self;else try{t=Function("return this")()}catch(e){throw new Error("polyfill failed because global object is unavailable in this environment")}var n=t.Promise;(!n||"[object Promise]"!==Object.prototype.toString.call(n.resolve())||n.cast)&&(t.Promise=pt)}var z;z=Array.isArray?Array.isArray:function(t){return"[object Array]"===Object.prototype.toString.call(t)};var B,G,H,I=z,J=0,Q=function(t,e){tt[J]=t,tt[J+1]=e,J+=2,2===J&&(G?G(a):H())},R="undefined"!=typeof window?window:void 0,V=R||{},X=V.MutationObserver||V.WebKitMutationObserver,Z="undefined"==typeof self&&"undefined"!=typeof process&&"[object process]"==={}.toString.call(process),$="undefined"!=typeof Uint8ClampedArray&&"undefined"!=typeof importScripts&&"undefined"!=typeof MessageChannel,tt=new Array(1e3);H=Z?o():X?s():$?u():void 0===R&&"function"==typeof require?f():c();var et=l,nt=h,rt=Math.random().toString(36).substring(16),ot=void 0,it=1,st=2,ut=new M,ct=new M,at=0,ft=Y,lt=q,ht=F,pt=L;L.all=ft,L.race=lt,L.resolve=nt,L.reject=ht,L._setScheduler=n,L._setAsap=r,L._asap=Q,L.prototype={constructor:L,then:et,"catch":function(t){return this.then(null,t)}};var _t=N;N.prototype._enumerate=function(){for(var t=this.length,e=this._input,n=0;this._state===ot&&t>n;n++)this._eachEntry(e[n],n)},N.prototype._eachEntry=function(t,e){var n=this._instanceConstructor,r=n.resolve;if(r===nt){var o=v(t);if(o===et&&t._state!==ot)this._settledAt(t._state,e,t._result);else if("function"!=typeof o)this._remaining--,this._result[e]=t;else if(n===pt){var i=new n(p);w(i,t,o),this._willSettleAt(i,e)}else this._willSettleAt(new n(function(e){e(t)}),e)}else this._willSettleAt(r(t),e)},N.prototype._settledAt=function(t,e,n){var r=this.promise;r._state===ot&&(this._remaining--,t===st?j(r,n):this._result[e]=n),0===this._remaining&&S(r,this._result)},N.prototype._willSettleAt=function(t,e){var n=this;E(t,void 0,function(t){n._settledAt(it,e,t)},function(t){n._settledAt(st,e,t)})};var dt=W,vt={Promise:pt,polyfill:dt};"function"==typeof define&&define.amd?define(function(){return vt}):"undefined"!=typeof module&&module.exports?module.exports=vt:"undefined"!=typeof this&&(this.ES6Promise=vt),dt()}).call(this);
+
+// https://github.com/kristw/d3.promise
+// !function(a,b){"function"==typeof define&&define.amd?define(["d3"],b):"object"==typeof exports?module.exports=b(require("d3")):a.d3.promise=b(a.d3)}(this,function(a){var b=function(){function b(a,b){return function(){var c=Array.prototype.slice.call(arguments);return new Promise(function(d,e){var f=function(a,b){return a?void e(Error(a)):void d(b)};b.apply(a,c.concat(f))})}}var c={};return["csv","tsv","json","xml","text","html","get"].forEach(function(d){c[d]=b(a,a[d])}),c}();return a.promise=b,b});
+
+// https://github.com/overset/javascript-natural-sort
+function naturalSort(a, b) {
+  var q,
+      r,
+      c = /(^([+\-]?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?(?=\D|\s|$))|^0x[\da-fA-F]+$|\d+)/g,
+      d = /^\s+|\s+$/g,
+      e = /\s+/g,
+      f = /(^([\w ]+,?[\w ]+)?[\w ]+,?[\w ]+\d+:\d+(:\d+)?[\w ]?|^\d{1,4}[\/\-]\d{1,4}[\/\-]\d{1,4}|^\w+, \w+ \d+, \d{4})/,
+      g = /^0x[0-9a-f]+$/i,
+      h = /^0/,
+      i = function i(a) {
+    return (naturalSort.insensitive && ("" + a).toLowerCase() || "" + a).replace(d, "");
+  },
+      j = i(a),
+      k = i(b),
+      l = j.replace(c, "\0$1\0").replace(/\0$/, "").replace(/^\0/, "").split("\0"),
+      m = k.replace(c, "\0$1\0").replace(/\0$/, "").replace(/^\0/, "").split("\0"),
+      n = parseInt(j.match(g), 16) || 1 !== l.length && Date.parse(j),
+      o = parseInt(k.match(g), 16) || n && k.match(f) && Date.parse(k) || null,
+      p = function p(a, b) {
+    return (!a.match(h) || 1 == b) && parseFloat(a) || a.replace(e, " ").replace(d, "") || 0;
+  };if (o) {
+    if (n < o) return -1;if (n > o) return 1;
+  }for (var s = 0, t = l.length, u = m.length, v = Math.max(t, u); s < v; s++) {
+    if (q = p(l[s] || "", t), r = p(m[s] || "", u), isNaN(q) !== isNaN(r)) return isNaN(q) ? 1 : -1;if (/[^\x00-\x80]/.test(q + r) && q.localeCompare) {
+      var w = q.localeCompare(r);return w / Math.abs(w);
+    }if (q < r) return -1;if (q > r) return 1;
+  }
+}
+
+// e.g. "Homo sapiens" -> "homo-sapiens"
+
+// import from './lib'
+function slugify(value) {
+  return value.toLowerCase().replace(' ', '-');
+};
+
+window.naturalSort = naturalSort;
+window.slugify = slugify;
+
+window.Ideogram = _core.Ideogram;
+
 },{"./color":2,"./core":3,"./layouts/horizontal-layout":5,"./layouts/layout":6,"./layouts/paired-layout":7,"./layouts/small-layout":8,"./layouts/vertical-layout":9,"./model-adapter":10,"./model-no-bands-adapter":11,"./ploidy":12,"./range":13,"./views/chromosome":14,"./views/metacentric-chromosome":15,"./views/telocentric-chromosome":16}],5:[function(require,module,exports){
 'use strict';
 
@@ -18790,11 +18850,11 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _d = require('d3');
 
-var _d2 = _interopRequireDefault(_d);
+var d3 = _interopRequireWildcard(_d);
 
 var _layout = require('./layout');
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -18837,7 +18897,7 @@ var HorizontalLayout = exports.HorizontalLayout = function (_Layout) {
     value: function rotateForward(setNumber, chrNumber, chrElement, callback) {
       var xOffset = 30;
 
-      var ideoBox = _d2.default.select(this._ideo.selector).node().getBoundingClientRect();
+      var ideoBox = d3.select(this._ideo.selector).node().getBoundingClientRect();
       var chrBox = chrElement.getBoundingClientRect();
 
       var scaleX = ideoBox.height / (chrBox.width + xOffset / 2) * 0.9;
@@ -18847,11 +18907,11 @@ var HorizontalLayout = exports.HorizontalLayout = function (_Layout) {
 
       var transform = 'rotate(90) ' + 'translate(' + xOffset + ', -' + yOffset + ') ' + 'scale(' + scaleX + ', ' + scaleY + ')';
 
-      _d2.default.select(chrElement.parentNode).transition().attr("transform", transform).on('end', callback);
+      d3.select(chrElement.parentNode).transition().attr("transform", transform).on('end', callback);
 
       // Append new chromosome labels
       var labels = this.getChromosomeLabels(chrElement);
-      _d2.default.select(this._ideo.getSvg()).append('g').attr('class', 'tmp').selectAll('text').data(labels).enter().append('text').attr('class', function (d, i) {
+      d3.select(this._ideo.getSvg()).append('g').attr('class', 'tmp').selectAll('text').data(labels).enter().append('text').attr('class', function (d, i) {
         return i === 0 && labels.length === 2 ? 'chrSetLabel' : null;
       }).attr('x', 30).attr('y', function (d, i) {
         return (i + 1 + labels.length % 2) * 12;
@@ -18862,9 +18922,9 @@ var HorizontalLayout = exports.HorizontalLayout = function (_Layout) {
     value: function rotateBack(setNumber, chrNumber, chrElement, callback) {
       var translate = this.getChromosomeSetTranslate(setNumber);
 
-      _d2.default.select(chrElement.parentNode).transition().attr("transform", translate).on('end', callback);
+      d3.select(chrElement.parentNode).transition().attr("transform", translate).on('end', callback);
 
-      _d2.default.selectAll(this._ideo.selector + ' g.tmp').style('opacity', 0).remove();
+      d3.selectAll(this._ideo.selector + ' g.tmp').style('opacity', 0).remove();
     }
   }, {
     key: 'getHeight',
@@ -18998,8 +19058,17 @@ var HorizontalLayout = exports.HorizontalLayout = function (_Layout) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.Layout = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _verticalLayout = require('./vertical-layout');
+
+var _horizontalLayout = require('./horizontal-layout');
+
+var _pairedLayout = require('./paired-layout');
+
+var _smallLayout = require('./small-layout');
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -19233,15 +19302,15 @@ var Layout = exports.Layout = function () {
     key: 'getInstance',
     value: function getInstance(config, ideo) {
       if ('perspective' in config && config.perspective === 'comparative') {
-        return new PairedLayout(config, ideo);
+        return new _pairedLayout.PairedLayout(config, ideo);
       } else if ('rows' in config && config.rows > 1) {
-        return new SmallLayout(config, ideo);
+        return new _smallLayout.SmallLayout(config, ideo);
       } else if (config.orientation === 'vertical') {
-        return new VerticalLayout(config, ideo);
+        return new _verticalLayout.VerticalLayout(config, ideo);
       } else if (config.orientation === 'horizontal') {
-        return new HorizontalLayout(config, ideo);
+        return new _horizontalLayout.HorizontalLayout(config, ideo);
       } else {
-        return new VerticalLayout(config, ideo);
+        return new _verticalLayout.VerticalLayout(config, ideo);
       }
     }
   }]);
@@ -19249,7 +19318,7 @@ var Layout = exports.Layout = function () {
   return Layout;
 }();
 
-},{}],7:[function(require,module,exports){
+},{"./horizontal-layout":5,"./paired-layout":7,"./small-layout":8,"./vertical-layout":9}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -19261,11 +19330,11 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _d = require('d3');
 
-var _d2 = _interopRequireDefault(_d);
+var d3 = _interopRequireWildcard(_d);
 
 var _layout = require('./layout');
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -19300,7 +19369,7 @@ var PairedLayout = exports.PairedLayout = function (_Layout) {
       var ideo = this._ideo;
 
       // Get ideo container and chromosome set dimensions
-      var ideoBox = _d2.default.select(ideo.selector).node().getBoundingClientRect();
+      var ideoBox = d3.select(ideo.selector).node().getBoundingClientRect();
       var chrBox = chrElement.getBoundingClientRect();
 
       // Evaluate dimensions scale coefficients
@@ -19314,7 +19383,7 @@ var PairedLayout = exports.PairedLayout = function (_Layout) {
       var transform = 'translate(15, ' + yOffset + ') scale(' + scaleX + ', ' + scaleY + ')';
 
       // Run rotation procedure
-      _d2.default.select(chrElement.parentNode).transition().attr("transform", transform).on('end', function () {
+      d3.select(chrElement.parentNode).transition().attr("transform", transform).on('end', function () {
         // Run callback function if provided
         if (callback) {
           callback();
@@ -19323,16 +19392,16 @@ var PairedLayout = exports.PairedLayout = function (_Layout) {
         var translateY = 6 * Number(!setNumber);
 
         // Rotate band labels
-        _d2.default.select(chrElement.parentNode).selectAll('g.bandLabel text').attr('transform', 'rotate(90) translate(0, ' + translateY + ')').attr('text-anchor', 'middle');
+        d3.select(chrElement.parentNode).selectAll('g.bandLabel text').attr('transform', 'rotate(90) translate(0, ' + translateY + ')').attr('text-anchor', 'middle');
 
         // Hide syntenic regions
-        _d2.default.selectAll(ideo.selector + ' .syntenicRegion').style('display', 'none');
+        d3.selectAll(ideo.selector + ' .syntenicRegion').style('display', 'none');
       });
 
       // Append new chromosome labels
       var labels = this.getChromosomeLabels(chrElement);
 
-      _d2.default.select(this._ideo.getSvg()).append('g').attr('class', 'tmp').selectAll('text').data(this.getChromosomeLabels(chrElement)).enter().append('text').attr('class', function (d, i) {
+      d3.select(this._ideo.getSvg()).append('g').attr('class', 'tmp').selectAll('text').data(this.getChromosomeLabels(chrElement)).enter().append('text').attr('class', function (d, i) {
         return i === 0 && labels.length === 2 ? 'chrSetLabel' : null;
       }).attr('x', 0).attr('y', yOffset + self._config.chrWidth * scaleX / 2 * 1.15).style('opacity', 0).text(String).transition().style('opacity', 1);
     }
@@ -19345,18 +19414,18 @@ var PairedLayout = exports.PairedLayout = function (_Layout) {
       var translate = this.getChromosomeSetTranslate(setNumber);
 
       // Run rotation procedure
-      _d2.default.select(chrElement.parentNode).transition().attr('transform', translate).on('end', function () {
+      d3.select(chrElement.parentNode).transition().attr('transform', translate).on('end', function () {
         // Run callback fnuction if provided
         callback();
 
         // Show syntenic regions
-        _d2.default.selectAll(ideo.select + ' .syntenicRegion').style('display', null);
+        d3.selectAll(ideo.select + ' .syntenicRegion').style('display', null);
 
         // Reset changed attributes to original state
-        _d2.default.select(chrElement.parentNode).selectAll('g.bandLabel text').attr('transform', null).attr('text-anchor', setNumber ? null : 'end');
+        d3.select(chrElement.parentNode).selectAll('g.bandLabel text').attr('transform', null).attr('text-anchor', setNumber ? null : 'end');
       });
 
-      _d2.default.selectAll(ideo.selector + ' g.tmp').style('opacity', 0).remove();
+      d3.selectAll(ideo.selector + ' g.tmp').style('opacity', 0).remove();
     }
   }, {
     key: 'getHeight',
@@ -19439,11 +19508,11 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _d = require('d3');
 
-var _d2 = _interopRequireDefault(_d);
+var d3 = _interopRequireWildcard(_d);
 
 var _layout = require('./layout');
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -19471,7 +19540,7 @@ var SmallLayout = exports.SmallLayout = function (_Layout) {
   _createClass(SmallLayout, [{
     key: 'rotateForward',
     value: function rotateForward(setNumber, chrNumber, chrElement, callback) {
-      var ideoBox = _d2.default.select(this._ideo.selector).node().getBoundingClientRect();
+      var ideoBox = d3.select(this._ideo.selector).node().getBoundingClientRect();
       var chrBox = chrElement.getBoundingClientRect();
 
       var scaleX = ideoBox.width / chrBox.height * 0.97;
@@ -19479,14 +19548,14 @@ var SmallLayout = exports.SmallLayout = function (_Layout) {
 
       transform = 'translate(5, 25) scale(' + scaleX + ', ' + scaleY + ')';
 
-      _d2.default.select(chrElement.parentNode).transition().attr('transform', transform).on('end', callback);
+      d3.select(chrElement.parentNode).transition().attr('transform', transform).on('end', callback);
     }
   }, {
     key: 'rotateBack',
     value: function rotateBack(setNumber, chrNumber, chrElement, callback) {
       var translate = this.getChromosomeSetTranslate(setNumber);
 
-      _d2.default.select(chrElement.parentNode).transition().attr('transform', translate).on('end', callback);
+      d3.select(chrElement.parentNode).transition().attr('transform', translate).on('end', callback);
     }
   }, {
     key: 'getHeight',
@@ -19568,11 +19637,11 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _d = require('d3');
 
-var _d2 = _interopRequireDefault(_d);
+var d3 = _interopRequireWildcard(_d);
 
 var _layout = require('./layout');
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -19608,7 +19677,7 @@ var VerticalLayout = exports.VerticalLayout = function (_Layout) {
 
       var xOffset = 20;
 
-      var ideoBox = _d2.default.select(this._ideo.selector).node().getBoundingClientRect();
+      var ideoBox = d3.select(this._ideo.selector).node().getBoundingClientRect();
       var chrBox = chrElement.getBoundingClientRect();
 
       var scaleX = ideoBox.width / chrBox.height * 0.97;
@@ -19616,12 +19685,12 @@ var VerticalLayout = exports.VerticalLayout = function (_Layout) {
 
       var transform = 'translate(' + xOffset + ', 25) scale(' + scaleX + ', ' + scaleY + ')';
 
-      _d2.default.select(chrElement.parentNode).transition().attr('transform', transform).on('end', callback);
+      d3.select(chrElement.parentNode).transition().attr('transform', transform).on('end', callback);
 
       // Append new chromosome labels
       var labels = this.getChromosomeLabels(chrElement);
       var y = (xOffset + self._config.chrWidth) * 1.3;
-      _d2.default.select(this._ideo.getSvg()).append('g').attr('class', 'tmp').selectAll('text').data(labels).enter().append('text').attr('class', function (d, i) {
+      d3.select(this._ideo.getSvg()).append('g').attr('class', 'tmp').selectAll('text').data(labels).enter().append('text').attr('class', function (d, i) {
         return i === 0 && labels.length === 2 ? 'chrSetLabel' : null;
       }).attr('x', 0).attr('y', y).style('opacity', 0).text(String).transition().style('opacity', 1);
     }
@@ -19630,9 +19699,9 @@ var VerticalLayout = exports.VerticalLayout = function (_Layout) {
     value: function rotateBack(setNumber, chrNumber, chrElement, callback) {
       var translate = this.getChromosomeSetTranslate(setNumber);
 
-      _d2.default.select(chrElement.parentNode).transition().attr('transform', translate).on('end', callback);
+      d3.select(chrElement.parentNode).transition().attr('transform', translate).on('end', callback);
 
-      _d2.default.selectAll(this._ideo.selector + ' g.tmp').style('opacity', 0).remove();
+      d3.selectAll(this._ideo.selector + ' g.tmp').style('opacity', 0).remove();
     }
   }, {
     key: 'getHeight',

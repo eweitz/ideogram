@@ -1,6 +1,11 @@
 // Developed by Eric Weitz (https://github.com/eweitz)
 
-import d3 from 'd3';
+import * as d3 from 'd3';
+
+import {Ploidy} from './ploidy';
+import {Layout} from './layouts/layout';
+import {ModelAdapter} from './model-adapter';
+import {Chromosome} from './views/chromosome';
 
 export class Ideogram {
 
@@ -2194,7 +2199,7 @@ export class Ideogram {
   * execute callbacks defined by client code
   */
   processBandData() {
-    var bandsArray, j, k, chromosome, bands,
+    var bandsArray, maxLength, j, k, chromosome, bands,
       chrLength, chr,
       bandData, bandsByChr,
       taxid, taxids, chrs, chrsByTaxid,

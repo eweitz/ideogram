@@ -4,7 +4,7 @@
 * starting at left and ending at right, and aligned as rows.
 */
 
-import d3 from 'd3';
+import * as d3 from 'd3';
 import {Layout} from './layout';
 
 export class HorizontalLayout extends Layout {

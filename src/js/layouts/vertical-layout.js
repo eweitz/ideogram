@@ -4,7 +4,7 @@
 * starting at top and ending at bottom, and aligned as columns.
 */
 
-import d3 from 'd3';
+import * as d3 from 'd3';
 import {Layout} from './layout';
 
 export class VerticalLayout extends Layout {

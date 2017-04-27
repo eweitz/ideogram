@@ -4,7 +4,7 @@
 * This enables ploidy support beyond the default haploid; e.g. diploid genomes.
 */
 
-import d3 from 'd3';
+import * as d3 from 'd3';
 import {Layout} from './layout';
 
 export class PairedLayout extends Layout {

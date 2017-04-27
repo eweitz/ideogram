@@ -1,3 +1,9 @@
+
+import {VerticalLayout} from './vertical-layout';
+import {HorizontalLayout} from './horizontal-layout';
+import {PairedLayout} from './paired-layout';
+import {SmallLayout} from './small-layout';
+
 export class Layout {
 
   constructor(config, ideo) {
