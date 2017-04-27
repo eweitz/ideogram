@@ -1,3 +1,5 @@
+import {ModelAdapter} from './model-adapter';
+
 export class ModelNoBandsAdapter extends ModelAdapter {
 
   constructor(model) {

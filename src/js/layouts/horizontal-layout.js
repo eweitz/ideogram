@@ -5,6 +5,7 @@
 */
 
 import d3 from 'd3';
+import {Layout} from './layout';
 
 export class HorizontalLayout extends Layout {
 
