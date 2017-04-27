@@ -1,6 +1,9 @@
-function MetacentricChromosome(model, config, ideo) {
-  Chromosome.call(this, model, config, ideo);
-  this._class = 'MetacentricChromosome';
-}
+import {Chromosome} from './chromosome';
 
-MetacentricChromosome.prototype = Object.create(Chromosome.prototype);
+export class MetacentricChromosome extends Chromosome {
+
+  constructor(model, config, ideo) {
+    super(model, config, ideo);
+    this._class = 'MetacentricChromosome';
+  }
+}
