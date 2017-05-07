@@ -1,17 +1,4 @@
-import {Range} from './range'
-import {ModelAdapter} from './model-adapter'
-import {ModelNoBandsAdapter} from './model-no-bands-adapter'
-import {Layout} from './layouts/layout'
-import {HorizontalLayout} from './layouts/horizontal-layout'
-import {VerticalLayout} from './layouts/vertical-layout'
-import {PairedLayout} from './layouts/paired-layout'
-import {SmallLayout} from './layouts/small-layout'
-import {Ploidy} from './ploidy'
-import {Color} from './color'
-import {Chromosome} from './views/chromosome'
-import {TelocentricChromosome} from './views/telocentric-chromosome'
-import {MetacentricChromosome} from './views/metacentric-chromosome'
-// import from './lib'
+
 import {Ideogram} from './core'
 // import from './filter'
 

@@ -16244,8 +16244,11 @@ var   y0$3;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.Color = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _ploidy = require('./ploidy');
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -16255,7 +16258,7 @@ var Color = exports.Color = function () {
 
     // Ideogram config
     this._config = config;
-    this._ploidy = new Ploidy(this._config);
+    this._ploidy = new _ploidy.Ploidy(this._config);
   }
 
   _createClass(Color, [{
@@ -16295,7 +16298,7 @@ var Color = exports.Color = function () {
   return Color;
 }();
 
-},{}],3:[function(require,module,exports){
+},{"./ploidy":7}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -18756,36 +18759,10 @@ var Ideogram = exports.Ideogram = function () {
   return Ideogram;
 }();
 
-},{"./layouts/layout":6,"./model-adapter":10,"./ploidy":12,"./views/chromosome":14,"d3":1}],4:[function(require,module,exports){
-'use strict';
+},{"./layouts/layout":5,"./model-adapter":6,"./ploidy":7,"./views/chromosome":8,"d3":1}],4:[function(require,module,exports){
+"use strict";
 
-var _range = require('./range');
-
-var _modelAdapter = require('./model-adapter');
-
-var _modelNoBandsAdapter = require('./model-no-bands-adapter');
-
-var _layout = require('./layouts/layout');
-
-var _horizontalLayout = require('./layouts/horizontal-layout');
-
-var _verticalLayout = require('./layouts/vertical-layout');
-
-var _pairedLayout = require('./layouts/paired-layout');
-
-var _smallLayout = require('./layouts/small-layout');
-
-var _ploidy = require('./ploidy');
-
-var _color = require('./color');
-
-var _chromosome = require('./views/chromosome');
-
-var _telocentricChromosome = require('./views/telocentric-chromosome');
-
-var _metacentricChromosome = require('./views/metacentric-chromosome');
-
-var _core = require('./core');
+var _core = require("./core");
 
 // import from './filter'
 
@@ -18827,8 +18804,6 @@ function naturalSort(a, b) {
 }
 
 // e.g. "Homo sapiens" -> "homo-sapiens"
-
-// import from './lib'
 function slugify(value) {
   return value.toLowerCase().replace(' ', '-');
 };
@@ -18838,239 +18813,25 @@ window.slugify = slugify;
 
 window.Ideogram = _core.Ideogram;
 
-},{"./color":2,"./core":3,"./layouts/horizontal-layout":5,"./layouts/layout":6,"./layouts/paired-layout":7,"./layouts/small-layout":8,"./layouts/vertical-layout":9,"./model-adapter":10,"./model-no-bands-adapter":11,"./ploidy":12,"./range":13,"./views/chromosome":14,"./views/metacentric-chromosome":15,"./views/telocentric-chromosome":16}],5:[function(require,module,exports){
+},{"./core":3}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.HorizontalLayout = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _d = require('d3');
-
-var d3 = _interopRequireWildcard(_d);
-
-var _layout = require('./layout');
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               * Horizontal layout class
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               * Ideogram instances with horizontal layout are oriented with each chromosome
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               * starting at left and ending at right, and aligned as rows.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               */
-
-var HorizontalLayout = exports.HorizontalLayout = function (_Layout) {
-  _inherits(HorizontalLayout, _Layout);
-
-  function HorizontalLayout(config, ideo) {
-    _classCallCheck(this, HorizontalLayout);
-
-    var _this = _possibleConstructorReturn(this, (HorizontalLayout.__proto__ || Object.getPrototypeOf(HorizontalLayout)).call(this, config, ideo));
-
-    _this._class = 'HorizontalLayout';
-    _this._margin = {
-      left: 20,
-      top: 30
-    };
-    return _this;
-  }
-
-  _createClass(HorizontalLayout, [{
-    key: '_getLeftMargin',
-    value: function _getLeftMargin() {
-      var margin = _layout.Layout.prototype._getLeftMargin.call(this);
-      if (this._config.ploidy > 1) {
-        margin *= 1.8;
-      }
-
-      return margin;
-    }
-  }, {
-    key: 'rotateForward',
-    value: function rotateForward(setNumber, chrNumber, chrElement, callback) {
-      var xOffset = 30;
-
-      var ideoBox = d3.select(this._ideo.selector).node().getBoundingClientRect();
-      var chrBox = chrElement.getBoundingClientRect();
-
-      var scaleX = ideoBox.height / (chrBox.width + xOffset / 2) * 0.9;
-      var scaleY = this._getYScale();
-
-      var yOffset = (chrNumber + 1) * (this._config.chrWidth * 2 * scaleY);
-
-      var transform = 'rotate(90) ' + 'translate(' + xOffset + ', -' + yOffset + ') ' + 'scale(' + scaleX + ', ' + scaleY + ')';
-
-      d3.select(chrElement.parentNode).transition().attr("transform", transform).on('end', callback);
-
-      // Append new chromosome labels
-      var labels = this.getChromosomeLabels(chrElement);
-      d3.select(this._ideo.getSvg()).append('g').attr('class', 'tmp').selectAll('text').data(labels).enter().append('text').attr('class', function (d, i) {
-        return i === 0 && labels.length === 2 ? 'chrSetLabel' : null;
-      }).attr('x', 30).attr('y', function (d, i) {
-        return (i + 1 + labels.length % 2) * 12;
-      }).style('text-anchor', 'middle').style('opacity', 0).text(String).transition().style('opacity', 1);
-    }
-  }, {
-    key: 'rotateBack',
-    value: function rotateBack(setNumber, chrNumber, chrElement, callback) {
-      var translate = this.getChromosomeSetTranslate(setNumber);
-
-      d3.select(chrElement.parentNode).transition().attr("transform", translate).on('end', callback);
-
-      d3.selectAll(this._ideo.selector + ' g.tmp').style('opacity', 0).remove();
-    }
-  }, {
-    key: 'getHeight',
-    value: function getHeight(taxId) {
-      // Get last chromosome set offset.
-      var numChromosomes = this._config.chromosomes[taxId].length;
-      var lastSetOffset = this.getChromosomeSetYTranslate(numChromosomes - 1);
-
-      // Get last chromosome set size.
-      var lastSetSize = this._getChromosomeSetSize(numChromosomes - 1);
-
-      // Increase offset by last chromosome set size
-      lastSetOffset += lastSetSize;
-
-      return lastSetOffset + this._getAdditionalOffset() * 2;
-    }
-  }, {
-    key: 'getWidth',
-    value: function getWidth() {
-      return this._config.chrHeight + this._margin.top * 1.5;
-    }
-  }, {
-    key: 'getChromosomeSetLabelAnchor',
-    value: function getChromosomeSetLabelAnchor() {
-      return 'end';
-    }
-  }, {
-    key: 'getChromosomeBandLabelAnchor',
-    value: function getChromosomeBandLabelAnchor() {
-      return null;
-    }
-  }, {
-    key: 'getChromosomeBandTickY1',
-    value: function getChromosomeBandTickY1() {
-      return 2;
-    }
-  }, {
-    key: 'getChromosomeBandTickY2',
-    value: function getChromosomeBandTickY2() {
-      return 10;
-    }
-  }, {
-    key: 'getChromosomeBandLabelTranslate',
-    value: function getChromosomeBandLabelTranslate(band) {
-      var x = this._ideo.round(-this._tickSize + band.px.start + band.px.width / 2);
-      var y = -10;
-
-      return {
-        x: x,
-        y: y,
-        translate: 'translate(' + x + ',' + y + ')'
-      };
-    }
-  }, {
-    key: 'getChromosomeSetLabelTranslate',
-    value: function getChromosomeSetLabelTranslate() {
-      return null;
-    }
-  }, {
-    key: 'getChromosomeSetTranslate',
-    value: function getChromosomeSetTranslate(setNumber) {
-      var leftMargin = this._getLeftMargin();
-      var chromosomeSetYTranslate = this.getChromosomeSetYTranslate(setNumber);
-      return 'translate(' + leftMargin + ', ' + chromosomeSetYTranslate + ')';
-    }
-  }, {
-    key: 'getChromosomeSetYTranslate',
-    value: function getChromosomeSetYTranslate(setNumber) {
-      // If no detailed description provided just use one formula for all cases.
-      if (!this._config.ploidyDesc) {
-        return this._config.chrMargin * (setNumber + 1);
-      }
-
-      // Id detailed description provided start to calculate offsets
-      //  for each chromosome set separately. This should be done only once.
-      if (!this._translate) {
-        // First offset equals to zero.
-        this._translate = [1];
-
-        // Loop through description set
-        for (var i = 1; i < this._config.ploidyDesc.length; i++) {
-          this._translate[i] = this._translate[i - 1] + this._getChromosomeSetSize(i - 1);
-        }
-      }
-
-      return this._translate[setNumber];
-    }
-  }, {
-    key: 'getChromosomeSetLabelXPosition',
-    value: function getChromosomeSetLabelXPosition(i) {
-      if (this._config.ploidy === 1) {
-        return this.getChromosomeLabelXPosition(i);
-      } else {
-        return -20;
-      }
-    }
-  }, {
-    key: 'getChromosomeSetLabelYPosition',
-    value: function getChromosomeSetLabelYPosition(i) {
-      var setSize = this._ploidy.getSetSize(i),
-          config = this._config,
-          chrMargin = config.chrMargin,
-          chrWidth = config.chrWidth;
-
-      if (config.ploidy === 1) {
-        y = chrWidth / 2 + 3;
-      } else {
-        y = setSize * chrMargin / 2;
-      }
-
-      return y;
-    }
-  }, {
-    key: 'getChromosomeLabelXPosition',
-    value: function getChromosomeLabelXPosition() {
-      return -8;
-    }
-  }, {
-    key: 'getChromosomeLabelYPosition',
-    value: function getChromosomeLabelYPosition() {
-      return this._config.chrWidth;
-    }
-  }]);
-
-  return HorizontalLayout;
-}(_layout.Layout);
-
-},{"./layout":6,"d3":1}],6:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.Layout = undefined;
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _verticalLayout = require('./vertical-layout');
-
-var _horizontalLayout = require('./horizontal-layout');
-
-var _pairedLayout = require('./paired-layout');
-
-var _smallLayout = require('./small-layout');
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+// import {VerticalLayout} from './vertical-layout';
+// import {HorizontalLayout} from './horizontal-layout';
+// import {PairedLayout} from './paired-layout';
+// import {SmallLayout} from './small-layout';
 
 var Layout = exports.Layout = function () {
   function Layout(config, ideo) {
@@ -19302,15 +19063,15 @@ var Layout = exports.Layout = function () {
     key: 'getInstance',
     value: function getInstance(config, ideo) {
       if ('perspective' in config && config.perspective === 'comparative') {
-        return new _pairedLayout.PairedLayout(config, ideo);
+        return new PairedLayout(config, ideo);
       } else if ('rows' in config && config.rows > 1) {
-        return new _smallLayout.SmallLayout(config, ideo);
+        return new SmallLayout(config, ideo);
       } else if (config.orientation === 'vertical') {
-        return new _verticalLayout.VerticalLayout(config, ideo);
+        return new VerticalLayout(config, ideo);
       } else if (config.orientation === 'horizontal') {
-        return new _horizontalLayout.HorizontalLayout(config, ideo);
+        return new HorizontalLayout(config, ideo);
       } else {
-        return new _verticalLayout.VerticalLayout(config, ideo);
+        return new VerticalLayout(config, ideo);
       }
     }
   }]);
@@ -19318,48 +19079,206 @@ var Layout = exports.Layout = function () {
   return Layout;
 }();
 
-},{"./horizontal-layout":5,"./paired-layout":7,"./small-layout":8,"./vertical-layout":9}],7:[function(require,module,exports){
-'use strict';
+var HorizontalLayout = exports.HorizontalLayout = function (_Layout) {
+  _inherits(HorizontalLayout, _Layout);
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.PairedLayout = undefined;
+  function HorizontalLayout(config, ideo) {
+    _classCallCheck(this, HorizontalLayout);
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+    var _this = _possibleConstructorReturn(this, (HorizontalLayout.__proto__ || Object.getPrototypeOf(HorizontalLayout)).call(this, config, ideo));
 
-var _d = require('d3');
+    _this._class = 'HorizontalLayout';
+    _this._margin = {
+      left: 20,
+      top: 30
+    };
+    return _this;
+  }
 
-var d3 = _interopRequireWildcard(_d);
+  _createClass(HorizontalLayout, [{
+    key: '_getLeftMargin',
+    value: function _getLeftMargin() {
+      var margin = Layout.prototype._getLeftMargin.call(this);
+      if (this._config.ploidy > 1) {
+        margin *= 1.8;
+      }
 
-var _layout = require('./layout');
+      return margin;
+    }
+  }, {
+    key: 'rotateForward',
+    value: function rotateForward(setNumber, chrNumber, chrElement, callback) {
+      var xOffset = 30;
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+      var ideoBox = d3.select(this._ideo.selector).node().getBoundingClientRect();
+      var chrBox = chrElement.getBoundingClientRect();
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+      var scaleX = ideoBox.height / (chrBox.width + xOffset / 2) * 0.9;
+      var scaleY = this._getYScale();
 
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+      var yOffset = (chrNumber + 1) * (this._config.chrWidth * 2 * scaleY);
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /*
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               * Paired layout class
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               * Ideograms with paired layout group each chromosome in a chromosome set.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               * This enables ploidy support beyond the default haploid; e.g. diploid genomes.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               */
+      var transform = 'rotate(90) ' + 'translate(' + xOffset + ', -' + yOffset + ') ' + 'scale(' + scaleX + ', ' + scaleY + ')';
 
-var PairedLayout = exports.PairedLayout = function (_Layout) {
-  _inherits(PairedLayout, _Layout);
+      d3.select(chrElement.parentNode).transition().attr("transform", transform).on('end', callback);
+
+      // Append new chromosome labels
+      var labels = this.getChromosomeLabels(chrElement);
+      d3.select(this._ideo.getSvg()).append('g').attr('class', 'tmp').selectAll('text').data(labels).enter().append('text').attr('class', function (d, i) {
+        return i === 0 && labels.length === 2 ? 'chrSetLabel' : null;
+      }).attr('x', 30).attr('y', function (d, i) {
+        return (i + 1 + labels.length % 2) * 12;
+      }).style('text-anchor', 'middle').style('opacity', 0).text(String).transition().style('opacity', 1);
+    }
+  }, {
+    key: 'rotateBack',
+    value: function rotateBack(setNumber, chrNumber, chrElement, callback) {
+      var translate = this.getChromosomeSetTranslate(setNumber);
+
+      d3.select(chrElement.parentNode).transition().attr("transform", translate).on('end', callback);
+
+      d3.selectAll(this._ideo.selector + ' g.tmp').style('opacity', 0).remove();
+    }
+  }, {
+    key: 'getHeight',
+    value: function getHeight(taxId) {
+      // Get last chromosome set offset.
+      var numChromosomes = this._config.chromosomes[taxId].length;
+      var lastSetOffset = this.getChromosomeSetYTranslate(numChromosomes - 1);
+
+      // Get last chromosome set size.
+      var lastSetSize = this._getChromosomeSetSize(numChromosomes - 1);
+
+      // Increase offset by last chromosome set size
+      lastSetOffset += lastSetSize;
+
+      return lastSetOffset + this._getAdditionalOffset() * 2;
+    }
+  }, {
+    key: 'getWidth',
+    value: function getWidth() {
+      return this._config.chrHeight + this._margin.top * 1.5;
+    }
+  }, {
+    key: 'getChromosomeSetLabelAnchor',
+    value: function getChromosomeSetLabelAnchor() {
+      return 'end';
+    }
+  }, {
+    key: 'getChromosomeBandLabelAnchor',
+    value: function getChromosomeBandLabelAnchor() {
+      return null;
+    }
+  }, {
+    key: 'getChromosomeBandTickY1',
+    value: function getChromosomeBandTickY1() {
+      return 2;
+    }
+  }, {
+    key: 'getChromosomeBandTickY2',
+    value: function getChromosomeBandTickY2() {
+      return 10;
+    }
+  }, {
+    key: 'getChromosomeBandLabelTranslate',
+    value: function getChromosomeBandLabelTranslate(band) {
+      var x = this._ideo.round(-this._tickSize + band.px.start + band.px.width / 2);
+      var y = -10;
+
+      return {
+        x: x,
+        y: y,
+        translate: 'translate(' + x + ',' + y + ')'
+      };
+    }
+  }, {
+    key: 'getChromosomeSetLabelTranslate',
+    value: function getChromosomeSetLabelTranslate() {
+      return null;
+    }
+  }, {
+    key: 'getChromosomeSetTranslate',
+    value: function getChromosomeSetTranslate(setNumber) {
+      var leftMargin = this._getLeftMargin();
+      var chromosomeSetYTranslate = this.getChromosomeSetYTranslate(setNumber);
+      return 'translate(' + leftMargin + ', ' + chromosomeSetYTranslate + ')';
+    }
+  }, {
+    key: 'getChromosomeSetYTranslate',
+    value: function getChromosomeSetYTranslate(setNumber) {
+      // If no detailed description provided just use one formula for all cases.
+      if (!this._config.ploidyDesc) {
+        return this._config.chrMargin * (setNumber + 1);
+      }
+
+      // Id detailed description provided start to calculate offsets
+      //  for each chromosome set separately. This should be done only once.
+      if (!this._translate) {
+        // First offset equals to zero.
+        this._translate = [1];
+
+        // Loop through description set
+        for (var i = 1; i < this._config.ploidyDesc.length; i++) {
+          this._translate[i] = this._translate[i - 1] + this._getChromosomeSetSize(i - 1);
+        }
+      }
+
+      return this._translate[setNumber];
+    }
+  }, {
+    key: 'getChromosomeSetLabelXPosition',
+    value: function getChromosomeSetLabelXPosition(i) {
+      if (this._config.ploidy === 1) {
+        return this.getChromosomeLabelXPosition(i);
+      } else {
+        return -20;
+      }
+    }
+  }, {
+    key: 'getChromosomeSetLabelYPosition',
+    value: function getChromosomeSetLabelYPosition(i) {
+      var setSize = this._ploidy.getSetSize(i),
+          config = this._config,
+          chrMargin = config.chrMargin,
+          chrWidth = config.chrWidth;
+
+      if (config.ploidy === 1) {
+        y = chrWidth / 2 + 3;
+      } else {
+        y = setSize * chrMargin / 2;
+      }
+
+      return y;
+    }
+  }, {
+    key: 'getChromosomeLabelXPosition',
+    value: function getChromosomeLabelXPosition() {
+      return -8;
+    }
+  }, {
+    key: 'getChromosomeLabelYPosition',
+    value: function getChromosomeLabelYPosition() {
+      return this._config.chrWidth;
+    }
+  }]);
+
+  return HorizontalLayout;
+}(Layout);
+
+var PairedLayout = exports.PairedLayout = function (_Layout2) {
+  _inherits(PairedLayout, _Layout2);
 
   function PairedLayout(config, ideo) {
     _classCallCheck(this, PairedLayout);
 
-    var _this = _possibleConstructorReturn(this, (PairedLayout.__proto__ || Object.getPrototypeOf(PairedLayout)).call(this, config, ideo));
+    var _this2 = _possibleConstructorReturn(this, (PairedLayout.__proto__ || Object.getPrototypeOf(PairedLayout)).call(this, config, ideo));
 
-    _this._class = 'PairedLayout';
+    _this2._class = 'PairedLayout';
 
-    _this._margin = {
+    _this2._margin = {
       left: 30
     };
-    return _this;
+    return _this2;
   }
 
   _createClass(PairedLayout, [{
@@ -19494,47 +19413,23 @@ var PairedLayout = exports.PairedLayout = function (_Layout) {
   }]);
 
   return PairedLayout;
-}(_layout.Layout);
+}(Layout);
 
-},{"./layout":6,"d3":1}],8:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.SmallLayout = undefined;
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _d = require('d3');
-
-var d3 = _interopRequireWildcard(_d);
-
-var _layout = require('./layout');
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var SmallLayout = exports.SmallLayout = function (_Layout) {
-  _inherits(SmallLayout, _Layout);
+var SmallLayout = exports.SmallLayout = function (_Layout3) {
+  _inherits(SmallLayout, _Layout3);
 
   function SmallLayout(config, ideo) {
     _classCallCheck(this, SmallLayout);
 
-    var _this = _possibleConstructorReturn(this, (SmallLayout.__proto__ || Object.getPrototypeOf(SmallLayout)).call(this, config, ideo));
+    var _this3 = _possibleConstructorReturn(this, (SmallLayout.__proto__ || Object.getPrototypeOf(SmallLayout)).call(this, config, ideo));
 
-    _this._class = 'SmallLayout';
+    _this3._class = 'SmallLayout';
 
-    _this._margin = {
+    _this3._margin = {
       left: 36.5,
       top: 10
     };
-    return _this;
+    return _this3;
   }
 
   _createClass(SmallLayout, [{
@@ -19623,51 +19518,23 @@ var SmallLayout = exports.SmallLayout = function (_Layout) {
   }]);
 
   return SmallLayout;
-}(_layout.Layout);
+}(Layout);
 
-},{"./layout":6,"d3":1}],9:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.VerticalLayout = undefined;
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _d = require('d3');
-
-var d3 = _interopRequireWildcard(_d);
-
-var _layout = require('./layout');
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               * Vertical layout class
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               * Ideogram instances with vertical layout are oriented with each chromosome
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               * starting at top and ending at bottom, and aligned as columns.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               */
-
-var VerticalLayout = exports.VerticalLayout = function (_Layout) {
-  _inherits(VerticalLayout, _Layout);
+var VerticalLayout = exports.VerticalLayout = function (_Layout4) {
+  _inherits(VerticalLayout, _Layout4);
 
   function VerticalLayout(config, ideo) {
     _classCallCheck(this, VerticalLayout);
 
-    var _this = _possibleConstructorReturn(this, (VerticalLayout.__proto__ || Object.getPrototypeOf(VerticalLayout)).call(this, config, ideo));
+    var _this4 = _possibleConstructorReturn(this, (VerticalLayout.__proto__ || Object.getPrototypeOf(VerticalLayout)).call(this, config, ideo));
 
-    _this._class = 'VerticalLayout';
+    _this4._class = 'VerticalLayout';
     // Layout margins
-    _this._margin = {
+    _this4._margin = {
       top: 30,
       left: 15
     };
-    return _this;
+    return _this4;
   }
 
   _createClass(VerticalLayout, [{
@@ -19788,9 +19655,9 @@ var VerticalLayout = exports.VerticalLayout = function (_Layout) {
   }]);
 
   return VerticalLayout;
-}(_layout.Layout);
+}(Layout);
 
-},{"./layout":6,"d3":1}],10:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -19833,66 +19700,7 @@ var ModelAdapter = exports.ModelAdapter = function () {
   return ModelAdapter;
 }();
 
-},{}],11:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.ModelNoBandsAdapter = undefined;
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _modelAdapter = require('./model-adapter');
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var ModelNoBandsAdapter = exports.ModelNoBandsAdapter = function (_ModelAdapter) {
-  _inherits(ModelNoBandsAdapter, _ModelAdapter);
-
-  function ModelNoBandsAdapter(model) {
-    _classCallCheck(this, ModelNoBandsAdapter);
-
-    var _this = _possibleConstructorReturn(this, (ModelNoBandsAdapter.__proto__ || Object.getPrototypeOf(ModelNoBandsAdapter)).call(this, model));
-
-    _this._class = 'ModelNoBandsAdapter';
-    return _this;
-  }
-
-  _createClass(ModelNoBandsAdapter, [{
-    key: 'getModel',
-    value: function getModel() {
-      this._model.bands = [];
-
-      // If chromosome width more, then 1 add single band to bands array
-      if (this._model.width > 1) {
-        this._model.bands.push({
-          name: 'q',
-          px: {
-            start: 0,
-            stop: this._model.width,
-            width: this._model.width
-          }
-        });
-      }
-
-      return this._model;
-    }
-  }, {
-    key: 'getCssClass',
-    value: function getCssClass() {
-      return 'noBands';
-    }
-  }]);
-
-  return ModelNoBandsAdapter;
-}(_modelAdapter.ModelAdapter);
-
-},{"./model-adapter":10}],12:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -20020,84 +19828,21 @@ var Ploidy = exports.Ploidy = function () {
   return Ploidy;
 }();
 
-},{}],13:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.TelocentricChromosome = exports.MetacentricChromosome = exports.Chromosome = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+var _color = require('./../color');
 
-var Range = exports.Range = function () {
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
-  /**
-  * Chromosome range.
-  * @public
-  * @class
-  * @param {Object} data - range data.
-  * @param {Integer} data.chr - chromosome index.
-  * @param {Integer[]} [data.ploidy] - array which controls on which chromosomes range should appear in case of ploidy.
-  * @param {Integer} data.start - range start.
-  * @param {Integer} data.stop - range end.
-  * @param {String} data.color - range color.
-  */
-  function Range(data) {
-    _classCallCheck(this, Range);
-
-    this._data = data;
-  }
-
-  _createClass(Range, [{
-    key: 'getStart',
-    value: function getStart() {
-      return this._data.start;
-    }
-  }, {
-    key: 'getStop',
-    value: function getStop() {
-      return this._data.stop;
-    }
-  }, {
-    key: 'getLength',
-    value: function getLength() {
-      return this._data.stop - this._data.start;
-    }
-  }, {
-    key: 'getColor',
-    value: function getColor(chrNumber) {
-      if (!('ploidy' in this._data)) {
-        return this._getColor(chrNumber);
-      } else if ('ploidy' in this._data && this._data.ploidy[chrNumber]) {
-        return this._getColor(chrNumber);
-      } else {
-        return 'transparent';
-      }
-    }
-  }, {
-    key: '_getColor',
-    value: function _getColor(chrNumber) {
-      if (Array.isArray(this._data.color)) {
-        return this._data.color[chrNumber];
-      } else {
-        return this._data.color;
-      }
-    }
-  }]);
-
-  return Range;
-}();
-
-},{}],14:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -20109,7 +19854,7 @@ var Chromosome = exports.Chromosome = function () {
     this._model = this._adapter.getModel();
     this._config = config;
     this._ideo = ideo;
-    this._color = new Color(this._config);
+    this._color = new _color.Color(this._config);
     this._bumpCoefficient = 5;
   }
 
@@ -20322,7 +20067,7 @@ var Chromosome = exports.Chromosome = function () {
         var start = self._ideo.round(d.px.start);
         var length = self._ideo.round(d.px.width);
 
-        x = start + length;
+        var x = start + length;
 
         return "M " + start + ", 0" + "l " + length + " 0 " + "l 0 " + self._config.chrWidth + " " + "l -" + length + " 0 z";
       }).style('fill', fill);
@@ -20371,22 +20116,6 @@ var Chromosome = exports.Chromosome = function () {
   return Chromosome;
 }();
 
-},{}],15:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.MetacentricChromosome = undefined;
-
-var _chromosome = require('./chromosome');
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
 var MetacentricChromosome = exports.MetacentricChromosome = function (_Chromosome) {
   _inherits(MetacentricChromosome, _Chromosome);
 
@@ -20400,37 +20129,19 @@ var MetacentricChromosome = exports.MetacentricChromosome = function (_Chromosom
   }
 
   return MetacentricChromosome;
-}(_chromosome.Chromosome);
+}(Chromosome);
 
-},{"./chromosome":14}],16:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.TelocentricChromosome = undefined;
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _chromosome = require('./chromosome');
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var TelocentricChromosome = exports.TelocentricChromosome = function (_Chromosome) {
-  _inherits(TelocentricChromosome, _Chromosome);
+var TelocentricChromosome = exports.TelocentricChromosome = function (_Chromosome2) {
+  _inherits(TelocentricChromosome, _Chromosome2);
 
   function TelocentricChromosome(model, config, ideo) {
     _classCallCheck(this, TelocentricChromosome);
 
-    var _this = _possibleConstructorReturn(this, (TelocentricChromosome.__proto__ || Object.getPrototypeOf(TelocentricChromosome)).call(this, model, config, ideo));
+    var _this2 = _possibleConstructorReturn(this, (TelocentricChromosome.__proto__ || Object.getPrototypeOf(TelocentricChromosome)).call(this, model, config, ideo));
 
-    _this._class = 'TelocentricChromosome';
-    _this._pArmOffset = 3;
-    return _this;
+    _this2._class = 'TelocentricChromosome';
+    _this2._pArmOffset = 3;
+    return _this2;
   }
 
   _createClass(TelocentricChromosome, [{
@@ -20468,8 +20179,8 @@ var TelocentricChromosome = exports.TelocentricChromosome = function (_Chromosom
   }]);
 
   return TelocentricChromosome;
-}(_chromosome.Chromosome);
+}(Chromosome);
 
-},{"./chromosome":14}]},{},[4])
+},{"./../color":2}]},{},[4])
 
 //# sourceMappingURL=ideogram.js.map

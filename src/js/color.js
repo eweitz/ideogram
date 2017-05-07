@@ -1,3 +1,5 @@
+import {Ploidy} from './ploidy';
+
 export class Color {
 
   constructor(config) {
