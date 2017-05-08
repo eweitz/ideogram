@@ -4,6 +4,10 @@
 // import {PairedLayout} from './paired-layout';
 // import {SmallLayout} from './small-layout';
 
+import * as d3 from 'd3';
+
+import {ChromosomeUtil} from './../views/chromosome-util';
+
 export class Layout {
 
   constructor(config, ideo) {
