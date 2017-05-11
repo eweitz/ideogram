@@ -566,7 +566,7 @@ export class Ideogram {
   * Stalks are small lines that visually connect labels to their bands.
   */
   drawBandLabels(chromosomes) {
-    var i, chr, chrs, taxid, ideo, chrModel;
+    var i, chr, chrs, taxid, ideo, chrModel, chrIndex, textOffsets;
 
     ideo = this;
 
@@ -578,7 +578,7 @@ export class Ideogram {
       }
     }
 
-    var textOffsets = {};
+    textOffsets = {};
 
     chrIndex = 0;
     for (i = 0; i < chrs.length; i++) {
@@ -668,6 +668,8 @@ export class Ideogram {
         prevHiddenBoxIndex,
         xLeft,
         prevLabelXRight,
+        prevTextBoxLeft,
+        prevTextBoxWidth,
         textPadding;
 
       overlappingLabelXRight = 0;
@@ -728,7 +730,7 @@ export class Ideogram {
   // Rotates chromosome labels by 90 degrees, e.g. upon clicking a chromosome to focus.
   rotateChromosomeLabels(chr, chrIndex, orientation, scale) {
     var chrMargin, chrWidth, ideo, x, y,
-      numAnnotTracks, scaleSvg, tracksHeight;
+      numAnnotTracks, scaleSvg, tracksHeight, chrMargin2;
 
     chrWidth = this.config.chrWidth;
     chrMargin = this.config.chrMargin * chrIndex;
@@ -1000,7 +1002,7 @@ export class Ideogram {
     var r1, r2,
       syntenies,
       i, color, opacity,
-      regionID,
+      regionID, regions, syntenicRegion,
       ideo = this;
 
     syntenies = d3.select(ideo.selector)
@@ -1712,7 +1714,7 @@ export class Ideogram {
       org, orgs, i,
       taxidInit, tmpChrs,
       assembly, chromosomes,
-      multiorganism;
+      multiorganism, promise;
 
     taxidInit = 'taxid' in ideo.config;
 
@@ -1811,7 +1813,7 @@ export class Ideogram {
                   seenChrs[chr] = 1;
                 }
               }
-              chromsomes = chromosomes.sort(ideo.sortChromosomes);
+              chromosomes = chromosomes.sort(ideo.sortChromosomes);
               asmAndChrArray.push(chromosomes);
               ideo.coordinateSystem = 'iscn';
               return asmAndChrArray;
@@ -1889,7 +1891,7 @@ export class Ideogram {
 */
   getAssemblyAndChromosomesFromEutils(callback) {
     var asmAndChrArray, // [assembly_accession, chromosome_objects_array]
-      assemblyAccession, chromosomes, asmSearch,
+      organism, assemblyAccession, chromosomes, asmSearch,
       asmUid, asmSummary,
       rsUid, nuccoreLink,
       links, ntSummary,
@@ -1902,12 +1904,12 @@ export class Ideogram {
     chromosomes = [];
 
     asmSearch =
-    ideo.esearch +
-    '&db=assembly' +
-    '&term=%22' + organism + '%22[organism]' +
-      'AND%20(%22latest%20refseq%22[filter])%20' +
-      'AND%20(%22chromosome%20level%22[filter]%20' +
-      'OR%20%22complete%20genome%22[filter])';
+      ideo.esearch +
+      '&db=assembly' +
+      '&term=%22' + organism + '%22[organism]' +
+        'AND%20(%22latest%20refseq%22[filter])%20' +
+        'AND%20(%22chromosome%20level%22[filter]%20' +
+        'OR%20%22complete%20genome%22[filter])';
 
     var promise = d3.promise.json(asmSearch);
 
