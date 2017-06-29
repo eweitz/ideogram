@@ -15,10 +15,14 @@ function compile(watch) {
     )
   );
 
+  bundler.transform({
+    global: true
+  }, 'uglifyify');
+
   function rebundle() {
     bundler.bundle()
       .on('error', function(err) { console.error(err); this.emit('end'); })
-      .pipe(source('ideogram.js'))
+      .pipe(source('ideogram.min.js'))
       .pipe(buffer())
       .pipe(sourcemaps.init({ loadMaps: true }))
       .pipe(sourcemaps.write('./'))

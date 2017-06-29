@@ -1,4 +1,5 @@
 import {Color} from './../color';
+import {Range} from './../range';
 
 export class Chromosome {
 
@@ -77,24 +78,24 @@ export class Chromosome {
 
     // Render chromosome border
     container.append('g')
-          .attr('class', 'chromosome-border')
-          .selectAll('path')
-          .data(clipPath)
-          .enter()
-          .append('path')
-          .attr('fill', fill)
-          .style('fill-opacity', opacity)
-          .attr('stroke', function(d, i) {
-            return self._color.getBorderColor(chrSetNumber, chrNumber, i);
-          })
-          .attr('stroke-width', function(d) {
-            return ('strokeWidth' in d ? d.strokeWidth : 1);
-          })
-          .attr('d', function(d) {
-            return d.path;
-          }).attr('class', function(d) {
-            return d.class;
-          });
+      .attr('class', 'chromosome-border')
+      .selectAll('path')
+      .data(clipPath)
+      .enter()
+      .append('path')
+      .attr('fill', fill)
+      .style('fill-opacity', opacity)
+      .attr('stroke', function(d, i) {
+        return self._color.getBorderColor(chrSetNumber, chrNumber, i);
+      })
+      .attr('stroke-width', function(d) {
+        return ('strokeWidth' in d ? d.strokeWidth : 1);
+      })
+      .attr('d', function(d) {
+        return d.path;
+      }).attr('class', function(d) {
+        return d.class;
+      });
 
     return clipPath;
   };
@@ -110,29 +111,28 @@ export class Chromosome {
       return new Range(range);
     });
 
-    var rangesContainer = container.append('g')
-          .attr('class', 'range-set');
+    var rangesContainer = container.append('g').attr('class', 'range-set');
 
     var self = this;
     var ideo = self._ideo;
     var bandsXOffset = ideo._bandsXOffset;
 
     rangesContainer.selectAll('rect.range')
-          .data(rangeSet)
-          .enter()
-          .append('rect')
-          .attr('class', 'range')
-          .attr('x', function(range) {
-            var startPx = ideo.convertBpToPx(self._model, range.getStart());
-            return startPx - bandsXOffset;
-          }).attr('y', 0)
-          .attr('width', function(range) {
-            var lengthPx = ideo.convertBpToPx(self._model, range.getLength());
-            return lengthPx - bandsXOffset;
-          }).attr('height', this._config.chrWidth)
-          .style('fill', function(range) {
-            return range.getColor(chrNumber);
-          });
+      .data(rangeSet)
+      .enter()
+      .append('rect')
+      .attr('class', 'range')
+      .attr('x', function(range) {
+        var startPx = ideo.convertBpToPx(self._model, range.getStart());
+        return startPx - bandsXOffset;
+      }).attr('y', 0)
+      .attr('width', function(range) {
+        var lengthPx = ideo.convertBpToPx(self._model, range.getLength());
+        return lengthPx - bandsXOffset;
+      }).attr('height', this._config.chrWidth)
+      .style('fill', function(range) {
+        return range.getColor(chrNumber);
+      });
   };
 
   // Get chromosome's shape main values

@@ -960,7 +960,7 @@ export class Ideogram {
   * Bp-to-pixel scales differ among cytogenetic bands.
   */
   convertPxToBp(chr, px) {
-    var i, band, pxToIscnScale, iscn,
+    var i, band, pxToIscnScale, iscn, bp, pxLength,
       pxStart, pxStop, iscnStart, iscnStop, bpLength, iscnLength;
 
     for (i = 0; i < chr.bands.length; i++) {
@@ -1263,10 +1263,11 @@ export class Ideogram {
     var t0 = new Date().getTime();
 
     var i, j, chr,
-      chrModels, chrPxStop, px,
+      chrModel, chrModels, chrPxStop, px, bp,
       chrAnnots, chrName, chrIndex, annot,
       bars, bar, barPx, nextBarPx, barWidth,
-      maxAnnotsPerBar, color,
+      maxAnnotsPerBar, color, lastBand,
+      numBins, barAnnots, barCount, height,
       firstGet = false,
       histogramScaling,
       ideo = this;
@@ -1407,7 +1408,7 @@ export class Ideogram {
 * running parallel to each chromosome.
 */
   drawProcessedAnnots(annots) {
-    var chrWidth, layout,
+    var chrMargin, chrWidth, layout,
       annotHeight, triangle, circle, r, chrAnnot,
       x1, x2, y1, y2,
       filledAnnots,
@@ -2201,7 +2202,7 @@ export class Ideogram {
   * execute callbacks defined by client code
   */
   processBandData() {
-    var bandsArray, maxLength, j, k, chromosome, bands,
+    var bandsArray, maxLength, i, j, k, chromosome, bands,
       chrLength, chr,
       bandData, bandsByChr,
       taxid, taxids, chrs, chrsByTaxid,
