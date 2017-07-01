@@ -224,6 +224,13 @@ export class Ideogram {
   }
 
   /**
+  * Enable use of D3 in client apps, via "d3 = Ideogram.d3"
+  */
+  static get d3() {
+    return d3;
+  }
+
+  /**
   * Gets chromosome band data from a
   * TSV file, or, if band data is prefetched, from an array
   *
