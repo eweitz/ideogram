@@ -14,10 +14,10 @@ function compile(watch) {
       })
     )
   );
-
-  bundler.transform({
-    global: true
-  }, 'uglifyify');
+  // 
+  // bundler.transform({
+  //   global: true
+  // }, 'uglifyify');
 
   function rebundle() {
     bundler.bundle()
