@@ -2,6 +2,10 @@
 
 import * as d3 from 'd3';
 
+import * as d3promise from 'd3.promise';
+
+d3.promise = d3promise;
+
 import {Ploidy} from './ploidy';
 import {Layout} from './layouts/layout';
 import {ModelAdapter} from './model-adapter';
