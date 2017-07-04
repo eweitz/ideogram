@@ -1,15 +1,15 @@
 // Developed by Eric Weitz (https://github.com/eweitz)
 
 import * as d3 from 'd3';
-
 import * as d3promise from 'd3.promise';
-
-d3.promise = d3promise;
+import {Promise} from 'es6-promise';
 
 import {Ploidy} from './ploidy';
 import {Layout} from './layouts/layout';
 import {ModelAdapter} from './model-adapter';
 import {Chromosome} from './views/chromosome';
+
+d3.promise = d3promise;
 
 export class Ideogram {
 
@@ -1518,7 +1518,7 @@ export class Ideogram {
     } else if (layout === 'histogram') {
       chrAnnot.append('polygon')
         // .attr('id', function(d, i) { return d.id; })
-        .attr('zclass', 'annot')
+        .attr('class', 'annot')
         .attr('points', function(d) {
           x1 = d.px + ideo.bump;
           x2 = d.px + ideo.config.barWidth + ideo.bump;
