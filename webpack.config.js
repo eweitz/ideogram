@@ -7,6 +7,7 @@ module.exports = {
     filename: 'ideogram.min.js',
     path: path.resolve(__dirname, 'dist/js')
   },
+  devtool: "source-map",
   module: {
     rules: [
       {
