@@ -1373,8 +1373,8 @@ export class Ideogram {
       ideo.maxAnnotsPerBar[chr] = maxAnnotsPerBar;
     }
 
-  // Set each bar's height to be proportional to
-  // the height of the bar with the most annotations
+    // Set each bar's height to be proportional to
+    // the height of the bar with the most annotations
     for (i = 0; i < bars.length; i++) {
       annots = bars[i].annots;
       for (j = 0; j < annots.length; j++) {
@@ -1395,11 +1395,11 @@ export class Ideogram {
     return bars;
   }
 
-/**
-* Fills out annotations data structure such that its top-level list of arrays
-* matches that of this ideogram's chromosomes list in order and number
-* Fixes https://github.com/eweitz/ideogram/issues/66
-*/
+  /**
+  * Fills out annotations data structure such that its top-level list of arrays
+  * matches that of this ideogram's chromosomes list in order and number
+  * Fixes https://github.com/eweitz/ideogram/issues/66
+  */
   fillAnnots(annots) {
     var filledAnnots, chrs, chrArray, i, chr, annot, chrIndex;
 
@@ -1424,12 +1424,12 @@ export class Ideogram {
     return filledAnnots;
   }
 
-/**
-* Draws genome annotations on chromosomes.
-* Annotations can be rendered as either overlaid directly
-* on a chromosome, or along one or more "tracks"
-* running parallel to each chromosome.
-*/
+  /**
+  * Draws genome annotations on chromosomes.
+  * Annotations can be rendered as either overlaid directly
+  * on a chromosome, or along one or more "tracks"
+  * running parallel to each chromosome.
+  */
   drawProcessedAnnots(annots) {
     var chrMargin, chrWidth, layout,
       annotHeight, triangle, circle, r, chrAnnot,
@@ -1456,10 +1456,10 @@ export class Ideogram {
     (2 * annotHeight) +
     ' l ' + (2 * annotHeight) + ' 0 z';
 
-  // From http://stackoverflow.com/a/10477334, with a minor change ("m -r, r")
-  // Circles are supported natively via <circle>, but having it as a path
-  // simplifies handling triangles, circles and other shapes in the same
-  // D3 call
+    // From http://stackoverflow.com/a/10477334, with a minor change ("m -r, r")
+    // Circles are supported natively via <circle>, but having it as a path
+    // simplifies handling triangles, circles and other shapes in the same
+    // D3 call
     r = annotHeight;
     circle =
     'm -' + r + ', ' + r +
@@ -1469,12 +1469,12 @@ export class Ideogram {
     filledAnnots = ideo.fillAnnots(annots);
 
     chrAnnot = d3.selectAll(ideo.selector + ' .chromosome')
-    .data(filledAnnots)
-      .selectAll('path.annot')
-      .data(function(d) {
-        return d.annots;
-      })
-      .enter();
+      .data(filledAnnots)
+        .selectAll('path.annot')
+        .data(function(d) {
+          return d.annots;
+        })
+        .enter();
 
     if (layout === 'tracks') {
       chrAnnot
@@ -1593,16 +1593,16 @@ export class Ideogram {
     ideo.selectedRegion = {from: from, to: to, extent: (to - from)};
 
     ideo.brush = d3.brushX()
-    .extent([[xOffset, 0], [length + xOffset, width]])
-    .on('brush', onBrushMove);
+      .extent([[xOffset, 0], [length + xOffset, width]])
+      .on('brush', onBrushMove);
 
     var yTranslate = this._layout.getChromosomeSetYTranslate(0);
     var yOffset = yTranslate + (ideo.config.chrWidth - width) / 2;
     d3.select(ideo.selector).append('g')
-    .attr('class', 'brush')
-    .attr('transform', 'translate(0, ' + yOffset + ')')
-    .call(ideo.brush)
-    .call(ideo.brush.move, [x0, x1]);
+      .attr('class', 'brush')
+      .attr('transform', 'translate(0, ' + yOffset + ')')
+      .call(ideo.brush)
+      .call(ideo.brush.move, [x0, x1]);
 
     function onBrushMove() {
       var extent = d3.event.selection.map(xScale.invert),
@@ -1617,11 +1617,11 @@ export class Ideogram {
     }
   }
 
-/**
-* Called when Ideogram has finished initializing.
-* Accounts for certain ideogram properties not being set until
-* asynchronous requests succeed, etc.
-*/
+  /**
+  * Called when Ideogram has finished initializing.
+  * Accounts for certain ideogram properties not being set until
+  * asynchronous requests succeed, etc.
+  */
   onLoad() {
     call(this.onLoadCallback);
   }
@@ -1630,9 +1630,9 @@ export class Ideogram {
     call(this.onDrawAnnotsCallback);
   }
 
-/*
-* Returns SVG gradients that give chromosomes a polished look
-*/
+  /*
+  * Returns SVG gradients that give chromosomes a polished look
+  */
   getBandColorGradients() {
     var colors,
       stain, color1, color2, color3,
@@ -1640,15 +1640,15 @@ export class Ideogram {
       gradients = '';
 
     colors = [
-    ['gneg', '#FFF', '#FFF', '#DDD'],
-    ['gpos25', '#C8C8C8', '#DDD', '#BBB'],
-    ['gpos33', '#BBB', '#BBB', '#AAA'],
-    ['gpos50', '#999', '#AAA', '#888'],
-    ['gpos66', '#888', '#888', '#666'],
-    ['gpos75', '#777', '#777', '#444'],
-    ['gpos100', '#444', '#666', '#000'],
-    ['acen', '#FEE', '#FEE', '#FDD'],
-    ['noBands', '#BBB', '#BBB', '#AAA']
+      ['gneg', '#FFF', '#FFF', '#DDD'],
+      ['gpos25', '#C8C8C8', '#DDD', '#BBB'],
+      ['gpos33', '#BBB', '#BBB', '#AAA'],
+      ['gpos50', '#999', '#AAA', '#888'],
+      ['gpos66', '#888', '#888', '#666'],
+      ['gpos75', '#777', '#777', '#444'],
+      ['gpos100', '#444', '#666', '#000'],
+      ['acen', '#FEE', '#FEE', '#FDD'],
+      ['noBands', '#BBB', '#BBB', '#AAA']
     ];
 
     for (var i = 0; i < colors.length; i++) {
@@ -1727,11 +1727,11 @@ export class Ideogram {
     });
   }
 
-/**
-* Returns an array of taxids for the current ideogram
-* Also sets configuration parameters related to taxid(s), whether ideogram is
-* multiorganism, and adjusts chromosomes parameters as needed
-**/
+  /**
+  * Returns an array of taxids for the current ideogram
+  * Also sets configuration parameters related to taxid(s), whether ideogram is
+  * multiorganism, and adjusts chromosomes parameters as needed
+  **/
   getTaxids(callback) {
     var ideo = this,
       taxid, taxids,
@@ -1750,7 +1750,7 @@ export class Ideogram {
     multiorganism = ideo.config.multiorganism;
 
     if ('organism' in ideo.config) {
-    // Ideogram instance was constructed using common organism name(s)
+      // Ideogram instance was constructed using common organism name(s)
       if (multiorganism) {
         orgs = ideo.config.organism;
       } else {
@@ -1893,8 +1893,8 @@ export class Ideogram {
       bIsCP = b.type === 'chloroplast',
       aIsMT = a.type === 'mitochondrion',
       bIsMT = b.type === 'mitochondrion';
-    // aIsPlastid = aIsMT && a.name !== 'MT', // e.g. B1 in rice genome GCF_001433935.1
-    // bIsPlastid = bIsMT && b.name !== 'MT';
+      // aIsPlastid = aIsMT && a.name !== 'MT', // e.g. B1 in rice genome GCF_001433935.1
+      // bIsPlastid = bIsMT && b.name !== 'MT';
 
     if (aIsNuclear && bIsNuclear) {
       return Ideogram.naturalSort(a.name, b.name);
@@ -1909,10 +1909,10 @@ export class Ideogram {
     }
   }
 
-/*
-*  Returns names and lengths of chromosomes for an organism's best-known
-*  genome assembly.  Gets data from NCBI EUtils web API.
-*/
+  /*
+  *  Returns names and lengths of chromosomes for an organism's best-known
+  *  genome assembly.  Gets data from NCBI EUtils web API.
+  */
   getAssemblyAndChromosomesFromEutils(callback) {
     var asmAndChrArray, // [assembly_accession, chromosome_objects_array]
       organism, assemblyAccession, chromosomes, asmSearch,
