@@ -2,7 +2,7 @@
   "name": "ideogram",
   "version": "0.6.0-alpha",
   "description": "Chromosome visualization with D3.js",
-  "main": "src/index.js",
+  "main": "dist/js/ideogram.min.js",
   "directories": {
     "example": "examples",
     "test": "test"
