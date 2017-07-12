@@ -13,7 +13,7 @@
   },
   "scripts": {
     "test": "karma start --single-run --browsers ChromeHeadless karma.conf.js",
-    "build": "webpack -p --display-modules --display-reasons"
+    "build": "webpack -p --display-modules --display-reasons && cp -r src/css dist/ && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data"
   },
   "repository": {
     "type": "git",
