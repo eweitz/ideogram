@@ -1,6 +1,6 @@
 {
   "name": "ideogram",
-  "version": "0.6.0-alpha",
+  "version": "0.6.0-alpha2",
   "description": "Chromosome visualization with D3.js",
   "main": "dist/js/ideogram.min.js",
   "directories": {
