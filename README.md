@@ -21,8 +21,7 @@ Then go to [http://localhost/ideogram/examples](http://localhost/ideogram/exampl
 ```html
 <head>
   <link type="text/css" rel="stylesheet" href="../dist/css/ideogram.css">
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.1.1/d3.min.js"></script>
-  <script type="text/javascript" src="../dist/js/ideogram.js"></script>
+  <script type="text/javascript" src="../dist/js/ideogram.min.js"></script>
 </head>
 <body>
   <script type="text/javascript">
