@@ -1,23 +1,28 @@
+import * as d3 from 'd3';
+
 // Chromosome's view utility class
-function ChromosomeUtil(node) {
-  this._node = node;
+export class ChromosomeUtil {
+
+  constructor(node) {
+    this._node = node;
+  }
+
+  getLabel() {
+    var label =
+      d3
+        .select(this._node)
+        .select('text.chrLabel')
+        .text();
+    return label;
+  }
+
+  // Get chromosome set label
+  getSetLabel() {
+    var setLabel =
+      d3
+        .select(this._node.parentNode)
+        .select('text.chromosome-set-label')
+        .text();
+    return setLabel;
+  }
 }
-
-ChromosomeUtil.prototype.getLabel = function() {
-  var label =
-    d3
-      .select(this._node)
-      .select('text.chrLabel')
-      .text();
-  return label;
-};
-
-// Get chromosome set label
-ChromosomeUtil.prototype.getSetLabel = function() {
-  var setLabel =
-    d3
-      .select(this._node.parentNode)
-      .select('text.chromosome-set-label')
-      .text();
-  return setLabel;
-};

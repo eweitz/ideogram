@@ -11,3 +11,7 @@ scripts/__pycache__
 # Eclipse IDE files
 .project
 .settings
+
+# IDEA IDE files
+.idea/
+ideogram.iml

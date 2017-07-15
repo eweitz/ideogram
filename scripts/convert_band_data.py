@@ -106,7 +106,7 @@ def main():
                 output.append(columns)
 
         output = json.dumps(output)
-        output = "chrBands = " + output + ";"
+        output = "window.chrBands = " + output + ";"
         open(output_file, "w").write(output)
 
 if __name__ == '__main__':

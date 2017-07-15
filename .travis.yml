@@ -1,7 +1,9 @@
 language: node_js
+dist: trusty
 node_js:
-  - "5.10"
+  - "6.10"
+addons:
+  chrome: stable
 before_script:
-  - npm link 
-  - npm install gulp
-script: gulp
+  - npm link
+script: npm test
