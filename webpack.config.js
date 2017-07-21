@@ -7,7 +7,7 @@ module.exports = {
     filename: 'ideogram.min.js',
     path: path.resolve(__dirname, 'dist/js')
   },
-  devtool: "source-map",
+  devtool: 'source-map',
   module: {
     rules: [
       {
@@ -16,7 +16,7 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['es2015']
+            presets: [['env', {modules: false}]]
           }
         }
       }

@@ -11,7 +11,7 @@ import {Chromosome} from './views/chromosome';
 
 d3.promise = d3promise;
 
-export class Ideogram {
+export default class Ideogram {
 
   constructor(config) {
     var orientation,
