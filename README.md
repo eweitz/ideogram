@@ -10,12 +10,24 @@ More examples: http://eweitz.github.io/ideogram/
 
 # Installation
 
+If you use npm:
+```
+npm install ideogram
+```
+
+You can then [import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import) Ideogram into an application like so:
+```
+import Ideogram from 'ideogram';
+```
+
+If you don't use npm, you can try still easily use Ideogram on your own server:
 ```
 $ cd <your local web server document root>
 $ git clone https://github.com/eweitz/ideogram.git
 ```
 
 Then go to [http://localhost/ideogram/examples](http://localhost/ideogram/examples).
+
 
 # Usage
 ```html
