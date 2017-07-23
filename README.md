@@ -4,9 +4,9 @@
 
 Chromosome visualization with D3.js
 
-[![All human genes](https://raw.githubusercontent.com/eweitz/ideogram/master/examples/ideogram_histogram_all_human_genes.png)](http://eweitz.github.io/ideogram/annotations_histogram.html)
+[![All human genes](https://raw.githubusercontent.com/eweitz/ideogram/master/examples/ideogram_histogram_all_human_genes.png)](https://eweitz.github.io/ideogram/annotations_histogram.html)
 
-More examples: http://eweitz.github.io/ideogram/
+More examples: https://eweitz.github.io/ideogram/
 
 # Installation
 
@@ -49,3 +49,5 @@ Then go to [http://localhost/ideogram/examples](http://localhost/ideogram/exampl
   </script>
 </body>
 ```
+
+Many more usage examples are available at https://eweitz.github.io/ideogram/.
