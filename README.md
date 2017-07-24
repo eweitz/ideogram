@@ -38,14 +38,14 @@ Then go to [http://localhost/ideogram/examples](http://localhost/ideogram/exampl
 <body>
   <script type="text/javascript">
       var ideogram = new Ideogram({
-          organism: 'human',
-          annotations: [{
-            name: 'BRCA1',
-            chr: '17',
-            start: 43044294,
-            stop: 43125482
-          }]
-        });
+        organism: 'human',
+        annotations: [{
+          name: 'BRCA1',
+          chr: '17',
+          start: 43044294,
+          stop: 43125482
+        }]
+      });
   </script>
 </body>
 ```
