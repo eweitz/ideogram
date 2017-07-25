@@ -134,10 +134,10 @@ Ideogram.prototype.filterAnnots = function(selections) {
 
   results = ideo.packAnnots(results);
 
-  d3.selectAll(ideo.selector + " polygon.annot").remove();
+  d3.selectAll(ideo.selector + ' polygon.annot').remove();
   ideo.drawAnnots(results);
 
-  console.log("Time in filterAnnots: " + (Date.now() - t0) + " ms");
+  console.log('Time in filterAnnots: ' + (Date.now() - t0) + ' ms');
 
   return counts;
 };

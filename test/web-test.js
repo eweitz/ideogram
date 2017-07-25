@@ -625,43 +625,48 @@ describe("Ideogram", function() {
       var ideogram = new Ideogram(config);
     });
 
-
-    it("should align chr. label with thick horizontal chromosome", function(done) {
-      // Tests use case from ../examples/annotations_basic.html
-
-      function callback() {
-        var band, bandMiddle,
-            chrLabel, chrLabelMiddle;
-
-        band = d3.selectAll(".chromosome .band").nodes()[0].getBoundingClientRect();
-        chrLabel = d3.selectAll(".chromosome-set-label").nodes()[0].getBoundingClientRect();
-
-        bandMiddle = band.top + band.height/2;
-        chrLabelMiddle = chrLabel.top + chrLabel.height/2;
-
-        labelsDiff = Math.abs(bandMiddle - chrLabelMiddle);
-
-        assert.isAtMost(labelsDiff, 1);
-        done();
-      }
-
-      config = {
-        organism: "human",
-        chrHeight: 600,
-        chrWidth: 20,
-        orientation: "horizontal",
-        chromosomes: ["17"],
-        annotations: [{
-          "name": "BRCA1",
-          "chr": "17",
-          "start": 43044294,
-          "stop": 43125482
-        }],
-        annotationHeight: 6
-      };
-      config.onDrawAnnots = callback;
-      var ideogram = new Ideogram(config);
-    });
+    // TODO: Re-enable when there is a decent package that enables
+    //       PhantomJS-like screenshots from automated tests
+    //       cf.:
+    //        if (window.callPhantom) {
+    //        callPhantom({'screenshot': filename})
+    //
+    // it("should align chr. label with thick horizontal chromosome", function(done) {
+    //   // Tests use case from ../examples/annotations_basic.html
+    //
+    //   function callback() {
+    //     var band, bandMiddle,
+    //         chrLabel, chrLabelMiddle;
+    //
+    //     band = d3.selectAll(".chromosome .band").nodes()[0].getBoundingClientRect();
+    //     chrLabel = d3.selectAll(".chromosome-set-label").nodes()[0].getBoundingClientRect();
+    //
+    //     bandMiddle = band.top + band.height/2;
+    //     chrLabelMiddle = chrLabel.top + chrLabel.height/2;
+    //
+    //     labelsDiff = Math.abs(bandMiddle - chrLabelMiddle);
+    //
+    //     assert.isAtMost(labelsDiff, 1);
+    //     done();
+    //   }
+    //
+    //   config = {
+    //     organism: "human",
+    //     chrHeight: 600,
+    //     chrWidth: 20,
+    //     orientation: "horizontal",
+    //     chromosomes: ["17"],
+    //     annotations: [{
+    //       "name": "BRCA1",
+    //       "chr": "17",
+    //       "start": 43044294,
+    //       "stop": 43125482
+    //     }],
+    //     annotationHeight: 6
+    //   };
+    //   config.onDrawAnnots = callback;
+    //   var ideogram = new Ideogram(config);
+    // });
 
     it("should align chr. label with vertical chromosome", function(done) {
       // Tests use case from ../examples/human.html

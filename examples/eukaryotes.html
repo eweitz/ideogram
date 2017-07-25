@@ -3,7 +3,6 @@
 <head>
   <title>Eukaryotes | Ideogram</title>
   <link type="text/css" rel="stylesheet" href="../dist/css/ideogram.css"/>
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.1.1/d3.min.js"></script>
   <script type="text/javascript" src="../dist/js/ideogram.min.js"></script>
   <style>
     #container {
@@ -114,6 +113,9 @@
       ideogram = new Ideogram(config);
     }
 
+    var org,
+        d3 = Ideogram.d3;
+
     d3.selectAll("input").on("change", function(d) {
       var org;
       d3.select("#_ideogram").remove();
@@ -121,8 +123,6 @@
       org = d3.select(this).attr("value");
       loadOrganism(org);
     });
-
-    var org;
 
     if (window.location.search !== "") {
       org = window.location.search.split("=")[1];
