@@ -13,7 +13,9 @@
   },
   "scripts": {
     "test": "karma start --single-run --browsers ChromeHeadless karma.conf.js",
-    "build": "webpack -p --display-modules --display-reasons && cp -r src/css dist/ && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data"
+    "build": "webpack -p --display-modules --display-reasons && cp -r src/css dist/ && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
+    "watch": "webpack --watch && cp -r src/css dist/ && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
+    "start": "webpack-dev-server --open"
   },
   "repository": {
     "type": "git",
@@ -53,6 +55,7 @@
     "karma-chrome-launcher": "^2.2.0",
     "karma-mocha": "^1.3.0",
     "mocha": "^2.3.0",
-    "webpack": "^3.1.0"
+    "webpack": "^3.1.0",
+    "webpack-dev-server": "^2.6.1"
   }
 }
