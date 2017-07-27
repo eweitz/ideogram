@@ -14,6 +14,7 @@ d3.promise = d3promise;
 export default class Ideogram {
 
   constructor(config) {
+
     var orientation,
       chrWidth, chrHeight,
       container, rect;
@@ -192,7 +193,8 @@ export default class Ideogram {
         assemblies: {
           default: 'GCF_000001405.26', // GRCh38
           GRCh38: 'GCF_000001405.26',
-          GRCh37: 'GCF_000001405.13'
+          GRCh37: 'GCF_000001405.13',
+          'GCF_000001405.25': 'GCF_000001405.13',
         }
       },
       10090: {
@@ -244,6 +246,13 @@ export default class Ideogram {
   static naturalSort(a,b) {
     // https://github.com/overset/javascript-natural-sort
     var q,r,c=/(^([+\-]?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?(?=\D|\s|$))|^0x[\da-fA-F]+$|\d+)/g,d=/^\s+|\s+$/g,e=/\s+/g,f=/(^([\w ]+,?[\w ]+)?[\w ]+,?[\w ]+\d+:\d+(:\d+)?[\w ]?|^\d{1,4}[\/\-]\d{1,4}[\/\-]\d{1,4}|^\w+, \w+ \d+, \d{4})/,g=/^0x[0-9a-f]+$/i,h=/^0/,i=function(a){return(Ideogram.naturalSort.insensitive&&(""+a).toLowerCase()||""+a).replace(d,"")},j=i(a),k=i(b),l=j.replace(c,"\0$1\0").replace(/\0$/,"").replace(/^\0/,"").split("\0"),m=k.replace(c,"\0$1\0").replace(/\0$/,"").replace(/^\0/,"").split("\0"),n=parseInt(j.match(g),16)||1!==l.length&&Date.parse(j),o=parseInt(k.match(g),16)||n&&k.match(f)&&Date.parse(k)||null,p=function(a,b){return(!a.match(h)||1==b)&&parseFloat(a)||a.replace(e," ").replace(d,"")||0};if(o){if(n<o)return-1;if(n>o)return 1}for(var s=0,t=l.length,u=m.length,v=Math.max(t,u);s<v;s++){if(q=p(l[s]||"",t),r=p(m[s]||"",u),isNaN(q)!==isNaN(r))return isNaN(q)?1:-1;if(/[^\x00-\x80]/.test(q+r)&&q.localeCompare){var w=q.localeCompare(r);return w/Math.abs(w)}if(q<r)return-1;if(q>r)return 1}
+  }
+
+  assemblyIsAccession() {
+    return (
+      'assembly' in this.config &&
+      /(GCF_|GCA_)/.test(this.config.assembly)
+    );
   }
 
   /**
@@ -1743,9 +1752,9 @@ export default class Ideogram {
     taxidInit = 'taxid' in ideo.config;
 
     ideo.config.multiorganism = (
-    ('organism' in ideo.config && ideo.config.organism instanceof Array) ||
-    (taxidInit && ideo.config.taxid instanceof Array)
-  );
+      ('organism' in ideo.config && ideo.config.organism instanceof Array) ||
+      (taxidInit && ideo.config.taxid instanceof Array)
+    );
 
     multiorganism = ideo.config.multiorganism;
 
@@ -1774,7 +1783,7 @@ export default class Ideogram {
         }
       }
 
-      if (taxids.length === 0) {
+      if (taxids.length === 0 || ideo.assemblyIsAccession()) {
         promise = new Promise(function(resolve) {
           ideo.getTaxidFromEutils(resolve);
         });
@@ -1785,7 +1794,10 @@ export default class Ideogram {
             urlOrg = organism.replace(' ', '-');
 
           taxid = data;
-          taxids.push(taxid);
+
+          if (taxids.indexOf(taxid) === -1) {
+            taxids.push(taxid);
+          }
 
           ideo.config.taxids = taxids;
           ideo.organisms[taxid] = {
@@ -1796,9 +1808,9 @@ export default class Ideogram {
 
           var fullyBandedTaxids = ['9606', '10090', '10116'];
           if (
-          fullyBandedTaxids.indexOf(taxid) !== -1 &&
-          ideo.config.showFullyBanded === false
-        ) {
+            fullyBandedTaxids.indexOf(taxid) !== -1 &&
+            ideo.config.showFullyBanded === false
+          ) {
             urlOrg += '-no-bands';
           }
           var chromosomesUrl = dataDir + urlOrg + '.js';
@@ -1844,6 +1856,7 @@ export default class Ideogram {
             },
             function() {
               return new Promise(function(resolve) {
+
                 ideo.coordinateSystem = 'bp';
                 ideo.getAssemblyAndChromosomesFromEutils(resolve);
               });
@@ -1853,7 +1866,6 @@ export default class Ideogram {
       .then(function(asmChrArray) {
         assembly = asmChrArray[0];
         chromosomes = asmChrArray[1];
-
         ideo.config.chromosomes = chromosomes;
         ideo.organisms[taxid].assemblies = {
           default: assembly
@@ -1881,7 +1893,6 @@ export default class Ideogram {
         }
         ideo.config.taxids = taxids;
       }
-
       callback(taxids);
     }
   }
@@ -1910,12 +1921,15 @@ export default class Ideogram {
   }
 
   /*
-  *  Returns names and lengths of chromosomes for an organism's best-known
-  *  genome assembly.  Gets data from NCBI EUtils web API.
+  * Returns names and lengths of chromosomes for an organism's best-known
+  * genome assembly, or for a specified assembly.  Gets data from NCBI
+  * EUtils web API.
+  *
+  * @param callback Function to call upon completion of this async method
   */
   getAssemblyAndChromosomesFromEutils(callback) {
     var asmAndChrArray, // [assembly_accession, chromosome_objects_array]
-      organism, assemblyAccession, chromosomes, asmSearch,
+      organism, assemblyAccession, chromosomes, termStem, asmSearch,
       asmUid, asmSummary,
       rsUid, nuccoreLink,
       links, ntSummary,
@@ -1927,10 +1941,16 @@ export default class Ideogram {
     asmAndChrArray = [];
     chromosomes = [];
 
+    if (ideo.assemblyIsAccession()) {
+      termStem = ideo.config.assembly + '%22[Assembly%20Accession]';
+    } else {
+      termStem = organism + '%22[organism]';
+    }
+
     asmSearch =
       ideo.esearch +
       '&db=assembly' +
-      '&term=%22' + organism + '%22[organism]' +
+      '&term=%22' + termStem +
         'AND%20(%22latest%20refseq%22[filter])%20' +
         'AND%20(%22chromosome%20level%22[filter]%20' +
         'OR%20%22complete%20genome%22[filter])';
@@ -2383,7 +2403,10 @@ export default class Ideogram {
           bandDataFileNames[taxid] = bandFileName;
         }
 
-        if (typeof chrBands === 'undefined' && taxid in bandDataFileNames) {
+        if (
+          typeof accession !== 'undefined' &&
+          typeof chrBands === 'undefined' && taxid in bandDataFileNames
+        ) {
           d3.request(ideo.config.dataDir + bandDataFileNames[taxid])
             .on('beforesend', function(data) {
               // Ensures correct taxid is processed in response callback; using
