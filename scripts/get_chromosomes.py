@@ -2,16 +2,14 @@
 
 import urllib.request as request
 from urllib.parse import quote
-import urllib.error
 import ftplib
-import socket
 import os
 import shutil
 import json
-import io
 import gzip
-import subprocess
 import logging
+
+import convert_band_data
 
 
 output_dir = 'data/bands/native/'
@@ -44,6 +42,7 @@ ftp_domain = 'ftp.ncbi.nlm.nih.gov'
 ftp = ftplib.FTP(ftp_domain)
 ftp.login()
 
+
 def get_chromosome_object(agp):
     """Extracts centromere coordinates and chromosome length from AGP data,
     and returns a chromosome object formatted in JSON"""
@@ -71,6 +70,7 @@ def get_chromosome_object(agp):
         if i == len(agp) - 2:
             chr['length'] = stop
     return chr
+
 
 def download_genome_agp(asm):
 
@@ -143,7 +143,7 @@ def download_genome_agp(asm):
         )
     else:
         leaf = ''
-        if organism in set(('homo-sapiens', 'mus-musculus', 'rattus-norvegicus')):
+        if organism in ('homo-sapiens', 'mus-musculus', 'rattus-norvegicus'):
             leaf = '-no-bands'
         output_path = output_dir + organism + leaf + ".js"
 
@@ -169,7 +169,7 @@ def download_genome_agp(asm):
 
                 midpoint = str(midpoint)
 
-                p = name + ' p 1 0 ' + iscn_stop_p + ' 0 ' + midpoint;
+                p = name + ' p 1 0 ' + iscn_stop_p + ' 0 ' + midpoint
                 q = (
                     name + ' q 1 ' + str(int(iscn_stop_p) + 1) + ' ' + iscn_stop_q +
                     ' ' + midpoint + ' ' + length
@@ -186,6 +186,7 @@ def download_genome_agp(asm):
             f.write(js_chrs)
 
     shutil.rmtree(output_dir + organism + '/')
+
 
 def find_genomes_with_centromeres(asm_summary_response):
 
@@ -279,7 +280,6 @@ find_genomes_with_centromeres(data)
 ftp.quit()
 
 logger.info('Calling convert_band_data.py')
-import convert_band_data
 convert_band_data.main()
 
 logger.info('Ending get_chromosomes.py')
