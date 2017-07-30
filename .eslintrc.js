@@ -12,6 +12,7 @@ module.exports = {
     "no-warning-comments": "off",
     "no-eval": "off",
     "no-inner-declarations": "off",
-    "no-else-return": "off"
+    "no-else-return": "off",
+    "no-var": "off"
   }
 }
