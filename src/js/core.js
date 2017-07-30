@@ -8,6 +8,7 @@ import {Ploidy} from './ploidy';
 import {Layout} from './layouts/layout';
 import {ModelAdapter} from './model-adapter';
 import {Chromosome} from './views/chromosome';
+import {BedParser} from './parsers/bed-parser';
 
 d3.promise = d3promise;
 
@@ -246,19 +247,6 @@ export default class Ideogram {
     var q,r,c=/(^([+\-]?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?(?=\D|\s|$))|^0x[\da-fA-F]+$|\d+)/g,d=/^\s+|\s+$/g,e=/\s+/g,f=/(^([\w ]+,?[\w ]+)?[\w ]+,?[\w ]+\d+:\d+(:\d+)?[\w ]?|^\d{1,4}[\/\-]\d{1,4}[\/\-]\d{1,4}|^\w+, \w+ \d+, \d{4})/,g=/^0x[0-9a-f]+$/i,h=/^0/,i=function(a){return(Ideogram.naturalSort.insensitive&&(""+a).toLowerCase()||""+a).replace(d,"")},j=i(a),k=i(b),l=j.replace(c,"\0$1\0").replace(/\0$/,"").replace(/^\0/,"").split("\0"),m=k.replace(c,"\0$1\0").replace(/\0$/,"").replace(/^\0/,"").split("\0"),n=parseInt(j.match(g),16)||1!==l.length&&Date.parse(j),o=parseInt(k.match(g),16)||n&&k.match(f)&&Date.parse(k)||null,p=function(a,b){return(!a.match(h)||1==b)&&parseFloat(a)||a.replace(e," ").replace(d,"")||0};if(o){if(n<o)return-1;if(n>o)return 1}for(var s=0,t=l.length,u=m.length,v=Math.max(t,u);s<v;s++){if(q=p(l[s]||"",t),r=p(m[s]||"",u),isNaN(q)!==isNaN(r))return isNaN(q)?1:-1;if(/[^\x00-\x80]/.test(q+r)&&q.localeCompare){var w=q.localeCompare(r);return w/Math.abs(w)}if(q<r)return-1;if(q>r)return 1}
   }
 
-  // http://stackoverflow.com/a/5624139
-  static componentToHex(c) {
-      var hex = parseInt(c, 10).toString(16);
-      return hex.length == 1 ? "0" + hex : hex;
-  }
-  static rgbToHex(r, g, b) {
-      return (
-        "#" +
-        Ideogram.componentToHex(r) +
-        Ideogram.componentToHex(g) +
-        Ideogram.componentToHex(b)
-      );
-  }
 
   /**
   * Gets chromosome band data from a
@@ -496,9 +484,9 @@ export default class Ideogram {
 
     chr.centromerePosition = '';
     if (
-    hasBands && bands[0].name[0] === 'p' && bands[1].name[0] === 'q' &&
-    bands[0].bp.stop - bands[0].bp.start < 2E6
-  ) {
+      hasBands && bands[0].name[0] === 'p' && bands[1].name[0] === 'q' &&
+      bands[0].bp.stop - bands[0].bp.start < 2E6
+    ) {
       // As with almost all mouse chromosome, chimpanzee chr22
       chr.centromerePosition = 'telocentric';
 
@@ -542,7 +530,7 @@ export default class Ideogram {
       })
       .attr('text-anchor', ideo._layout.getChromosomeSetLabelAnchor())
       .each(function(d, i) {
-          // Get label lines
+        // Get label lines
         var lines;
         if (d.name.indexOf(' ') === -1) {
           lines = [d.name];
@@ -1165,85 +1153,6 @@ export default class Ideogram {
     }
   }
 
-  /*
-  * Parses a BED file, returns raw annotations
-  * BED documentation: https://genome.ucsc.edu/FAQ/FAQformat#format1
-  */
-  parseBed(bed) {
-
-    var tsvLines, i, columns, chrs, chr, start, stop, chrIndex, annots, annot,
-      chrs, annots, bedStartIndex, ucscStyle, rgb, color, label, keys,
-      rawAnnots;
-
-    annots = [];
-
-    // Horrible.  Remove hard-coding.
-    chrs = [
-      "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
-      "11", "12", "13", "14", "15", "16", "17", "18", "19", "20",
-      "21", "22", "X", "Y"
-    ];
-
-    for (i = 0; i < chrs.length; i++) {
-      chr = chrs[i];
-      annots.push({"chr": chr, "annots": []});
-    }
-
-    tsvLines = bed.split(/\r\n|\n/);
-
-    bedStartIndex = 0; // 1 if BED has header (i.e. track line), 0 otherwise
-    ucscStyle = true;
-    if (tsvLines[0].slice(0,3) === 'chr' || isNaN(parseInt(tsvLines[0]))) {
-      bedStartIndex = 1;
-    }
-
-    if (isNaN(parseInt(tsvLines[bedStartIndex])) === false) {
-      ucscStyle = false;
-    }
-
-    for (i = bedStartIndex; i < tsvLines.length; i++) {
-      columns = tsvLines[i].split(/\s/g);
-
-      // These three columns (i.e. fields) are required
-      chr = columns[0];
-      start = parseInt(columns[1], 10);
-      stop = parseInt(columns[2], 10);
-
-      length = stop - start;
-
-      if (ucscStyle) {
-        chr = chr.slice(3);
-      }
-      chrIndex = chrs.indexOf(chr);
-      if (chrIndex === -1) {
-        continue;
-      }
-      annot = ["", start, length, 0];
-
-      if (columns.length >= 4) {
-        label = columns[3];
-        annot[0] = label;
-      }
-
-      if (columns.length >= 8) {
-        rgb = columns[8].split(',');
-        color = Ideogram.rgbToHex(rgb[0], rgb[1], rgb[2]);
-        annot.push(color)
-      }
-
-      annots[chrIndex]["annots"].push(annot);
-    }
-    keys = ['name', 'start', 'length', 'trackIndex'];
-    if (tsvLines[bedStartIndex].length >= 8) {
-      keys.push('color');
-    }
-    rawAnnots = {
-      keys: keys,
-      annots: annots
-    };
-    return rawAnnots;
-  }
-
 
   fetchAnnots(annotsUrl) {
 
@@ -1272,7 +1181,7 @@ export default class Ideogram {
     }
 
     d3.request(annotsUrl, function(data) {
-      ideo.rawAnnots = ideo.parseBed(data.response);
+      ideo.rawAnnots = new BedParser(data.response, ideo).rawAnnots;
     });
 
   }
