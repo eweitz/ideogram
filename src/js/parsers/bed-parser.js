@@ -7,7 +7,7 @@ export class BedParser {
   // http://stackoverflow.com/a/5624139
   static componentToHex(c) {
     var hex = parseInt(c, 10).toString(16);
-    return hex.length == 1 ? "0" + hex : hex;
+    return hex.length === 1 ? "0" + hex : hex;
   }
 
   static rgbToHex(r, g, b) {
@@ -26,7 +26,7 @@ export class BedParser {
   parseBed(bed, ideo) {
 
     var tsvLines, i, columns, chrs, chr, start, stop, chrIndex, annots, annot,
-      chrs, annots, bedStartIndex, ucscStyle, rgb, color, label, keys,
+      bedStartIndex, ucscStyle, rgb, color, label, keys,
       rawAnnots;
 
     annots = [];
@@ -35,18 +35,18 @@ export class BedParser {
 
     for (i = 0; i < chrs.length; i++) {
       chr = chrs[i];
-      annots.push({"chr": chr, "annots": []});
+      annots.push({chr: chr, annots: []});
     }
 
     tsvLines = bed.split(/\r\n|\n/);
 
     bedStartIndex = 0; // 1 if BED has header (i.e. track line), 0 otherwise
     ucscStyle = true;
-    if (tsvLines[0].slice(0,3) === 'chr' || isNaN(parseInt(tsvLines[0]))) {
+    if (tsvLines[0].slice(0, 3) === 'chr' || isNaN(parseInt(tsvLines[0], 10))) {
       bedStartIndex = 1;
     }
 
-    if (isNaN(parseInt(tsvLines[bedStartIndex])) === false) {
+    if (isNaN(parseInt(tsvLines[bedStartIndex], 10)) === false) {
       ucscStyle = false;
     }
 
@@ -77,10 +77,10 @@ export class BedParser {
       if (columns.length >= 8) {
         rgb = columns[8].split(',');
         color = Ideogram.rgbToHex(rgb[0], rgb[1], rgb[2]);
-        annot.push(color)
+        annot.push(color);
       }
 
-      annots[chrIndex]["annots"].push(annot);
+      annots[chrIndex].annots.push(annot);
     }
     keys = ['name', 'start', 'length', 'trackIndex'];
     if (tsvLines[bedStartIndex].length >= 8) {
