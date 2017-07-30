@@ -606,6 +606,21 @@ describe("Ideogram", function() {
       var ideogram = new Ideogram(config);
     });
 
+  // it("should use GCF_000306695.2 when specified in 'assembly' parameter", function(done) {
+  //   // Tests use case from ../examples/human.html
+  //
+  //   function callback() {
+  //     var bands = ideogram.chromosomes["9606"]["1"]["bands"]
+  //     var chr1Length = bands[bands.length - 1].bp.stop;
+  //     assert.equal(chr1Length, 249250621);
+  //     done();
+  //   }
+  //
+  //   config.assembly = "GCF_000306695.2";
+  //   config.onLoad = callback;
+  //   var ideogram = new Ideogram(config);
+  // });
+
     it("should handle arrayed objects in 'annotations' parameter", function(done) {
       // Tests use case from ../examples/human.html
 
