@@ -76,7 +76,7 @@ export class BedParser {
 
       if (columns.length >= 8) {
         rgb = columns[8].split(',');
-        color = Ideogram.rgbToHex(rgb[0], rgb[1], rgb[2]);
+        color = BedParser.rgbToHex(rgb[0], rgb[1], rgb[2]);
         annot.push(color);
       }
 
