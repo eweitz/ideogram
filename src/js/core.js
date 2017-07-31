@@ -8,6 +8,7 @@ import {Ploidy} from './ploidy';
 import {Layout} from './layouts/layout';
 import {ModelAdapter} from './model-adapter';
 import {Chromosome} from './views/chromosome';
+import {BedParser} from './parsers/bed-parser';
 
 d3.promise = d3promise;
 
@@ -246,6 +247,7 @@ export default class Ideogram {
     var q,r,c=/(^([+\-]?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?(?=\D|\s|$))|^0x[\da-fA-F]+$|\d+)/g,d=/^\s+|\s+$/g,e=/\s+/g,f=/(^([\w ]+,?[\w ]+)?[\w ]+,?[\w ]+\d+:\d+(:\d+)?[\w ]?|^\d{1,4}[\/\-]\d{1,4}[\/\-]\d{1,4}|^\w+, \w+ \d+, \d{4})/,g=/^0x[0-9a-f]+$/i,h=/^0/,i=function(a){return(Ideogram.naturalSort.insensitive&&(""+a).toLowerCase()||""+a).replace(d,"")},j=i(a),k=i(b),l=j.replace(c,"\0$1\0").replace(/\0$/,"").replace(/^\0/,"").split("\0"),m=k.replace(c,"\0$1\0").replace(/\0$/,"").replace(/^\0/,"").split("\0"),n=parseInt(j.match(g),16)||1!==l.length&&Date.parse(j),o=parseInt(k.match(g),16)||n&&k.match(f)&&Date.parse(k)||null,p=function(a,b){return(!a.match(h)||1==b)&&parseFloat(a)||a.replace(e," ").replace(d,"")||0};if(o){if(n<o)return-1;if(n>o)return 1}for(var s=0,t=l.length,u=m.length,v=Math.max(t,u);s<v;s++){if(q=p(l[s]||"",t),r=p(m[s]||"",u),isNaN(q)!==isNaN(r))return isNaN(q)?1:-1;if(/[^\x00-\x80]/.test(q+r)&&q.localeCompare){var w=q.localeCompare(r);return w/Math.abs(w)}if(q<r)return-1;if(q>r)return 1}
   }
 
+
   /**
   * Gets chromosome band data from a
   * TSV file, or, if band data is prefetched, from an array
@@ -482,9 +484,9 @@ export default class Ideogram {
 
     chr.centromerePosition = '';
     if (
-    hasBands && bands[0].name[0] === 'p' && bands[1].name[0] === 'q' &&
-    bands[0].bp.stop - bands[0].bp.start < 2E6
-  ) {
+      hasBands && bands[0].name[0] === 'p' && bands[1].name[0] === 'q' &&
+      bands[0].bp.stop - bands[0].bp.start < 2E6
+    ) {
       // As with almost all mouse chromosome, chimpanzee chr22
       chr.centromerePosition = 'telocentric';
 
@@ -528,7 +530,7 @@ export default class Ideogram {
       })
       .attr('text-anchor', ideo._layout.getChromosomeSetLabelAnchor())
       .each(function(d, i) {
-          // Get label lines
+        // Get label lines
         var lines;
         if (d.name.indexOf(' ') === -1) {
           lines = [d.name];
@@ -1149,6 +1151,39 @@ export default class Ideogram {
     if (typeof this.config.annotationsColor === 'undefined') {
       this.config.annotationsColor = '#F00';
     }
+  }
+
+
+  fetchAnnots(annotsUrl) {
+
+    var ideo = this;
+
+    if (annotsUrl.slice(0, 4) !== 'http') {
+      d3.json(
+        ideo.config.annotationsPath,
+        function(data) {
+          ideo.rawAnnots = data;
+        }
+      );
+      return;
+    }
+
+    var tmp = annotsUrl.split('.');
+    var extension = tmp[tmp.length - 1];
+
+    if (extension !== 'bed') {
+      extension = extension.toUpperCase();
+      alert(
+        'This Ideogram.js feature is very new, and only supports BED at the ' +
+        'moment.  Sorry, check back soon for ' + extension + ' support!'
+      );
+      return;
+    }
+
+    d3.request(annotsUrl, function(data) {
+      ideo.rawAnnots = new BedParser(data.response, ideo).rawAnnots;
+    });
+
   }
 
   /**
@@ -2415,14 +2450,10 @@ export default class Ideogram {
     });
 
     function writeContainer() {
+
       if (ideo.config.annotationsPath) {
-        d3.json(
-        ideo.config.annotationsPath, // URL
-        function(data) { // Callback
-          ideo.rawAnnots = data;
-        }
-      );
-      }
+         ideo.fetchAnnots(ideo.config.annotationsPath);
+       }
 
       // If ploidy description is a string, then convert it to the canonical
       // array format.  String ploidyDesc is used when depicting e.g. parental

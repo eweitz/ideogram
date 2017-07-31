@@ -492,6 +492,24 @@ describe("Ideogram", function() {
     ideogram = new Ideogram(config);
   });
 
+  it("should have 114 annotations in file URL example", function(done) {
+    // Tests use case from ../examples/annotations_file_url.html
+
+    function callback() {
+      var numAnnots = document.getElementsByClassName("annot").length;
+      assert.equal(numAnnots, 114);
+      done();
+    }
+
+    var config = {
+      organism: 'human',
+      assembly: 'GRCh37',
+      annotationsPath: 'https://raw.githubusercontent.com/NCBI-Hackathons/Scan2CNV/master/files/201113910010_R08C02.PennCnvOut.bed',
+      onDrawAnnots: callback
+    };
+
+    ideogram = new Ideogram(config);
+  });
 
   it("should have histogram bars roughly flush with chromosome ends", function(done) {
     // Tests use case from ../examples/annotations_histogram.html
@@ -805,6 +823,41 @@ describe("Ideogram", function() {
       config.onLoad = callback;
       var ideogram = new Ideogram(config);
     });
+
+    /*
+    it("should load remote data from external BED file", function(done) {
+
+      function callback() {
+        var numChr1Annots, redAnnot, greenAnnot;
+
+        numChr1Annots = d3.selectAll('#chr1-9606 .annot').nodes().length;
+        redAnnotColor =
+          d3.selectAll('#chr1-9606 .annot path:nth-child(1)').attr('fill');
+        greenAnnotColor =
+          d3.selectAll('#chr1-9606 .annot path:nth-child(1)').attr('fill');
+        assert.equals(numChr1Annots, 11);
+        done();
+      }
+
+      var annotsTracks = [{
+        id: "myTrack",
+        displayName: "Genome features",
+        color: "#F00"
+      }];
+      var annotsHeight = 3.5;
+
+      var config = {
+        organism: "human",
+        assembly: "GRCh37",
+        annotationsPath: "https://raw.githubusercontent.com/NCBI-Hackathons/Scan2CNV/master/files/201113910010_R08C02.PennCnvOut.bed",
+        annotationTracks: annotsTracks,
+        annotationHeight: annotsHeight,
+        container: '#ideo-container',
+        onDrawAnnots: callback
+      };
+      var ideogram = new Ideogram(config);
+    });
+    */
 
     // it("should align chr. label with band-labeled vertical chromosome", function(done) {
     //   // Tests use case from ../examples/human.html
