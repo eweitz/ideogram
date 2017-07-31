@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Annotations, remote URL | Ideogram</title>
+  <title>Annotations, file URL | Ideogram</title>
   <link type="text/css" rel="stylesheet" href="../src/css/ideogram.css"/>
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.1.1/d3.min.js"></script>
   <script type="text/javascript" src="../dist/js/ideogram.min.js"></script>
   <style>
 
@@ -30,8 +29,14 @@
   </style>
 </head>
 <body>
-  <h1>Annotations, remote URL | Ideogram</h1>
-  <a href=".">Back to overview</a>
+  <h1>Annotations, file URL | Ideogram</h1>
+  <a href=".">Back to overview</a> |
+  <a href="annotations_external_data.html">Previous</a> |
+  <a href="annotations_histogram.html">Next</a>
+  <p>
+  Load a BED file by specifying its URL, and see genome-wide data.
+    <a href="?asm=GRCh37&annotsUrl=https://raw.githubusercontent.com/NCBI-Hackathons/Scan2CNV/master/files/201113910010_R08C02.PennCnvOut.bed">Example</a>.
+  </p>
   <p>
     <p id="assembly-options">
       <span>Assembly</span>
@@ -41,13 +46,15 @@
       <label for="GRCh37">GRCh37</label>
     </p>
     <br/>
-    <label for="bed-url-input">BED URL:</label>
+    <label for="bed-url">BED URL:</label>
     <input id="bed-url" type="text" style="width:300px">
     <button id="display-bed">Display BED</button>
   </p>
   <p id="annotations-summary">
   <div id="ideo-container" style="height:400px"></div>
   <script type="text/javascript">
+
+    d3 = Ideogram.d3;
 
   function displayAnnotsCaption() {
     var cfg = ideogram.config,
@@ -98,8 +105,9 @@
   var annotsHeight = 3.5;
 
   var config = {
-    organism: "human",
-    container: '#ideo-container'
+    organism: 'human',
+    container: '#ideo-container',
+    chrHeight: 300
   };
 
   if ('annotsUrl' in urlParams) {
