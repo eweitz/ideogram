@@ -1,26 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Annotations, remote URL | Ideogram</title>
-  <link type="text/css" rel="stylesheet" href="dist/css/ideogram.css"/>
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.1.1/d3.min.js"></script>
-  <script type="text/javascript" src="dist/js/ideogram.js"></script>
+  <title>Annotations, file URL | Ideogram</title>
+  <link type="text/css" rel="stylesheet" href="src/css/ideogram.css"/>
+  <script type="text/javascript" src="dist/js/ideogram.min.js"></script>
   <style>
 
-    .radio-set {
+    #assembly-options {
       clear: both;
       margin-bottom: 20px;
     }
 
-    .radio-set label, .radio-set span {
+    #assembly-options label, #assembly-options span {
       float: left;
       clear: none;
       display: block;
       padding: 0px 1em 0 5px;
     }
 
-    .radio-set input[type=radio],
-    .radio-set input.radio {
+
+    #assembly-options input[type=radio],
+    #assembly-options input.radio {
       float: left;
       clear: none;
       margin: 2px 0 0 2px;
@@ -29,31 +29,32 @@
   </style>
 </head>
 <body>
-  <h1>Annotations, remote URL | Ideogram</h1>
-  <a href=".">Back to overview</a>
+  <h1>Annotations, file URL | Ideogram</h1>
+  <a href=".">Back to overview</a> |
+  <a href="annotations_external_data.html">Previous</a> |
+  <a href="annotations_histogram.html">Next</a>
   <p>
-    <p class="radio-set">
+  Load a BED file by specifying its URL, and see genome-wide data.
+    <a href="?asm=GRCh37&annotsUrl=https://raw.githubusercontent.com/NCBI-Hackathons/Scan2CNV/master/files/201113910010_R08C02.PennCnvOut.bed">Example</a>.
+  </p>
+  <p>
+    <p id="assembly-options">
       <span>Assembly</span>
       <input type="radio" name="asm" id="GRCh38" value="GRCh38" checked>
       <label for="GRCh38">GRCh38</label>
       <input type="radio" name="asm" id="GRCh37" value="GRCh37">
       <label for="GRCh37">GRCh37</label>
     </p>
-    <p class="radio-set">
-      <span>Annotations layout</span>
-      <input type="radio" name="annots-layout" id="basic" value="basic" checked>
-      <label for="basic">Basic</label>
-      <input type="radio" name="annots-layout" id="histogram" value="histogram">
-      <label for="histogram">Histogram</label>
-    </p>
     <br/>
-    <label for="bed-url-input">BED URL:</label>
+    <label for="bed-url">BED URL:</label>
     <input id="bed-url" type="text" style="width:300px">
     <button id="display-bed">Display BED</button>
   </p>
   <p id="annotations-summary">
   <div id="ideo-container" style="height:400px"></div>
   <script type="text/javascript">
+
+    d3 = Ideogram.d3;
 
   function displayAnnotsCaption() {
     var cfg = ideogram.config,
@@ -73,14 +74,13 @@
   d3.select('#display-bed').on('click', function() {
     var bedUrl = d3.select("#bed-url").nodes()[0].value;
     var asm = d3.select('input[name="asm"]:checked').nodes()[0].value;
-    var annotsLayout = d3.select('input[name="annots-layout"]:checked').nodes()[0].value;
     d3.select('#ideo-container').nodes()[0].innerHTML = '';
     delete chrBands; // TODO: this shold be deleted automatically in Ideogram.js
     ideogram = new Ideogram({
       organism: "human",
       assembly: asm,
       annotationsPath: bedUrl,
-      annotationsLayout: annotsLayout,
+      annotationTracks: annotsTracks,
       annotationHeight: annotsHeight,
       container: '#ideo-container',
       onDrawAnnots: displayAnnotsCaption
@@ -101,24 +101,23 @@
     }
   }
 
+  var annotsTracks = [{"id": "myTrack", "displayName": "Genome features", "color": "#F00"}];
   var annotsHeight = 3.5;
 
   var config = {
-    organism: "human",
-    container: '#ideo-container'
+    organism: 'human',
+    container: '#ideo-container',
+    chrHeight: 300
   };
 
   if ('annotsUrl' in urlParams) {
     // Example annotationsPath:
     // "https://raw.githubusercontent.com/NCBI-Hackathons/Global_Screening_Arrays/master/files/output/pennTest2_gsrcCNVcall.bed",
     config.annotationsPath = urlParams.annotsUrl;
+    config.annotationTracks = annotsTracks;
     config.annotationHeight = annotsHeight;
     config.onDrawAnnots = displayAnnotsCaption;
   }
-  if ('annotsLayout' in urlParams) {
-    config.annotationsLayout = urlParams.annotsLayout;
-  }
-
   if ('asm' in urlParams) {
     config.assembly = urlParams.asm;
     d3.select('#' + urlParams.asm).nodes()[0].checked = true;
