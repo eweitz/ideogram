@@ -492,6 +492,24 @@ describe("Ideogram", function() {
     ideogram = new Ideogram(config);
   });
 
+  it("should have 114 annotations in file URL example", function(done) {
+    // Tests use case from ../examples/annotations_file_url.html
+
+    function callback() {
+      var numAnnots = document.getElementsByClassName("annot").length;
+      assert.equal(numAnnots, 114);
+      done();
+    }
+
+    var config = {
+      organism: 'human',
+      assembly: 'GRCh37',
+      annotationsPath: 'https://raw.githubusercontent.com/NCBI-Hackathons/Scan2CNV/master/files/201113910010_R08C02.PennCnvOut.bed',
+      onDrawAnnots: callback
+    };
+
+    ideogram = new Ideogram(config);
+  });
 
   it("should have histogram bars roughly flush with chromosome ends", function(done) {
     // Tests use case from ../examples/annotations_histogram.html
