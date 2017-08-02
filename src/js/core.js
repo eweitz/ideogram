@@ -1961,7 +1961,7 @@ export default class Ideogram {
     var asmAndChrArray, // [assembly_accession, chromosome_objects_array]
       organism, assemblyAccession, chromosomes, termStem, asmSearch,
       asmUid, asmSummary,
-      rsUid, nuccoreLink,
+      gbUid, nuccoreLink,
       links, ntSummary,
       results, result, cnIndex, chrName, chrLength, chromosome, type,
       ideo = this;
@@ -1974,14 +1974,16 @@ export default class Ideogram {
     if (ideo.assemblyIsAccession()) {
       termStem = ideo.config.assembly + '%22[Assembly%20Accession]';
     } else {
-      termStem = organism + '%22[organism]';
+      termStem = (
+        organism + '%22[organism]' +
+        'AND%20(%22latest%20refseq%22[filter])%20'
+      );
     }
 
     asmSearch =
       ideo.esearch +
       '&db=assembly' +
       '&term=%22' + termStem +
-        'AND%20(%22latest%20refseq%22[filter])%20' +
         'AND%20(%22chromosome%20level%22[filter]%20' +
         'OR%20%22complete%20genome%22[filter])';
 
@@ -1996,8 +1998,8 @@ export default class Ideogram {
         return d3.promise.json(asmSummary);
       })
       .then(function(data) {
-        // RefSeq UID for this assembly
-        rsUid = data.result[asmUid].rsuid;
+        // GenBank UID for this assembly
+        gbUid = data.result[asmUid].gbuid;
         assemblyAccession = data.result[asmUid].assemblyaccession;
 
         asmAndChrArray.push(assemblyAccession);
@@ -2007,7 +2009,7 @@ export default class Ideogram {
         // This information does not seem to be available from well-known
         // NCBI databases like Assembly or Nucleotide, so we use GenColl,
         // a lesser-known NCBI database.
-        var qs = '&db=nuccore&linkname=gencoll_nuccore_chr&from_uid=' + rsUid;
+        var qs = '&db=nuccore&linkname=gencoll_nuccore_chr&from_uid=' + gbUid;
         nuccoreLink = ideo.elink + qs;
 
         return d3.promise.json(nuccoreLink);

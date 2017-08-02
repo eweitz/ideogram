@@ -606,23 +606,41 @@ describe("Ideogram", function() {
       var ideogram = new Ideogram(config);
     });
 
-  it("should use GCF_000306695.2 when specified in 'assembly' parameter", function(done) {
-    // Tests use case for non-default assemblies.
-    // GCF_000306695.2 is commonly called CHM1_1.1
-    // https://www.ncbi.nlm.nih.gov/assembly/GCF_000306695.2/
+    it("should support RefSeq accessions in 'assembly' parameter", function(done) {
+      // Tests use case for non-default assemblies.
+      // GCF_000306695.2 is commonly called CHM1_1.1
+      // https://www.ncbi.nlm.nih.gov/assembly/GCF_000306695.2/
 
-    function callback() {
-      var chr1Length = ideogram.chromosomes["9606"]["1"].length
-      // For reference, see length section of LOCUS field in GenBank record at
-      // https://www.ncbi.nlm.nih.gov/nuccore/CM001609.2
-      assert.equal(chr1Length, 250522664);
-      done();
-    }
+      function callback() {
+        var chr1Length = ideogram.chromosomes["9606"]["1"].length
+        // For reference, see length section of LOCUS field in GenBank record at
+        // https://www.ncbi.nlm.nih.gov/nuccore/CM001609.2
+        assert.equal(chr1Length, 250522664);
+        done();
+      }
 
-    config.assembly = "GCF_000306695.2";
-    config.onLoad = callback;
-    var ideogram = new Ideogram(config);
-  });
+      config.assembly = "GCF_000306695.2";
+      config.onLoad = callback;
+      var ideogram = new Ideogram(config);
+    });
+  
+    it("should support GenBank accessions in 'assembly' parameter", function(done) {
+      // Tests use case for non-default assemblies.
+      // GCA_000002125.2 is commonly called HuRef
+      // https://www.ncbi.nlm.nih.gov/assembly/GCA_000002125.2
+
+      function callback() {
+        var chr1Length = ideogram.chromosomes["9606"]["1"].length
+        // For reference, see length section of LOCUS field in GenBank record at
+        // https://www.ncbi.nlm.nih.gov/nuccore/CM001609.2
+        assert.equal(chr1Length, 219475005);
+        done();
+      }
+
+      config.assembly = "GCA_000002125.2";
+      config.onLoad = callback;
+      var ideogram = new Ideogram(config);
+    });
 
     it("should handle arrayed objects in 'annotations' parameter", function(done) {
       // Tests use case from ../examples/human.html
