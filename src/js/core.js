@@ -2154,6 +2154,10 @@ export default class Ideogram {
 
         chrModel = ideo.getChromosomeModel(bands, chromosome, taxid, chrIndex);
 
+        if (typeof chromosome !== 'string') {
+          chromosome = chromosome.name;
+        }
+
         ideo.chromosomes[taxid][chromosome] = chrModel;
         ideo.chromosomesArray.push(chrModel);
 
