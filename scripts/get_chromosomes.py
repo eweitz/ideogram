@@ -202,9 +202,8 @@ def find_genomes_with_centromeres(asm_summary_response):
             continue
 
         result = data['result'][uid]
-        acc = result['assemblyaccession'] # RefSeq accession.version
+        acc = result['assemblyaccession'] # Accession.version
         name = result['assemblyname']
-        rs_uid = result['rsuid']
         taxid = result['taxid']
         organism = result['speciesname'].lower().replace(' ', '-').strip()
 
@@ -213,6 +212,8 @@ def find_genomes_with_centromeres(asm_summary_response):
         #     continue
         asm_segment = acc + '_' + name.replace(' ', '_').replace('-', '_')
 
+        # NCBI genomes FTP directories have path segments corresponding to a split
+        # assembly accession, e.g. GCF_000001515 -> GCF/000/001/515.
         split_acc = ''
         for i, char in enumerate(acc.split('.')[0].replace('_', '')):
             split_acc += char
@@ -231,7 +232,6 @@ def find_genomes_with_centromeres(asm_summary_response):
         asm = {
             'acc': acc,
             'name': name,
-            'rs_uid': rs_uid,
             'taxid': taxid,
             'organism': organism,
             'agp_ftp_wd': agp_ftp_wd,
@@ -251,7 +251,8 @@ elink = eutils + 'elink.fcgi?retmode=json';
 asms = []
 
 term = quote(
-    '("latest refseq"[filter] AND ("chromosome level"[filter] OR "complete genome"[filter]) AND ' +
+    '("reference genome"[filter] OR "representative genome"[filter]) AND '
+    '("chromosome level"[filter] OR "complete genome"[filter]) AND ' +
     '(animals[filter] OR plants[filter] OR fungi[filter] OR protists[filter])'
 )
 
@@ -274,7 +275,7 @@ logger.info('Fetching ' + asm_summary)
 # Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?retmode=json&db=assembly&id=733711
 with request.urlopen(asm_summary) as response:
     data = json.loads(response.read().decode('utf-8'))
-
+    
 find_genomes_with_centromeres(data)
 
 ftp.quit()

@@ -36,8 +36,11 @@ from os import walk
 # significantly improves performance for the most common use cases.
 output_mappings = {
     'ideogram_9606_GCF_000001305.14_850_V1': 'homo-sapiens',
+    'ideogram_9606_GCF_000001305.14_850_V1': 'homo-sapiens-GCF_000001405.26',
     'ideogram_9606_GCF_000001305.14_550_V1': 'homo-sapiens-550',
+    'ideogram_9606_GCF_000001305.14_550_V1': 'homo-sapiens-GCF_000001405.26-550',
     'ideogram_9606_GCF_000001305.14_400_V1': 'homo-sapiens-400',
+    'ideogram_9606_GCF_000001305.14_400_V1': 'homo-sapiens-GCF_000001405.26-400',
     'ideogram_9606_GCF_000001305.13_850_V1': 'homo-sapiens-GCF_000001405.13-850',
     'ideogram_9606_GCF_000001305.13_550_V1': 'homo-sapiens-GCF_000001405.13-550',
     'ideogram_10090_GCF_000000055.19_NA_V2': 'mus-musculus',
