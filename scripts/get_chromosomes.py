@@ -4,10 +4,10 @@ import urllib.request as request
 from urllib.parse import quote
 import ftplib
 import os
-import shutil
 import json
 import gzip
 import logging
+import io
 
 import convert_band_data
 
@@ -95,6 +95,9 @@ def download_genome_agp(asm):
 
     file_names = ftp.nlst()
 
+    def handle_binary(data):
+        bytesio_object.write(data)
+
     logger.info('List of files in FTP working directory')
     logger.info(file_names)
     for file_name in file_names:
@@ -102,24 +105,20 @@ def download_genome_agp(asm):
         # We retrieve both agp.gz and comp.agp.gz files
         # Former is more common, latter used for some organisms (e.g. platypus)
 
-        output_path = asm_output_dir + file_name
-
-        if os.path.exists(asm_output_dir) == False:
-            os.makedirs(asm_output_dir)
+        bytesio_object = io.BytesIO()
 
         # Example full URL of file:
         # 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF_000001515.7_Pan_tro_3.0/GCF_000001515.7_Pan_tro_3.0_assembly_structure/Primary_Assembly/assembled_chromosomes/AGP/chr1.agp.gz'
         logger.info('Retrieving from FTP: ' + file_name)
-        with open(output_path, 'wb') as file:
-            ftp.retrbinary('RETR '+ file_name, file.write)
 
-        with gzip.open(output_path, 'rb') as file:
-            agp = file.read().decode('utf-8')
+        ftp.retrbinary('RETR ' + file_name, callback=handle_binary)
+
+        bytesio_object.seek(0) # Go back to the start
+        zip_data = gzip.GzipFile(fileobj=bytesio_object)
+
+        agp = zip_data.read().decode('utf-8')
 
         chr = get_chromosome_object(agp)
-
-        # Remove e.g. chr1.agp.gz in its respective directory
-        os.remove(output_path)
 
         chr_acc = chr['accession']
         if chr_acc not in chrs_seen:
@@ -190,9 +189,6 @@ def download_genome_agp(asm):
 
         with open(long_output_path, 'w') as f:
             f.write(js_chrs)
-
-    if os.path.exists(output_dir + organism + '/'):
-        shutil.rmtree(output_dir + organism + '/')
 
 
 def find_genomes_with_centromeres(asm_summary_response):
