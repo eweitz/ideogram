@@ -75,7 +75,7 @@ def get_chromosome_object(agp):
 def download_genome_agp(asm):
 
     agp_ftp_wd = asm['agp_ftp_wd']
-    acc = asm['acc']
+    asm_acc = asm['acc']
     organism = asm['organism']
     asm_output_dir = asm['asm_output_dir']
     asm_name = asm['name']
@@ -99,6 +99,8 @@ def download_genome_agp(asm):
     logger.info(file_names)
     for file_name in file_names:
         # Download each chromomsome's compressed AGP file
+        # We retrieve both agp.gz and comp.agp.gz files
+        # Former is more common, latter used for some organisms (e.g. platypus)
 
         output_path = asm_output_dir + file_name
 
@@ -145,7 +147,8 @@ def download_genome_agp(asm):
         leaf = ''
         if organism in ('homo-sapiens', 'mus-musculus', 'rattus-norvegicus'):
             leaf = '-no-bands'
-        output_path = output_dir + organism + leaf + ".js"
+        output_path = output_dir + organism + leaf + '.js'
+        long_output_path = output_dir + organism + '-' + asm_acc + '.js'
 
         adapted_chromosomes = []
 
@@ -185,7 +188,11 @@ def download_genome_agp(asm):
         with open(output_path, 'w') as f:
             f.write(js_chrs)
 
-    shutil.rmtree(output_dir + organism + '/')
+        with open(long_output_path, 'w') as f:
+            f.write(js_chrs)
+
+    if os.path.exists(output_dir + organism + '/'):
+        shutil.rmtree(output_dir + organism + '/')
 
 
 def find_genomes_with_centromeres(asm_summary_response):
@@ -251,7 +258,7 @@ elink = eutils + 'elink.fcgi?retmode=json';
 asms = []
 
 term = quote(
-    '("reference genome"[filter] OR "representative genome"[filter]) AND '
+    '("latest refseq"[filter]) AND '
     '("chromosome level"[filter] OR "complete genome"[filter]) AND ' +
     '(animals[filter] OR plants[filter] OR fungi[filter] OR protists[filter])'
 )
@@ -275,7 +282,7 @@ logger.info('Fetching ' + asm_summary)
 # Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?retmode=json&db=assembly&id=733711
 with request.urlopen(asm_summary) as response:
     data = json.loads(response.read().decode('utf-8'))
-    
+
 find_genomes_with_centromeres(data)
 
 ftp.quit()
