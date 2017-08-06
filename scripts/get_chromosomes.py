@@ -9,6 +9,7 @@ import gzip
 import logging
 import io
 import multiprocessing
+import time
 
 import convert_band_data
 
@@ -110,7 +111,13 @@ def download_genome_agp(ftp, asm):
         # 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF_000001515.7_Pan_tro_3.0/GCF_000001515.7_Pan_tro_3.0_assembly_structure/Primary_Assembly/assembled_chromosomes/AGP/chr1.agp.gz'
         logger.info('Retrieving from FTP: ' + file_name)
 
-        ftp.retrbinary('RETR ' + file_name, callback=handle_binary)
+        try:
+            ftp.retrbinary('RETR ' + file_name, callback=handle_binary)
+        except ftplib.error_temp as e:
+            # E.g. "ftplib.error_temp: 425 EPSV: Address already in use"
+            logger.info('Caught FTP error; retrying in 1 second')
+            time.sleep(1)
+            ftp.retrbinary('RETR ' + file_name, callback=handle_binary)
 
         bytesio_object.seek(0) # Go back to the start
         zip_data = gzip.GzipFile(fileobj=bytesio_object)
@@ -294,7 +301,7 @@ top_uid_list = data['esearchresult']['idlist']
 logger.info('Assembly UIDs returned in search results: ' + str(len(top_uid_list)))
 
 # TODO: Make this configurable
-num_cores = multiprocessing.cpu_count() - 1
+num_cores = multiprocessing.cpu_count()
 
 uid_lists = chunkify(top_uid_list, num_cores)
 
