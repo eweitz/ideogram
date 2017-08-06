@@ -8,6 +8,7 @@ import json
 import gzip
 import logging
 import io
+import multiprocessing
 
 import convert_band_data
 
@@ -39,8 +40,6 @@ logger.info('Starting get_chromosomes.py')
 orgs_with_centromere_data = {}
 
 ftp_domain = 'ftp.ncbi.nlm.nih.gov'
-ftp = ftplib.FTP(ftp_domain)
-ftp.login()
 
 
 def get_chromosome_object(agp):
@@ -72,7 +71,7 @@ def get_chromosome_object(agp):
     return chr
 
 
-def download_genome_agp(asm):
+def download_genome_agp(ftp, asm):
 
     agp_ftp_wd = asm['agp_ftp_wd']
     asm_acc = asm['acc']
@@ -191,7 +190,7 @@ def download_genome_agp(asm):
             f.write(js_chrs)
 
 
-def find_genomes_with_centromeres(asm_summary_response):
+def find_genomes_with_centromeres(ftp, asm_summary_response):
 
     data = asm_summary_response
 
@@ -242,9 +241,33 @@ def find_genomes_with_centromeres(asm_summary_response):
             'asm_segment': asm_segment
         }
 
-        download_genome_agp(asm)
+        download_genome_agp(ftp, asm)
 
         asms.append(asm)
+
+
+def chunkify(lst, n):
+    return [lst[i::n] for i in range(n)]
+
+
+def pool_processing(uid_list):
+
+    uid_list = ','.join(uid_list)
+
+    asm_summary = esummary + '&db=assembly&id=' + uid_list
+
+    logger.info('Fetching ' + asm_summary)
+    # Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?retmode=json&db=assembly&id=733711
+    with request.urlopen(asm_summary) as response:
+        data = json.loads(response.read().decode('utf-8'))
+
+    ftp = ftplib.FTP(ftp_domain)
+    ftp.login()
+
+    find_genomes_with_centromeres(ftp, data)
+
+    ftp.quit()
+
 
 eutils = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
 esearch = eutils + 'esearch.fcgi?retmode=json';
@@ -266,22 +289,19 @@ with request.urlopen(asm_search) as response:
     data = json.loads(response.read().decode('utf-8'))
 
 # Returns ~1000 ids
-uid_list = data['esearchresult']['idlist']
+top_uid_list = data['esearchresult']['idlist']
 
-logger.info('Assembly UIDs returned in search results: ' + str(len(uid_list)))
+logger.info('Assembly UIDs returned in search results: ' + str(len(top_uid_list)))
 
-uid_list = ','.join(uid_list)
+# TODO: Make this configurable
+num_cores = multiprocessing.cpu_count() - 1
 
-asm_summary = esummary + '&db=assembly&id=' + uid_list
+uid_lists = chunkify(top_uid_list, num_cores)
 
-logger.info('Fetching ' + asm_summary)
-# Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?retmode=json&db=assembly&id=733711
-with request.urlopen(asm_summary) as response:
-    data = json.loads(response.read().decode('utf-8'))
+pool = multiprocessing.Pool(num_cores)
 
-find_genomes_with_centromeres(data)
+pool.map(pool_processing, uid_lists)
 
-ftp.quit()
 
 logger.info('Calling convert_band_data.py')
 convert_band_data.main()
