@@ -90,7 +90,7 @@ def download_genome_agp(ftp, asm):
     try:
         ftp.cwd(agp_ftp_wd)
     except ftplib.error_perm as e:
-        logger.info(e)
+        logger.warning(e)
         return
 
     file_names = ftp.nlst()
@@ -109,13 +109,16 @@ def download_genome_agp(ftp, asm):
 
         # Example full URL of file:
         # 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF_000001515.7_Pan_tro_3.0/GCF_000001515.7_Pan_tro_3.0_assembly_structure/Primary_Assembly/assembled_chromosomes/AGP/chr1.agp.gz'
-        logger.info('Retrieving from FTP: ' + file_name)
+        logger.info(
+            'Retrieving from FTP (' + asm_name + ', ' + asm_acc + '): ' +
+            file_name
+        )
 
         try:
             ftp.retrbinary('RETR ' + file_name, callback=handle_binary)
         except ftplib.error_temp as e:
             # E.g. "ftplib.error_temp: 425 EPSV: Address already in use"
-            logger.info('Caught FTP error; retrying in 1 second')
+            logger.warning('Caught FTP error; retrying in 1 second')
             time.sleep(1)
             ftp.retrbinary('RETR ' + file_name, callback=handle_binary)
 
@@ -145,12 +148,21 @@ def download_genome_agp(ftp, asm):
 
     if has_centromere_data == False:
         logger.info(
-            'No centromere data found in AGP for ' + organism + ' ' +
-            'for any chromosomes in genome assembly ' + asm_name
+            'No centromere data found in any AGP for ' + organism + ' ' +
+            'in genome assembly ' + asm_name + ' (' + asm_acc + ')'
         )
     else:
+
+        logger.info(
+            'Centromeres found in AGP for ' + organism + ' ' +
+            'in genome assembly ' + asm_name + ' (' + asm_acc + ')'
+        )
         leaf = ''
-        if organism in ('homo-sapiens', 'mus-musculus', 'rattus-norvegicus'):
+        if (
+            (organism == 'homo-sapiens' and asm_name[:3] == 'GRC') or
+            (organism == 'mus-musculus' and asm_name[:3] in ('GRC', 'MGS')) or
+            (organism == 'rattus-norvegicus' and asm_name[:3] == 'Rnor')
+        ):
             leaf = '-no-bands'
         output_path = output_dir + organism + leaf + '.js'
         long_output_path = output_dir + organism + '-' + asm_acc + '.js'

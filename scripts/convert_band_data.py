@@ -51,6 +51,7 @@ output_mappings = {
         'homo-sapiens-GCF_000001405.26-400'
     ],
     'ideogram_9606_GCF_000001305.13_850_V1': [
+        'homo-sapiens-GCF_000001405.13',
         'homo-sapiens-GCF_000001405.13-850'
     ],
     'ideogram_9606_GCF_000001305.13_550_V1': [
