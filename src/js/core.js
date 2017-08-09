@@ -57,7 +57,7 @@ export default class Ideogram {
     this.selector = this.config.container + ' #_ideogram';
 
     if (!this.config.resolution) {
-      this.config.resolution = 850;
+      this.config.resolution = '';
     }
 
     if ('showChromosomeLabels' in this.config === false) {
@@ -1814,7 +1814,8 @@ export default class Ideogram {
         }
       }
 
-      if (taxids.length === 0 || ideo.assemblyIsAccession()) {
+      // if (taxids.length === 0 || ideo.assemblyIsAccession()) {
+      if (taxids.length === 0) {
         promise = new Promise(function(resolve) {
           ideo.getTaxidFromEutils(resolve);
         });
@@ -2145,6 +2146,13 @@ export default class Ideogram {
       taxid = taxids[i];
       chrs = ideo.config.chromosomes[taxid];
 
+      if (
+        typeof chrBands !== 'undefined' &&
+        chrs.length >= chrBands.length/2
+      ) {
+        ideo.coordinateSystem = 'bp';
+      }
+
       ideo.chromosomes[taxid] = {};
 
       ideo.setSexChromosomes(chrs);
@@ -2418,7 +2426,12 @@ export default class Ideogram {
           ideo.config.assembly = 'default';
         }
         assemblies = ideo.organisms[taxid].assemblies;
-        accession = assemblies[ideo.config.assembly];
+
+        if (ideo.assemblyIsAccession()) {
+          accession = ideo.config.assembly;
+        } else {
+          accession = assemblies[ideo.config.assembly];
+        }
 
         bandFileName = [];
         bandFileName.push(
@@ -2429,7 +2442,9 @@ export default class Ideogram {
         }
         if (
           taxid === '9606' &&
-          (accession !== assemblies.default || resolution !== 850)
+          (accession in assemblies === 'false' &&
+          Object.values(assemblies).indexOf(ideo.config.assembly) === -1 ||
+          (resolution !== '' && resolution !== 850))
         ) {
           bandFileName.push(resolution);
         }
