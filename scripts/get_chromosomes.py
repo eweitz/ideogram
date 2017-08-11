@@ -72,6 +72,68 @@ def get_chromosome_object(agp):
     return chr
 
 
+# Downloads gzipped FTP data in binary format, returns plain text content
+def fetch_gzipped_ftp(ftp, file_name):
+
+    bytesio_object = io.BytesIO()
+
+    def handle_binary(data):
+        bytesio_object.write(data)
+
+    try:
+        ftp.retrbinary('RETR ' + file_name, callback=handle_binary)
+    except ftplib.error_temp as e:
+        # E.g. "ftplib.error_temp: 425 EPSV: Address already in use"
+        logger.warning('Caught FTP error; retrying in 1 second')
+        time.sleep(1)
+        ftp.retrbinary('RETR ' + file_name, callback=handle_binary)
+
+    bytesio_object.seek(0) # Go back to the start
+    zip_data = gzip.GzipFile(fileobj=bytesio_object)
+
+    content = zip_data.read().decode('utf-8')
+
+    return content
+
+
+def change_ftp_dir(ftp, wd):
+
+    logger.info('Changing FTP working directory to: ' + wd)
+    try:
+        ftp.cwd(wd)
+        return 0
+    except ftplib.error_perm as e:
+        logger.warning(e)
+        return 1
+
+
+def download_genome_regions(ftp, regions_ftp):
+
+    centromeres = {}
+
+    wd = regions_ftp.split('/')[:-1].join('/')
+
+    change_ftp_dir(ftp, wd)
+
+    # Example:
+    # ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.37_GRCh38.p11/GCF_000001405.37_GRCh38.p11_assembly_regions.txt
+    content = fetch_gzipped_ftp(ftp, regions_ftp)
+
+    for line in content.readlines():
+        if line[0] == '#':
+            continue
+        columns = line.split('\t')
+        role = columns[4]
+        if role in ('CEN'):
+            chr = columns[1]
+            start = columns[2]
+            stop = columns[3]
+            centromeres[chr] = [start, stop]
+
+    return centromeres
+
+
+
 def download_genome_agp(ftp, asm):
 
     agp_ftp_wd = asm['agp_ftp_wd']
@@ -80,23 +142,18 @@ def download_genome_agp(ftp, asm):
     asm_output_dir = asm['asm_output_dir']
     asm_name = asm['name']
     asm_segment = asm['asm_segment']
+    regions_ftp = asm['regions_ftp']
 
     chrs = []
     chrs_seen = {}
 
     has_centromere_data = False
 
-    logger.info('Changing FTP working directory to: ' + agp_ftp_wd)
-    try:
-        ftp.cwd(agp_ftp_wd)
-    except ftplib.error_perm as e:
-        logger.warning(e)
+    status = change_ftp_dir(ftp, agp_ftp_wd)
+    if status == 1:
         return
 
     file_names = ftp.nlst()
-
-    def handle_binary(data):
-        bytesio_object.write(data)
 
     logger.info('List of files in FTP working directory')
     logger.info(file_names)
@@ -105,8 +162,6 @@ def download_genome_agp(ftp, asm):
         # We retrieve both agp.gz and comp.agp.gz files
         # Former is more common, latter used for some organisms (e.g. platypus)
 
-        bytesio_object = io.BytesIO()
-
         # Example full URL of file:
         # 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF_000001515.7_Pan_tro_3.0/GCF_000001515.7_Pan_tro_3.0_assembly_structure/Primary_Assembly/assembled_chromosomes/AGP/chr1.agp.gz'
         logger.info(
@@ -114,18 +169,7 @@ def download_genome_agp(ftp, asm):
             file_name
         )
 
-        try:
-            ftp.retrbinary('RETR ' + file_name, callback=handle_binary)
-        except ftplib.error_temp as e:
-            # E.g. "ftplib.error_temp: 425 EPSV: Address already in use"
-            logger.warning('Caught FTP error; retrying in 1 second')
-            time.sleep(1)
-            ftp.retrbinary('RETR ' + file_name, callback=handle_binary)
-
-        bytesio_object.seek(0) # Go back to the start
-        zip_data = gzip.GzipFile(fileobj=bytesio_object)
-
-        agp = zip_data.read().decode('utf-8')
+        agp = fetch_gzipped_ftp(ftp, file_name)
 
         chr = get_chromosome_object(agp)
 
@@ -151,6 +195,11 @@ def download_genome_agp(ftp, asm):
             'No centromere data found in any AGP for ' + organism + ' ' +
             'in genome assembly ' + asm_name + ' (' + asm_acc + ')'
         )
+
+        if regions_ftp != '':
+            centromeres = download_genome_regions(regions_ftp)
+
+
     else:
 
         logger.info(
@@ -161,8 +210,9 @@ def download_genome_agp(ftp, asm):
         if (
             (organism == 'homo-sapiens' and asm_name[:3] == 'GRC') or
             (organism == 'mus-musculus' and asm_name[:3] in ('GRC', 'MGS')) or
-            (organism == 'rattus-norvegicus' and asm_name[:3] == 'Rnor')
+            (organism == 'rattus-norvegicus' and asm_name[:4] == 'Rnor')
         ):
+            logger.info('Got no-bands assembly: ' + asm_name)
             leaf = '-no-bands'
         output_path = output_dir + organism + leaf + '.js'
         long_output_path = output_dir + organism + '-' + asm_acc + '.js'
@@ -242,11 +292,16 @@ def find_genomes_with_centromeres(ftp, asm_summary_response):
                 split_acc += '/'
 
         # Example: ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/515/GCF_000001515.7_Pan_tro_3.0/GCF_000001515.7_Pan_tro_3.0_assembly_structure/Primary_Assembly/assembled_chromosomes/AGP/chr1.agp.gz
+        # FTP working directory of AGP files
         agp_ftp_wd = (
             '/genomes/all/' + split_acc +
             asm_segment + '/' + asm_segment + '_assembly_structure/' +
             'Primary_Assembly/assembled_chromosomes/AGP/'
         )
+
+        regions_ftp_ = result['ftppath_regions_rpt']
+        if regions_ftp != '':
+            regions_ftp = regions_ftp.split('nih.gov')[1]
 
         asm_output_dir = output_dir + organism + '/' + asm_segment + '/'
 
@@ -257,7 +312,8 @@ def find_genomes_with_centromeres(ftp, asm_summary_response):
             'organism': organism,
             'agp_ftp_wd': agp_ftp_wd,
             'asm_output_dir': asm_output_dir,
-            'asm_segment': asm_segment
+            'asm_segment': asm_segment,
+            'regions_ftp': regions_ftp
         }
 
         download_genome_agp(ftp, asm)
