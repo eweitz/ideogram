@@ -72,8 +72,8 @@ def get_chromosome_object(agp):
     return chr
 
 
-# Downloads gzipped FTP data in binary format, returns plain text content
-def fetch_gzipped_ftp(ftp, file_name):
+
+def fetch_ftp(ftp, file_name):
 
     bytesio_object = io.BytesIO()
 
@@ -88,7 +88,16 @@ def fetch_gzipped_ftp(ftp, file_name):
         time.sleep(1)
         ftp.retrbinary('RETR ' + file_name, callback=handle_binary)
 
+    return bytesio_object
+
+
+# Downloads gzipped FTP data in binary format, returns plain text content
+def fetch_gzipped_ftp(ftp, file_name):
+
+    bytesio_object = fetch_ftp(ftp, file_name)
+
     bytesio_object.seek(0) # Go back to the start
+
     zip_data = gzip.GzipFile(fileobj=bytesio_object)
 
     content = zip_data.read().decode('utf-8')
@@ -106,21 +115,23 @@ def change_ftp_dir(ftp, wd):
         logger.warning(e)
         return 1
 
-
+# GRCh38 defines centromeres and heterochromatin in regions files, not AGP gaps
 def download_genome_regions(ftp, regions_ftp):
 
     centromeres = {}
 
-    wd = regions_ftp.split('/')[:-1].join('/')
+    wd = '/'.join(regions_ftp.split('/')[:-1])
 
     change_ftp_dir(ftp, wd)
 
+    logger.info('Downloading genome regions ' + regions_ftp)
+
     # Example:
     # ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.37_GRCh38.p11/GCF_000001405.37_GRCh38.p11_assembly_regions.txt
-    content = fetch_gzipped_ftp(ftp, regions_ftp)
+    content = fetch_ftp(ftp, regions_ftp).getvalue().decode('utf-8')
 
-    for line in content.readlines():
-        if line[0] == '#':
+    for line in content.split('\n'):
+        if len(line) == 0 or line[0] == '#':
             continue
         columns = line.split('\t')
         role = columns[4]
@@ -128,7 +139,13 @@ def download_genome_regions(ftp, regions_ftp):
             chr = columns[1]
             start = columns[2]
             stop = columns[3]
-            centromeres[chr] = [start, stop]
+            centromeres[chr] = {
+                'start': int(start),
+                'length': int(stop) - int(start)
+            }
+
+    if len(centromeres) > 0:
+        logger.info('Found centromeres in regions for FTP path ' + regions_ftp)
 
     return centromeres
 
@@ -190,20 +207,26 @@ def download_genome_agp(ftp, asm):
             )
             continue
 
-    if has_centromere_data == False:
+    if not has_centromere_data:
         logger.info(
             'No centromere data found in any AGP for ' + organism + ' ' +
             'in genome assembly ' + asm_name + ' (' + asm_acc + ')'
         )
 
         if regions_ftp != '':
-            centromeres = download_genome_regions(regions_ftp)
+            centromeres = download_genome_regions(ftp, regions_ftp)
+            if len(centromeres) > 0:
+                has_centromere_data = True
+                orgs_with_centromere_data[organism] = 1
+                for chr in centromeres:
+                    for chr2 in chrs:
+                        if chr == chr2['name']:
+                            chr2['centromere'] = centromeres[chr]
 
-
-    else:
+    if has_centromere_data:
 
         logger.info(
-            'Centromeres found in AGP for ' + organism + ' ' +
+            'Centromeres found for ' + organism + ' ' +
             'in genome assembly ' + asm_name + ' (' + asm_acc + ')'
         )
         leaf = ''
@@ -299,7 +322,7 @@ def find_genomes_with_centromeres(ftp, asm_summary_response):
             'Primary_Assembly/assembled_chromosomes/AGP/'
         )
 
-        regions_ftp_ = result['ftppath_regions_rpt']
+        regions_ftp = result['ftppath_regions_rpt']
         if regions_ftp != '':
             regions_ftp = regions_ftp.split('nih.gov')[1]
 
