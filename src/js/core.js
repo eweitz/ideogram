@@ -1814,8 +1814,11 @@ export default class Ideogram {
         }
       }
 
-      // if (taxids.length === 0 || ideo.assemblyIsAccession()) {
-      if (taxids.length === 0) {
+      if (
+        taxids.length === 0 ||
+        ideo.assemblyIsAccession() && /GCA_/.test(ideo.config.assembly)
+      ) {
+      // if (taxids.length === 0) {
         promise = new Promise(function(resolve) {
           ideo.getTaxidFromEutils(resolve);
         });
@@ -2456,6 +2459,7 @@ export default class Ideogram {
 
         if (
           typeof accession !== 'undefined' &&
+          /GCA_/.test(ideo.config.assembly) === false &&
           typeof chrBands === 'undefined' && taxid in bandDataFileNames
         ) {
           d3.request(ideo.config.dataDir + bandDataFileNames[taxid])
