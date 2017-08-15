@@ -26,7 +26,6 @@ describe("Ideogram", function() {
 
     config = {
       organism: "human",
-      resolution: 550,
       chrWidth: 10,
       chrHeight: 150,
       chrMargin: 10,
