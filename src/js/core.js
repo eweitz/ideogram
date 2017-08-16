@@ -988,6 +988,10 @@ export default class Ideogram {
     var i, band, pxToIscnScale, iscn, bp, pxLength,
       pxStart, pxStop, iscnStart, iscnStop, bpLength, iscnLength;
 
+    if (px === 0) {
+      px = chr.bands[0].px.start;
+    }
+
     for (i = 0; i < chr.bands.length; i++) {
       band = chr.bands[i];
 
