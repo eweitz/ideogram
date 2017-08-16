@@ -1012,7 +1012,7 @@ export default class Ideogram {
 
     throw new Error(
       'Pixel out of range.  ' +
-      'px: ' + bp + '; length of chr' + chr.name + ': ' + pxStop
+      'px: ' + px + '; length of chr' + chr.name + ': ' + pxStop
     );
   }
 
