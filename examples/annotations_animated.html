@@ -11,7 +11,10 @@
 <div class="container">
     This ideogram shows the distribution of all analyzed mouse genes throughout the genome.  Filter 15,000+ genes in < 100 ms by clicking the boxes below.
     <div class="ideogram-container" style="margin-top: 10px; margin-left: 10px; height: 400px;"></div>
-    <div class="facets" style="margin-top: 50px;"></div>
+    <input id="animate-f0" class="animate-button" type="button" value="Animate F0" style="margin: 50px 0 15px 0;"/>
+    <input id="animate-f10" class="animate-button" type="button" value="Animate F10" />
+    <input id="animate-f150" class="animate-button" type="button" value="Animate F150" />
+    <div class="facets"></div>
 </div>
 <script>
   var counts, key, count;
@@ -23,16 +26,70 @@
     return value[0].toUpperCase() + value.substr(1,).replace('-', ' ');
   }
 
+  function updateFilters() {
+    var tmp, facet,
+      checkedFilter,
+      checkedFilters,
+      selections = {},
+      i, facet, counts, count,
+      filterID;
+
+    checkedFilters = d3.selectAll("input:checked").nodes();
+
+    for (i = 0; i < checkedFilters.length; i++) {
+      tmp = checkedFilters[i].id.split("_");
+      facet = tmp[1] + '_' + tmp[2] + '_' + tmp[3];
+      checkedFilter = tmp[tmp.length - 1];
+
+      filterID = filterMap[facet][checkedFilter];
+      if (facet in selections == false) {
+        selections[facet] = {};
+      }
+      selections[facet][filterID] = 1;
+    }
+
+    counts = ideogram.filterAnnots(selections);
+
+    for (facet in counts) {
+      for (i = 0; i < counts[facet].length; i++) {
+        count = counts[facet][i];
+        key = count.key - 1;
+        value = "(" + count.value + ")";
+
+        // document.querySelectorAll("#" + facet + " .count")[key].innerHTML = value;
+      }
+    }
+  }
+
+
+  function animateFilters(nodes) {
+    setTimeout(function() {
+      var node = nodes.shift(); // remove first element from list, assign it here
+      console.log(node.id);
+      d3.selectAll('input').attr('checked', null);
+      d3.select('#' + node.id).attr('checked', true);
+      updateFilters();
+      if (nodes.length > 0) {
+        return animateFilters(nodes);
+      }
+    }, 500);
+  }
+
   annotsLoaded = false;
   seenF10 = false;
   seenF150 = false;
+  filterMap = {}
   function onDrawAnnots() {
 
     if (annotsLoaded === true) {
       return;
     }
 
-    filterMap = {};
+    d3.selectAll('.animate-button').on('click', function(d) {
+      var dosage = this.id.split('-')[1];
+      var nodes = d3.selectAll('.filter-' + dosage + '-low').nodes();
+      animateFilters(nodes);
+    });
 
     var uls = '';
 
@@ -51,20 +108,26 @@
       };
       var ul = '<ul id="' + key + '" style="float: left">';
 
-      parts = key.split('_');
+      var parts = key.split('_');
+      var month = parts[1];
+      var dosage = parts[2]; // Influenza dosage
 
       // e.g. expression_04M_F10 -> 04M_F10
-      facetLabel = parts[1] + '_' + parts[2];
+      var facetLabel = month + '_' + dosage;
       ul += '<span class="facet-label">' + facetLabel + '</span>';
 
       var innerKeys = Object.keys(filterMap[key]);
       for (var j = 0; j < innerKeys.length; j++) {
         var innerKey = innerKeys[j];
         var id = 'filter_'  + key + '_' + innerKey;
+        var highOrLow = innerKey.split('_').slice(-1)[0];
+        var filterClass = 'filter-' + dosage.toLowerCase() + '-' + highOrLow;
         ul +=
           '<li>' +
           '<label for="' + id + '">' +
-          '<input type="checkbox" id="' + id + '">' + desluggify(innerKey) + '</input>' +
+          '<input type="checkbox" id="' + id + '" class="filter-checkbox ' + filterClass + '">' +
+            desluggify(innerKey) +
+          '</input>' +
           '</label>' +
           '</li>';
       }
@@ -85,44 +148,14 @@
     facetsContainer = '<div style="font-style: italic; margin-bottom: 10px;">Gene expression (high: >= 2, low < 2; edgeR normalized):</div>' + uls;
     d3.select('.facets').html(facetsContainer);
 
-    d3.selectAll("input").on("click", function() {
-      var tmp, facet,
-        checkedFilter,
-        checkedFilters,
-        selections = {},
-        i, facet, counts, count,
-        filterID;
-
-      checkedFilters = d3.selectAll("input:checked").nodes();
-
-      for (i = 0; i < checkedFilters.length; i++) {
-        tmp = checkedFilters[i].id.split("_");
-        facet = tmp[1] + '_' + tmp[2] + '_' + tmp[3];
-        checkedFilter = tmp[tmp.length - 1];
-
-        filterID = filterMap[facet][checkedFilter];
-        if (facet in selections == false) {
-          selections[facet] = {};
-        }
-        selections[facet][filterID] = 1;
-      }
-
-      counts = ideogram.filterAnnots(selections);
-
-      for (facet in counts) {
-        for (i = 0; i < counts[facet].length; i++) {
-          count = counts[facet][i];
-          key = count.key - 1;
-          value = "(" + count.value + ")";
-
-          // document.querySelectorAll("#" + facet + " .count")[key].innerHTML = value;
-        }
-      }
+    d3.selectAll(".filter-checkbox").on("click", function() {
+      updateFilters();
     });
 
 
     annotsLoaded = true;
   }
+
 
   var config = {
     organism: 'mouse',
@@ -134,7 +167,5 @@
 
   var ideogram = new Ideogram(config);
 </script>
-{% block scripts %}
-{% endblock %}
 </body>
 </html>
