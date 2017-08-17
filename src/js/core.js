@@ -988,6 +988,10 @@ export default class Ideogram {
     var i, band, pxToIscnScale, iscn, bp, pxLength,
       pxStart, pxStop, iscnStart, iscnStop, bpLength, iscnLength;
 
+    if (px === 0) {
+      px = chr.bands[0].px.start;
+    }
+
     for (i = 0; i < chr.bands.length; i++) {
       band = chr.bands[i];
 
@@ -1012,7 +1016,7 @@ export default class Ideogram {
 
     throw new Error(
       'Pixel out of range.  ' +
-      'px: ' + bp + '; length of chr' + chr.name + ': ' + pxStop
+      'px: ' + px + '; length of chr' + chr.name + ': ' + pxStop
     );
   }
 
@@ -1253,7 +1257,7 @@ export default class Ideogram {
   */
   processAnnotData(rawAnnots) {
     var keys,
-      i, j, annot, annots, annotsByChr,
+      i, j, k, m, annot, annots, annotsByChr,
       chr,
       chrModel, ra,
       startPx, stopPx, px,
@@ -1265,13 +1269,26 @@ export default class Ideogram {
 
     annots = [];
 
+    m = -1;
     for (i = 0; i < rawAnnots.length; i++) {
+
       annotsByChr = rawAnnots[i];
 
+      chr = annotsByChr.chr;
+      chrModel = ideo.chromosomes[ideo.config.taxid][chr];
+
+      if (typeof chrModel === 'undefined') {
+        console.warn(
+          'Chromosome "' + chr + '" undefined in ideogram; ' +
+          annotsByChr.annots.length + ' annotations not shown'
+        );
+        continue;
+      }
+
+      m++;
       annots.push({chr: annotsByChr.chr, annots: []});
 
       for (j = 0; j < annotsByChr.annots.length; j++) {
-        chr = annotsByChr.chr;
         ra = annotsByChr.annots[j];
         annot = {};
 
@@ -1280,8 +1297,6 @@ export default class Ideogram {
         }
 
         annot.stop = annot.start + annot.length;
-
-        chrModel = ideo.chromosomes[ideo.config.taxid][chr];
 
         startPx = ideo.convertBpToPx(chrModel, annot.start);
         stopPx = ideo.convertBpToPx(chrModel, annot.stop);
@@ -1307,7 +1322,7 @@ export default class Ideogram {
         annot.stopPx = stopPx - 30;
         annot.color = color;
 
-        annots[i].annots.push(annot);
+        annots[m].annots.push(annot);
       }
     }
 
