@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Annotations, animated | Ideogram</title>
+    <link type="text/css" rel="stylesheet" href="../dist/css/ideogram.css"/>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter/1.3.12/crossfilter.min.js"></script>
+    <script type="text/javascript" src="../dist/js/ideogram.min.js"></script>
+    <script type="text/javascript" src="../src/js/filter.js"></script>
+</head>
+<body>
+<div class="container">
+    This ideogram shows the distribution of all analyzed mouse genes throughout the genome.  Filter 15,000+ genes in < 100 ms by clicking the boxes below.
+    <div class="ideogram-container" style="margin-top: 10px; margin-left: 10px; height: 400px;"></div>
+    <div class="facets" style="margin-top: 50px;"></div>
+</div>
+<script>
+  var counts, key, count;
+  var d3 = Ideogram.d3;
+
+
+  // e.g. "very-low" -> "Very low"
+  function desluggify(value) {
+    return value[0].toUpperCase() + value.substr(1,).replace('-', ' ');
+  }
+
+  annotsLoaded = false;
+  seenF10 = false;
+  seenF150 = false;
+  function onDrawAnnots() {
+
+    if (annotsLoaded === true) {
+      return;
+    }
+
+    filterMap = {};
+
+    var uls = '';
+
+    var keysToSkip = {'name': 1, 'start': 1, 'length': 1, 'trackIndex': 1};
+
+    for (var i = 0; i < ideogram.rawAnnots.keys.length; i++) {
+
+      var key = ideogram.rawAnnots.keys[i];
+      if (key in keysToSkip) {
+        continue;
+      }
+
+      filterMap[key] = {
+        "high": 2,
+        "low": 1
+      };
+      var ul = '<ul id="' + key + '" style="float: left">';
+
+      parts = key.split('_');
+
+      // e.g. expression_04M_F10 -> 04M_F10
+      facetLabel = parts[1] + '_' + parts[2];
+      ul += '<span class="facet-label">' + facetLabel + '</span>';
+
+      var innerKeys = Object.keys(filterMap[key]);
+      for (var j = 0; j < innerKeys.length; j++) {
+        var innerKey = innerKeys[j];
+        var id = 'filter_'  + key + '_' + innerKey;
+        ul +=
+          '<li>' +
+          '<label for="' + id + '">' +
+          '<input type="checkbox" id="' + id + '">' + desluggify(innerKey) + '</input>' +
+          '</label>' +
+          '</li>';
+      }
+      ul += '</ul>';
+
+      if (parts[2] == 'F10' && seenF10 === false) {
+        ul = '<div style="clear: both;"></div>' + ul;
+        seenF10 = true;
+      }
+      if (parts[2] == 'F150' && seenF150 === false) {
+        ul = '<div style="clear: both;"></div>' + ul;
+        seenF150 = true;
+      }
+
+      uls += ul;
+    }
+
+    facetsContainer = '<div style="font-style: italic; margin-bottom: 10px;">Gene expression (high: >= 2, low < 2; edgeR normalized):</div>' + uls;
+    d3.select('.facets').html(facetsContainer);
+
+    d3.selectAll("input").on("click", function() {
+      var tmp, facet,
+        checkedFilter,
+        checkedFilters,
+        selections = {},
+        i, facet, counts, count,
+        filterID;
+
+      checkedFilters = d3.selectAll("input:checked").nodes();
+
+      for (i = 0; i < checkedFilters.length; i++) {
+        tmp = checkedFilters[i].id.split("_");
+        facet = tmp[1] + '_' + tmp[2] + '_' + tmp[3];
+        checkedFilter = tmp[tmp.length - 1];
+
+        filterID = filterMap[facet][checkedFilter];
+        if (facet in selections == false) {
+          selections[facet] = {};
+        }
+        selections[facet][filterID] = 1;
+      }
+
+      counts = ideogram.filterAnnots(selections);
+
+      for (facet in counts) {
+        for (i = 0; i < counts[facet].length; i++) {
+          count = counts[facet][i];
+          key = count.key - 1;
+          value = "(" + count.value + ")";
+
+          // document.querySelectorAll("#" + facet + " .count")[key].innerHTML = value;
+        }
+      }
+    });
+
+
+    annotsLoaded = true;
+  }
+
+  var config = {
+    organism: 'mouse',
+    annotationsPath: '../dist/data/annotations/mouse_aging.json',
+    annotationsLayout: 'histogram',
+    container: '.ideogram-container',
+    onDrawAnnots: onDrawAnnots
+  };
+
+  var ideogram = new Ideogram(config);
+</script>
+{% block scripts %}
+{% endblock %}
+</body>
+</html>
