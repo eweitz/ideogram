@@ -1,21 +1,42 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Annotations, animated | Ideogram</title>
-    <link type="text/css" rel="stylesheet" href="../dist/css/ideogram.css"/>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter/1.3.12/crossfilter.min.js"></script>
-    <script type="text/javascript" src="../dist/js/ideogram.min.js"></script>
-    <script type="text/javascript" src="../src/js/filter.js"></script>
+<title>Annotations, animated | Ideogram</title>
+<link type="text/css" rel="stylesheet" href="../dist/css/ideogram.css"/>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter/1.3.12/crossfilter.min.js"></script>
+<script type="text/javascript" src="../dist/js/ideogram.min.js"></script>
+<script type="text/javascript" src="../src/js/filter.js"></script>
+<style>
+    ul {
+        list-style: none;
+        padding-left: 10px;
+        float: left;
+    }
+    label {
+        font-weight: normal;
+    }
+    .facets input {
+        margin-right: 3px;
+    }
+    .facet-label {
+        font-weight: 700;
+    }
+</style>
 </head>
 <body>
-<div class="container">
-    This ideogram shows the distribution of all analyzed mouse genes throughout the genome.  Filter 15,000+ genes in < 100 ms by clicking the boxes below.
-    <div class="ideogram-container" style="margin-top: 10px; margin-left: 10px; height: 400px;"></div>
-    <input id="animate-f0" class="animate-button" type="button" value="Animate F0" style="margin: 50px 0 15px 0;"/>
-    <input id="animate-f10" class="animate-button" type="button" value="Animate F10" />
-    <input id="animate-f150" class="animate-button" type="button" value="Animate F150" />
-    <div class="facets"></div>
-</div>
+<h1>Annotations, animated | Ideogram</h1>
+<a href=".">Back to overview</a> |
+<a href="annotations_histogram.html">Previous</a> |
+<a href="layout_small.html">Next</a>
+<p>
+    See genome-wide transitions in expression over time.
+    Below, changes in gene expression in mouse lung tissue over two years, in three influenza dosage cohorts.
+</p>
+<input id="animate-f0" class="animate-button" type="button" value="Animate F0" />
+<input id="animate-f10" class="animate-button" type="button" value="Animate F10" />
+<input id="animate-f150" class="animate-button" type="button" value="Animate F150" />
+<div class="ideogram-container" style="margin-top: 10px; margin-left: 10px; height: 300px;"></div>
+<div style="margin-top: 50px"></div>
+<div class="facets"></div>
 <script>
   var counts, key, count;
   var d3 = Ideogram.d3;
@@ -126,7 +147,7 @@
           '<li>' +
           '<label for="' + id + '">' +
           '<input type="checkbox" id="' + id + '" class="filter-checkbox ' + filterClass + '">' +
-            desluggify(innerKey) +
+          desluggify(innerKey) +
           '</input>' +
           '</label>' +
           '</li>';
@@ -145,7 +166,11 @@
       uls += ul;
     }
 
-    facetsContainer = '<div style="font-style: italic; margin-bottom: 10px;">Gene expression (high: >= 2, low < 2; edgeR normalized):</div>' + uls;
+    facetsContainer =
+      '<div style="font-style: italic;">' +
+        'Filter by gene expression (high: >= 2, low < 2; edgeR normalized):' +
+      '</div>' +
+        uls;
     d3.select('.facets').html(facetsContainer);
 
     d3.selectAll(".filter-checkbox").on("click", function() {
