@@ -1751,8 +1751,8 @@ export default class Ideogram {
   }
 
   /*
-*  Returns an NCBI taxonomy identifier (taxid) for the configured organism
-*/
+  *  Returns an NCBI taxonomy identifier (taxid) for the configured organism
+  */
   getTaxidFromEutils(callback) {
     var organism, taxonomySearch, taxid,
       ideo = this;
@@ -1767,6 +1767,20 @@ export default class Ideogram {
     });
   }
 
+  getOrganismFromEutils(callback) {
+    var organism, taxonomySearch, taxid,
+      ideo = this;
+
+    taxid = ideo.config.organism;
+
+    taxonomySearch = ideo.esummary + '&db=taxonomy&id=' + taxid;
+
+    d3.json(taxonomySearch, function(data) {
+      organism = data.result['' + taxid].commonname;
+      ideo.config.organism = organism;
+      return callback(organism);
+    });
+  }
   /**
   * Returns an array of taxids for the current ideogram
   * Also sets configuration parameters related to taxid(s), whether ideogram is
@@ -2406,7 +2420,14 @@ export default class Ideogram {
       accession;
 
     var promise = new Promise(function(resolve) {
-      ideo.getTaxids(resolve);
+      if (typeof ideo.config.organism === 'number') {
+        // 'organism' is a taxid, e.g. 9606
+        ideo.getOrganismFromEutils(function() {
+          ideo.getTaxids(resolve);
+        });
+      } else {
+        ideo.getTaxids(resolve);
+      }
     });
 
     promise.then(function(taxids) {

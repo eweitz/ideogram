@@ -841,7 +841,23 @@ describe("Ideogram", function() {
       var ideogram = new Ideogram(config);
     });
 
-    // it("should align chr. label with band-labeled vertical chromosome", function(done) {
+    it("should support using NCBI Taxonomy ID in 'organism' option", function(done) {
+
+      function callback() {
+        var numChromosomes = Object.keys(ideogram.chromosomes[9606]).length;
+        assert.equal(numChromosomes, 24);
+        done();
+      }
+      
+      var config = {
+        organism: 9606
+      };
+      config.onLoad = callback;
+      var ideogram = new Ideogram(config);
+    });
+
+
+  // it("should align chr. label with band-labeled vertical chromosome", function(done) {
     //   // Tests use case from ../examples/human.html
     //
     //   function callback() {
