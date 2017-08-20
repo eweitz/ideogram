@@ -26,7 +26,6 @@ describe("Ideogram", function() {
 
     config = {
       organism: "human",
-      resolution: 550,
       chrWidth: 10,
       chrHeight: 150,
       chrMargin: 10,
@@ -624,6 +623,42 @@ describe("Ideogram", function() {
       var ideogram = new Ideogram(config);
     });
 
+    it("should support RefSeq accessions in 'assembly' parameter", function(done) {
+      // Tests use case for non-default assemblies.
+      // GCF_000306695.2 is commonly called CHM1_1.1
+      // https://www.ncbi.nlm.nih.gov/assembly/GCF_000306695.2/
+
+      function callback() {
+        var chr1Length = ideogram.chromosomes["9606"]["1"].length
+        // For reference, see length section of LOCUS field in GenBank record at
+        // https://www.ncbi.nlm.nih.gov/nuccore/CM001609.2
+        assert.equal(chr1Length, 250522664);
+        done();
+      }
+
+      config.assembly = "GCF_000306695.2";
+      config.onLoad = callback;
+      var ideogram = new Ideogram(config);
+    });
+  
+    it("should support GenBank accessions in 'assembly' parameter", function(done) {
+      // Tests use case for non-default assemblies.
+      // GCA_000002125.2 is commonly called HuRef
+      // https://www.ncbi.nlm.nih.gov/assembly/GCA_000002125.2
+
+      function callback() {
+        var chr1Length = ideogram.chromosomes["9606"]["1"].length
+        // For reference, see length section of LOCUS field in GenBank record at
+        // https://www.ncbi.nlm.nih.gov/nuccore/CM001609.2
+        assert.equal(chr1Length, 219475005);
+        done();
+      }
+
+      config.assembly = "GCA_000002125.2";
+      config.onLoad = callback;
+      var ideogram = new Ideogram(config);
+    });
+
     it("should handle arrayed objects in 'annotations' parameter", function(done) {
       // Tests use case from ../examples/human.html
 
@@ -819,6 +854,21 @@ describe("Ideogram", function() {
       var config = {
         organism: "human",
         sex: "female"
+      };
+      config.onLoad = callback;
+      var ideogram = new Ideogram(config);
+    });
+
+    it("should support using NCBI Taxonomy ID in 'organism' option", function(done) {
+
+      function callback() {
+        var numChromosomes = Object.keys(ideogram.chromosomes[9606]).length;
+        assert.equal(numChromosomes, 24);
+        done();
+      }
+
+      var config = {
+        organism: 9606
       };
       config.onLoad = callback;
       var ideogram = new Ideogram(config);
