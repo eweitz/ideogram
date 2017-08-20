@@ -53,7 +53,7 @@ var ideogram = new Ideogram({
 * [showNonNuclearChromosomes](#shownonnuclearchromosomes)
 
 ## annotations
-Array.  Optional.  A list of annotation objects.  Each annotation object
+Array.  Optional.  A list of annotation objects.  Each annotation object has at least a chromosome name (chr), start coordinate (start), and stop coordinate (stop).  Annotation objects can also have a name, color, shape, and track index.
 
 See also [annotationsPath](#annotationspath).
 
