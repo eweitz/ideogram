@@ -19,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/eweitz/ideogram.git"
+    "url": "git+https://github.com/eweitz/ideogram.git" 
   },
   "keywords": [
     "chromosome",

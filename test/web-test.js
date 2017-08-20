@@ -866,7 +866,7 @@ describe("Ideogram", function() {
         assert.equal(numChromosomes, 24);
         done();
       }
-      
+
       var config = {
         organism: 9606
       };
