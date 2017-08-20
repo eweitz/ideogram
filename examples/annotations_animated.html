@@ -34,7 +34,7 @@
 <input id="animate-f0" class="animate-button" type="button" value="Animate F0" />
 <input id="animate-f10" class="animate-button" type="button" value="Animate F10" />
 <input id="animate-f150" class="animate-button" type="button" value="Animate F150" />
-<div class="ideogram-container" style="margin-top: 10px; margin-left: 10px; height: 300px;"></div>
+<div class="ideogram-container" style="margin-top: 10px; margin-left: 10px; height: 350px;"></div>
 <div style="margin-top: 50px"></div>
 <div class="facets"></div>
 <script>
@@ -99,7 +99,7 @@
   annotsLoaded = false;
   seenF10 = false;
   seenF150 = false;
-  filterMap = {}
+  filterMap = {};
   function onDrawAnnots() {
 
     if (annotsLoaded === true) {
@@ -166,9 +166,10 @@
       uls += ul;
     }
 
+    var geaLink = '<a href="https://github.com/NCBI-Hackathons/GeneExpressionAging">GeneExpressionAging</a>';
     facetsContainer =
       '<div style="font-style: italic;">' +
-        'Filter by gene expression (high: >= 2, low < 2; edgeR normalized):' +
+        'Filter by gene expression (high: >= 2, low < 2; edgeR normalized count from ' + geaLink + '):' +
       '</div>' +
         uls;
     d3.select('.facets').html(facetsContainer);
@@ -186,6 +187,7 @@
     organism: 'mouse',
     annotationsPath: '../dist/data/annotations/mouse_aging.json',
     annotationsLayout: 'histogram',
+    annotationsColor: 'orangered',
     container: '.ideogram-container',
     onDrawAnnots: onDrawAnnots
   };
