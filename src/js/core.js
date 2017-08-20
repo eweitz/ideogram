@@ -8,6 +8,7 @@ import {Ploidy} from './ploidy';
 import {Layout} from './layouts/layout';
 import {ModelAdapter} from './model-adapter';
 import {Chromosome} from './views/chromosome';
+import {BedParser} from './parsers/bed-parser';
 
 d3.promise = d3promise;
 
@@ -286,6 +287,7 @@ export default class Ideogram {
     );
   }
 
+
   /**
   * Gets chromosome band data from a
   * TSV file, or, if band data is prefetched, from an array
@@ -525,7 +527,7 @@ export default class Ideogram {
     chr.centromerePosition = '';
     if (
       hasBands && bands[0].name[0] === 'p' && bands[1].name[0] === 'q' &&
-    bands[0].bp.stop - bands[0].bp.start < 2E6
+      bands[0].bp.stop - bands[0].bp.start < 2E6
     ) {
       // As with almost all mouse chromosome, chimpanzee chr22
       chr.centromerePosition = 'telocentric';
@@ -1027,6 +1029,10 @@ export default class Ideogram {
     var i, band, pxToIscnScale, iscn, bp, pxLength,
       pxStart, pxStop, iscnStart, iscnStop, bpLength, iscnLength;
 
+    if (px === 0) {
+      px = chr.bands[0].px.start;
+    }
+
     for (i = 0; i < chr.bands.length; i++) {
       band = chr.bands[i];
 
@@ -1051,7 +1057,7 @@ export default class Ideogram {
 
     throw new Error(
       'Pixel out of range.  ' +
-      'px: ' + bp + '; length of chr' + chr.name + ': ' + pxStop
+      'px: ' + px + '; length of chr' + chr.name + ': ' + pxStop
     );
   }
 
@@ -1192,6 +1198,39 @@ export default class Ideogram {
     }
   }
 
+
+  fetchAnnots(annotsUrl) {
+
+    var ideo = this;
+
+    if (annotsUrl.slice(0, 4) !== 'http') {
+      d3.json(
+        ideo.config.annotationsPath,
+        function(data) {
+          ideo.rawAnnots = data;
+        }
+      );
+      return;
+    }
+
+    var tmp = annotsUrl.split('.');
+    var extension = tmp[tmp.length - 1];
+
+    if (extension !== 'bed') {
+      extension = extension.toUpperCase();
+      alert(
+        'This Ideogram.js feature is very new, and only supports BED at the ' +
+        'moment.  Sorry, check back soon for ' + extension + ' support!'
+      );
+      return;
+    }
+
+    d3.request(annotsUrl, function(data) {
+      ideo.rawAnnots = new BedParser(data.response, ideo).rawAnnots;
+    });
+
+  }
+
   /**
   * Draws annotations defined by user
   */
@@ -1259,7 +1298,7 @@ export default class Ideogram {
   */
   processAnnotData(rawAnnots) {
     var keys,
-      i, j, annot, annots, annotsByChr,
+      i, j, k, m, annot, annots, annotsByChr,
       chr,
       chrModel, ra,
       startPx, stopPx, px,
@@ -1271,13 +1310,26 @@ export default class Ideogram {
 
     annots = [];
 
+    m = -1;
     for (i = 0; i < rawAnnots.length; i++) {
+
       annotsByChr = rawAnnots[i];
 
+      chr = annotsByChr.chr;
+      chrModel = ideo.chromosomes[ideo.config.taxid][chr];
+
+      if (typeof chrModel === 'undefined') {
+        console.warn(
+          'Chromosome "' + chr + '" undefined in ideogram; ' +
+          annotsByChr.annots.length + ' annotations not shown'
+        );
+        continue;
+      }
+
+      m++;
       annots.push({chr: annotsByChr.chr, annots: []});
 
       for (j = 0; j < annotsByChr.annots.length; j++) {
-        chr = annotsByChr.chr;
         ra = annotsByChr.annots[j];
         annot = {};
 
@@ -1286,8 +1338,6 @@ export default class Ideogram {
         }
 
         annot.stop = annot.start + annot.length;
-
-        chrModel = ideo.chromosomes[ideo.config.taxid][chr];
 
         startPx = ideo.convertBpToPx(chrModel, annot.start);
         stopPx = ideo.convertBpToPx(chrModel, annot.stop);
@@ -1313,7 +1363,7 @@ export default class Ideogram {
         annot.stopPx = stopPx - 30;
         annot.color = color;
 
-        annots[i].annots.push(annot);
+        annots[m].annots.push(annot);
       }
     }
 
@@ -2514,13 +2564,9 @@ export default class Ideogram {
     });
 
     function writeContainer() {
+
       if (ideo.config.annotationsPath) {
-        d3.json(
-          ideo.config.annotationsPath, // URL
-          function(data) { // Callback
-            ideo.rawAnnots = data;
-          }
-        );
+         ideo.fetchAnnots(ideo.config.annotationsPath);
       }
 
       // If ploidy description is a string, then convert it to the canonical

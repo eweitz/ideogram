@@ -25,5 +25,11 @@ module.exports = {
       }
 
     ]
-  }
+  },
+  plugins: [
+    new webpack.BannerPlugin({
+      banner: 'Ideogram.js, developed by Eric Weitz. https://github.com/eweitz/ideogram.  Public domain (CC0 1.0).',
+      entryOnly: true
+    })
+  ]
 };
