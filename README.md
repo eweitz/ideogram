@@ -10,7 +10,14 @@ Check out [live examples](https://eweitz.github.io/ideogram/), get [up and runni
 
 # Installation
 
-If you use npm:
+```
+$ cd <your local web server document root>
+$ git clone https://github.com/eweitz/ideogram.git
+```
+
+Then go to [http://localhost/ideogram/examples](http://localhost/ideogram/examples).
+
+Or, if you use npm:
 ```
 npm install ideogram
 ```
@@ -19,14 +26,6 @@ You can then [import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Re
 ```
 import Ideogram from 'ideogram';
 ```
-
-If you don't use npm, you can try still easily use Ideogram on your own server:
-```
-$ cd <your local web server document root>
-$ git clone https://github.com/eweitz/ideogram.git
-```
-
-Then go to [http://localhost/ideogram/examples](http://localhost/ideogram/examples).
 
 
 # Usage
