@@ -51,3 +51,7 @@ Then go to [http://localhost/ideogram/examples](http://localhost/ideogram/exampl
 ```
 
 Many more usage examples are available at https://eweitz.github.io/ideogram/.
+
+# API
+
+See the [Ideogram API reference](api.md) for detailed documentation on configuration options and methods.
