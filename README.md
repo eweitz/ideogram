@@ -6,7 +6,7 @@ Chromosome visualization with D3.js
 
 [![All human genes](https://raw.githubusercontent.com/eweitz/ideogram/master/examples/ideogram_histogram_all_human_genes.png)](https://eweitz.github.io/ideogram/annotations_histogram.html)
 
-More examples: https://eweitz.github.io/ideogram/
+Check out [live examples](https://eweitz.github.io/ideogram/), get [up and running](#installation) with your own deployment, skim [basic usage](#usage), or dive into the [full API](api.md)!
 
 # Installation
 
