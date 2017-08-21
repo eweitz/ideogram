@@ -1,6 +1,6 @@
 # Ideogram API reference
 
-Ideogram.js is a JavaScript library for chromosome visualization.  Its API consists of configuration options and methods.  You can see examples of almost all these options and methods -- as well as their actual effect -- in the many [ideogram examples](https://eweitz.github.io/ideogram/).  Simply "View source" in any example page.
+Ideogram.js is a JavaScript library for chromosome visualization.  Ideogram supports drawing and animating genome-wide datasets.  Its API consists of configuration options and methods.  You can see examples of almost all these options and methods -- as well as their actual effect -- in the many [live examples](https://eweitz.github.io/ideogram/).  Simply "View source" in any example page.
 
 # Installation
 See the main [README](https://github.com/eweitz/ideogram#installation) for installation instructions.
