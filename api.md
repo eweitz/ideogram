@@ -53,15 +53,15 @@ var ideogram = new Ideogram({
 * [showNonNuclearChromosomes](#shownonnuclearchromosomes)
 
 ## annotations
-Array.  Optional.  A list of annotation objects.  Each annotation object has at least a chromosome name (chr), start coordinate (start), and stop coordinate (stop).  Annotation objects can also have a name, color, shape, and track index.
+Array.  Optional.  A list of annotation objects.  Each annotation object has at least a chromosome name (chr), start coordinate (start), and stop coordinate (stop).  Annotation objects can also have a name, color, shape, and track index.  Example in [Annotations, basic](https://eweitz.github.io/ideogram/annotations_basic.html).
 
 See also [annotationsPath](#annotationspath).
 
 ## annotationHeight
-Number.  Optional.  The height of each annotation.
+Number.  Optional.  The height of each annotation. Example in [Annotations, tracks](https://eweitz.github.io/ideogram/annotations_tracks.html).
 
 ## annotationsColor
-String.  Optional.  Default: "#F00" (i.e., red).  The color of each annotation.
+String.  Optional.  Default: "#F00" (i.e., red).  The color of each annotation.  Example in [Multiple, primates](https://eweitz.github.io/ideogram/multiple_primates.html).
 
 ## annotationsLayout
 String.  Optional.  Default: "tracks".  
@@ -69,16 +69,16 @@ String.  Optional.  Default: "tracks".
 The layout of this ideogram's annotations.  One of "tracks", "histogram", or "overlay".
 
 ### annotationsLayout: 'tracks'
-Lay out annotations in tracks beside each chromosome.  There can be more than one track, which is useful for displaying annotations by category (e.g. pathogenic, unknown significance, benign).
+Lay out annotations in tracks beside each chromosome.  There can be more than one track, which is useful for displaying annotations by category (e.g. pathogenic, unknown significance, benign).  Example in [Annotations, tracks](https://eweitz.github.io/ideogram/annotations_tracks.html).
 
 ### annotationsLayout: 'histogram'
-Lay out annotations in a histogram.  This clusters annoatations by location, such that each cluster or bin is shown as a bar.  The height of the bar represent the number of annotations in that genomic range.  This option is useful for summarizing the distribution of many (1000+) features througout the genome.
+Lay out annotations in a histogram.  This clusters annoatations by location, such that each cluster or bin is shown as a bar.  The height of the bar represent the number of annotations in that genomic range.  This option is useful for summarizing the distribution of many (1000+) features througout the genome.  Example in [Annotations, histogram](https://eweitz.github.io/ideogram/annotations_histogram.html)
 
 ### annotationsLayout: 'overlay'
-Lay out annotations directly over chromosomes.  This is the most space-efficient annotation layout option.
+Lay out annotations directly over chromosomes.  This is the most space-efficient annotation layout option.  Example in [Annotations, overlay](https://eweitz.github.io/ideogram/annotations_overlay.html).
 
 ## annotationsPath
-String.  Optional.  An absolute or relative URL to a JSON file containing annotation objects.
+String.  Optional.  An absolute or relative URL to a JSON file containing annotation objects.  Example in [Annotations, overlay](https://eweitz.github.io/ideogram/annotations_overlay.html).
 
 See also [annotations](#annotations).
 
