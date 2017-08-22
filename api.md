@@ -72,7 +72,7 @@ The layout of this ideogram's annotations.  One of "tracks", "histogram", or "ov
 Lay out annotations in tracks beside each chromosome.  There can be more than one track, which is useful for displaying annotations by category (e.g. pathogenic, unknown significance, benign).  Example in [Annotations, tracks](https://eweitz.github.io/ideogram/annotations_tracks.html).
 
 ### annotationsLayout: 'histogram'
-Lay out annotations in a histogram.  This clusters annoatations by location, such that each cluster or bin is shown as a bar.  The height of the bar represent the number of annotations in that genomic range.  This option is useful for summarizing the distribution of many (1000+) features througout the genome.  Example in [Annotations, histogram](https://eweitz.github.io/ideogram/annotations_histogram.html)
+Lay out annotations in a histogram.  This clusters annoatations by location, such that each cluster or bin is shown as a bar.  The height of the bar represent the number of annotations in that genomic range.  This option is useful for summarizing the distribution of many (1000+) features througout the genome.  Example in [Annotations, histogram](https://eweitz.github.io/ideogram/annotations_histogram.html).
 
 ### annotationsLayout: 'overlay'
 Lay out annotations directly over chromosomes.  This is the most space-efficient annotation layout option.  Example in [Annotations, overlay](https://eweitz.github.io/ideogram/annotations_overlay.html).
@@ -86,13 +86,13 @@ See also [annotations](#annotations).
 String.  Optional.  Default: latest RefSeq assembly for specified organism.  The genome assembly to display.  Takes assembly name (e.g. "GRCh37"), RefSeq accession (e.g. "GCF_000306695.2"), or GenBank accession (e.g. "GCA_000005005.5").
 
 ## barWidth
-Number.  Optional.  Default: 3.  The pixel width of bars drawn when `annotationsLayout: 'histogram'`.
+Number.  Optional.  Default: 3.  The pixel width of bars drawn when `annotationsLayout: 'histogram'`.  Example in [Annotations, histogram](https://eweitz.github.io/ideogram/annotations_histogram.html).
 
 ## brush
-Boolean.  Optional.  Default: false.  Flag to set a [brush](https://github.com/d3/d3-brush) (a.k.a. slider window) on a chromosome.  Useful when ideogram consists of one chromosome and you want to be able to focus on a region within that chromosome.
+Boolean.  Optional.  Default: false.  Flag to set a [brush](https://github.com/d3/d3-brush) (a.k.a. slider window) on a chromosome.  Useful when ideogram consists of one chromosome and you want to be able to focus on a region within that chromosome.  Example in [Brush](https://eweitz.github.io/ideogram/brush.html).
 
 ## chrHeight
-Number.  Optional.  Default: 400.  The pixel height of the tallest chromosome in the ideogram.
+Number.  Optional.  Default: 400.  The pixel height of the tallest chromosome in the ideogram.  Examples in [Layout, small](https://eweitz.github.io/ideogram/layout_small.html) and [Annotations, basic](https://eweitz.github.io/ideogram/annotations_basic.html).
 
 ## chrMargin
 Number.  Optional.  Default: 10.  The pixel space of the margin between each chromosome.
@@ -104,16 +104,16 @@ Number.  Optional.  Default: 10.  The pixel width of each chromosome.
 Array.  Optional.  Default: all chromosomes in assembly.  A list of the names of chromosomes to display.  Useful for depicting a subset of the chromosomes in the genome, e.g. a single chromosome.
 
 ## container
-String.  Optional.  Default: "body".  CSS selector of the HTML element that will contain the ideogram.
+String.  Optional.  Default: "body".  CSS selector of the HTML element that will contain the ideogram.  Example in [Layout, small](https://eweitz.github.io/ideogram/layout_small.html).
 
 ## dataDir
-String.  Optional.  Default: "../data/bands/native/".  Absolute or relative URL of the directory containing data needed to draw banded chromosomes.
+String.  Optional.  Default: "../data/bands/native/".  Absolute or relative URL of the directory containing data needed to draw banded chromosomes.  Example in [GeneExpressionAging/ideogram](https://ncbi-hackathons.github.io/GeneExpressionAging/ideogram).
 
 ## multiorganism
 Boolean.  Optional.  Default: false.  Flag to indicate if this ideogram contains chromosomes from multiple organisms.
 
 ## onBrushMove
-Function.  Optional.  Callback function to invoke when brush moves.
+Function.  Optional.  Callback function to invoke when brush moves.  Example in [Brush](https://eweitz.github.io/ideogram/brush.html).
 
 ## onDrawAnnots
 Function.  Optional.  Callback function to invoke when annotations are drawn.
@@ -122,25 +122,25 @@ Function.  Optional.  Callback function to invoke when annotations are drawn.
 Function.  Optional.  Callback function to invoke when chromosomes are loaded, i.e. rendered on the page.
 
 ## organism
-String or number or array.  Required.  Organism(s) to show chromosomes for.  Supply organism's name as a string (e.g. `"human"`) or organism's NCBI Taxonomy ID (taxid, e.g. `9606`) to display chromosomes from a single organism, or an array of organisms' names or taxids to display chromosomes from multiple species.
+String or number or array.  Required.  Organism(s) to show chromosomes for.  Supply organism's name as a string (e.g. `"human"`) or organism's NCBI Taxonomy ID (taxid, e.g. `9606`) to display chromosomes from a single organism, or an array of organisms' names or taxids to display chromosomes from multiple species.  Example in [Human]( https://eweitz.github.io/ideogram/human.html).
 
 ## orientation
-String.  Optional.  Default: horizontal.  The orientation of chromosomes on the page.  One of "horizontal" or "vertical".
+String.  Optional.  Default: horizontal.  The orientation of chromosomes on the page.  Example in [Mouse]( https://eweitz.github.io/ideogram/mouse.html).
 
 ## ploidy
-Number.  Optional.  Default: 1.  The ploidy -- i.e., number of chromosomes -- to depict for each chromosome set.  Useful for biologically accurate depicting of genomes that are diploid, triploid, etc.
+Number.  Optional.  Default: 1.  The ploidy -- i.e., number of chromosomes -- to depict for each chromosome set.  Useful for biologically accurate depicting of genomes that are diploid, triploid, etc.  Example in [Layout, small](https://eweitz.github.io/ideogram/layout_small.html).
 
 ## resolution
 Number.  Optional.  Default: highest resolution available for specified genome assembly.  The resolution of cytogenetic bands to show for each chromosome.  The quantity refers to approximate value in bands per haploid set (bphs).  One of 450, 550, or 850.
 
 ## rotatable
-Boolean.  Optional.  Default: true.  Whether chromosomes are rotatable upon clicking them.
+Boolean.  Optional.  Default: true.  Whether chromosomes are rotatable upon clicking them.  Example in [Layout, small](https://eweitz.github.io/ideogram/layout_small.html).
 
 ## rows
-Number.  Optional.  Default: 1.  Number of rows to arrange chromosomes into.  Useful for putting ideogram into a small container, or when dealing with genomes that have many chromosomes.
+Number.  Optional.  Default: 1.  Number of rows to arrange chromosomes into.  Useful for putting ideogram into a small container, or when dealing with genomes that have many chromosomes.  Example in [Layout, small](https://eweitz.github.io/ideogram/layout_small.html).
 
 ## sex
-String.  Optional.  Default: male.  The biological sex of the organism.  Useful for omitting chromosome Y in female mammals.  Currently only supported for organisms that use XY sex-determination.
+String.  Optional.  Default: male.  The biological sex of the organism.  Useful for omitting chromosome Y in female mammals.  Currently only supported for organisms that use XY sex-determination.  Examples in [Layout, small](https://eweitz.github.io/ideogram/layout_small.html)
 
 ## showBandLabels
 Boolean.  Optional.  Default: false.  Whether to show cytogenetic band labels, e.g. 1q21.
