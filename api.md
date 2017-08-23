@@ -36,11 +36,11 @@ var ideogram = new Ideogram({
 * [chrWidth](#chrwidth)
 * [chromosomes](#chromosomes)
 * [container](#container)
-* [dataDir](#dataDir)
+* [dataDir](#datadir)
 * [multiorganism](#multiorganism)
 * [onBrushMove](#onbrushmove)
 * [onDrawAnnots](#ondrawannots)
-* [onLoad](#onLoad)
+* [onLoad](#onload)
 * [organism](#organism)
 * [orientation](#orientation)
 * [ploidy](#ploidy)
@@ -98,10 +98,10 @@ Number.  Optional.  Default: 400.  The pixel height of the tallest chromosome in
 Number.  Optional.  Default: 10.  The pixel space of the margin between each chromosome.
 
 ## chrWidth
-Number.  Optional.  Default: 10.  The pixel width of each chromosome.
+Number.  Optional.  Default: 10.  The pixel width of each chromosome.  Example in [Annotations, tracks](https://eweitz.github.io/ideogram/annotations_tracks.html).
 
 ## chromosomes
-Array.  Optional.  Default: all chromosomes in assembly.  A list of the names of chromosomes to display.  Useful for depicting a subset of the chromosomes in the genome, e.g. a single chromosome.
+Array.  Optional.  Default: all chromosomes in assembly.  A list of the names of chromosomes to display.  Useful for depicting a subset of the chromosomes in the genome, e.g. a single chromosome.  Example in [Annotations, basic](https://eweitz.github.io/ideogram/annotations_basic.html).
 
 ## container
 String.  Optional.  Default: "body".  CSS selector of the HTML element that will contain the ideogram.  Example in [Layout, small](https://eweitz.github.io/ideogram/layout_small.html).
@@ -119,7 +119,7 @@ Function.  Optional.  Callback function to invoke when brush moves.  Example in 
 Function.  Optional.  Callback function to invoke when annotations are drawn.
 
 ## onLoad
-Function.  Optional.  Callback function to invoke when chromosomes are loaded, i.e. rendered on the page.
+Function.  Optional.  Callback function to invoke when chromosomes are loaded, i.e. rendered on the page.  Example in [Annotations, external data]( https://eweitz.github.io/ideogram/annotations_external_data.html).
 
 ## organism
 String or number or array.  Required.  Organism(s) to show chromosomes for.  Supply organism's name as a string (e.g. `"human"`) or organism's NCBI Taxonomy ID (taxid, e.g. `9606`) to display chromosomes from a single organism, or an array of organisms' names or taxids to display chromosomes from multiple species.  Example in [Human]( https://eweitz.github.io/ideogram/human.html).
@@ -131,7 +131,7 @@ String.  Optional.  Default: horizontal.  The orientation of chromosomes on the 
 Number.  Optional.  Default: 1.  The ploidy -- i.e., number of chromosomes -- to depict for each chromosome set.  Useful for biologically accurate depicting of genomes that are diploid, triploid, etc.  Example in [Layout, small](https://eweitz.github.io/ideogram/layout_small.html).
 
 ## resolution
-Number.  Optional.  Default: highest resolution available for specified genome assembly.  The resolution of cytogenetic bands to show for each chromosome.  The quantity refers to approximate value in bands per haploid set (bphs).  One of 450, 550, or 850.
+Number.  Optional.  Default: highest resolution available for specified genome assembly.  The resolution of cytogenetic bands to show for each chromosome.  The quantity refers to approximate value in bands per haploid set (bphs).  One of 450, 550, or 850.  Example in [Layout, small](https://eweitz.github.io/ideogram/layout_small.html).
 
 ## rotatable
 Boolean.  Optional.  Default: true.  Whether chromosomes are rotatable upon clicking them.  Example in [Layout, small](https://eweitz.github.io/ideogram/layout_small.html).
@@ -143,13 +143,13 @@ Number.  Optional.  Default: 1.  Number of rows to arrange chromosomes into.  Us
 String.  Optional.  Default: male.  The biological sex of the organism.  Useful for omitting chromosome Y in female mammals.  Currently only supported for organisms that use XY sex-determination.  Examples in [Layout, small](https://eweitz.github.io/ideogram/layout_small.html)
 
 ## showBandLabels
-Boolean.  Optional.  Default: false.  Whether to show cytogenetic band labels, e.g. 1q21.
+Boolean.  Optional.  Default: false.  Whether to show cytogenetic band labels, e.g. 1q21.  Example in [Annotations, basic](https://eweitz.github.io/ideogram/annotations_basic.html).
 
 ## showChromosomeLabels
-Boolean.  Optional.  Defaut: true.  Whether to show chromosome labels, e.g. 1, 2, 3, X, Y.
+Boolean.  Optional.  Defaut: true.  Whether to show chromosome labels, e.g. 1, 2, 3, X, Y.  Example in [Annotations, basic](https://eweitz.github.io/ideogram/annotations_basic.html).
 
 ## showFullyBanded
-Boolean.  Optional.  Default: true.  Whether to show fully banded chromosomes for genomes that have sufficient data.  Useful for showing simpler chromosomes of cytogenetically well-characterized organisms, e.g. human, beside chromosomes of less studied organisms, e.g. chimpanzee.
+Boolean.  Optional.  Default: true.  Whether to show fully banded chromosomes for genomes that have sufficient data.  Useful for showing simpler chromosomes of cytogenetically well-characterized organisms, e.g. human, beside chromosomes of less studied organisms, e.g. chimpanzee.  Example in [Multiple, primates](https://eweitz.github.io/ideogram/multiple_primates.html).
 
 ## showNonNuclearChromosomes
-Boolean.  Optional.  Default: false.  Whether to show non-nuclear chromosomes, e.g. for mitochondrial (MT) and chloroplast (CP) DNA.
+Boolean.  Optional.  Default: false.  Whether to show non-nuclear chromosomes, e.g. for mitochondrial (MT) and chloroplast (CP) DNA.  Example in [Eukaryotes: Sus scrofa](https://eweitz.github.io/ideogram/eukaryotes.html?org=sus-scrofa).
