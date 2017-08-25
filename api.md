@@ -95,7 +95,7 @@ Boolean.  Optional.  Default: false.  Flag to set a [brush](https://github.com/d
 Number.  Optional.  Default: 400.  The pixel height of the tallest chromosome in the ideogram.  Examples in [Layout, small](https://eweitz.github.io/ideogram/layout_small.html) and [Annotations, basic](https://eweitz.github.io/ideogram/annotations_basic.html).
 
 ## chrMargin
-Number.  Optional.  Default: 10.  The pixel space of the margin between each chromosome.
+Number.  Optional.  Default: 10.  The pixel space of the margin between each chromosome.  Example in [Multiple, primates](https://eweitz.github.io/ideogram/multiple_primates.html).
 
 ## chrWidth
 Number.  Optional.  Default: 10.  The pixel width of each chromosome.  Example in [Annotations, tracks](https://eweitz.github.io/ideogram/annotations_tracks.html).
