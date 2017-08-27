@@ -28,7 +28,7 @@ export default class Ideogram {
     this.debug = false;
 
     if (!this.config.dataDir) {
-      this.config.dataDir = '../data/bands/native/';
+      this.config.dataDir = this.getDataDir();
     }
 
     if (!this.config.ploidy) {
@@ -287,6 +287,32 @@ export default class Ideogram {
     );
   }
 
+  /**
+  * Returns directory used to fetch data for bands and annotations
+  *
+  * This simplifies ideogram configuration.  By default, the dataDir is
+  * deduced from the "src" attribute of the ideogram script loaded in the
+  * document.
+   */
+  getDataDir() {
+    var scripts = document.scripts,
+      script, tmp, protocol, dataDir;
+
+    for (var i = 0; i < scripts.length; i++) {
+      script = scripts[i];
+      if (
+        'src' in script &&
+        /ideogram/.test(script.src.split('/').slice(-1))
+      ) {
+        tmp = script.src.split('//');
+        protocol = tmp[0];
+        tmp = '/' + tmp[1].split('/').slice(0,-2).join('/');
+        dataDir = protocol + '//' + tmp + '/data/bands/native/';
+        return dataDir;
+      }
+    }
+    return '../data/bands/native/';
+  }
 
   /**
   * Gets chromosome band data from a

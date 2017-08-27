@@ -337,7 +337,6 @@ describe("Ideogram", function() {
       var numSyntenicRegions = document.getElementsByClassName("syntenicRegion").length;
       //console.log(d3.selectAll(".syntenicRegion"));
 
-      console.log('document.getElementsByClassName("syntenicRegion")');
       console.log(document.getElementsByClassName("syntenicRegion")[0][0]);
 
       assert.equal(numSyntenicRegions, 1, "numSyntenicRegions");
@@ -366,7 +365,7 @@ describe("Ideogram", function() {
       done();
     }
 
-    config.annotationsPath = "../data/annotations/1000_virtual_snvs.json";
+    config.annotationsPath = "../dist/data/annotations/1000_virtual_snvs.json";
 
     config.onDrawAnnots = callback;
     var ideogram = new Ideogram(config);
@@ -388,7 +387,7 @@ describe("Ideogram", function() {
       chrHeight: 500,
       chrMargin: 5,
       showChromosomeLabels: true,
-      annotationsPath: "../data/annotations/1000_virtual_snvs.json",
+      annotationsPath: "../dist/data/annotations/1000_virtual_snvs.json",
       annotationsLayout: "overlay",
       orientation: "horizontal",
       onDrawAnnots: callback
@@ -422,7 +421,7 @@ describe("Ideogram", function() {
 
     config = {
       organism: "human",
-      annotationsPath: "../data/annotations/10_virtual_cnvs.json",
+      annotationsPath: "../dist/data/annotations/10_virtual_cnvs.json",
       annotationsLayout: "overlay",
       orientation: "horizontal",
       onDrawAnnots: callback
@@ -455,7 +454,7 @@ describe("Ideogram", function() {
       chrHeight: 500,
       chrMargin: 10,
       showChromosomeLabels: true,
-      annotationsPath: "../data/annotations/1000_virtual_snvs.json",
+      annotationsPath: "../dist/data/annotations/1000_virtual_snvs.json",
       annotationTracks: annotationTracks,
       annotationHeight: 2.5,
       orientation: "vertical",
@@ -481,7 +480,7 @@ describe("Ideogram", function() {
       chrHeight: 500,
       chrMargin: 10,
       showChromosomeLabels: true,
-      annotationsPath: "../data/annotations/all_human_genes.json",
+      annotationsPath: "../dist/data/annotations/all_human_genes.json",
       annotationsLayout: "histogram",
       barWidth: 3,
       orientation: "vertical",
@@ -563,7 +562,7 @@ describe("Ideogram", function() {
       chrHeight: 500,
       chrMargin: 10,
       showChromosomeLabels: true,
-      annotationsPath: "../data/annotations/all_human_genes.json",
+      annotationsPath: "../dist/data/annotations/all_human_genes.json",
       annotationsLayout: "histogram",
       barWidth: 3,
       orientation: "vertical",
@@ -753,7 +752,7 @@ describe("Ideogram", function() {
         organism: "human",
         chrWidth: 20,
         chrHeight: 500,
-        annotationsPath: "../data/annotations/1000_virtual_snvs.json",
+        annotationsPath: "../dist/data/annotations/1000_virtual_snvs.json",
         annotationTracks: annotationTracks,
         annotationHeight: 2.5
       };
