@@ -31,10 +31,10 @@ import Ideogram from 'ideogram';
 # Usage
 ```html
 <head>
-  <script type="text/javascript" src="../dist/js/ideogram.min.js"></script>
+  <script src="../dist/js/ideogram.min.js"></script>
 </head>
 <body>
-  <script type="text/javascript">
+  <script>
       var ideogram = new Ideogram({
         organism: 'human',
         annotations: [{
