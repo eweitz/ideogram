@@ -31,7 +31,6 @@ import Ideogram from 'ideogram';
 # Usage
 ```html
 <head>
-  <link type="text/css" rel="stylesheet" href="../src/css/examples.css">
   <script type="text/javascript" src="../dist/js/ideogram.min.js"></script>
 </head>
 <body>
