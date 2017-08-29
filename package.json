@@ -13,8 +13,8 @@
   },
   "scripts": {
     "test": "karma start --single-run --browsers ChromeHeadless --debug karma.conf.js",
-    "build": "webpack -p --display-modules --display-reasons && cp -r src/css dist/ && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
-    "watch": "webpack --watch && cp -r src/css dist/ && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
+    "build": "webpack -p --display-modules --display-reasons && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
+    "watch": "webpack --watch && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
     "start": "webpack-dev-server --open"
   },
   "repository": {

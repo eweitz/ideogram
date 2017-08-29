@@ -1819,7 +1819,7 @@ export default class Ideogram {
     '      padding-left: 15px;' +
     '    }' +
     '' +
-    '    svg#_ideogram .labeledLeft {' +
+    '    svg#_ideogram.labeledLeft {' +
     '      padding-left: 15px;' +
     '      padding-top: 15px;' +
     '    }' +
@@ -1877,11 +1877,11 @@ export default class Ideogram {
     '    }' +
     '' +
     '#_ideogram .noBands {' +
-    '      fill: #AAA;' +
-    '    }' +
+    '  fill: #AAA;' +
+    '}' +
     '' +
-    '    /* NCBI stain density colors */' +
-    '  #_ideogram .gneg {fill: #FFF}' +
+    '/* NCBI stain density colors */' +
+    '#_ideogram .gneg {fill: #FFF}' +
     '#_ideogram .gpos25 {fill: #BBB}' +
     '#_ideogram .gpos33 {fill: #AAA}' +
     '#_ideogram .gpos50 {fill: #888}' +
@@ -1893,17 +1893,17 @@ export default class Ideogram {
     '#_ideogram .stalk {fill: #CCE;}' +
     '#_ideogram .gvar {fill: #DDF}' +
     '    /* Used when overlaid with annotations */' +
-    '#_ideogram .faint .gneg {fill: #FFF}' +
-    '#_ideogram .faint .gpos25 {fill: #EEE}' +
-    '#_ideogram .faint .gpos33 {fill: #EEE}' +
-    '#_ideogram .faint .gpos50 {fill: #EEE}' +
-    '#_ideogram .faint .gpos66 {fill: #EEE}' +
-    '#_ideogram .faint .gpos75 {fill: #EEE}' +
-    '#_ideogram .faint .gpos100 {fill: #DDD}' +
-    '#_ideogram .faint .gpos {fill: #DDD}' +
-    '#_ideogram .faint .acen {fill: #FEE}' +
-    '#_ideogram .faint .stalk {fill: #EEF;}' +
-    '#_ideogram .faint .gvar {fill: #EEF}' +
+    '#_ideogram.faint .gneg {fill: #FFF}' +
+    '#_ideogram.faint .gpos25 {fill: #EEE}' +
+    '#_ideogram.faint .gpos33 {fill: #EEE}' +
+    '#_ideogram.faint .gpos50 {fill: #EEE}' +
+    '#_ideogram.faint .gpos66 {fill: #EEE}' +
+    '#_ideogram.faint .gpos75 {fill: #EEE}' +
+    '#_ideogram.faint .gpos100 {fill: #DDD}' +
+    '#_ideogram.faint .gpos {fill: #DDD}' +
+    '#_ideogram.faint .acen {fill: #FEE}' +
+    '#_ideogram.faint .stalk {fill: #EEF;}' +
+    '#_ideogram.faint .gvar {fill: #EEF}' +
     '.gneg {fill: url("#gneg")} ' +
     '.gpos25 {fill: url("#gpos25")} ' +
     '.gpos33 {fill: url("#gpos33")} ' +
