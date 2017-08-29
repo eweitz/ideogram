@@ -119,7 +119,7 @@
     d3.selectAll("input").on("change", function(d) {
       var org;
       d3.select("#_ideogram").remove();
-      d3.event.preventDefault();
+      // d3.event.preventDefault();
       org = d3.select(this).attr("value");
       loadOrganism(org);
     });

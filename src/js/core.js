@@ -1,6 +1,13 @@
 // Developed by Eric Weitz (https://github.com/eweitz)
 
-import * as d3 from 'd3';
+import * as d3selection from 'd3-selection';
+// See https://github.com/d3/d3/issues/2733
+import {event as currentEvent} from 'd3-selection';
+import * as d3request from 'd3-request';
+import * as d3brush from 'd3-brush';
+import * as d3dispatch from 'd3-dispatch';
+import {scaleLinear} from 'd3-scale';
+import {max} from 'd3-array';
 import * as d3promise from 'd3.promise';
 import {Promise} from 'es6-promise';
 
@@ -10,7 +17,10 @@ import {ModelAdapter} from './model-adapter';
 import {Chromosome} from './views/chromosome';
 import {BedParser} from './parsers/bed-parser';
 
+var d3 = Object.assign({}, d3selection, d3request, d3brush, d3dispatch);
 d3.promise = d3promise;
+d3.scaleLinear = scaleLinear;
+d3.max = max;
 
 export default class Ideogram {
   constructor(config) {
@@ -1721,7 +1731,7 @@ export default class Ideogram {
       .call(ideo.brush.move, [x0, x1]);
 
     function onBrushMove() {
-      var extent = d3.event.selection.map(xScale.invert),
+      var extent = currentEvent.selection.map(xScale.invert),
         from = Math.floor(extent[0]),
         to = Math.ceil(extent[1]);
 

@@ -13,7 +13,8 @@
   },
   "scripts": {
     "test": "karma start --single-run --browsers ChromeHeadless --debug karma.conf.js",
-    "build": "webpack -p --display-modules --display-reasons && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
+    "debugbuild": "webpack -p --display-modules --display-reasons && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
+    "build": "webpack -p && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
     "watch": "webpack --watch && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
     "start": "webpack-dev-server --open"
   },
@@ -37,9 +38,15 @@
   "homepage": "https://github.com/eweitz/ideogram#readme",
   "dependencies": {
     "commander": "*",
-    "d3": "4.1.1",
+    "d3-array": "^1.2.0",
+    "d3-brush": "^1.0.4",
+    "d3-dispatch": "^1.0.3",
+    "d3-request": "^1.0.5",
+    "d3-scale": "^1.0.6",
+    "d3-selection": "^1.1.0",
     "d3.promise": "^2.0.0",
-    "es6-promise": "^4.1.0"
+    "es6-promise": "^4.1.0",
+    "lighthouse-ci": "git+https://github.com/ebidel/lighthouse-ci.git"
   },
   "devDependencies": {
     "babel-core": "^6.25.0",

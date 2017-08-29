@@ -19,6 +19,8 @@ describe("Ideogram", function() {
 
   var config = {};
 
+  d3 = Ideogram.d3;
+
   beforeEach(function() {
 
     delete chrBands;
