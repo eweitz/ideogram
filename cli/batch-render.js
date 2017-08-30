@@ -75,7 +75,7 @@ function getIndexHtml() {
 
   var html, css, d3, js, bands, path;
 
-  css = dir + '/src/css/ideogram.css';
+  css = dir + '/src/css/examples.css';
   d3 = dir + '/node_modules/d3/build/d3.min.js';
   js = dir + '/src/js/ideogram.js';
   bands = dir + '/data/bands/native/ideogram_9606_GCF_000001305.14_850_V1.js';

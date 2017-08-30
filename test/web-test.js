@@ -19,6 +19,8 @@ describe("Ideogram", function() {
 
   var config = {};
 
+  d3 = Ideogram.d3;
+
   beforeEach(function() {
 
     delete chrBands;
@@ -26,7 +28,6 @@ describe("Ideogram", function() {
 
     config = {
       organism: "human",
-      resolution: 550,
       chrWidth: 10,
       chrHeight: 150,
       chrMargin: 10,
@@ -338,7 +339,6 @@ describe("Ideogram", function() {
       var numSyntenicRegions = document.getElementsByClassName("syntenicRegion").length;
       //console.log(d3.selectAll(".syntenicRegion"));
 
-      console.log('document.getElementsByClassName("syntenicRegion")');
       console.log(document.getElementsByClassName("syntenicRegion")[0][0]);
 
       assert.equal(numSyntenicRegions, 1, "numSyntenicRegions");
@@ -367,7 +367,7 @@ describe("Ideogram", function() {
       done();
     }
 
-    config.annotationsPath = "../data/annotations/1000_virtual_snvs.json";
+    config.annotationsPath = "../dist/data/annotations/1000_virtual_snvs.json";
 
     config.onDrawAnnots = callback;
     var ideogram = new Ideogram(config);
@@ -389,7 +389,7 @@ describe("Ideogram", function() {
       chrHeight: 500,
       chrMargin: 5,
       showChromosomeLabels: true,
-      annotationsPath: "../data/annotations/1000_virtual_snvs.json",
+      annotationsPath: "../dist/data/annotations/1000_virtual_snvs.json",
       annotationsLayout: "overlay",
       orientation: "horizontal",
       onDrawAnnots: callback
@@ -423,7 +423,7 @@ describe("Ideogram", function() {
 
     config = {
       organism: "human",
-      annotationsPath: "../data/annotations/10_virtual_cnvs.json",
+      annotationsPath: "../dist/data/annotations/10_virtual_cnvs.json",
       annotationsLayout: "overlay",
       orientation: "horizontal",
       onDrawAnnots: callback
@@ -456,7 +456,7 @@ describe("Ideogram", function() {
       chrHeight: 500,
       chrMargin: 10,
       showChromosomeLabels: true,
-      annotationsPath: "../data/annotations/1000_virtual_snvs.json",
+      annotationsPath: "../dist/data/annotations/1000_virtual_snvs.json",
       annotationTracks: annotationTracks,
       annotationHeight: 2.5,
       orientation: "vertical",
@@ -482,7 +482,7 @@ describe("Ideogram", function() {
       chrHeight: 500,
       chrMargin: 10,
       showChromosomeLabels: true,
-      annotationsPath: "../data/annotations/all_human_genes.json",
+      annotationsPath: "../dist/data/annotations/all_human_genes.json",
       annotationsLayout: "histogram",
       barWidth: 3,
       orientation: "vertical",
@@ -564,7 +564,7 @@ describe("Ideogram", function() {
       chrHeight: 500,
       chrMargin: 10,
       showChromosomeLabels: true,
-      annotationsPath: "../data/annotations/all_human_genes.json",
+      annotationsPath: "../dist/data/annotations/all_human_genes.json",
       annotationsLayout: "histogram",
       barWidth: 3,
       orientation: "vertical",
@@ -620,6 +620,42 @@ describe("Ideogram", function() {
       }
 
       config.assembly = "GRCh37";
+      config.onLoad = callback;
+      var ideogram = new Ideogram(config);
+    });
+
+    it("should support RefSeq accessions in 'assembly' parameter", function(done) {
+      // Tests use case for non-default assemblies.
+      // GCF_000306695.2 is commonly called CHM1_1.1
+      // https://www.ncbi.nlm.nih.gov/assembly/GCF_000306695.2/
+
+      function callback() {
+        var chr1Length = ideogram.chromosomes["9606"]["1"].length
+        // For reference, see length section of LOCUS field in GenBank record at
+        // https://www.ncbi.nlm.nih.gov/nuccore/CM001609.2
+        assert.equal(chr1Length, 250522664);
+        done();
+      }
+
+      config.assembly = "GCF_000306695.2";
+      config.onLoad = callback;
+      var ideogram = new Ideogram(config);
+    });
+  
+    it("should support GenBank accessions in 'assembly' parameter", function(done) {
+      // Tests use case for non-default assemblies.
+      // GCA_000002125.2 is commonly called HuRef
+      // https://www.ncbi.nlm.nih.gov/assembly/GCA_000002125.2
+
+      function callback() {
+        var chr1Length = ideogram.chromosomes["9606"]["1"].length
+        // For reference, see length section of LOCUS field in GenBank record at
+        // https://www.ncbi.nlm.nih.gov/nuccore/CM001609.2
+        assert.equal(chr1Length, 219475005);
+        done();
+      }
+
+      config.assembly = "GCA_000002125.2";
       config.onLoad = callback;
       var ideogram = new Ideogram(config);
     });
@@ -718,7 +754,7 @@ describe("Ideogram", function() {
         organism: "human",
         chrWidth: 20,
         chrHeight: 500,
-        annotationsPath: "../data/annotations/1000_virtual_snvs.json",
+        annotationsPath: "../dist/data/annotations/1000_virtual_snvs.json",
         annotationTracks: annotationTracks,
         annotationHeight: 2.5
       };
@@ -819,6 +855,21 @@ describe("Ideogram", function() {
       var config = {
         organism: "human",
         sex: "female"
+      };
+      config.onLoad = callback;
+      var ideogram = new Ideogram(config);
+    });
+
+    it("should support using NCBI Taxonomy ID in 'organism' option", function(done) {
+
+      function callback() {
+        var numChromosomes = Object.keys(ideogram.chromosomes[9606]).length;
+        assert.equal(numChromosomes, 24);
+        done();
+      }
+
+      var config = {
+        organism: 9606
       };
       config.onLoad = callback;
       var ideogram = new Ideogram(config);

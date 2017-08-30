@@ -6,11 +6,18 @@ Chromosome visualization with D3.js
 
 [![All human genes](https://raw.githubusercontent.com/eweitz/ideogram/master/examples/ideogram_histogram_all_human_genes.png)](https://eweitz.github.io/ideogram/annotations_histogram.html)
 
-More examples: https://eweitz.github.io/ideogram/
+Check out [live examples](https://eweitz.github.io/ideogram/), get [up and running](#installation) with your own deployment, skim [basic usage](#usage), or dive into the [full API](api.md)!
 
 # Installation
 
-If you use npm:
+```
+$ cd <your local web server document root>
+$ git clone https://github.com/eweitz/ideogram.git
+```
+
+Then go to [http://localhost/ideogram/examples](http://localhost/ideogram/examples).
+
+Or, if you use npm:
 ```
 npm install ideogram
 ```
@@ -20,23 +27,14 @@ You can then [import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Re
 import Ideogram from 'ideogram';
 ```
 
-If you don't use npm, you can try still easily use Ideogram on your own server:
-```
-$ cd <your local web server document root>
-$ git clone https://github.com/eweitz/ideogram.git
-```
-
-Then go to [http://localhost/ideogram/examples](http://localhost/ideogram/examples).
-
 
 # Usage
 ```html
 <head>
-  <link type="text/css" rel="stylesheet" href="../dist/css/ideogram.css">
-  <script type="text/javascript" src="../dist/js/ideogram.min.js"></script>
+  <script src="../dist/js/ideogram.min.js"></script>
 </head>
 <body>
-  <script type="text/javascript">
+  <script>
       var ideogram = new Ideogram({
         organism: 'human',
         annotations: [{
@@ -51,3 +49,7 @@ Then go to [http://localhost/ideogram/examples](http://localhost/ideogram/exampl
 ```
 
 Many more usage examples are available at https://eweitz.github.io/ideogram/.
+
+# API
+
+See the [Ideogram API reference](api.md) for detailed documentation on configuration options and methods.

@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Eukaryotes | Ideogram</title>
-  <link type="text/css" rel="stylesheet" href="dist/css/ideogram.css"/>
+  <link type="text/css" rel="stylesheet" href="src/css/examples"/>
   <script type="text/javascript" src="dist/js/ideogram.min.js"></script>
   <style>
     #container {
@@ -119,7 +119,7 @@
     d3.selectAll("input").on("change", function(d) {
       var org;
       d3.select("#_ideogram").remove();
-      d3.event.preventDefault();
+      // d3.event.preventDefault();
       org = d3.select(this).attr("value");
       loadOrganism(org);
     });

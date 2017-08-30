@@ -1,4 +1,6 @@
-import * as d3 from 'd3';
+import * as d3selection from 'd3-selection';
+
+var d3 = Object.assign({}, d3selection);
 
 // Chromosome's view utility class
 export class ChromosomeUtil {

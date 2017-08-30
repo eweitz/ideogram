@@ -18,11 +18,11 @@ module.exports = function(config) {
       'node_modules/d3/build/d3.min.js',
       'dist/js/ideogram.min.js',
       'test/web-test.js',
-      {pattern: 'data/**', watched: false, included: false, served: true, nocache: false}
+      {pattern: 'dist/data/**', watched: false, included: false, served: true, nocache: false}
     ],
 
     proxies: {
-      '/data': '/base/data'
+      '/dist/data': '/base/dist/data'
     },
 
     // list of files to exclude

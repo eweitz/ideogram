@@ -1,6 +1,6 @@
 {
   "name": "ideogram",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Chromosome visualization with D3.js",
   "main": "src/js/index.js",
   "directories": {
@@ -12,9 +12,11 @@
     "ideogram": "cli/ideo-cli.js"
   },
   "scripts": {
-    "test": "karma start --single-run --browsers ChromeHeadless karma.conf.js",
-    "build": "webpack -p --display-modules --display-reasons && cp -r src/css dist/ && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
-    "watch": "webpack --watch && cp -r src/css dist/ && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data"
+    "test": "karma start --single-run --browsers ChromeHeadless --debug karma.conf.js",
+    "debugbuild": "webpack -p --display-modules --display-reasons && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
+    "build": "webpack -p && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
+    "watch": "webpack --watch && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
+    "start": "webpack-dev-server --open"
   },
   "repository": {
     "type": "git",
@@ -36,9 +38,15 @@
   "homepage": "https://github.com/eweitz/ideogram#readme",
   "dependencies": {
     "commander": "*",
-    "d3": "4.1.1",
+    "d3-array": "^1.2.0",
+    "d3-brush": "^1.0.4",
+    "d3-dispatch": "^1.0.3",
+    "d3-request": "^1.0.5",
+    "d3-scale": "^1.0.6",
+    "d3-selection": "^1.1.0",
     "d3.promise": "^2.0.0",
-    "es6-promise": "^4.1.0"
+    "es6-promise": "^4.1.0",
+    "lighthouse-ci": "git+https://github.com/ebidel/lighthouse-ci.git"
   },
   "devDependencies": {
     "babel-core": "^6.25.0",
@@ -54,6 +62,7 @@
     "karma-chrome-launcher": "^2.2.0",
     "karma-mocha": "^1.3.0",
     "mocha": "^2.3.0",
-    "webpack": "^3.1.0"
+    "webpack": "^3.1.0",
+    "webpack-dev-server": "^2.6.1"
   }
 }

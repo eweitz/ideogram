@@ -13,6 +13,7 @@ module.exports = {
     "no-eval": "off",
     "no-inner-declarations": "off",
     "no-else-return": "off",
+    "no-var": "off",
     "padded-blocks": "off"
   }
 }
