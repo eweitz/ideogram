@@ -1,3 +1,5 @@
+var path = require('path');
+
 // Karma configuration
 // Generated on Thu Jun 29 2017 21:00:08 GMT-0400 (EDT)
 
@@ -16,7 +18,7 @@ module.exports = function(config) {
     // list of files / patterns to load in the browser
     files: [
       'node_modules/d3/build/d3.min.js',
-      'dist/js/ideogram.min.js',
+      'src/js/index.js',
       'test/web-test.js',
       {pattern: 'dist/data/**', watched: false, included: false, served: true, nocache: false}
     ],
@@ -33,14 +35,38 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
+      'src/js/index.js': 'webpack'
+    },
+
+
+    webpack: {
+      module: {
+        rules: [
+          // instrument only testing sources with Istanbul
+          {
+            test: /\.js$/,
+            use: {
+              loader: 'istanbul-instrumenter-loader',
+              options: {
+                esModules: true
+              }
+            },
+            include: path.resolve('src/js/')
+          }
+        ]
+      }
     },
 
 
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['progress'],
+    reporters: ['progress', 'coverage-istanbul'],
 
+    coverageIstanbulReporter: {
+      reports: [ 'text-summary' ],
+      fixWebpackSourcePaths: true
+    },
 
     // web server port
     port: 9876,

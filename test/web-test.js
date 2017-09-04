@@ -32,7 +32,8 @@ describe("Ideogram", function() {
       chrHeight: 150,
       chrMargin: 10,
       showChromosomeLabels: true,
-      orientation: "vertical"
+      orientation: "vertical",
+      dataDir: '/dist/data/bands/native/'
     };
   });
 
@@ -290,6 +291,7 @@ describe("Ideogram", function() {
       showBandLabels: true,
       orientation: "vertical",
       perspective: "comparative",
+      dataDir: '/dist/data/bands/native/',
       onLoad: callback
     };
 
@@ -392,6 +394,7 @@ describe("Ideogram", function() {
       annotationsPath: "../dist/data/annotations/1000_virtual_snvs.json",
       annotationsLayout: "overlay",
       orientation: "horizontal",
+      dataDir: '/dist/data/bands/native/',
       onDrawAnnots: callback
     };
 
@@ -426,6 +429,7 @@ describe("Ideogram", function() {
       annotationsPath: "../dist/data/annotations/10_virtual_cnvs.json",
       annotationsLayout: "overlay",
       orientation: "horizontal",
+      dataDir: '/dist/data/bands/native/',
       onDrawAnnots: callback
     };
 
@@ -460,6 +464,7 @@ describe("Ideogram", function() {
       annotationTracks: annotationTracks,
       annotationHeight: 2.5,
       orientation: "vertical",
+      dataDir: '/dist/data/bands/native/',
       onDrawAnnots: callback
     };
 
@@ -486,6 +491,7 @@ describe("Ideogram", function() {
       annotationsLayout: "histogram",
       barWidth: 3,
       orientation: "vertical",
+      dataDir: '/dist/data/bands/native/',
       onDrawAnnots: callback
     };
 
@@ -505,6 +511,7 @@ describe("Ideogram", function() {
       organism: 'human',
       assembly: 'GRCh37',
       annotationsPath: 'https://raw.githubusercontent.com/NCBI-Hackathons/Scan2CNV/master/files/201113910010_R08C02.PennCnvOut.bed',
+      dataDir: '/dist/data/bands/native/',
       onDrawAnnots: callback
     };
 
@@ -568,6 +575,7 @@ describe("Ideogram", function() {
       annotationsLayout: "histogram",
       barWidth: 3,
       orientation: "vertical",
+      dataDir: '/dist/data/bands/native/',
       onDrawAnnots: onIdeogramLoadAnnots
     };
 
@@ -601,7 +609,8 @@ describe("Ideogram", function() {
         chrMargin: 10,
         rows: 2,
         showChromosomeLabels: true,
-        orientation: "vertical"
+        orientation: "vertical",
+        dataDir: '/dist/data/bands/native/'
       };
 
       config.onLoad = callback;
@@ -756,7 +765,8 @@ describe("Ideogram", function() {
         chrHeight: 500,
         annotationsPath: "../dist/data/annotations/1000_virtual_snvs.json",
         annotationTracks: annotationTracks,
-        annotationHeight: 2.5
+        annotationHeight: 2.5,
+        dataDir: '/dist/data/bands/native/'
       };
       config.onDrawAnnots = callback;
       var ideogram = new Ideogram(config);
@@ -786,6 +796,7 @@ describe("Ideogram", function() {
         chrHeight: 125,
         resolution: 400,
         orientation: "vertical",
+        dataDir: '/dist/data/bands/native/',
         onLoad: callback
       };
 
@@ -817,6 +828,7 @@ describe("Ideogram", function() {
         chrHeight: 300,
         chrWidth: 8,
         ploidy: 2,
+        dataDir: '/dist/data/bands/native/',
         onLoad: callback
       };
       var ideogram = new Ideogram(config);
@@ -839,6 +851,7 @@ describe("Ideogram", function() {
         chrHeight: 300,
         chrWidth: 8,
         ploidy: 2,
+        dataDir: '/dist/data/bands/native/',
         onLoad: callback
       };
       var ideogram = new Ideogram(config);
@@ -854,7 +867,8 @@ describe("Ideogram", function() {
 
       var config = {
         organism: "human",
-        sex: "female"
+        sex: "female",
+        dataDir: '/dist/data/bands/native/'
       };
       config.onLoad = callback;
       var ideogram = new Ideogram(config);
@@ -869,7 +883,8 @@ describe("Ideogram", function() {
       }
 
       var config = {
-        organism: 9606
+        organism: 9606,
+        dataDir: '/dist/data/bands/native/'
       };
       config.onLoad = callback;
       var ideogram = new Ideogram(config);
