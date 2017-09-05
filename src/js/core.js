@@ -122,7 +122,7 @@ export default class Ideogram {
     }
 
     if ('showFullyBanded' in this.config) {
-      this.config.showFullyBanded = this.config.showFullyBanded;
+      this.config.showFullyBanded = config.showFullyBanded;
     } else {
       this.config.showFullyBanded = true;
     }
@@ -903,71 +903,6 @@ export default class Ideogram {
         .selectAll('tspan')
         .attr('x', x)
         .attr('y', y);
-    }
-  }
-
-  /**
-  * Rotates band labels by 90 degrees, e.g. upon clicking a chromosome to focus.
-  *
-  * This method includes proportional scaling, which ensures that
-  * while the parent chromosome group is scaled strongly in one dimension to fill
-  * available space, the text in the chromosome's band labels is
-  * not similarly distorted, and remains readable.
-  */
-  rotateBandLabels(chr, chrIndex, scale) {
-    var chrMargin, scaleSvg,
-      orientation, bandLabels,
-      ideo = this;
-
-    bandLabels = chr.selectAll('.bandLabel');
-
-    chrMargin = this.config.chrMargin * chrIndex;
-
-    orientation = chr.attr('data-orientation');
-
-    if (typeof (scale) === 'undefined') {
-      scale = {x: 1, y: 1};
-      scaleSvg = '';
-    } else {
-      scaleSvg = 'scale(' + scale.x + ',' + scale.y + ')';
-    }
-
-    if (
-      chrIndex === 1 &&
-      'perspective' in this.config && this.config.perspective === 'comparative'
-    ) {
-      bandLabels
-        .attr('transform', function(d) {
-          var x, y;
-          x = (8 - chrMargin) - 26;
-          y = ideo.round(2 + d.px.start + d.px.width / 2);
-          return 'rotate(-90)translate(' + x + ',' + y + ')';
-        })
-        .selectAll('text')
-        .attr('text-anchor', 'end');
-    } else if (orientation === 'vertical') {
-      bandLabels
-        .attr('transform', function(d) {
-          var x, y;
-          x = 8 - chrMargin;
-          y = ideo.round(2 + d.px.start + d.px.width / 2);
-          return 'rotate(-90)translate(' + x + ',' + y + ')';
-        })
-        .selectAll('text')
-        .attr('transform', scaleSvg);
-    } else {
-      bandLabels
-        .attr('transform', function(d) {
-          var x, y;
-          x = ideo.round(-8 * scale.x + d.px.start + d.px.width / 2);
-          y = chrMargin - 10;
-          return 'translate(' + x + ',' + y + ')';
-        })
-        .selectAll('text')
-        .attr('transform', scaleSvg);
-
-      chr.selectAll('.bandLabelStalk line')
-        .attr('transform', scaleSvg);
     }
   }
 

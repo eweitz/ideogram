@@ -688,6 +688,32 @@ describe("Ideogram", function() {
       var ideogram = new Ideogram(config);
     });
 
+
+    it("should create a brush when specified", function(done) {
+      // Tests use case from ../examples/brush.html
+
+      function callback() {
+        assert.equal(ideogram.selectedRegion.from, 7637454)
+        assert.equal(ideogram.selectedRegion.to, 12390477)
+        assert.equal(ideogram.selectedRegion.extent, 4753023)
+        assert.equal(d3.selectAll('.selection').nodes().length, 1);
+        done();
+      }
+
+      var config = {
+        organism: 'human',
+        chromosome: '19',
+        brush: true,
+        chrHeight: 900,
+        orientation: 'horizontal',
+        onBrushMove: callback, // placeholder
+        onLoad: callback,
+        dataDir: '/dist/data/bands/native/'
+      };
+      var ideogram = new Ideogram(config);
+    });
+
+
     // TODO: Re-enable when there is a decent package that enables
     //       PhantomJS-like screenshots from automated tests
     //       cf.:
