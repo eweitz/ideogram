@@ -64,7 +64,7 @@ module.exports = function(config) {
     reporters: ['progress', 'coverage-istanbul'],
 
     coverageIstanbulReporter: {
-      reports: [ 'text-summary' ],
+      reports: ['text', 'html'],
       fixWebpackSourcePaths: true
     },
 
