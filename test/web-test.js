@@ -937,6 +937,28 @@ describe("Ideogram", function() {
       var ideogram = new Ideogram(config);
     });
 
+  it("should show only one chromosome after clicking a chromosome once", function(done) {
+
+    function callback() {
+
+      // d3.select('.chromosome').on('click', function(d) { console.log('I WAS CLICKED')});
+
+      d3.select('#chr1-9606').dispatch('click');
+
+      var shownChrs = d3.selectAll('.chromosome').nodes().filter(function(d) {
+        return d.style.display !== 'none';
+      });
+      var shownChrID = shownChrs[0].id;
+      assert.equal(shownChrs.length, 1);
+      assert.equal(shownChrID, 'chr1-9606');
+      done();
+    }
+
+    config.onLoad = callback;
+    config.orientation = 'horizontal';
+    var ideogram = new Ideogram(config);
+  });
+
     /*
     it("should load remote data from external BED file", function(done) {
 
