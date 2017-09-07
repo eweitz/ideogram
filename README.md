@@ -1,6 +1,7 @@
 # ideogram
 
 [![Build Status](https://travis-ci.org/eweitz/ideogram.svg?branch=master)](https://travis-ci.org/eweitz/ideogram)
+[![Coverage Status](https://coveralls.io/repos/github/eweitz/ideogram/badge.svg)](https://coveralls.io/github/eweitz/ideogram)
 
 Chromosome visualization with D3.js
 
