@@ -2726,10 +2726,6 @@ export default class Ideogram {
           console.log('Time constructing ideogram: ' + (t1 - t0) + ' ms');
         }
 
-        if (ideo.onLoadCallback) {
-          ideo.onLoadCallback();
-        }
-
         if (!('rotatable' in ideo.config && ideo.config.rotatable === false)) {
           d3.selectAll(ideo.selector + ' .chromosome').on('click', function() {
             ideo.rotateAndToggleDisplay(this);
@@ -2737,6 +2733,10 @@ export default class Ideogram {
         } else {
           d3.selectAll(ideo.selector + ' .chromosome')
             .style('cursor', 'default');
+        }
+
+        if (ideo.onLoadCallback) {
+          ideo.onLoadCallback();
         }
       } catch (e) {
         // console.log(e);

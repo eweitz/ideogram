@@ -650,7 +650,7 @@ describe("Ideogram", function() {
       config.onLoad = callback;
       var ideogram = new Ideogram(config);
     });
-  
+
     it("should support GenBank accessions in 'assembly' parameter", function(done) {
       // Tests use case for non-default assemblies.
       // GCA_000002125.2 is commonly called HuRef
@@ -693,9 +693,9 @@ describe("Ideogram", function() {
       // Tests use case from ../examples/brush.html
 
       function callback() {
-        assert.equal(ideogram.selectedRegion.from, 7637454)
-        assert.equal(ideogram.selectedRegion.to, 12390477)
-        assert.equal(ideogram.selectedRegion.extent, 4753023)
+        assert.equal(ideogram.selectedRegion.from, 7637454);
+        assert.equal(ideogram.selectedRegion.to, 12390477);
+        assert.equal(ideogram.selectedRegion.extent, 4753023);
         assert.equal(d3.selectAll('.selection').nodes().length, 1);
         done();
       }
@@ -912,6 +912,27 @@ describe("Ideogram", function() {
         organism: 9606,
         dataDir: '/dist/data/bands/native/'
       };
+      config.onLoad = callback;
+      var ideogram = new Ideogram(config);
+    });
+
+    it("should show only one chromosome after clicking a chromosome once", function(done) {
+
+      function callback() {
+
+        // d3.select('.chromosome').on('click', function(d) { console.log('I WAS CLICKED')});
+
+        d3.select('#chr1-9606').dispatch('click');
+
+        var shownChrs = d3.selectAll('.chromosome').nodes().filter(function(d) {
+          return d.style.display !== 'none';
+        });
+        var shownChrID = shownChrs[0].id;
+        assert.equal(shownChrs.length, 1);
+        assert.equal(shownChrID, 'chr1-9606');
+        done();
+      }
+
       config.onLoad = callback;
       var ideogram = new Ideogram(config);
     });
