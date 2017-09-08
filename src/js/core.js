@@ -344,13 +344,13 @@ export default class Ideogram {
       i, init, tsvLinesLength, source,
       start, stop, firstColumn, tmp;
 
-    if (content.slice(0, 8) === 'chrBands') {
+    if (content.slice(0, 15) === 'window.chrBands') {
       source = 'native';
     }
 
     if (
       chromosomes instanceof Array &&
-    typeof chromosomes[0] === 'object'
+      typeof chromosomes[0] === 'object'
     ) {
       tmp = [];
       for (i = 0; i < chromosomes.length; i++) {
@@ -391,10 +391,10 @@ export default class Ideogram {
         chr = columns[0];
 
         if (
-        // If a specific set of chromosomes has been requested, and
-        // the current chromosome
+          // If a specific set of chromosomes has been requested, and
+          // the current chromosome
           typeof (chromosomes) !== 'undefined' &&
-        chromosomes.indexOf(chr) === -1
+          chromosomes.indexOf(chr) === -1
         ) {
           continue;
         }

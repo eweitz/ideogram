@@ -54,7 +54,7 @@ export class Layout {
 
   // Get rotated chromosome y scale
   _getYScale() {
-      // 20 is width of rotated chromosome.
+    // 20 is width of rotated chromosome.
     return 20 / this._config.chrWidth;
   }
 
@@ -80,32 +80,33 @@ export class Layout {
   rotate(chrSetNumber, chrNumber, chrElement) {
     var ideo = this._ideo;
 
-      // Find chromosomes which should be hidden
+    // Find chromosomes which should be hidden
     var otherChrs = d3.selectAll(ideo.selector + ' g.chromosome')
       .filter(function() {
         return this !== chrElement;
       });
 
     if (this._isRotated) {
-          // Reset _isRotated flag
+      // Reset _isRotated flag
       this._isRotated = false;
-          // Rotate chromosome back
+
+      // Rotate chromosome back
       this.rotateBack(chrSetNumber, chrNumber, chrElement, function() {
-              // Show all other chromosomes and chromosome labels
+        // Show all other chromosomes and chromosome labels
         otherChrs.style('display', null);
         d3.selectAll(ideo.selector + ' .chrSetLabel, .chrLabel')
           .style('display', null);
       });
     } else {
-          // Set _isRotated flag
+      // Set _isRotated flag
       this._isRotated = true;
 
-          // Hide all other chromosomes and chromosome labels
+      // Hide all other chromosomes and chromosome labels
       otherChrs.style('display', 'none');
       d3.selectAll(ideo.selector + ' .chrSetLabel, .chrLabel')
         .style('display', 'none');
 
-          // Rotate chromosome
+      // Rotate chromosome
       this.rotateForward(chrSetNumber, chrNumber, chrElement);
     }
   }
@@ -138,44 +139,44 @@ export class Layout {
   getMargin() {
     return this._margin;
   }
-
-  // Get SVG element height
-  getHeight() {
-    throw new Error(this._class + '#getHeight not implemented');
-  }
-
-  getChromosomeBandTickY1() {
-    throw new Error(this._class + '#getChromosomeBandTickY1 not implemented');
-  }
-
-  getChromosomeBandTickY2() {
-    throw new Error(this._class + '#getChromosomeBandTickY2 not implemented');
-  }
-
-  // Get chromosome's band translate attribute
-  getChromosomeBandLabelTranslate() {
-    throw new Error(
-      this._class + '#getChromosomeBandLabelTranslate not implemented'
-    );
-  }
+  //
+  // // Get SVG element height
+  // getHeight() {
+  //   throw new Error(this._class + '#getHeight not implemented');
+  // }
+  //
+  // getChromosomeBandTickY1() {
+  //   throw new Error(this._class + '#getChromosomeBandTickY1 not implemented');
+  // }
+  //
+  // getChromosomeBandTickY2() {
+  //   throw new Error(this._class + '#getChromosomeBandTickY2 not implemented');
+  // }
+  //
+  // // Get chromosome's band translate attribute
+  // getChromosomeBandLabelTranslate() {
+  //   throw new Error(
+  //     this._class + '#getChromosomeBandLabelTranslate not implemented'
+  //   );
+  // }
 
   // Get chromosome set label anchor property
   getChromosomeSetLabelAnchor() {
     return 'middle';
   }
-
-  // Get chromosome's band label text-anchor value
-  getChromosomeBandLabelAnchor() {
-    throw (
-      new Error(this._class + '#getChromosomeBandLabelAnchor not implemented')
-    );
-  }
-
-  getChromosomeLabelXPosition() {
-    throw new Error(
-      this._class + '#getChromosomeLabelXPosition not implemented'
-    );
-  }
+  //
+  // // Get chromosome's band label text-anchor value
+  // getChromosomeBandLabelAnchor() {
+  //   throw (
+  //     new Error(this._class + '#getChromosomeBandLabelAnchor not implemented')
+  //   );
+  // }
+  //
+  // getChromosomeLabelXPosition() {
+  //   throw new Error(
+  //     this._class + '#getChromosomeLabelXPosition not implemented'
+  //   );
+  // }
 
   // Get chromosome label y position.
   getChromosomeLabelYPosition() {
@@ -191,34 +192,32 @@ export class Layout {
     }
   }
 
-  getChromosomeSetLabelXPosition() {
-    throw (
-      new Error(
-        this._class + '#getChromosomeSetLabelXPosition not implemented'
-      )
-    );
-  }
-
-  getChromosomeSetLabelTranslate() {
-    throw (
-      new Error(this._class + '#getChromosomeSetLabelTranslate not implemented')
-    );
-  }
-
-  // Get chromosome set translate attribute
-  getChromosomeSetTranslate() {
-    throw new Error(this._class + '#getChromosomeSetTranslate not implemented');
-  }
-
-  // Get chromosome set translate's y offset
-  getChromosomeSetYTranslate() {
-    throw new Error(
-      this._class + '#getChromosomeSetYTranslate not implemented'
-    );
-  }
+  // getChromosomeSetLabelXPosition() {
+  //   throw (
+  //     new Error(
+  //       this._class + '#getChromosomeSetLabelXPosition not implemented'
+  //     )
+  //   );
+  // }
+  //
+  // getChromosomeSetLabelTranslate() {
+  //   throw (
+  //     new Error(this._class + '#getChromosomeSetLabelTranslate not implemented')
+  //   );
+  // }
+  //
+  // // Get chromosome set translate attribute
+  // getChromosomeSetTranslate() {
+  //   throw new Error(this._class + '#getChromosomeSetTranslate not implemented');
+  // }
+  //
+  // // Get chromosome set translate's y offset
+  // getChromosomeSetYTranslate() {
+  //   throw new Error(
+  //     this._class + '#getChromosomeSetYTranslate not implemented'
+  //   );
+  // }
 }
-
-
 
 export class HorizontalLayout extends Layout {
 
@@ -285,8 +284,7 @@ export class HorizontalLayout extends Layout {
       .style('opacity', 1);
   }
 
-  rotateBack(setNumber, chrNumber,
-             chrElement, callback) {
+  rotateBack(setNumber, chrNumber, chrElement, callback) {
     var translate = this.getChromosomeSetTranslate(setNumber);
 
     d3.select(chrElement.parentNode)
@@ -410,9 +408,6 @@ export class HorizontalLayout extends Layout {
   }
 
 }
-
-
-
 
 export class PairedLayout extends Layout {
 
@@ -575,8 +570,6 @@ export class PairedLayout extends Layout {
 
 }
 
-
-
 export class SmallLayout extends Layout {
 
   constructor(config, ideo) {
@@ -590,29 +583,29 @@ export class SmallLayout extends Layout {
     };
   }
 
-  rotateForward(setNumber, chrNumber, chrElement, callback) {
-    var ideoBox = d3.select(this._ideo.selector).node().getBoundingClientRect();
-    var chrBox = chrElement.getBoundingClientRect();
-
-    var scaleX = (ideoBox.width / chrBox.height) * 0.97;
-    var scaleY = this._getYScale();
-
-    transform = 'translate(5, 25) scale(' + scaleX + ', ' + scaleY + ')';
-
-    d3.select(chrElement.parentNode)
-      .transition()
-      .attr('transform', transform)
-      .on('end', callback);
-  }
-
-  rotateBack(setNumber, chrNumber, chrElement, callback) {
-    var translate = this.getChromosomeSetTranslate(setNumber);
-
-    d3.select(chrElement.parentNode)
-      .transition()
-      .attr('transform', translate)
-      .on('end', callback);
-  }
+  // rotateForward(setNumber, chrNumber, chrElement, callback) {
+  //   var ideoBox = d3.select(this._ideo.selector).node().getBoundingClientRect();
+  //   var chrBox = chrElement.getBoundingClientRect();
+  //
+  //   var scaleX = (ideoBox.width / chrBox.height) * 0.97;
+  //   var scaleY = this._getYScale();
+  //
+  //   transform = 'translate(5, 25) scale(' + scaleX + ', ' + scaleY + ')';
+  //
+  //   d3.select(chrElement.parentNode)
+  //     .transition()
+  //     .attr('transform', transform)
+  //     .on('end', callback);
+  // }
+  //
+  // rotateBack(setNumber, chrNumber, chrElement, callback) {
+  //   var translate = this.getChromosomeSetTranslate(setNumber);
+  //
+  //   d3.select(chrElement.parentNode)
+  //     .transition()
+  //     .attr('transform', translate)
+  //     .on('end', callback);
+  // }
 
   getHeight() {
     var chrHeight = this._config.chrHeight;
@@ -733,8 +726,7 @@ export class VerticalLayout extends Layout {
       .style('opacity', 1);
   }
 
-  rotateBack(setNumber, chrNumber,
-             chrElement, callback) {
+  rotateBack(setNumber, chrNumber, chrElement, callback) {
     var translate = this.getChromosomeSetTranslate(setNumber);
 
     d3.select(chrElement.parentNode)

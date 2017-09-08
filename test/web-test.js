@@ -920,8 +920,6 @@ describe("Ideogram", function() {
 
       function callback() {
 
-        // d3.select('.chromosome').on('click', function(d) { console.log('I WAS CLICKED')});
-
         d3.select('#chr1-9606').dispatch('click');
 
         var shownChrs = d3.selectAll('.chromosome').nodes().filter(function(d) {
@@ -952,8 +950,6 @@ describe("Ideogram", function() {
 
     function callback() {
 
-      // d3.select('.chromosome').on('click', function(d) { console.log('I WAS CLICKED')});
-
       d3.select('#chr1-9606').dispatch('click');
 
       var shownChrs = d3.selectAll('.chromosome').nodes().filter(function(d) {
@@ -977,6 +973,111 @@ describe("Ideogram", function() {
     config.orientation = 'horizontal';
     var ideogram = new Ideogram(config);
   });
+
+  it("should depict chromosomal rearrangements", function(done) {
+    // Covers case in ../examples/ploidy_rearrangements.html
+
+    function callback() {
+      // TODO: There shouldn't be multiple elements with the same id
+      var lastCopyChr1 = d3.selectAll('#chr1-4641').nodes().slice(-1)[0];
+      lastCopyChr1Fill = d3.select(lastCopyChr1).select('.p-band').nodes()[0].style.fill;
+      assert.equal(lastCopyChr1Fill, 'transparent');
+      done()
+    }
+
+    d3.select('body')
+      .append('script')
+      .attr('src', '/dist/data/bands/native/banana.js');
+
+    setTimeout(function() {
+      var config = {
+        organism: "banana",
+        orientation: "horizontal",
+        ploidy: 3,
+        ancestors: {
+          "A": "#dea673",
+          "B": "#7396be"
+        },
+        ploidyDesc: [
+          {'AABB': ['11', '11', '11', '02']},
+          {'AAB': ['01', '11', '11']},
+          'BAB',
+          {'AABB': ['11', '11', '11', '20']},
+          'AAB',
+          'BBB',
+          {'AAB': ['01', '11', '11']},
+          'AAB',
+          'AAB',
+          'AAB',
+          'AAB'
+        ]
+      };
+
+      config.onLoad = callback;
+      var ideogram = new Ideogram(config);
+    }, 100);
+
+  });
+
+  it("should depict chromosomal rangesets", function(done) {
+    // Covers case in ../examples/ploidy_recombination.html
+
+    function callback() {
+      // TODO: There shouldn't be multiple elements with the same id
+      var numRangeSets = d3.selectAll('.range-set rect').nodes().length;
+      assert.equal(numRangeSets, 6);
+      done();
+    }
+
+    d3.select('body')
+      .append('script')
+      .attr('src', '/dist/data/bands/native/banana.js');
+
+    setTimeout(function() {
+
+      var config = {
+        organism: "banana",
+        orientation: "horizontal",
+        ploidy: 3,
+        chrMargin: 10,
+        ancestors: {
+          "A": "#dea673",
+          "B": "#7396be"
+        },
+        ploidyDesc: [
+          'AAB',
+          'AAB',
+          'BAB',
+          'AAB',
+          'AAB',
+          'BBB',
+          'AAB',
+          'AAB',
+          'AAB',
+          'AAB',
+          'AAB'
+        ],
+        rangeSet: [{
+          chr: 1,
+          ploidy: [0, 1, 0],
+          start: 17120000,
+          stop: 25120000,
+          color: [0, '#7396be', 0,]
+        }, {
+          chr: 2,
+          ploidy: [0, 1, 1],
+          start: 12120000,
+          stop: 15120000,
+          color: [0, '#7396be', '#dea673']
+        }]
+      };
+
+      config.onLoad = callback;
+      var ideogram = new Ideogram(config);
+    }, 100);
+
+  });
+
 
     /*
     it("should load remote data from external BED file", function(done) {
