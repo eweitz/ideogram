@@ -916,7 +916,7 @@ describe("Ideogram", function() {
       var ideogram = new Ideogram(config);
     });
 
-    it("should show only one chromosome after clicking a chromosome once", function(done) {
+  it("should handle toggling single- and multi-chromosome view, in horizontal orientation", function(done) {
 
       function callback() {
 
@@ -930,14 +930,25 @@ describe("Ideogram", function() {
         var shownChrID = shownChrs[0].id;
         assert.equal(shownChrs.length, 1);
         assert.equal(shownChrID, 'chr1-9606');
-        done();
+
+        d3.select('#chr1-9606').dispatch('click');
+        setTimeout(function() {
+
+          var shownChrs = d3.selectAll('.chromosome').nodes().filter(function(d) {
+            return d.style.display !== 'none';
+          });
+          assert.equal(shownChrs.length, 24);
+
+          done();
+        }, 500);
+
       }
 
       config.onLoad = callback;
       var ideogram = new Ideogram(config);
     });
 
-  it("should show only one chromosome after clicking a chromosome once", function(done) {
+  it("should handle toggling single- and multi-chromosome view, in horizontal orientation", function(done) {
 
     function callback() {
 
@@ -951,7 +962,15 @@ describe("Ideogram", function() {
       var shownChrID = shownChrs[0].id;
       assert.equal(shownChrs.length, 1);
       assert.equal(shownChrID, 'chr1-9606');
-      done();
+      d3.select('#chr1-9606').dispatch('click');
+      setTimeout(function() {
+        var shownChrs = d3.selectAll('.chromosome').nodes().filter(function(d) {
+          return d.style.display !== 'none';
+        });
+        assert.equal(shownChrs.length, 24);
+
+        done();
+      }, 500);
     }
 
     config.onLoad = callback;
