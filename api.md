@@ -37,7 +37,6 @@ var ideogram = new Ideogram({
 * [chromosomes](#chromosomes)
 * [container](#container)
 * [dataDir](#datadir)
-* [multiorganism](#multiorganism)
 * [onBrushMove](#onbrushmove)
 * [onDrawAnnots](#ondrawannots)
 * [onLoad](#onload)
@@ -109,14 +108,11 @@ String.  Optional.  Default: "body".  CSS selector of the HTML element that will
 ## dataDir
 String.  Optional.  Default: "../data/bands/native/".  Absolute or relative URL of the directory containing data needed to draw banded chromosomes.  Example in [GeneExpressionAging/ideogram](https://ncbi-hackathons.github.io/GeneExpressionAging/ideogram).
 
-## multiorganism
-Boolean.  Optional.  Default: false.  Flag to indicate if this ideogram contains chromosomes from multiple organisms.
-
 ## onBrushMove
 Function.  Optional.  Callback function to invoke when brush moves.  Example in [Brush](https://eweitz.github.io/ideogram/brush.html).
 
 ## onDrawAnnots
-Function.  Optional.  Callback function to invoke when annotations are drawn.
+Function.  Optional.  Callback function to invoke when annotations are drawn.  This is useful for when loading and drawing large annotation datsets.  Example in [web-tests.js](https://github.com/eweitz/ideogram/blob/b701dc0b76089842d50860c8c6cf5aa6d8dec564/test/web-test.js#L395).
 
 ## onLoad
 Function.  Optional.  Callback function to invoke when chromosomes are loaded, i.e. rendered on the page.  Example in [Annotations, external data]( https://eweitz.github.io/ideogram/annotations_external_data.html).

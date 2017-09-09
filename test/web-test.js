@@ -32,7 +32,8 @@ describe("Ideogram", function() {
       chrHeight: 150,
       chrMargin: 10,
       showChromosomeLabels: true,
-      orientation: "vertical"
+      orientation: "vertical",
+      dataDir: '/dist/data/bands/native/'
     };
   });
 
@@ -277,6 +278,20 @@ describe("Ideogram", function() {
       var numSyntenicRegions = document.getElementsByClassName("syntenicRegion").length;
       assert.equal(numSyntenicRegions, 25);
 
+      var srID = '#chr1-10090_54516053_55989459___chr2-10090_114000000_123500000';
+      var otherSrID = '#chr1-10090_54516053_55989459___chr2-10090_108000000_117000000';
+
+      var sr = d3.select(srID);
+      var otherSr = d3.select(otherSrID);
+      sr.dispatch('mouseover');
+      var otherSrIsTranslucent = /ghost/.test(otherSr.nodes()[0].classList.value);
+      assert.equal(otherSrIsTranslucent, true);
+      sr.dispatch('mouseout');
+
+      sr.dispatch('click');
+      var otherSrIsHidden = /hidden/.test(otherSr.nodes()[0].classList.value);
+      assert.equal(otherSrIsHidden, true);
+
       done();
     }
 
@@ -290,6 +305,7 @@ describe("Ideogram", function() {
       showBandLabels: true,
       orientation: "vertical",
       perspective: "comparative",
+      dataDir: '/dist/data/bands/native/',
       onLoad: callback
     };
 
@@ -392,6 +408,7 @@ describe("Ideogram", function() {
       annotationsPath: "../dist/data/annotations/1000_virtual_snvs.json",
       annotationsLayout: "overlay",
       orientation: "horizontal",
+      dataDir: '/dist/data/bands/native/',
       onDrawAnnots: callback
     };
 
@@ -426,6 +443,7 @@ describe("Ideogram", function() {
       annotationsPath: "../dist/data/annotations/10_virtual_cnvs.json",
       annotationsLayout: "overlay",
       orientation: "horizontal",
+      dataDir: '/dist/data/bands/native/',
       onDrawAnnots: callback
     };
 
@@ -460,6 +478,7 @@ describe("Ideogram", function() {
       annotationTracks: annotationTracks,
       annotationHeight: 2.5,
       orientation: "vertical",
+      dataDir: '/dist/data/bands/native/',
       onDrawAnnots: callback
     };
 
@@ -486,6 +505,7 @@ describe("Ideogram", function() {
       annotationsLayout: "histogram",
       barWidth: 3,
       orientation: "vertical",
+      dataDir: '/dist/data/bands/native/',
       onDrawAnnots: callback
     };
 
@@ -505,6 +525,7 @@ describe("Ideogram", function() {
       organism: 'human',
       assembly: 'GRCh37',
       annotationsPath: 'https://raw.githubusercontent.com/NCBI-Hackathons/Scan2CNV/master/files/201113910010_R08C02.PennCnvOut.bed',
+      dataDir: '/dist/data/bands/native/',
       onDrawAnnots: callback
     };
 
@@ -568,6 +589,7 @@ describe("Ideogram", function() {
       annotationsLayout: "histogram",
       barWidth: 3,
       orientation: "vertical",
+      dataDir: '/dist/data/bands/native/',
       onDrawAnnots: onIdeogramLoadAnnots
     };
 
@@ -601,7 +623,8 @@ describe("Ideogram", function() {
         chrMargin: 10,
         rows: 2,
         showChromosomeLabels: true,
-        orientation: "vertical"
+        orientation: "vertical",
+        dataDir: '/dist/data/bands/native/'
       };
 
       config.onLoad = callback;
@@ -641,7 +664,7 @@ describe("Ideogram", function() {
       config.onLoad = callback;
       var ideogram = new Ideogram(config);
     });
-  
+
     it("should support GenBank accessions in 'assembly' parameter", function(done) {
       // Tests use case for non-default assemblies.
       // GCA_000002125.2 is commonly called HuRef
@@ -678,6 +701,32 @@ describe("Ideogram", function() {
       config.onDrawAnnots = callback;
       var ideogram = new Ideogram(config);
     });
+
+
+    it("should create a brush when specified", function(done) {
+      // Tests use case from ../examples/brush.html
+
+      function callback() {
+        assert.equal(ideogram.selectedRegion.from, 7637454);
+        assert.equal(ideogram.selectedRegion.to, 12390477);
+        assert.equal(ideogram.selectedRegion.extent, 4753023);
+        assert.equal(d3.selectAll('.selection').nodes().length, 1);
+        done();
+      }
+
+      var config = {
+        organism: 'human',
+        chromosome: '19',
+        brush: true,
+        chrHeight: 900,
+        orientation: 'horizontal',
+        onBrushMove: callback, // placeholder
+        onLoad: callback,
+        dataDir: '/dist/data/bands/native/'
+      };
+      var ideogram = new Ideogram(config);
+    });
+
 
     // TODO: Re-enable when there is a decent package that enables
     //       PhantomJS-like screenshots from automated tests
@@ -756,17 +805,18 @@ describe("Ideogram", function() {
         chrHeight: 500,
         annotationsPath: "../dist/data/annotations/1000_virtual_snvs.json",
         annotationTracks: annotationTracks,
-        annotationHeight: 2.5
+        annotationHeight: 2.5,
+        dataDir: '/dist/data/bands/native/'
       };
       config.onDrawAnnots = callback;
       var ideogram = new Ideogram(config);
     });
 
 
-    it("should show three genomes in one page", function(done) {
+    it("should show three human genomes in one page", function(done) {
       // Tests use case from ../examples/multiple_trio.html
 
-      var config, containerIDs, id, i, container
+      var config, containerIDs, id, i, container,
           ideogramsLoaded = 0;
 
       function callback() {
@@ -786,6 +836,7 @@ describe("Ideogram", function() {
         chrHeight: 125,
         resolution: 400,
         orientation: "vertical",
+        dataDir: '/dist/data/bands/native/',
         onLoad: callback
       };
 
@@ -799,6 +850,44 @@ describe("Ideogram", function() {
       }
 
     });
+
+  it("should show three unbanded primated genomes in one page", function(done) {
+    // Tests use case from ../examples/multiple_primates.html
+
+    var config, containerIDs, id, i, container,
+        ideogramsLoaded = 0;
+
+    function callback() {
+      var numChromosomes;
+
+      ideogramsLoaded += 1;
+      if (ideogramsLoaded === 3) {
+        numChromosomes = document.querySelectorAll('.chromosome').length;
+        assert.equal(numChromosomes, 23+25+21);
+        done();
+      }
+    }
+
+    config = {
+      chrHeight: 250,
+      chrMargin: 2,
+      orientation: "horizontal",
+      showFullyBanded: false,
+      dataDir: '/dist/data/bands/native/',
+      onLoad: callback
+    };
+
+    containerIDs = ["homo-sapiens", "pan-troglodytes", "macaca-fascicularis"];
+    for (i = 0; i < containerIDs.length; i++) {
+      id = containerIDs[i];
+      container = '<div id="' + id + '"></div>';
+      document.querySelector("body").innerHTML += container;
+      config.container = "#" + id;
+      config.organism = id;
+      new Ideogram(config);
+    }
+
+  });
 
 
     it("should show XX chromosomes for a diploid human female", function(done) {
@@ -817,6 +906,7 @@ describe("Ideogram", function() {
         chrHeight: 300,
         chrWidth: 8,
         ploidy: 2,
+        dataDir: '/dist/data/bands/native/',
         onLoad: callback
       };
       var ideogram = new Ideogram(config);
@@ -839,6 +929,7 @@ describe("Ideogram", function() {
         chrHeight: 300,
         chrWidth: 8,
         ploidy: 2,
+        dataDir: '/dist/data/bands/native/',
         onLoad: callback
       };
       var ideogram = new Ideogram(config);
@@ -854,7 +945,8 @@ describe("Ideogram", function() {
 
       var config = {
         organism: "human",
-        sex: "female"
+        sex: "female",
+        dataDir: '/dist/data/bands/native/'
       };
       config.onLoad = callback;
       var ideogram = new Ideogram(config);
@@ -869,11 +961,176 @@ describe("Ideogram", function() {
       }
 
       var config = {
-        organism: 9606
+        organism: 9606,
+        dataDir: '/dist/data/bands/native/'
       };
       config.onLoad = callback;
       var ideogram = new Ideogram(config);
     });
+
+  it("should handle toggling single- and multi-chromosome view, in horizontal orientation", function(done) {
+
+      function callback() {
+
+        d3.select('#chr1-9606').dispatch('click');
+
+        var shownChrs = d3.selectAll('.chromosome').nodes().filter(function(d) {
+          return d.style.display !== 'none';
+        });
+        var shownChrID = shownChrs[0].id;
+        assert.equal(shownChrs.length, 1);
+        assert.equal(shownChrID, 'chr1-9606');
+
+        d3.select('#chr1-9606').dispatch('click');
+        setTimeout(function() {
+
+          var shownChrs = d3.selectAll('.chromosome').nodes().filter(function(d) {
+            return d.style.display !== 'none';
+          });
+          assert.equal(shownChrs.length, 24);
+
+          done();
+        }, 500);
+
+      }
+
+      config.onLoad = callback;
+      var ideogram = new Ideogram(config);
+    });
+
+  it("should handle toggling single- and multi-chromosome view, in horizontal orientation", function(done) {
+
+    function callback() {
+
+      d3.select('#chr1-9606').dispatch('click');
+
+      var shownChrs = d3.selectAll('.chromosome').nodes().filter(function(d) {
+        return d.style.display !== 'none';
+      });
+      var shownChrID = shownChrs[0].id;
+      assert.equal(shownChrs.length, 1);
+      assert.equal(shownChrID, 'chr1-9606');
+      d3.select('#chr1-9606').dispatch('click');
+      setTimeout(function() {
+        var shownChrs = d3.selectAll('.chromosome').nodes().filter(function(d) {
+          return d.style.display !== 'none';
+        });
+        assert.equal(shownChrs.length, 24);
+
+        done();
+      }, 500);
+    }
+
+    config.onLoad = callback;
+    config.orientation = 'horizontal';
+    var ideogram = new Ideogram(config);
+  });
+
+  it("should depict chromosomal rearrangements", function(done) {
+    // Covers case in ../examples/ploidy_rearrangements.html
+
+    function callback() {
+      // TODO: There shouldn't be multiple elements with the same id
+      var lastCopyChr1 = d3.selectAll('#chr1-4641').nodes().slice(-1)[0];
+      lastCopyChr1Fill = d3.select(lastCopyChr1).select('.p-band').nodes()[0].style.fill;
+      assert.equal(lastCopyChr1Fill, 'transparent');
+      done()
+    }
+
+    d3.select('body')
+      .append('script')
+      .attr('src', '/dist/data/bands/native/banana.js');
+
+    setTimeout(function() {
+      var config = {
+        organism: "banana",
+        orientation: "horizontal",
+        ploidy: 3,
+        ancestors: {
+          "A": "#dea673",
+          "B": "#7396be"
+        },
+        ploidyDesc: [
+          {'AABB': ['11', '11', '11', '02']},
+          {'AAB': ['01', '11', '11']},
+          'BAB',
+          {'AABB': ['11', '11', '11', '20']},
+          'AAB',
+          'BBB',
+          {'AAB': ['01', '11', '11']},
+          'AAB',
+          'AAB',
+          'AAB',
+          'AAB'
+        ]
+      };
+
+      config.onLoad = callback;
+      var ideogram = new Ideogram(config);
+    }, 100);
+
+  });
+
+  it("should depict chromosomal rangesets", function(done) {
+    // Covers case in ../examples/ploidy_recombination.html
+
+    function callback() {
+      // TODO: There shouldn't be multiple elements with the same id
+      var numRangeSets = d3.selectAll('.range-set rect').nodes().length;
+      assert.equal(numRangeSets, 6);
+      done();
+    }
+
+    d3.select('body')
+      .append('script')
+      .attr('src', '/dist/data/bands/native/banana.js');
+
+    setTimeout(function() {
+
+      var config = {
+        organism: "banana",
+        orientation: "horizontal",
+        ploidy: 3,
+        chrMargin: 10,
+        ancestors: {
+          "A": "#dea673",
+          "B": "#7396be"
+        },
+        ploidyDesc: [
+          'AAB',
+          'AAB',
+          'BAB',
+          'AAB',
+          'AAB',
+          'BBB',
+          'AAB',
+          'AAB',
+          'AAB',
+          'AAB',
+          'AAB'
+        ],
+        rangeSet: [{
+          chr: 1,
+          ploidy: [0, 1, 0],
+          start: 17120000,
+          stop: 25120000,
+          color: [0, '#7396be', 0,]
+        }, {
+          chr: 2,
+          ploidy: [0, 1, 1],
+          start: 12120000,
+          stop: 15120000,
+          color: [0, '#7396be', '#dea673']
+        }]
+      };
+
+      config.onLoad = callback;
+      config.debug = true;
+      var ideogram = new Ideogram(config);
+    }, 100);
+
+  });
+
 
     /*
     it("should load remote data from external BED file", function(done) {

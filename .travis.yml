@@ -7,3 +7,4 @@ addons:
 before_script:
   - npm link
 script: npm test
+after_script: npm run coveralls

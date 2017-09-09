@@ -35,7 +35,9 @@ export default class Ideogram {
     // TODO: Document this
     this._bandsXOffset = 30;
 
-    this.debug = false;
+    if (!this.config.debug) {
+      this.config.debug = false;
+    }
 
     if (!this.config.dataDir) {
       this.config.dataDir = this.getDataDir();
@@ -122,7 +124,7 @@ export default class Ideogram {
     }
 
     if ('showFullyBanded' in this.config) {
-      this.config.showFullyBanded = this.config.showFullyBanded;
+      this.config.showFullyBanded = config.showFullyBanded;
     } else {
       this.config.showFullyBanded = true;
     }
@@ -344,13 +346,13 @@ export default class Ideogram {
       i, init, tsvLinesLength, source,
       start, stop, firstColumn, tmp;
 
-    if (content.slice(0, 8) === 'chrBands') {
+    if (content.slice(0, 15) === 'window.chrBands') {
       source = 'native';
     }
 
     if (
       chromosomes instanceof Array &&
-    typeof chromosomes[0] === 'object'
+      typeof chromosomes[0] === 'object'
     ) {
       tmp = [];
       for (i = 0; i < chromosomes.length; i++) {
@@ -391,10 +393,10 @@ export default class Ideogram {
         chr = columns[0];
 
         if (
-        // If a specific set of chromosomes has been requested, and
-        // the current chromosome
+          // If a specific set of chromosomes has been requested, and
+          // the current chromosome
           typeof (chromosomes) !== 'undefined' &&
-        chromosomes.indexOf(chr) === -1
+          chromosomes.indexOf(chr) === -1
         ) {
           continue;
         }
@@ -906,71 +908,6 @@ export default class Ideogram {
     }
   }
 
-  /**
-  * Rotates band labels by 90 degrees, e.g. upon clicking a chromosome to focus.
-  *
-  * This method includes proportional scaling, which ensures that
-  * while the parent chromosome group is scaled strongly in one dimension to fill
-  * available space, the text in the chromosome's band labels is
-  * not similarly distorted, and remains readable.
-  */
-  rotateBandLabels(chr, chrIndex, scale) {
-    var chrMargin, scaleSvg,
-      orientation, bandLabels,
-      ideo = this;
-
-    bandLabels = chr.selectAll('.bandLabel');
-
-    chrMargin = this.config.chrMargin * chrIndex;
-
-    orientation = chr.attr('data-orientation');
-
-    if (typeof (scale) === 'undefined') {
-      scale = {x: 1, y: 1};
-      scaleSvg = '';
-    } else {
-      scaleSvg = 'scale(' + scale.x + ',' + scale.y + ')';
-    }
-
-    if (
-      chrIndex === 1 &&
-      'perspective' in this.config && this.config.perspective === 'comparative'
-    ) {
-      bandLabels
-        .attr('transform', function(d) {
-          var x, y;
-          x = (8 - chrMargin) - 26;
-          y = ideo.round(2 + d.px.start + d.px.width / 2);
-          return 'rotate(-90)translate(' + x + ',' + y + ')';
-        })
-        .selectAll('text')
-        .attr('text-anchor', 'end');
-    } else if (orientation === 'vertical') {
-      bandLabels
-        .attr('transform', function(d) {
-          var x, y;
-          x = 8 - chrMargin;
-          y = ideo.round(2 + d.px.start + d.px.width / 2);
-          return 'rotate(-90)translate(' + x + ',' + y + ')';
-        })
-        .selectAll('text')
-        .attr('transform', scaleSvg);
-    } else {
-      bandLabels
-        .attr('transform', function(d) {
-          var x, y;
-          x = ideo.round(-8 * scale.x + d.px.start + d.px.width / 2);
-          y = chrMargin - 10;
-          return 'translate(' + x + ',' + y + ')';
-        })
-        .selectAll('text')
-        .attr('transform', scaleSvg);
-
-      chr.selectAll('.bandLabelStalk line')
-        .attr('transform', scaleSvg);
-    }
-  }
-
   round(coord) {
     // Rounds an SVG coordinates to two decimal places
     // e.g. 42.1234567890 -> 42.12
@@ -1195,7 +1132,7 @@ export default class Ideogram {
     }
 
     var t1 = new Date().getTime();
-    if (ideo.debug) {
+    if (ideo.config.debug) {
       console.log('Time in drawSyntenicRegions: ' + (t1 - t0) + ' ms');
     }
   }
@@ -1513,7 +1450,7 @@ export default class Ideogram {
     }
 
     var t1 = new Date().getTime();
-    if (ideo.debug) {
+    if (ideo.config.debug) {
       console.log('Time spent in getHistogramBars: ' + (t1 - t0) + ' ms');
     }
 
@@ -2524,7 +2461,7 @@ export default class Ideogram {
     }
 
     var t1B = new Date().getTime();
-    if (ideo.debug) {
+    if (ideo.config.debug) {
       console.log('Time in processBandData: ' + (t1B - t0B) + ' ms');
     }
 
@@ -2756,7 +2693,7 @@ export default class Ideogram {
             .style('display', 'none');
           d3.selectAll(bandsToShow).style('display', '');
           var t1C = new Date().getTime();
-          if (ideo.debug) {
+          if (ideo.config.debug) {
             console.log('Time in showing bands: ' + (t1C - t0C) + ' ms');
           }
 
@@ -2782,17 +2719,13 @@ export default class Ideogram {
         }
 
         var t1A = new Date().getTime();
-        if (ideo.debug) {
+        if (ideo.config.debug) {
           console.log('Time in drawChromosome: ' + (t1A - t0A) + ' ms');
         }
 
         var t1 = new Date().getTime();
-        if (ideo.debug) {
+        if (ideo.config.debug) {
           console.log('Time constructing ideogram: ' + (t1 - t0) + ' ms');
-        }
-
-        if (ideo.onLoadCallback) {
-          ideo.onLoadCallback();
         }
 
         if (!('rotatable' in ideo.config && ideo.config.rotatable === false)) {
@@ -2802,6 +2735,10 @@ export default class Ideogram {
         } else {
           d3.selectAll(ideo.selector + ' .chromosome')
             .style('cursor', 'default');
+        }
+
+        if (ideo.onLoadCallback) {
+          ideo.onLoadCallback();
         }
       } catch (e) {
         // console.log(e);
