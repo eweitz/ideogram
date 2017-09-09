@@ -278,6 +278,20 @@ describe("Ideogram", function() {
       var numSyntenicRegions = document.getElementsByClassName("syntenicRegion").length;
       assert.equal(numSyntenicRegions, 25);
 
+      var srID = '#chr1-10090_54516053_55989459___chr2-10090_114000000_123500000';
+      var otherSrID = '#chr1-10090_54516053_55989459___chr2-10090_108000000_117000000';
+
+      var sr = d3.select(srID);
+      var otherSr = d3.select(otherSrID);
+      sr.dispatch('mouseover');
+      var otherSrIsTranslucent = /ghost/.test(otherSr.nodes()[0].classList.value);
+      assert.equal(otherSrIsTranslucent, true);
+      sr.dispatch('mouseout');
+
+      sr.dispatch('click');
+      var otherSrIsHidden = /hidden/.test(otherSr.nodes()[0].classList.value);
+      assert.equal(otherSrIsHidden, true);
+
       done();
     }
 
@@ -799,10 +813,10 @@ describe("Ideogram", function() {
     });
 
 
-    it("should show three genomes in one page", function(done) {
+    it("should show three human genomes in one page", function(done) {
       // Tests use case from ../examples/multiple_trio.html
 
-      var config, containerIDs, id, i, container
+      var config, containerIDs, id, i, container,
           ideogramsLoaded = 0;
 
       function callback() {
@@ -836,6 +850,44 @@ describe("Ideogram", function() {
       }
 
     });
+
+  it("should show three unbanded primated genomes in one page", function(done) {
+    // Tests use case from ../examples/multiple_primates.html
+
+    var config, containerIDs, id, i, container,
+        ideogramsLoaded = 0;
+
+    function callback() {
+      var numChromosomes;
+
+      ideogramsLoaded += 1;
+      if (ideogramsLoaded === 3) {
+        numChromosomes = document.querySelectorAll('.chromosome').length;
+        assert.equal(numChromosomes, 23+25+21);
+        done();
+      }
+    }
+
+    config = {
+      chrHeight: 250,
+      chrMargin: 2,
+      orientation: "horizontal",
+      showFullyBanded: false,
+      dataDir: '/dist/data/bands/native/',
+      onLoad: callback
+    };
+
+    containerIDs = ["homo-sapiens", "pan-troglodytes", "macaca-fascicularis"];
+    for (i = 0; i < containerIDs.length; i++) {
+      id = containerIDs[i];
+      container = '<div id="' + id + '"></div>';
+      document.querySelector("body").innerHTML += container;
+      config.container = "#" + id;
+      config.organism = id;
+      new Ideogram(config);
+    }
+
+  });
 
 
     it("should show XX chromosomes for a diploid human female", function(done) {
@@ -1073,6 +1125,7 @@ describe("Ideogram", function() {
       };
 
       config.onLoad = callback;
+      config.debug = true;
       var ideogram = new Ideogram(config);
     }, 100);
 

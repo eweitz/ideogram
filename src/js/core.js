@@ -35,7 +35,9 @@ export default class Ideogram {
     // TODO: Document this
     this._bandsXOffset = 30;
 
-    this.debug = false;
+    if (!this.config.debug) {
+      this.config.debug = false;
+    }
 
     if (!this.config.dataDir) {
       this.config.dataDir = this.getDataDir();
@@ -1130,7 +1132,7 @@ export default class Ideogram {
     }
 
     var t1 = new Date().getTime();
-    if (ideo.debug) {
+    if (ideo.config.debug) {
       console.log('Time in drawSyntenicRegions: ' + (t1 - t0) + ' ms');
     }
   }
@@ -1448,7 +1450,7 @@ export default class Ideogram {
     }
 
     var t1 = new Date().getTime();
-    if (ideo.debug) {
+    if (ideo.config.debug) {
       console.log('Time spent in getHistogramBars: ' + (t1 - t0) + ' ms');
     }
 
@@ -2459,7 +2461,7 @@ export default class Ideogram {
     }
 
     var t1B = new Date().getTime();
-    if (ideo.debug) {
+    if (ideo.config.debug) {
       console.log('Time in processBandData: ' + (t1B - t0B) + ' ms');
     }
 
@@ -2691,7 +2693,7 @@ export default class Ideogram {
             .style('display', 'none');
           d3.selectAll(bandsToShow).style('display', '');
           var t1C = new Date().getTime();
-          if (ideo.debug) {
+          if (ideo.config.debug) {
             console.log('Time in showing bands: ' + (t1C - t0C) + ' ms');
           }
 
@@ -2717,12 +2719,12 @@ export default class Ideogram {
         }
 
         var t1A = new Date().getTime();
-        if (ideo.debug) {
+        if (ideo.config.debug) {
           console.log('Time in drawChromosome: ' + (t1A - t0A) + ' ms');
         }
 
         var t1 = new Date().getTime();
-        if (ideo.debug) {
+        if (ideo.config.debug) {
           console.log('Time constructing ideogram: ' + (t1 - t0) + ' ms');
         }
 
