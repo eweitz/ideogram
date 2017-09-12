@@ -1189,17 +1189,21 @@ export default class Ideogram {
     var tmp = annotsUrl.split('.');
     var extension = tmp[tmp.length - 1];
 
-    if (extension !== 'bed') {
+    if (extension !== 'bed' && extension !== 'json') {
       extension = extension.toUpperCase();
       alert(
-        'This Ideogram.js feature is very new, and only supports BED at the ' +
+        'This Ideogram.js only supports BED and native format at the ' +
         'moment.  Sorry, check back soon for ' + extension + ' support!'
       );
       return;
     }
 
     d3.request(annotsUrl, function(data) {
-      ideo.rawAnnots = new BedParser(data.response, ideo).rawAnnots;
+      if (extension === 'bed') {
+        ideo.rawAnnots = new BedParser(data.response, ideo).rawAnnots;
+      } else {
+        ideo.rawAnnots = JSON.parse(data.response);
+      }
     });
 
   }
