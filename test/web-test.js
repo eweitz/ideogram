@@ -887,7 +887,7 @@ describe("Ideogram", function() {
       ideogramsLoaded += 1;
       if (ideogramsLoaded === 3) {
         numChromosomes = document.querySelectorAll('.chromosome').length;
-        assert.equal(numChromosomes, 23+25+21);
+        assert.equal(numChromosomes, 24+25+21);
         done();
       }
     }
