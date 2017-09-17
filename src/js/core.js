@@ -1189,17 +1189,21 @@ export default class Ideogram {
     var tmp = annotsUrl.split('.');
     var extension = tmp[tmp.length - 1];
 
-    if (extension !== 'bed') {
+    if (extension !== 'bed' && extension !== 'json') {
       extension = extension.toUpperCase();
       alert(
-        'This Ideogram.js feature is very new, and only supports BED at the ' +
+        'This Ideogram.js only supports BED and native format at the ' +
         'moment.  Sorry, check back soon for ' + extension + ' support!'
       );
       return;
     }
 
     d3.request(annotsUrl, function(data) {
-      ideo.rawAnnots = new BedParser(data.response, ideo).rawAnnots;
+      if (extension === 'bed') {
+        ideo.rawAnnots = new BedParser(data.response, ideo).rawAnnots;
+      } else {
+        ideo.rawAnnots = JSON.parse(data.response);
+      }
     });
 
   }
@@ -1306,7 +1310,7 @@ export default class Ideogram {
         ra = annotsByChr.annots[j];
         annot = {};
 
-        for (var k = 0; k < keys.length; k++) {
+        for (k = 0; k < keys.length; k++) {
           annot[keys[k]] = ra[k];
         }
 
@@ -1343,8 +1347,8 @@ export default class Ideogram {
     return annots;
   }
 
-  /*
-  * Can be used for bar chart or sparkline
+  /**
+  * Returns and sets bars used for histogram
   */
   getHistogramBars(annots) {
     var t0 = new Date().getTime();
@@ -1693,8 +1697,7 @@ export default class Ideogram {
     call(this.onDrawAnnotsCallback);
   }
 
-  
-  /*
+  /**
   * Returns SVG gradients that give chromosomes a polished look
   */
   getBandColorGradients() {
@@ -1817,7 +1820,7 @@ export default class Ideogram {
     return gradients;
   }
 
-  /*
+  /**
   *  Returns an NCBI taxonomy identifier (taxid) for the configured organism
   */
   getTaxidFromEutils(callback) {
@@ -1843,7 +1846,7 @@ export default class Ideogram {
     taxonomySearch = ideo.esummary + '&db=taxonomy&id=' + taxid;
 
     d3.json(taxonomySearch, function(data) {
-      organism = data.result['' + taxid].commonname;
+      organism = data.result[String(taxid)].commonname;
       ideo.config.organism = organism;
       return callback(organism);
     });
@@ -2035,7 +2038,7 @@ export default class Ideogram {
     }
   }
 
-  /*
+  /**
   * Returns names and lengths of chromosomes for an organism's best-known
   * genome assembly, or for a specified assembly.  Gets data from NCBI
   * EUtils web API.
@@ -2210,7 +2213,7 @@ export default class Ideogram {
     }
   }
 
-  /*
+  /**
   * Configures chromosome data and calls downstream chromosome drawing functions
   */
   initDrawChromosomes(bandsArray) {
@@ -2232,7 +2235,7 @@ export default class Ideogram {
 
       if (
         typeof chrBands !== 'undefined' &&
-        chrs.length >= chrBands.length/2
+        chrs.length >= chrBands.length / 2
       ) {
         ideo.coordinateSystem = 'bp';
       }
@@ -2318,7 +2321,7 @@ export default class Ideogram {
     return d3.select(this.selector).node();
   }
 
-  /*
+  /**
   * Sets instance properties regarding sex chromosomes.
   * Currently only supported for mammals.
   * TODO: Support all sexually reproducing taxa
@@ -2363,24 +2366,20 @@ export default class Ideogram {
     }
   }
 
-  /*
-  * Completes default ideogram initialization
-  * by calling downstream functions to
-  * process raw band data into full JSON objects,
-  * render chromosome and cytoband figures and labels,
-  * apply initial graphical transformations,
-  * hide overlapping band labels, and
-  * execute callbacks defined by client code
+  /**
+  * Completes default ideogram initialization by calling downstream functions
+  * to process raw band data into full JSON objects, render chromosome and
+  * cytoband figures and labels, apply initial graphical transformations,
+  * hide overlapping band labels, and execute callbacks defined by client code
   */
   processBandData() {
-    var bandsArray, maxLength, i, j, k, chromosome, bands,
+    var bandsArray, i, j, k, chromosome, bands,
       chrLength, chr,
       bandData, bandsByChr,
       taxid, taxids, chrs, chrsByTaxid,
       ideo = this;
 
     bandsArray = [];
-    maxLength = 0;
 
     if (ideo.config.multiorganism === true) {
       ideo.coordinateSystem = 'bp';
@@ -2583,7 +2582,7 @@ export default class Ideogram {
     function writeContainer() {
 
       if (ideo.config.annotationsPath) {
-         ideo.fetchAnnots(ideo.config.annotationsPath);
+        ideo.fetchAnnots(ideo.config.annotationsPath);
       }
 
       // If ploidy description is a string, then convert it to the canonical
