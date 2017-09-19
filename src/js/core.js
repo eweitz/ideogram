@@ -33,8 +33,6 @@ export default class Ideogram {
     // without picking up prior ideogram's settings
     this.config = JSON.parse(JSON.stringify(config));
 
-    this.version = version;
-
     // TODO: Document this
     this._bandsXOffset = 30;
 
@@ -240,6 +238,13 @@ export default class Ideogram {
     this.bandData = {};
 
     this.init();
+  }
+
+  /**
+   * Get the current version of Ideogram.js
+   */
+  static get version() {
+    return version;
   }
 
   /**
