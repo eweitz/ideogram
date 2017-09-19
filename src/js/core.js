@@ -16,6 +16,7 @@ import {Layout} from './layouts/layout';
 import {ModelAdapter} from './model-adapter';
 import {Chromosome} from './views/chromosome';
 import {BedParser} from './parsers/bed-parser';
+import version from './version';
 
 var d3 = Object.assign({}, d3selection, d3request, d3brush, d3dispatch);
 d3.promise = d3promise;
@@ -31,6 +32,8 @@ export default class Ideogram {
     // Clone the config object, to allow multiple instantiations
     // without picking up prior ideogram's settings
     this.config = JSON.parse(JSON.stringify(config));
+
+    this.version = version;
 
     // TODO: Document this
     this._bandsXOffset = 30;
