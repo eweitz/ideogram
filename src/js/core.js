@@ -316,11 +316,11 @@ export default class Ideogram {
    */
   getDataDir() {
     var scripts = document.scripts,
-      hostname = location.hostname,
+      host = location.host,
       version = Ideogram.version,
       script, tmp, protocol, dataDir;
 
-    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+    if (host !== 'localhost' && host !== '127.0.0.1') {
       return (
         'https://unpkg.com/ideogram@' + version + '/dist/data/bands/native/'
       );
