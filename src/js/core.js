@@ -316,7 +316,15 @@ export default class Ideogram {
    */
   getDataDir() {
     var scripts = document.scripts,
+      hostname = location.hostname,
+      version = Ideogram.version,
       script, tmp, protocol, dataDir;
+
+    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      return (
+        'https://unpkg.com/ideogram@' + version + '/dist/data/bands/native/'
+      );
+    }
 
     for (var i = 0; i < scripts.length; i++) {
       script = scripts[i];
