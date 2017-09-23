@@ -3,16 +3,12 @@ import * as d3selection from 'd3-selection';
 import {event as currentEvent} from 'd3-selection';
 import * as d3request from 'd3-request';
 import * as d3dispatch from 'd3-dispatch';
-import {scaleLinear} from 'd3-scale';
-import {max} from 'd3-array';
 import * as d3promise from 'd3.promise';
 
 import {BedParser} from './parsers/bed-parser';
 
 var d3 = Object.assign({}, d3selection, d3request, d3dispatch);
 d3.promise = d3promise;
-d3.scaleLinear = scaleLinear;
-d3.max = max;
 
 /**
  * Optional callback, invoked when annotations are drawn
