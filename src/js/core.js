@@ -15,10 +15,12 @@ d3.promise = d3promise;
 d3.scaleLinear = scaleLinear;
 d3.max = max;
 
+import {configure, initDrawChromosomes, onLoad, init} from './init';
+
 import {
   onDrawAnnots, processAnnotData, initAnnotSettings, fetchAnnots, drawAnnots,
   getHistogramBars, fillAnnots, drawProcessedAnnots, drawSynteny
-} from './annotations';;
+} from './annotations';
 
 import {
   eutils, esearch, esummary, elink,
@@ -33,7 +35,6 @@ import {
 import {onBrushMove, createBrush} from './brush';
 import {drawSexChromosomes, setSexChromosomes} from './sex-chromosomes';
 import {convertBpToPx, convertPxToBp} from './coordinate-converters';
-import {configure, initDrawChromosomes, onLoad, init} from './init';
 
 import {
   assemblyIsAccession, getDataDir, getChromosomeModel, drawChromosomeLabels,
@@ -43,6 +44,12 @@ import {
 
 export default class Ideogram {
   constructor(config) {
+
+    // Functions from init.js
+    this.configure = configure;
+    this.initDrawChromosomes = initDrawChromosomes;
+    this.onLoad = onLoad;
+    this.init = init;
 
     // Functions from annotations.js
     this.onDrawAnnots = onDrawAnnots;
@@ -82,12 +89,6 @@ export default class Ideogram {
     // Functions from coordinate-converters.js
     this.convertBpToPx = convertBpToPx;
     this.convertPxToBp = convertPxToBp;
-
-    // Functions from init.js
-    this.configure = configure;
-    this.initDrawChromosomes = initDrawChromosomes;
-    this.onLoad = onLoad;
-    this.init = init;
 
     // Functions from lib.js
     this.assemblyIsAccession = assemblyIsAccession;

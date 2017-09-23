@@ -30,7 +30,6 @@ function getTaxidFromEutils(callback) {
   });
 }
 
-
 /**
  * Searches NCBI EUtils for the common organism name for this ideogram
  * instance's taxid (i.e. NCBI Taxonomy ID)
@@ -51,7 +50,6 @@ function getOrganismFromEutils(callback) {
     return callback(organism);
   });
 }
-
 
 /**
  * Returns an array of taxids for the current ideogram
@@ -170,7 +168,7 @@ function getTaxids(callback) {
                   seenChrs[chr] = 1;
                 }
               }
-              chromosomes = chromosomes.sort(ideo.sortChromosomes);
+              chromosomes = chromosomes.sort(Ideogram.sortChromosomes);
               asmAndChrArray.push(chromosomes);
               ideo.coordinateSystem = 'iscn';
               return asmAndChrArray;
@@ -216,7 +214,6 @@ function getTaxids(callback) {
     callback(taxids);
   }
 }
-
 
 /**
  * Returns names and lengths of chromosomes for an organism's best-known
@@ -353,7 +350,7 @@ function getAssemblyAndChromosomesFromEutils(callback) {
         chromosomes.push(chromosome);
       }
 
-      chromosomes = chromosomes.sort(ideo.sortChromosomes);
+      chromosomes = chromosomes.sort(Ideogram.sortChromosomes);
       asmAndChrArray.push(chromosomes);
 
       ideo.coordinateSystem = 'bp';
