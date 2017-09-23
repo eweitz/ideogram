@@ -1,4 +1,4 @@
-import Ideogram from './core';
+import Ideogram from './ideogram';
 
 // Enable references to Ideogram when loaded via traditional script tag
 window.Ideogram = Ideogram;
