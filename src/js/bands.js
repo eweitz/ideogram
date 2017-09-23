@@ -1,3 +1,5 @@
+import * as d3selection from 'd3-selection';
+var d3 = Object.assign({}, d3selection);
 
 /**
  * Gets chromosome band data from a
