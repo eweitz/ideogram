@@ -1,17 +1,12 @@
 // Developed by Eric Weitz (https://github.com/eweitz)
 
 import * as d3selection from 'd3-selection';
-import * as d3request from 'd3-request';
-import * as d3dispatch from 'd3-dispatch';
-import * as d3promise from 'd3.promise';
-import {Promise} from 'es6-promise';
 
 import {ModelAdapter} from './model-adapter';
 import {Chromosome} from './views/chromosome';
 import version from './version';
 
-var d3 = Object.assign({}, d3selection, d3request, d3dispatch);
-d3.promise = d3promise;
+var d3 = Object.assign({}, d3selection);
 
 import {
   onDrawAnnots, processAnnotData, initAnnotSettings, fetchAnnots, drawAnnots,
@@ -31,7 +26,7 @@ import {
 import {onBrushMove, createBrush} from './brush';
 import {drawSexChromosomes, setSexChromosomes} from './sex-chromosomes';
 import {convertBpToPx, convertPxToBp} from './coordinate-converters';
-import {configure, initDrawChromosomes, init} from './init';
+import {configure, initDrawChromosomes, onLoad, init} from './init';
 
 export default class Ideogram {
   constructor(config) {
@@ -76,12 +71,12 @@ export default class Ideogram {
     this.convertPxToBp = convertPxToBp;
 
     // Functions from init.js
-    this.initDrawChromosomes = initDrawChromosomes
-    this.init = init;
     this.configure = configure;
+    this.initDrawChromosomes = initDrawChromosomes;
+    this.onLoad = onLoad;
+    this.init = init;
 
     this.configure(config)
-
   }
 
   /**
@@ -105,8 +100,16 @@ export default class Ideogram {
     return value.toLowerCase().replace(' ', '-');
   }
 
+  /**
+   * TODO: Create an 'es6-natural-sort' package for this in npm, such
+   * that it can be pulled in via ES6 import.
+   *
+   * This function doesn't belong in Ideogram-specific code.
+   *
+   * From: https://github.com/overset/javascript-natural-sort
+   */
   static naturalSort(a, b) {
-    // https://github.com/overset/javascript-natural-sort
+
     var q, r,
       c = /(^([+\-]?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?(?=\D|\s|$))|^0x[\da-fA-F]+$|\d+)/g,
       d = /^\s+|\s+$/g,
@@ -141,6 +144,42 @@ export default class Ideogram {
       } if (q > r) {
         return 1;
       }
+    }
+  }
+
+  /**
+   * Sorts two chromosome objects by type and name
+   * - Nuclear chromosomes come before non-nuclear chromosomes.
+   * - Among nuclear chromosomes, use "natural sorting", e.g.
+   *   numbers come before letters
+   * - Among non-nuclear chromosomes, i.e. "MT" (mitochondrial DNA) and
+   *   "CP" (chromoplast DNA), MT comes first
+   *
+   *
+   * @param a Chromosome object "A"
+   * @param b Chromosome object "B"
+   * @returns {Number} JavaScript sort order indicator
+   */
+  static sortChromosomes(a, b) {
+    var aIsNuclear = a.type === 'nuclear',
+      bIsNuclear = b.type === 'nuclear',
+      aIsCP = a.type === 'chloroplast',
+      bIsCP = b.type === 'chloroplast',
+      aIsMT = a.type === 'mitochondrion',
+      bIsMT = b.type === 'mitochondrion';
+    // aIsPlastid = aIsMT && a.name !== 'MT', // e.g. B1 in rice genome GCF_001433935.1
+    // bIsPlastid = bIsMT && b.name !== 'MT';
+
+    if (aIsNuclear && bIsNuclear) {
+      return Ideogram.naturalSort(a.name, b.name);
+    } else if (!aIsNuclear && bIsNuclear) {
+      return 1;
+    } else if (aIsMT && bIsCP) {
+      return 1;
+    } else if (aIsCP && bIsMT) {
+      return -1;
+    } else if (!aIsMT && !aIsCP && (bIsMT || bIsCP)) {
+      return -1;
     }
   }
 
@@ -504,52 +543,6 @@ export default class Ideogram {
     ).indexOf(chromosome);
 
     return this._layout.rotate(chrSetNumber, chrNumber, chromosome);
-  }
-
-
-  /**
-  * Called when Ideogram has finished initializing.
-  * Accounts for certain ideogram properties not being set until
-  * asynchronous requests succeed, etc.
-  */
-  onLoad() {
-    call(this.onLoadCallback);
-  }
-
-  /**
-   * Sorts two chromosome objects by type and name
-   * - Nuclear chromosomes come before non-nuclear chromosomes.
-   * - Among nuclear chromosomes, use "natural sorting", e.g.
-   *   numbers come before letters
-   * - Among non-nuclear chromosomes, i.e. "MT" (mitochondrial DNA) and
-   *   "CP" (chromoplast DNA), MT comes first
-   *
-   *
-   * @param a Chromosome object "A"
-   * @param b Chromosome object "B"
-   * @returns {Number} JavaScript sort order indicator
-   */
-  sortChromosomes(a, b) {
-    var aIsNuclear = a.type === 'nuclear',
-      bIsNuclear = b.type === 'nuclear',
-      aIsCP = a.type === 'chloroplast',
-      bIsCP = b.type === 'chloroplast',
-      aIsMT = a.type === 'mitochondrion',
-      bIsMT = b.type === 'mitochondrion';
-      // aIsPlastid = aIsMT && a.name !== 'MT', // e.g. B1 in rice genome GCF_001433935.1
-      // bIsPlastid = bIsMT && b.name !== 'MT';
-
-    if (aIsNuclear && bIsNuclear) {
-      return Ideogram.naturalSort(a.name, b.name);
-    } else if (!aIsNuclear && bIsNuclear) {
-      return 1;
-    } else if (aIsMT && bIsCP) {
-      return 1;
-    } else if (aIsCP && bIsMT) {
-      return -1;
-    } else if (!aIsMT && !aIsCP && (bIsMT || bIsCP)) {
-      return -1;
-    }
   }
 
   /**
