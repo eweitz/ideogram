@@ -300,6 +300,11 @@ export default class Ideogram {
     }
   }
 
+  /**
+   * Is the assembly in this.config an NCBI Assembly accession?
+   *
+   * @returns {boolean}
+   */
   assemblyIsAccession() {
     return (
       'assembly' in this.config &&
@@ -311,8 +316,11 @@ export default class Ideogram {
   * Returns directory used to fetch data for bands and annotations
   *
   * This simplifies ideogram configuration.  By default, the dataDir is
-  * deduced from the "src" attribute of the ideogram script loaded in the
-  * document.
+  * set to an external CDN unless we're serving from the local host, in
+  * which case dataDir is deduced from the "src" attribute of the ideogram
+  * script loaded in the document.
+   *
+   * @returns {String}
    */
   getDataDir() {
     var scripts = document.scripts,
@@ -495,10 +503,9 @@ export default class Ideogram {
   }
 
   /**
-  * Generates a model object for each chromosome
-  * containing information on its name, DOM ID,
-  * length in base pairs or ISCN coordinates,
-  * cytogenetic bands, centromere position, etc.
+  * Generates a model object for each chromosome containing information on
+  * its name, DOM ID, length in base pairs or ISCN coordinates, cytogenetic
+  * bands, centromere position, etc.
   */
   getChromosomeModel(bands, chromosome, taxid, chrIndex) {
     var chr = {},
@@ -848,7 +855,9 @@ export default class Ideogram {
     }
   }
 
-  // Rotates chromosome labels by 90 degrees, e.g. upon clicking a chromosome to focus.
+  /**
+   * Rotates chromosome labels by 90 degrees, e.g. upon clicking a chromosome to focus.
+   */
   rotateChromosomeLabels(chr, chrIndex, orientation, scale) {
     var chrMargin, chrWidth, ideo, x, y,
       numAnnotTracks, scaleSvg, tracksHeight, chrMargin2;
@@ -1187,7 +1196,12 @@ export default class Ideogram {
     }
   }
 
-
+  /**
+   * Requests annotations URL via HTTP, sets ideo.rawAnnots for downstream
+   * processing.
+   *
+   * @param annotsUrl Absolute or relative URL native or BED annotations file
+   */
   fetchAnnots(annotsUrl) {
 
     var ideo = this;
@@ -1643,10 +1657,19 @@ export default class Ideogram {
     }
   }
 
+  /**
+   * Custom event handler, fired upon dragging sliding window on chromosome
+   */
   onBrushMove() {
     call(this.onBrushMoveCallback);
   }
 
+  /**
+   * Creates a sliding window along a chromosome
+   *
+   * @param from Genomic start coordinate, in base pairs
+   * @param to Genomic end coordinate, in base pairs
+   */
   createBrush(from, to) {
     var ideo = this,
       width = ideo.config.chrWidth + 6.5,
@@ -1853,6 +1876,12 @@ export default class Ideogram {
     });
   }
 
+  /**
+   * Searches NCBI EUtils for the common organism name for this ideogram
+   * instance's taxid (i.e. NCBI Taxonomy ID)
+   *
+   * @param callback Function to call upon completing ESearch request
+   */
   getOrganismFromEutils(callback) {
     var organism, taxonomySearch, taxid,
       ideo = this;
@@ -1867,6 +1896,7 @@ export default class Ideogram {
       return callback(organism);
     });
   }
+
   /**
   * Returns an array of taxids for the current ideogram
   * Also sets configuration parameters related to taxid(s), whether ideogram is
@@ -2031,6 +2061,19 @@ export default class Ideogram {
     }
   }
 
+  /**
+   * Sorts two chromosome objects by type and name
+   * - Nuclear chromosomes come before non-nuclear chromosomes.
+   * - Among nuclear chromosomes, use "natural sorting", e.g.
+   *   numbers come before letters
+   * - Among non-nuclear chromosomes, i.e. "MT" (mitochondrial DNA) and
+   *   "CP" (chromoplast DNA), MT comes first
+   *
+   *
+   * @param a Chromosome object "A"
+   * @param b Chromosome object "B"
+   * @returns {Number} JavaScript sort order indicator
+   */
   sortChromosomes(a, b) {
     var aIsNuclear = a.type === 'nuclear',
       bIsNuclear = b.type === 'nuclear',
@@ -2332,7 +2375,9 @@ export default class Ideogram {
     }
   }
 
-  // Get ideogram SVG container
+  /**
+   * Get ideogram SVG container
+   */
   getSvg() {
     return d3.select(this.selector).node();
   }
