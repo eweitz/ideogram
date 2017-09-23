@@ -322,6 +322,15 @@ function initDrawChromosomes(bandsArray) {
 }
 
 /**
+ * Called when Ideogram has finished initializing.
+ * Accounts for certain ideogram properties not being set until
+ * asynchronous requests succeed, etc.
+ */
+function onLoad() {
+  call(this.onLoadCallback);
+}
+
+/**
  * Initializes an ideogram.
  * Sets some high-level properties based on instance configuration,
  * fetches band and annotation data if needed, and
@@ -600,4 +609,4 @@ function init() {
   }
 }
 
-export {configure, initDrawChromosomes, init};
+export {configure, initDrawChromosomes, onLoad, init};
