@@ -14,8 +14,8 @@
   "scripts": {
     "debugtest": "karma start --log-level debug --browsers Chrome karma.conf.js",
     "test": "karma start --single-run --browsers ChromeHeadless karma.conf.js",
-    "debugbuild": "webpack -p --display-modules --display-reasons && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
-    "build": "webpack -p && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
+    "debugbuild": "node scripts/prepublish.js; webpack -p --display-modules --display-reasons && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
+    "build": "node scripts/prepublish.js; webpack -p && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
     "watch": "webpack --watch && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
     "start": "webpack-dev-server --open"
   },
@@ -36,7 +36,7 @@
   "bugs": {
     "url": "https://github.com/eweitz/ideogram/issues"
   },
-  "homepage": "https://github.com/eweitz/ideogram#readme",
+  "homepage": "https://github.com/eweitz/ideogram",
   "dependencies": {
     "commander": "*",
     "d3-array": "^1.2.0",
