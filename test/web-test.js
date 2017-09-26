@@ -671,6 +671,22 @@ describe("Ideogram", function() {
       var ideogram = new Ideogram(config);
     });
 
+
+  it("should use GCF_000001405.12 when specified in 'assembly' parameter", function(done) {
+    // Tests use case from ../examples/human.html with NCBI36 / hg18
+
+    function callback() {
+      var bands = ideogram.chromosomes["9606"]["1"]["bands"]
+      var chr1Length = bands[bands.length - 1].bp.stop;
+      assert.equal(chr1Length, 247249719);
+      done();
+    }
+
+    config.assembly = "GCF_000001405.12";
+    config.onLoad = callback;
+    var ideogram = new Ideogram(config);
+  });
+
     it("should support RefSeq accessions in 'assembly' parameter", function(done) {
       // Tests use case for non-default assemblies.
       // GCF_000306695.2 is commonly called CHM1_1.1
