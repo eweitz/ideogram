@@ -57,6 +57,19 @@ output_mappings = {
     'ideogram_9606_GCF_000001305.13_550_V1': [
         'homo-sapiens-GCF_000001405.13-550'
     ],
+    'ideogram_9606_GCF_000001305.12_1200_V1': [
+        'homo-sapiens-GCF_000001405.12-1200'
+    ],
+    'ideogram_9606_GCF_000001305.12_850_V1': [
+        'homo-sapiens-GCF_000001405.12',
+        'homo-sapiens-GCF_000001405.12-850'
+    ],
+    'ideogram_9606_GCF_000001305.12_550_V1': [
+        'homo-sapiens-GCF_000001405.12-550'
+    ],
+    'ideogram_9606_GCF_000001305.12_400_V1': [
+        'homo-sapiens-GCF_000001405.12-400'
+    ],
     'ideogram_10090_GCF_000000055.19_NA_V2': [
         'mus-musculus',
         'mus-musculus-GCF_000001635.20'
