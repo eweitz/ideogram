@@ -1,3 +1,6 @@
+/**
+ * @fileoverview A collection of Ideogram methods that don't fit elsewhere.
+ */
 
 import * as d3selection from 'd3-selection';
 
@@ -233,11 +236,14 @@ function drawChromosomeLabels() {
         .attr('transform', setLabelTranslate)
         .attr('x', function(d, i) {
           return ideo._layout.getChromosomeLabelXPosition(i);
-        }).attr('y', function(d, i) {
-        return ideo._layout.getChromosomeLabelYPosition(i);
-      }).text(function(d, chrNumber) {
-        return ideo._ploidy.getAncestor(chrSetNumber, chrNumber);
-      }).attr('text-anchor', 'middle');
+        })
+        .attr('y', function(d, i) {
+          return ideo._layout.getChromosomeLabelYPosition(i);
+        })
+        .text(function(d, chrNumber) {
+          return ideo._ploidy.getAncestor(chrSetNumber, chrNumber);
+        })
+        .attr('text-anchor', 'middle');
     });
 }
 
@@ -319,9 +325,13 @@ function rotateChromosomeLabels(chr, chrIndex, orientation, scale) {
   }
 }
 
+/**
+ * Rounds an SVG coordinates to two decimal places
+ *
+ * @param coord SVG coordinate, e.g. 42.1234567890
+ * @returns {number} Rounded value, e.g. 42.12
+ */
 function round(coord) {
-  // Rounds an SVG coordinates to two decimal places
-  // e.g. 42.1234567890 -> 42.12
   // Per http://stackoverflow.com/a/9453447, below method is fastest
   return Math.round(coord * 100) / 100;
 }

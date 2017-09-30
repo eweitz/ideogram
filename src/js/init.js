@@ -1,5 +1,5 @@
 /**
- * @fileoveriew Instance methods for initialization
+ * @fileoveriew Methods for initialization
  */
 
 import * as d3request from 'd3-request';
@@ -451,6 +451,9 @@ function init() {
     }
   });
 
+  /**
+   * Writes the HTML elements that contain this ideogram instance.
+   */
   function writeContainer() {
 
     if (ideo.config.annotationsPath) {
@@ -509,6 +512,12 @@ function init() {
     finishInit();
   }
 
+  /**
+   * Completes high-level initialization.
+   * Draws chromosomes and band labels, rotating as needed;
+   * processes and draws annotations;
+   * creates brush, emits notification of load completion, etc.
+   */
   function finishInit() {
     try {
       var t0A = new Date().getTime();
