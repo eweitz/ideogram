@@ -1,3 +1,11 @@
+/**
+ * @fileoverview Methods for ideogram annotations.
+ * Annotations are graphical objects that represent features of interest
+ * located on the chromosomes, e.g. genes or variations.  They can
+ * appear beside a chromosome, overlaid on top of it, or between multiple
+ * chromosomes.
+ */
+
 import * as d3selection from 'd3-selection';
 // See https://github.com/d3/d3/issues/2733
 import {event as currentEvent} from 'd3-selection';
