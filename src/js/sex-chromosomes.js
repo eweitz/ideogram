@@ -1,3 +1,13 @@
+/**
+ * @fileoverview Instance methods for sex chromosomes (allosomes).
+ *
+ * This module provides methods for drawing karyotypically normal
+ * male and female mammalian genomes.
+ */
+
+/**
+ * Appends SVG elements depicting sex chromosomes to the document.
+ */
 function drawSexChromosomes(bandsArray, taxid, container, defs, j, chrs) {
   var chromosome, bands, chrModel, shape, sci, k,
     sexChromosomeIndexes,
