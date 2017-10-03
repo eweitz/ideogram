@@ -56,7 +56,7 @@ function drawSexChromosomes(bandsArray, taxid, container, defs, j, chrs) {
  *     - Turner syndrome: X0
  *     - Klinefelter syndome: XXY
  *  More types:
- *  https:*en.wikipedia.org/wiki/Category:Sex_chromosome_aneuploidies
+ *  https://en.wikipedia.org/wiki/Category:Sex_chromosome_aneuploidies
  */
 function setSexChromosomes(chrs) {
   if (this.config.ploidy !== 2 || !this.config.sex) {

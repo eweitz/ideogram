@@ -12,7 +12,9 @@ export class Chromosome {
     this._bumpCoefficient = 5;
   }
 
-  // Factory method
+  /**
+   * Factory method
+   */
   static getInstance(adapter, config, ideo) {
     if (adapter.getModel().centromerePosition === 'telocentric') {
       return new TelocentricChromosome(adapter, config, ideo);
@@ -37,23 +39,25 @@ export class Chromosome {
     }
   };
 
+  /**
+   * Append bands container and apply clip-path to it
+   */
   render(container, chrSetNumber, chrNumber) {
-      // Append bands container and apply clip-path on it
 
     var self = this;
 
     container = container.append('g')
       .attr('class', 'bands')
-      .attr("clip-path", "url(#" + this._model.id + "-chromosome-set-clippath)");
+      .attr('clip-path', 'url(#' + this._model.id + '-chromosome-set-clippath)');
 
-      // Render chromosome arms
+    // Render chromosome arms
     var isPArmRendered = this._renderPArm(container, chrSetNumber, chrNumber);
     var isQArmRendered = this._renderQArm(container, chrSetNumber, chrNumber);
 
-      // Render range set
+    // Render range set
     this._renderRangeSet(container, chrSetNumber, chrNumber);
 
-      // Push arms shape string into clipPath array
+    // Push arms shape string into clipPath array
     var clipPath = [];
     clipPath = this._addPArmShape(clipPath, isPArmRendered);
     clipPath = this._addQArmShape(clipPath, isQArmRendered);
@@ -135,7 +139,9 @@ export class Chromosome {
       });
   };
 
-  // Get chromosome's shape main values
+  /**
+   * Get chromosome's shape main values
+   */
   _getShapeData() {
       // First q band from bands sequence
     var firstQBand;
@@ -248,7 +254,9 @@ export class Chromosome {
     );
   };
 
-  // Render arm bands
+  /**
+   * Render arm bands
+   */
   _renderBands(container, chrSetNumber, chrNumber, bands, arm) {
     var self = this;
     var armNumber = arm === 'p' ? 0 : 1;
@@ -257,32 +265,34 @@ export class Chromosome {
       fill = self._color.getArmColor(chrSetNumber, chrNumber, armNumber);
     }
 
-    container.selectAll("path.band." + arm)
+    container.selectAll('path.band.' + arm)
       .data(bands)
       .enter()
-      .append("path")
-      .attr("id", function(d) {
-        return self._model.id + "-" + d.name.replace(".", "-");
+      .append('path')
+      .attr('id', function(d) {
+        return self._model.id + '-' + d.name.replace('.', '-');
       })
-      .attr("class", function(d) {
+      .attr('class', function(d) {
         return 'band ' + arm + '-band ' + d.stain;
       })
-      .attr("d", function(d) {
+      .attr('d', function(d) {
         var start = self._ideo.round(d.px.start);
         var length = self._ideo.round(d.px.width);
 
         var x = start + length;
 
-        return "M " + start + ", 0" +
-              "l " + length + " 0 " +
-              "l 0 " + self._config.chrWidth + " " +
-              "l -" + length + " 0 z";
+        return 'M ' + start + ', 0' +
+              'l ' + length + ' 0 ' +
+              'l 0 ' + self._config.chrWidth + ' ' +
+              'l -' + length + ' 0 z';
       })
       .style('fill', fill);
   };
 
-  // Render chromosome's p arm.
-  // Returns boolean which indicates is any bands was rendered
+  /**
+   * Render chromosome's p arm.
+   * Returns boolean which indicates is any bands was rendered.
+   */
   _renderPArm(container, chrSetNumber, chrNumber) {
     var bands = this._model.bands.filter(function(band) {
       return band.name[0] === 'p';
@@ -293,8 +303,10 @@ export class Chromosome {
     return Boolean(bands.length);
   };
 
-  // Render chromosome's q arm.
-  // Returns boolean which indicates is any bands was rendered
+  /**
+   * Render chromosome's q arm.
+   * Returns boolean which indicates is any bands was rendered.
+   */
   _renderQArm(container, chrSetNumber, chrNumber) {
     var bands = this._model.bands.filter(function(band) {
       return band.name[0] === 'q';
