@@ -2,7 +2,9 @@ import * as d3selection from 'd3-selection';
 
 var d3 = Object.assign({}, d3selection);
 
-// Chromosome's view utility class
+/**
+ * Chromosome's view utility class
+ */
 export class ChromosomeUtil {
 
   constructor(node) {
@@ -18,7 +20,9 @@ export class ChromosomeUtil {
     return label;
   }
 
-  // Get chromosome set label
+  /**
+   * Get chromosome set label
+   */
   getSetLabel() {
     var setLabel =
       d3

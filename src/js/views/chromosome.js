@@ -261,7 +261,7 @@ export class Chromosome {
     var self = this;
     var armNumber = arm === 'p' ? 0 : 1;
     var fill = '';
-    if ('ancestors' in this._ideo.config && !(this.isFullyBanded())) {
+    if ('ancestors' in self._ideo.config && !(self.isFullyBanded())) {
       fill = self._color.getArmColor(chrSetNumber, chrNumber, armNumber);
     }
 

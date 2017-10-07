@@ -166,7 +166,6 @@ function getBands(content, taxid, chromosomes) {
   return lines;
 }
 
-
 /**
  * Draws labels and stalks for cytogenetic bands.
  *
@@ -335,7 +334,6 @@ function drawBandLabels(chromosomes) {
   }
 }
 
-
 /**
  * Returns SVG gradients that give chromosomes a polished look
  */
@@ -458,7 +456,6 @@ function getBandColorGradients() {
 
   return gradients;
 }
-
 
 /**
  * Completes default ideogram initialization by calling downstream functions
