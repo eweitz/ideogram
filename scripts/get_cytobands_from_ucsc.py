@@ -1,21 +1,29 @@
+"""Fetch cytogenetic band data from third-party MySQL databases"""
+
 import pymysql
 
 connection = pymysql.connect(host="genome-mysql.soe.ucsc.edu", user="genome")
 cursor = connection.cursor()
 
-r = cursor.execute("""show databases""")
+db_map = {}
 
-rows = cursor.fetchall()
-
-chrs_by_db = {}
-
-for row in rows:
+cursor.execute('use hgcentral')
+cursor.execute("""
+  SELECT name, scientificName FROM dbDb
+    WHERE active = 1
+""")
+for row in cursor.fetchall():
     db = row[0]
+    # e.g. Homo sapiens -> homo-sapiens
+    name_slug = row[1].lower().replace(' ', '-')
+    db_map[db] = name_slug
+
+chrs_by_organism = {}
+
+for db in db_map:
     cursor.execute('USE ' + db)
     cursor.execute('SHOW TABLES')
     rows2 = cursor.fetchall()
-    # print('rows2 tables')
-    # print(rows2)
     found_needed_table = False
     for row2 in rows2:
         if row2[0] == 'cytoBandIdeo':
@@ -23,14 +31,17 @@ for row in rows:
             break
     if found_needed_table == False:
         continue
-    query = (""" 
-        SELECT * FROM cytoBandIdeo 
-        WHERE chrom NOT LIKE 'chrUn' 
-          AND chrom LIKE 'chr%' 
+
+    # Excludes unplaced and unlocalized chromosomes
+    query = ("""
+        SELECT * FROM cytoBandIdeo
+        WHERE chrom NOT LIKE 'chrUn'
+          AND chrom LIKE 'chr%'
           AND chrom NOT LIKE 'chr%\_%'
     """)
     r = cursor.execute(query)
     if r <= 1:
+        # Skip if result contains only e.g. chrMT
         continue
     bands_by_chr = {}
     has_bands = False
@@ -51,9 +62,10 @@ for row in rows:
             bands_by_chr[chr] = [band]
     if has_bands == False:
         continue
-    print(db)
-    chrs_by_db[db] = bands_by_chr
+    organism = db_map[db]
+    chrs_by_organism[organism] = bands_by_chr
 
-#print(chrs_by_db)
-
-#db.query("""SELECT spam, eggs, sausage FROM breakfast WHERE price < 5""")
+print('Number of organisms with centromeres:')
+print(len(chrs_by_organism))
+for org in chrs_by_organism:
+    print(org)
