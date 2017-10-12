@@ -9,6 +9,7 @@ crossfilter.min.js
 data/analysis/
 *.log
 scripts/__pycache__
+scripts/env
 
 # Eclipse IDE files
 .project
