@@ -1,71 +1,102 @@
 """Fetch cytogenetic band data from third-party MySQL databases"""
 
+# TODO:
+# - Write data for first-class organisms to JavaScript file in ../src/js/
+# - Incorporate Ensembl, Ensembl Genomes, GenoMaize
+# - Bonus: Convert this data into AGP 2.0, send data missing from NCBI to them
+
 import pymysql
 
-connection = pymysql.connect(host="genome-mysql.soe.ucsc.edu", user="genome")
-cursor = connection.cursor()
+def fetch_from_ucsc():
 
-db_map = {}
+    connection = pymysql.connect(host="genome-mysql.soe.ucsc.edu", user="genome")
+    cursor = connection.cursor()
 
-cursor.execute('use hgcentral')
-cursor.execute("""
-  SELECT name, scientificName FROM dbDb
-    WHERE active = 1
-""")
-for row in cursor.fetchall():
-    db = row[0]
-    # e.g. Homo sapiens -> homo-sapiens
-    name_slug = row[1].lower().replace(' ', '-')
-    db_map[db] = name_slug
+    db_map = {}
 
-chrs_by_organism = {}
-
-for db in db_map:
-    cursor.execute('USE ' + db)
-    cursor.execute('SHOW TABLES')
-    rows2 = cursor.fetchall()
-    found_needed_table = False
-    for row2 in rows2:
-        if row2[0] == 'cytoBandIdeo':
-            found_needed_table = True
-            break
-    if found_needed_table == False:
-        continue
-
-    # Excludes unplaced and unlocalized chromosomes
-    query = ("""
-        SELECT * FROM cytoBandIdeo
-        WHERE chrom NOT LIKE 'chrUn'
-          AND chrom LIKE 'chr%'
-          AND chrom NOT LIKE 'chr%\_%'
+    cursor.execute('use hgcentral')
+    cursor.execute("""
+      SELECT name, scientificName FROM dbDb
+        WHERE active = 1
     """)
-    r = cursor.execute(query)
-    if r <= 1:
-        # Skip if result contains only e.g. chrMT
-        continue
-    bands_by_chr = {}
-    has_bands = False
-    rows3 = cursor.fetchall()
-    for row3 in rows3:
-        chr = row3[0]
-        start = row3[1]
-        stop = row3[2]
-        length = stop - start
-        band_name = row3[3]
-        gie_stain = row3[4]
-        if band_name != '':
-            has_bands = True
-        band = [band_name, start, length, gie_stain]
-        if chr in bands_by_chr:
-            bands_by_chr[chr].append(band)
-        else:
-            bands_by_chr[chr] = [band]
-    if has_bands == False:
-        continue
-    organism = db_map[db]
-    chrs_by_organism[organism] = bands_by_chr
+    for row in cursor.fetchall():
+        db = row[0]
+        # e.g. Homo sapiens -> homo-sapiens
+        name_slug = row[1].lower().replace(' ', '-')
+        db_map[db] = name_slug
 
-print('Number of organisms with centromeres:')
-print(len(chrs_by_organism))
-for org in chrs_by_organism:
-    print(org)
+    chrs_by_organism = {}
+
+    for db in db_map:
+        cursor.execute('USE ' + db)
+        cursor.execute('SHOW TABLES')
+        rows2 = cursor.fetchall()
+        found_needed_table = False
+        for row2 in rows2:
+            if row2[0] == 'cytoBandIdeo':
+                found_needed_table = True
+                break
+        if found_needed_table == False:
+            continue
+
+        # Excludes unplaced and unlocalized chromosomes
+        query = ("""
+            SELECT * FROM cytoBandIdeo
+            WHERE chrom NOT LIKE 'chrUn'
+              AND chrom LIKE 'chr%'
+              AND chrom NOT LIKE 'chr%\_%'
+        """)
+        r = cursor.execute(query)
+        if r <= 1:
+            # Skip if result contains only e.g. chrMT
+            continue
+        bands_by_chr = {}
+        has_bands = False
+        rows3 = cursor.fetchall()
+        for row3 in rows3:
+            chr = row3[0]
+            start = row3[1]
+            stop = row3[2]
+            length = stop - start
+            band_name = row3[3]
+            gie_stain = row3[4]
+            if band_name != '':
+                has_bands = True
+            band = [band_name, start, length, gie_stain]
+            if chr in bands_by_chr:
+                bands_by_chr[chr].append(band)
+            else:
+                bands_by_chr[chr] = [band]
+        if has_bands == False:
+            continue
+        organism = db_map[db]
+        chrs_by_organism[organism] = bands_by_chr
+
+    print('Number of organisms with centromeres:')
+    print(len(chrs_by_organism))
+    for org in chrs_by_organism:
+        print(org)
+
+def fetch_from_ensembl_genomes():
+    connection = pymysql.connect(host='mysql-eg-publicsql.ebi.ac.uk', user='anonymous', port=4157)
+    cursor = connection.cursor()
+    cursor.execute('show databases like "%core_37%"');
+
+    db_map = {}
+
+    for row in cursor.fetchall():
+        db = row[0]
+        name_slug = db.split('_core')[0].replace('_', '-')
+        db_map[db] = name_slug
+
+    for db in db_map:
+        cursor.execute('USE ' + db)
+        cursor.execute('SELECT * FROM karyotype')
+        rows = cursor.fetchall()
+        if len(rows) > 0:
+            print(db)
+            for row in rows:
+                print(row)
+
+fetch_from_ensembl_genomes()
+
