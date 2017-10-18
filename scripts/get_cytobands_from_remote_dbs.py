@@ -2,17 +2,23 @@
 
 # TODO:
 # - Write data for first-class organisms to JavaScript file in ../src/js/
-# - Incorporate Ensembl, Ensembl Genomes, GenoMaize
+# - Incorporate Ensembl proper, GenoMaize
+# - Parallelize requests, one to each third-party (bonus: one to each mirror)
 # - Bonus: Convert this data into AGP 2.0, send data missing from NCBI to them
 
 import pymysql
 
 def fetch_from_ucsc():
-
-    connection = pymysql.connect(host="genome-mysql.soe.ucsc.edu", user="genome")
+    """Queries MySQL instances hosted by UCSC Genome Browser"""
+    print('fetch_from_ucsc')
+    connection = pymysql.connect(
+        host="genome-mysql.soe.ucsc.edu",
+        user="genome"
+    )
     cursor = connection.cursor()
 
     db_map = {}
+    org_map = {}
 
     cursor.execute('use hgcentral')
     cursor.execute("""
@@ -69,34 +75,87 @@ def fetch_from_ucsc():
                 bands_by_chr[chr] = [band]
         if has_bands == False:
             continue
-        organism = db_map[db]
-        chrs_by_organism[organism] = bands_by_chr
+        name_slug = db_map[db]
+        chrs_by_organism[name_slug] = bands_by_chr
+
+        if name_slug in db_map:
+            org_map[name_slug].append(db)
+        else:
+            org_map[name_slug] = [db]
 
     print('Number of organisms with centromeres:')
     print(len(chrs_by_organism))
     for org in chrs_by_organism:
         print(org)
 
+    return org_map
+
 def fetch_from_ensembl_genomes():
-    connection = pymysql.connect(host='mysql-eg-publicsql.ebi.ac.uk', user='anonymous', port=4157)
+    """Queries MySQL servers hosted by Ensembl Genomes
+    """
+    print('fetch_from_ensembl_genomes')
+    connection = pymysql.connect(
+        host='mysql-eg-publicsql.ebi.ac.uk',
+        user='anonymous',
+        port=4157
+    )
     cursor = connection.cursor()
-    cursor.execute('show databases like "%core_37%"');
+    cursor.execute('show databases like "%core_%"');
 
     db_map = {}
+    org_map = {}
 
     for row in cursor.fetchall():
         db = row[0]
+        if "collection" in db:
+            continue
         name_slug = db.split('_core')[0].replace('_', '-')
         db_map[db] = name_slug
 
     for db in db_map:
         cursor.execute('USE ' + db)
+
+        # Schema: https://www.ensembl.org/info/docs/api/core/core_schema.html#karyotype
+        # | karyotype_id | seq_region_id | seq_region_start | seq_region_end | band | stain |
+        # TODO: Learn what is available via seq_region_id, in seq_region table
         cursor.execute('SELECT * FROM karyotype')
         rows = cursor.fetchall()
-        if len(rows) > 0:
-            print(db)
-            for row in rows:
-                print(row)
+        if len(rows) == 0:
+            # print(db)
+            continue
 
-fetch_from_ensembl_genomes()
+        if name_slug in db_map:
+            org_map[name_slug].append(db)
+        else:
+            org_map[name_slug] = [db]
+
+        print(db + ' ****************')
+
+    return org_map
+
+
+party_map = {}
+org_map_ensembl_genomes = fetch_from_ensembl_genomes()
+org_map_ucsc = fetch_from_ucsc()
+party_map['ensembl_genomes'] = org_map_ensembl_genomes
+party_map['ucsc'] = org_map_ucsc
+
+# Non-redundant (NR) organism map
+nr_org_map = {}
+
+seen_orgs = {}
+for party in party_map:
+    org_map = party_map[party]
+    print('Iterating organisms from ' + party)
+    for org in org_map:
+        if org in seen_orgs:
+            print('Already saw ' + org)
+            continue
+        print('\t' + org)
+        nr_org_map[org] = org_map[org]
+
+
+
+
+
 
