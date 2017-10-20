@@ -9,7 +9,11 @@
 import pymysql
 
 def fetch_from_ucsc():
-    """Queries MySQL instances hosted by UCSC Genome Browser"""
+    """Queries MySQL instances hosted by UCSC Genome Browser
+
+    To connect via Terminal (e.g. to debug), run:
+    mysql --user=genome --host=genome-mysql.soe.ucsc.edu -A
+    """
     print('fetch_from_ucsc')
     connection = pymysql.connect(
         host="genome-mysql.soe.ucsc.edu",
@@ -56,6 +60,9 @@ def fetch_from_ucsc():
         if r <= 1:
             # Skip if result contains only e.g. chrMT
             continue
+
+        # TODO: Get GenBank assembly accession
+
         bands_by_chr = {}
         has_bands = False
         rows3 = cursor.fetchall()
@@ -92,6 +99,9 @@ def fetch_from_ucsc():
 
 def fetch_from_ensembl_genomes():
     """Queries MySQL servers hosted by Ensembl Genomes
+
+    To connect via Terminal (e.g. to debug), run:
+    mysql --user=anonymous --host=mysql-eg-publicsql.ebi.ac.uk --port=4157 -A
     """
     print('fetch_from_ensembl_genomes')
     connection = pymysql.connect(
@@ -113,6 +123,8 @@ def fetch_from_ensembl_genomes():
         db_map[db] = name_slug
 
     for db in db_map:
+
+        # Example for debugging: "USE zea_mays_core_35_88_7;"
         cursor.execute('USE ' + db)
 
         # Schema: https://www.ensembl.org/info/docs/api/core/core_schema.html#karyotype
@@ -124,10 +136,18 @@ def fetch_from_ensembl_genomes():
             # print(db)
             continue
 
+        cursor.execute("""
+          SELECT meta_value FROM meta
+          where meta_key = "assembly.accession"
+        """)
+        genbank_assembly_accession = cursor.fetchone()[0]
+
+        asm_data = [genbank_assembly_accession, db]
+
         if name_slug in db_map:
-            org_map[name_slug].append(db)
+            org_map[name_slug].append(asm_data)
         else:
-            org_map[name_slug] = [db]
+            org_map[name_slug] = [asm_data]
 
         print(db + ' ****************')
 
