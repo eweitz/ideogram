@@ -7,6 +7,48 @@
 # - Bonus: Convert this data into AGP 2.0, send data missing from NCBI to them
 
 import pymysql
+import urllib.request as request
+import os
+import json
+
+unfound_dbs = []
+
+def get_genbank_accession_from_ucsc_name(db):
+    """Queries NCBI EUtils for the GenBank accession of a UCSC asseembly name
+    """
+    print(db)
+
+    eutils = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
+    esearch = eutils + 'esearch.fcgi?retmode=json'
+    esummary = eutils + 'esummary.fcgi?retmode=json'
+
+    asm_search = esearch + '&db=assembly&term=' + db
+
+    # Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=assembly&retmode=json&term=panTro4
+    with request.urlopen(asm_search) as response:
+        data = json.loads(response.read().decode('utf-8'))
+    #print(data)
+    id_list = data['esearchresult']['idlist']
+    if len(id_list) > 0:
+        assembly_uid = id_list[0]
+    else:
+        unfound_dbs.append(db)
+        return ''
+    asm_summary = esummary + '&db=assembly&id=' + assembly_uid
+
+    # Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?retmode=json&db=assembly&id=255628
+    with request.urlopen(asm_summary) as response:
+        data = json.loads(response.read().decode('utf-8'))
+
+    result = data['result'][assembly_uid]
+    acc = result['assemblyaccession'] # Accession.version
+
+    # Return GenBank accession if it's default, else find and return it
+    if "GCA_" in acc:
+        return acc
+    else:
+        return result['synonym']['genbank']
+
 
 def fetch_from_ucsc():
     """Queries MySQL instances hosted by UCSC Genome Browser
@@ -16,8 +58,8 @@ def fetch_from_ucsc():
     """
     print('fetch_from_ucsc')
     connection = pymysql.connect(
-        host="genome-mysql.soe.ucsc.edu",
-        user="genome"
+        host='genome-mysql.soe.ucsc.edu',
+        user='genome'
     )
     cursor = connection.cursor()
 
@@ -25,10 +67,10 @@ def fetch_from_ucsc():
     org_map = {}
 
     cursor.execute('use hgcentral')
-    cursor.execute("""
+    cursor.execute('''
       SELECT name, scientificName FROM dbDb
         WHERE active = 1
-    """)
+    ''')
     for row in cursor.fetchall():
         db = row[0]
         # e.g. Homo sapiens -> homo-sapiens
@@ -50,18 +92,16 @@ def fetch_from_ucsc():
             continue
 
         # Excludes unplaced and unlocalized chromosomes
-        query = ("""
+        query = ('''
             SELECT * FROM cytoBandIdeo
-            WHERE chrom NOT LIKE 'chrUn'
-              AND chrom LIKE 'chr%'
-              AND chrom NOT LIKE 'chr%\_%'
-        """)
+            WHERE chrom NOT LIKE "chrUn"
+              AND chrom LIKE "chr%"
+              AND chrom NOT LIKE "chr%\_%"
+        ''')
         r = cursor.execute(query)
         if r <= 1:
             # Skip if result contains only e.g. chrMT
             continue
-
-        # TODO: Get GenBank assembly accession
 
         bands_by_chr = {}
         has_bands = False
@@ -82,18 +122,23 @@ def fetch_from_ucsc():
                 bands_by_chr[chr] = [band]
         if has_bands == False:
             continue
+
+        genbank_accession = get_genbank_accession_from_ucsc_name(db)
+
         name_slug = db_map[db]
         chrs_by_organism[name_slug] = bands_by_chr
 
+        asm_data = [genbank_accession, db]
+
         if name_slug in db_map:
-            org_map[name_slug].append(db)
+            org_map[name_slug].append(asm_data)
         else:
-            org_map[name_slug] = [db]
+            org_map[name_slug] = [asm_data]
 
     print('Number of organisms with centromeres:')
     print(len(chrs_by_organism))
-    for org in chrs_by_organism:
-        print(org)
+    #for org in chrs_by_organism:
+        #print(org)
 
     return org_map
 
@@ -117,7 +162,7 @@ def fetch_from_ensembl_genomes():
 
     for row in cursor.fetchall():
         db = row[0]
-        if "collection" in db:
+        if 'collection' in db:
             continue
         name_slug = db.split('_core')[0].replace('_', '-')
         db_map[db] = name_slug
@@ -136,44 +181,52 @@ def fetch_from_ensembl_genomes():
             # print(db)
             continue
 
-        cursor.execute("""
+        cursor.execute('''
           SELECT meta_value FROM meta
           where meta_key = "assembly.accession"
-        """)
-        genbank_assembly_accession = cursor.fetchone()[0]
+        ''')
+        genbank_accession = cursor.fetchone()[0]
 
-        asm_data = [genbank_assembly_accession, db]
+        asm_data = [genbank_accession, db]
 
         if name_slug in db_map:
             org_map[name_slug].append(asm_data)
         else:
             org_map[name_slug] = [asm_data]
 
-        print(db + ' ****************')
+        #print(db + ' ****************')
 
     return org_map
 
-
-party_map = {}
+party_list = []
 org_map_ensembl_genomes = fetch_from_ensembl_genomes()
 org_map_ucsc = fetch_from_ucsc()
-party_map['ensembl_genomes'] = org_map_ensembl_genomes
-party_map['ucsc'] = org_map_ucsc
+party_list.append(['ensembl', org_map_ensembl_genomes])
+party_list.append(['ucsc', org_map_ucsc])
+
+print('')
+print('UCSC databases not mapped to GenBank assembly IDs:')
+print(', '.join(unfound_dbs))
+print('')
 
 # Non-redundant (NR) organism map
 nr_org_map = {}
 
 seen_orgs = {}
-for party in party_map:
-    org_map = party_map[party]
+for party, org_map in party_list:
     print('Iterating organisms from ' + party)
     for org in org_map:
+        print('\t' + org)
         if org in seen_orgs:
             print('Already saw ' + org)
             continue
-        print('\t' + org)
         nr_org_map[org] = org_map[org]
 
+print('')
+print('organisms in nr_org_map')
+for org in nr_org_map:
+    print(org + ' ' + str(nr_org_map[org]))
+print('')
 
 
 
