@@ -13,8 +13,7 @@ import time
 
 import convert_band_data
 
-
-output_dir = 'data/bands/native/'
+output_dir = '../data/bands/native/'
 
 if os.path.exists(output_dir) == False:
     os.mkdir(output_dir)
@@ -93,15 +92,10 @@ def fetch_ftp(ftp, file_name):
 
 # Downloads gzipped FTP data in binary format, returns plain text content
 def fetch_gzipped_ftp(ftp, file_name):
-
     bytesio_object = fetch_ftp(ftp, file_name)
-
     bytesio_object.seek(0) # Go back to the start
-
     zip_data = gzip.GzipFile(fileobj=bytesio_object)
-
     content = zip_data.read().decode('utf-8')
-
     return content
 
 
@@ -149,6 +143,63 @@ def download_genome_regions(ftp, regions_ftp):
 
     return centromeres
 
+
+def write_centromere_data(organism, asm_name, asm_acc, output_dir, chrs):
+    logger.info(
+        'Centromeres found for ' + organism + ' ' +
+        'in genome assembly ' + asm_name + ' (' + asm_acc + ')'
+    )
+    leaf = ''
+    if (
+        (organism == 'homo-sapiens' and asm_name[:3] == 'GRC') or
+        (organism == 'mus-musculus' and asm_name[:3] in ('GRC', 'MGS')) or
+        (organism == 'rattus-norvegicus' and asm_name[:4] == 'Rnor')
+    ):
+        logger.info('Got no-bands assembly: ' + asm_name)
+        leaf = '-no-bands'
+    output_path = output_dir + organism + leaf + '.js'
+    long_output_path = output_dir + organism + '-' + asm_acc + '.js'
+
+    adapted_chromosomes = []
+
+    max_chr_length = 0
+    for chr in chrs:
+        if chr['length'] > max_chr_length:
+            max_chr_length = chr['length']
+
+    for chr in chrs:
+        name = chr['name']
+        length = chr['length']
+
+        iscn_stop_q = str(round(length) / max_chr_length * 10000)
+        length = str(length)
+
+        if 'centromere' in chr:
+            cen = chr['centromere']
+            midpoint = cen['start'] + round(cen['length']/2)
+
+            iscn_stop_p = str(round(midpoint / max_chr_length * 10000))
+
+            midpoint = str(midpoint)
+
+            p = name + ' p 1 0 ' + iscn_stop_p + ' 0 ' + midpoint
+            q = (
+                name + ' q 1 ' + str(int(iscn_stop_p) + 1) + ' ' + iscn_stop_q +
+                ' ' + midpoint + ' ' + length
+            )
+
+            adapted_chromosomes += [p, q]
+        else:
+            adapted_chromosomes.append(
+                name + ' n 1 0 ' + iscn_stop_q + ' 0 ' + length
+            )
+    js_chrs = 'window.chrBands = ' + json.dumps(adapted_chromosomes)
+
+    with open(output_path, 'w') as f:
+        f.write(js_chrs)
+
+    with open(long_output_path, 'w') as f:
+        f.write(js_chrs)
 
 
 def download_genome_agp(ftp, asm):
@@ -224,62 +275,7 @@ def download_genome_agp(ftp, asm):
                             chr2['centromere'] = centromeres[chr]
 
     if has_centromere_data:
-
-        logger.info(
-            'Centromeres found for ' + organism + ' ' +
-            'in genome assembly ' + asm_name + ' (' + asm_acc + ')'
-        )
-        leaf = ''
-        if (
-            (organism == 'homo-sapiens' and asm_name[:3] == 'GRC') or
-            (organism == 'mus-musculus' and asm_name[:3] in ('GRC', 'MGS')) or
-            (organism == 'rattus-norvegicus' and asm_name[:4] == 'Rnor')
-        ):
-            logger.info('Got no-bands assembly: ' + asm_name)
-            leaf = '-no-bands'
-        output_path = output_dir + organism + leaf + '.js'
-        long_output_path = output_dir + organism + '-' + asm_acc + '.js'
-
-        adapted_chromosomes = []
-
-        max_chr_length = 0
-        for chr in chrs:
-            if chr['length'] > max_chr_length:
-                max_chr_length = chr['length']
-
-        for chr in chrs:
-            name = chr['name']
-            length = chr['length']
-
-            iscn_stop_q = str(round(length) / max_chr_length * 10000)
-            length = str(length)
-
-            if 'centromere' in chr:
-                cen = chr['centromere']
-                midpoint = cen['start'] + round(cen['length']/2)
-
-                iscn_stop_p = str(round(midpoint / max_chr_length * 10000))
-
-                midpoint = str(midpoint)
-
-                p = name + ' p 1 0 ' + iscn_stop_p + ' 0 ' + midpoint
-                q = (
-                    name + ' q 1 ' + str(int(iscn_stop_p) + 1) + ' ' + iscn_stop_q +
-                    ' ' + midpoint + ' ' + length
-                )
-
-                adapted_chromosomes += [p, q]
-            else:
-                adapted_chromosomes.append(
-                    name + ' n 1 0 ' + iscn_stop_q + ' 0 ' + length
-                )
-        js_chrs = 'window.chrBands = ' + json.dumps(adapted_chromosomes)
-
-        with open(output_path, 'w') as f:
-            f.write(js_chrs)
-
-        with open(long_output_path, 'w') as f:
-            f.write(js_chrs)
+        write_centromere_data(organism, asm_name, asm_acc, output_dir, chrs)
 
 
 def find_genomes_with_centromeres(ftp, asm_summary_response):
@@ -368,9 +364,9 @@ def pool_processing(uid_list):
 
 
 eutils = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
-esearch = eutils + 'esearch.fcgi?retmode=json';
-esummary = eutils + 'esummary.fcgi?retmode=json';
-elink = eutils + 'elink.fcgi?retmode=json';
+esearch = eutils + 'esearch.fcgi?retmode=json'
+esummary = eutils + 'esummary.fcgi?retmode=json'
+elink = eutils + 'elink.fcgi?retmode=json'
 
 asms = []
 
