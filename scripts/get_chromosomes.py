@@ -8,7 +8,7 @@ import json
 import gzip
 import logging
 import io
-import multiprocessing
+from concurrent.futures import ThreadPoolExecutor
 import time
 
 import convert_band_data
@@ -344,7 +344,10 @@ def chunkify(lst, n):
     return [lst[i::n] for i in range(n)]
 
 
+
+thread_counter = 0
 def pool_processing(uid_list):
+    global thread_counter
 
     uid_list = ','.join(uid_list)
 
@@ -361,7 +364,9 @@ def pool_processing(uid_list):
     find_genomes_with_centromeres(ftp, data)
 
     ftp.quit()
-
+    thread_counter += 1
+    # print('done with pool_processing call ' + str(thread_counter))
+    return thread_counter
 
 eutils = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
 esearch = eutils + 'esearch.fcgi?retmode=json'
@@ -388,16 +393,19 @@ top_uid_list = data['esearchresult']['idlist']
 logger.info('Assembly UIDs returned in search results: ' + str(len(top_uid_list)))
 
 # TODO: Make this configurable
-num_cores = multiprocessing.cpu_count()
+num_threads = 24
 
-uid_lists = chunkify(top_uid_list, num_cores)
+uid_lists = chunkify(top_uid_list, num_threads)
 
-pool = multiprocessing.Pool(num_cores)
+# TODO: Improve error handling.  This sometimes freezes, with no error message.
+with ThreadPoolExecutor(max_workers=num_threads) as pool:
 
-pool.map(pool_processing, uid_lists)
-
+    # for result in pool.map(pool_processing, uid_lists):
+    #     print('result (thread_counter):')
+    #     print(result)
+    pool.map(pool_processing, uid_lists)
+    # print('before exiting with clause')
 
 logger.info('Calling convert_band_data.py')
 convert_band_data.main()
-
 logger.info('Ending get_chromosomes.py')
