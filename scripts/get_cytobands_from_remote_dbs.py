@@ -10,13 +10,35 @@ import pymysql
 import urllib.request as request
 import os
 import json
+from concurrent.futures import ThreadPoolExecutor
+import logging
 
-unfound_dbs = []
+output_dir = '../data/bands/native/'
+
+if os.path.exists(output_dir) == False:
+    os.mkdir(output_dir)
+
+# create logger with 'get_chromosomes'
+logger = logging.getLogger('get_cytobands_from_remote_dbs')
+logger.setLevel(logging.DEBUG)
+# create file handler which logs even debug messages
+fh = logging.FileHandler(output_dir + 'get_cytobands_from_remote_dbs.log')
+fh.setLevel(logging.DEBUG)
+# create console handler with a higher log level
+ch = logging.StreamHandler()
+ch.setLevel(logging.ERROR)
+# create formatter and add it to the handlers
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+fh.setFormatter(formatter)
+ch.setFormatter(formatter)
+# add the handlers to the logger
+logger.addHandler(fh)
+logger.addHandler(ch)
 
 def get_genbank_accession_from_ucsc_name(db):
     """Queries NCBI EUtils for the GenBank accession of a UCSC asseembly name
     """
-    print(db)
+    logger.info('Fetching GenBank accession from NCBI EUtils for: ' + db)
 
     eutils = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
     esearch = eutils + 'esearch.fcgi?retmode=json'
@@ -27,7 +49,7 @@ def get_genbank_accession_from_ucsc_name(db):
     # Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=assembly&retmode=json&term=panTro4
     with request.urlopen(asm_search) as response:
         data = json.loads(response.read().decode('utf-8'))
-    #print(data)
+    #logger.info(data)
     id_list = data['esearchresult']['idlist']
     if len(id_list) > 0:
         assembly_uid = id_list[0]
@@ -56,11 +78,12 @@ def fetch_from_ucsc():
     To connect via Terminal (e.g. to debug), run:
     mysql --user=genome --host=genome-mysql.soe.ucsc.edu -A
     """
-    print('fetch_from_ucsc')
+    logger.info('Entering fetch_from_ucsc')
     connection = pymysql.connect(
         host='genome-mysql.soe.ucsc.edu',
         user='genome'
     )
+    logger.info('Connected to UCSC database')
     cursor = connection.cursor()
 
     db_map = {}
@@ -130,15 +153,12 @@ def fetch_from_ucsc():
 
         asm_data = [genbank_accession, db]
 
+        logger.info('Got UCSC data: ' + str(asm_data))
+
         if name_slug in db_map:
             org_map[name_slug].append(asm_data)
         else:
             org_map[name_slug] = [asm_data]
-
-    print('Number of organisms with centromeres:')
-    print(len(chrs_by_organism))
-    #for org in chrs_by_organism:
-        #print(org)
 
     return org_map
 
@@ -148,13 +168,16 @@ def fetch_from_ensembl_genomes():
     To connect via Terminal (e.g. to debug), run:
     mysql --user=anonymous --host=mysql-eg-publicsql.ebi.ac.uk --port=4157 -A
     """
-    print('fetch_from_ensembl_genomes')
+    logger.info('Entering fetch_from_ensembl_genomes')
     connection = pymysql.connect(
         host='mysql-eg-publicsql.ebi.ac.uk',
         user='anonymous',
         port=4157
     )
+    logger.info('Connected to Ensembl Genomes database')
+
     cursor = connection.cursor()
+
     cursor.execute('show databases like "%core_%"');
 
     db_map = {}
@@ -178,7 +201,7 @@ def fetch_from_ensembl_genomes():
         cursor.execute('SELECT * FROM karyotype')
         rows = cursor.fetchall()
         if len(rows) == 0:
-            # print(db)
+            # logger.info(db)
             continue
 
         cursor.execute('''
@@ -189,44 +212,62 @@ def fetch_from_ensembl_genomes():
 
         asm_data = [genbank_accession, db]
 
+        logger.info('Got Ensembl Genomes data: ' + str(asm_data))
+
         if name_slug in db_map:
             org_map[name_slug].append(asm_data)
         else:
             org_map[name_slug] = [asm_data]
 
-        #print(db + ' ****************')
-
     return org_map
 
-party_list = []
-org_map_ensembl_genomes = fetch_from_ensembl_genomes()
-org_map_ucsc = fetch_from_ucsc()
-party_list.append(['ensembl', org_map_ensembl_genomes])
-party_list.append(['ucsc', org_map_ucsc])
+def pool_processing(party):
+    logger.info('Entering pool processing, party: ' + party)
+    if party == 'ensembl':
+        org_map = fetch_from_ensembl_genomes()
+    else:
+        org_map = fetch_from_ucsc()
+    logger.info('exiting pool processing')
+    return [party, org_map]
 
-print('')
-print('UCSC databases not mapped to GenBank assembly IDs:')
-print(', '.join(unfound_dbs))
-print('')
+party_list = []
+unfound_dbs = []
+
+num_threads = 2
+
+# TODO: Improve error handling.  This sometimes freezes, with no error message.
+with ThreadPoolExecutor(max_workers=num_threads) as pool:
+
+    for result in pool.map(pool_processing, ['ensembl', 'ucsc']):
+        logger.info('result:')
+        logger.info(result)
+        party_list.append(result)
+
+    logger.info('before exiting with clause')
+
+logger.info('')
+logger.info('UCSC databases not mapped to GenBank assembly IDs:')
+logger.info(', '.join(unfound_dbs))
+logger.info('')
 
 # Non-redundant (NR) organism map
 nr_org_map = {}
 
 seen_orgs = {}
 for party, org_map in party_list:
-    print('Iterating organisms from ' + party)
+    logger.info('Iterating organisms from ' + party)
     for org in org_map:
-        print('\t' + org)
+        logger.info('\t' + org)
         if org in seen_orgs:
-            print('Already saw ' + org)
+            logger.info('Already saw ' + org)
             continue
         nr_org_map[org] = org_map[org]
 
-print('')
-print('organisms in nr_org_map')
+logger.info('')
+logger.info('organisms in nr_org_map')
 for org in nr_org_map:
-    print(org + ' ' + str(nr_org_map[org]))
-print('')
+    logger.info(org + ' ' + str(nr_org_map[org]))
+logger.info('')
 
 
 
