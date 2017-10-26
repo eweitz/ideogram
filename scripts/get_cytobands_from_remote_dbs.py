@@ -12,6 +12,7 @@ import os
 import json
 from concurrent.futures import ThreadPoolExecutor
 import logging
+import time
 
 output_dir = '../data/bands/native/'
 
@@ -35,9 +36,20 @@ ch.setFormatter(formatter)
 logger.addHandler(fh)
 logger.addHandler(ch)
 
+time_ncbi = 0
+time_ucsc = 0
+time_ensembl = 0
+
+
+def time_ms():
+    return int(round(time.time() * 1000))
+
+
 def get_genbank_accession_from_ucsc_name(db):
     """Queries NCBI EUtils for the GenBank accession of a UCSC asseembly name
     """
+    global time_ncbi
+    t0 = time_ms()
     logger.info('Fetching GenBank accession from NCBI EUtils for: ' + db)
 
     eutils = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
@@ -66,10 +78,11 @@ def get_genbank_accession_from_ucsc_name(db):
     acc = result['assemblyaccession'] # Accession.version
 
     # Return GenBank accession if it's default, else find and return it
-    if "GCA_" in acc:
-        return acc
-    else:
-        return result['synonym']['genbank']
+    if "GCA_" not in acc:
+        acc = result['synonym']['genbank']
+
+    time_ncbi += time_ms() - t0
+    return acc
 
 
 def fetch_from_ucsc():
@@ -78,6 +91,8 @@ def fetch_from_ucsc():
     To connect via Terminal (e.g. to debug), run:
     mysql --user=genome --host=genome-mysql.soe.ucsc.edu -A
     """
+    global time_ucsc
+    t0 = time_ms()
     logger.info('Entering fetch_from_ucsc')
     connection = pymysql.connect(
         host='genome-mysql.soe.ucsc.edu',
@@ -160,6 +175,7 @@ def fetch_from_ucsc():
         else:
             org_map[name_slug] = [asm_data]
 
+    time_ucsc += time_ms() - t0
     return org_map
 
 def fetch_from_ensembl_genomes():
@@ -168,6 +184,8 @@ def fetch_from_ensembl_genomes():
     To connect via Terminal (e.g. to debug), run:
     mysql --user=anonymous --host=mysql-eg-publicsql.ebi.ac.uk --port=4157 -A
     """
+    global time_ensembl
+    t0 = time_ms()
     logger.info('Entering fetch_from_ensembl_genomes')
     connection = pymysql.connect(
         host='mysql-eg-publicsql.ebi.ac.uk',
@@ -219,6 +237,7 @@ def fetch_from_ensembl_genomes():
         else:
             org_map[name_slug] = [asm_data]
 
+    time_ensembl += time_ms() - t0
     return org_map
 
 def pool_processing(party):
@@ -262,6 +281,13 @@ for party, org_map in party_list:
             logger.info('Already saw ' + org)
             continue
         nr_org_map[org] = org_map[org]
+
+logger.info('time_ucsc:')
+logger.info(time_ucsc)
+logger.info('time_ncbi:')
+logger.info(time_ncbi)
+logger.info('time_ensembl:')
+logger.info(time_ensembl)
 
 logger.info('')
 logger.info('organisms in nr_org_map')
