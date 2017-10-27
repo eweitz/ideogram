@@ -45,6 +45,10 @@ def time_ms():
     return int(round(time.time() * 1000))
 
 
+def chunkify(lst, n):
+    return [lst[i::n] for i in range(n)]
+
+
 def get_genbank_accession_from_ucsc_name(db):
     """Queries NCBI EUtils for the GenBank accession of a UCSC asseembly name
     """
@@ -178,6 +182,52 @@ def fetch_from_ucsc():
     time_ucsc += time_ms() - t0
     return org_map
 
+
+def pool_query_ensembl(db_tuples_list):
+    """Query for karyotype data in Ensembl Genomes.
+    This function is launched many times simultaneously in a thread pool.
+
+    :param db_tuples_list: List of (db, name_slug) tuples
+    :return: List of [name_slug, asm_data] lists
+    """
+
+    connection = pymysql.connect(
+        host='mysql-eg-publicsql.ebi.ac.uk',
+        user='anonymous',
+        port=4157
+    )
+    logger.info('Connected to Ensembl Genomes database via pool')
+
+    pq_result = []
+
+    cursor = connection.cursor()
+    for db_tuple in db_tuples_list:
+        db, name_slug = db_tuple
+
+        # Example for debugging: "USE zea_mays_core_35_88_7;"
+        cursor.execute('USE ' + db)
+
+        # Schema: https://www.ensembl.org/info/docs/api/core/core_schema.html#karyotype
+        # | karyotype_id | seq_region_id | seq_region_start | seq_region_end | band | stain |
+        # TODO: Learn what is available via seq_region_id, in seq_region table
+        cursor.execute('SELECT * FROM karyotype')
+        rows = cursor.fetchall()
+        if len(rows) == 0:
+            continue
+
+        cursor.execute('''
+          SELECT meta_value FROM meta
+          where meta_key = "assembly.accession"
+        ''')
+        genbank_accession = cursor.fetchone()[0]
+
+        asm_data = [genbank_accession, db]
+        pq_result.append([name_slug, asm_data])
+        logger.info('Got Ensembl Genomes data: ' + str(asm_data))
+
+    return pq_result
+
+
 def fetch_from_ensembl_genomes():
     """Queries MySQL servers hosted by Ensembl Genomes
 
@@ -196,49 +246,41 @@ def fetch_from_ensembl_genomes():
 
     cursor = connection.cursor()
 
-    cursor.execute('show databases like "%core_%"');
-
     db_map = {}
     org_map = {}
 
+    # Get a list of databases we want to query for karyotype data
+    cursor.execute('show databases like "%core_%"');
     for row in cursor.fetchall():
         db = row[0]
         if 'collection' in db:
             continue
         name_slug = db.split('_core')[0].replace('_', '-')
         db_map[db] = name_slug
+    db_tuples = [item for item in db_map.items()]
 
-    for db in db_map:
+    cursor.close()
 
-        # Example for debugging: "USE zea_mays_core_35_88_7;"
-        cursor.execute('USE ' + db)
+    # Take the list of DBs we want to query for karyotype data,
+    # split it into 20 smaller lists,
+    # then launch a new thread for each of those small new DB lists
+    # to divide up the work of querying remote DBs.
+    num_threads_ensembl = 20
+    db_tuples_lists = chunkify(db_tuples, num_threads_ensembl)
+    with ThreadPoolExecutor(max_workers=num_threads_ensembl) as inner_pool:
+        for ens_result in inner_pool.map(pool_query_ensembl, db_tuples_lists):
+            for db_tuple in ens_result:
+                name_slug, asm_data = db_tuple
+                if name_slug in org_map:
+                    org_map[name_slug].append(asm_data)
+                else:
+                    org_map[name_slug] = [asm_data]
 
-        # Schema: https://www.ensembl.org/info/docs/api/core/core_schema.html#karyotype
-        # | karyotype_id | seq_region_id | seq_region_start | seq_region_end | band | stain |
-        # TODO: Learn what is available via seq_region_id, in seq_region table
-        cursor.execute('SELECT * FROM karyotype')
-        rows = cursor.fetchall()
-        if len(rows) == 0:
-            # logger.info(db)
-            continue
-
-        cursor.execute('''
-          SELECT meta_value FROM meta
-          where meta_key = "assembly.accession"
-        ''')
-        genbank_accession = cursor.fetchone()[0]
-
-        asm_data = [genbank_accession, db]
-
-        logger.info('Got Ensembl Genomes data: ' + str(asm_data))
-
-        if name_slug in db_map:
-            org_map[name_slug].append(asm_data)
-        else:
-            org_map[name_slug] = [asm_data]
+    logger.info('before exiting with clause')
 
     time_ensembl += time_ms() - t0
     return org_map
+
 
 def pool_processing(party):
     logger.info('Entering pool processing, party: ' + party)
@@ -249,14 +291,13 @@ def pool_processing(party):
     logger.info('exiting pool processing')
     return [party, org_map]
 
+
 party_list = []
 unfound_dbs = []
 
 num_threads = 2
 
-# TODO: Improve error handling.  This sometimes freezes, with no error message.
 with ThreadPoolExecutor(max_workers=num_threads) as pool:
-
     for result in pool.map(pool_processing, ['ensembl', 'ucsc']):
         logger.info('result:')
         logger.info(result)
@@ -282,20 +323,15 @@ for party, org_map in party_list:
             continue
         nr_org_map[org] = org_map[org]
 
-logger.info('time_ucsc:')
-logger.info(time_ucsc)
-logger.info('time_ncbi:')
-logger.info(time_ncbi)
-logger.info('time_ensembl:')
-logger.info(time_ensembl)
-
 logger.info('')
 logger.info('organisms in nr_org_map')
 for org in nr_org_map:
     logger.info(org + ' ' + str(nr_org_map[org]))
 logger.info('')
 
-
-
-
-
+logger.info('time_ucsc:')
+logger.info(time_ucsc)
+logger.info('time_ncbi:')
+logger.info(time_ncbi)
+logger.info('time_ensembl:')
+logger.info(time_ensembl)
