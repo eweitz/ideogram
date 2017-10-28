@@ -3,7 +3,6 @@
 # TODO:
 # - Write data for first-class organisms to JavaScript file in ../src/js/
 # - Incorporate Ensembl proper, GenoMaize
-# - Parallelize requests, one to each third-party (bonus: one to each mirror)
 # - Bonus: Convert this data into AGP 2.0, send data missing from NCBI to them
 
 import pymysql
@@ -89,15 +88,10 @@ def get_genbank_accession_from_ucsc_name(db):
     return acc
 
 
-def fetch_from_ucsc():
-    """Queries MySQL instances hosted by UCSC Genome Browser
-
-    To connect via Terminal (e.g. to debug), run:
-    mysql --user=genome --host=genome-mysql.soe.ucsc.edu -A
+def query_ucsc_cytobandideo_db(db_tuples_list):
+    """Queries UCSC DBs, called via a thread pool in fetch_ucsc_data
     """
-    global time_ucsc
-    t0 = time_ms()
-    logger.info('Entering fetch_from_ucsc')
+
     connection = pymysql.connect(
         host='genome-mysql.soe.ucsc.edu',
         user='genome'
@@ -105,23 +99,8 @@ def fetch_from_ucsc():
     logger.info('Connected to UCSC database')
     cursor = connection.cursor()
 
-    db_map = {}
-    org_map = {}
-
-    cursor.execute('use hgcentral')
-    cursor.execute('''
-      SELECT name, scientificName FROM dbDb
-        WHERE active = 1
-    ''')
-    for row in cursor.fetchall():
-        db = row[0]
-        # e.g. Homo sapiens -> homo-sapiens
-        name_slug = row[1].lower().replace(' ', '-')
-        db_map[db] = name_slug
-
-    chrs_by_organism = {}
-
-    for db in db_map:
+    for db_tuple in db_tuples_list:
+        db, name_slug = db_tuple
         cursor.execute('USE ' + db)
         cursor.execute('SHOW TABLES')
         rows2 = cursor.fetchall()
@@ -167,23 +146,71 @@ def fetch_from_ucsc():
 
         genbank_accession = get_genbank_accession_from_ucsc_name(db)
 
-        name_slug = db_map[db]
-        chrs_by_organism[name_slug] = bands_by_chr
+        # name_slug = db_map[db]
+        # chrs_by_organism[name_slug] = bands_by_chr
 
         asm_data = [genbank_accession, db]
 
         logger.info('Got UCSC data: ' + str(asm_data))
 
-        if name_slug in db_map:
-            org_map[name_slug].append(asm_data)
-        else:
-            org_map[name_slug] = [asm_data]
+        return asm_data
+
+
+def fetch_from_ucsc():
+    """Queries MySQL instances hosted by UCSC Genome Browser
+
+    To connect via Terminal (e.g. to debug), run:
+    mysql --user=genome --host=genome-mysql.soe.ucsc.edu -A
+    """
+    global time_ucsc
+    t0 = time_ms()
+    logger.info('Entering fetch_from_ucsc')
+    connection = pymysql.connect(
+        host='genome-mysql.soe.ucsc.edu',
+        user='genome'
+    )
+    logger.info('Connected to UCSC database')
+    cursor = connection.cursor()
+
+    db_map = {}
+    org_map = {}
+
+    cursor.execute('use hgcentral')
+    cursor.execute('''
+      SELECT name, scientificName FROM dbDb
+        WHERE active = 1
+    ''')
+    for row in cursor.fetchall():
+        db = row[0]
+        # e.g. Homo sapiens -> homo-sapiens
+        name_slug = row[1].lower().replace(' ', '-')
+        db_map[db] = name_slug
+
+    chrs_by_organism = {}
+
+    db_tuples = [item for item in db_map.items()]
+
+    # Take the list of DBs we want to query for cytoBandIdeo data,
+    # split it into 20 smaller lists,
+    # then launch a new thread for each of those small new DB lists
+    # to divide up the work of querying remote DBs.
+    num_threads = 20
+    db_tuples_lists = chunkify(db_tuples, num_threads)
+    with ThreadPoolExecutor(max_workers=num_threads) as pool:
+        for result in pool.map(query_ucsc_cytobandideo_db, db_tuples_lists):
+            if result is None:
+                continue
+            name_slug, asm_data = result
+            if name_slug in org_map:
+                org_map[name_slug].append(asm_data)
+            else:
+                org_map[name_slug] = [asm_data]
 
     time_ucsc += time_ms() - t0
     return org_map
 
 
-def pool_query_ensembl(db_tuples_list):
+def query_ensembl_karyotype_db(db_tuples_list):
     """Query for karyotype data in Ensembl Genomes.
     This function is launched many times simultaneously in a thread pool.
 
@@ -196,11 +223,11 @@ def pool_query_ensembl(db_tuples_list):
         user='anonymous',
         port=4157
     )
+    cursor = connection.cursor()
     logger.info('Connected to Ensembl Genomes database via pool')
 
     pq_result = []
 
-    cursor = connection.cursor()
     for db_tuple in db_tuples_list:
         db, name_slug = db_tuple
 
@@ -265,11 +292,11 @@ def fetch_from_ensembl_genomes():
     # split it into 20 smaller lists,
     # then launch a new thread for each of those small new DB lists
     # to divide up the work of querying remote DBs.
-    num_threads_ensembl = 20
-    db_tuples_lists = chunkify(db_tuples, num_threads_ensembl)
-    with ThreadPoolExecutor(max_workers=num_threads_ensembl) as inner_pool:
-        for ens_result in inner_pool.map(pool_query_ensembl, db_tuples_lists):
-            for db_tuple in ens_result:
+    num_threads = 20
+    db_tuples_lists = chunkify(db_tuples, num_threads)
+    with ThreadPoolExecutor(max_workers=num_threads) as pool:
+        for result in pool.map(query_ensembl_karyotype_db, db_tuples_lists):
+            for db_tuple in result:
                 name_slug, asm_data = db_tuple
                 if name_slug in org_map:
                     org_map[name_slug].append(asm_data)
