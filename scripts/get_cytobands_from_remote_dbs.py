@@ -18,7 +18,7 @@ output_dir = '../data/bands/native/'
 if os.path.exists(output_dir) == False:
     os.mkdir(output_dir)
 
-# create logger with 'get_chromosomes'
+# create logger with 'get_cytobands_from_remote_dbs'
 logger = logging.getLogger('get_cytobands_from_remote_dbs')
 logger.setLevel(logging.DEBUG)
 # create file handler which logs even debug messages
@@ -64,7 +64,6 @@ def get_genbank_accession_from_ucsc_name(db):
     # Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=assembly&retmode=json&term=panTro4
     with request.urlopen(asm_search) as response:
         data = json.loads(response.read().decode('utf-8'))
-    #logger.info(data)
     id_list = data['esearchresult']['idlist']
     if len(id_list) > 0:
         assembly_uid = id_list[0]
@@ -149,7 +148,7 @@ def query_ucsc_cytobandideo_db(db_tuples_list):
         # name_slug = db_map[db]
         # chrs_by_organism[name_slug] = bands_by_chr
 
-        asm_data = [genbank_accession, db]
+        asm_data = [db, genbank_accession]
 
         logger.info('Got UCSC data: ' + str(asm_data))
 
@@ -191,16 +190,16 @@ def fetch_from_ucsc():
     db_tuples = [item for item in db_map.items()]
 
     # Take the list of DBs we want to query for cytoBandIdeo data,
-    # split it into 20 smaller lists,
+    # split it into 30 smaller lists,
     # then launch a new thread for each of those small new DB lists
     # to divide up the work of querying remote DBs.
-    num_threads = 20
+    num_threads = 30
     db_tuples_lists = chunkify(db_tuples, num_threads)
     with ThreadPoolExecutor(max_workers=num_threads) as pool:
         for result in pool.map(query_ucsc_cytobandideo_db, db_tuples_lists):
             if result is None:
                 continue
-            name_slug, asm_data = result
+            asm_data = result
             if name_slug in org_map:
                 org_map[name_slug].append(asm_data)
             else:
@@ -289,10 +288,10 @@ def fetch_from_ensembl_genomes():
     cursor.close()
 
     # Take the list of DBs we want to query for karyotype data,
-    # split it into 20 smaller lists,
+    # split it into 100 smaller lists,
     # then launch a new thread for each of those small new DB lists
     # to divide up the work of querying remote DBs.
-    num_threads = 20
+    num_threads = 100
     db_tuples_lists = chunkify(db_tuples, num_threads)
     with ThreadPoolExecutor(max_workers=num_threads) as pool:
         for result in pool.map(query_ensembl_karyotype_db, db_tuples_lists):
