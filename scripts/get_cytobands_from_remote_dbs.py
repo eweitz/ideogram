@@ -12,6 +12,7 @@ import json
 from concurrent.futures import ThreadPoolExecutor
 import logging
 import time
+import pprint
 
 output_dir = '../data/bands/native/'
 
@@ -127,15 +128,12 @@ def query_ucsc_cytobandideo_db(db_tuples_list):
         has_bands = False
         rows3 = cursor.fetchall()
         for row3 in rows3:
-            chr = row3[0]
-            start = row3[1]
-            stop = row3[2]
+            chr, start, stop, band_name, stain = row3
             length = stop - start
-            band_name = row3[3]
             gie_stain = row3[4]
             if band_name != '':
                 has_bands = True
-            band = [band_name, start, length, gie_stain]
+            band = [band_name, start, length, stain]
             if chr in bands_by_chr:
                 bands_by_chr[chr].append(band)
             else:
@@ -146,9 +144,8 @@ def query_ucsc_cytobandideo_db(db_tuples_list):
         genbank_accession = get_genbank_accession_from_ucsc_name(db)
 
         # name_slug = db_map[db]
-        # chrs_by_organism[name_slug] = bands_by_chr
 
-        asm_data = [db, genbank_accession]
+        asm_data = [db, genbank_accession, bands_by_chr]
 
         logger.info('Got UCSC data: ' + str(asm_data))
 
@@ -209,6 +206,31 @@ def fetch_from_ucsc():
     return org_map
 
 
+def get_ensembl_chr_ids(cursor):
+    """Get a map of Ensembl seq_region_ids to familiar chromosome names.
+    Helper function for query_ensembl_karyotype_db.
+
+    :param cursor: Cursor connected to Ensembl Genomes DB of interest
+    :return: chr_id: Dictionary mapping seq_region_id to chromosome names
+    """
+    cursor.execute('''
+      SELECT coord_system_id FROM coord_system
+      WHERE name="chromosome" AND attrib="default_version"
+    ''')
+    coord_system_id = str(cursor.fetchone()[0])
+    chr_ids = {}
+    cursor.execute(
+        'SELECT name, seq_region_id FROM seq_region ' +
+        'WHERE coord_system_id = ' + coord_system_id
+    )
+    rows = cursor.fetchall()
+    for row in rows:
+        chr, seq_region_id = row
+        chr_ids[seq_region_id] = chr
+
+    return chr_ids
+
+
 def query_ensembl_karyotype_db(db_tuples_list):
     """Query for karyotype data in Ensembl Genomes.
     This function is launched many times simultaneously in a thread pool.
@@ -238,8 +260,23 @@ def query_ensembl_karyotype_db(db_tuples_list):
         # TODO: Learn what is available via seq_region_id, in seq_region table
         cursor.execute('SELECT * FROM karyotype')
         rows = cursor.fetchall()
+        # Omit assmblies that don't have cytoband data
         if len(rows) == 0:
             continue
+
+        chr_ids = get_ensembl_chr_ids(cursor)
+
+        bands_by_chr = {}
+
+        for row in rows:
+            pid, seq_region_id, start, stop, band_name, stain = row
+            length = int(stop) - int(start)
+            chr = chr_ids[seq_region_id]
+            band = [band_name, start, length, stain]
+            if chr in bands_by_chr:
+                bands_by_chr[chr].append(band)
+            else:
+                bands_by_chr[chr] = [band]
 
         cursor.execute('''
           SELECT meta_value FROM meta
@@ -247,7 +284,7 @@ def query_ensembl_karyotype_db(db_tuples_list):
         ''')
         genbank_accession = cursor.fetchone()[0]
 
-        asm_data = [genbank_accession, db]
+        asm_data = [genbank_accession, db, bands_by_chr]
         pq_result.append([name_slug, asm_data])
         logger.info('Got Ensembl Genomes data: ' + str(asm_data))
 
@@ -351,8 +388,20 @@ for party, org_map in party_list:
 
 logger.info('')
 logger.info('organisms in nr_org_map')
+
+manifest= {}
+
 for org in nr_org_map:
-    logger.info(org + ' ' + str(nr_org_map[org]))
+    asm_data = sorted(nr_org_map[org], reverse=True)[0]
+    genbank_accession, db, bands_by_chr = asm_data
+    manifest[org] = [genbank_accession, db]
+
+pp = pprint.PrettyPrinter(indent=4)
+manifest = pp.pformat(manifest)
+
+with open(output_dir + 'manifest.tsv', 'w') as f:
+    f.write(manifest)
+
 logger.info('')
 
 logger.info('time_ucsc:')
