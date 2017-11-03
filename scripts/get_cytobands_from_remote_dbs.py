@@ -272,6 +272,12 @@ def query_ensembl_karyotype_db(db_tuples_list):
             pid, seq_region_id, start, stop, band_name, stain = row
             length = int(stop) - int(start)
             chr = chr_ids[seq_region_id]
+            # band_name and stain can be omitted,
+            # see e.g. Aspergillus oryzae, Anopheles gambiae
+            if band_name is None:
+                band_name = ''
+            if stain is None:
+                stain = ''
             band = [band_name, start, length, stain]
             if chr in bands_by_chr:
                 bands_by_chr[chr].append(band)
@@ -362,11 +368,7 @@ num_threads = 2
 
 with ThreadPoolExecutor(max_workers=num_threads) as pool:
     for result in pool.map(pool_processing, ['ensembl', 'ucsc']):
-        logger.info('result:')
-        logger.info(result)
         party_list.append(result)
-
-    logger.info('before exiting with clause')
 
 logger.info('')
 logger.info('UCSC databases not mapped to GenBank assembly IDs:')
@@ -391,12 +393,16 @@ logger.info('organisms in nr_org_map')
 
 manifest= {}
 
+pp = pprint.PrettyPrinter(indent=4)
+
 for org in nr_org_map:
     asm_data = sorted(nr_org_map[org], reverse=True)[0]
     genbank_accession, db, bands_by_chr = asm_data
+    bands_by_chr = pp.pformat(bands_by_chr)
     manifest[org] = [genbank_accession, db]
+    with open(output_dir + org + '.js', 'w') as f:
+        f.write('window.chrBands = ' + bands_by_chr)
 
-pp = pprint.PrettyPrinter(indent=4)
 manifest = pp.pformat(manifest)
 
 with open(output_dir + 'manifest.tsv', 'w') as f:
