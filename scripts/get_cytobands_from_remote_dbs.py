@@ -130,10 +130,9 @@ def query_ucsc_cytobandideo_db(db_tuples_list):
         for row3 in rows3:
             chr, start, stop, band_name, stain = row3
             length = stop - start
-            gie_stain = row3[4]
             if band_name != '':
                 has_bands = True
-            band = [band_name, start, length, stain]
+            band = [band_name, str(start), str(length), stain]
             if chr in bands_by_chr:
                 bands_by_chr[chr].append(band)
             else:
@@ -278,7 +277,7 @@ def query_ensembl_karyotype_db(db_tuples_list):
                 band_name = ''
             if stain is None:
                 stain = ''
-            band = [band_name, start, length, stain]
+            band = [band_name, str(start), str(length), stain]
             if chr in bands_by_chr:
                 bands_by_chr[chr].append(band)
             else:
@@ -398,10 +397,14 @@ pp = pprint.PrettyPrinter(indent=4)
 for org in nr_org_map:
     asm_data = sorted(nr_org_map[org], reverse=True)[0]
     genbank_accession, db, bands_by_chr = asm_data
-    bands_by_chr = pp.pformat(bands_by_chr)
+    band_list = []
+    for chr in bands_by_chr:
+        bands = bands_by_chr[chr]
+        for band in bands:
+            band_list.append(chr + ' ' + ' '.join(band))
     manifest[org] = [genbank_accession, db]
     with open(output_dir + org + '.js', 'w') as f:
-        f.write('window.chrBands = ' + bands_by_chr)
+        f.write('window.chrBands = ' + str(band_list))
 
 manifest = pp.pformat(manifest)
 
