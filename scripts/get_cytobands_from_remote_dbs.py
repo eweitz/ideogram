@@ -132,7 +132,7 @@ def query_ucsc_cytobandideo_db(db_tuples_list):
             length = stop - start
             if band_name != '':
                 has_bands = True
-            band = [band_name, str(start), str(length), stain]
+            band = [band_name, str(start), str(stop), str(start), str(stop), stain]
             if chr in bands_by_chr:
                 bands_by_chr[chr].append(band)
             else:
@@ -277,7 +277,7 @@ def query_ensembl_karyotype_db(db_tuples_list):
                 band_name = ''
             if stain is None:
                 stain = ''
-            band = [band_name, str(start), str(length), stain]
+            band = [band_name, str(start), str(stop), str(start), str(stop), stain]
             if chr in bands_by_chr:
                 bands_by_chr[chr].append(band)
             else:
