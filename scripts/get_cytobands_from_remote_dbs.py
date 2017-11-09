@@ -129,7 +129,7 @@ def query_ucsc_cytobandideo_db(db_tuples_list):
         rows3 = cursor.fetchall()
         for row3 in rows3:
             chr, start, stop, band_name, stain = row3
-            length = stop - start
+            chr = chr.replace('chr', '') # e.g. chr1 -> 1
             if band_name != '':
                 has_bands = True
             band = [band_name, str(start), str(stop), str(start), str(stop), stain]
@@ -180,8 +180,6 @@ def fetch_from_ucsc():
         # e.g. Homo sapiens -> homo-sapiens
         name_slug = row[1].lower().replace(' ', '-')
         db_map[db] = name_slug
-
-    chrs_by_organism = {}
 
     db_tuples = [item for item in db_map.items()]
 
@@ -269,8 +267,8 @@ def query_ensembl_karyotype_db(db_tuples_list):
 
         for row in rows:
             pid, seq_region_id, start, stop, band_name, stain = row
-            length = int(stop) - int(start)
             chr = chr_ids[seq_region_id]
+            chr = chr.replace('chr', '') # e.g. chr1 -> 1
             # band_name and stain can be omitted,
             # see e.g. Aspergillus oryzae, Anopheles gambiae
             if band_name is None:
