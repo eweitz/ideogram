@@ -13,6 +13,7 @@ from concurrent.futures import ThreadPoolExecutor
 import logging
 import time
 import pprint
+import re
 
 output_dir = '../data/bands/native/'
 
@@ -41,12 +42,37 @@ time_ucsc = 0
 time_ensembl = 0
 
 
+def natural_sort(l):
+    """From https://stackoverflow.com/a/4836734
+    """
+    convert = lambda text: int(text) if text.isdigit() else text.lower()
+    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
+    return sorted(l, key=alphanum_key)
+
+
 def time_ms():
     return int(round(time.time() * 1000))
 
 
 def chunkify(lst, n):
     return [lst[i::n] for i in range(n)]
+
+
+def update_bands_by_chr(bands_by_chr, chr, band_name, start, stop, stain):
+    chr = chr.replace('chr', '') # e.g. chr1 -> 1
+    # band_name and stain can be omitted,
+    # see e.g. Aspergillus oryzae, Anopheles gambiae
+    if band_name is None:
+        band_name = ''
+    if stain is None:
+        stain = ''
+    stain = stain.lower()
+    band = [band_name, str(start), str(stop), str(start), str(stop), stain]
+    if chr in bands_by_chr:
+        bands_by_chr[chr].append(band)
+    else:
+        bands_by_chr[chr] = [band]
+    return bands_by_chr
 
 
 def get_genbank_accession_from_ucsc_name(db):
@@ -129,14 +155,11 @@ def query_ucsc_cytobandideo_db(db_tuples_list):
         rows3 = cursor.fetchall()
         for row3 in rows3:
             chr, start, stop, band_name, stain = row3
-            chr = chr.replace('chr', '') # e.g. chr1 -> 1
+            bands_by_chr = update_bands_by_chr(
+                bands_by_chr, chr, band_name, start, stop, stain
+            )
             if band_name != '':
                 has_bands = True
-            band = [band_name, str(start), str(stop), str(start), str(stop), stain]
-            if chr in bands_by_chr:
-                bands_by_chr[chr].append(band)
-            else:
-                bands_by_chr[chr] = [band]
         if has_bands == False:
             continue
 
@@ -268,18 +291,9 @@ def query_ensembl_karyotype_db(db_tuples_list):
         for row in rows:
             pid, seq_region_id, start, stop, band_name, stain = row
             chr = chr_ids[seq_region_id]
-            chr = chr.replace('chr', '') # e.g. chr1 -> 1
-            # band_name and stain can be omitted,
-            # see e.g. Aspergillus oryzae, Anopheles gambiae
-            if band_name is None:
-                band_name = ''
-            if stain is None:
-                stain = ''
-            band = [band_name, str(start), str(stop), str(start), str(stop), stain]
-            if chr in bands_by_chr:
-                bands_by_chr[chr].append(band)
-            else:
-                bands_by_chr[chr] = [band]
+            bands_by_chr = update_bands_by_chr(
+                bands_by_chr, chr, band_name, start, stop, stain
+            )
 
         cursor.execute('''
           SELECT meta_value FROM meta
@@ -396,7 +410,8 @@ for org in nr_org_map:
     asm_data = sorted(nr_org_map[org], reverse=True)[0]
     genbank_accession, db, bands_by_chr = asm_data
     band_list = []
-    for chr in bands_by_chr:
+    chrs = natural_sort(list(bands_by_chr.keys()))
+    for chr in chrs:
         bands = bands_by_chr[chr]
         for band in bands:
             band_list.append(chr + ' ' + ' '.join(band))
