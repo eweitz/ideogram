@@ -393,15 +393,35 @@ def fetch_maize_centromeres():
     url = 'http://genomaize.org/cgi-bin/hgTables'
     req = request.Request(url, data=post_body)
     content = request.urlopen(req).read().decode()
-    rows = content.split('\n')[1:]
+    rows = content.split('\n')[1:-1]
     for row in rows:
         # Headers: chrom, chromStart, chromEnd, name, score
         chr, start, stop = row.split('\t')[:3]
-        centromeres_by_chr[chr] = {
-            'start': start,
-            'stop': stop
-        }
-    return {'zea-mays': centromeres_by_chr}
+        chr = chr.replace('chr', '')
+        centromeres_by_chr[chr] = [start, stop]
+    return centromeres_by_chr
+
+
+def merge_centromeres(bands_by_chr, centromeres):
+    """Adds p and q arms to cytobands; thus adds centromere to each chromosome.
+    """
+    logger.info('Entering merge_centromeres')
+    new_bands = {}
+    for chr in bands_by_chr:
+        bands = bands_by_chr[chr]
+        new_bands[chr] = []
+        centromere = centromeres[chr]
+        cen_start, cen_stop = centromere
+        for band in bands:
+            new_band = band
+            band_start, band_stop = band[1:3]
+            if int(band_stop) < int(cen_start):
+                arm = 'p'
+            else:
+                arm = 'q'
+            new_band.insert(0, arm)
+            new_bands[chr].append(new_band)
+    return new_bands
 
 
 def pool_processing(party):
@@ -422,13 +442,17 @@ def pool_processing(party):
 
 party_list = []
 unfound_dbs = []
-
+zea_mays_centromeres = {}
 num_threads = 3
 
 with ThreadPoolExecutor(max_workers=num_threads) as pool:
     parties = ['ensembl', 'ucsc', 'genomaize']
     for result in pool.map(pool_processing, parties):
-        party_list.append(result)
+        party = result[0]
+        if party == 'genomaize':
+            zea_mays_centromeres = result[1]
+        else:
+            party_list.append(result)
 
 logger.info('')
 logger.info('UCSC databases not mapped to GenBank assembly IDs:')
@@ -448,9 +472,6 @@ for party, org_map in party_list:
             continue
         nr_org_map[org] = org_map[org]
 
-logger.info('')
-logger.info('organisms in nr_org_map')
-
 manifest= {}
 
 pp = pprint.PrettyPrinter(indent=4)
@@ -458,6 +479,8 @@ pp = pprint.PrettyPrinter(indent=4)
 for org in nr_org_map:
     asm_data = sorted(nr_org_map[org], reverse=True)[0]
     genbank_accession, db, bands_by_chr = asm_data
+    if org == 'zea-mays':
+        bands_by_chr = merge_centromeres(bands_by_chr, zea_mays_centromeres)
     band_list = []
     chrs = natural_sort(list(bands_by_chr.keys()))
     for chr in chrs:
