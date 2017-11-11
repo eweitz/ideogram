@@ -362,12 +362,60 @@ def fetch_from_ensembl_genomes():
     return org_map
 
 
+def fetch_maize_centromeres():
+    """Requests maize centromere data from Genomaize
+    This is a special case for maize, a request for which began this module.
+
+    To debug:
+    curl 'http://genomaize.org/cgi-bin/hgTables' --data 'hgsid=10695_on1bE0YyWYp9CannFyHJO5ONYzO1&jsh_pageVertPos=0&clade=monocots&org=Zea+mays&db=zeaMay_b73_v2&hgta_group=map&hgta_track=centromere&hgta_table=centromere&hgta_regionType=genome&position=chr1%3A1-301354135&hgta_outputType=primaryTable&boolshad.sendToGalaxy=0&boolshad.sendToGreat=0&hgta_outFileName=&hgta_compressType=none&hgta_doTopSubmit=get+output'
+    """
+    centromeres_by_chr = {}
+
+    post_body = (
+        'hgsid=10695_on1bE0YyWYp9CannFyHJO5ONYzO1' +
+        '&jsh_pageVertPos=0' +
+        '&clade=monocots' +
+        '&org=Zea+mays' +
+        '&db=zeaMay_b73_v2' +
+        '&hgta_group=map' +
+        '&hgta_track=centromere' +
+        '&hgta_table=centromere' +
+        '&hgta_regionType=genome' +
+        '&position=chr1%3A1-301354135' +
+        '&hgta_outputType=primaryTable' +
+        '&boolshad.sendToGalaxy=0' +
+        '&boolshad.sendToGreat=0' +
+        '&hgta_outFileName=' +
+        '&hgta_compressType=none' +
+        '&hgta_doTopSubmit=get+output'
+    )
+    post_body = post_body.encode()
+    url = 'http://genomaize.org/cgi-bin/hgTables'
+    req = request.Request(url, data=post_body)
+    content = request.urlopen(req).read().decode()
+    rows = content.split('\n')[1:]
+    for row in rows:
+        # Headers: chrom, chromStart, chromEnd, name, score
+        chr, start, stop = row.split('\t')[:3]
+        centromeres_by_chr[chr] = {
+            'start': start,
+            'stop': stop
+        }
+    return {'zea-mays': centromeres_by_chr}
+
+
 def pool_processing(party):
+    """Called once per "party" (i.e. UCSC, Ensembl, or GenoMaize)
+    to fetch cytobands from them.
+    """
     logger.info('Entering pool processing, party: ' + party)
     if party == 'ensembl':
         org_map = fetch_from_ensembl_genomes()
-    else:
+    elif party == 'ucsc':
         org_map = fetch_from_ucsc()
+    elif party == 'genomaize':
+        org_map = fetch_maize_centromeres()
+
     logger.info('exiting pool processing')
     return [party, org_map]
 
@@ -375,10 +423,11 @@ def pool_processing(party):
 party_list = []
 unfound_dbs = []
 
-num_threads = 2
+num_threads = 3
 
 with ThreadPoolExecutor(max_workers=num_threads) as pool:
-    for result in pool.map(pool_processing, ['ensembl', 'ucsc']):
+    parties = ['ensembl', 'ucsc', 'genomaize']
+    for result in pool.map(pool_processing, parties):
         party_list.append(result)
 
 logger.info('')
