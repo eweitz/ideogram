@@ -277,7 +277,6 @@ def query_ensembl_karyotype_db(db_tuples_list):
 
         # Schema: https://www.ensembl.org/info/docs/api/core/core_schema.html#karyotype
         # | karyotype_id | seq_region_id | seq_region_start | seq_region_end | band | stain |
-        # TODO: Learn what is available via seq_region_id, in seq_region table
         cursor.execute('SELECT * FROM karyotype')
         rows = cursor.fetchall()
         # Omit assmblies that don't have cytoband data
@@ -404,6 +403,12 @@ def fetch_maize_centromeres():
 
 def merge_centromeres(bands_by_chr, centromeres):
     """Adds p and q arms to cytobands; thus adds centromere to each chromosome.
+
+    This is a special case for Zea mays (maize, i.e. corn).
+    Ensembl Genomes provides band data with no cytogenetic arm assignment.
+    Genomaize provides centromere positions for each chromosome.
+    This function merges those two datasets to provide input directly
+    useable to Ideogram.js.
     """
     logger.info('Entering merge_centromeres')
     new_bands = {}
@@ -443,8 +448,9 @@ def pool_processing(party):
 party_list = []
 unfound_dbs = []
 zea_mays_centromeres = {}
-num_threads = 3
 
+# Request data from all parties simultaneously
+num_threads = 3
 with ThreadPoolExecutor(max_workers=num_threads) as pool:
     parties = ['ensembl', 'ucsc', 'genomaize']
     for result in pool.map(pool_processing, parties):
@@ -459,9 +465,9 @@ logger.info('UCSC databases not mapped to GenBank assembly IDs:')
 logger.info(', '.join(unfound_dbs))
 logger.info('')
 
-# Non-redundant (NR) organism map
+# Third parties (e.g. UCSC, Ensembl) can have data for the same organism.
+# Convert any such duplicate data into a non-redundant (NR) organism map.
 nr_org_map = {}
-
 seen_orgs = {}
 for party, org_map in party_list:
     logger.info('Iterating organisms from ' + party)
@@ -474,30 +480,38 @@ for party, org_map in party_list:
 
 manifest= {}
 
-pp = pprint.PrettyPrinter(indent=4)
-
 for org in nr_org_map:
+
+    manifest[org] = [genbank_accession, db]
+
     asm_data = sorted(nr_org_map[org], reverse=True)[0]
     genbank_accession, db, bands_by_chr = asm_data
     if org == 'zea-mays':
         bands_by_chr = merge_centromeres(bands_by_chr, zea_mays_centromeres)
+
+    # Collapse chromosome-to-band dict, making it a list of strings
     band_list = []
     chrs = natural_sort(list(bands_by_chr.keys()))
     for chr in chrs:
         bands = bands_by_chr[chr]
         for band in bands:
             band_list.append(chr + ' ' + ' '.join(band))
-    manifest[org] = [genbank_accession, db]
+
+    # Write actual cytoband data to file,
+    # e.g. ../data/bands/native/anopheles-gambiae.js
     with open(output_dir + org + '.js', 'w') as f:
         f.write('window.chrBands = ' + str(band_list))
 
+# Write a manifest of organisms for which we have cytobands.
+# This enables Ideogram.js to more quickly load those organisms.
+pp = pprint.PrettyPrinter(indent=4)
 manifest = pp.pformat(manifest)
-
 with open(output_dir + 'manifest.tsv', 'w') as f:
     f.write(manifest)
 
 logger.info('')
 
+# How long did each part take?
 logger.info('time_ucsc:')
 logger.info(time_ucsc)
 logger.info('time_ncbi:')
