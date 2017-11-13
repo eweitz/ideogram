@@ -71,7 +71,6 @@ def get_chromosome_object(agp):
     return chr
 
 
-
 def fetch_ftp(ftp, file_name):
 
     bytesio_object = io.BytesIO()
@@ -109,6 +108,7 @@ def change_ftp_dir(ftp, wd):
         logger.warning(e)
         return 1
 
+
 # GRCh38 defines centromeres and heterochromatin in regions files, not AGP gaps
 def download_genome_regions(ftp, regions_ftp):
 
@@ -129,7 +129,7 @@ def download_genome_regions(ftp, regions_ftp):
             continue
         columns = line.split('\t')
         role = columns[4]
-        if role in ('CEN'):
+        if role == 'CEN':
             chr = columns[1]
             start = columns[2]
             stop = columns[3]
@@ -344,11 +344,7 @@ def chunkify(lst, n):
     return [lst[i::n] for i in range(n)]
 
 
-
-thread_counter = 0
 def pool_processing(uid_list):
-    global thread_counter
-
     uid_list = ','.join(uid_list)
 
     asm_summary = esummary + '&db=assembly&id=' + uid_list
@@ -364,9 +360,7 @@ def pool_processing(uid_list):
     find_genomes_with_centromeres(ftp, data)
 
     ftp.quit()
-    thread_counter += 1
-    # print('done with pool_processing call ' + str(thread_counter))
-    return thread_counter
+
 
 eutils = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
 esearch = eutils + 'esearch.fcgi?retmode=json'
@@ -399,12 +393,7 @@ uid_lists = chunkify(top_uid_list, num_threads)
 
 # TODO: Improve error handling.  This sometimes freezes, with no error message.
 with ThreadPoolExecutor(max_workers=num_threads) as pool:
-
-    # for result in pool.map(pool_processing, uid_lists):
-    #     print('result (thread_counter):')
-    #     print(result)
     pool.map(pool_processing, uid_lists)
-    # print('before exiting with clause')
 
 logger.info('Calling convert_band_data.py')
 convert_band_data.main()
