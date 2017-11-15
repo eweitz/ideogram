@@ -429,9 +429,63 @@ def merge_centromeres(bands_by_chr, centromeres):
     return new_bands
 
 
+def parse_centromeres(bands_by_chr):
+    """Adds p and q arms to cytobands, by parsing embedded centromere bands.
+
+    This is a special case for assigning cytogenetic arms to certain organisms
+    from Ensembl Genomes, including: Aspergillus fumigatus, Aspergillus
+    nidulans, Aspergillus niger, Aspergillus oryzae (various fungi);
+    Oryza sativa (rice); and Hordeum vulgare (barley).
+
+    Bands are assigned an arm based on their position relative to the embedded
+    centromere.
+    """
+    logger.info('Entering parse_centromeres')
+
+    # If centromeres aren't embedded in the input banding data,
+    # then simply return the input without modification.
+    has_centromere = False
+    for chr in bands_by_chr:
+        bands = bands_by_chr[chr]
+        for band in bands:
+            stain = band[-1]
+            if stain == 'acen':
+                has_centromere = True
+    if has_centromere is False:
+        return bands_by_chr
+
+    new_bands = {}
+
+    for chr in bands_by_chr:
+        bands = bands_by_chr[chr]
+        new_bands[chr] = []
+
+        # On each side of the centromere -- the p-arm side and the q-arm
+        # side -- there is a band with a "stain" value of "acen".  Here,
+        # we find the index of the acen band on the p-arm side.  That
+        # band and all bands to the left of it are on the p arm.  All
+        # bands to the right of it are on the q arm.
+        pcen_index = None
+        for i, band in enumerate(bands):
+            stain = band[-1]
+            if stain == 'acen':
+                pcen_index = i
+        for i, band in enumerate(bands):
+            arm = ''
+            if pcen_index is not None:
+                if i < pcen_index:
+                    arm = 'p'
+                else:
+                    arm = 'q'
+            band.insert(0, arm)
+            new_bands[chr].append(band)
+
+    return new_bands
+
+
 def pool_processing(party):
     """Called once per "party" (i.e. UCSC, Ensembl, or GenoMaize)
-    to fetch cytobands from them.
+    to fetch cytoband data from each.
     """
     logger.info('Entering pool processing, party: ' + party)
     if party == 'ensembl':
@@ -478,16 +532,20 @@ for party, org_map in party_list:
             continue
         nr_org_map[org] = org_map[org]
 
-manifest= {}
+manifest = {}
 
 for org in nr_org_map:
 
-    manifest[org] = [genbank_accession, db]
-
     asm_data = sorted(nr_org_map[org], reverse=True)[0]
     genbank_accession, db, bands_by_chr = asm_data
+
+    manifest[org] = [genbank_accession, db]
+
+    # Assign cytogenetic arms for each band
     if org == 'zea-mays':
         bands_by_chr = merge_centromeres(bands_by_chr, zea_mays_centromeres)
+    else:
+        bands_by_chr = parse_centromeres(bands_by_chr)
 
     # Collapse chromosome-to-band dict, making it a list of strings
     band_list = []
