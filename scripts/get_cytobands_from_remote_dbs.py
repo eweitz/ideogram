@@ -1,8 +1,11 @@
-"""Fetch cytogenetic band data from third-party MySQL databases"""
+"""Fetch cytogenetic band data from third-party MySQL databases
+
+Examples:
+
+
+"""
 
 # TODO:
-# - Write data for first-class organisms to JavaScript file in ../src/js/
-# - Incorporate Ensembl proper, GenoMaize
 # - Bonus: Convert this data into AGP 2.0, send data missing from NCBI to them
 
 import pymysql
@@ -14,11 +17,36 @@ import logging
 import time
 import pprint
 import re
+import argparse
 
-output_dir = '../data/bands/native/'
+parser = argparse.ArgumentParser(
+    description=__doc__,
+    formatter_class=argparse.RawDescriptionHelpFormatter)
+parser.add_argument('--output_dir',
+    help='Diretory to sent output data to',
+    default='../data/bands/native/')
+parser.add_argument('--fresh_run',
+    help='Do you want to use cached data, or fresh data fetched over ' +
+         'the Internet?',
+    type=bool,
+    default=True)
+parser.add_argument('--fill_cache',
+    help='Do you want to populate the cache?  Only relevant for fresh runs.',
+    type=bool,
+    default=False)
+args = parser.parse_args()
+
+output_dir = args.output_dir
+fresh_run = args.fresh_run
+fill_cache = args.fill_cache
+
+cache_dir = output_dir + 'cache/'
 
 if os.path.exists(output_dir) == False:
     os.mkdir(output_dir)
+
+# if fill_cache and os.path.exists(output_dir) == False:
+
 
 # create logger with 'get_cytobands_from_remote_dbs'
 logger = logging.getLogger('get_cytobands_from_remote_dbs')
