@@ -31,7 +31,7 @@ parser.add_argument('--fresh_run',
     type=bool,
     default=True)
 parser.add_argument('--fill_cache',
-    help='Do you want to populate the cache?  Only relevant for fresh runs.',
+    help='Do you want to populate the cache?  Only applicable for fresh runs.',
     type=bool,
     default=False)
 args = parser.parse_args()
@@ -42,11 +42,30 @@ fill_cache = args.fill_cache
 
 cache_dir = output_dir + 'cache/'
 
-if os.path.exists(output_dir) == False:
-    os.mkdir(output_dir)
+# | fresh_run  | True | True  | False | False |
+# | fill_cache | True | False | True  | False |
+# | Scenario   | A    | B     | C     | D     |
+#
+# Scenario A: Repopulate cache.  Slow run, prepare later cache.
+# Scenario B: For production.  Slow run, don't write to cache.
+# Scenario C: No-op.  Illogical state, throw error.
+# Scenario D: For development, or debugging.  Fast run, usable offline.
+#
+# Scenario D can be useful when working without Internet access, e.g. on a
+# train or in rural areas.  It also enables much faster iteration even when
+# connectivity is good.  Be sure to run Scenario A first, though!
+if os.path.exists(output_dir) is False:
+    if fill_cache:
+        os.mkdir(output_dir)
 
-# if fill_cache and os.path.exists(output_dir) == False:
+if fresh_run is False and fill_cache:
+    raise ValueError(
+        'Error: attempting to use cache, but no cache exists.  ' +
+        'Either A) do not set fresh_run to true, or B) '
+    )
 
+if fill_cache and os.path.exists(output_dir) is False:
+    os.mkdir(cache_dir)
 
 # create logger with 'get_cytobands_from_remote_dbs'
 logger = logging.getLogger('get_cytobands_from_remote_dbs')
