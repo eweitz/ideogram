@@ -9,7 +9,7 @@ Examples:
 # - Bonus: Convert this data into AGP 2.0, send data missing from NCBI to them
 
 import pymysql
-import urllib.request as request
+import urllib.request
 import os
 import json
 from concurrent.futures import ThreadPoolExecutor
@@ -40,6 +40,9 @@ output_dir = args.output_dir
 fresh_run = args.fresh_run
 fill_cache = args.fill_cache
 
+if os.path.exists(output_dir) is False:
+    os.mkdir(output_dir)
+
 cache_dir = output_dir + 'cache/'
 
 # | fresh_run  | True | True  | False | False |
@@ -54,18 +57,20 @@ cache_dir = output_dir + 'cache/'
 # Scenario D can be useful when working without Internet access, e.g. on a
 # train or in rural areas.  It also enables much faster iteration even when
 # connectivity is good.  Be sure to run Scenario A first, though!
-if os.path.exists(output_dir) is False:
-    if fill_cache:
-        os.mkdir(output_dir)
-
 if fresh_run is False and fill_cache:
     raise ValueError(
         'Error: attempting to use cache, but no cache exists.  ' +
         'Either A) do not set fresh_run to true, or B) '
     )
 
-if fill_cache and os.path.exists(output_dir) is False:
-    os.mkdir(cache_dir)
+if os.path.exists(cache_dir) is False:
+    if fill_cache:
+        os.mkdir(cache_dir)
+    if fresh_run is False:
+        raise ValueError(
+            'No cache available.  ' +
+            'Run with "--fresh_run=True --fill_cache=True" then try again.'
+        )
 
 # create logger with 'get_cytobands_from_remote_dbs'
 logger = logging.getLogger('get_cytobands_from_remote_dbs')
@@ -89,11 +94,35 @@ time_ucsc = 0
 time_ensembl = 0
 
 
+def request(url, request_body=None):
+    """Wrapper for urllib.request; includes caching
+    """
+    file_name = \
+        url.replace('.', '_').replace('/', '_').replace(':', '_')\
+        .replace('?', '_').replace('=', '_').replace('&', '_')
+
+    if fresh_run:
+        if request_body is not None:
+            req = urllib.request.Request(url, data=request_body)
+            data = urllib.request.urlopen(req).read().decode()
+        else:
+            with urllib.request.urlopen(url) as response:
+                data = response.read().decode('utf-8')
+        if fill_cache:
+            with open(cache_dir + file_name, 'w') as file:
+                file.write(data)
+    else:
+        with open(cache_dir + file_name) as file:
+            data = file.read().decode('utf-8')
+
+    return data
+
+
 def natural_sort(l):
     """From https://stackoverflow.com/a/4836734
     """
     convert = lambda text: int(text) if text.isdigit() else text.lower()
-    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
+    alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
     return sorted(l, key=alphanum_key)
 
 
@@ -136,8 +165,7 @@ def get_genbank_accession_from_ucsc_name(db):
     asm_search = esearch + '&db=assembly&term=' + db
 
     # Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=assembly&retmode=json&term=panTro4
-    with request.urlopen(asm_search) as response:
-        data = json.loads(response.read().decode('utf-8'))
+    data = json.loads(request(asm_search))
     id_list = data['esearchresult']['idlist']
     if len(id_list) > 0:
         assembly_uid = id_list[0]
@@ -147,9 +175,7 @@ def get_genbank_accession_from_ucsc_name(db):
     asm_summary = esummary + '&db=assembly&id=' + assembly_uid
 
     # Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?retmode=json&db=assembly&id=255628
-    with request.urlopen(asm_summary) as response:
-        data = json.loads(response.read().decode('utf-8'))
-
+    data = json.loads(request(asm_summary))
     result = data['result'][assembly_uid]
     acc = result['assemblyaccession'] # Accession.version
 
@@ -437,9 +463,8 @@ def fetch_maize_centromeres():
     )
     post_body = post_body.encode()
     url = 'http://genomaize.org/cgi-bin/hgTables'
-    req = request.Request(url, data=post_body)
-    content = request.urlopen(req).read().decode()
-    rows = content.split('\n')[1:-1]
+    data = request(url, request_body=post_body)
+    rows = data.split('\n')[1:-1]
     for row in rows:
         # Headers: chrom, chromStart, chromEnd, name, score
         chr, start, stop = row.split('\t')[:3]
