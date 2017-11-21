@@ -13,7 +13,7 @@ import time
 
 import convert_band_data
 
-output_dir = '../data/bands/native/'
+output_dir = '../../data/bands/native/'
 
 if os.path.exists(output_dir) == False:
     os.mkdir(output_dir)

@@ -14,17 +14,14 @@ import json
 from concurrent.futures import ThreadPoolExecutor
 import logging
 import pprint
-import re
 import argparse
-
-from utils import request, connect, time_ms, natural_sort, chunkify
 
 parser = argparse.ArgumentParser(
     description=__doc__,
     formatter_class=argparse.RawDescriptionHelpFormatter)
 parser.add_argument('--output_dir',
     help='Diretory to sent output data to',
-    default='../data/bands/native/')
+    default='../../data/bands/native/')
 parser.add_argument('--fresh_run',
     help='Do you want to use cached data, or fresh data fetched over ' +
          'the Internet?',
@@ -36,14 +33,18 @@ parser.add_argument('--fill_cache',
     default=False)
 args = parser.parse_args()
 
-output_dir = args.output_dir
 fresh_run = args.fresh_run
 fill_cache = args.fill_cache
+output_dir = args.output_dir
+cache_dir = output_dir + 'cache/'
+
+import settings
+settings.init(fresh_run, fill_cache, output_dir, cache_dir)
+
+from utils import request, connect, time_ms, natural_sort, chunkify
 
 if os.path.exists(output_dir) is False:
     os.mkdir(output_dir)
-
-cache_dir = output_dir + 'cache/'
 
 # | fresh_run  | True | True  | False | False |
 # | fill_cache | True | False | True  | False |

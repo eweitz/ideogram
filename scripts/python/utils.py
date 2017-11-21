@@ -1,9 +1,19 @@
+import settings
+
+import pymysql
 import urllib.request
 import time
+import re
+
+fresh_run = settings.fresh_run
+fill_cache = settings.fill_cache
+output_dir = settings.output_dir
+cache_dir = settings.cache_dir
 
 def connect(host, user):
     """Wrapper for pymmsql.connect; enables caching
     """
+
     if fresh_run:
         connection = pymysql.connect(host=host, user=user)
     else:
@@ -19,6 +29,7 @@ def connect(host, user):
 def request(url, request_body=None):
     """Wrapper for urllib.request; includes caching
     """
+
     file_name = \
         url.replace('.', '_').replace('/', '_').replace(':', '_') \
             .replace('?', '_').replace('=', '_').replace('&', '_')
