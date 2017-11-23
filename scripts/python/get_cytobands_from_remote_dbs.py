@@ -41,7 +41,7 @@ cache_dir = output_dir + 'cache/'
 import settings
 settings.init(fresh_run, fill_cache, output_dir, cache_dir)
 
-from utils import request, connect, time_ms, natural_sort, chunkify
+from utils import request, time_ms, natural_sort, chunkify
 
 if os.path.exists(output_dir) is False:
     os.mkdir(output_dir)
