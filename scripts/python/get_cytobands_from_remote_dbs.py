@@ -29,8 +29,6 @@ parser.add_argument('--fresh_run',
 parser.add_argument('--fill_cache',
     help='Do you want to populate the cache?  Only applicable for fresh runs.',
     default='False')
-parser.add_argument('--bloop',
-                    help='bleep')
 args = parser.parse_args()
 
 def t_or_f(arg):
@@ -55,6 +53,8 @@ from utils import request, db_connect, time_ms, natural_sort, chunkify
 if os.path.exists(output_dir) is False:
     os.mkdir(output_dir)
 
+# Caching scenarios
+#
 # | fresh_run  | True | True  | False | False |
 # | fill_cache | True | False | True  | False |
 # | Scenario   | A    | B     | C     | D     |
@@ -69,8 +69,8 @@ if os.path.exists(output_dir) is False:
 # connectivity is good.  Be sure to run Scenario A first, though!
 if fresh_run is False and fill_cache:
     raise ValueError(
-        'Error: attempting to use cache, but no cache exists.  ' +
-        'Either A) do not set fresh_run to true, or B) '
+        'Error: Attempting to use cache, but no cache exists.  ' +
+        'Use other arguments, e.g. "--fill_cache=True --fill_cache=True".'
     )
 
 if os.path.exists(cache_dir) is False:
