@@ -11,27 +11,60 @@ output_dir = settings.output_dir
 cache_dir = settings.cache_dir
 
 
-def monkeypatched_execute(self, query, args=None):
-    file_name = \
-        query.strip().replace('.', '_').replace('/', '_').replace(':', '_') \
-            .replace('?', '_').replace('=', '_').replace('&', '_') \
-            .replace(',', '').replace(' ', '_').replace('\n', '')
+class Cursor:
 
-    cache_path = cache_dir + 'sql__' + file_name
+    def __init__(self):
+        self.query = ''
+        self._result = ''
+        self._original_execute = pymysql.cursors.Cursor.execute
+        self._original_fetchall = pymysql.cursors.Cursor.fetchall
 
-    cursor = self._original_execute(query, args=args)
+    def execute(self, query, args=None):
+        file_name = \
+            query.strip().replace('.', '_').replace('/', '_')\
+                .replace(':', '_').replace('?', '_').replace('=', '_')\
+                .replace('&', '_').replace(',', '').replace(' ', '_')\
+                .replace('\n', '')
+
+        cache_path = cache_dir + 'sql__' + file_name
+
+        if fresh_run:
+            cursor = self._original_execute(self, query, args=args)
+            if fill_cache:
+                result = str(self.fetchall())
+                open(cache_path, 'w').write(result)
+            return cursor
+        else:
+            result = open(cache_path, 'r').read()
+            self._result = result
+            return self
+
+    def fetchall(self):
+        if fresh_run:
+            return self._original_fetchall
+        else:
+            return self._result
+
+
+class Connection:
+    def __init__(self, host=None, user=None, port=None):
+        self.host = host
+        self.user = user
+        self.port = port
+        self.cursorclass = pymysql.cursors.Cursor
+
+    def cursor(self):
+        return Cursor()
+
+
+def db_connect(host, user=None, port=None):
+    """Wrapper for pymmsql.connect; enables caching
+    """
+
     if fresh_run:
-        if fill_cache:
-            result = str(self.fetchall())
-            open(cache_path, 'w').write(result)
+        return pymysql.connect(host, user=user, port=port)
     else:
-        result = open(cache_path, 'r').read()
-        self._result = result
-    return cursor
-
-
-pymysql.cursors.Cursor._original_execute = pymysql.cursors.Cursor.execute
-pymysql.cursors.Cursor.execute = monkeypatched_execute
+        return Connection(host=host, user=user, port=port)
 
 
 def request(url, request_body=None):

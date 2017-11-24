@@ -25,23 +25,32 @@ parser.add_argument('--output_dir',
 parser.add_argument('--fresh_run',
     help='Do you want to use cached data, or fresh data fetched over ' +
          'the Internet?',
-    type=bool,
-    default=True)
+    default='True')
 parser.add_argument('--fill_cache',
     help='Do you want to populate the cache?  Only applicable for fresh runs.',
-    type=bool,
-    default=False)
+    default='False')
+parser.add_argument('--bloop',
+                    help='bleep')
 args = parser.parse_args()
 
-fresh_run = args.fresh_run
-fill_cache = args.fill_cache
+def t_or_f(arg):
+    ua = str(arg).upper()
+    if 'TRUE'.startswith(ua):
+        return True
+    elif 'FALSE'.startswith(ua):
+        return False
+    else:
+        pass  #error condition maybe?
+
+fresh_run = t_or_f(args.fresh_run)
+fill_cache = t_or_f(args.fill_cache)
 output_dir = args.output_dir
 cache_dir = output_dir + 'cache/'
 
 import settings
 settings.init(fresh_run, fill_cache, output_dir, cache_dir)
 
-from utils import request, time_ms, natural_sort, chunkify
+from utils import request, db_connect, time_ms, natural_sort, chunkify
 
 if os.path.exists(output_dir) is False:
     os.mkdir(output_dir)
@@ -152,7 +161,7 @@ def query_ucsc_cytobandideo_db(db_tuples_list):
     """Queries UCSC DBs, called via a thread pool in fetch_ucsc_data
     """
 
-    connection = pymysql.connect(
+    connection = db_connect(
         host='genome-mysql.soe.ucsc.edu',
         user='genome'
     )
@@ -217,7 +226,7 @@ def fetch_from_ucsc():
     global time_ucsc
     t0 = time_ms()
     logger.info('Entering fetch_from_ucsc')
-    connection = pymysql.connect(
+    connection = db_connect(
         host='genome-mysql.soe.ucsc.edu',
         user='genome'
     )
@@ -293,7 +302,7 @@ def query_ensembl_karyotype_db(db_tuples_list):
     :return: List of [name_slug, asm_data] lists
     """
 
-    connection = pymysql.connect(
+    connection = db_connect(
         host='mysql-eg-publicsql.ebi.ac.uk',
         user='anonymous',
         port=4157
@@ -350,7 +359,7 @@ def fetch_from_ensembl_genomes():
     global time_ensembl
     t0 = time_ms()
     logger.info('Entering fetch_from_ensembl_genomes')
-    connection = pymysql.connect(
+    connection = db_connect(
         host='mysql-eg-publicsql.ebi.ac.uk',
         user='anonymous',
         port=4157
