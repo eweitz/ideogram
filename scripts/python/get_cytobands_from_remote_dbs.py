@@ -372,7 +372,7 @@ def fetch_from_ensembl_genomes():
     org_map = {}
 
     # Get a list of databases we want to query for karyotype data
-    cursor.execute('show databases like "%core_%"');
+    cursor.execute('show databases like "%core_%"')
     for row in cursor.fetchall():
         db = row[0]
         if 'collection' in db:

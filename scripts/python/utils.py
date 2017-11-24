@@ -4,6 +4,7 @@ import pymysql
 import urllib.request
 import time
 import re
+import ast
 
 fresh_run = settings.fresh_run
 fill_cache = settings.fill_cache
@@ -18,6 +19,7 @@ class Cursor:
         self._result = ''
         self._original_execute = pymysql.cursors.Cursor.execute
         self._original_fetchall = pymysql.cursors.Cursor.fetchall
+        self._original_close = pymysql.cursors.Cursor.close
 
     def execute(self, query, args=None):
         file_name = \
@@ -36,7 +38,7 @@ class Cursor:
             return cursor
         else:
             result = open(cache_path, 'r').read()
-            self._result = result
+            self._result = ast.literal_eval(result)
             return self
 
     def fetchall(self):
@@ -44,6 +46,12 @@ class Cursor:
             return self._original_fetchall
         else:
             return self._result
+
+    def close(self):
+        if fresh_run:
+            return self._original_close
+        else:
+            return
 
 
 class Connection:
