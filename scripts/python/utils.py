@@ -11,14 +11,14 @@ fill_cache = settings.fill_cache
 output_dir = settings.output_dir
 cache_dir = settings.cache_dir
 
+_original_execute = pymysql.cursors.Cursor.execute
+_original_fetchall = pymysql.cursors.Cursor.fetchall
 
 class Cursor:
 
     def __init__(self):
         self.query = ''
         self._result = ''
-        self._original_execute = pymysql.cursors.Cursor.execute
-        self._original_fetchall = pymysql.cursors.Cursor.fetchall
         self._original_close = pymysql.cursors.Cursor.close
 
     def execute(self, query, args=None):
@@ -31,8 +31,9 @@ class Cursor:
         cache_path = cache_dir + 'sql__' + file_name
 
         if fresh_run:
-            cursor = self._original_execute(self, query, args=args)
+            cursor = _original_execute(self, query, args=args)
             if fill_cache:
+
                 result = str(self.fetchall())
                 open(cache_path, 'w').write(result)
             return cursor
@@ -43,7 +44,7 @@ class Cursor:
 
     def fetchall(self):
         if fresh_run:
-            return self._original_fetchall
+            return self._rows
         else:
             return self._result
 
@@ -69,9 +70,19 @@ def db_connect(host, user=None, port=None):
     """Wrapper for pymmsql.connect; enables caching
     """
 
-    if fresh_run:
+    if fresh_run and fill_cache is False:
+        # Production run, fast; needs Internet
         return pymysql.connect(host, user=user, port=port)
-    else:
+
+    elif fresh_run and fill_cache:
+        # Production run, slower; needs Internet
+        connection = pymysql.connect(host, user=user, port=port)
+        connection.cursorclass.execute = Cursor.execute
+        connection.cursorclass.fetchall = Cursor.fetchall
+        return connection
+
+    elif fresh_run is False and fill_cache is False:
+        # Development run, fastest; does not need Internet
         return Connection(host=host, user=user, port=port)
 
 
