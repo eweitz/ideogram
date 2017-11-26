@@ -12,7 +12,6 @@ import pymysql
 import os
 import json
 from concurrent.futures import ThreadPoolExecutor
-import logging
 import pprint
 import argparse
 
@@ -44,9 +43,10 @@ fresh_run = t_or_f(args.fresh_run)
 fill_cache = t_or_f(args.fill_cache)
 output_dir = args.output_dir
 cache_dir = output_dir + 'cache/'
+log_name = 'get_cytobands_from_remote_dbs'
 
 import settings
-settings.init(fresh_run, fill_cache, output_dir, cache_dir)
+logger = settings.init(fresh_run, fill_cache, output_dir, cache_dir, log_name)
 
 from utils import request, db_connect, time_ms, natural_sort, chunkify
 
@@ -81,23 +81,6 @@ if os.path.exists(cache_dir) is False:
             'No cache available.  ' +
             'Run with "--fresh_run=True --fill_cache=True" then try again.'
         )
-
-# create logger with 'get_cytobands_from_remote_dbs'
-logger = logging.getLogger('get_cytobands_from_remote_dbs')
-logger.setLevel(logging.DEBUG)
-# create file handler which logs even debug messages
-fh = logging.FileHandler(output_dir + 'get_cytobands_from_remote_dbs.log')
-fh.setLevel(logging.DEBUG)
-# create console handler with a higher log level
-ch = logging.StreamHandler()
-ch.setLevel(logging.ERROR)
-# create formatter and add it to the handlers
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-fh.setFormatter(formatter)
-ch.setFormatter(formatter)
-# add the handlers to the logger
-logger.addHandler(fh)
-logger.addHandler(ch)
 
 time_ncbi = 0
 time_ucsc = 0
@@ -178,7 +161,7 @@ def query_ucsc_cytobandideo_db(db_tuples_list):
             if row2[0] == 'cytoBandIdeo':
                 found_needed_table = True
                 break
-        if found_needed_table == False:
+        if found_needed_table is False:
             continue
 
         # Excludes unplaced and unlocalized chromosomes
@@ -203,7 +186,7 @@ def query_ucsc_cytobandideo_db(db_tuples_list):
             )
             if band_name != '':
                 has_bands = True
-        if has_bands == False:
+        if has_bands is False:
             continue
 
         genbank_accession = get_genbank_accession_from_ucsc_name(db)
@@ -241,7 +224,9 @@ def fetch_from_ucsc():
       SELECT name, scientificName FROM dbDb
         WHERE active = 1
     ''')
-    for row in cursor.fetchall():
+    rows = cursor.fetchall()
+
+    for row in rows:
         db = row[0]
         # e.g. Homo sapiens -> homo-sapiens
         name_slug = row[1].lower().replace(' ', '-')
@@ -280,7 +265,7 @@ def get_ensembl_chr_ids(cursor):
       SELECT coord_system_id FROM coord_system
       WHERE name="chromosome" AND attrib="default_version"
     ''')
-    coord_system_id = str(cursor.fetchone()[0])
+    coord_system_id = str(cursor.fetchall()[0][0])
     chr_ids = {}
     cursor.execute(
         'SELECT name, seq_region_id FROM seq_region ' +

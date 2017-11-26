@@ -6,36 +6,19 @@ import ftplib
 import os
 import json
 import gzip
-import logging
 import io
 from concurrent.futures import ThreadPoolExecutor
 import time
+import settings
 
 import convert_band_data
 
 output_dir = '../../data/bands/native/'
 
+logger = settings.get_logger(output_dir, 'get_chromosomes')
+
 if os.path.exists(output_dir) == False:
     os.mkdir(output_dir)
-
-# create logger with 'get_chromosomes'
-logger = logging.getLogger('get_chromosomes')
-logger.setLevel(logging.DEBUG)
-# create file handler which logs even debug messages
-fh = logging.FileHandler(output_dir + 'get_chromosomes.log')
-fh.setLevel(logging.DEBUG)
-# create console handler with a higher log level
-ch = logging.StreamHandler()
-ch.setLevel(logging.ERROR)
-# create formatter and add it to the handlers
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-fh.setFormatter(formatter)
-ch.setFormatter(formatter)
-# add the handlers to the logger
-logger.addHandler(fh)
-logger.addHandler(ch)
-
-logger.info('Starting get_chromosomes.py')
 
 orgs_with_centromere_data = {}
 
