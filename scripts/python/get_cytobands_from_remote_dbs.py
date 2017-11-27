@@ -154,7 +154,7 @@ def query_ucsc_cytobandideo_db(db_tuples_list):
     for db_tuple in db_tuples_list:
         db, name_slug = db_tuple
         cursor.execute('USE ' + db)
-        cursor.execute('SHOW TABLES')
+        cursor.execute('SHOW TABLES; # for ' + db)
         rows2 = cursor.fetchall()
         found_needed_table = False
         for row2 in rows2:

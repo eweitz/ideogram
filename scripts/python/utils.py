@@ -39,8 +39,13 @@ class Cursor:
             return cursor
         else:
             result = open(cache_path, 'r').read()
-            self._result = ast.literal_eval(result)
-            return self
+            _result = ast.literal_eval(result)
+            if _result is None:
+                num_results = 0
+            else:
+                num_results = len(_result)
+            self._result = _result
+            return num_results
 
     def fetchall(self):
         if fresh_run:
