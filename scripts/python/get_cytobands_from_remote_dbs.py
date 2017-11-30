@@ -394,19 +394,18 @@ def fetch_maize_centromeres():
     This is a special case for maize, a request for which began this module.
 
     To debug:
-    curl 'http://genomaize.org/cgi-bin/hgTables' --data 'hgsid=10695_on1bE0YyWYp9CannFyHJO5ONYzO1&jsh_pageVertPos=0&clade=monocots&org=Zea+mays&db=zeaMay_b73_v2&hgta_group=map&hgta_track=centromere&hgta_table=centromere&hgta_regionType=genome&position=chr1%3A1-301354135&hgta_outputType=primaryTable&boolshad.sendToGalaxy=0&boolshad.sendToGreat=0&hgta_outFileName=&hgta_compressType=none&hgta_doTopSubmit=get+output'
+    curl 'http://genomaize.org/cgi-bin/hgTables' --data 'jsh_pageVertPos=0&clade=monocots&org=Zea+mays&db=zeaMay_b73_v2&hgta_group=map&hgta_track=cytoBandIdeo&hgta_table=cytoBandIdeo&hgta_regionType=genome&position=chr1%3A1-301354135&hgta_outputType=primaryTable&boolshad.sendToGalaxy=0&boolshad.sendToGreat=0&hgta_outFileName=&hgta_compressType=none&hgta_doTopSubmit=get+output'
     """
     centromeres_by_chr = {}
 
     post_body = (
-        'hgsid=10695_on1bE0YyWYp9CannFyHJO5ONYzO1' +
-        '&jsh_pageVertPos=0' +
+        'jsh_pageVertPos=0' +
         '&clade=monocots' +
         '&org=Zea+mays' +
         '&db=zeaMay_b73_v2' +
         '&hgta_group=map' +
-        '&hgta_track=centromere' +
-        '&hgta_table=centromere' +
+        '&hgta_track=cytoBandIdeo' +
+        '&hgta_table=cytoBandIdeo' +
         '&hgta_regionType=genome' +
         '&position=chr1%3A1-301354135' +
         '&hgta_outputType=primaryTable' +
