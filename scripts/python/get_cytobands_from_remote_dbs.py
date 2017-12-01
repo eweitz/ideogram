@@ -21,14 +21,15 @@ parser = argparse.ArgumentParser(
 parser.add_argument('--output_dir',
     help='Diretory to sent output data to',
     default='../../data/bands/native/')
-parser.add_argument('--fresh_run',
-    help='Do you want to use cached data, or fresh data fetched over ' +
-         'the Internet?',
-    default='True')
-parser.add_argument('--fill_cache',
-    help='Do you want to populate the cache?  Only applicable for fresh runs.',
-    default='False')
+# parser.add_argument('--fresh_run',
+#     help='Do you want to use cached data, or fresh data fetched over ' +
+#          'the Internet?',
+#     default='True')
+# parser.add_argument('--fill_cache',
+#     help='Do you want to populate the cache?  Only applicable for fresh runs.',
+#     default='False')
 args = parser.parse_args()
+
 
 def t_or_f(arg):
     ua = str(arg).upper()
@@ -39,8 +40,12 @@ def t_or_f(arg):
     else:
         pass  #error condition maybe?
 
-fresh_run = t_or_f(args.fresh_run)
-fill_cache = t_or_f(args.fill_cache)
+
+# eweitz, 2017-12-01:
+# The arguments '--fresh_run=False and --fresh_run=False' do not yet work.
+# The code related to these arguments is a work in progress.
+fresh_run = True # t_or_f(args.fresh_run)
+fill_cache = False #t_or_f(args.fill_cache)
 output_dir = args.output_dir
 cache_dir = output_dir + 'cache/'
 log_name = 'get_cytobands_from_remote_dbs'

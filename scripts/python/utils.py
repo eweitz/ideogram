@@ -112,7 +112,7 @@ def request(url, request_body=None):
                 file.write(data)
     else:
         with open(cache_path) as file:
-            data = file.read().decode('utf-8')
+            data = file.read()
 
     return data
 
