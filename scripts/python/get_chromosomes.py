@@ -9,6 +9,7 @@ import gzip
 import io
 from concurrent.futures import ThreadPoolExecutor
 import time
+import pprint
 import settings
 
 import convert_band_data
@@ -25,6 +26,8 @@ orgs_with_centromere_data = {}
 
 ftp_domain = 'ftp.ncbi.nlm.nih.gov'
 
+
+manifest = {}
 
 def get_chromosome_object(agp):
     """Extracts centromere coordinates and chromosome length from AGP data,
@@ -184,6 +187,8 @@ def write_centromere_data(organism, asm_name, asm_acc, output_dir, chrs):
 
     with open(long_output_path, 'w') as f:
         f.write(js_chrs)
+
+    manifest[organism] = [asm_acc, asm_name]
 
 
 def download_genome_agp(ftp, asm):
@@ -377,9 +382,20 @@ num_threads = 24
 
 uid_lists = chunkify(top_uid_list, num_threads)
 
-# TODO: Improve error handling.  This sometimes freezes, with no error message.
 with ThreadPoolExecutor(max_workers=num_threads) as pool:
     pool.map(pool_processing, uid_lists)
+
+manifest_path = output_dir + '_manifest.json'
+old_manifest = json.loads(open(manifest_path).read())
+manifest.update(old_manifest)
+
+# Write a manifest of organisms for which we have cytobands.
+# This enables Ideogram.js to more quickly load those organisms.
+pp = pprint.PrettyPrinter(indent=4)
+manifest = pp.pformat(manifest)
+
+with open(manifest_path, 'w') as f:
+    f.write(manifest)
 
 logger.info('Calling convert_band_data.py')
 convert_band_data.main()

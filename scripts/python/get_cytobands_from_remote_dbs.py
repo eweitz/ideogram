@@ -520,8 +520,6 @@ def patch_telomeres(bands_by_chr):
         first_band = bands_by_chr[chr][0]
         start = first_band[1]
         if start != '1':
-            print('caught, _band = ')
-            print(first_band)
             stop = str(int(start) - 1)
             pter_band = ['pter', '1', stop, '1', stop, 'gpos']
             bands_by_chr[chr].insert(0, pter_band)
@@ -620,12 +618,10 @@ def main():
         with open(output_dir + org + '.js', 'w') as f:
             f.write('window.chrBands = ' + str(band_list))
 
-    # Write a manifest of organisms for which we have cytobands.
-    # This enables Ideogram.js to more quickly load those organisms.
-    pp = pprint.PrettyPrinter(indent=4)
-    manifest = pp.pformat(manifest)
-    with open(output_dir + 'manifest.tsv', 'w') as f:
-        f.write(manifest)
+    manifest_path = output_dir + '_manifest.json'
+
+    with open(manifest_path, 'w') as f:
+        f.write(json.dumps(manifest))
 
     logger.info('')
 
