@@ -6,9 +6,9 @@
     'aspergillus-niger': ['GCA_000002855.1', 'aspergillus_niger_core_31_84_1'],
     'aspergillus-oryzae': [   'GCA_000184455.1',
                               'aspergillus_oryzae_core_31_84_2'],
-    'danio-rerio': ['taeGut2', ''],
     'drosophila-melanogaster': [   'GCA_000001215.4',
                                    'drosophila_melanogaster_core_37_90_6'],
     'hordeum-vulgare': ['GCA_000326085.1', 'hordeum_vulgare_core_35_88_2'],
     'oryza-sativa': ['GCA_001433935.1', 'oryza_sativa_core_37_90_7'],
+    'xenopus-laevis': ['taeGut2', ''],
     'zea-mays': ['GCA_000005005.5', 'zea_mays_core_31_84_6']}

@@ -513,6 +513,30 @@ def parse_centromeres(bands_by_chr):
     return new_bands
 
 
+def patch_telomeres(bands_by_chr):
+    """Account for special case with Drosophila melanogaster
+    """
+    for chr in bands_by_chr:
+        first_band = bands_by_chr[chr][0]
+        start = first_band[1]
+        if start != '1':
+            print('caught, _band = ')
+            print(first_band)
+            stop = str(int(start) - 1)
+            pter_band = ['pter', '1', stop, '1', stop, 'gpos']
+            bands_by_chr[chr].insert(0, pter_band)
+
+    new_bands = {}
+    for chr in bands_by_chr:
+        new_bands[chr] = []
+        for band in bands_by_chr[chr]:
+            band.insert(0, 'q')
+            new_bands[chr].append(band)
+    bands_by_chr = new_bands
+
+    return bands_by_chr
+
+
 def pool_processing(party):
     """Called once per "party" (i.e. UCSC, Ensembl, or GenoMaize)
     to fetch cytoband data from each.
@@ -573,6 +597,9 @@ def main():
         genbank_accession, db, bands_by_chr = asm_data
 
         manifest[org] = [genbank_accession, db]
+
+        if org == 'drosophila-melanogaster':
+            bands_by_chr = patch_telomeres(bands_by_chr)
 
         # Assign cytogenetic arms for each band
         if org == 'zea-mays':
