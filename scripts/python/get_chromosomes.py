@@ -12,6 +12,7 @@ import time
 import settings
 
 import convert_band_data
+import get_cytobands_from_remote_dbs
 
 output_dir = '../../data/bands/native/'
 
@@ -369,6 +370,8 @@ top_uid_list = data['esearchresult']['idlist']
 
 logger.info('Assembly UIDs returned in search results: ' + str(len(top_uid_list)))
 
+get_cytobands_from_remote_dbs.main()
+
 # TODO: Make this configurable
 num_threads = 24
 
@@ -380,4 +383,5 @@ with ThreadPoolExecutor(max_workers=num_threads) as pool:
 
 logger.info('Calling convert_band_data.py')
 convert_band_data.main()
+
 logger.info('Ending get_chromosomes.py')

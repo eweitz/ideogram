@@ -8,7 +8,6 @@ Examples:
 # TODO:
 # - Bonus: Convert this data into AGP 2.0, send data missing from NCBI to them
 
-import pymysql
 import os
 import json
 from concurrent.futures import ThreadPoolExecutor
@@ -534,76 +533,83 @@ party_list = []
 unfound_dbs = []
 zea_mays_centromeres = {}
 
-# Request data from all parties simultaneously
-num_threads = 3
-with ThreadPoolExecutor(max_workers=num_threads) as pool:
-    parties = ['ensembl', 'ucsc', 'genomaize']
-    for result in pool.map(pool_processing, parties):
-        party = result[0]
-        if party == 'genomaize':
-            zea_mays_centromeres = result[1]
+
+def main():
+
+    # Request data from all parties simultaneously
+    num_threads = 3
+    with ThreadPoolExecutor(max_workers=num_threads) as pool:
+        parties = ['ensembl', 'ucsc', 'genomaize']
+        for result in pool.map(pool_processing, parties):
+            party = result[0]
+            if party == 'genomaize':
+                zea_mays_centromeres = result[1]
+            else:
+                party_list.append(result)
+
+    logger.info('')
+    logger.info('UCSC databases not mapped to GenBank assembly IDs:')
+    logger.info(', '.join(unfound_dbs))
+    logger.info('')
+
+    # Third parties (e.g. UCSC, Ensembl) can have data for the same organism.
+    # Convert any such duplicate data into a non-redundant (NR) organism map.
+    nr_org_map = {}
+    seen_orgs = {}
+    for party, org_map in party_list:
+        logger.info('Iterating organisms from ' + party)
+        for org in org_map:
+            logger.info('\t' + org)
+            if org in seen_orgs:
+                logger.info('Already saw ' + org)
+                continue
+            nr_org_map[org] = org_map[org]
+
+    manifest = {}
+
+    for org in nr_org_map:
+
+        asm_data = sorted(nr_org_map[org], reverse=True)[0]
+        genbank_accession, db, bands_by_chr = asm_data
+
+        manifest[org] = [genbank_accession, db]
+
+        # Assign cytogenetic arms for each band
+        if org == 'zea-mays':
+            bands_by_chr = merge_centromeres(bands_by_chr, zea_mays_centromeres)
         else:
-            party_list.append(result)
+            bands_by_chr = parse_centromeres(bands_by_chr)
 
-logger.info('')
-logger.info('UCSC databases not mapped to GenBank assembly IDs:')
-logger.info(', '.join(unfound_dbs))
-logger.info('')
+        # Collapse chromosome-to-band dict, making it a list of strings
+        band_list = []
+        chrs = natural_sort(list(bands_by_chr.keys()))
+        for chr in chrs:
+            bands = bands_by_chr[chr]
+            for band in bands:
+                band_list.append(chr + ' ' + ' '.join(band))
 
-# Third parties (e.g. UCSC, Ensembl) can have data for the same organism.
-# Convert any such duplicate data into a non-redundant (NR) organism map.
-nr_org_map = {}
-seen_orgs = {}
-for party, org_map in party_list:
-    logger.info('Iterating organisms from ' + party)
-    for org in org_map:
-        logger.info('\t' + org)
-        if org in seen_orgs:
-            logger.info('Already saw ' + org)
-            continue
-        nr_org_map[org] = org_map[org]
+        # Write actual cytoband data to file,
+        # e.g. ../data/bands/native/anopheles-gambiae.js
+        with open(output_dir + org + '.js', 'w') as f:
+            f.write('window.chrBands = ' + str(band_list))
 
-manifest = {}
+    # Write a manifest of organisms for which we have cytobands.
+    # This enables Ideogram.js to more quickly load those organisms.
+    pp = pprint.PrettyPrinter(indent=4)
+    manifest = pp.pformat(manifest)
+    with open(output_dir + 'manifest.tsv', 'w') as f:
+        f.write(manifest)
 
-for org in nr_org_map:
+    logger.info('')
 
-    asm_data = sorted(nr_org_map[org], reverse=True)[0]
-    genbank_accession, db, bands_by_chr = asm_data
+    # How long did each part take?
+    logger.info('time_ucsc:')
+    logger.info(time_ucsc)
+    logger.info('time_ncbi:')
+    logger.info(time_ncbi)
+    logger.info('time_ensembl:')
+    logger.info(time_ensembl)
 
-    manifest[org] = [genbank_accession, db]
 
-    # Assign cytogenetic arms for each band
-    if org == 'zea-mays':
-        bands_by_chr = merge_centromeres(bands_by_chr, zea_mays_centromeres)
-    else:
-        bands_by_chr = parse_centromeres(bands_by_chr)
-
-    # Collapse chromosome-to-band dict, making it a list of strings
-    band_list = []
-    chrs = natural_sort(list(bands_by_chr.keys()))
-    for chr in chrs:
-        bands = bands_by_chr[chr]
-        for band in bands:
-            band_list.append(chr + ' ' + ' '.join(band))
-
-    # Write actual cytoband data to file,
-    # e.g. ../data/bands/native/anopheles-gambiae.js
-    with open(output_dir + org + '.js', 'w') as f:
-        f.write('window.chrBands = ' + str(band_list))
-
-# Write a manifest of organisms for which we have cytobands.
-# This enables Ideogram.js to more quickly load those organisms.
-pp = pprint.PrettyPrinter(indent=4)
-manifest = pp.pformat(manifest)
-with open(output_dir + 'manifest.tsv', 'w') as f:
-    f.write(manifest)
-
-logger.info('')
-
-# How long did each part take?
-logger.info('time_ucsc:')
-logger.info(time_ucsc)
-logger.info('time_ncbi:')
-logger.info(time_ncbi)
-logger.info('time_ensembl:')
-logger.info(time_ensembl)
+if __name__ == '__main__':
+    main()
