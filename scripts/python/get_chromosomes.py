@@ -132,6 +132,8 @@ def download_genome_regions(ftp, regions_ftp):
 
 
 def write_centromere_data(organism, asm_name, asm_acc, output_dir, chrs):
+    global manifest
+
     logger.info(
         'Centromeres found for ' + organism + ' ' +
         'in genome assembly ' + asm_name + ' (' + asm_acc + ')'
@@ -375,7 +377,7 @@ top_uid_list = data['esearchresult']['idlist']
 
 logger.info('Assembly UIDs returned in search results: ' + str(len(top_uid_list)))
 
-get_cytobands_from_remote_dbs.main()
+old_manifest = get_cytobands_from_remote_dbs.main()
 
 # TODO: Make this configurable
 num_threads = 24
@@ -385,8 +387,6 @@ uid_lists = chunkify(top_uid_list, num_threads)
 with ThreadPoolExecutor(max_workers=num_threads) as pool:
     pool.map(pool_processing, uid_lists)
 
-manifest_path = output_dir + '_manifest.json'
-old_manifest = json.loads(open(manifest_path).read())
 manifest.update(old_manifest)
 
 # Write a manifest of organisms for which we have cytobands.

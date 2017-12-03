@@ -1,8 +1,4 @@
 """Fetch cytogenetic band data from third-party MySQL databases
-
-Examples:
-
-
 """
 
 # TODO:
@@ -11,7 +7,6 @@ Examples:
 import os
 import json
 from concurrent.futures import ThreadPoolExecutor
-import pprint
 import argparse
 
 parser = argparse.ArgumentParser(
@@ -43,6 +38,8 @@ def t_or_f(arg):
 # eweitz, 2017-12-01:
 # The arguments '--fresh_run=False and --fresh_run=False' do not yet work.
 # The code related to these arguments is a work in progress.
+# They are intended to speed up development by enabling runs to
+# bypass remote querying and download.
 fresh_run = True # t_or_f(args.fresh_run)
 fill_cache = False #t_or_f(args.fill_cache)
 output_dir = args.output_dir
@@ -618,11 +615,6 @@ def main():
         with open(output_dir + org + '.js', 'w') as f:
             f.write('window.chrBands = ' + str(band_list))
 
-    manifest_path = output_dir + '_manifest.json'
-
-    with open(manifest_path, 'w') as f:
-        f.write(json.dumps(manifest))
-
     logger.info('')
 
     # How long did each part take?
@@ -632,6 +624,8 @@ def main():
     logger.info(time_ncbi)
     logger.info('time_ensembl:')
     logger.info(time_ensembl)
+
+    return manifest
 
 
 if __name__ == '__main__':
