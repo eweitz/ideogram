@@ -393,8 +393,9 @@ manifest.update(old_manifest)
 # This enables Ideogram.js to more quickly load those organisms.
 pp = pprint.PrettyPrinter(indent=4)
 manifest = pp.pformat(manifest)
+manifest = "assemblyManifest = " + manifest
 
-with open(manifest_path, 'w') as f:
+with open('../../src/js/assembly-manifest.js', 'w') as f:
     f.write(manifest)
 
 logger.info('Calling convert_band_data.py')

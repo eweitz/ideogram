@@ -1,4 +1,4 @@
-{   'anopheles-gambiae': ['GCA_000005575.1', 'anopheles_gambiae_core_37_90_4'],
+assemblyManifest = {   'anopheles-gambiae': ['GCA_000005575.1', 'anopheles_gambiae_core_37_90_4'],
     'aspergillus-fumigatus': [   'GCA_000002655.1',
                                  'aspergillus_fumigatus_core_37_90_2'],
     'aspergillus-nidulans': [   'GCA_000011425.1',
