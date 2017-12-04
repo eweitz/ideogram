@@ -14,8 +14,8 @@
   "scripts": {
     "debugtest": "karma start --log-level debug --browsers Chrome karma.conf.js",
     "test": "karma start --single-run --browsers ChromeHeadless karma.conf.js",
-    "debugbuild": "node scripts/prepublish.js; webpack -p --display-modules --display-reasons && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
-    "build": "node scripts/prepublish.js; webpack -p && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
+    "debugbuild": "node scripts/js/prepublish.js; webpack -p --display-modules --display-reasons && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
+    "build": "node scripts/js/prepublish.js; webpack -p && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
     "watch": "webpack --watch && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
     "start": "webpack-dev-server --open"
   },

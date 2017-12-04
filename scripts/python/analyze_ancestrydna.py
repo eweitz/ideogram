@@ -25,7 +25,7 @@ args = parser.parse_args()
 
 show_snpedia_results = args.snpedia
 
-data_dir = "../data/analysis/"
+data_dir = "../../data/analysis/"
 if os.path.exists(data_dir) == False:
     os.mkdir(data_dir)
 
