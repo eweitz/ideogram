@@ -1,4 +1,9 @@
-// Developed by Eric Weitz (https://github.com/eweitz)
+/**
+ * @fileoverview Core module of Ideogram.js, links all other modules
+ * This file defines the Ideogram class, its constructor method, and its
+ * static methods.  All instance methods are defined in other modules.
+ *
+ */
 
 import * as d3selection from 'd3-selection';
 import * as d3request from 'd3-request';

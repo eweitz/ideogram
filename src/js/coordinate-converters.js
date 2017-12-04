@@ -1,6 +1,21 @@
 /**
+ * @fileoverview Methods to convert to and from different types of coordinates.
+ *
+ * Ideogram.js uses multiple coordinate systems, e.g. base pairs (bp) and
+ * pixels (px).  These methods interconvert between those coordinate systems.
+ *
+ * TODO:
+ * - Add methods to interconvert between ISCN coordinates and base pairs,
+ * pixels.
+ */
+
+/**
  * Converts base pair coordinates to pixel offsets.
  * Bp-to-pixel scales differ among cytogenetic bands.
+ *
+ * For example, if we want to depict a gene on a chromosome, then we need
+ * to convert the gene's location in base pairs to a location in pixels offset
+ * from the start of the chromosome.
  */
 function convertBpToPx(chr, bp) {
   var i, band, bpToIscnScale, iscn, px, offset, pxStart, pxLength, iscnStart,
@@ -36,8 +51,12 @@ function convertBpToPx(chr, bp) {
 }
 
 /**
- * Converts base pair coordinates to pixel offsets.
- * Bp-to-pixel scales differ among cytogenetic bands.
+ * Converts pixel offsets to base pair coordinates.
+ * Pixel-to-bp scales differ among cytogenetic bands.
+ *
+ * For example, if we want to determine the genomic location a user clicked on
+ * (e.g. when creating a brush / sliding window region), then we need to
+ * convert pixels to base pairs.
  */
 function convertPxToBp(chr, px) {
   var i, band, pxToIscnScale, iscn, bp, pxLength,

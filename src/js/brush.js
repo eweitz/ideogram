@@ -1,3 +1,14 @@
+/**
+ * @fileoverview Methods to create and handle a brush on a chromosome.
+ *
+ * Ideogram.js enables users to display a box around part of a chromosome
+ * that represents a "currently selected" region.  The user can move this
+ * box like a sliding window, e.g. by clicking and dragging the mouse.
+ *
+ * For background, see:
+ * https://github.com/d3/d3-brush
+ */
+
 import * as d3selection from 'd3-selection';
 // See https://github.com/d3/d3/issues/2733
 import {event as currentEvent} from 'd3-selection';

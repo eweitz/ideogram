@@ -1,9 +1,22 @@
+/**
+ * @fileoverview Methods for processing chromosome length and band data.
+ *
+ * Ideogram.js depicts chromosomes using data on their length, name, and
+ * (if dealing with a very well-studied organism) cytogenetic banding data.
+ * This file processes band data that comes from biological research
+ * institutions.
+ *
+ * For background on cytogenetic bands and how they are used in genomics, see:
+ * https://ghr.nlm.nih.gov/primer/howgeneswork/genelocation
+ *
+ */
+
 import * as d3selection from 'd3-selection';
 var d3 = Object.assign({}, d3selection);
 
 /**
- * Gets chromosome band data from a
- * TSV file, or, if band data is prefetched, from an array
+ * Gets chromosome band data from a TSV file, or, if band data is
+ * prefetched, from an array
  *
  * UCSC:
  * #chrom chromStart chromEnd name gieStain
@@ -152,7 +165,6 @@ function getBands(content, taxid, chromosomes) {
 
   return lines;
 }
-
 
 /**
  * Draws labels and stalks for cytogenetic bands.
@@ -322,7 +334,6 @@ function drawBandLabels(chromosomes) {
   }
 }
 
-
 /**
  * Returns SVG gradients that give chromosomes a polished look
  */
@@ -445,7 +456,6 @@ function getBandColorGradients() {
 
   return gradients;
 }
-
 
 /**
  * Completes default ideogram initialization by calling downstream functions
