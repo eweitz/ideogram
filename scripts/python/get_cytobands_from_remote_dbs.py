@@ -391,7 +391,10 @@ def fetch_from_ensembl_genomes():
 
 
 def fetch_maize_centromeres():
-    """Requests maize centromere data from Genomaize
+    """Reads local copy of centromeres from B73 v2 genome assembly for Zea mays
+
+    Old documentation:
+    Requests maize centromere data from Genomaize
     This is a special case for maize, a request for which began this module.
 
     To debug:
@@ -399,6 +402,7 @@ def fetch_maize_centromeres():
     """
     centromeres_by_chr = {}
 
+    '''
     post_body = (
         'jsh_pageVertPos=0' +
         '&clade=monocots' +
@@ -425,6 +429,14 @@ def fetch_maize_centromeres():
         chr, start, stop = row.split('\t')[:3]
         chr = chr.replace('chr', '')
         centromeres_by_chr[chr] = [start, stop]
+    '''
+
+    rows = open(output_dir + 'zea-mays-b73-v2-centromeres.tsv').readlines()
+    for row in rows[1:]:
+        chr, start, stop = row.split('\t')[:3]
+        chr = chr.replace('chr', '')
+        centromeres_by_chr[chr] = [start, stop]
+    
     return centromeres_by_chr
 
 
