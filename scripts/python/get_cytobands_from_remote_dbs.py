@@ -436,7 +436,7 @@ def fetch_maize_centromeres():
         chr, start, stop = row.split('\t')[:3]
         chr = chr.replace('chr', '')
         centromeres_by_chr[chr] = [start, stop]
-    
+
     return centromeres_by_chr
 
 
@@ -451,20 +451,37 @@ def merge_centromeres(bands_by_chr, centromeres):
     """
     logger.info('Entering merge_centromeres')
     new_bands = {}
+
     for chr in bands_by_chr:
         bands = bands_by_chr[chr]
         new_bands[chr] = []
         centromere = centromeres[chr]
         cen_start, cen_stop = centromere
-        for band in bands:
+        pcen_index = None
+        for i, band in enumerate(bands):
             new_band = band
             band_start, band_stop = band[1:3]
             if int(band_stop) < int(cen_start):
                 arm = 'p'
             else:
                 arm = 'q'
+                if pcen_index is None:
+                    pcen_index = i
+                    cen_mid = int(cen_start) + round((int(cen_stop)-int(cen_start))/2)
+                    pcen = [
+                        chr, 'p', 'pcen', cen_start, str(cen_mid),
+                        cen_start, str(cen_mid), 'acen'
+                    ]
+                    qcen_start = str(int(cen_stop) - cen_mid + 1)
+                    qcen = [
+                        chr, 'q', 'qcen', qcen_start, cen_stop,
+                        qcen_start, cen_stop, 'acen'
+                    ]
             new_band.insert(0, arm)
             new_bands[chr].append(new_band)
+        if pcen_index is not None:
+            new_bands[chr].insert(pcen_index, qcen)
+            new_bands[chr].insert(pcen_index, pcen)
     return new_bands
 
 
