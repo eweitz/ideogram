@@ -467,16 +467,32 @@ def merge_centromeres(bands_by_chr, centromeres):
                 arm = 'q'
                 if pcen_index is None:
                     pcen_index = i
+
+                    # Extend nearest p-arm band's stop coordinate to the
+                    # p_cen's start coordinate (minus 1)
+                    cen_start_pre = str(int(cen_start) - 1)
+                    new_bands[chr][i - 1][4] = cen_start_pre
+                    new_bands[chr][i - 1][6] = cen_start_pre
+
+                    # Extend nearest q-arm band's start coordinate to the
+                    # q_cen's stop coordinate
+                    bands[i + 1][3] = cen_stop
+                    bands[i + 1][5] = cen_stop
+
+                    # Coordinates of the centromere itself
                     cen_mid = int(cen_start) + round((int(cen_stop)-int(cen_start))/2)
+
                     pcen = [
-                        chr, 'p', 'pcen', cen_start, str(cen_mid),
-                        cen_start, str(cen_mid), 'acen'
+                        chr, 'p', 'pcen', cen_start, str(cen_mid - 1),
+                        cen_start, str(cen_mid - 1), 'acen'
                     ]
-                    qcen_start = str(int(cen_stop) - cen_mid + 1)
                     qcen = [
-                        chr, 'q', 'qcen', qcen_start, cen_stop,
-                        qcen_start, cen_stop, 'acen'
+                        chr, 'q', 'qcen', str(cen_mid), cen_stop,
+                        str(cen_mid), cen_stop, 'acen'
                     ]
+                else:
+                    if int(band_start) < int(cen_stop):
+                        continue
             new_band.insert(0, arm)
             new_bands[chr].append(new_band)
         if pcen_index is not None:
