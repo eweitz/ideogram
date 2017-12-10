@@ -458,41 +458,51 @@ def merge_centromeres(bands_by_chr, centromeres):
         centromere = centromeres[chr]
         cen_start, cen_stop = centromere
         pcen_index = None
+
+        j = 0
         for i, band in enumerate(bands):
             new_band = band
             band_start, band_stop = band[1:3]
             if int(band_stop) < int(cen_start):
                 arm = 'p'
             else:
+
                 arm = 'q'
+
+                if int(band_start) < int(cen_stop):
+                    # Omit any q-arm bands that start before q-arm pericentromeric band
+                    if chr == '1':
+                        logger.info('Omit band:')
+                        logger.info(band)
+                    j += 1
+                    continue
+
                 if pcen_index is None:
-                    pcen_index = i
+                    pcen_index = i - j
 
                     # Extend nearest p-arm band's stop coordinate to the
                     # p_cen's start coordinate (minus 1)
                     cen_start_pre = str(int(cen_start) - 1)
-                    new_bands[chr][i - 1][4] = cen_start_pre
-                    new_bands[chr][i - 1][6] = cen_start_pre
+                    new_bands[chr][i - j - 1][3] = cen_start_pre
+                    new_bands[chr][i - j - 1][5  ] = cen_start_pre
 
                     # Extend nearest q-arm band's start coordinate to the
-                    # q_cen's stop coordinate
-                    bands[i + 1][3] = cen_stop
-                    bands[i + 1][5] = cen_stop
+                    # q_cen's stop coordinate (plus 1)
+                    cen_stop_post = str(int(cen_stop) + 1)
+                    bands[i + j][1] = cen_stop_post
+                    bands[i + j][3] = cen_stop_post
 
                     # Coordinates of the centromere itself
                     cen_mid = int(cen_start) + round((int(cen_stop)-int(cen_start))/2)
 
                     pcen = [
-                        chr, 'p', 'pcen', cen_start, str(cen_mid - 1),
+                        'p', 'pcen', cen_start, str(cen_mid - 1),
                         cen_start, str(cen_mid - 1), 'acen'
                     ]
                     qcen = [
-                        chr, 'q', 'qcen', str(cen_mid), cen_stop,
+                        'q', 'qcen', str(cen_mid), cen_stop,
                         str(cen_mid), cen_stop, 'acen'
                     ]
-                else:
-                    if int(band_start) < int(cen_stop):
-                        continue
             new_band.insert(0, arm)
             new_bands[chr].append(new_band)
         if pcen_index is not None:
