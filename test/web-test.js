@@ -23,7 +23,7 @@ describe("Ideogram", function() {
 
   beforeEach(function() {
 
-    delete chrBands;
+    delete window.chrBands;
     d3.selectAll("svg").remove();
 
     config = {
@@ -1068,7 +1068,6 @@ describe("Ideogram", function() {
 
   it("should depict chromosomal rearrangements", function(done) {
     // Covers case in ../examples/ploidy_rearrangements.html
-
     function callback() {
       // TODO: There shouldn't be multiple elements with the same id
       var lastCopyChr1 = d3.selectAll('#chr1-4641').nodes().slice(-1)[0];
@@ -1077,11 +1076,11 @@ describe("Ideogram", function() {
       done()
     }
 
-    d3.select('body')
-      .append('script')
-      .attr('src', '/dist/data/bands/native/banana.js');
+    function initIdeo() {
+      if (typeof bandTimeout !== 'undefined') {
+        window.clearTimeout(bandTimeout);
+      }
 
-    setTimeout(function() {
       var config = {
         organism: "banana",
         orientation: "horizontal",
@@ -1107,7 +1106,23 @@ describe("Ideogram", function() {
 
       config.onLoad = callback;
       var ideogram = new Ideogram(config);
-    }, 100);
+    }
+
+    d3.select('body')
+      .append('script')
+      .attr('src', '/dist/data/bands/native/banana.js');
+    
+    // Check for banana.js content every 50 ms.
+    // If/when that content exists, initialize ideogram.
+    (function checkBandData() {
+      window.bandTimeout = setTimeout(function () {
+        if (typeof(window.chrBands) === 'undefined') {
+          checkBandData();
+        } else {
+          initIdeo();
+        }
+      }, 50);
+    })();
 
   });
 
@@ -1121,11 +1136,7 @@ describe("Ideogram", function() {
       done();
     }
 
-    d3.select('body')
-      .append('script')
-      .attr('src', '/dist/data/bands/native/banana.js');
-
-    setTimeout(function() {
+    function initIdeo() {
 
       var config = {
         organism: "banana",
@@ -1167,7 +1178,23 @@ describe("Ideogram", function() {
       config.onLoad = callback;
       config.debug = true;
       var ideogram = new Ideogram(config);
-    }, 100);
+    }
+
+    d3.select('body')
+      .append('script')
+      .attr('src', '/dist/data/bands/native/banana.js');
+
+    // Check for banana.js content every 50 ms.
+    // If/when that content exists, initialize ideogram.
+    (function checkBandData() {
+      window.bandTimeout = setTimeout(function () {
+        if (typeof(window.chrBands) === 'undefined') {
+          checkBandData();
+        } else {
+          initIdeo();
+        }
+      }, 50);
+    })();
 
   });
 
