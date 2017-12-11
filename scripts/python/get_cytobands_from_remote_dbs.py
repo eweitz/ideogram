@@ -391,7 +391,10 @@ def fetch_from_ensembl_genomes():
 
 
 def fetch_maize_centromeres():
-    """Requests maize centromere data from Genomaize
+    """Reads local copy of centromeres from B73 v2 genome assembly for Zea mays
+
+    Old documentation:
+    Requests maize centromere data from Genomaize
     This is a special case for maize, a request for which began this module.
 
     To debug:
@@ -399,6 +402,7 @@ def fetch_maize_centromeres():
     """
     centromeres_by_chr = {}
 
+    '''
     post_body = (
         'jsh_pageVertPos=0' +
         '&clade=monocots' +
@@ -425,6 +429,14 @@ def fetch_maize_centromeres():
         chr, start, stop = row.split('\t')[:3]
         chr = chr.replace('chr', '')
         centromeres_by_chr[chr] = [start, stop]
+    '''
+
+    rows = open(output_dir + 'zea-mays-b73-v2-centromeres.tsv').readlines()
+    for row in rows[1:]:
+        chr, start, stop = row.split('\t')[:3]
+        chr = chr.replace('chr', '')
+        centromeres_by_chr[chr] = [start, stop]
+
     return centromeres_by_chr
 
 
@@ -439,20 +451,63 @@ def merge_centromeres(bands_by_chr, centromeres):
     """
     logger.info('Entering merge_centromeres')
     new_bands = {}
+
     for chr in bands_by_chr:
         bands = bands_by_chr[chr]
         new_bands[chr] = []
         centromere = centromeres[chr]
         cen_start, cen_stop = centromere
-        for band in bands:
+        pcen_index = None
+
+        j = 0
+        for i, band in enumerate(bands):
             new_band = band
             band_start, band_stop = band[1:3]
             if int(band_stop) < int(cen_start):
                 arm = 'p'
             else:
+
                 arm = 'q'
+
+                if int(band_start) < int(cen_stop):
+                    # Omit any q-arm bands that start before q-arm pericentromeric band
+                    if chr == '1':
+                        logger.info('Omit band:')
+                        logger.info(band)
+                    j += 1
+                    continue
+
+                if pcen_index is None:
+                    pcen_index = i - j
+
+                    # Extend nearest p-arm band's stop coordinate to the
+                    # p_cen's start coordinate (minus 1)
+                    cen_start_pre = str(int(cen_start) - 1)
+                    new_bands[chr][i - j - 1][3] = cen_start_pre
+                    new_bands[chr][i - j - 1][5  ] = cen_start_pre
+
+                    # Extend nearest q-arm band's start coordinate to the
+                    # q_cen's stop coordinate (plus 1)
+                    cen_stop_post = str(int(cen_stop) + 1)
+                    bands[i + j][1] = cen_stop_post
+                    bands[i + j][3] = cen_stop_post
+
+                    # Coordinates of the centromere itself
+                    cen_mid = int(cen_start) + round((int(cen_stop)-int(cen_start))/2)
+
+                    pcen = [
+                        'p', 'pcen', cen_start, str(cen_mid - 1),
+                        cen_start, str(cen_mid - 1), 'acen'
+                    ]
+                    qcen = [
+                        'q', 'qcen', str(cen_mid), cen_stop,
+                        str(cen_mid), cen_stop, 'acen'
+                    ]
             new_band.insert(0, arm)
             new_bands[chr].append(new_band)
+        if pcen_index is not None:
+            new_bands[chr].insert(pcen_index, qcen)
+            new_bands[chr].insert(pcen_index, pcen)
     return new_bands
 
 

@@ -2,7 +2,32 @@
 <html>
 <head>
   <title>Overview | Ideogram</title>
-  <style>body {font: 12px Arial; line-height: 19.6px;}</style>
+  <style>
+	  body {
+	  	font: 12px Arial;
+	  	line-height: 19.6px;
+	  }
+	  div.gallery {
+	    margin: 5px;
+	    border: 1px solid #ccc;
+	    float: left;
+	    width: 180px;
+	  }
+
+	  div.gallery:hover {
+	   	border: 1px solid #777;
+	  }
+
+	  div.gallery img {
+	    width: 100%;
+		height: auto;
+	  }
+
+	  div.desc {
+		padding: 15px;
+		text-align: center;
+	  }
+  </style>
 </head>
 <body>
   	<h1>Overview | Ideogram</h1>
@@ -17,29 +42,90 @@
   	data is read in and rendered entirely on the client using
   	<a href="http://d3js.org/" target="_blank">D3.js</a>.
   	</p>
-  	<ol>
-	  <li><a href="human.html">Human</a>.  Chromosomes 1-22, X and Y rendered vertically.</li>
-	  <li><a href="mouse.html">Mouse</a>.  Chromosomes 1-19, X and Y rendered horizontally.</li>
-      <li><a href="eukaryotes.html">Eukaryotes</a>.  Genomes for many organisms, using data fetched via API.</li>
-	  <li><a href="homology_basic.html">Homology, basic</a>.  Simple relations between two chromosomes.</li>
-	  <li><a href="homology_advanced.html">Homology, advanced</a>.  Relations between two chromosomes, using color and opacity.</li>
-	  <li><a href="homology_interspecies.html">Homology, interspecies</a>.  Relations between two chromosomes, each from a different taxon.</li>
-      <li><a href="annotations_basic.html">Annotations, basic</a>.  Location of a gene on a chromosome.</li>
-      <li><a href="annotations_overlaid.html">Annotations, overlaid</a>.  Overlaid features on chromosomes.</li>
-      <!-- <li><a href="annotations_colored_arms.html">Annotations, colored arms</a>.  Cytogenetic arms filled with different colors.</li> -->
-      <li><a href="annotations_tracks.html">Annotations, tracks</a>.  Stacked features on chromosomes.</li>
-      <li><a href="annotations_external_data.html">Annotations, external data</a>.  Annotation data fetched from a third party API.</li>
-	  <li><a href="annotations_file_url.html">Annotations, file URL</a>.  Annotations parsed from standard file formats, e.g. BED, loaded via URL.</li>
-      <li><a href="annotations_histogram.html">Annotations, histogram</a>.  Dense feature distributions on chromosomes.</li>
-	  <li><a href="annotations_animated.html">Annotations, animated</a>.  Genome-wide transitions in expression over time.</li>
-      <li><a href="layout_small.html">Layout, small</a>.  Chromosomes surrounded by other content.</li>
-      <li><a href="brush.html">Brush</a>.  Move and resize a slider-like widget to change genomic coordinates in focus.</li>
-      <li><a href="ploidy_basic.html">Ploidy, basic</a>.  Diploid genome of a human female.</li>
-      <li><a href="ploidy_rearrangements.html">Ploidy, rearrangements</a>.  Loss and gain of cytogenetic arms and chromatids.</li>
-      <li><a href="ploidy_recombination.html">Ploidy, recombination</a>. Gene conversion and double chromosome crossover among chromatids.</li>
-      <li><a href="multiple_trio.html">Multiple, trio</a>. Three human genomes.</li>
-      <li><a href="multiple_primates.html">Multiple, primates</a>. Three primate genomes, with orthologs annotated for comparison.</li>
-  	</ol>
+	<div class="gallery">
+		<a href="human"><img src="img/human_ideogram.png" height="200" width="300"/></a>
+		<div class="desc"><a href="human">Human</a>.  Chromosomes 1-22, X and Y rendered vertically.</div>
+	</div>
+	<div class="gallery">
+		<a href="mouse"><img src="img/mouse_ideogram.png" height="200" width="300"/></a>
+		<div class="desc"><a href="mouse">Mouse</a>.  Chromosomes 1-19, X and Y rendered horizontally</div>
+	</div>
+	<div class="gallery">
+		<a href="eukaryotes"><img src="img/eukaryotes_ideogram.png" height="200" width="300"/></a>
+		<div class="desc"><a href="eukaryotes">Eukaryotes</a>.  Genomes for many organisms, using data fetched via API.</div>
+	</div>
+	<div class="gallery">
+		<a href="homology_basic"><img src="img/homology_basic_ideogram.png" height="200" width="300"/></a>
+		<div class="desc"><a href="homology_basic">Homology, basic</a>.  Simple relations between two chromosomes</div>
+	</div>
+	<div class="gallery">
+		<a href="homology_advanced"><img src="img/homology_advanced_ideogram.png" height="200" width="300"/></a>
+		<div class="desc"><a href="homology_advanced">Homology, advanced</a>.  Relations between two chromosomes, using color and opacity</div>
+	</div>
+	<div style="clear:both"></div>
+	<div class="gallery">
+		<a href="homology_interspecies"><img src="img/homology_interspecies_ideogram.png" height="200" width="300"/></a>
+		<div class="desc"><a href="homology_interspecies">Homology, interspecies</a>.  Relations between two chromosomes, each from a different taxon</div>
+	</div>
+	<div class="gallery">
+		<a href="annotations_basic"><img src="img/annotations_basic_ideogram.png" height="200" width="300"/></a>
+		<div class="desc"><a href="annotations_basic">Annotations, basic</a>.  Location of a gene on a chromosome</div>
+	</div>
+	<div class="gallery">
+		<a href="annotations_overlaid"><img src="img/annotations_overlaid_ideogram.png" height="200" width="300"/></a>
+		<div class="desc"><a href="annotations_overlaid">Annotations, overlaid</a>.  Overlaid features on chromosomes</div>
+	</div>
+	<div class="gallery">
+		<a href="annotations_tracks"><img src="img/annotations_tracks_ideogram.png" height="200" width="300"/></a>
+		<div class="desc"><a href="annotations_tracks">Annotations, <tracks></tracks></a>.  Stacked features on chromosomes.</div>
+	</div>
+	<div class="gallery">
+		<a href="annotations_external_data"><img src="img/annotations_external_data_ideogram.png" height="200" width="300"/></a>
+		<div class="desc"><a href="annotations_external_data">Annotations, external data</a>.  Annotation data fetched from a third party API.</div>
+	</div>
+	<div style="clear:both"></div>
+	<div class="gallery">
+		<a href="annotations_file_url"><img src="img/annotations_file_url_ideogram.png" height="200" width="300"/></a>
+		<div class="desc"><a href="annotations_file_url">Annotations, file URL</a>.  Annotations parsed from standard file formats, e.g. BED, loaded via URL.</div>
+	</div>
+	<div class="gallery">
+		<a href="annotations_histogram"><img src="img/annotations_histogram_ideogram.png" height="200" width="300"/></a>
+		<div class="desc"><a href="annotations_histogram">Annotations, histogram</a>.  Dense feature distributions on chromosomes.</div>
+	</div>
+	<div class="gallery">
+		<a href="annotations_animated"><img src="img/annotations_animated_ideogram.png" height="200" width="300"/></a>
+		<div class="desc"><a href="annotations_animated">Annotations, animated</a>.  Genome-wide transitions in expression over time.</div>
+	</div>
+	<div class="gallery">
+		<a href="layout_small"><img src="img/layout_small_ideogram.png" height="200" width="300"/></a>
+		<div class="desc"><a href="layout_small">Layout, small</a>.  Chromosomes surrounded by other content.</div>
+	</div>
+	<div class="gallery">
+		<a href="brush"><img src="img/brush_ideogram.png" height="200" width="300"/></a>
+		<div class="desc"><a href="brush">Brush</a>.  Move and resize a slider-like widget to change genomic coordinates in focus.</div>
+	</div>
+	<div style="clear:both"></div>
+	<div class="gallery">
+		<a href="ploidy_basic"><img src="img/ploidy_basic_ideogram.png" height="200" width="300"/></a>
+		<div class="desc"><a href="ploidy_basic">Ploidy, basic</a>.  Diploid genome of a human female.</div>
+	</div>
+	<div class="gallery">
+		<a href="ploidy_rearrangements"><img src="img/ploidy_rearrangements_ideogram.png" height="200" width="300"/></a>
+		<div class="desc"><a href="ploidy_rearrangements">Ploidy, rearrangements</a>.  Loss and gain of cytogenetic arms and chromatids.</div>
+	</div>
+	<div class="gallery">
+		<a href="ploidy_recombination"><img src="img/ploidy_recombination_ideogram.png" height="200" width="300"/></a>
+		<div class="desc"><a href="ploidy_recombination">Ploidy, recombination</a>. Gene conversion and double chromosome crossover among chromatids.</div>
+	</div>
+	<div class="gallery">
+		<a href="multiple_trio"><img src="img/multiple_trio_ideogram.png" height="200" width="300"/></a>
+		<div class="desc"><a href="multiple_trio">Multiple, trio</a>. Three human genomes.</div>
+	</div>
+	<div class="gallery">
+		<a href="multiple_primates"><img src="img/multiple_primates_ideogram.png" height="200" width="300"/></a>
+		<div class="desc"><a href="multiple_primates">Multiple, primates</a>. Three primate genomes, with orthologs annotated for comparison.</div>
+	</div>
+	<div style="clear:both"></div>
   	<p>
   	Ideogram is developed by <a href="https://github.com/eweitz">Eric Weitz</a>.
   	</p>
