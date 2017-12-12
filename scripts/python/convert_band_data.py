@@ -1,25 +1,18 @@
-''' Converts cytogenetic band data from TSV to JSONP
+"""Converts cytogenetic band data from TSV to JSONP
 
 Example:
-cd ideogram
-python3 scripts/convert_band_data.py
+cd python/scripts
+python3 convert_band_data.py
 
-NCBI and UCSC provide cytogenetic band data as a TSV file.
-This script parses those TSVs into JSON, and assigns that to
+NCBI provides cytogenetic band data as a TSV file.
+This script parses those TSVs into JSONP, and assigns that to
 a global variable in any HTML document that includes the output
 file.
 
 NCBI: #chromosome  arm band  iscn_start  iscn_stop bp_start  bp_stop stain density
 ftp://ftp.ncbi.nlm.nih.gov/pub/gdp/ideogram_9606_GCF_000001305.14_550_V1
 
-UCSC: #chrom chromStart  chromEnd  name  gieStain
-http://genome.ucsc.edu/cgi-bin/hgTables
-  - group: Mapping and Sequencing
-  - track: Chromosome Band (Ideogram)
-
-TODO:
-- Converting UCSC data
-'''
+"""
 
 import json
 from os import walk
@@ -57,6 +50,19 @@ output_mappings = {
     'ideogram_9606_GCF_000001305.13_550_V1': [
         'homo-sapiens-GCF_000001405.13-550'
     ],
+    'ideogram_9606_GCF_000001305.12_1200_V1': [
+        'homo-sapiens-GCF_000001405.12-1200'
+    ],
+    'ideogram_9606_GCF_000001305.12_850_V1': [
+        'homo-sapiens-GCF_000001405.12',
+        'homo-sapiens-GCF_000001405.12-850'
+    ],
+    'ideogram_9606_GCF_000001305.12_550_V1': [
+        'homo-sapiens-GCF_000001405.12-550'
+    ],
+    'ideogram_9606_GCF_000001305.12_400_V1': [
+        'homo-sapiens-GCF_000001405.12-400'
+    ],
     'ideogram_10090_GCF_000000055.19_NA_V2': [
         'mus-musculus',
         'mus-musculus-GCF_000001635.20'
@@ -67,9 +73,10 @@ output_mappings = {
     ]
 }
 
+
 def main():
-    in_dir = "data/bands/ncbi/"
-    out_dir = "data/bands/native/"
+    in_dir = '../../data/bands/ncbi/'
+    out_dir = '../../data/bands/native/'
 
     f = []
     for (dirpath, dirnames, filenames) in walk(in_dir):
@@ -93,19 +100,19 @@ def main():
             fn = [fn]
         output_file = out_dir + fn[0] + '.js'
 
-        rows = open(in_dir + input_file, "r").readlines()
+        rows = open(in_dir + input_file, 'r').readlines()
 
         if len(rows[0].split("\t")) == 4:
             # e.g. ../data/bands/ncbi/ideogram_banana_v0.1.tsv
             #chromosome	arm	bp_start	bp_stop
             max_chr_length = 0
             for row in rows[1:]:
-                columns = row.split("\t")
+                columns = row.split('\t')
                 bp_stop = int(columns[3])
                 if bp_stop > max_chr_length:
                     max_chr_length = bp_stop
             for row in rows[1:]:
-                columns = row.split("\t")
+                columns = row.split('\t')
 
                 chr = columns[0]
                 arm = columns[1]
@@ -126,7 +133,7 @@ def main():
             # e.g. ../data/bands/ncbi/ideogram_9606_GCF_000001305.13_550_V1
             # #chromosome	arm	band	iscn_start	iscn_stop	bp_start	bp_stop	stain	density
             for row in rows[1:]:
-                columns = row.replace("\n", "").replace("\t", " ")
+                columns = row.replace('\n', '').replace('\t', ' ')
                 output.append(columns)
 
         output = json.dumps(output)
@@ -137,6 +144,7 @@ def main():
         if len(fn) > 1:
             output_file_2 = out_dir + fn[1] + '.js'
             open(output_file_2, 'w').write(output)
+
 
 if __name__ == '__main__':
     main()

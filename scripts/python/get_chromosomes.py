@@ -6,42 +6,28 @@ import ftplib
 import os
 import json
 import gzip
-import logging
 import io
-import multiprocessing
+from concurrent.futures import ThreadPoolExecutor
 import time
+import pprint
+import settings
 
 import convert_band_data
+import get_cytobands_from_remote_dbs
 
+output_dir = '../../data/bands/native/'
 
-output_dir = 'data/bands/native/'
+logger = settings.get_logger(output_dir, 'get_chromosomes')
 
 if os.path.exists(output_dir) == False:
     os.mkdir(output_dir)
-
-# create logger with 'get_chromosomes'
-logger = logging.getLogger('get_chromosomes')
-logger.setLevel(logging.DEBUG)
-# create file handler which logs even debug messages
-fh = logging.FileHandler(output_dir + 'get_chromosomes.log')
-fh.setLevel(logging.DEBUG)
-# create console handler with a higher log level
-ch = logging.StreamHandler()
-ch.setLevel(logging.ERROR)
-# create formatter and add it to the handlers
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-fh.setFormatter(formatter)
-ch.setFormatter(formatter)
-# add the handlers to the logger
-logger.addHandler(fh)
-logger.addHandler(ch)
-
-logger.info('Starting get_chromosomes.py')
 
 orgs_with_centromere_data = {}
 
 ftp_domain = 'ftp.ncbi.nlm.nih.gov'
 
+
+manifest = {}
 
 def get_chromosome_object(agp):
     """Extracts centromere coordinates and chromosome length from AGP data,
@@ -72,7 +58,6 @@ def get_chromosome_object(agp):
     return chr
 
 
-
 def fetch_ftp(ftp, file_name):
 
     bytesio_object = io.BytesIO()
@@ -93,15 +78,10 @@ def fetch_ftp(ftp, file_name):
 
 # Downloads gzipped FTP data in binary format, returns plain text content
 def fetch_gzipped_ftp(ftp, file_name):
-
     bytesio_object = fetch_ftp(ftp, file_name)
-
     bytesio_object.seek(0) # Go back to the start
-
     zip_data = gzip.GzipFile(fileobj=bytesio_object)
-
     content = zip_data.read().decode('utf-8')
-
     return content
 
 
@@ -114,6 +94,7 @@ def change_ftp_dir(ftp, wd):
     except ftplib.error_perm as e:
         logger.warning(e)
         return 1
+
 
 # GRCh38 defines centromeres and heterochromatin in regions files, not AGP gaps
 def download_genome_regions(ftp, regions_ftp):
@@ -135,7 +116,7 @@ def download_genome_regions(ftp, regions_ftp):
             continue
         columns = line.split('\t')
         role = columns[4]
-        if role in ('CEN'):
+        if role == 'CEN':
             chr = columns[1]
             start = columns[2]
             stop = columns[3]
@@ -149,6 +130,67 @@ def download_genome_regions(ftp, regions_ftp):
 
     return centromeres
 
+
+def write_centromere_data(organism, asm_name, asm_acc, output_dir, chrs):
+    global manifest
+
+    logger.info(
+        'Centromeres found for ' + organism + ' ' +
+        'in genome assembly ' + asm_name + ' (' + asm_acc + ')'
+    )
+    leaf = ''
+    if (
+        (organism == 'homo-sapiens' and asm_name[:3] == 'GRC') or
+        (organism == 'mus-musculus' and asm_name[:3] in ('GRC', 'MGS')) or
+        (organism == 'rattus-norvegicus' and asm_name[:4] == 'Rnor')
+    ):
+        logger.info('Got no-bands assembly: ' + asm_name)
+        leaf = '-no-bands'
+    output_path = output_dir + organism + leaf + '.js'
+    long_output_path = output_dir + organism + '-' + asm_acc + '.js'
+
+    adapted_chromosomes = []
+
+    max_chr_length = 0
+    for chr in chrs:
+        if chr['length'] > max_chr_length:
+            max_chr_length = chr['length']
+
+    for chr in chrs:
+        name = chr['name']
+        length = chr['length']
+
+        iscn_stop_q = str(round(length) / max_chr_length * 10000)
+        length = str(length)
+
+        if 'centromere' in chr:
+            cen = chr['centromere']
+            midpoint = cen['start'] + round(cen['length']/2)
+
+            iscn_stop_p = str(round(midpoint / max_chr_length * 10000))
+
+            midpoint = str(midpoint)
+
+            p = name + ' p 1 0 ' + iscn_stop_p + ' 0 ' + midpoint
+            q = (
+                name + ' q 1 ' + str(int(iscn_stop_p) + 1) + ' ' + iscn_stop_q +
+                ' ' + midpoint + ' ' + length
+            )
+
+            adapted_chromosomes += [p, q]
+        else:
+            adapted_chromosomes.append(
+                name + ' n 1 0 ' + iscn_stop_q + ' 0 ' + length
+            )
+    js_chrs = 'window.chrBands = ' + json.dumps(adapted_chromosomes)
+
+    with open(output_path, 'w') as f:
+        f.write(js_chrs)
+
+    with open(long_output_path, 'w') as f:
+        f.write(js_chrs)
+
+    manifest[organism] = [asm_acc, asm_name]
 
 
 def download_genome_agp(ftp, asm):
@@ -224,62 +266,7 @@ def download_genome_agp(ftp, asm):
                             chr2['centromere'] = centromeres[chr]
 
     if has_centromere_data:
-
-        logger.info(
-            'Centromeres found for ' + organism + ' ' +
-            'in genome assembly ' + asm_name + ' (' + asm_acc + ')'
-        )
-        leaf = ''
-        if (
-            (organism == 'homo-sapiens' and asm_name[:3] == 'GRC') or
-            (organism == 'mus-musculus' and asm_name[:3] in ('GRC', 'MGS')) or
-            (organism == 'rattus-norvegicus' and asm_name[:4] == 'Rnor')
-        ):
-            logger.info('Got no-bands assembly: ' + asm_name)
-            leaf = '-no-bands'
-        output_path = output_dir + organism + leaf + '.js'
-        long_output_path = output_dir + organism + '-' + asm_acc + '.js'
-
-        adapted_chromosomes = []
-
-        max_chr_length = 0
-        for chr in chrs:
-            if chr['length'] > max_chr_length:
-                max_chr_length = chr['length']
-
-        for chr in chrs:
-            name = chr['name']
-            length = chr['length']
-
-            iscn_stop_q = str(round(length) / max_chr_length * 10000)
-            length = str(length)
-
-            if 'centromere' in chr:
-                cen = chr['centromere']
-                midpoint = cen['start'] + round(cen['length']/2)
-
-                iscn_stop_p = str(round(midpoint / max_chr_length * 10000))
-
-                midpoint = str(midpoint)
-
-                p = name + ' p 1 0 ' + iscn_stop_p + ' 0 ' + midpoint
-                q = (
-                    name + ' q 1 ' + str(int(iscn_stop_p) + 1) + ' ' + iscn_stop_q +
-                    ' ' + midpoint + ' ' + length
-                )
-
-                adapted_chromosomes += [p, q]
-            else:
-                adapted_chromosomes.append(
-                    name + ' n 1 0 ' + iscn_stop_q + ' 0 ' + length
-                )
-        js_chrs = 'window.chrBands = ' + json.dumps(adapted_chromosomes)
-
-        with open(output_path, 'w') as f:
-            f.write(js_chrs)
-
-        with open(long_output_path, 'w') as f:
-            f.write(js_chrs)
+        write_centromere_data(organism, asm_name, asm_acc, output_dir, chrs)
 
 
 def find_genomes_with_centromeres(ftp, asm_summary_response):
@@ -349,7 +336,6 @@ def chunkify(lst, n):
 
 
 def pool_processing(uid_list):
-
     uid_list = ','.join(uid_list)
 
     asm_summary = esummary + '&db=assembly&id=' + uid_list
@@ -368,9 +354,9 @@ def pool_processing(uid_list):
 
 
 eutils = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
-esearch = eutils + 'esearch.fcgi?retmode=json';
-esummary = eutils + 'esummary.fcgi?retmode=json';
-elink = eutils + 'elink.fcgi?retmode=json';
+esearch = eutils + 'esearch.fcgi?retmode=json'
+esummary = eutils + 'esummary.fcgi?retmode=json'
+elink = eutils + 'elink.fcgi?retmode=json'
 
 asms = []
 
@@ -391,15 +377,26 @@ top_uid_list = data['esearchresult']['idlist']
 
 logger.info('Assembly UIDs returned in search results: ' + str(len(top_uid_list)))
 
+old_manifest = get_cytobands_from_remote_dbs.main()
+
 # TODO: Make this configurable
-num_cores = multiprocessing.cpu_count()
+num_threads = 24
 
-uid_lists = chunkify(top_uid_list, num_cores)
+uid_lists = chunkify(top_uid_list, num_threads)
 
-pool = multiprocessing.Pool(num_cores)
+with ThreadPoolExecutor(max_workers=num_threads) as pool:
+    pool.map(pool_processing, uid_lists)
 
-pool.map(pool_processing, uid_lists)
+manifest.update(old_manifest)
 
+# Write a manifest of organisms for which we have cytobands.
+# This enables Ideogram.js to more quickly load those organisms.
+pp = pprint.PrettyPrinter(indent=4)
+manifest = pp.pformat(manifest)
+manifest = "assemblyManifest = " + manifest
+
+with open('../../src/js/assembly-manifest.js', 'w') as f:
+    f.write(manifest)
 
 logger.info('Calling convert_band_data.py')
 convert_band_data.main()

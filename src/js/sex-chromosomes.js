@@ -1,3 +1,13 @@
+/**
+ * @fileoverview Instance methods for sex chromosomes (allosomes).
+ *
+ * This module provides methods for drawing karyotypically normal
+ * male and female mammalian genomes.
+ */
+
+/**
+ * Appends SVG elements depicting sex chromosomes to the document.
+ */
 function drawSexChromosomes(bandsArray, taxid, container, defs, j, chrs) {
   var chromosome, bands, chrModel, shape, sci, k,
     sexChromosomeIndexes,
@@ -46,7 +56,7 @@ function drawSexChromosomes(bandsArray, taxid, container, defs, j, chrs) {
  *     - Turner syndrome: X0
  *     - Klinefelter syndome: XXY
  *  More types:
- *  https:*en.wikipedia.org/wiki/Category:Sex_chromosome_aneuploidies
+ *  https://en.wikipedia.org/wiki/Category:Sex_chromosome_aneuploidies
  */
 function setSexChromosomes(chrs) {
   if (this.config.ploidy !== 2 || !this.config.sex) {
