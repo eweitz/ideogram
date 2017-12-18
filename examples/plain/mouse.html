@@ -3,7 +3,14 @@
 <head>
   <title>Mouse | Ideogram</title>
   <style>body {font: 12px Arial; line-height: 19.6px;}</style>
-  <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
+  <script>
+    if('serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .register('/ideogram/src/js/service-worker.js')
+        .then(function() { console.log("Service Worker Registered"); });
+    }
+  </script>
+  <script type="module" src="../../src/js/index.js"></script>
 </head>
 <body>
   <h1>Mouse | Ideogram</h1>
