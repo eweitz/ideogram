@@ -3,24 +3,17 @@
 <head>
   <title>Mouse | Ideogram</title>
   <style>body {font: 12px Arial; line-height: 19.6px;}</style>
-  <script>
-    if('serviceWorker' in navigator) {
-      navigator.serviceWorker
-        .register('/ideogram/src/js/service-worker.js')
-        .then(function() { console.log("Service Worker Registered"); });
-    }
-  </script>
-  <script type="module" src="../../src/js/index.js"></script>
+  <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
 </head>
 <body>
-  <h1>Mouse | Ideogram</h1>
-  <a href="../">Back to overview</a> |
-  <a href="human.html">Previous</a> |
-  <a href="eukaryotes.html">Next</a>
-  <p>
-    A mouse genome, with each chromosome rendered horizontally.
-  </p>
-  <script type="text/javascript">
+<h1>Mouse | Ideogram</h1>
+<a href=".">Back to overview</a> |
+<a href="human.html">Previous</a> |
+<a href="eukaryotes.html">Next</a>
+<p>
+  A mouse genome, with each chromosome rendered horizontally.
+</p>
+<script type="text/javascript">
 
   var config = {
     organism: "mouse",
@@ -30,7 +23,7 @@
 
   var ideogram = new Ideogram(config);
 
-  </script>
+</script>
 
-  </body>
+</body>
 </html>
