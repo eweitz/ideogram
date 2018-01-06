@@ -19,6 +19,6 @@
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
   #ideo-container {
-    height: 400px;
+    height: 300px;
   }
 </style>
