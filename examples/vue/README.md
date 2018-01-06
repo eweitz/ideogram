@@ -1,27 +1,18 @@
-# vue
+# Ideogram in Vue
+This is a very basic example of integrating Ideogram with [Vue](https://vuejs.org/).
 
-> A Vue.js project
-
-## Build Setup
+# Install
 
 ``` bash
-# install dependencies
+git clone origin https://github.com/eweitz/ideogram
+cd ideogram/examples/vue
 npm install
-
-# serve with hot reload at localhost:8080
 npm run dev
-
-# build for production with minification
-npm run build
-
-# build for production and view the bundle analyzer report
-npm run build --report
-
-# run unit tests
-npm run unit
-
-# run all tests
-npm test
 ```
 
-For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+Then open your browser to http://localhost:8080.
+
+# Output
+
+After executing the steps above, you should see the following: 
+![Ideogram in Vue screenshot](https://raw.githubusercontent.com/eweitz/ideogram/framework-examples/examples/vue/ideogram_vue_example.png)
