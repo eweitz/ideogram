@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Brush | Ideogram</title>
+  <style>body {font: 12px Arial; line-height: 19.6px;}</style>
+  <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
+</head>
+<body>
+  <h1>Brush | Ideogram</h1>
+  <a href="../">Back to overview</a> |
+  <a href="layout_small.html">Previous</a> |
+  <a href="ploidy_basic.html">Next</a>
+  <br/><br/>
+  <div>
+    Selected region on human chromosome 19:
+    <div><span id="from"></span>-<span id="to"></span>
+      (extent: <span id="extent"></span> base pairs)
+    </div>
+  </div>
+  <div class="small-ideogram">
+    <!-- The ideogram goes here. -->
+  </div>
+  <script type="text/javascript">
+
+  function writeSelectedRange() {
+    var r = ideogram.selectedRegion,
+        from = r.from.toLocaleString(), // Adds thousands-separator
+        to = r.to.toLocaleString(),
+        extent = r.extent.toLocaleString();
+
+    document.getElementById("from").innerHTML = from;
+    document.getElementById("to").innerHTML = to;
+    document.getElementById("extent").innerHTML = extent;
+  }
+
+  var config = {
+    container: ".small-ideogram",
+    organism: "human",
+    chromosome: "19",
+    brush: true,
+    chrHeight: 900,
+    orientation: "horizontal",
+    onBrushMove: writeSelectedRange,
+    onLoad: writeSelectedRange
+  };
+
+  var ideogram = new Ideogram(config);
+  </script>
+</body>
+</html>
