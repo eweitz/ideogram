@@ -1,6 +1,9 @@
 # Ideogram in Jupyter
 
 This is a very basic example of integrating Ideogram with [Jupyter](https://jupyter.org/).
+
+More examples showing the breadth of Ideogram's functionality are at https://eweitz.github.io/ideogram/.
+
 # Install
 ```
 git clone origin https://github.com/eweitz/ideogram

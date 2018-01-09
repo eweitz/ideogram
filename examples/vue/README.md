@@ -1,6 +1,8 @@
 # Ideogram in Vue
 This is a very basic example of integrating Ideogram with [Vue](https://vuejs.org/).
 
+More examples showing the breadth of Ideogram's functionality are at https://eweitz.github.io/ideogram/.
+
 # Install
 
 ``` bash
