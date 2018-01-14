@@ -3,6 +3,8 @@ import * as d3dispatch from 'd3-dispatch';
 import * as d3promise from 'd3.promise';
 import {Promise} from 'es6-promise';
 
+import {Object} from './lib.js';
+
 var d3 = Object.assign({}, d3request, d3dispatch);
 d3.promise = d3promise;
 

@@ -6,9 +6,10 @@
 
 import * as d3selection from 'd3-selection';
 
-var d3 = Object.assign({}, d3selection);
-
 import {ChromosomeUtil} from './../views/chromosome-util';
+import {Object} from './../lib.js';
+
+var d3 = Object.assign({}, d3selection);
 
 export class Layout {
 

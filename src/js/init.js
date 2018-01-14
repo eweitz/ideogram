@@ -8,6 +8,7 @@ import {Promise} from 'es6-promise';
 
 import {Ploidy} from './ploidy';
 import {Layout} from './layouts/layout';
+import {Object} from './lib.js';
 
 var d3 = Object.assign({}, d3request, d3selection);
 
