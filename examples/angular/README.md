@@ -16,4 +16,4 @@ Then open your browser to http://localhost:4200.
 
 # Output
 After executing the steps above, you should see the following: 
-![Ideogram in Angular screenshot](https://raw.githubusercontent.com/eweitz/ideogram/framework-examples/examples/angular/ideogram_angular_example.png)
+![Ideogram in Angular screenshot](https://raw.githubusercontent.com/eweitz/ideogram/master/examples/angular/ideogram_angular_example.png)

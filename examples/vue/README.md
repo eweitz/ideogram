@@ -17,4 +17,4 @@ Then open your browser to http://localhost:8080.
 # Output
 
 After executing the steps above, you should see the following: 
-![Ideogram in Vue screenshot](https://raw.githubusercontent.com/eweitz/ideogram/framework-examples/examples/vue/ideogram_vue_example.png)
+![Ideogram in Vue screenshot](https://raw.githubusercontent.com/eweitz/ideogram/master/examples/vue/ideogram_vue_example.png)

@@ -15,4 +15,4 @@ Then, in the browser window that opens, click on "ideogram.pynb", then click "Ru
 
 # Output
 After executing the steps above, you should see the following:
-![Ideogram in Jupyter screenshot](https://raw.githubusercontent.com/eweitz/ideogram/framework-examples/examples/jupyter/ideogram_jupyter_example.png)
+![Ideogram in Jupyter screenshot](https://raw.githubusercontent.com/eweitz/ideogram/master/examples/jupyter/ideogram_jupyter_example.png)

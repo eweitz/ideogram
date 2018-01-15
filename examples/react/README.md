@@ -13,4 +13,4 @@ npm start
 
 # Output
 After executing the steps above, you should see the following:
-![Ideogram in React screenshot](https://raw.githubusercontent.com/eweitz/ideogram/framework-examples/examples/react/ideogram_react_example.png)
+![Ideogram in React screenshot](https://raw.githubusercontent.com/eweitz/ideogram/master/examples/react/ideogram_react_example.png)
