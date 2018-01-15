@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/eweitz/ideogram.svg?branch=master)](https://travis-ci.org/eweitz/ideogram)
 [![Coverage Status](https://coveralls.io/repos/github/eweitz/ideogram/badge.svg)](https://coveralls.io/github/eweitz/ideogram)
 
-Ideogram.js is a JavaScript library for chromosome visualization. Ideogram supports drawing and animating genome-wide datasets for human, mouse and many other eukaryotes.
+[Ideogram.js](https://eweitz.github.io/ideogram/) is a JavaScript library for chromosome visualization. Ideogram supports drawing and animating genome-wide datasets for human, mouse and many other eukaryotes.
 
 [![All human genes](https://raw.githubusercontent.com/eweitz/ideogram/master/examples/vanilla/ideogram_histogram_all_human_genes.png)](https://eweitz.github.io/ideogram/annotations_histogram.html)
 
@@ -13,7 +13,11 @@ Check out [live examples](https://eweitz.github.io/ideogram/), get [up and runni
 
 To link directly to the latest release, copy this snippet:
 ```
-<script src="https://unpkg.com/ideogram@0.13.0/dist/js/ideogram.min.js"></script>
+<<<<<<< HEAD
+<script src="https://unpkg.com/ideogram@0.14.0/dist/js/ideogram.min.js"></script>
+=======
+<script src="https://unpkg.com/ideogram@0.14.0/dist/js/ideogram.min.js"></script>
+>>>>>>> ce97ac39267ff93efa92c57cb467465fa1b7eda1
 ```
 
 You can also easily use the library locally:
@@ -38,7 +42,11 @@ import Ideogram from 'ideogram';
 # Usage
 ```html
 <head>
-  <script src="https://unpkg.com/ideogram@0.13.0/dist/js/ideogram.min.js"></script>
+<<<<<<< HEAD
+  <script src="https://unpkg.com/ideogram@0.14.0/dist/js/ideogram.min.js"></script>
+=======
+  <script src="https://unpkg.com/ideogram@0.14.0/dist/js/ideogram.min.js"></script>
+>>>>>>> ce97ac39267ff93efa92c57cb467465fa1b7eda1
 </head>
 <body>
   <script>
