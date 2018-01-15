@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/eweitz/ideogram.svg?branch=master)](https://travis-ci.org/eweitz/ideogram)
 [![Coverage Status](https://coveralls.io/repos/github/eweitz/ideogram/badge.svg)](https://coveralls.io/github/eweitz/ideogram)
 
-Ideogram.js is a JavaScript library for chromosome visualization. Ideogram supports drawing and animating genome-wide datasets for human, mouse and many other eukaryotes.
+[Ideogram.js](https://eweitz.github.io/ideogram/) is a JavaScript library for chromosome visualization. Ideogram supports drawing and animating genome-wide datasets for human, mouse and many other eukaryotes.
 
 [![All human genes](https://raw.githubusercontent.com/eweitz/ideogram/master/examples/vanilla/ideogram_histogram_all_human_genes.png)](https://eweitz.github.io/ideogram/annotations_histogram.html)
 
