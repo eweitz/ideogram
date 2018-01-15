@@ -15,11 +15,6 @@ import * as d3promise from 'd3.promise';
 
 import version from './version';
 
-var d3 = Object.assign({}, d3selection, d3request, d3brush, d3dispatch);
-d3.promise = d3promise;
-d3.scaleLinear = scaleLinear;
-d3.max = max;
-
 import {configure, initDrawChromosomes, onLoad, init} from './init';
 
 import {
@@ -44,8 +39,13 @@ import {convertBpToPx, convertPxToBp} from './coordinate-converters';
 import {
   assemblyIsAccession, getDataDir, getChromosomeModel, drawChromosomeLabels,
   rotateChromosomeLabels, round, drawChromosome, rotateAndToggleDisplay,
-  getSvg
+  getSvg, Object
 } from './lib';
+
+var d3 = Object.assign({}, d3selection, d3request, d3brush, d3dispatch);
+d3.promise = d3promise;
+d3.scaleLinear = scaleLinear;
+d3.max = max;
 
 export default class Ideogram {
   constructor(config) {
