@@ -37,9 +37,9 @@ import {drawSexChromosomes, setSexChromosomes} from './sex-chromosomes';
 import {convertBpToPx, convertPxToBp} from './coordinate-converters';
 
 import {
-  assemblyIsAccession, getDataDir, getChromosomeModel, drawChromosomeLabels,
-  rotateChromosomeLabels, round, drawChromosome, rotateAndToggleDisplay,
-  getSvg, Object
+  assemblyIsAccession, getDataDir, getChromosomeModel,
+  getChromosomePixelsAndScale, drawChromosomeLabels, rotateChromosomeLabels,
+  round, drawChromosome, rotateAndToggleDisplay, getSvg, Object
 } from './lib';
 
 var d3 = Object.assign({}, d3selection, d3request, d3brush, d3dispatch);
@@ -99,6 +99,7 @@ export default class Ideogram {
     this.assemblyIsAccession = assemblyIsAccession;
     this.getDataDir = getDataDir;
     this.getChromosomeModel = getChromosomeModel;
+    this.getChromosomePixelsAndScale = getChromosomePixelsAndScale;
     this.drawChromosomeLabels = drawChromosomeLabels;
     this.rotateChromosomeLabels = rotateChromosomeLabels;
     this.round = round;

@@ -95,51 +95,29 @@ function getDataDir() {
   return '../data/bands/native/';
 }
 
-/**
- * Generates a model object for each chromosome containing information on
- * its name, DOM ID, length in base pairs or ISCN coordinates, cytogenetic
- * bands, centromere position, etc.
- */
-function getChromosomeModel(bands, chromosome, taxid, chrIndex) {
-  var chr = {},
-    band,
-    width, pxStop,
-    chrHeight = this.config.chrHeight,
-    maxLength = this.maxLength,
-    chrLength,
-    cs, hasBands;
+function getChromosomePixelsAndScale(chr, bands) {
 
+  var chrHeight, pxStop, hasBands, maxLength, band, cs, csLength, width,
+    chrLength;
+
+  chrHeight = this.config.chrHeight;
+  pxStop = 0;
   cs = this.coordinateSystem;
   hasBands = (typeof bands !== 'undefined');
-
-  if (hasBands) {
-    chr.name = chromosome;
-    chr.length = bands[bands.length - 1][cs].stop;
-    chr.type = 'nuclear';
-  } else {
-    chr = chromosome;
-  }
-
-  chr.chrIndex = chrIndex;
-
-  chr.id = 'chr' + chr.name + '-' + taxid;
-
-  if (this.config.fullChromosomeLabels === true) {
-    var orgName = this.organisms[taxid].scientificNameAbbr;
-    chr.name = orgName + ' chr' + chr.name;
-  }
-
+  maxLength = this.maxLength;
   chrLength = chr.length;
-
-  pxStop = 0;
 
   if (hasBands) {
     for (var i = 0; i < bands.length; i++) {
       band = bands[i];
-      var csLength = band[cs].stop - band[cs].start;
+      csLength = band[cs].stop - band[cs].start;
       width = chrHeight * chr.length / maxLength[cs] * csLength / chrLength;
 
-      bands[i].px = {start: pxStop, stop: pxStop + width, width: width};
+      bands[i].px = {
+        start: pxStop,
+        stop: pxStop + width,
+        width: width
+      };
 
       pxStop = bands[i].px.stop;
 
@@ -177,6 +155,40 @@ function getChromosomeModel(bands, chromosome, taxid, chrIndex) {
     }
   }
   chr.bands = bands;
+  
+  return chr;
+}
+
+/**
+ * Generates a model object for each chromosome containing information on
+ * its name, DOM ID, length in base pairs or ISCN coordinates, cytogenetic
+ * bands, centromere position, etc.
+ */
+function getChromosomeModel(bands, chromosome, taxid, chrIndex) {
+  var chr = {},
+    cs, hasBands;
+
+  cs = this.coordinateSystem;
+  hasBands = (typeof bands !== 'undefined');
+
+  if (hasBands) {
+    chr.name = chromosome;
+    chr.length = bands[bands.length - 1][cs].stop;
+    chr.type = 'nuclear';
+  } else {
+    chr = chromosome;
+  }
+
+  chr.chrIndex = chrIndex;
+
+  chr.id = 'chr' + chr.name + '-' + taxid;
+
+  if (this.config.fullChromosomeLabels === true) {
+    var orgName = this.organisms[taxid].scientificNameAbbr;
+    chr.name = orgName + ' chr' + chr.name;
+  }
+
+  chr = this.getChromosomePixelsAndScale(chr, bands);
 
   chr.centromerePosition = '';
   if (
@@ -196,6 +208,8 @@ function getChromosomeModel(bands, chromosome, taxid, chrIndex) {
     // Example: chromosome F1 in Felis catus.
     delete chr.bands;
   }
+
+  console.log('ok')
 
   return chr;
 }
@@ -422,8 +436,8 @@ function getSvg() {
 }
 
 export {
-  assemblyIsAccession, getDataDir, getChromosomeModel, drawChromosomeLabels,
-  rotateChromosomeLabels, round, drawChromosome, rotateAndToggleDisplay,
-  getSvg, Object
+  assemblyIsAccession, getDataDir, getChromosomeModel,
+  getChromosomePixelsAndScale, drawChromosomeLabels, rotateChromosomeLabels,
+  round, drawChromosome, rotateAndToggleDisplay, getSvg, Object
 };
 
