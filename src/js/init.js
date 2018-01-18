@@ -240,9 +240,7 @@ function initDrawChromosomes(bandsArray) {
     chrSetNumber = 0,
     bands,
     i, j, chrs, chromosome, chrModel,
-    defs, transform;
-
-  defs = d3.select(ideo.selector + ' defs');
+    transform;
 
   for (i = 0; i < taxids.length; i++) {
     taxid = taxids[i];
@@ -299,30 +297,12 @@ function initDrawChromosomes(bandsArray) {
         ploidy === 2 &&
         ideo.sexChromosomes.index + 1 === chrIndex
       ) {
-        ideo.drawSexChromosomes(bandsArray, taxid, container, defs, j, chrs);
+        ideo.drawSexChromosomes(bandsArray, taxid, container, j, chrs);
         continue;
       }
 
-      var shape;
-      var numChrsInSet = 1;
-      if (ploidy > 1) {
-        numChrsInSet = this._ploidy.getChromosomesNumber(j);
-      }
-      for (var k = 0; k < numChrsInSet; k++) {
-        shape = ideo.drawChromosome(chrModel, chrIndex - 1, container, k);
-      }
+      ideo.drawChromosome(chrModel, chrIndex - 1, container, ploidy);
 
-      defs.append('clipPath')
-        .attr('id', chrModel.id + '-chromosome-set-clippath')
-        .selectAll('path')
-        .data(shape)
-        .enter()
-        .append('path')
-        .attr('d', function(d) {
-          return d.path;
-        }).attr('class', function(d) {
-        return d.class;
-      });
     }
 
     if (ideo.config.showBandLabels === true) {

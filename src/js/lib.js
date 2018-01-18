@@ -95,11 +95,12 @@ function getDataDir() {
   return '../data/bands/native/';
 }
 
-function getChromosomePixelsAndScale(chr, bands) {
+function getChromosomePixelsAndScale(chr) {
 
-  var chrHeight, pxStop, hasBands, maxLength, band, cs, csLength, width,
-    chrLength;
+  var bands, chrHeight, pxStop, hasBands, maxLength, band, cs, csLength,
+    width, chrLength;
 
+  bands = chr.bands;
   chrHeight = this.config.chrHeight;
   pxStop = 0;
   cs = this.coordinateSystem;
@@ -155,7 +156,7 @@ function getChromosomePixelsAndScale(chr, bands) {
     }
   }
   chr.bands = bands;
-  
+
   return chr;
 }
 
@@ -188,7 +189,8 @@ function getChromosomeModel(bands, chromosome, taxid, chrIndex) {
     chr.name = orgName + ' chr' + chr.name;
   }
 
-  chr = this.getChromosomePixelsAndScale(chr, bands);
+  chr.bands = bands;
+  chr = this.getChromosomePixelsAndScale(chr);
 
   chr.centromerePosition = '';
   if (
@@ -389,22 +391,46 @@ function round(coord) {
 /**
  * Renders all the bands and outlining boundaries of a chromosome.
  */
-function drawChromosome(chrModel, chrIndex, container, k) {
-  var chrMargin = this.config.chrMargin;
+function drawChromosome(chrModel, chrIndex, container, ploidy) {
 
-  // Get chromosome model adapter class
-  var adapter = ModelAdapter.getInstance(chrModel);
+  var shape;
 
-  // Append chromosome's container
-  var chromosome = container
-    .append('g')
-    .attr('id', chrModel.id)
-    .attr('class', 'chromosome ' + adapter.getCssClass())
-    .attr('transform', 'translate(0, ' + k * chrMargin + ')');
+  var defs = d3.select(this.selector + ' defs');
 
-  // Render chromosome
-  return Chromosome.getInstance(adapter, this.config, this)
-    .render(chromosome, chrIndex, k);
+  var numChrsInSet = 1;
+  if (ploidy > 1) {
+    numChrsInSet = this._ploidy.getChromosomesNumber(chrIndex);
+  }
+  for (var k = 0; k < numChrsInSet; k++) {
+
+    var chrMargin = this.config.chrMargin;
+
+    // Get chromosome model adapter class
+    var adapter = ModelAdapter.getInstance(chrModel);
+
+    // Append chromosome's container
+    var chromosome = container
+      .append('g')
+      .attr('id', chrModel.id)
+      .attr('class', 'chromosome ' + adapter.getCssClass())
+      .attr('transform', 'translate(0, ' + k * chrMargin + ')');
+
+    // Render chromosome
+    shape = Chromosome.getInstance(adapter, this.config, this)
+      .render(chromosome, chrIndex, k);
+
+    defs.append('clipPath')
+      .attr('id', chrModel.id + '-chromosome-set-clippath')
+      .selectAll('path')
+      .data(shape)
+      .enter()
+      .append('path')
+      .attr('d', function (d) {
+        return d.path;
+      }).attr('class', function (d) {
+      return d.class;
+    });
+  }
 }
 
 /**

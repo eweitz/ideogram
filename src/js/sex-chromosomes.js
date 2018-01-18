@@ -8,7 +8,7 @@
 /**
  * Appends SVG elements depicting sex chromosomes to the document.
  */
-function drawSexChromosomes(bandsArray, taxid, container, defs, j, chrs) {
+function drawSexChromosomes(bandsArray, taxid, container, j, chrs) {
   var chromosome, bands, chrModel, shape, sci, k,
     sexChromosomeIndexes,
     ideo = this;
@@ -24,18 +24,7 @@ function drawSexChromosomes(bandsArray, taxid, container, defs, j, chrs) {
     chromosome = chrs[sci];
     bands = bandsArray[sci];
     chrModel = ideo.getChromosomeModel(bands, chromosome, taxid, sci);
-    shape = ideo.drawChromosome(chrModel, j, container, k);
-    defs.append('clipPath')
-      .attr('id', chrModel.id + '-chromosome-set-clippath')
-      .selectAll('path')
-      .data(shape)
-      .enter()
-      .append('path')
-      .attr('d', function(d) {
-        return d.path;
-      }).attr('class', function(d) {
-      return d.class;
-    });
+    ideo.drawChromosome(chrModel, j, container, 3);
   }
 }
 
