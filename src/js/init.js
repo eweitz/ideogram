@@ -301,7 +301,7 @@ function initDrawChromosomes(bandsArray) {
         continue;
       }
 
-      ideo.drawChromosome(chrModel, chrIndex - 1, container, ploidy);
+      ideo.drawChromosomeSet(chrModel, chrIndex - 1, container);
 
     }
 
@@ -581,7 +581,7 @@ function init() {
 
       var t1A = new Date().getTime();
       if (ideo.config.debug) {
-        console.log('Time in drawChromosome: ' + (t1A - t0A) + ' ms');
+        console.log('Time in drawChromosomeSet: ' + (t1A - t0A) + ' ms');
       }
 
       var t1 = new Date().getTime();

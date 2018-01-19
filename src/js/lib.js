@@ -391,29 +391,32 @@ function round(coord) {
 /**
  * Renders all the bands and outlining boundaries of a chromosome.
  */
-function drawChromosome(chrModel, chrIndex, container, ploidy) {
+function drawChromosomeSet(chrModel, chrIndex, container) {
 
-  var shape;
+  var shape, defs, numChrsInSet, adapter, chromosome,
+    homologOffset;
 
-  var defs = d3.select(this.selector + ' defs');
+  defs = d3.select(this.selector + ' defs');
 
-  var numChrsInSet = 1;
-  if (ploidy > 1) {
+  numChrsInSet = 1;
+  if (this.config.ploidy > 1) {
     numChrsInSet = this._ploidy.getChromosomesNumber(chrIndex);
   }
+
+  // Get chromosome model adapter class
+  adapter = ModelAdapter.getInstance(chrModel);
+
   for (var k = 0; k < numChrsInSet; k++) {
 
-    var chrMargin = this.config.chrMargin;
-
-    // Get chromosome model adapter class
-    var adapter = ModelAdapter.getInstance(chrModel);
+    // How far one copy of a chromosome is from another
+    homologOffset = k * this.config.chrMargin;
 
     // Append chromosome's container
-    var chromosome = container
+    chromosome = container
       .append('g')
       .attr('id', chrModel.id)
       .attr('class', 'chromosome ' + adapter.getCssClass())
-      .attr('transform', 'translate(0, ' + k * chrMargin + ')');
+      .attr('transform', 'translate(0, ' + homologOffset + ')');
 
     // Render chromosome
     shape = Chromosome.getInstance(adapter, this.config, this)
@@ -427,9 +430,10 @@ function drawChromosome(chrModel, chrIndex, container, ploidy) {
       .append('path')
       .attr('d', function (d) {
         return d.path;
-      }).attr('class', function (d) {
-      return d.class;
-    });
+      })
+      .attr('class', function (d) {
+        return d.class;
+      });
   }
 }
 
@@ -464,6 +468,6 @@ function getSvg() {
 export {
   assemblyIsAccession, getDataDir, getChromosomeModel,
   getChromosomePixelsAndScale, drawChromosomeLabels, rotateChromosomeLabels,
-  round, drawChromosome, rotateAndToggleDisplay, getSvg, Object
+  round, drawChromosomeSet, rotateAndToggleDisplay, getSvg, Object
 };
 
