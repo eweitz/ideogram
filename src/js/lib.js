@@ -388,15 +388,46 @@ function round(coord) {
   return Math.round(coord * 100) / 100;
 }
 
+function appendHomolog(chrModel, chrIndex, homIndex, container, adapter) {
+
+  var homologOffset, chromosome, shape, defs;
+
+  defs = d3.select(this.selector + ' defs');
+
+  // How far this copy of the chromosome is from another
+  homologOffset = homIndex * this.config.chrMargin;
+
+  // Append chromosome's container
+  chromosome = container
+    .append('g')
+    .attr('id', chrModel.id)
+    .attr('class', 'chromosome ' + adapter.getCssClass())
+    .attr('transform', 'translate(0, ' + homologOffset + ')');
+
+  // Render chromosome
+  shape = Chromosome.getInstance(adapter, this.config, this)
+    .render(chromosome, chrIndex, homIndex);
+
+  defs.append('clipPath')
+    .attr('id', chrModel.id + '-chromosome-set-clippath')
+    .selectAll('path')
+    .data(shape)
+    .enter()
+    .append('path')
+    .attr('d', function (d) {
+      return d.path;
+    })
+    .attr('class', function (d) {
+      return d.class;
+    });
+}
+
 /**
  * Renders all the bands and outlining boundaries of a chromosome.
  */
 function drawChromosomeSet(chrModel, chrIndex, container) {
 
-  var shape, defs, numChrsInSet, adapter, chromosome,
-    homologOffset;
-
-  defs = d3.select(this.selector + ' defs');
+  var numChrsInSet, adapter;
 
   numChrsInSet = 1;
   if (this.config.ploidy > 1) {
@@ -406,34 +437,8 @@ function drawChromosomeSet(chrModel, chrIndex, container) {
   // Get chromosome model adapter class
   adapter = ModelAdapter.getInstance(chrModel);
 
-  for (var k = 0; k < numChrsInSet; k++) {
-
-    // How far one copy of a chromosome is from another
-    homologOffset = k * this.config.chrMargin;
-
-    // Append chromosome's container
-    chromosome = container
-      .append('g')
-      .attr('id', chrModel.id)
-      .attr('class', 'chromosome ' + adapter.getCssClass())
-      .attr('transform', 'translate(0, ' + homologOffset + ')');
-
-    // Render chromosome
-    shape = Chromosome.getInstance(adapter, this.config, this)
-      .render(chromosome, chrIndex, k);
-
-    defs.append('clipPath')
-      .attr('id', chrModel.id + '-chromosome-set-clippath')
-      .selectAll('path')
-      .data(shape)
-      .enter()
-      .append('path')
-      .attr('d', function (d) {
-        return d.path;
-      })
-      .attr('class', function (d) {
-        return d.class;
-      });
+  for (var homIndex = 0; homIndex < numChrsInSet; homIndex++) {
+    this.appendHomolog(chrModel, chrIndex, homIndex, container, adapter);
   }
 }
 
@@ -468,6 +473,7 @@ function getSvg() {
 export {
   assemblyIsAccession, getDataDir, getChromosomeModel,
   getChromosomePixelsAndScale, drawChromosomeLabels, rotateChromosomeLabels,
-  round, drawChromosomeSet, rotateAndToggleDisplay, getSvg, Object
+  round, appendHomolog, drawChromosomeSet, rotateAndToggleDisplay, getSvg,
+  Object
 };
 
