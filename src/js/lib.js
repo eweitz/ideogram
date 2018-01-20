@@ -377,6 +377,7 @@ function rotateChromosomeLabels(chr, chrIndex, orientation, scale) {
   }
 }
 
+
 /**
  * Rounds an SVG coordinates to two decimal places
  *
@@ -388,14 +389,18 @@ function round(coord) {
   return Math.round(coord * 100) / 100;
 }
 
-function appendHomolog(chrModel, chrIndex, homIndex, container, adapter) {
 
-  var homologOffset, chromosome, shape, defs;
+function appendHomolog(chrModel, chrIndex, homologIndex, container) {
+
+  var homologOffset, chromosome, shape, defs, adapter;
 
   defs = d3.select(this.selector + ' defs');
 
+  // Get chromosome model adapter class
+  adapter = ModelAdapter.getInstance(chrModel);
+
   // How far this copy of the chromosome is from another
-  homologOffset = homIndex * this.config.chrMargin;
+  homologOffset = homologIndex * this.config.chrMargin;
 
   // Append chromosome's container
   chromosome = container
@@ -406,7 +411,7 @@ function appendHomolog(chrModel, chrIndex, homIndex, container, adapter) {
 
   // Render chromosome
   shape = Chromosome.getInstance(adapter, this.config, this)
-    .render(chromosome, chrIndex, homIndex);
+    .render(chromosome, chrIndex, homologIndex);
 
   defs.append('clipPath')
     .attr('id', chrModel.id + '-chromosome-set-clippath')
@@ -427,18 +432,24 @@ function appendHomolog(chrModel, chrIndex, homIndex, container, adapter) {
  */
 function drawChromosomeSet(chrModel, chrIndex, container) {
 
-  var numChrsInSet, adapter;
+  var numChrsInSet;
+
+  if (
+    'sex' in this.config &&
+    this.config.ploidy === 2 &&
+    this.sexChromosomes.index === chrIndex
+  ) {
+    this.drawSexChromosomes(container, chrIndex);
+    return;
+  }
 
   numChrsInSet = 1;
   if (this.config.ploidy > 1) {
     numChrsInSet = this._ploidy.getChromosomesNumber(chrIndex);
   }
 
-  // Get chromosome model adapter class
-  adapter = ModelAdapter.getInstance(chrModel);
-
-  for (var homIndex = 0; homIndex < numChrsInSet; homIndex++) {
-    this.appendHomolog(chrModel, chrIndex, homIndex, container, adapter);
+  for (var homologIndex = 0; homologIndex < numChrsInSet; homologIndex++) {
+    this.appendHomolog(chrModel, chrIndex, homologIndex, container);
   }
 }
 

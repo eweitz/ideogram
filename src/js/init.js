@@ -257,6 +257,8 @@ function initDrawChromosomes(bandsArray) {
 
     ideo.setSexChromosomes(chrs);
 
+    ideo.bandsArray = bandsArray;
+
     for (j = 0; j < chrs.length; j++) {
       chromosome = chrs[j];
       bands = bandsArray[chrIndex];
@@ -291,15 +293,6 @@ function initDrawChromosomes(bandsArray) {
         .attr('data-set-number', j)
         .attr('transform', transform)
         .attr('id', chrModel.id + '-chromosome-set');
-
-      if (
-        'sex' in ideo.config &&
-        ploidy === 2 &&
-        ideo.sexChromosomes.index + 1 === chrIndex
-      ) {
-        ideo.drawSexChromosomes(bandsArray, taxid, container, j, chrs);
-        continue;
-      }
 
       ideo.drawChromosomeSet(chrModel, chrIndex - 1, container);
 

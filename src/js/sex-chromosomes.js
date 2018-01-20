@@ -8,31 +8,29 @@
 /**
  * Appends SVG elements depicting sex chromosomes to the document.
  */
-function drawSexChromosomes(bandsArray, taxid, container, chrIndex, chrs) {
-  var chromosome, bands, chrModel, sci, chrInSetIndex,
-    sexChromosomeIndexes,
-    ideo = this;
+function drawSexChromosomes(container, chrIndex) {
+  var bandsArray, taxid, chrs,
+    sexChromosomeIndexes, sciLength,
+    chromosome, bands, chrModel, sci, homologIndex;
 
-  if (ideo.config.sex === 'male') {
+  bandsArray = this.bandsArray;
+  taxid = this.config.taxid;
+  chrs = this.config.chromosomes[taxid];
+
+  if (this.config.sex === 'male') {
     sexChromosomeIndexes = [1, 0];
   } else {
     sexChromosomeIndexes = [0, 0];
   }
 
-  console.log('sexChromosome');
+  sciLength = sexChromosomeIndexes.length;
 
-  sciLength = sexChromosomeIndexes.length
-
-  for (chrInSetIndex = 0; chrInSetIndex < sciLength; chrInSetIndex++) {
-    sci = sexChromosomeIndexes[chrInSetIndex] + chrIndex;
-    console.log('sci');
-    console.log(sci);
+  for (homologIndex = 0; homologIndex < sciLength; homologIndex++) {
+    sci = sexChromosomeIndexes[homologIndex] + chrIndex;
     chromosome = chrs[sci];
     bands = bandsArray[sci];
-    chrModel = ideo.getChromosomeModel(bands, chromosome, taxid, sci);
-    console.log('chrModel');
-    console.log(chrModel);
-    ideo.drawChromosomeSet(chrModel, chrIndex, container, chrInSetIndex);
+    chrModel = this.getChromosomeModel(bands, chromosome, taxid, sci);
+    this.appendHomolog(chrModel, chrIndex, homologIndex, container);
   }
 }
 
