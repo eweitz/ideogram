@@ -78,7 +78,7 @@ export class Layout {
     throw new Error(this._class + '#rotateForward not implemented');
   }
 
-  rotate(chrSetNumber, chrNumber, chrElement) {
+  rotate(chrSetNumber, chrIndex, chrElement) {
     var ideo = this._ideo;
 
     // Find chromosomes which should be hidden
@@ -92,7 +92,7 @@ export class Layout {
       this._isRotated = false;
 
       // Rotate chromosome back
-      this.rotateBack(chrSetNumber, chrNumber, chrElement, function() {
+      this.rotateBack(chrSetNumber, chrIndex, chrElement, function() {
         // Show all other chromosomes and chromosome labels
         otherChrs.style('display', null);
         d3.selectAll(ideo.selector + ' .chrSetLabel, .chrLabel')
@@ -108,7 +108,19 @@ export class Layout {
         .style('display', 'none');
 
       // Rotate chromosome
-      this.rotateForward(chrSetNumber, chrNumber, chrElement);
+      this.rotateForward(chrSetNumber, chrIndex, chrElement, function() {
+
+        var taxid = ideo.config.taxid;
+        var chrName = chrElement.id.split('-')[0].replace('chr', '');
+        var chrModel = ideo.chromosomes[taxid][chrName];
+        var bands = chrModel.bands;
+
+        ideo.config.chrHeight = chrElement.getBoundingClientRect().width;
+
+        chrModel = ideo.getChromosomeModel(bands, chrName, taxid, chrIndex);
+        ideo.chromosomes[taxid][chrName] = chrModel;
+        ideo.drawChromosome(chrName);
+      });
     }
   }
 

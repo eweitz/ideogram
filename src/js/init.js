@@ -283,18 +283,7 @@ function initDrawChromosomes(bandsArray) {
         continue;
       }
 
-      transform = ideo._layout.getChromosomeSetTranslate(chrSetNumber);
-      chrSetNumber += 1;
-
-      // Append chromosome set container
-      var container = d3.select(ideo.selector)
-        .append('g')
-        .attr('class', 'chromosome-set-container')
-        .attr('data-set-number', j)
-        .attr('transform', transform)
-        .attr('id', chrModel.id + '-chromosome-set');
-
-      ideo.drawChromosomeSet(chrModel, chrIndex - 1, container);
+      ideo.drawChromosome(chrModel.name);
 
     }
 
@@ -574,7 +563,7 @@ function init() {
 
       var t1A = new Date().getTime();
       if (ideo.config.debug) {
-        console.log('Time in drawChromosomeSet: ' + (t1A - t0A) + ' ms');
+        console.log('Time in drawChromosome: ' + (t1A - t0A) + ' ms');
       }
 
       var t1 = new Date().getTime();

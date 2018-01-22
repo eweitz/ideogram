@@ -389,7 +389,14 @@ function round(coord) {
   return Math.round(coord * 100) / 100;
 }
 
-
+/**
+ * Adds a copy of a chromosome (i.e. a homologous chromosome, homolog) to DOM
+ *
+ * @param chrModel
+ * @param chrIndex
+ * @param homologIndex
+ * @param container
+ */
 function appendHomolog(chrModel, chrIndex, homologIndex, container) {
 
   var homologOffset, chromosome, shape, defs, adapter;
@@ -430,9 +437,25 @@ function appendHomolog(chrModel, chrIndex, homologIndex, container) {
 /**
  * Renders all the bands and outlining boundaries of a chromosome.
  */
-function drawChromosomeSet(chrModel, chrIndex, container) {
+function drawChromosome(chrName) {
 
-  var numChrsInSet;
+  var chrModel, chrIndex, container, numChrsInSet, transform, chrSetNumber;
+
+  chrModel = this.chromosomes[this.config.taxid][chrName];
+  chrIndex = chrModel.chrIndex;
+  container = d3.select('#' + chrModel.id + '-chromosome-set');
+
+  transform = this._layout.getChromosomeSetTranslate(chrIndex);
+
+  d3.selectAll('#' + chrModel.id + '-chromosome-set').remove();
+
+  // Append chromosome set container
+  d3.select(this.selector)
+    .append('g')
+    .attr('class', 'chromosome-set-container')
+    .attr('data-set-number', chrIndex)
+    .attr('transform', transform)
+    .attr('id', chrModel.id + '-chromosome-set');
 
   if (
     'sex' in this.config &&
@@ -464,14 +487,15 @@ function rotateAndToggleDisplay(chromosome) {
     return;
   }
 
-  var chrSetNumber =
-    Number(d3.select(chromosome.parentNode).attr('data-set-number'));
-
-  var chrNumber = Array.prototype.slice.call(
+  // TODO: Why not just use chrModel.chrIndex?
+  var chrIndex = Array.prototype.slice.call(
     d3.select(chromosome.parentNode).selectAll('g.chromosome')._groups[0]
   ).indexOf(chromosome);
 
-  return this._layout.rotate(chrSetNumber, chrNumber, chromosome);
+  var chrSetNumber =
+    Number(d3.select(chromosome.parentNode).attr('data-set-number'));
+
+  return this._layout.rotate(chrSetNumber, chrIndex, chromosome);
 }
 
 /**
@@ -484,7 +508,7 @@ function getSvg() {
 export {
   assemblyIsAccession, getDataDir, getChromosomeModel,
   getChromosomePixelsAndScale, drawChromosomeLabels, rotateChromosomeLabels,
-  round, appendHomolog, drawChromosomeSet, rotateAndToggleDisplay, getSvg,
+  round, appendHomolog, drawChromosome, rotateAndToggleDisplay, getSvg,
   Object
 };
 
