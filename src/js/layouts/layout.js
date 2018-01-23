@@ -115,7 +115,8 @@ export class Layout {
         var chrModel = ideo.chromosomes[taxid][chrName];
         var bands = chrModel.bands;
 
-        ideo.config.chrHeight = chrElement.getBoundingClientRect().width;
+        ideo.config.chrHeight =
+          d3.selectAll('#_ideogram').nodes()[0].getBoundingClientRect().width;
 
         chrModel = ideo.getChromosomeModel(bands, chrName, taxid, chrIndex);
         ideo.chromosomes[taxid][chrName] = chrModel;
@@ -712,7 +713,7 @@ export class VerticalLayout extends Layout {
     var scaleY = this._getYScale();
 
     var transform =
-      'translate(' + xOffset + ', 25) scale(' + scaleX + ', ' + scaleY + ')';
+      'translate(' + xOffset + ', 25)';
 
     d3.select(chrElement.parentNode)
       .transition()

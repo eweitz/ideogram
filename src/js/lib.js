@@ -112,7 +112,12 @@ function getChromosomePixelsAndScale(chr) {
     for (var i = 0; i < bands.length; i++) {
       band = bands[i];
       csLength = band[cs].stop - band[cs].start;
-      width = chrHeight * chr.length / maxLength[cs] * csLength / chrLength;
+
+      if (this._layout._isRotated) {
+        width = chrHeight * csLength / chrLength;
+      } else {
+        width = chrHeight * chr.length / maxLength[cs] * csLength / chrLength;
+      }
 
       bands[i].px = {
         start: pxStop,
@@ -210,8 +215,6 @@ function getChromosomeModel(bands, chromosome, taxid, chrIndex) {
     // Example: chromosome F1 in Felis catus.
     delete chr.bands;
   }
-
-  console.log('ok')
 
   return chr;
 }
@@ -402,7 +405,6 @@ function appendHomolog(chrModel, chrIndex, homologIndex, container) {
   var homologOffset, chromosome, shape, defs, adapter;
 
   defs = d3.select(this.selector + ' defs');
-
   // Get chromosome model adapter class
   adapter = ModelAdapter.getInstance(chrModel);
 
@@ -416,9 +418,28 @@ function appendHomolog(chrModel, chrIndex, homologIndex, container) {
     .attr('class', 'chromosome ' + adapter.getCssClass())
     .attr('transform', 'translate(0, ' + homologOffset + ')');
 
+
+  if (chrModel.name === '21') {
+    console.log("chrModel.bands[0].px");
+    console.log(chrModel.bands[0].px);
+  }
+
+
+  if (chrModel.name === '21') {
+    console.log("adapter._model.bands[0].px");
+    console.log(adapter._model.bands[0].px);
+  }
+
   // Render chromosome
   shape = Chromosome.getInstance(adapter, this.config, this)
     .render(chromosome, chrIndex, homologIndex);
+
+  if (chrModel.name === '21') {
+    console.log('shape');
+    console.log(shape);
+  }
+
+  d3.select('#' + chrModel.id + '-chromosome-set-clippath').remove();
 
   defs.append('clipPath')
     .attr('id', chrModel.id + '-chromosome-set-clippath')
@@ -443,19 +464,20 @@ function drawChromosome(chrName) {
 
   chrModel = this.chromosomes[this.config.taxid][chrName];
   chrIndex = chrModel.chrIndex;
-  container = d3.select('#' + chrModel.id + '-chromosome-set');
 
   transform = this._layout.getChromosomeSetTranslate(chrIndex);
 
-  d3.selectAll('#' + chrModel.id + '-chromosome-set').remove();
+  container = d3.select('#' + chrModel.id + '-chromosome-set');
 
-  // Append chromosome set container
-  d3.select(this.selector)
-    .append('g')
-    .attr('class', 'chromosome-set-container')
-    .attr('data-set-number', chrIndex)
-    .attr('transform', transform)
-    .attr('id', chrModel.id + '-chromosome-set');
+  if (container.nodes().length === 0) {
+    // Append chromosome set container
+    container = d3.select(this.selector)
+      .append('g')
+      .attr('class', 'chromosome-set-container')
+      .attr('data-set-number', chrIndex)
+      .attr('transform', transform)
+      .attr('id', chrModel.id + '-chromosome-set');
+  }
 
   if (
     'sex' in this.config &&
