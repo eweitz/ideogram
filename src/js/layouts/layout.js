@@ -110,13 +110,27 @@ export class Layout {
       // Rotate chromosome
       this.rotateForward(chrSetNumber, chrIndex, chrElement, function() {
 
-        var taxid = ideo.config.taxid;
-        var chrName = chrElement.id.split('-')[0].replace('chr', '');
-        var chrModel = ideo.chromosomes[taxid][chrName];
-        var bands = chrModel.bands;
+        var chrHeight, taxid, chrName, chrModel, bands,
+          elementWidth, windowWidth;
 
-        ideo.config.chrHeight =
-          d3.selectAll('#_ideogram').nodes()[0].getBoundingClientRect().width;
+        taxid = ideo.config.taxid;
+        chrName = chrElement.id.split('-')[0].replace('chr', '');
+        chrModel = ideo.chromosomes[taxid][chrName];
+        bands = chrModel.bands;
+
+        elementWidth = d3.selectAll('#_ideogram').nodes()[0].getBoundingClientRect().width;
+        windowWidth = window.innerWidth;
+
+        // Set chromosome height to window width or ideogram element width,
+        // whichever is smaller.  This keeps whole chromosome viewable, while
+        // also ensuring the height doesn't exceed what the user specified.
+        chrHeight = (windowWidth < elementWidth ? windowWidth : elementWidth);
+
+        // Account for chromosome label
+        // TODO: Make this dynamic, not hard-coded
+        chrHeight -= 30;
+
+        ideo.config.chrHeight = chrHeight;
 
         chrModel = ideo.getChromosomeModel(bands, chrName, taxid, chrIndex);
         ideo.chromosomes[taxid][chrName] = chrModel;

@@ -38,7 +38,7 @@ import {convertBpToPx, convertPxToBp} from './coordinate-converters';
 
 import {
   assemblyIsAccession, getDataDir, getChromosomeModel,
-  getChromosomePixelsAndScale, drawChromosomeLabels, rotateChromosomeLabels,
+  getChromosomePixels, drawChromosomeLabels, rotateChromosomeLabels,
   round, drawChromosome, appendHomolog, rotateAndToggleDisplay, getSvg,
   Object
 } from './lib';
@@ -100,7 +100,7 @@ export default class Ideogram {
     this.assemblyIsAccession = assemblyIsAccession;
     this.getDataDir = getDataDir;
     this.getChromosomeModel = getChromosomeModel;
-    this.getChromosomePixelsAndScale = getChromosomePixelsAndScale;
+    this.getChromosomePixels = getChromosomePixels;
     this.drawChromosomeLabels = drawChromosomeLabels;
     this.rotateChromosomeLabels = rotateChromosomeLabels;
     this.round = round;

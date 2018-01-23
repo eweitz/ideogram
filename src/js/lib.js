@@ -95,7 +95,7 @@ function getDataDir() {
   return '../data/bands/native/';
 }
 
-function getChromosomePixelsAndScale(chr) {
+function getChromosomePixels(chr) {
 
   var bands, chrHeight, pxStop, hasBands, maxLength, band, cs, csLength,
     width, chrLength;
@@ -113,6 +113,9 @@ function getChromosomePixelsAndScale(chr) {
       band = bands[i];
       csLength = band[cs].stop - band[cs].start;
 
+      // If ideogram is rotated (and thus showing only one chromosome),
+      // then set its width independent of the longest chromosome in this
+      // genome.
       if (this._layout._isRotated) {
         width = chrHeight * csLength / chrLength;
       } else {
@@ -195,7 +198,7 @@ function getChromosomeModel(bands, chromosome, taxid, chrIndex) {
   }
 
   chr.bands = bands;
-  chr = this.getChromosomePixelsAndScale(chr);
+  chr = this.getChromosomePixels(chr);
 
   chr.centromerePosition = '';
   if (
@@ -529,7 +532,7 @@ function getSvg() {
 
 export {
   assemblyIsAccession, getDataDir, getChromosomeModel,
-  getChromosomePixelsAndScale, drawChromosomeLabels, rotateChromosomeLabels,
+  getChromosomePixels, drawChromosomeLabels, rotateChromosomeLabels,
   round, appendHomolog, drawChromosome, rotateAndToggleDisplay, getSvg,
   Object
 };
