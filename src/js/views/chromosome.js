@@ -44,27 +44,30 @@ export class Chromosome {
    */
   render(container, chrSetNumber, chrNumber) {
 
-    var self = this;
+    var self , isPArmRendered, isQArmRendered, clipPath, opacity, fill,
+      isFullyBanded;
+
+    self = this;
 
     container = container.append('g')
       .attr('class', 'bands')
       .attr('clip-path', 'url(#' + this._model.id + '-chromosome-set-clippath)');
 
     // Render chromosome arms
-    var isPArmRendered = this._renderPArm(container, chrSetNumber, chrNumber);
-    var isQArmRendered = this._renderQArm(container, chrSetNumber, chrNumber);
+    isPArmRendered = this._renderPArm(container, chrSetNumber, chrNumber);
+    isQArmRendered = this._renderQArm(container, chrSetNumber, chrNumber);
 
     // Render range set
     this._renderRangeSet(container, chrSetNumber, chrNumber);
 
     // Push arms shape string into clipPath array
-    var clipPath = [];
+    clipPath = [];
     clipPath = this._addPArmShape(clipPath, isPArmRendered);
     clipPath = this._addQArmShape(clipPath, isQArmRendered);
 
-    var opacity = '0';
-    var fill = '';
-    var isFullyBanded = this.isFullyBanded();
+    opacity = '0';
+    fill = '';
+    isFullyBanded = this.isFullyBanded();
     if ('ancestors' in this._ideo.config && !('rangeSet' in this._ideo.config)) {
       // E.g. diploid human genome (with translucent overlay)
       fill = self._color.getArmColor(chrSetNumber, chrNumber, 0);
@@ -105,21 +108,24 @@ export class Chromosome {
   };
 
   _renderRangeSet(container, chrSetNumber, chrNumber) {
+
+    var self, rangeSet, rangesContainer, ideo, bandsXOffset;
+
     if (!('rangeSet' in this._config)) {
       return;
     }
 
-    var rangeSet = this._config.rangeSet.filter(function(range) {
+    rangeSet = this._config.rangeSet.filter(function(range) {
       return range.chr - 1 === chrSetNumber;
     }).map(function(range) {
       return new Range(range);
     });
 
-    var rangesContainer = container.append('g').attr('class', 'range-set');
+    rangesContainer = container.append('g').attr('class', 'range-set');
 
-    var self = this;
-    var ideo = self._ideo;
-    var bandsXOffset = ideo._bandsXOffset;
+    self = this;
+    ideo = self._ideo;
+    bandsXOffset = ideo._bandsXOffset;
 
     rangesContainer.selectAll('rect.range')
       .data(rangeSet)
@@ -143,9 +149,11 @@ export class Chromosome {
    * Get chromosome's shape main values
    */
   _getShapeData() {
-      // First q band from bands sequence
-    var firstQBand;
-    for (var i = 0; i < this._model.bands.length; i++) {
+
+    var firstQBand, i, lastBand, rightTerminalPosition;
+
+    // First q band from bands sequence
+    for (i = 0; i < this._model.bands.length; i++) {
       if (this._model.bands[i].name[0] === 'q') {
         firstQBand = this._model.bands[i];
         break;
@@ -153,8 +161,8 @@ export class Chromosome {
     }
 
     // Chromosome's right position
-    var lastBand = this._model.bands.length - 1;
-    var rightTerminalPosition = this._model.bands[lastBand].px.stop;
+    lastBand = this._model.bands.length - 1;
+    rightTerminalPosition = this._model.bands[lastBand].px.stop;
 
       // Properties description:
       // x1 - left terminal start position
@@ -258,9 +266,13 @@ export class Chromosome {
    * Render arm bands
    */
   _renderBands(container, chrSetNumber, chrNumber, bands, arm) {
-    var self = this;
-    var armNumber = arm === 'p' ? 0 : 1;
-    var fill = '';
+
+    var self, armNumber, fill;
+
+    self = this;
+    armNumber = arm === 'p' ? 0 : 1;
+    fill = '';
+
     if ('ancestors' in self._ideo.config && !(self.isFullyBanded())) {
       fill = self._color.getArmColor(chrSetNumber, chrNumber, armNumber);
     }
@@ -276,10 +288,10 @@ export class Chromosome {
         return 'band ' + arm + '-band ' + d.stain;
       })
       .attr('d', function(d) {
-        var start = self._ideo.round(d.px.start);
-        var length = self._ideo.round(d.px.width);
+        var start, length, x;
 
-        var x = start + length;
+        start = self._ideo.round(d.px.start);
+        length = self._ideo.round(d.px.width);
 
         return 'M ' + start + ', 0' +
               'l ' + length + ' 0 ' +
