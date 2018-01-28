@@ -88,7 +88,7 @@ export class Layout {
       });
 
     if (this._isRotated) {
-      // Reset _isRotated flag
+
       this._isRotated = false;
 
       // Rotate chromosome back
@@ -98,8 +98,9 @@ export class Layout {
         d3.selectAll(ideo.selector + ' .chrSetLabel, .chrLabel')
           .style('display', null);
       });
+
     } else {
-      // Set _isRotated flag
+
       this._isRotated = true;
 
       // Hide all other chromosomes and chromosome labels
@@ -110,25 +111,32 @@ export class Layout {
       // Rotate chromosome
       this.rotateForward(chrSetNumber, chrIndex, chrElement, function() {
 
-        var chrHeight, taxid, chrName, chrModel, bands,
-          elementWidth, windowWidth;
+        var chrHeight, taxid, chrName, chrModel, bands, ideoBounds,
+          elementLength, windowLength;
 
         taxid = ideo.config.taxid;
         chrName = chrElement.id.split('-')[0].replace('chr', '');
         chrModel = ideo.chromosomes[taxid][chrName];
         bands = chrModel.bands;
 
-        elementWidth = d3.selectAll('#_ideogram').nodes()[0].getBoundingClientRect().width;
-        windowWidth = window.innerWidth;
+        ideoBounds = document.querySelector('#_ideogram').getBoundingClientRect();
 
-        // Set chromosome height to window width or ideogram element width,
+        if (this._class === 'VerticalLayout') {
+          elementLength = ideoBounds.width;
+          windowLength = window.innerWidth;
+        } else {
+          elementLength = ideoBounds.height;
+          windowLength = ideoBounds.height;
+        }
+
+        // Set chromosome height to window length or ideogram element length,
         // whichever is smaller.  This keeps whole chromosome viewable, while
         // also ensuring the height doesn't exceed what the user specified.
-        chrHeight = (windowWidth < elementWidth ? windowWidth : elementWidth);
+        chrHeight = (windowLength < elementLength ? windowLength : elementLength);
 
         // Account for chromosome label
         // TODO: Make this dynamic, not hard-coded
-        chrHeight -= 30;
+        ideo.config.chrWidth *= 2;
 
         ideo.config.chrHeight = chrHeight;
 

@@ -173,19 +173,19 @@ function getChromosomePixels(chr) {
  * its name, DOM ID, length in base pairs or ISCN coordinates, cytogenetic
  * bands, centromere position, etc.
  */
-function getChromosomeModel(bands, chromosome, taxid, chrIndex) {
+function getChromosomeModel(bands, chrName, taxid, chrIndex) {
   var chr = {},
-    cs, hasBands;
+    cs, hasBands, firstBandArm, chrBorderSelector, firstChrBorder;
 
   cs = this.coordinateSystem;
   hasBands = (typeof bands !== 'undefined');
 
   if (hasBands) {
-    chr.name = chromosome;
+    chr.name = chrName;
     chr.length = bands[bands.length - 1][cs].stop;
     chr.type = 'nuclear';
   } else {
-    chr = chromosome;
+    chr = chrName;
   }
 
   chr.chrIndex = chrIndex;
@@ -200,17 +200,35 @@ function getChromosomeModel(bands, chromosome, taxid, chrIndex) {
   chr.bands = bands;
   chr = this.getChromosomePixels(chr);
 
+
+  if (chr.name === '1') {
+    console.log('chr.centromerePosition');
+    console.log(chr.centromerePosition);
+  }
+
+  firstBandArm = bands[0].name[0];
   chr.centromerePosition = '';
+  chrBorderSelector = this.selector + ' #' + chr.id + ' .chromosome-border';
+  firstChrBorder =
+    document.querySelector(chrBorderSelector + ' path:first-child');
+
   if (
-    hasBands && bands[0].name[0] === 'p' && bands[1].name[0] === 'q' &&
+    firstBandArm === 'q' || // Happens when re-drawing
+    hasBands && firstBandArm === 'p' && bands[1].name[0] === 'q' &&
     bands[0].bp.stop - bands[0].bp.start < 2E6
   ) {
     // As with almost all mouse chromosome, chimpanzee chr22
     chr.centromerePosition = 'telocentric';
 
-    // Remove placeholder pter band
-    chr.bands = chr.bands.slice(1);
+    if (
+      firstChrBorder === null ||
+      firstChrBorder.classList.contains('acen') === false
+    ) {
+      // Remove placeholder pter band
+      chr.bands = chr.bands.slice(1);
+    }
   }
+
 
   if (hasBands && chr.bands.length === 1) {
     // Encountered when processing an assembly that has chromosomes with
@@ -421,26 +439,9 @@ function appendHomolog(chrModel, chrIndex, homologIndex, container) {
     .attr('class', 'chromosome ' + adapter.getCssClass())
     .attr('transform', 'translate(0, ' + homologOffset + ')');
 
-
-  if (chrModel.name === '21') {
-    console.log("chrModel.bands[0].px");
-    console.log(chrModel.bands[0].px);
-  }
-
-
-  if (chrModel.name === '21') {
-    console.log("adapter._model.bands[0].px");
-    console.log(adapter._model.bands[0].px);
-  }
-
   // Render chromosome
   shape = Chromosome.getInstance(adapter, this.config, this)
     .render(chromosome, chrIndex, homologIndex);
-
-  if (chrModel.name === '21') {
-    console.log('shape');
-    console.log(shape);
-  }
 
   d3.select('#' + chrModel.id + '-chromosome-set-clippath').remove();
 
@@ -463,7 +464,7 @@ function appendHomolog(chrModel, chrIndex, homologIndex, container) {
  */
 function drawChromosome(chrName) {
 
-  var chrModel, chrIndex, container, numChrsInSet, transform, chrSetNumber;
+  var chrModel, chrIndex, container, numChrsInSet, transform, homologIndex;
 
   chrModel = this.chromosomes[this.config.taxid][chrName];
   chrIndex = chrModel.chrIndex;
@@ -496,7 +497,7 @@ function drawChromosome(chrName) {
     numChrsInSet = this._ploidy.getChromosomesNumber(chrIndex);
   }
 
-  for (var homologIndex = 0; homologIndex < numChrsInSet; homologIndex++) {
+  for (homologIndex = 0; homologIndex < numChrsInSet; homologIndex++) {
     this.appendHomolog(chrModel, chrIndex, homologIndex, container);
   }
 }
