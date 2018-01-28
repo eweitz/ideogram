@@ -10,6 +10,7 @@ module.exports = {
   output: {
     filename: 'ideogram.min.js',
     path: path.resolve(__dirname, 'dist/js'),
+    publicPath: '/dist/js',
     libraryTarget: 'umd',
     umdNamedDefine: true
   },
