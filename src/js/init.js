@@ -510,6 +510,20 @@ function init() {
       .attr('height', svgHeight)
       .html(gradients);
 
+    //Tooltip div setup w/ default styling.
+    d3.select(ideo.config.container).append("div")
+      .attr("class", "tooltip")
+      .attr("id", "tooltip")
+      .style("opacity", 0)
+      .style("position", "absolute")
+      .style("text-align", "center")
+      .style("padding", "2px")
+      .style("font", "12px sans-serif")
+      .style("background", "lightsteelblue")
+      .style("border", "0px")
+      .style("border-radius", "8px")
+      .style("pointer-events", "none");
+
     finishInit();
   }
 

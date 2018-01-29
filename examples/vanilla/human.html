@@ -3,7 +3,15 @@
 <head>
   <title>Human | Ideogram</title>
   <style>body {font: 12px Arial; line-height: 19.6px;}</style>
-  <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/ideogram-tt@0.14.6/dist/js/ideogram.min.js"></script>
+        <style>
+          html, body {
+            height: 100%;
+            font: 12px Arial;
+            line-height: 19.6px;
+          }
+      
+        </style>
 </head>
 <body>
   <h1>Human | Ideogram</h1>
@@ -27,9 +35,19 @@
   <script type="text/javascript">
 
     var ideogram = new Ideogram({
-      organism: "human"
+      organism: "human",
+      annotations: [
+          {name: "NRAS", chr: "1", start: 114704468, stop: 114716894, color: '#F00'},
+          {name: "ERBB4", chr: "2", start: 211375716, stop: 212538841, color: '#F00'},
+          {name: "FGFR3", chr: "4", start: 1793306, stop: 1808872, color: '#77F', shape: 'circle'}
+        ]
+
     });
 
+    function setTooltip() {
+      document.getElementById("tooltip").style.backgroundColor = "pink";
+    }
+    window.onload = setTooltip;
   </script>
 </body>
 </html>
