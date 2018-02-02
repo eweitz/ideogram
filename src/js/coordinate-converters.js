@@ -24,7 +24,6 @@ function convertBpToPx(chr, bp) {
   for (i = 0; i < chr.bands.length; i++) {
     band = chr.bands[i];
 
-    offset = this._bandsXOffset;
     bpStart = band.bp.start;
     bpStop = band.bp.stop;
     bpLength = bpStop - bpStart;
@@ -38,7 +37,7 @@ function convertBpToPx(chr, bp) {
       bpToIscnScale = iscnLength / bpLength;
       iscn = iscnStart + (bp - bpStart) * bpToIscnScale;
 
-      px = offset + pxStart + (pxLength * (iscn - iscnStart) / (iscnLength));
+      px = pxStart + (pxLength * (iscn - iscnStart) / (iscnLength));
 
       return px;
     }

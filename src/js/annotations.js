@@ -81,7 +81,7 @@ function processAnnotData(rawAnnots) {
       startPx = ideo.convertBpToPx(chrModel, annot.start);
       stopPx = ideo.convertBpToPx(chrModel, annot.stop);
 
-      px = Math.round((startPx + stopPx) / 2) - 28;
+      px = Math.round((startPx + stopPx) / 2);
 
       color = ideo.config.annotationsColor;
       if (ideo.config.annotationTracks) {
