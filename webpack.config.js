@@ -11,7 +11,8 @@ module.exports = {
     filename: 'ideogram.min.js',
     path: path.resolve(__dirname, 'dist/js'),
     libraryTarget: 'umd',
-    umdNamedDefine: true
+    umdNamedDefine: true,
+    publicPath: '/dist/js',
   },
   devtool: 'source-map',
   devServer: {
