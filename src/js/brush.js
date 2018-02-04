@@ -41,14 +41,19 @@ function createBrush(from, to) {
     length = ideo.config.chrHeight,
     chr = ideo.chromosomesArray[0],
     chrLengthBp = chr.bands[chr.bands.length - 1].bp.stop,
-    x0, x1,
     xOffset = this._layout.getMargin().left,
-    xScale = d3.scaleLinear()
-      .domain([0, d3.max(chr.bands, function(band) {
-        return band.bp.stop;
-      })]).range([xOffset, d3.max(chr.bands, function(band) {
-        return band.px.stop;
-      }) + xOffset]);
+    x0, x1, band, i,
+    bpDomain = [0],
+    pxRange = [0],
+    xScale;
+
+  for (i = 0; i < chr.bands.length; i++) {
+    band = chr.bands[i];
+    bpDomain.push(band.bp.stop);
+    pxRange.push(band.px.stop + xOffset);
+  }
+
+  xScale = d3.scaleLinear().domain(bpDomain).range(pxRange);
 
   if (typeof from === 'undefined') {
     from = Math.floor(chrLengthBp / 10);
@@ -76,6 +81,7 @@ function createBrush(from, to) {
     .call(ideo.brush.move, [x0, x1]);
 
   function onBrushMove() {
+
     var extent = currentEvent.selection.map(xScale.invert),
       from = Math.floor(extent[0]),
       to = Math.ceil(extent[1]);
