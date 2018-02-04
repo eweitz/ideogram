@@ -42,7 +42,7 @@ function createBrush(from, to) {
     chr = ideo.chromosomesArray[0],
     chrLengthBp = chr.bands[chr.bands.length - 1].bp.stop,
     x0, x1,
-    xOffset = 0, //this._layout.getMargin().left,
+    xOffset = this._layout.getMargin().left,
     xScale = d3.scaleLinear()
       .domain([0, d3.max(chr.bands, function(band) {
         return band.bp.stop;
