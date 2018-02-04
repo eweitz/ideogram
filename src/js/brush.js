@@ -63,10 +63,10 @@ function createBrush(from, to) {
     to = Math.ceil(from * 2);
   }
 
-  x0 = ideo.convertBpToPx(chr, from);
-  x1 = ideo.convertBpToPx(chr, to);
-
   ideo.selectedRegion = {from: from, to: to, extent: (to - from)};
+
+  x0 = ideo.convertBpToPx(chr, from) + xOffset;
+  x1 = ideo.convertBpToPx(chr, to) + xOffset;
 
   ideo.brush = d3.brushX()
     .extent([[xOffset, 0], [length + xOffset, width]])

@@ -41,7 +41,7 @@ function processAnnotData(rawAnnots) {
     chr,
     chrModel, ra,
     startPx, stopPx, px,
-    color,
+    color, xOffset,
     ideo = this;
 
   keys = rawAnnots.keys;
