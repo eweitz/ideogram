@@ -747,9 +747,9 @@ describe("Ideogram", function() {
       // Tests use case from ../examples/brush.html
 
       function callback() {
-        assert.equal(ideogram.selectedRegion.from, 7637454);
-        assert.equal(ideogram.selectedRegion.to, 12390477);
-        assert.equal(ideogram.selectedRegion.extent, 4753023);
+        assert.equal(ideogram.selectedRegion.from, 6003730);
+        assert.equal(ideogram.selectedRegion.to, 11723522);
+        assert.equal(ideogram.selectedRegion.extent, 5719792);
         assert.equal(d3.selectAll('.selection').nodes().length, 1);
         done();
       }
