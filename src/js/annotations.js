@@ -500,7 +500,7 @@ function drawProcessedAnnots(annots) {
 
         var thisChrWidth = ideo.chromosomesArray[d.chrIndex - 1].width;
 
-        if (x2 > thisChrWidth + ideo.bump) {
+        if (x2 > thisChrWidth) {
           x2 = thisChrWidth;
         }
 
