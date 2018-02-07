@@ -98,8 +98,8 @@ function processAnnotData(rawAnnots) {
       annot.chr = chr;
       annot.chrIndex = i;
       annot.px = px;
-      annot.startPx = startPx - 30;
-      annot.stopPx = stopPx - 30;
+      annot.startPx = startPx;
+      annot.stopPx = stopPx;
       annot.color = color;
 
       annots[m].annots.push(annot);
@@ -286,7 +286,7 @@ function getHistogramBars(annots) {
       bp = ideo.convertPxToBp(chrModel, px + ideo.bump);
       bar.annots.push({
         bp: bp,
-        px: px - ideo.bump,
+        px: px,
         count: 0,
         chrIndex: chrIndex,
         chrName: chr,
@@ -500,7 +500,7 @@ function drawProcessedAnnots(annots) {
 
         var thisChrWidth = ideo.chromosomesArray[d.chrIndex - 1].width;
 
-        if (x2 > thisChrWidth) {
+        if (x2 > thisChrWidth + ideo.bump) {
           x2 = thisChrWidth;
         }
 
