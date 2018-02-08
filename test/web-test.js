@@ -565,9 +565,6 @@ describe("Ideogram", function() {
       // edge of the p or q arm of chromosome 1
         var armIndex = (arm === 'p') ? 1 : 2,
           ter = d3.selectAll('.chromosome-border path:nth-child(' + armIndex + ')'),
-          terBox = ter.nodes()[0].getBBox(),
-          terX = terBox.x,
-          terWidth = terBox.width,
           terEnd,
           inst = ter.attr('d').split(' '), // Path instructions in description ('d')
           terCurve = parseInt(inst[4].replace('Q', '').split(',')[0]),
@@ -592,13 +589,12 @@ describe("Ideogram", function() {
           qterEnd = getTerEnd("q"),
           tmp = d3.selectAll("#chr1-9606 .annot").nodes(),
           tmp = tmp[tmp.length - 1].getBBox(),
-          bump = ideogram.bump,
           lastAnnotEnd = tmp.x + tmp.width;
 
           // console.log("pterEnd - firstAnnotEnd: " + (pterEnd - firstAnnotEnd));
           // console.log("qterEnd - lastAnnotEnd: " + (qterEnd - lastAnnotEnd));
-          assert.isBelow(pterEnd - firstAnnotEnd - bump, 3);
-          assert.isAbove(qterEnd - lastAnnotEnd - bump, -20);
+          assert.isBelow(pterEnd - firstAnnotEnd, -1);
+          assert.isAbove(qterEnd - lastAnnotEnd, -18);
 
       done();
     }
