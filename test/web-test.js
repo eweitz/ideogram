@@ -641,12 +641,12 @@ describe("Ideogram", function() {
       annotationsLayout: 'histogram',
       chromosomes: ['17'],
 
-      brush: true,
+      brush: 'chr17:5000000-10000000',
       onBrushMove: function () {},
       onLoad: function () {
-        this.createBrush(1, 2);
-        this.createBrush(40900000, 44900000);
-        this.createBrush(81094108, 81094109);
+        this.createBrush('17', 1, 2);
+        this.createBrush('17', 40900000, 44900000);
+        this.createBrush('17', 81094108, 81094109);
 
         // Closest test for https://github.com/eweitz/ideogram/issues/91
         var bandQ2131Left = getLeft('#chr17-9606-q21-31');
@@ -831,9 +831,9 @@ describe("Ideogram", function() {
       // Tests use case from ../examples/brush.html
 
       function callback() {
-        assert.equal(ideogram.selectedRegion.from, 6003730);
-        assert.equal(ideogram.selectedRegion.to, 11723522);
-        assert.equal(ideogram.selectedRegion.extent, 5719792);
+        assert.equal(ideogram.selectedRegion.from, 5000000);
+        assert.equal(ideogram.selectedRegion.to, 10000000);
+        assert.equal(ideogram.selectedRegion.extent, 5000000);
         assert.equal(d3.selectAll('.selection').nodes().length, 1);
         done();
       }
@@ -841,7 +841,7 @@ describe("Ideogram", function() {
       var config = {
         organism: 'human',
         chromosome: '19',
-        brush: true,
+        brush: 'chr19:5000000-10000000',
         chrHeight: 900,
         orientation: 'horizontal',
         onBrushMove: callback, // placeholder
