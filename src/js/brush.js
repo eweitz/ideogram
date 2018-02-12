@@ -74,7 +74,7 @@ function createBrush(chr, from, to) {
     pxRange.push(band.px.start + xOffset);
   }
 
-  bpDomain.push(lastBand.bp.stop);
+  bpDomain.push(lastBand.bp.stop - 1);
   pxRange.push(lastBand.px.stop + xOffset);
 
   xScale = d3.scaleLinear().domain(bpDomain).range(pxRange);
