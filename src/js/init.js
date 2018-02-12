@@ -588,8 +588,8 @@ function init() {
         ideo.drawChromosomeLabels(ideo.chromosomes);
       }
 
-      if (ideo.config.brush === true) {
-        ideo.createBrush();
+      if (ideo.config.brush) {
+        ideo.createBrush(ideo.config.brush);
       }
 
       if (ideo.config.annotations) {

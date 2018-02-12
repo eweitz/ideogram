@@ -32,23 +32,43 @@ function onBrushMove() {
 /**
  * Creates a sliding window along a chromosome
  *
- * @param from Genomic start coordinate, in base pairs
- * @param to Genomic end coordinate, in base pairs
+ * @param chr Chromosome name (e.g. '1') or range, e.g. 'chr1:104325484-119977655'
+ * @param from Genomic start coordinate in base pairs, e.g. 104325484
+ * @param to Genomic end coordinate in base pairs, e.g. 119977655
  */
-function createBrush(from, to) {
+function createBrush(chr, from, to) {
   var ideo = this,
     width = ideo.config.chrWidth + 6.5,
     length = ideo.config.chrHeight,
-    chr = ideo.chromosomesArray[0],
-    chrLengthBp = chr.bands[chr.bands.length - 1].bp.stop,
     xOffset = this._layout.getMargin().left,
+    chrModel, cm, chrLengthBp, nameSplit, fromToSplit,
     x0, x1, band, i,
     bpDomain = [0],
     pxRange = [0],
     xScale;
 
-  for (i = 0; i < chr.bands.length; i++) {
-    band = chr.bands[i];
+  // Account for calls like createBrush('chr1:104325484-119977655')
+  nameSplit = chr.split(':');
+  fromToSplit = chr.split('-');
+  if (nameSplit.length > 1 && fromToSplit.length > 1) {
+    chr = nameSplit[0].replace('chr', '');
+    fromToSplit = nameSplit[1].split('-');
+    from = parseInt(fromToSplit[0]);
+    to = parseInt(fromToSplit[1]);
+  }
+
+  for (i = 0; i < ideo.chromosomesArray.length; i++) {
+    cm = ideo.chromosomesArray[i];
+    if (cm.name === chr) {
+      chrModel = cm;
+      break;
+    }
+  }
+
+  chrLengthBp = chrModel.bands.slice(-1)[0].bp.stop;
+
+  for (i = 0; i < chrModel.bands.length; i++) {
+    band = chrModel.bands[i];
     bpDomain.push(band.bp.stop);
     pxRange.push(band.px.stop + xOffset);
   }
@@ -65,8 +85,8 @@ function createBrush(from, to) {
 
   ideo.selectedRegion = {from: from, to: to, extent: (to - from)};
 
-  x0 = ideo.convertBpToPx(chr, from) + xOffset;
-  x1 = ideo.convertBpToPx(chr, to) + xOffset;
+  x0 = ideo.convertBpToPx(chrModel, from) + xOffset;
+  x1 = ideo.convertBpToPx(chrModel, to) + xOffset;
 
   ideo.brush = d3.brushX()
     .extent([[xOffset, 0], [length + xOffset, width]])
