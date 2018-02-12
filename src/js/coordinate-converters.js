@@ -19,7 +19,9 @@
  */
 function convertBpToPx(chr, bp) {
   var i, band, bpToIscnScale, iscn, px, pxStart, pxLength, iscnStart,
-    iscnStop, iscnLength, bpStart, bpStop, bpLength;
+    xOffset, iscnStop, iscnLength, bpStart, bpStop, bpLength;
+
+  xOffset = this._layout.getMargin().left;
 
   for (i = 0; i < chr.bands.length; i++) {
     band = chr.bands[i];
@@ -37,7 +39,7 @@ function convertBpToPx(chr, bp) {
       bpToIscnScale = iscnLength / bpLength;
       iscn = iscnStart + (bp - bpStart) * bpToIscnScale;
 
-      px = pxStart + (pxLength * (iscn - iscnStart) / (iscnLength));
+      px = xOffset + pxStart + (pxLength * (iscn - iscnStart) / (iscnLength));
 
       return px;
     }

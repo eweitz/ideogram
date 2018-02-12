@@ -42,9 +42,9 @@ function createBrush(chr, from, to) {
     length = ideo.config.chrHeight,
     xOffset = this._layout.getMargin().left,
     chrModel, cm, chrLengthBp, nameSplit, fromToSplit,
-    x0, x1, band, i,
-    bpDomain = [0],
-    pxRange = [0],
+    lastBand, x0, x1, band, i,
+    bpDomain = [1],
+    pxRange = [1],
     xScale;
 
   // Account for calls like createBrush('chr1:104325484-119977655')
@@ -65,13 +65,17 @@ function createBrush(chr, from, to) {
     }
   }
 
-  chrLengthBp = chrModel.bands.slice(-1)[0].bp.stop;
+  lastBand = chrModel.bands.slice(-1)[0];
+  chrLengthBp = lastBand.bp.stop;
 
   for (i = 0; i < chrModel.bands.length; i++) {
     band = chrModel.bands[i];
-    bpDomain.push(band.bp.stop);
-    pxRange.push(band.px.stop + xOffset);
+    bpDomain.push(band.bp.start);
+    pxRange.push(band.px.start + xOffset);
   }
+
+  bpDomain.push(lastBand.bp.stop);
+  pxRange.push(lastBand.px.stop + xOffset);
 
   xScale = d3.scaleLinear().domain(bpDomain).range(pxRange);
 
@@ -85,8 +89,8 @@ function createBrush(chr, from, to) {
 
   ideo.selectedRegion = {from: from, to: to, extent: (to - from)};
 
-  x0 = ideo.convertBpToPx(chrModel, from) + xOffset;
-  x1 = ideo.convertBpToPx(chrModel, to) + xOffset;
+  x0 = ideo.convertBpToPx(chrModel, from);
+  x1 = ideo.convertBpToPx(chrModel, to);
 
   ideo.brush = d3.brushX()
     .extent([[xOffset, 0], [length + xOffset, width]])
