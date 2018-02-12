@@ -54,7 +54,7 @@ function createBrush(chr, from, to) {
     chr = nameSplit[0].replace('chr', '');
     fromToSplit = nameSplit[1].split('-');
     from = parseInt(fromToSplit[0]);
-    to = parseInt(fromToSplit[1]);
+    to = parseInt(fromToSplit[1] - 1);
   }
 
   for (i = 0; i < ideo.chromosomesArray.length; i++) {
