@@ -17,6 +17,18 @@ module.exports = {
   devtool: 'source-map',
   devServer: {
     contentBase: path.join(__dirname, '.'),
+    historyApiFallback: {
+      rewrites: [{
+        from: /^\/examples\/vanilla\/.*$/,
+        to: function(context) {
+          if (context.match === '/examples/vanilla/') {
+            return context.match + '/index.html';
+          } else {
+            return context.match + '.html';
+          }
+        }
+      }]
+    }
   },
   module: {
     rules: [
