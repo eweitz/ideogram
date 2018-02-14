@@ -87,7 +87,13 @@ function createBrush(chr, from, to) {
     to = Math.ceil(from * 2);
   }
 
-  ideo.selectedRegion = {from: from, to: to, extent: (to - from)};
+  // Genomics web UIs are 1-based, fully closed.
+  // I.e. If start = 20 bp and stop = 10 bp, then extent = 11 bp.
+  // Details:
+  // http://genome.ucsc.edu/blog/the-ucsc-genome-browser-coordinate-counting-systems/
+  // https://www.biostars.org/p/84686/
+  var extent = to - from + 1;
+  ideo.selectedRegion = {from: from, to: to, extent: extent};
 
   x0 = ideo.convertBpToPx(chrModel, from);
   x1 = ideo.convertBpToPx(chrModel, to);
