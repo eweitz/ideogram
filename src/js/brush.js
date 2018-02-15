@@ -95,8 +95,8 @@ function createBrush(chr, from, to) {
   var extent = to - from + 1;
   ideo.selectedRegion = {from: from, to: to, extent: extent};
 
-  x0 = ideo.convertBpToPx(chrModel, from);
-  x1 = ideo.convertBpToPx(chrModel, to);
+  x0 = ideo.convertBpToPx(chrModel, from) + xOffset;
+  x1 = ideo.convertBpToPx(chrModel, to) + xOffset;
 
   ideo.brush = d3.brushX()
     .extent([[xOffset, 0], [length + xOffset, width]])

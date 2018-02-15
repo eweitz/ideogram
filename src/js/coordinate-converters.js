@@ -18,10 +18,8 @@
  * from the start of the chromosome.
  */
 function convertBpToPx(chr, bp) {
-  var i, band, bpToIscnScale, iscn, px, pxStart, pxLength, iscnStart,
-    xOffset, iscnStop, iscnLength, bpStart, bpStop, bpLength;
-
-  xOffset = this._layout.getMargin().left;
+  var i, band, bpToIscnScale, iscn, px, pxStart, pxLength,
+    iscnStart, iscnStop, iscnLength, bpStart, bpStop, bpLength;
 
   for (i = 0; i < chr.bands.length; i++) {
     band = chr.bands[i];
@@ -39,7 +37,7 @@ function convertBpToPx(chr, bp) {
       bpToIscnScale = iscnLength / bpLength;
       iscn = iscnStart + (bp - bpStart) * bpToIscnScale;
 
-      px = xOffset + pxStart + (pxLength * (iscn - iscnStart) / (iscnLength));
+      px = pxStart + (pxLength * (iscn - iscnStart) / (iscnLength));
 
       return px;
     }

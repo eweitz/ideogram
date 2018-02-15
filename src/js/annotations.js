@@ -40,14 +40,11 @@ function processAnnotData(rawAnnots) {
     i, j, k, m, annot, annots, annotsByChr,
     chr,
     chrModel, ra,
-    startPx, stopPx, px,
-    color, xOffset,
+    startPx, stopPx, px, color,
     ideo = this;
 
   keys = rawAnnots.keys;
   rawAnnots = rawAnnots.annots;
-
-  xOffset = this._layout.getMargin().left;
 
   annots = [];
 
@@ -83,7 +80,7 @@ function processAnnotData(rawAnnots) {
       startPx = ideo.convertBpToPx(chrModel, annot.start);
       stopPx = ideo.convertBpToPx(chrModel, annot.stop);
 
-      px = Math.round((startPx + stopPx) / 2) - xOffset;
+      px = Math.round((startPx + stopPx) / 2);
 
       color = ideo.config.annotationsColor;
       if (ideo.config.annotationTracks) {
