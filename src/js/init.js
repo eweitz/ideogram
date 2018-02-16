@@ -27,9 +27,6 @@ function configure(config) {
   // without picking up prior ideogram's settings
   this.config = JSON.parse(JSON.stringify(config));
 
-  // TODO: Document this
-  this._bandsXOffset = 30;
-
   if (!this.config.debug) {
     this.config.debug = false;
   }

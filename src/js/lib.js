@@ -69,7 +69,7 @@ function assemblyIsAccession() {
  */
 function getDataDir() {
   var scripts = document.scripts,
-    host = location.host,
+    host = location.host.split(':')[0],
     version = Ideogram.version,
     script, tmp, protocol, dataDir;
 

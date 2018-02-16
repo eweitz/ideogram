@@ -41,7 +41,7 @@ function processAnnotData(rawAnnots) {
     chr,
     chrModel, ra,
     startPx, stopPx, px,
-    color,
+    color, xOffset,
     ideo = this;
 
   keys = rawAnnots.keys;
@@ -81,7 +81,7 @@ function processAnnotData(rawAnnots) {
       startPx = ideo.convertBpToPx(chrModel, annot.start);
       stopPx = ideo.convertBpToPx(chrModel, annot.stop);
 
-      px = Math.round((startPx + stopPx) / 2) - 28;
+      px = Math.round((startPx + stopPx) / 2);
 
       color = ideo.config.annotationsColor;
       if (ideo.config.annotationTracks) {
@@ -98,8 +98,8 @@ function processAnnotData(rawAnnots) {
       annot.chr = chr;
       annot.chrIndex = i;
       annot.px = px;
-      annot.startPx = startPx - 30;
-      annot.stopPx = stopPx - 30;
+      annot.startPx = startPx;
+      annot.stopPx = stopPx;
       annot.color = color;
 
       annots[m].annots.push(annot);
@@ -286,7 +286,7 @@ function getHistogramBars(annots) {
       bp = ideo.convertPxToBp(chrModel, px + ideo.bump);
       bar.annots.push({
         bp: bp,
-        px: px - ideo.bump,
+        px: px,
         count: 0,
         chrIndex: chrIndex,
         chrName: chr,
