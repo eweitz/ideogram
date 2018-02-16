@@ -93,14 +93,14 @@
 
       var org, chrHeight, rows, config;
 
-      history.pushState(null, null, "?org=" + org);
-      org = org.split("-").join(" ");
+      history.pushState(null, null, '?org=' + org);
+      org = org.split('-').join(' ');
 
       if (
-        org === "canis lupus familiaris" ||
-        org === "bos taurus" ||
-        org === "gallus gallus" ||
-        org === "leishmania donovani"
+        org === 'canis lupus familiaris' ||
+        org === 'bos taurus' ||
+        org === 'gallus gallus' ||
+        org === 'leishmania donovani'
       ) {
         chrHeight = 200;
         rows = 2;
@@ -111,7 +111,7 @@
 
       config = {
         organism: org,
-        container: "#container",
+        container: '#container',
         chrWidth: 10,
         chrHeight: chrHeight,
         rows: rows,
@@ -124,21 +124,21 @@
     var org,
         d3 = Ideogram.d3;
 
-    d3.selectAll("input").on("change", function(d) {
+    d3.selectAll('input').on('change', function(d) {
       var org;
-      d3.select("#_ideogram").remove();
+      d3.select('#_ideogram').remove();
       // d3.event.preventDefault();
-      org = d3.select(this).attr("value");
+      org = d3.select(this).attr('value');
       loadOrganism(org);
     });
 
-    if (window.location.search !== "") {
-      org = window.location.search.split("=")[1];
+    if (window.location.search !== '') {
+      org = window.location.search.split('=')[1];
     } else {
-      org = "rattus-norvegicus";
+      org = 'rattus-norvegicus';
     }
 
-    d3.select("#" + org).property("checked", true);
+    d3.select('#' + org).property('checked', true);
     loadOrganism(org);
 
   </script>
