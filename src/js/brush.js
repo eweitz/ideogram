@@ -40,7 +40,7 @@ function createBrush(chr, from, to) {
   var ideo = this,
     width = ideo.config.chrWidth + 6.5,
     length = ideo.config.chrHeight,
-    xOffset = this._layout.getMargin().left,
+    xOffset = this._layout.margin.left,
     chrModel, cm, chrLengthBp, nameSplit, fromToSplit,
     lastBand, x0, x1, band, i,
     bpDomain = [1],

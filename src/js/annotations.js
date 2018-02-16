@@ -539,7 +539,7 @@ function drawSynteny(syntenicRegions) {
     .insert('g', ':first-child')
     .attr('class', 'synteny');
 
-  xOffset = ideo._layout.getMargin().left;
+  xOffset = ideo._layout.margin.left;
 
   for (i = 0; i < syntenicRegions.length; i++) {
     regions = syntenicRegions[i];

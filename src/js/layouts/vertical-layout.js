@@ -13,7 +13,7 @@
 //     super(config, ideo);
 //     this._class = 'VerticalLayout';
 //       // Layout margins
-//     this._margin = {
+//     this.margin = {
 //       top: 30,
 //       left: 15
 //     };
@@ -73,7 +73,7 @@
 //   }
 //
 //   getHeight() {
-//     return this._config.chrHeight + this._margin.top * 1.5;
+//     return this._config.chrHeight + this.margin.top * 1.5;
 //   }
 //
 //   getWidth() {
@@ -89,7 +89,7 @@
 //   }
 //
 //   getChromosomeSetTranslate(setNumber) {
-//     var marginTop = this._margin.top;
+//     var marginTop = this.margin.top;
 //     var chromosomeSetYTranslate = this.getChromosomeSetYTranslate(setNumber);
 //     return (
 //       'rotate(90) ' +
