@@ -122,7 +122,7 @@ function configure(config) {
   }
 
   if (!this.config.brush) {
-    this.config.brush = false;
+    this.config.brush = null;
   }
 
   if (!this.config.rows) {
