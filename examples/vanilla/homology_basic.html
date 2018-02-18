@@ -20,8 +20,8 @@
 function onIdeogramLoad() {
 
 	var chrs = ideogram.chromosomes,
-		chrX = chrs["9606"]["X"],
-		chrY = chrs["9606"]["Y"];
+		chrX = chrs['9606']['X'],
+		chrY = chrs['9606']['Y'];
 
 	var par1X = {chr: chrX, start: 10001, stop: 2781479};
 	var par1Y = {chr: chrY, start: 10001, stop: 2781479};
@@ -30,20 +30,20 @@ function onIdeogramLoad() {
 	var par2Y = {chr: chrY, start: 56887903, stop: 57217415};
 
 	var pseudoautosomalRegions = [
-		{"r1": par1X, "r2": par1Y},
-		{"r1": par2X, "r2": par2Y}
+		{'r1': par1X, 'r2': par1Y},
+		{'r1': par2X, 'r2': par2Y}
 	];
 
 	ideogram.drawSynteny(pseudoautosomalRegions);
 }
 
 var config = {
-  organism: "human",
-  chromosomes: ["X", "Y"],
+  organism: 'human',
+  chromosomes: ['X', 'Y'],
   chrHeight: 400,
   chrMargin: 200,
   showBandLabels: true,
-  perspective: "comparative",
+  perspective: 'comparative',
   rotatable: false,
   onLoad: onIdeogramLoad
 };

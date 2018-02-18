@@ -40,8 +40,7 @@ function processAnnotData(rawAnnots) {
     i, j, k, m, annot, annots, annotsByChr,
     chr,
     chrModel, ra,
-    startPx, stopPx, px,
-    color, xOffset,
+    startPx, stopPx, px, color,
     ideo = this;
 
   keys = rawAnnots.keys;
@@ -532,13 +531,15 @@ function drawSynteny(syntenicRegions) {
 
   var r1, r2,
     syntenies,
-    i, color, opacity,
+    i, color, opacity, xOffset,
     regionID, regions, syntenicRegion,
     ideo = this;
 
   syntenies = d3.select(ideo.selector)
     .insert('g', ':first-child')
     .attr('class', 'synteny');
+
+  xOffset = ideo._layout.margin.left;
 
   for (i = 0; i < syntenicRegions.length; i++) {
     regions = syntenicRegions[i];
@@ -556,10 +557,10 @@ function drawSynteny(syntenicRegions) {
       opacity = regions.opacity;
     }
 
-    r1.startPx = this.convertBpToPx(r1.chr, r1.start);
-    r1.stopPx = this.convertBpToPx(r1.chr, r1.stop);
-    r2.startPx = this.convertBpToPx(r2.chr, r2.start);
-    r2.stopPx = this.convertBpToPx(r2.chr, r2.stop);
+    r1.startPx = this.convertBpToPx(r1.chr, r1.start) + xOffset;
+    r1.stopPx = this.convertBpToPx(r1.chr, r1.stop) + xOffset;
+    r2.startPx = this.convertBpToPx(r2.chr, r2.start) + xOffset;
+    r2.stopPx = this.convertBpToPx(r2.chr, r2.stop) + xOffset;
 
     regionID = (
       r1.chr.id + '_' + r1.start + '_' + r1.stop + '_' +

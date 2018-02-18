@@ -88,7 +88,7 @@ String.  Optional.  Default: latest RefSeq assembly for specified organism.  The
 Number.  Optional.  Default: 3.  The pixel width of bars drawn when `annotationsLayout: 'histogram'`.  Example in [Annotations, histogram](https://eweitz.github.io/ideogram/annotations_histogram.html).
 
 ## brush
-Boolean.  Optional.  Default: false.  Flag to set a [brush](https://github.com/d3/d3-brush) (a.k.a. slider window) on a chromosome.  Useful when ideogram consists of one chromosome and you want to be able to focus on a region within that chromosome.  Example in [Brush](https://eweitz.github.io/ideogram/brush.html).
+String.  Optional.  Default: null.  Genomic coordinate range (e.g. "chr1:104325484-119977655") for a [brush](https://github.com/d3/d3-brush) on a chromosome.  Useful when ideogram consists of one chromosome and you want to be able to focus on a region within that chromosome, and create an interactive sliding window to other regions.  Example in [Brush](https://eweitz.github.io/ideogram/brush.html).
 
 ## chrHeight
 Number.  Optional.  Default: 400.  The pixel height of the tallest chromosome in the ideogram.  Examples in [Layout, small](https://eweitz.github.io/ideogram/layout_small.html) and [Annotations, basic](https://eweitz.github.io/ideogram/annotations_basic.html).
