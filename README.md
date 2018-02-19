@@ -13,11 +13,7 @@ Check out [live examples](https://eweitz.github.io/ideogram/), get [up and runni
 
 To link directly to the latest release, copy this snippet:
 ```
-<<<<<<< HEAD
-<script src="https://unpkg.com/ideogram@0.14.0/dist/js/ideogram.min.js"></script>
-=======
-<script src="https://unpkg.com/ideogram@0.14.0/dist/js/ideogram.min.js"></script>
->>>>>>> ce97ac39267ff93efa92c57cb467465fa1b7eda1
+<script src="https://unpkg.com/ideogram@0.15.0/dist/js/ideogram.min.js"></script>
 ```
 
 You can also easily use the library locally:
@@ -43,10 +39,14 @@ import Ideogram from 'ideogram';
 ```html
 <head>
 <<<<<<< HEAD
+<<<<<<< HEAD
   <script src="https://unpkg.com/ideogram@0.14.0/dist/js/ideogram.min.js"></script>
 =======
   <script src="https://unpkg.com/ideogram@0.14.0/dist/js/ideogram.min.js"></script>
 >>>>>>> ce97ac39267ff93efa92c57cb467465fa1b7eda1
+=======
+  <script src="https://unpkg.com/ideogram@0.15.0/dist/js/ideogram.min.js"></script>
+>>>>>>> 561160a256bddfbdb9d751a45cf5526e783d28ab
 </head>
 <body>
   <script>
