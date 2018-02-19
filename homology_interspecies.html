@@ -28,15 +28,15 @@
       // Mouse: http://www.ncbi.nlm.nih.gov/gene/56717#genomic-context
 
       var chrs = ideogram.chromosomes,
-        chr1 = chrs["9606"]["1"],
-        chr4 = chrs["10090"]["4"],
+        chr1 = chrs['9606']['1'],
+        chr4 = chrs['10090']['4'],
         syntenicRegions = [];
 
       range1 = {
         chr: chr1,
         start: 11106531,
         stop: 11262557,
-        orientation: "reverse"
+        orientation: 'reverse'
       };
 
       range2 = {
@@ -45,23 +45,23 @@
         stop: 148557685
       };
 
-      syntenicRegions.push({"r1": range1, "r2": range2});
+      syntenicRegions.push({'r1': range1, 'r2': range2});
 
       ideogram.drawSynteny(syntenicRegions);
 
     }
 
   var config = {
-    organism: ["human", "mouse"],
+    organism: ['human', 'mouse'],
     chromosomes: {
-      "human": ["1"],
-      "mouse": ["4"]
+      'human': ['1'],
+      'mouse': ['4']
     },
     chrHeight: 400,
     chrMargin: 50,
     fullChromosomeLabels: true,
     showBandLabels: true,
-    perspective: "comparative",
+    perspective: 'comparative',
     rotatable: false,
     onLoad: onIdeogramLoad
   };

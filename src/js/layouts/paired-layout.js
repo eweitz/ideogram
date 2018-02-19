@@ -14,7 +14,7 @@
 //
 //     this._class = 'PairedLayout';
 //
-//     this._margin = {
+//     this.margin = {
 //       left: 30
 //     };
 //   }
@@ -111,7 +111,7 @@
 //   }
 //
 //   getHeight() {
-//     return this._config.chrHeight + this._margin.left * 1.5;
+//     return this._config.chrHeight + this.margin.left * 1.5;
 //   }
 //
 //   getWidth() {
@@ -158,7 +158,7 @@
 //     var chromosomeSetYTranslate = this.getChromosomeSetYTranslate(setNumber);
 //     return (
 //       'rotate(90) ' +
-//       'translate(' + this._margin.left + ', -' + chromosomeSetYTranslate + ')'
+//       'translate(' + this.margin.left + ', -' + chromosomeSetYTranslate + ')'
 //     );
 //   }
 //

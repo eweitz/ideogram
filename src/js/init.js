@@ -27,9 +27,6 @@ function configure(config) {
   // without picking up prior ideogram's settings
   this.config = JSON.parse(JSON.stringify(config));
 
-  // TODO: Document this
-  this._bandsXOffset = 30;
-
   if (!this.config.debug) {
     this.config.debug = false;
   }
@@ -125,7 +122,7 @@ function configure(config) {
   }
 
   if (!this.config.brush) {
-    this.config.brush = false;
+    this.config.brush = null;
   }
 
   if (!this.config.rows) {
@@ -591,8 +588,8 @@ function init() {
         ideo.drawChromosomeLabels(ideo.chromosomes);
       }
 
-      if (ideo.config.brush === true) {
-        ideo.createBrush();
+      if (ideo.config.brush) {
+        ideo.createBrush(ideo.config.brush);
       }
 
       if (ideo.config.annotations) {

@@ -50,7 +50,7 @@ export class Layout {
 
   // Get chart left margin
   _getLeftMargin() {
-    return this._margin.left;
+    return this.margin.left;
   }
 
   // Get rotated chromosome y scale
@@ -136,10 +136,6 @@ export class Layout {
     );
   }
 
-  // Get layout margin
-  getMargin() {
-    return this._margin;
-  }
   //
   // // Get SVG element height
   // getHeight() {
@@ -225,7 +221,7 @@ export class HorizontalLayout extends Layout {
   constructor(config, ideo) {
     super(config, ideo);
     this._class = 'HorizontalLayout';
-    this._margin = {
+    this.margin = {
       left: 20,
       top: 30
     };
@@ -313,7 +309,7 @@ export class HorizontalLayout extends Layout {
   }
 
   getWidth() {
-    return this._config.chrHeight + this._margin.top * 1.5;
+    return this._config.chrHeight + this.margin.top * 1.5;
   }
 
   getChromosomeSetLabelAnchor() {
@@ -417,7 +413,7 @@ export class PairedLayout extends Layout {
 
     this._class = 'PairedLayout';
 
-    this._margin = {
+    this.margin = {
       left: 30
     };
   }
@@ -514,7 +510,7 @@ export class PairedLayout extends Layout {
   }
 
   getHeight() {
-    return this._config.chrHeight + this._margin.left * 1.5;
+    return this._config.chrHeight + this.margin.left * 1.5;
   }
 
   getWidth() {
@@ -561,7 +557,7 @@ export class PairedLayout extends Layout {
     var chromosomeSetYTranslate = this.getChromosomeSetYTranslate(setNumber);
     return (
       'rotate(90) ' +
-      'translate(' + this._margin.left + ', -' + chromosomeSetYTranslate + ')'
+      'translate(' + this.margin.left + ', -' + chromosomeSetYTranslate + ')'
     );
   }
 
@@ -578,7 +574,7 @@ export class SmallLayout extends Layout {
 
     this._class = 'SmallLayout';
 
-    this._margin = {
+    this.margin = {
       left: 36.5,
       top: 10
     };
@@ -610,7 +606,7 @@ export class SmallLayout extends Layout {
 
   getHeight() {
     var chrHeight = this._config.chrHeight;
-    return this._config.rows * (chrHeight + this._margin.top * 1.5);
+    return this._config.rows * (chrHeight + this.margin.top * 1.5);
   }
 
   getWidth() {
@@ -640,10 +636,10 @@ export class SmallLayout extends Layout {
     var yOffset;
 
     if (setNumber > rowSize - 1) {
-      xOffset = this._margin.left + this._config.chrHeight * 1.4;
+      xOffset = this.margin.left + this._config.chrHeight * 1.4;
       yOffset = this.getChromosomeSetYTranslate(setNumber - rowSize);
     } else {
-      xOffset = this._margin.left;
+      xOffset = this.margin.left;
       yOffset = this.getChromosomeSetYTranslate(setNumber);
     }
 
@@ -655,7 +651,7 @@ export class SmallLayout extends Layout {
     var additionalPadding = this._getAdditionalOffset();
     // If no detailed description provided just use one formula for all cases
     return (
-      this._margin.left * (setNumber) + this._config.chrWidth +
+      this.margin.left * (setNumber) + this._config.chrWidth +
       additionalPadding * 2 + additionalPadding * setNumber
     );
   }
@@ -682,7 +678,7 @@ export class VerticalLayout extends Layout {
     super(config, ideo);
     this._class = 'VerticalLayout';
     // Layout margins
-    this._margin = {
+    this.margin = {
       top: 30,
       left: 15
     };
@@ -741,7 +737,7 @@ export class VerticalLayout extends Layout {
   }
 
   getHeight() {
-    return this._config.chrHeight + this._margin.top * 1.5;
+    return this._config.chrHeight + this.margin.top * 1.5;
   }
 
   getWidth() {
@@ -757,7 +753,7 @@ export class VerticalLayout extends Layout {
   }
 
   getChromosomeSetTranslate(setNumber) {
-    var marginTop = this._margin.top;
+    var marginTop = this.margin.top;
     var chromosomeSetYTranslate = this.getChromosomeSetYTranslate(setNumber);
     return (
       'rotate(90) ' +

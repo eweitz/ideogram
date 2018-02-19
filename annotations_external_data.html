@@ -27,52 +27,51 @@
   */
   function getAndDrawAcmgGenes() {
 
-    var acmgGenes, gene, i, annots, annot,
-        geneClause, geneID, geneIDs, topWeight,
+    var acmgGenes, i, annots, geneClause, geneID, geneIDs, topWeight,
         eutils, esearch, esummary, url, defaultParams;
 
     geneIDs = [];
     annots = [];
 
     // EUtils is a web API to access NCBI data
-    eutils = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/";
-    defaultParams = "?db=gene&retmode=json&retmax=100";
+    eutils = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/';
+    defaultParams = '?db=gene&retmode=json&retmax=100';
 
     // Use ESearch to get NCBI Gene ID for gene name, e.g. BRCA1 -> 672
-    esearch = eutils + "esearch.fcgi" + defaultParams;
+    esearch = eutils + 'esearch.fcgi' + defaultParams;
 
     // Use ESummary to get genomic coordinates for given gene IDs
-    esummary = eutils + "esummary.fcgi" + defaultParams;
+    esummary = eutils + 'esummary.fcgi' + defaultParams;
 
     acmgGenes = [
-      "APC", "MYH11", "ACTA2", "MYLK", "TMEM43", "DSP", "PKP2", "DSG2", "DSC2",
-      "BRCA1", "BRCA2", "SCN5A", "RYR2", "LMNA", "MYBPC3", "COL3A1", "GLA",
-      "APOB", "LDLR", "MYH7", "TPM1", "MYBPC3", "PRKAG2", "TNNI3", "MYL3",
-      "MYL2", "ACTC1", "RET", "PCSK9", "TNNT2", "TP53", "TGFBR1", "TGFBR2",
-      "TGFBR1", "TGFBR2", "SMAD3", "KCNQ1", "KCNH2", "SCN5A", "MLH1", "MSH2",
-      "MSH6", "PMS2", "RYR1", "CACNA1S", "FBN1", "TGFBR1", "MEN1", "RET",
-      "MUTYH", "NF2", "SDHD", "SDHAF2", "SDHC", "SDHB", "STK11", "MUTYH",
-      "PTEN", "RB1", "TSC1", "TSC2", "VHL"
+      'APC', 'MYH11', 'ACTA2', 'TMEM43', 'DSP', 'PKP2', 'DSG2', 'DSC2',
+      'BRCA1', 'BRCA2', 'SCN5A', 'RYR2', 'LMNA', 'MYBPC3', 'COL3A1', 'GLA',
+      'APOB', 'LDLR', 'MYH7', 'TPM1', 'PRKAG2', 'TNNI3', 'MYL3', 'MYL2',
+      'ACTC1', 'RET', 'PCSK9', 'BMPR1A', 'SMAD4', 'TNNT2', 'TP53', 'TGFBR1',
+      'TGFBR2', 'SMAD3', 'KCNQ1', 'KCNH2', 'MLH1', 'MSH2', 'MSH6', 'PMS2',
+      'RYR1', 'CACNA1S', 'FBN1', 'MEN1', 'MUTYH', 'NF2', 'OTC', 'SDHD',
+      'SDHAF2', 'SDHC', 'SDHB', 'STK11', 'PTEN', 'RB1', 'TSC1', 'TSC2',
+      'VHL', 'WT1', 'ATP7B'
     ];
 
     // Batch request all ACMG genes
-    geneClause = "(" + acmgGenes.join("[symbol] OR ") + "[symbol])";
+    geneClause = '(' + acmgGenes.join('[symbol] OR ') + '[symbol])';
 
     topWeight = 0;
     weights = [];
 
-    url = esearch + "&term=Homo-sapiens[Organism] AND " + geneClause;
+    url = esearch + '&term=Homo-sapiens[Organism] AND ' + geneClause;
     d3.json(url, function(error, data) {
       geneIDs = data.esearchresult.idlist;
 
       // Batch request genomic coordinates for all ACMG genes
-      url = esummary + "&id=" + geneIDs.join(",");
+      url = esummary + '&id=' + geneIDs.join(',');
       d3.json(url, function(error, data) {
-        for (var i = 0; i < geneIDs.length; i++) {
-          var result, gene, chr, loc, start, stop, weight;
+        var result, gene, chr, loc, start, stop, weight;
+        for (i = 0; i < geneIDs.length; i++) {
           geneID = geneIDs[i];
           result = data.result[geneID];
-          if (result.currentid !== "" || acmgGenes.indexOf(result.name) === -1 ) {
+          if (result.currentid !== '' || acmgGenes.indexOf(result.name) === -1 ) {
             // currentid case occurs when one gene symbol in a taxon maps to
             // multiple gene.  It seems to be annotation-run noise.
             // result.name case occurs when gene has a non-canonical alias
@@ -82,7 +81,7 @@
           }
           gene = result.name;
           chr = result.chromosome;
-          loc = result.locationhist[0]; // better than "genomicinfo"
+          loc = result.locationhist[0]; // better than 'genomicinfo'
           start = loc.chrstart;
           stop = loc.chrstop;
           weight = result.geneweight;
@@ -95,11 +94,11 @@
           // This is the annotations API
           ////
           annots.push({
-            "name": gene, // required, but unused
-            "chr": chr, // required
-            "start": start, // required
-            "stop": stop, // required
-            "weight": weight // optional
+            'name': gene, // required, but unused
+            'chr': chr, // required
+            'start': start, // required
+            'stop': stop, // required
+            'weight': weight // optional
           });
 
         }
@@ -114,14 +113,14 @@
 
         // This block highlights the 10 most important ACMG genes.
         for (i = 0; i < annots.length; i++) {
-          color = (i < 10) ? "#F00" : "#FAA";
-          annots[i].shape = "triangle";
+          color = (i < 10) ? '#F00' : '#FAA';
+          annots[i].shape = 'triangle';
           annots[i].color = color;
 
           // BRCA1 is the most widely-recognized gene name.  Make it stand out.
-          if (annots[i].name === "BRCA1") {
-            annots[i].shape = "circle";
-            annots[i].color = "#0A0";
+          if (annots[i].name === 'BRCA1') {
+            annots[i].shape = 'circle';
+            annots[i].color = '#0A0';
           }
         }
 
@@ -135,8 +134,8 @@
   var d3 = Ideogram.d3;
 
   var config = {
-    organism: "human",
-    orientation: "vertical",
+    organism: 'human',
+    orientation: 'vertical',
     resolution: 550,
     chrHeight: 300,
     annotationHeight: 4,

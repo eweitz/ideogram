@@ -18,24 +18,24 @@
     var config, genomes, id, i, container, sex;
 
     config = {
-      organism: "human",
+      organism: 'human',
       ploidy: 2,
       chrHeight: 125,
       chrWidth: 8,
       resolution: 400,
-      orientation: "vertical"
+      orientation: 'vertical'
     };
 
     genomes = [
-      ["mother", "female"],
-      ["father", "male"],
-      ["proband", "male"]
+      ['mother', 'female'],
+      ['father', 'male'],
+      ['proband', 'male']
     ];
     for (i = 0; i < genomes.length; i++) {
       id = genomes[i][0];
       container = '<div id="' + id + '"></div>';
-      document.querySelector("body").innerHTML += container;
-      config.container = "#" + id;
+      document.querySelector('body').innerHTML += container;
+      config.container = '#' + id;
       config.sex = genomes[i][1];
       new Ideogram(config);
     }
