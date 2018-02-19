@@ -455,22 +455,24 @@ function drawProcessedAnnots(annots) {
           return circle;
         }
       })
-      //Tooltip functions added to each annotation.
-      .on("mouseover", function(d) {
-        d3.select(".tooltip").transition()
+      .on('mouseover', function(d) {
+        // Tooltip functions added to each annotation.
+        d3.select('.tooltip').transition()
           .duration(200)                
-          .style("opacity", .9);
+          .style('opacity', .9);
+
         var matrix = this.getScreenCTM()
-            .translate(+this.getAttribute("cx"),
-                     +this.getAttribute("cy"));
-        d3.select(".tooltip").html((d.name) + "<br/>"  + (d.start) + "-" + (d.stop) + "<br/>")
-                .style("left", (window.pageXOffset + matrix.e) + "px")
-                .style("top", (window.pageYOffset + matrix.f - 28) + "px");
-        })
-      .on("mouseout", function(d) {
-        d3.select(".tooltip").transition()
+            .translate(+this.getAttribute('cx'), +this.getAttribute('cy'));
+
+        d3.select('.tooltip')
+          .html((d.name) + '<br/>'  + (d.start) + '-' + (d.stop) + '<br/>')
+            .style('left', (window.pageXOffset + matrix.e) + 'px')
+            .style('top', (window.pageYOffset + matrix.f - 28) + 'px');
+      })
+      .on('mouseout', function(d) {
+        d3.select('.tooltip').transition()
           .duration(500)
-          .style("opacity", 0); 
+          .style('opacity', 0); 
         })
 
       .attr('fill', function(d) {
