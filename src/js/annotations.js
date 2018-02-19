@@ -466,9 +466,9 @@ function drawProcessedAnnots(annots) {
         matrix = this.getScreenCTM()
           .translate(+this.getAttribute('cx'), +this.getAttribute('cy'));
 
-        range = 'chr' + d.chr + ':' + d.start;
+        range = 'chr' + d.chr + ':' + d.start.toLocaleString();
         if (d.length > 0) {
-          range += '-' + d.stop;
+          range += '-' + d.stop.toLocaleString();
         }
 
         d3.select('.tooltip')
