@@ -465,7 +465,11 @@ function drawProcessedAnnots(annots) {
             .translate(+this.getAttribute('cx'), +this.getAttribute('cy'));
 
         d3.select('.tooltip')
-          .html((d.name) + '<br/>'  + (d.start) + '-' + (d.stop) + '<br/>')
+          .html(
+            d.name +
+            '<br/>' +
+            'chr' + d.chr + ':' + d.start + '-' + d.stop
+          )
             .style('left', (window.pageXOffset + matrix.e) + 'px')
             .style('top', (window.pageYOffset + matrix.f - 32) + 'px');
       })
