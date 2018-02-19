@@ -456,19 +456,24 @@ function drawProcessedAnnots(annots) {
         }
       })
       .on('mouseover', function(d) {
+        var matrix, range;
+
         // Tooltip functions added to each annotation.
         d3.select('.tooltip').transition()
           .duration(200)                
           .style('opacity', 1);
 
-        var matrix = this.getScreenCTM()
-            .translate(+this.getAttribute('cx'), +this.getAttribute('cy'));
+        matrix = this.getScreenCTM()
+          .translate(+this.getAttribute('cx'), +this.getAttribute('cy'));
+
+        range = 'chr' + d.chr + ':' + d.start;
+        if (d.length > 0) {
+          range += '-' + d.stop;
+        }
 
         d3.select('.tooltip')
           .html(
-            d.name +
-            '<br/>' +
-            'chr' + d.chr + ':' + d.start + '-' + d.stop
+            d.name + '<br/>' + range
           )
             .style('left', (window.pageXOffset + matrix.e) + 'px')
             .style('top', (window.pageYOffset + matrix.f - 32) + 'px');
