@@ -31,8 +31,8 @@
 <body>
   <h1>Annotations, histogram | Ideogram</h1>
   <a href="../">Back to overview</a> |
-  <a href="annotations_file_url.html">Previous</a> |
-  <a href="annotations_animated.html">Next</a>
+  <a href="annotations-file-url">Previous</a> |
+  <a href="annotations-animated">Next</a>
   <br/><br/>
   <div>
     This ideogram shows the distribution of all human genes throughout the genome.
@@ -126,7 +126,7 @@
   var counts, key, count;
   var d3 = Ideogram.d3;
 
-  d3.selectAll("input").on("click", function() {
+  d3.selectAll('input').on('click', function() {
     var filterMap,
         tmp, facet,
         checkedFilter,
@@ -136,35 +136,35 @@
         filterID;
 
     filterMap = {
-      "expression-level": {
-        "extremely-high": 7,
-        "very-high": 6,
-        "high": 5,
-        "moderately-high": 4,
-        "moderate": 3,
-        "low": 2,
-        "very-low": 1
+      'expression-level': {
+        'extremely-high': 7,
+        'very-high': 6,
+        'high': 5,
+        'moderately-high': 4,
+        'moderate': 3,
+        'low': 2,
+        'very-low': 1
       },
-      "gene-type": {
-        "mrna": 1,
-        "misc-rna": 2,
-        "mirna": 3,
-        "trna": 4,
-        "lncrna": 5
+      'gene-type': {
+        'mrna': 1,
+        'misc-rna': 2,
+        'mirna': 3,
+        'trna': 4,
+        'lncrna': 5
       },
-      "tissue-type": {
-        "cerebral-cortex": 1,
-        "heart": 2,
-        "liver": 3,
-        "skin": 4,
-        "skeletal-muscle": 5
+      'tissue-type': {
+        'cerebral-cortex': 1,
+        'heart': 2,
+        'liver': 3,
+        'skin': 4,
+        'skeletal-muscle': 5
       }
     };
 
-    checkedFilters = d3.selectAll("input:checked").nodes();
+    checkedFilters = d3.selectAll('input:checked').nodes();
 
     for (i = 0; i < checkedFilters.length; i++) {
-      tmp = checkedFilters[i].id.split("_");
+      tmp = checkedFilters[i].id.split('_');
       facet = tmp[1];
       checkedFilter = tmp[2];
 
@@ -181,21 +181,21 @@
       for (i = 0; i < counts[facet].length; i++) {
         count = counts[facet][i];
         key = count.key - 1;
-        value = "(" + count.value + ")";
+        value = '(' + count.value + ')';
 
-        // document.querySelectorAll("#" + facet + " .count")[key].innerHTML = value;
+        // document.querySelectorAll('#' + facet + ' .count')[key].innerHTML = value;
       }
     }
   });
 
   var config = {
-    container: "#container",
-    orientation: "vertical",
-    organism: "human",
-    assembly: "GRCh37",
+    container: '#container',
+    orientation: 'vertical',
+    organism: 'human',
+    assembly: 'GRCh37',
     chrHeight: 275,
-    annotationsPath: "../../data/annotations/SRR562646.json",
-    annotationsLayout: "histogram",
+    annotationsPath: '../../data/annotations/SRR562646.json',
+    annotationsLayout: 'histogram',
     barWidth: 3
   };
 

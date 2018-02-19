@@ -119,7 +119,7 @@ export class Chromosome {
 
     var self = this;
     var ideo = self._ideo;
-    var bandsXOffset = ideo._bandsXOffset;
+    var chrModel = self._model;
 
     rangesContainer.selectAll('rect.range')
       .data(rangeSet)
@@ -127,12 +127,10 @@ export class Chromosome {
       .append('rect')
       .attr('class', 'range')
       .attr('x', function(range) {
-        var startPx = ideo.convertBpToPx(self._model, range.getStart());
-        return startPx - bandsXOffset;
+        return ideo.convertBpToPx(chrModel, range.getStart());
       }).attr('y', 0)
       .attr('width', function(range) {
-        var lengthPx = ideo.convertBpToPx(self._model, range.getLength());
-        return lengthPx - bandsXOffset;
+        return ideo.convertBpToPx(chrModel, range.getLength());
       }).attr('height', this._config.chrWidth)
       .style('fill', function(range) {
         return range.getColor(chrNumber);
@@ -179,7 +177,7 @@ export class Chromosome {
       // Encountered when chromosome has any of:
       //  - One placeholder "band", e.g. pig genome GCF_000003025.5
       //  - Many (> 2) bands, e.g. human reference genome
-      //  - Ancestor colors in ploidy configuration, as in ploidy_basic.html
+      //  - Ancestor colors in ploidy configuration, as in ploidy-basic.html
       return {
         class: '',
         path:

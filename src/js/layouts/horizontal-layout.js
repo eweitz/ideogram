@@ -12,7 +12,7 @@
 //   constructor(config, ideo) {
 //     super(config, ideo);
 //     this._class = 'HorizontalLayout';
-//     this._margin = {
+//     this.margin = {
 //       left: 20,
 //       top: 30
 //     };
@@ -101,7 +101,7 @@
 //   }
 //
 //   getWidth() {
-//     return this._config.chrHeight + this._margin.top * 1.5;
+//     return this._config.chrHeight + this.margin.top * 1.5;
 //   }
 //
 //   getChromosomeSetLabelAnchor() {

@@ -21,12 +21,6 @@ var d3 = Object.assign({}, d3selection);
  * Gets chromosome band data from a TSV file, or, if band data is
  * prefetched, from an array
  *
- * UCSC:
- * #chrom chromStart chromEnd name gieStain
- * http://genome.ucsc.edu/cgi-bin/hgTables
- *  - group: Mapping and Sequencing
- *  - track: Chromosome Band (Ideogram)
- *
  * NCBI:
  * #chromosome arm band iscn_start iscn_stop bp_start bp_stop stain density
  * ftp://ftp.ncbi.nlm.nih.gov/pub/gdp/ideogram_9606_GCF_000001305.14_550_V1
@@ -66,105 +60,55 @@ function getBands(content, taxid, chromosomes) {
     init = 0;
   }
 
-  firstColumn = tsvLines[0].split(delimiter)[0];
-  if (firstColumn === '#chromosome') {
-    source = 'ncbi';
-  } else if (firstColumn === '#chrom') {
-    source = 'ucsc';
-  } else {
-    source = 'native';
-  }
-
   tsvLinesLength = tsvLines.length;
 
-  if (source === 'ncbi' || source === 'native') {
-    for (i = init; i < tsvLinesLength; i++) {
-      columns = tsvLines[i].split(delimiter);
+  for (i = init; i < tsvLinesLength; i++) {
+    columns = tsvLines[i].split(delimiter);
 
-      chr = columns[0];
+    chr = columns[0];
 
-      if (
-        // If a specific set of chromosomes has been requested, and
+    if (
+      // If a specific set of chromosomes has been requested, and
       // the current chromosome
       typeof (chromosomes) !== 'undefined' &&
       chromosomes.indexOf(chr) === -1
-      ) {
-        continue;
-      }
-
-      if (chr in lines === false) {
-        lines[chr] = [];
-      }
-
-      stain = columns[7];
-      if (columns[8]) {
-        // For e.g. acen and gvar, columns[8] (density) is undefined
-        stain += columns[8];
-      }
-
-      line = {
-        chr: chr,
-        bp: {
-          start: parseInt(columns[5], 10),
-          stop: parseInt(columns[6], 10)
-        },
-        iscn: {
-          start: parseInt(columns[3], 10),
-          stop: parseInt(columns[4], 10)
-        },
-        px: {
-          start: -1,
-          stop: -1,
-          width: -1
-        },
-        name: columns[1] + columns[2],
-        stain: stain,
-        taxid: taxid
-      };
-
-      lines[chr].push(line);
+    ) {
+      continue;
     }
-  } else if (source === 'ucsc') {
-    for (i = init; i < tsvLinesLength; i++) {
-      // #chrom chromStart  chromEnd  name  gieStain
-      // e.g. for fly:
-      // chr4	69508	108296	102A1	n/a
-      columns = tsvLines[i].split(delimiter);
 
-      if (columns[0] !== 'chr' + chromosomeName) {
-        continue;
-      }
-
-      stain = columns[4];
-      if (stain === 'n/a') {
-        stain = 'gpos100';
-      }
-      start = parseInt(columns[1], 10);
-      stop = parseInt(columns[2], 10);
-
-      line = {
-        chr: columns[0].split('chr')[1],
-        bp: {
-          start: start,
-          stop: stop
-        },
-        iscn: {
-          start: start,
-          stop: stop
-        },
-        px: {
-          start: -1,
-          stop: -1,
-          width: -1
-        },
-        name: columns[3],
-        stain: stain,
-        taxid: taxid
-      };
-
-      lines[chr].push(line);
+    if (chr in lines === false) {
+      lines[chr] = [];
     }
+
+    stain = columns[7];
+    if (columns[8]) {
+      // For e.g. acen and gvar, columns[8] (density) is undefined
+      stain += columns[8];
+    }
+
+    line = {
+      chr: chr,
+      bp: {
+        start: parseInt(columns[5], 10),
+        stop: parseInt(columns[6], 10)
+      },
+      iscn: {
+        start: parseInt(columns[3], 10),
+        stop: parseInt(columns[4], 10)
+      },
+      px: {
+        start: -1,
+        stop: -1,
+        width: -1
+      },
+      name: columns[1] + columns[2],
+      stain: stain,
+      taxid: taxid
+    };
+
+    lines[chr].push(line);
   }
+
 
   return lines;
 }

@@ -108,7 +108,7 @@ describe("Ideogram", function() {
   });
 
   it("should have 4 syntenic regions for basic homology example", function(done) {
-    // Tests use case from ../examples/homology_basic.html
+    // Tests use case from ../examples/homology-basic.html
 
     function callback() {
 
@@ -211,7 +211,7 @@ describe("Ideogram", function() {
 
 
   it("should have 25 syntenic regions for advanced example", function(done) {
-    // Tests use case from ../examples/homology_advanced.html
+    // Tests use case from ../examples/homology-advanced.html
 
     function callback() {
 
@@ -314,7 +314,7 @@ describe("Ideogram", function() {
 
 
   it("should have 1 syntenic region between a human and a mouse chromosome", function(done) {
-    // Tests use case from ../examples/homology_interspecies.html
+    // Tests use case from ../examples/homology-interspecies.html
 
     function callback() {
       // See HomoloGene entry for MTOR at
@@ -391,7 +391,7 @@ describe("Ideogram", function() {
 
 
   it("should have 1000 annotations in overlaid annotations example", function(done) {
-    // Tests use case from old ../examples/annotations_overlaid.html
+    // Tests use case from old ../examples/annotations-overlaid.html
 
     function callback() {
       var numAnnots = document.getElementsByClassName("annot").length;
@@ -451,7 +451,7 @@ describe("Ideogram", function() {
   });
 
   it("should have 1000 annotations and 5 tracks in tracks annotations example", function(done) {
-    // Tests use case from ../examples/annotations_tracks.html
+    // Tests use case from ../examples/annotations-tracks.html
     // TODO: Add class to annots indicating track
 
     function callback() {
@@ -486,7 +486,7 @@ describe("Ideogram", function() {
   });
 
   it("should have 2015 annotations in histogram annotations example", function(done) {
-    // Tests use case from ../examples/annotations_histogram.html
+    // Tests use case from ../examples/annotations-histogram.html
     // TODO: Add class to annots indicating track
 
     function callback() {
@@ -557,7 +557,7 @@ describe("Ideogram", function() {
   });
 
   it("should have histogram bars roughly flush with chromosome ends", function(done) {
-    // Tests use case from ../examples/annotations_histogram.html
+    // Tests use case from ../examples/annotations-histogram.html
     // TODO: Add class to annots indicating track
 
     function getTerEnd(arm) {
@@ -565,9 +565,6 @@ describe("Ideogram", function() {
       // edge of the p or q arm of chromosome 1
         var armIndex = (arm === 'p') ? 1 : 2,
           ter = d3.selectAll('.chromosome-border path:nth-child(' + armIndex + ')'),
-          terBox = ter.nodes()[0].getBBox(),
-          terX = terBox.x,
-          terWidth = terBox.width,
           terEnd,
           inst = ter.attr('d').split(' '), // Path instructions in description ('d')
           terCurve = parseInt(inst[4].replace('Q', '').split(',')[0]),
@@ -592,13 +589,12 @@ describe("Ideogram", function() {
           qterEnd = getTerEnd("q"),
           tmp = d3.selectAll("#chr1-9606 .annot").nodes(),
           tmp = tmp[tmp.length - 1].getBBox(),
-          bump = ideogram.bump,
           lastAnnotEnd = tmp.x + tmp.width;
 
           // console.log("pterEnd - firstAnnotEnd: " + (pterEnd - firstAnnotEnd));
           // console.log("qterEnd - lastAnnotEnd: " + (qterEnd - lastAnnotEnd));
-          assert.isBelow(pterEnd - firstAnnotEnd - bump, 3);
-          assert.isAbove(qterEnd - lastAnnotEnd - bump, -20);
+          assert.isBelow(pterEnd - firstAnnotEnd, -1);
+          assert.isAbove(qterEnd - lastAnnotEnd, -18);
 
       done();
     }
@@ -620,8 +616,96 @@ describe("Ideogram", function() {
     ideogram = new Ideogram(config);
   });
 
+  it("should have annotations and brushes aligned with base pairs", function(done) {
+    // Tests fix for https://github.com/eweitz/ideogram/issues/91
+    // and related issues.
+
+    function getLeft(selector) {
+      return  Math.round(document
+        .querySelector(selector)
+        .getBoundingClientRect().x);
+    }
+
+    function getRight(selector) {
+      return  Math.round(document
+        .querySelector(selector)
+        .getBoundingClientRect().right);
+    }
+
+    var config = {
+      organism: 'human',
+      assembly: 'GRCh37',
+      chrHeight: 800,
+      dataDir: '/dist/data/bands/native/',
+
+      annotationsLayout: 'histogram',
+      chromosomes: ['17'],
+
+      brush: 'chr17:5000000-10000000',
+      onBrushMove: function () {},
+      onLoad: function () {
+        this.createBrush('17', 1, 2);
+        this.createBrush('17', 40900000, 44900000);
+        this.createBrush('17', 81094108, 81094109);
+
+        // Closest test for https://github.com/eweitz/ideogram/issues/91
+        var bandQ2131Left = getLeft('#chr17-9606-q21-31');
+        var bandQ2131AnnotLeft = getLeft('#chr17-9606 .annot:nth-child(191)');
+        var bandQ2131BrushLeft = getLeft('#_ideogram > g:nth-child(6) > rect.selection');
+        assert.equal(bandQ2131AnnotLeft, bandQ2131Left);
+        assert.equal(bandQ2131AnnotLeft, bandQ2131BrushLeft);
+
+        // Check alignment at far left
+        var firstBpAnnotLeft = getLeft('#chr17-9606 > .annot:nth-child(51)');
+        var firstBpSliderLeft = getLeft('#_ideogram > g:nth-child(5) > rect.selection');
+        var firstBpLeft = getLeft('#chr17-9606');
+        assert.equal(firstBpAnnotLeft, firstBpSliderLeft);
+        assert.equal(firstBpSliderLeft, firstBpLeft);
+
+        // Check alignment at far right
+        var lastBpAnnotRight = getRight('#chr17-9606 > .annot:nth-child(317)');
+        var lastBpSliderRight = getRight('#_ideogram > g:nth-child(7) > rect.selection');
+        var lastBpRight = getRight('#chr17-9606');
+        assert.isBelow(Math.abs(lastBpAnnotRight - lastBpSliderRight), 2);
+        assert.isBelow(Math.abs(lastBpSliderRight - lastBpRight), 2);
+
+        done();
+      },
+
+      orientation: 'horizontal',
+      showBandLabels: true, // only work in horizontal mode
+
+      annotations: [{
+        name: 'first_band',
+        chr: '17',
+        start: 1,
+        stop: 2
+      },
+        {
+          name: 'band_q21-31',
+          chr: '17',
+          start: 40900000,
+          stop: 40900001
+        },
+        {
+          name: 'last_band_start',
+          chr: '17',
+          start: 75300000,
+          stop: 75300001
+        },
+        {
+          name: 'last_band_stop',
+          chr: '17',
+          start: 81195208,
+          stop: 81195209
+        }]
+    };
+
+    var ideogram = new Ideogram(config);
+  });
+
   it("should have 12 chromosomes per row in small layout example", function(done) {
-      // Tests use case from ../examples/layout_small.html
+      // Tests use case from ../examples/layout-small.html
 
       function callback() {
 
@@ -747,9 +831,9 @@ describe("Ideogram", function() {
       // Tests use case from ../examples/brush.html
 
       function callback() {
-        assert.equal(ideogram.selectedRegion.from, 7637454);
-        assert.equal(ideogram.selectedRegion.to, 12390477);
-        assert.equal(ideogram.selectedRegion.extent, 4753023);
+        assert.equal(ideogram.selectedRegion.from, 5000000);
+        assert.equal(ideogram.selectedRegion.to, 10000000);
+        assert.equal(ideogram.selectedRegion.extent, 5000000);
         assert.equal(d3.selectAll('.selection').nodes().length, 1);
         done();
       }
@@ -757,7 +841,7 @@ describe("Ideogram", function() {
       var config = {
         organism: 'human',
         chromosome: '19',
-        brush: true,
+        brush: 'chr19:5000000-10000000',
         chrHeight: 900,
         orientation: 'horizontal',
         onBrushMove: callback, // placeholder
@@ -854,7 +938,7 @@ describe("Ideogram", function() {
 
 
     it("should show three human genomes in one page", function(done) {
-      // Tests use case from ../examples/multiple_trio.html
+      // Tests use case from ../examples/multiple-trio.html
 
       var config, containerIDs, id, i, container,
           ideogramsLoaded = 0;
@@ -892,7 +976,7 @@ describe("Ideogram", function() {
     });
 
   it("should show three unbanded primated genomes in one page", function(done) {
-    // Tests use case from ../examples/multiple_primates.html
+    // Tests use case from ../examples/multiple-primates.html
 
     var config, containerIDs, id, i, container,
         ideogramsLoaded = 0;
@@ -931,7 +1015,7 @@ describe("Ideogram", function() {
 
 
     it("should show XX chromosomes for a diploid human female", function(done) {
-      // Tests use case from ../examples/ploidy_basic.html
+      // Tests use case from ../examples/ploidy-basic.html
 
       function callback() {
         var selector = '#chrX-9606-chromosome-set .chromosome-set-label tspan';
@@ -954,7 +1038,7 @@ describe("Ideogram", function() {
 
 
     it("should show XY chromosomes for a diploid human male", function(done) {
-      // Tests use case from ../examples/ploidy_basic.html
+      // Tests use case from ../examples/ploidy-basic.html
 
       function callback() {
         var selector = '#chrX-9606-chromosome-set .chromosome-set-label tspan';
@@ -1067,7 +1151,7 @@ describe("Ideogram", function() {
   });
 
   it("should depict chromosomal rearrangements", function(done) {
-    // Covers case in ../examples/ploidy_rearrangements.html
+    // Covers case in ../examples/ploidy-rearrangements.html
     function callback() {
       // TODO: There shouldn't be multiple elements with the same id
       var lastCopyChr1 = d3.selectAll('#chr1-4641').nodes().slice(-1)[0];
@@ -1127,7 +1211,7 @@ describe("Ideogram", function() {
   });
 
   it("should depict chromosomal rangesets", function(done) {
-    // Covers case in ../examples/ploidy_recombination.html
+    // Covers case in ../examples/ploidy-recombination.html
 
     function callback() {
       // TODO: There shouldn't be multiple elements with the same id

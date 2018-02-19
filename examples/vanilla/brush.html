@@ -8,16 +8,16 @@
 <body>
   <h1>Brush | Ideogram</h1>
   <a href="../">Back to overview</a> |
-  <a href="layout_small.html">Previous</a> |
-  <a href="ploidy_basic.html">Next</a>
+  <a href="layout-small">Previous</a> |
+  <a href="ploidy-basic">Next</a>
   <br/><br/>
   <div>
-    Selected region on human chromosome 19:
+    Selected region on human chromosome 1:
     <div><span id="from"></span>-<span id="to"></span>
       (extent: <span id="extent"></span> base pairs)
     </div>
   </div>
-  <div class="small-ideogram">
+  <div class="ideogram-container">
     <!-- The ideogram goes here. -->
   </div>
   <script type="text/javascript">
@@ -28,18 +28,19 @@
         to = r.to.toLocaleString(),
         extent = r.extent.toLocaleString();
 
-    document.getElementById("from").innerHTML = from;
-    document.getElementById("to").innerHTML = to;
-    document.getElementById("extent").innerHTML = extent;
+    document.getElementById('from').innerHTML = from;
+    document.getElementById('to').innerHTML = to;
+    document.getElementById('extent').innerHTML = extent;
   }
 
   var config = {
-    container: ".small-ideogram",
-    organism: "human",
-    chromosome: "19",
-    brush: true,
+    container: '.ideogram-container',
+    organism: 'human',
+    chromosome: '1',
+    brush: 'chr1:104325484-119977655', // https://www.ncbi.nlm.nih.gov/dbvar/variants/nsv916356
     chrHeight: 900,
-    orientation: "horizontal",
+    resolution: 550,
+    orientation: 'horizontal',
     onBrushMove: writeSelectedRange,
     onLoad: writeSelectedRange
   };

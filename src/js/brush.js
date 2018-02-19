@@ -32,36 +32,71 @@ function onBrushMove() {
 /**
  * Creates a sliding window along a chromosome
  *
- * @param from Genomic start coordinate, in base pairs
- * @param to Genomic end coordinate, in base pairs
+ * @param chr Chromosome name (e.g. '1') or range, e.g. 'chr1:104325484-119977655'
+ * @param from Genomic start coordinate in base pairs, e.g. 104325484
+ * @param to Genomic end coordinate in base pairs, e.g. 119977655
  */
-function createBrush(from, to) {
+function createBrush(chr, from, to) {
   var ideo = this,
     width = ideo.config.chrWidth + 6.5,
     length = ideo.config.chrHeight,
-    chr = ideo.chromosomesArray[0],
-    chrLengthBp = chr.bands[chr.bands.length - 1].bp.stop,
-    x0, x1,
-    xOffset = this._layout.getMargin().left,
-    xScale = d3.scaleLinear()
-      .domain([0, d3.max(chr.bands, function(band) {
-        return band.bp.stop;
-      })]).range([xOffset, d3.max(chr.bands, function(band) {
-        return band.px.stop;
-      }) + xOffset]);
+    xOffset = this._layout.margin.left,
+    chrModel, cm, chrLengthBp, nameSplit, fromToSplit,
+    lastBand, x0, x1, band, i,
+    bpDomain = [1],
+    pxRange = [1],
+    xScale;
+
+  // Account for calls like createBrush('chr1:104325484-119977655')
+  nameSplit = chr.split(':');
+  fromToSplit = chr.split('-');
+  if (nameSplit.length > 1 && fromToSplit.length > 1) {
+    chr = nameSplit[0].replace('chr', '');
+    fromToSplit = nameSplit[1].split('-');
+    from = parseInt(fromToSplit[0]);
+    to = parseInt(fromToSplit[1] - 1);
+  }
+
+  for (i = 0; i < ideo.chromosomesArray.length; i++) {
+    cm = ideo.chromosomesArray[i];
+    if (cm.name === chr) {
+      chrModel = cm;
+      break;
+    }
+  }
+
+  lastBand = chrModel.bands.slice(-1)[0];
+  chrLengthBp = lastBand.bp.stop;
+
+  for (i = 0; i < chrModel.bands.length; i++) {
+    band = chrModel.bands[i];
+    bpDomain.push(band.bp.start);
+    pxRange.push(band.px.start + xOffset);
+  }
+
+  bpDomain.push(lastBand.bp.stop - 1);
+  pxRange.push(lastBand.px.stop + xOffset);
+
+  xScale = d3.scaleLinear().domain(bpDomain).range(pxRange);
 
   if (typeof from === 'undefined') {
     from = Math.floor(chrLengthBp / 10);
   }
 
-  if (typeof right === 'undefined') {
+  if (typeof to === 'undefined') {
     to = Math.ceil(from * 2);
   }
 
-  x0 = ideo.convertBpToPx(chr, from);
-  x1 = ideo.convertBpToPx(chr, to);
+  // Genomics web UIs are 1-based, fully closed.
+  // I.e. If start = 20 bp and stop = 10 bp, then extent = 11 bp.
+  // Details:
+  // http://genome.ucsc.edu/blog/the-ucsc-genome-browser-coordinate-counting-systems/
+  // https://www.biostars.org/p/84686/
+  var extent = to - from + 1;
+  ideo.selectedRegion = {from: from, to: to, extent: extent};
 
-  ideo.selectedRegion = {from: from, to: to, extent: (to - from)};
+  x0 = ideo.convertBpToPx(chrModel, from) + xOffset;
+  x1 = ideo.convertBpToPx(chrModel, to) + xOffset;
 
   ideo.brush = d3.brushX()
     .extent([[xOffset, 0], [length + xOffset, width]])
@@ -76,6 +111,7 @@ function createBrush(from, to) {
     .call(ideo.brush.move, [x0, x1]);
 
   function onBrushMove() {
+
     var extent = currentEvent.selection.map(xScale.invert),
       from = Math.floor(extent[0]),
       to = Math.ceil(extent[1]);
