@@ -459,7 +459,7 @@ function drawProcessedAnnots(annots) {
         // Tooltip functions added to each annotation.
         d3.select('.tooltip').transition()
           .duration(200)                
-          .style('opacity', .9);
+          .style('opacity', 1);
 
         var matrix = this.getScreenCTM()
             .translate(+this.getAttribute('cx'), +this.getAttribute('cy'));
@@ -467,13 +467,13 @@ function drawProcessedAnnots(annots) {
         d3.select('.tooltip')
           .html((d.name) + '<br/>'  + (d.start) + '-' + (d.stop) + '<br/>')
             .style('left', (window.pageXOffset + matrix.e) + 'px')
-            .style('top', (window.pageYOffset + matrix.f - 28) + 'px');
+            .style('top', (window.pageYOffset + matrix.f - 32) + 'px');
       })
       .on('mouseout', function(d) {
         d3.select('.tooltip').transition()
           .duration(500)
           .style('opacity', 0); 
-        })
+      })
 
       .attr('fill', function(d) {
         return d.color;
