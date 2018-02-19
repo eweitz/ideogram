@@ -507,7 +507,7 @@ function init() {
       .attr('height', svgHeight)
       .html(gradients);
 
-    //Tooltip div setup w/ default styling.
+    // Tooltip div setup w/ default styling.
     d3.select(ideo.config.container).append("div")
       .attr('class', 'tooltip')
       .attr('id', 'tooltip')
@@ -516,7 +516,7 @@ function init() {
       .style('text-align', 'center')
       .style('padding', '4px')
       .style('font', '12px sans-serif')
-      .style('background', 'lightsteelblue')
+      .style('background', 'white')
       .style('border', '1px solid black')
       .style('border-radius', '5px')
       .style('pointer-events', 'none');

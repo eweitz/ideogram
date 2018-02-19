@@ -476,7 +476,7 @@ function drawProcessedAnnots(annots) {
       .on('mouseout', function(d) {
         d3.select('.tooltip').transition()
           .duration(500)
-          .style('opacity', 0); 
+          .style('opacity', 0);
       })
 
       .attr('fill', function(d) {
