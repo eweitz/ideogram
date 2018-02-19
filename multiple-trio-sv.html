@@ -52,9 +52,9 @@
     };
 
     sampleConfigs = [
-      {label: 'Sample 1', annotationsPath: '../../data/annotations/10_virtual_cnvs.json'},
-      {label: 'Sample 2', annotationsPath: '../../data/annotations/10_virtual_cnvs.json'},
-      {label: 'Sample 3', annotationsPath: '../../data/annotations/10_virtual_cnvs.json'}
+      {label: 'Sample 1', annotationsPath: 'data/annotations/10_virtual_cnvs.json'},
+      {label: 'Sample 2', annotationsPath: 'data/annotations/10_virtual_cnvs.json'},
+      {label: 'Sample 3', annotationsPath: 'data/annotations/10_virtual_cnvs.json'}
     ];
 
     for (i = 0; i < sampleConfigs.length; i++) {
@@ -62,10 +62,10 @@
       label = sampleConfig.label;
       id = label.toLowerCase().replace(' ', '');
       container =
-        '<div class='ideogram-container'>' +
-          '<div class='ideogram-name'>' + label + '</div>' +
-          '<div id='' + id + ''></div>' +
-        '</div>'
+        '<div class="ideogram-container">' +
+          '<div class="ideogram-name">' + label + '</div>' +
+          '<div id="' + id + '"></div>' +
+        '</div>';
       document.querySelector('#content').innerHTML += container;
       config.container = '#' + id;
       config.annotationsPath = sampleConfig.annotationsPath;
