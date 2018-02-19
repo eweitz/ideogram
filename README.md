@@ -22,7 +22,7 @@ $ cd <your local web server document root>
 $ git clone https://github.com/eweitz/ideogram.git
 ```
 
-Then go to [http://localhost/ideogram/examples](http://localhost/ideogram/examples).
+Then go to [http://localhost/ideogram/examples/](http://localhost/ideogram/examples/).
 
 Or, if you use npm:
 ```

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Layout, small | Ideogram</title>
+  <script type="text/javascript" src="dist/js/ideogram.min.js"></script>
+  <style>
+    body {
+      font: 12px Arial;
+      line-height: 19.6px;
+    }
+
+    .top-left {
+      /* background-color: #FFC; */
+      width: 440px;
+      padding-right: 10px;
+      float: left;
+      position: relative;
+      top: -0.8em;
+    }
+
+    .top-right {
+      padding-top: 75px;
+      width: 460px;
+      float: left;
+    }
+
+    .bottom {
+      /* background-color: #CFC; */
+      height: 600px;
+      min-width: 960px;
+      float: left;
+    }
+
+    g {
+      cursor: default;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="top-left">
+    <h1>Layout, small | Ideogram</h1>
+    <a href="examples">Back to overview</a> |
+    <a href="annotations-animated">Previous</a> |
+    <a href="brush">Next</a>
+    <div class="small-ideogram">
+      <!-- The ideogram goes here. -->
+    </div>
+  </div>
+  <div class="top-right">
+    <p>
+    The small ideogram inset at left is an example of chromosome graphics surrounded by other content.  Instead of meaningless "Lorem ipsum" placeholder text, here is some background on the human reference genome assembly this ideogram depicts.
+    </p>
+    <p>
+    "In 2004, the Human Genome Project (HGP) published a finished version (Build35) of the human genome assembly (1). This was a major accomplishment that represented over a decade of effort by more than a dozen institutions and resulted in the highest quality vertebrate genome ever produced and a new tool for understanding human biology. Despite this achievement, a limited number of gaps, sequence and tiling path errors remained in the reference assembly. Thus, at the conclusion of the HGP and the release of their final assembly version (Build36 (UCSC name: hg18)), the GRC was conceived as a mechanism for continued stewardship and improvement of the human reference assembly."
+    </p>
+    <p>
+    "In 2009, the GRC produced an updated human assembly (GRCh37 (UCSC name: hg19))."  And in 2013, it produced the current major version of the human reference genome assembly, GRCh38.
+    </p>
+  </div>
+  <div class="bottom">
+    <p>
+    To learn more about Genome Reference Consortium, check out of the <a href="https://www.ncbi.nlm.nih.gov/books/NBK153600/">NCBI Handbook</a> entry quoted above, and the <a href="https://www.ncbi.nlm.nih.gov/grc">GRC website</a>.
+    </p>
+  </div>
+
+  <script type="text/javascript">
+
+  var config = {
+    container: '.small-ideogram',
+    orientation: 'vertical',
+    organism: 'human',
+    resolution: 550,
+    chrHeight: 150,
+    rows: 2,
+    rotatable: false
+  };
+
+  var ideogram = new Ideogram(config);
+
+  </script>
+
+</body>
+</html>

@@ -1,44 +1,5 @@
-<!DOCTYPE html>
 <html>
 <head>
-  <title>Multiple, trio | Ideogram</title>
-  <script type="text/javascript" src="dist/js/ideogram.min.js"></script>
-  <style>body {font: 12px Arial; line-height: 19.6px;}</style>
+  <meta http-equiv="refresh" content="0; url=multiple-trio" />
 </head>
-<body>
-  <h1>Multiple, trio | Ideogram</h1>
-  <a href=".">Back to overview</a> |
-  <a href="ploidy_recombination.html">Previous</a> |
-  <a href="multiple_primates.html">Next</a>
-  <p>
-    Three diploid human genomes: a female, a male, and another male.
-    See also <a href="multiple_trio_sv.html">Multiple, trio SV</a>.
-  </p>
-  <script type="text/javascript">
-    var config, genomes, id, i, container, sex;
-
-    config = {
-      organism: 'human',
-      ploidy: 2,
-      chrHeight: 125,
-      chrWidth: 8,
-      resolution: 400,
-      orientation: 'vertical'
-    };
-
-    genomes = [
-      ['mother', 'female'],
-      ['father', 'male'],
-      ['proband', 'male']
-    ];
-    for (i = 0; i < genomes.length; i++) {
-      id = genomes[i][0];
-      container = '<div id="' + id + '"></div>';
-      document.querySelector('body').innerHTML += container;
-      config.container = '#' + id;
-      config.sex = genomes[i][1];
-      new Ideogram(config);
-    }
-  </script>
-</body>
 </html>

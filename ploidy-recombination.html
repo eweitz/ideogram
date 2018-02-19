@@ -1,0 +1,66 @@
+<html>
+<head>
+  <title>Ploidy, recombination | Ideogram</title>
+  <style>body {font: 12px Arial; line-height: 19.6px;}</style>
+  <script type="text/javascript" src="dist/js/ideogram.min.js"></script>
+  <script type="text/javascript" src="data/bands/native/banana.js"></script>
+</head>
+<body>
+  <h1>Ploidy, recombination | Ideogram</h1>
+  <a href="examples">Back to overview</a> |
+  <a href="ploidy-rearrangements">Previous</a> |
+  <a href="multiple-trio">Next</a>
+  <p>
+    This triploid banana genome is a hybrid of
+    <i>Musa acuminata</i> ("A") and <i>Musa balbisiana</i> ("B").
+    <br/>
+    Recombination events shown below include:</br>
+    <ul>
+      <li>Gene conversion in a copy of chromosome 1</li>
+      <li>Double crossover in copies of chromosome 2</li>
+    </ul>
+  </p>
+  <script type="text/javascript">
+
+    var config = {
+      organism: 'banana',
+      orientation: 'horizontal',
+      ploidy: 3,
+      chrMargin: 10,
+      ancestors: {
+        'A': '#dea673',
+        'B': '#7396be'
+      },
+      ploidyDesc: [
+        'AAB',
+        'AAB',
+        'BAB',
+        'AAB',
+        'AAB',
+        'BBB',
+        'AAB',
+        'AAB',
+        'AAB',
+        'AAB',
+        'AAB'
+      ],
+      rangeSet: [{
+            chr: 1,
+            ploidy: [0, 1, 0],
+            start: 17120000,
+            stop: 25120000,
+            color: [0, '#7396be', 0,]
+        }, {
+            chr: 2,
+            ploidy: [0, 1, 1],
+            start: 12120000,
+            stop: 15120000,
+            color: [0, '#7396be', '#dea673']
+        }]
+    };
+
+    var ideogram = new Ideogram(config);
+
+  </script>
+</body>
+</html>

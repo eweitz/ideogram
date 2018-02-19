@@ -108,7 +108,7 @@ describe("Ideogram", function() {
   });
 
   it("should have 4 syntenic regions for basic homology example", function(done) {
-    // Tests use case from ../examples/homology_basic.html
+    // Tests use case from ../examples/homology-basic.html
 
     function callback() {
 
@@ -211,7 +211,7 @@ describe("Ideogram", function() {
 
 
   it("should have 25 syntenic regions for advanced example", function(done) {
-    // Tests use case from ../examples/homology_advanced.html
+    // Tests use case from ../examples/homology-advanced.html
 
     function callback() {
 
@@ -314,7 +314,7 @@ describe("Ideogram", function() {
 
 
   it("should have 1 syntenic region between a human and a mouse chromosome", function(done) {
-    // Tests use case from ../examples/homology_interspecies.html
+    // Tests use case from ../examples/homology-interspecies.html
 
     function callback() {
       // See HomoloGene entry for MTOR at
@@ -391,7 +391,7 @@ describe("Ideogram", function() {
 
 
   it("should have 1000 annotations in overlaid annotations example", function(done) {
-    // Tests use case from old ../examples/annotations_overlaid.html
+    // Tests use case from old ../examples/annotations-overlaid.html
 
     function callback() {
       var numAnnots = document.getElementsByClassName("annot").length;
@@ -451,7 +451,7 @@ describe("Ideogram", function() {
   });
 
   it("should have 1000 annotations and 5 tracks in tracks annotations example", function(done) {
-    // Tests use case from ../examples/annotations_tracks.html
+    // Tests use case from ../examples/annotations-tracks.html
     // TODO: Add class to annots indicating track
 
     function callback() {
@@ -486,7 +486,7 @@ describe("Ideogram", function() {
   });
 
   it("should have 2015 annotations in histogram annotations example", function(done) {
-    // Tests use case from ../examples/annotations_histogram.html
+    // Tests use case from ../examples/annotations-histogram.html
     // TODO: Add class to annots indicating track
 
     function callback() {
@@ -557,7 +557,7 @@ describe("Ideogram", function() {
   });
 
   it("should have histogram bars roughly flush with chromosome ends", function(done) {
-    // Tests use case from ../examples/annotations_histogram.html
+    // Tests use case from ../examples/annotations-histogram.html
     // TODO: Add class to annots indicating track
 
     function getTerEnd(arm) {
@@ -705,7 +705,7 @@ describe("Ideogram", function() {
   });
 
   it("should have 12 chromosomes per row in small layout example", function(done) {
-      // Tests use case from ../examples/layout_small.html
+      // Tests use case from ../examples/layout-small.html
 
       function callback() {
 
@@ -938,7 +938,7 @@ describe("Ideogram", function() {
 
 
     it("should show three human genomes in one page", function(done) {
-      // Tests use case from ../examples/multiple_trio.html
+      // Tests use case from ../examples/multiple-trio.html
 
       var config, containerIDs, id, i, container,
           ideogramsLoaded = 0;
@@ -976,7 +976,7 @@ describe("Ideogram", function() {
     });
 
   it("should show three unbanded primated genomes in one page", function(done) {
-    // Tests use case from ../examples/multiple_primates.html
+    // Tests use case from ../examples/multiple-primates.html
 
     var config, containerIDs, id, i, container,
         ideogramsLoaded = 0;
@@ -1015,7 +1015,7 @@ describe("Ideogram", function() {
 
 
     it("should show XX chromosomes for a diploid human female", function(done) {
-      // Tests use case from ../examples/ploidy_basic.html
+      // Tests use case from ../examples/ploidy-basic.html
 
       function callback() {
         var selector = '#chrX-9606-chromosome-set .chromosome-set-label tspan';
@@ -1038,7 +1038,7 @@ describe("Ideogram", function() {
 
 
     it("should show XY chromosomes for a diploid human male", function(done) {
-      // Tests use case from ../examples/ploidy_basic.html
+      // Tests use case from ../examples/ploidy-basic.html
 
       function callback() {
         var selector = '#chrX-9606-chromosome-set .chromosome-set-label tspan';
@@ -1151,7 +1151,7 @@ describe("Ideogram", function() {
   });
 
   it("should depict chromosomal rearrangements", function(done) {
-    // Covers case in ../examples/ploidy_rearrangements.html
+    // Covers case in ../examples/ploidy-rearrangements.html
     function callback() {
       // TODO: There shouldn't be multiple elements with the same id
       var lastCopyChr1 = d3.selectAll('#chr1-4641').nodes().slice(-1)[0];
@@ -1211,7 +1211,7 @@ describe("Ideogram", function() {
   });
 
   it("should depict chromosomal rangesets", function(done) {
-    // Covers case in ../examples/ploidy_recombination.html
+    // Covers case in ../examples/ploidy-recombination.html
 
     function callback() {
       // TODO: There shouldn't be multiple elements with the same id

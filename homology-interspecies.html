@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Homology, interspecies | Ideogram</title>
+  <style>body {font: 12px Arial; line-height: 19.6px;}</style>
+  <script type="text/javascript" src="dist/js/ideogram.min.js"></script>
+</head>
+<body>
+  <h1>Homology, interspecies | Ideogram</h1>
+  <a href="examples">Back to overview</a> |
+  <a href="homology-advanced">Previous</a> |
+  <a href="annotations-basic">Next</a>
+
+  <p>
+    The location of the <a href="http://www.ncbi.nlm.nih.gov/gene/2475">MTOR</a>
+    gene in human and mouse is depicted below.  MTOR is clinically associated
+    with cancer and Alzheimer's disease.
+  </p>
+
+  <script type="text/javascript">
+
+    function onIdeogramLoad() {
+      // See HomoloGene entry for MTOR at
+      // http://www.ncbi.nlm.nih.gov/homologene/3637
+      // Placements for H. sapiens and M. musculus used below.
+      // Placements from latest annotation release in
+      // Human: http://www.ncbi.nlm.nih.gov/gene/2475#genomic-context
+      // Mouse: http://www.ncbi.nlm.nih.gov/gene/56717#genomic-context
+
+      var chrs = ideogram.chromosomes,
+        chr1 = chrs['9606']['1'],
+        chr4 = chrs['10090']['4'],
+        syntenicRegions = [];
+
+      range1 = {
+        chr: chr1,
+        start: 11106531,
+        stop: 11262557,
+        orientation: 'reverse'
+      };
+
+      range2 = {
+        chr: chr4,
+        start: 148448582,
+        stop: 148557685
+      };
+
+      syntenicRegions.push({'r1': range1, 'r2': range2});
+
+      ideogram.drawSynteny(syntenicRegions);
+
+    }
+
+  var config = {
+    organism: ['human', 'mouse'],
+    chromosomes: {
+      'human': ['1'],
+      'mouse': ['4']
+    },
+    chrHeight: 400,
+    chrMargin: 50,
+    fullChromosomeLabels: true,
+    showBandLabels: true,
+    perspective: 'comparative',
+    rotatable: false,
+    onLoad: onIdeogramLoad
+  };
+
+  var ideogram = new Ideogram(config);
+
+  </script>
+</body>
+</html>

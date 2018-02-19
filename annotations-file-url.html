@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Annotations, file URL | Ideogram</title>
+  <script type="text/javascript" src="dist/js/ideogram.min.js"></script>
+  <style>
+    body {
+      font: 12px Arial;
+      line-height: 19.6px;
+    }
+
+    #assembly-options {
+      clear: both;
+      margin-bottom: 20px;
+    }
+
+    #assembly-options label, #assembly-options span {
+      float: left;
+      clear: none;
+      display: block;
+      padding: 0px 1em 0 5px;
+    }
+
+
+    #assembly-options input[type=radio],
+    #assembly-options input.radio {
+      float: left;
+      clear: none;
+      margin: 2px 0 0 2px;
+      padding-left: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Annotations, file URL | Ideogram</h1>
+  <a href="examples">Back to overview</a> |
+  <a href="annotations-external-data">Previous</a> |
+  <a href="annotations-histogram">Next</a>
+  <p>
+  Load a BED file by specifying its URL, and see genome-wide data.
+    <a href="?asm=GRCh37&annotsUrl=https://raw.githubusercontent.com/NCBI-Hackathons/Scan2CNV/master/files/201113910010_R08C02.PennCnvOut.bed">Example</a>.
+  </p>
+  <p>
+    <p id="assembly-options">
+      <span>Assembly</span>
+      <input type="radio" name="asm" id="GRCh38" value="GRCh38" checked>
+      <label for="GRCh38">GRCh38</label>
+      <input type="radio" name="asm" id="GRCh37" value="GRCh37">
+      <label for="GRCh37">GRCh37</label>
+    </p>
+    <br/>
+    <div style="clear: both;">
+      <label for="bed-url">BED URL:</label>
+      <input id="bed-url" type="text" style="width:300px">
+      <button id="display-bed">Display BED</button>
+    </div>
+  </p>
+  <p id="annotations-summary">
+  <div id="ideo-container" style="height:400px"></div>
+  <script type="text/javascript">
+
+    d3 = Ideogram.d3;
+
+  function displayAnnotsCaption() {
+    var cfg = ideogram.config,
+        asm = cfg.assembly,
+        annotsUrl = cfg.annotationsPath;
+
+    if (annotsUrl === '') {
+      return;
+    }
+
+    d3.select('#annotations-summary').html(
+      'Displaying ' + asm + ' BED file ' +
+      '<a target="_blank" href="' + annotsUrl + '">' + annotsUrl + '</a>'
+    )
+  }
+
+  d3.select('#display-bed').on('click', function() {
+    var bedUrl = d3.select('#bed-url').nodes()[0].value;
+    var asm = d3.select('input[name="asm"]:checked').nodes()[0].value;
+    d3.select('#ideo-container').nodes()[0].innerHTML = '';
+    delete chrBands; // TODO: this shold be deleted automatically in Ideogram.js
+    ideogram = new Ideogram({
+      organism: 'human',
+      assembly: asm,
+      annotationsPath: bedUrl,
+      annotationTracks: annotsTracks,
+      annotationHeight: annotsHeight,
+      container: '#ideo-container',
+      onDrawAnnots: displayAnnotsCaption
+    });
+  });
+
+  // Parse URL parameters
+  var rawParams = document.location.search;
+  var urlParams = {};
+  var param, key, value;
+  if (rawParams !== '') {
+    rawParams = rawParams.split('?')[1].split('&');
+    for (var i = 0; i < rawParams.length; i++) {
+      param = rawParams[i].split('=');
+      key = param[0];
+      value = param[1];
+      urlParams[key] = value;
+    }
+  }
+
+  var annotsTracks = [{'id': 'myTrack', 'displayName': 'Genome features', 'color': '#F00'}];
+  var annotsHeight = 3.5;
+
+  var config = {
+    organism: 'human',
+    container: '#ideo-container',
+    chrHeight: 300
+  };
+
+  if ('annotsUrl' in urlParams) {
+    // Example annotationsPath:
+    // 'https://raw.githubusercontent.com/NCBI-Hackathons/Global_Screening_Arrays/master/files/output/pennTest2_gsrcCNVcall.bed',
+    config.annotationsPath = urlParams.annotsUrl;
+    config.annotationTracks = annotsTracks;
+    config.annotationHeight = annotsHeight;
+    config.onDrawAnnots = displayAnnotsCaption;
+  }
+  if ('asm' in urlParams) {
+    config.assembly = urlParams.asm;
+    d3.select('#' + urlParams.asm).nodes()[0].checked = true;
+  }
+
+  var ideogram = new Ideogram(config);
+
+  </script>
+</body>
+</html>

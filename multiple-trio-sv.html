@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Multiple, trio SV | Ideogram</title>
+  <script type="text/javascript" src="dist/js/ideogram.min.js"></script>
+  <style>
+    body {
+      font: 12px Arial;
+      line-height: 19.6px;
+    }
+
+    #content {
+      margin-top: 30px;
+    }
+
+    .ideogram-container {
+      float: left;
+      margin-left: 15px;
+    }
+
+    #content .labeledLeft {
+      padding-left: 0px;
+      padding-top: 0;
+    }
+
+    .ideogram-name {
+      font-style: italic;
+      padding-left: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Multiple, trio SV | Ideogram</h1>
+  <a href="examples">Back to overview</a> |
+  <a href="multiple-trio">Previous</a> |
+  <a href="multiple-primates">Next</a>
+  <p>
+    Structural variations (SVs) annotated in three human samples.
+  </p>
+  <div id="content"></div>
+  <script type="text/javascript">
+
+    var config, sampleConfigs, id, i, container, sampleConfig, label;
+
+    config = {
+      chrHeight: 250,
+      chrMargin: 2,
+      orientation: 'horizontal',
+      showFullyBanded: false,
+      organism: 'human',
+      annotationsLayout: 'overlay',
+    };
+
+    sampleConfigs = [
+      {label: 'Sample 1', annotationsPath: '../../data/annotations/10_virtual_cnvs.json'},
+      {label: 'Sample 2', annotationsPath: '../../data/annotations/10_virtual_cnvs.json'},
+      {label: 'Sample 3', annotationsPath: '../../data/annotations/10_virtual_cnvs.json'}
+    ];
+
+    for (i = 0; i < sampleConfigs.length; i++) {
+      sampleConfig = sampleConfigs[i];
+      label = sampleConfig.label;
+      id = label.toLowerCase().replace(' ', '');
+      container =
+        '<div class='ideogram-container'>' +
+          '<div class='ideogram-name'>' + label + '</div>' +
+          '<div id='' + id + ''></div>' +
+        '</div>'
+      document.querySelector('#content').innerHTML += container;
+      config.container = '#' + id;
+      config.annotationsPath = sampleConfig.annotationsPath;
+      new Ideogram(config);
+    }
+  </script>
+</body>
+</html>

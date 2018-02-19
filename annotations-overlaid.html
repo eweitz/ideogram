@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Annotations, overlaid | Ideogram</title>
+  <style>body {font: 12px Arial; line-height: 19.6px;}</style>
+  <script type="text/javascript" src="dist/js/ideogram.min.js"></script>
+</head>
+<body>
+  <h1>Annotations, overlaid | Ideogram</h1>
+  <a href="examples">Back to overview</a> |
+  <a href="annotations-basic">Previous</a> |
+  <a href="annotations-tracks">Next</a>
+  <p>Large-scale structural variations (SVs) can be depicted using colored overlays, as seen below.</p>
+  <script type="text/javascript">
+
+  var config = {
+    organism: 'human',
+    chrHeight: 300,
+    chrMargin: 2,
+    annotationsPath: 'data/annotations/10_virtual_cnvs.json',
+    annotationsLayout: 'overlay',
+    orientation: 'horizontal'
+  };
+
+  var ideogram = new Ideogram(config);
+
+  </script>
+</body>
+</html>
