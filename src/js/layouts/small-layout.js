@@ -8,7 +8,7 @@
 //
 //     this._class = 'SmallLayout';
 //
-//     this._margin = {
+//     this.margin = {
 //       left: 36.5,
 //       top: 10
 //     };
@@ -40,7 +40,7 @@
 //
 //   getHeight() {
 //     var chrHeight = this._config.chrHeight;
-//     return this._config.rows * (chrHeight + this._margin.top * 1.5);
+//     return this._config.rows * (chrHeight + this.margin.top * 1.5);
 //   }
 //
 //   getWidth() {
@@ -70,10 +70,10 @@
 //     var yOffset;
 //
 //     if (setNumber > rowSize - 1) {
-//       xOffset = this._margin.left + this._config.chrHeight * 1.4;
+//       xOffset = this.margin.left + this._config.chrHeight * 1.4;
 //       yOffset = this.getChromosomeSetYTranslate(setNumber - rowSize);
 //     } else {
-//       xOffset = this._margin.left;
+//       xOffset = this.margin.left;
 //       yOffset = this.getChromosomeSetYTranslate(setNumber);
 //     }
 //
@@ -85,7 +85,7 @@
 //     var additionalPadding = this._getAdditionalOffset();
 //       // If no detailed description provided just use one formula for all cases
 //     return (
-//       this._margin.left * (setNumber) + this._config.chrWidth +
+//       this.margin.left * (setNumber) + this._config.chrWidth +
 //       additionalPadding * 2 + additionalPadding * setNumber
 //     );
 //   }
