@@ -461,7 +461,7 @@ function init() {
     // If ploidy description is a string, then convert it to the canonical
     // array format.  String ploidyDesc is used when depicting e.g. parental
     // origin each member of chromosome pair in a human genome.
-    // See ploidy_basic.html for usage example.
+    // See ploidy-basic.html for usage example.
     if (
       'ploidyDesc' in ideo.config &&
       typeof ideo.config.ploidyDesc === 'string'
