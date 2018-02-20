@@ -385,6 +385,7 @@ function fillAnnots(annots) {
   return filledAnnots;
 }
 
+
 function startHideAnnotTooltipTimeout() {
   this.hideAnnotTooltipTimeout = window.setTimeout(function () {
     d3.select('.tooltip').transition()
@@ -392,6 +393,39 @@ function startHideAnnotTooltipTimeout() {
       .style('opacity', 0);
   }, 250);
 }
+
+
+function showAnnotTooltip(annot, context) {
+  var matrix, range,
+    ideo = this;
+
+  clearTimeout(ideo.hideAnnotTooltipTimeout);
+
+  // Tooltip functions added to each annotation.
+  d3.select('.tooltip').transition()
+    .duration(200)
+    .style('opacity', 1);
+
+  matrix = context.getScreenCTM()
+    .translate(+context.getAttribute('cx'), +context.getAttribute('cy'));
+
+  range = 'chr' + annot.chr + ':' + annot.start.toLocaleString();
+  if (annot.length > 0) {
+    range += '-' + annot.stop.toLocaleString();
+  }
+
+  d3.select('.tooltip')
+    .html(annot.name + '<br/>' + range)
+    .style('left', (window.pageXOffset + matrix.e) + 'px')
+    .style('top', (window.pageYOffset + matrix.f - 32) + 'px')
+    .on('mouseover', function (d) {
+      clearTimeout(ideo.hideAnnotTooltipTimeout);
+    })
+    .on('mouseout', function (d) {
+      ideo.startHideAnnotTooltipTimeout();
+    });
+}
+
 
 /**
  * Draws genome annotations on chromosomes.
@@ -463,42 +497,8 @@ function drawProcessedAnnots(annots) {
           return circle;
         }
       })
-      .on('mouseover', function(d) {
-        ideo.showAnnotTooltip(annot);
-        var matrix, range;
-
-        clearTimeout(ideo.hideAnnotTooltipTimeout);
-
-        // Tooltip functions added to each annotation.
-        d3.select('.tooltip').transition()
-          .duration(200)
-          .style('opacity', 1);
-
-        matrix = this.getScreenCTM()
-          .translate(+this.getAttribute('cx'), +this.getAttribute('cy'));
-
-        range = 'chr' + d.chr + ':' + d.start.toLocaleString();
-        if (d.length > 0) {
-          range += '-' + d.stop.toLocaleString();
-        }
-
-        d3.select('.tooltip')
-          .html(
-            d.name + '<br/>' + range
-          )
-            .style('left', (window.pageXOffset + matrix.e) + 'px')
-            .style('top', (window.pageYOffset + matrix.f - 32) + 'px')
-            .on('mouseover', function(d) {
-              clearTimeout(ideo.hideAnnotTooltipTimeout);
-            })
-          .on('mouseout', function(d) {
-            ideo.startHideAnnotTooltipTimeout();
-          });
-      })
-      .on('mouseout', function(d) {
-        ideo.startHideAnnotTooltipTimeout();
-      })
-
+      .on('mouseover', function(d) { ideo.showAnnotTooltip(d, this); })
+      .on('mouseout', function() { ideo.startHideAnnotTooltipTimeout(); })
       .attr('fill', function(d) {
         return d.color;
       });
@@ -674,5 +674,5 @@ function drawSynteny(syntenicRegions) {
 export {
   onDrawAnnots, processAnnotData, initAnnotSettings, fetchAnnots, drawAnnots,
   getHistogramBars, fillAnnots, drawProcessedAnnots, drawSynteny,
-  startHideAnnotTooltipTimeout
+  startHideAnnotTooltipTimeout, showAnnotTooltip
 }
