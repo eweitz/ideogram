@@ -385,7 +385,9 @@ function fillAnnots(annots) {
   return filledAnnots;
 }
 
-
+/**
+ * Starts a timer that, upon expiring, hides the annotation tooltip.
+ */
 function startHideAnnotTooltipTimeout() {
   this.hideAnnotTooltipTimeout = window.setTimeout(function () {
     d3.select('.tooltip').transition()
@@ -394,7 +396,12 @@ function startHideAnnotTooltipTimeout() {
   }, 250);
 }
 
-
+/**
+* Shows the annotation tooltip.  Clears the "hide annot tooltip" timer.
+ *
+ * @param annot {Object} Processed annotation object
+ * @param context {Object} "This" of the caller -- an SVG path DOM object
+ */
 function showAnnotTooltip(annot, context) {
   var matrix, range,
     ideo = this;
