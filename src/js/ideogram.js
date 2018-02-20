@@ -19,7 +19,8 @@ import {configure, initDrawChromosomes, onLoad, init} from './init';
 
 import {
   onDrawAnnots, processAnnotData, initAnnotSettings, fetchAnnots, drawAnnots,
-  getHistogramBars, fillAnnots, drawProcessedAnnots, drawSynteny
+  getHistogramBars, fillAnnots, drawProcessedAnnots, drawSynteny,
+  startHideAnnotTooltipTimeout
 } from './annotations';
 
 import {
@@ -66,6 +67,7 @@ export default class Ideogram {
     this.fillAnnots = fillAnnots;
     this.drawProcessedAnnots = drawProcessedAnnots;
     this.drawSynteny = drawSynteny;
+    this.startHideAnnotTooltipTimeout = startHideAnnotTooltipTimeout;
 
     // Variables and functions from services.js
     this.eutils = eutils;

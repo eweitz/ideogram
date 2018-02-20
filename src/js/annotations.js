@@ -385,6 +385,14 @@ function fillAnnots(annots) {
   return filledAnnots;
 }
 
+function startHideAnnotTooltipTimeout() {
+  this.hideAnnotTooltipTimeout = window.setTimeout(function () {
+    d3.select('.tooltip').transition()
+      .duration(500)
+      .style('opacity', 0);
+  }, 250);
+}
+
 /**
  * Draws genome annotations on chromosomes.
  * Annotations can be rendered as either overlaid directly
@@ -456,11 +464,14 @@ function drawProcessedAnnots(annots) {
         }
       })
       .on('mouseover', function(d) {
+        ideo.showAnnotTooltip(annot);
         var matrix, range;
+
+        clearTimeout(ideo.hideAnnotTooltipTimeout);
 
         // Tooltip functions added to each annotation.
         d3.select('.tooltip').transition()
-          .duration(200)                
+          .duration(200)
           .style('opacity', 1);
 
         matrix = this.getScreenCTM()
@@ -476,17 +487,22 @@ function drawProcessedAnnots(annots) {
             d.name + '<br/>' + range
           )
             .style('left', (window.pageXOffset + matrix.e) + 'px')
-            .style('top', (window.pageYOffset + matrix.f - 32) + 'px');
+            .style('top', (window.pageYOffset + matrix.f - 32) + 'px')
+            .on('mouseover', function(d) {
+              clearTimeout(ideo.hideAnnotTooltipTimeout);
+            })
+          .on('mouseout', function(d) {
+            ideo.startHideAnnotTooltipTimeout();
+          });
       })
       .on('mouseout', function(d) {
-        d3.select('.tooltip').transition()
-          .duration(500)
-          .style('opacity', 0);
+        ideo.startHideAnnotTooltipTimeout();
       })
 
       .attr('fill', function(d) {
         return d.color;
       });
+
   } else if (layout === 'overlay') {
     // Overlaid annotations appear directly on chromosomes
 
@@ -657,5 +673,6 @@ function drawSynteny(syntenicRegions) {
 
 export {
   onDrawAnnots, processAnnotData, initAnnotSettings, fetchAnnots, drawAnnots,
-  getHistogramBars, fillAnnots, drawProcessedAnnots, drawSynteny
+  getHistogramBars, fillAnnots, drawProcessedAnnots, drawSynteny,
+  startHideAnnotTooltipTimeout
 }

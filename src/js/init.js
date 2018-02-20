@@ -518,8 +518,7 @@ function init() {
       .style('font', '12px sans-serif')
       .style('background', 'white')
       .style('border', '1px solid black')
-      .style('border-radius', '5px')
-      .style('pointer-events', 'none');
+      .style('border-radius', '5px');
 
     finishInit();
   }
