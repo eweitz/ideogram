@@ -419,9 +419,7 @@ function showAnnotTooltip(annot, context) {
   clearTimeout(ideo.hideAnnotTooltipTimeout);
 
   // Tooltip functions added to each annotation
-  d3.select('.tooltip').transition()
-    .duration(200)
-    .style('opacity', 1);
+  d3.select('.tooltip').style('opacity', 1);
 
   matrix = context.getScreenCTM()
     .translate(+context.getAttribute('cx'), +context.getAttribute('cy'));

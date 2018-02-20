@@ -545,9 +545,38 @@ describe("Ideogram", function() {
       organism: 'human',
       chrHeight: 300,
       chrMargin: 2,
-      annotationsPath: 'https://unpkg.com/ideogram@0.9.0/dist/data/annotations/10_virtual_cnvs.json',
+      annotationsPath: 'https://unpkg.com/ideogram@0.15.0/dist/data/annotations/10_virtual_cnvs.json',
       annotationsLayout: 'overlay',
       orientation: 'horizontal',
+      dataDir: '/dist/data/bands/native/',
+      onDrawAnnots: callback
+    };
+
+
+    ideogram = new Ideogram(config);
+  });
+
+  it("should show tooltip upon hovering over annotation ", function(done) {
+    // Tests use case from ../examples/annotations-basic.html
+
+    function callback() {
+      d3.select('.annot path').dispatch('mouseover');
+      var content = d3.select('.tooltip').html();
+      assert.equal(content, 'BRCA1<br>chr17:43,044,294-43,125,482');
+      done();
+    }
+
+    var config = {
+      organism: 'human',
+      chromosome: '17',
+      chrHeight: 600,
+      orientation: 'horizontal',
+      annotations: [{
+        'name': 'BRCA1',
+        'chr': '17',
+        'start': 43044294,
+        'stop': 43125482
+      }],
       dataDir: '/dist/data/bands/native/',
       onDrawAnnots: callback
     };
@@ -1281,7 +1310,6 @@ describe("Ideogram", function() {
     })();
 
   });
-
 
     // it("should align chr. label with band-labeled vertical chromosome", function(done) {
     //   // Tests use case from ../examples/human.html
