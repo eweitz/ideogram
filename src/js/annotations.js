@@ -392,7 +392,8 @@ function startHideAnnotTooltipTimeout() {
   this.hideAnnotTooltipTimeout = window.setTimeout(function () {
     d3.select('.tooltip').transition()
       .duration(500)
-      .style('opacity', 0);
+      .style('opacity', 0)
+      .style('pointer-events', 'none');
   }, 250);
 }
 
@@ -425,6 +426,7 @@ function showAnnotTooltip(annot, context) {
     .html(annot.name + '<br/>' + range)
     .style('left', (window.pageXOffset + matrix.e) + 'px')
     .style('top', (window.pageYOffset + matrix.f - 32) + 'px')
+    .style('pointer-events', null)
     .on('mouseover', function (d) {
       clearTimeout(ideo.hideAnnotTooltipTimeout);
     })
