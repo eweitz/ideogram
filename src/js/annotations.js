@@ -387,29 +387,38 @@ function fillAnnots(annots) {
 
 /**
  * Starts a timer that, upon expiring, hides the annotation tooltip.
+ *
+ * To enable users to copy tooltip content to their clipboard, a timer is
+ * used to control when the tooltip disappears.  It starts when the user's
+ * cursor leaves the annotation or the tooltip.  If the user moves the cursor
+ * back over the annot or tooltip after the timer starts and before it expires,
+ * then the timer is cleared.
  */
 function startHideAnnotTooltipTimeout() {
+
   this.hideAnnotTooltipTimeout = window.setTimeout(function () {
     d3.select('.tooltip').transition()
       .duration(500)
       .style('opacity', 0)
-      .style('pointer-events', 'none');
+      .style('pointer-events', 'none')
   }, 250);
 }
 
 /**
-* Shows the annotation tooltip.  Clears the "hide annot tooltip" timer.
+ * Shows a tooltip for the given annotation.
+ *
+ * See notes in startHideAnnotTooltipTimeout about show/hide logic.
  *
  * @param annot {Object} Processed annotation object
  * @param context {Object} "This" of the caller -- an SVG path DOM object
  */
 function showAnnotTooltip(annot, context) {
-  var matrix, range,
+  var matrix, range, content, yOffset,
     ideo = this;
 
   clearTimeout(ideo.hideAnnotTooltipTimeout);
 
-  // Tooltip functions added to each annotation.
+  // Tooltip functions added to each annotation
   d3.select('.tooltip').transition()
     .duration(200)
     .style('opacity', 1);
@@ -419,18 +428,25 @@ function showAnnotTooltip(annot, context) {
 
   range = 'chr' + annot.chr + ':' + annot.start.toLocaleString();
   if (annot.length > 0) {
+    // Only show range if stop differs from start
     range += '-' + annot.stop.toLocaleString();
+  }
+  content = range;
+  yOffset = 24;
+  if (annot.name) {
+    content = annot.name + '<br/>' + content;
+    yOffset += 8;
   }
 
   d3.select('.tooltip')
-    .html(annot.name + '<br/>' + range)
+    .html(content)
     .style('left', (window.pageXOffset + matrix.e) + 'px')
-    .style('top', (window.pageYOffset + matrix.f - 32) + 'px')
-    .style('pointer-events', null)
+    .style('top', (window.pageYOffset + matrix.f - yOffset) + 'px')
+    .style('pointer-events', null) // Prevents bug in clicking chromosome
     .on('mouseover', function (d) {
       clearTimeout(ideo.hideAnnotTooltipTimeout);
     })
-    .on('mouseout', function (d) {
+    .on('mouseout', function () {
       ideo.startHideAnnotTooltipTimeout();
     });
 }
@@ -506,11 +522,11 @@ function drawProcessedAnnots(annots) {
           return circle;
         }
       })
-      .on('mouseover', function(d) { ideo.showAnnotTooltip(d, this); })
-      .on('mouseout', function() { ideo.startHideAnnotTooltipTimeout(); })
       .attr('fill', function(d) {
         return d.color;
-      });
+      })
+      .on('mouseover', function(d) { ideo.showAnnotTooltip(d, this); })
+      .on('mouseout', function() { ideo.startHideAnnotTooltipTimeout(); });
 
   } else if (layout === 'overlay') {
     // Overlaid annotations appear directly on chromosomes
@@ -540,7 +556,9 @@ function drawProcessedAnnots(annots) {
       })
       .attr('fill', function(d) {
         return d.color;
-      });
+      })
+      .on('mouseover', function(d) { ideo.showAnnotTooltip(d, this); })
+      .on('mouseout', function() { ideo.startHideAnnotTooltipTimeout(); });
   } else if (layout === 'histogram') {
     chrAnnot.append('polygon')
     // .attr('id', function(d, i) { return d.id; })
