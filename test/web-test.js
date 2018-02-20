@@ -74,7 +74,7 @@ describe("Ideogram", function() {
 
 
   it("should have 24 chromosomes for a human ideogram instance", function(done) {
-    // Tests use case from ../examples/human.html
+    // Tests use case from ../examples/vanilla/human.html
 
     function callback() {
       var numChromosomes = Object.keys(ideogram.chromosomes["9606"]).length;
@@ -88,7 +88,7 @@ describe("Ideogram", function() {
 
 
   it("should have 21 chromosomes for a mouse ideogram instance", function(done) {
-    // Tests use case from ../examples/mouse.html
+    // Tests use case from ../examples/vanilla/mouse.html
 
     function callback() {
       var numChromosomes = Object.keys(ideogram.chromosomes["10090"]).length;
@@ -108,7 +108,7 @@ describe("Ideogram", function() {
   });
 
   it("should have 4 syntenic regions for basic homology example", function(done) {
-    // Tests use case from ../examples/homology-basic.html
+    // Tests use case from ../examples/vanilla/homology-basic.html
 
     function callback() {
 
@@ -211,7 +211,7 @@ describe("Ideogram", function() {
 
 
   it("should have 25 syntenic regions for advanced example", function(done) {
-    // Tests use case from ../examples/homology-advanced.html
+    // Tests use case from ../examples/vanilla/homology-advanced.html
 
     function callback() {
 
@@ -314,7 +314,7 @@ describe("Ideogram", function() {
 
 
   it("should have 1 syntenic region between a human and a mouse chromosome", function(done) {
-    // Tests use case from ../examples/homology-interspecies.html
+    // Tests use case from ../examples/vanilla/homology-interspecies.html
 
     function callback() {
       // See HomoloGene entry for MTOR at
@@ -375,7 +375,7 @@ describe("Ideogram", function() {
   });
 
   it("should have 1000 annotations in basic annotations example", function(done) {
-    // Tests use case from ../examples/annotations_basic.html
+    // Tests use case from ../examples/vanilla/annotations-basic.html
 
     function callback() {
       var numAnnots = document.getElementsByClassName("annot").length;
@@ -391,7 +391,7 @@ describe("Ideogram", function() {
 
 
   it("should have 1000 annotations in overlaid annotations example", function(done) {
-    // Tests use case from old ../examples/annotations-overlaid.html
+    // Tests use case from old ../examples/vanilla/annotations-overlaid.html
 
     function callback() {
       var numAnnots = document.getElementsByClassName("annot").length;
@@ -451,7 +451,7 @@ describe("Ideogram", function() {
   });
 
   it("should have 1000 annotations and 5 tracks in tracks annotations example", function(done) {
-    // Tests use case from ../examples/annotations-tracks.html
+    // Tests use case from ../examples/vanilla/annotations-tracks.html
     // TODO: Add class to annots indicating track
 
     function callback() {
@@ -486,7 +486,7 @@ describe("Ideogram", function() {
   });
 
   it("should have 2015 annotations in histogram annotations example", function(done) {
-    // Tests use case from ../examples/annotations-histogram.html
+    // Tests use case from ../examples/vanilla/annotations-histogram.html
     // TODO: Add class to annots indicating track
 
     function callback() {
@@ -513,7 +513,7 @@ describe("Ideogram", function() {
   });
 
   it("should have 114 annotations for BED file at remote URL", function(done) {
-    // Tests use case from ../examples/annotations_file_url.html
+    // Tests use case from ../examples/vanilla/annotations-file-url.html
 
     function callback() {
         var numAnnots = document.getElementsByClassName("annot").length;
@@ -533,7 +533,7 @@ describe("Ideogram", function() {
   });
 
   it("should have 10 annotations for native annots at remote URL", function(done) {
-    // Tests use case from ../examples/annotations_file_url.html
+    // Tests use case from ../examples/vanilla/annotations-file-url.html
 
     function callback() {
       var numAnnots = document.getElementsByClassName("annot").length;
@@ -557,7 +557,7 @@ describe("Ideogram", function() {
   });
 
   it("should show tooltip upon hovering over annotation ", function(done) {
-    // Tests use case from ../examples/annotations-basic.html
+    // Tests use case from ../examples/vanilla/annotations-basic.html
 
     function callback() {
       d3.select('.annot path').dispatch('mouseover');
@@ -586,7 +586,7 @@ describe("Ideogram", function() {
   });
 
   it("should have histogram bars roughly flush with chromosome ends", function(done) {
-    // Tests use case from ../examples/annotations-histogram.html
+    // Tests use case from ../examples/vanilla/annotations-histogram.html
     // TODO: Add class to annots indicating track
 
     function getTerEnd(arm) {
@@ -734,7 +734,7 @@ describe("Ideogram", function() {
   });
 
   it("should have 12 chromosomes per row in small layout example", function(done) {
-      // Tests use case from ../examples/layout-small.html
+      // Tests use case from ../examples/vanilla/layout-small.html
 
       function callback() {
 
@@ -770,7 +770,7 @@ describe("Ideogram", function() {
 
 
     it("should use GRCh37 when specified in 'assembly' parameter", function(done) {
-      // Tests use case from ../examples/human.html
+      // Tests use case from ../examples/vanilla/human.html
 
       function callback() {
         var bands = ideogram.chromosomes["9606"]["1"]["bands"]
@@ -786,7 +786,7 @@ describe("Ideogram", function() {
 
 
   it("should use GCF_000001405.12 when specified in 'assembly' parameter", function(done) {
-    // Tests use case from ../examples/human.html with NCBI36 / hg18
+    // Tests use case from ../examples/vanilla/human.html with NCBI36 / hg18
 
     function callback() {
       var bands = ideogram.chromosomes["9606"]["1"]["bands"]
@@ -837,7 +837,7 @@ describe("Ideogram", function() {
     });
 
     it("should handle arrayed objects in 'annotations' parameter", function(done) {
-      // Tests use case from ../examples/human.html
+      // Tests use case from ../examples/vanilla/human.html
 
       function callback() {
         var numAnnots = d3.selectAll(".annot").nodes().length;
@@ -857,7 +857,7 @@ describe("Ideogram", function() {
 
 
     it("should create a brush when specified", function(done) {
-      // Tests use case from ../examples/brush.html
+      // Tests use case from ../examples/vanilla/brush.html
 
       function callback() {
         assert.equal(ideogram.selectedRegion.from, 5000000);
@@ -888,7 +888,7 @@ describe("Ideogram", function() {
     //        callPhantom({'screenshot': filename})
     //
     // it("should align chr. label with thick horizontal chromosome", function(done) {
-    //   // Tests use case from ../examples/annotations_basic.html
+    //   // Tests use case from ../examples/vanilla/annotations_basic.html
     //
     //   function callback() {
     //     var band, bandMiddle,
@@ -925,7 +925,7 @@ describe("Ideogram", function() {
     // });
 
     it("should align chr. label with vertical chromosome", function(done) {
-      // Tests use case from ../examples/human.html
+      // Tests use case from ../examples/vanilla/human.html
 
       function callback() {
         var band, bandMiddle,
@@ -967,7 +967,7 @@ describe("Ideogram", function() {
 
 
     it("should show three human genomes in one page", function(done) {
-      // Tests use case from ../examples/multiple-trio.html
+      // Tests use case from ../examples/vanilla/multiple-trio.html
 
       var config, containerIDs, id, i, container,
           ideogramsLoaded = 0;
@@ -1005,7 +1005,7 @@ describe("Ideogram", function() {
     });
 
   it("should show three unbanded primated genomes in one page", function(done) {
-    // Tests use case from ../examples/multiple-primates.html
+    // Tests use case from ../examples/vanilla/multiple-primates.html
 
     var config, containerIDs, id, i, container,
         ideogramsLoaded = 0;
@@ -1044,7 +1044,7 @@ describe("Ideogram", function() {
 
 
     it("should show XX chromosomes for a diploid human female", function(done) {
-      // Tests use case from ../examples/ploidy-basic.html
+      // Tests use case from ../examples/vanilla/ploidy-basic.html
 
       function callback() {
         var selector = '#chrX-9606-chromosome-set .chromosome-set-label tspan';
@@ -1067,7 +1067,7 @@ describe("Ideogram", function() {
 
 
     it("should show XY chromosomes for a diploid human male", function(done) {
-      // Tests use case from ../examples/ploidy-basic.html
+      // Tests use case from ../examples/vanilla/ploidy-basic.html
 
       function callback() {
         var selector = '#chrX-9606-chromosome-set .chromosome-set-label tspan';
@@ -1180,7 +1180,7 @@ describe("Ideogram", function() {
   });
 
   it("should depict chromosomal rearrangements", function(done) {
-    // Covers case in ../examples/ploidy-rearrangements.html
+    // Covers case in ../examples/vanilla/ploidy-rearrangements.html
     function callback() {
       // TODO: There shouldn't be multiple elements with the same id
       var lastCopyChr1 = d3.selectAll('#chr1-4641').nodes().slice(-1)[0];
@@ -1240,7 +1240,7 @@ describe("Ideogram", function() {
   });
 
   it("should depict chromosomal rangesets", function(done) {
-    // Covers case in ../examples/ploidy-recombination.html
+    // Covers case in ../examples/vanilla/ploidy-recombination.html
 
     function callback() {
       // TODO: There shouldn't be multiple elements with the same id
@@ -1312,7 +1312,7 @@ describe("Ideogram", function() {
   });
 
     // it("should align chr. label with band-labeled vertical chromosome", function(done) {
-    //   // Tests use case from ../examples/human.html
+    //   // Tests use case from ../examples/vanilla/human.html
     //
     //   function callback() {
     //
