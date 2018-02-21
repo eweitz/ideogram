@@ -174,6 +174,10 @@ function configure(config) {
     this.onBrushMoveCallback = config.onBrushMove;
   }
 
+  if (config.onWillShowAnnotTooltip) {
+    this.onWillShowAnnotTooltipCallback = config.onWillShowAnnotTooltip;
+  }
+
   this.coordinateSystem = 'iscn';
 
   this.maxLength = {

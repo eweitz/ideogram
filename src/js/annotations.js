@@ -144,6 +144,10 @@ function initAnnotSettings() {
   if (this.config.showAnnotTooltip !== false) {
     this.config.showAnnotTooltip = true;
   }
+
+  if (this.config.onWillShowAnnotTooltip) {
+    this.onWillShowAnnotTooltipCallback = this.config.onWillShowAnnotTooltip;
+  }
 }
 
 /**
@@ -412,6 +416,15 @@ function startHideAnnotTooltipTimeout() {
   }, 250);
 }
 
+
+/**
+ * Optional callback, invoked before showing annotation tooltip
+ */
+function onWillShowAnnotTooltip(annot) {
+  call(this.onWillShowAnnotTooltipCallback, annot);
+}
+
+
 /**
  * Shows a tooltip for the given annotation.
  *
@@ -421,7 +434,7 @@ function startHideAnnotTooltipTimeout() {
  * @param context {Object} "This" of the caller -- an SVG path DOM object
  */
 function showAnnotTooltip(annot, context) {
-  var matrix, range, content, yOffset,
+  var matrix, range, content, yOffset, displayName,
     ideo = this;
 
   if (ideo.config.showAnnotTooltip === false) {
@@ -429,6 +442,10 @@ function showAnnotTooltip(annot, context) {
   }
 
   clearTimeout(ideo.hideAnnotTooltipTimeout);
+
+  if (ideo.onWillShowAnnotTooltipCallback) {
+    annot = ideo.onWillShowAnnotTooltipCallback(annot);
+  }
 
   // Tooltip functions added to each annotation
   d3.select('.tooltip').style('opacity', 1);
@@ -443,8 +460,10 @@ function showAnnotTooltip(annot, context) {
   }
   content = range;
   yOffset = 24;
+
   if (annot.name) {
-    content = annot.name + '<br/>' + content;
+    displayName = annot.displayName ? annot.displayName : annot.name;
+    content = displayName + '<br/>' + content;
     yOffset += 8;
   }
 
@@ -711,5 +730,5 @@ function drawSynteny(syntenicRegions) {
 export {
   onDrawAnnots, processAnnotData, initAnnotSettings, fetchAnnots, drawAnnots,
   getHistogramBars, fillAnnots, drawProcessedAnnots, drawSynteny,
-  startHideAnnotTooltipTimeout, showAnnotTooltip
+  startHideAnnotTooltipTimeout, showAnnotTooltip, onWillShowAnnotTooltip
 }

@@ -94,11 +94,11 @@
           // This is the annotations API
           ////
           annots.push({
-            'name': gene, // required, but unused
-            'chr': chr, // required
-            'start': start, // required
-            'stop': stop, // required
-            'weight': weight // optional
+            name: gene, // required
+            chr: chr, // required
+            start: start, // required
+            stop: stop, // required
+            weight: weight // optional
           });
 
         }
@@ -127,8 +127,15 @@
         ideogram.drawAnnots(annots);
 
       });
-    })
+    });
+  }
 
+  function hyperlinkGene(annot) {
+    var term = '(' + annot.name + '[gene])+AND+(Homo+sapiens[orgn])';
+    var url = 'https://ncbi.nlm.nih.gov/gene/?term=' + term;
+    annot.displayName =
+      '<a target="_blank" href="' + url + '">' + annot.name + '</a>';
+    return annot
   }
 
   var d3 = Ideogram.d3;
@@ -139,7 +146,8 @@
     resolution: 550,
     chrHeight: 300,
     annotationHeight: 4,
-    onLoad: getAndDrawAcmgGenes
+    onLoad: getAndDrawAcmgGenes,
+    onWillShowAnnotTooltip: hyperlinkGene
   };
 
   var ideogram = new Ideogram(config);
