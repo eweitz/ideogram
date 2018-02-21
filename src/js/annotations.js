@@ -140,6 +140,10 @@ function initAnnotSettings() {
   if (typeof this.config.annotationsColor === 'undefined') {
     this.config.annotationsColor = '#F00';
   }
+
+  if (this.config.showAnnotTooltip !== false) {
+    this.config.showAnnotTooltip = true;
+  }
 }
 
 /**
@@ -396,6 +400,10 @@ function fillAnnots(annots) {
  */
 function startHideAnnotTooltipTimeout() {
 
+  if (this.config.showAnnotTooltip === false) {
+    return;
+  }
+
   this.hideAnnotTooltipTimeout = window.setTimeout(function () {
     d3.select('.tooltip').transition()
       .duration(500)
@@ -415,6 +423,10 @@ function startHideAnnotTooltipTimeout() {
 function showAnnotTooltip(annot, context) {
   var matrix, range, content, yOffset,
     ideo = this;
+
+  if (ideo.config.showAnnotTooltip === false) {
+    return;
+  }
 
   clearTimeout(ideo.hideAnnotTooltipTimeout);
 
