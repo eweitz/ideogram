@@ -434,7 +434,7 @@ function onWillShowAnnotTooltip(annot) {
  * @param context {Object} "This" of the caller -- an SVG path DOM object
  */
 function showAnnotTooltip(annot, context) {
-  var matrix, range, content, yOffset, displayName,
+  var matrix, range, content, yOffset, displayName, tooltip,
     ideo = this;
 
   if (ideo.config.showAnnotTooltip === false) {
@@ -447,8 +447,8 @@ function showAnnotTooltip(annot, context) {
     annot = ideo.onWillShowAnnotTooltipCallback(annot);
   }
 
-  // Tooltip functions added to each annotation
-  d3.select('.tooltip').style('opacity', 1);
+  tooltip = d3.select('.tooltip');
+  tooltip.interrupt(); // Stop any in-progress disapperance
 
   matrix = context.getScreenCTM()
     .translate(+context.getAttribute('cx'), +context.getAttribute('cy'));
@@ -467,12 +467,13 @@ function showAnnotTooltip(annot, context) {
     yOffset += 8;
   }
 
-  d3.select('.tooltip')
+  tooltip
     .html(content)
+    .style('opacity', 1) // Make tooltip visible
     .style('left', (window.pageXOffset + matrix.e) + 'px')
     .style('top', (window.pageYOffset + matrix.f - yOffset) + 'px')
-    .style('pointer-events', null) // Prevents bug in clicking chromosome
-    .on('mouseover', function (d) {
+    .style('pointer-events', null) // Prevent bug in clicking chromosome
+    .on('mouseover', function () {
       clearTimeout(ideo.hideAnnotTooltipTimeout);
     })
     .on('mouseout', function () {
