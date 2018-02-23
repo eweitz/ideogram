@@ -140,6 +140,14 @@ function initAnnotSettings() {
   if (typeof this.config.annotationsColor === 'undefined') {
     this.config.annotationsColor = '#F00';
   }
+
+  if (this.config.showAnnotTooltip !== false) {
+    this.config.showAnnotTooltip = true;
+  }
+
+  if (this.config.onWillShowAnnotTooltip) {
+    this.onWillShowAnnotTooltipCallback = this.config.onWillShowAnnotTooltip;
+  }
 }
 
 /**
@@ -386,6 +394,95 @@ function fillAnnots(annots) {
 }
 
 /**
+ * Starts a timer that, upon expiring, hides the annotation tooltip.
+ *
+ * To enable users to copy tooltip content to their clipboard, a timer is
+ * used to control when the tooltip disappears.  It starts when the user's
+ * cursor leaves the annotation or the tooltip.  If the user moves the cursor
+ * back over the annot or tooltip after the timer starts and before it expires,
+ * then the timer is cleared.
+ */
+function startHideAnnotTooltipTimeout() {
+
+  if (this.config.showAnnotTooltip === false) {
+    return;
+  }
+
+  this.hideAnnotTooltipTimeout = window.setTimeout(function () {
+    d3.select('.tooltip').transition()
+      .duration(500)
+      .style('opacity', 0)
+      .style('pointer-events', 'none')
+  }, 250);
+}
+
+
+/**
+ * Optional callback, invoked before showing annotation tooltip
+ */
+function onWillShowAnnotTooltip(annot) {
+  call(this.onWillShowAnnotTooltipCallback, annot);
+}
+
+
+/**
+ * Shows a tooltip for the given annotation.
+ *
+ * See notes in startHideAnnotTooltipTimeout about show/hide logic.
+ *
+ * @param annot {Object} Processed annotation object
+ * @param context {Object} "This" of the caller -- an SVG path DOM object
+ */
+function showAnnotTooltip(annot, context) {
+  var matrix, range, content, yOffset, displayName, tooltip,
+    ideo = this;
+
+  if (ideo.config.showAnnotTooltip === false) {
+    return;
+  }
+
+  clearTimeout(ideo.hideAnnotTooltipTimeout);
+
+  if (ideo.onWillShowAnnotTooltipCallback) {
+    annot = ideo.onWillShowAnnotTooltipCallback(annot);
+  }
+
+  tooltip = d3.select('.tooltip');
+  tooltip.interrupt(); // Stop any in-progress disapperance
+
+  matrix = context.getScreenCTM()
+    .translate(+context.getAttribute('cx'), +context.getAttribute('cy'));
+
+  range = 'chr' + annot.chr + ':' + annot.start.toLocaleString();
+  if (annot.length > 0) {
+    // Only show range if stop differs from start
+    range += '-' + annot.stop.toLocaleString();
+  }
+  content = range;
+  yOffset = 24;
+
+  if (annot.name) {
+    displayName = annot.displayName ? annot.displayName : annot.name;
+    content = displayName + '<br/>' + content;
+    yOffset += 8;
+  }
+
+  tooltip
+    .html(content)
+    .style('opacity', 1) // Make tooltip visible
+    .style('left', (window.pageXOffset + matrix.e) + 'px')
+    .style('top', (window.pageYOffset + matrix.f - yOffset) + 'px')
+    .style('pointer-events', null) // Prevent bug in clicking chromosome
+    .on('mouseover', function () {
+      clearTimeout(ideo.hideAnnotTooltipTimeout);
+    })
+    .on('mouseout', function () {
+      ideo.startHideAnnotTooltipTimeout();
+    });
+}
+
+
+/**
  * Draws genome annotations on chromosomes.
  * Annotations can be rendered as either overlaid directly
  * on a chromosome, or along one or more "tracks"
@@ -457,7 +554,10 @@ function drawProcessedAnnots(annots) {
       })
       .attr('fill', function(d) {
         return d.color;
-      });
+      })
+      .on('mouseover', function(d) { ideo.showAnnotTooltip(d, this); })
+      .on('mouseout', function() { ideo.startHideAnnotTooltipTimeout(); });
+
   } else if (layout === 'overlay') {
     // Overlaid annotations appear directly on chromosomes
 
@@ -486,7 +586,9 @@ function drawProcessedAnnots(annots) {
       })
       .attr('fill', function(d) {
         return d.color;
-      });
+      })
+      .on('mouseover', function(d) { ideo.showAnnotTooltip(d, this); })
+      .on('mouseout', function() { ideo.startHideAnnotTooltipTimeout(); });
   } else if (layout === 'histogram') {
     chrAnnot.append('polygon')
     // .attr('id', function(d, i) { return d.id; })
@@ -628,5 +730,6 @@ function drawSynteny(syntenicRegions) {
 
 export {
   onDrawAnnots, processAnnotData, initAnnotSettings, fetchAnnots, drawAnnots,
-  getHistogramBars, fillAnnots, drawProcessedAnnots, drawSynteny
+  getHistogramBars, fillAnnots, drawProcessedAnnots, drawSynteny,
+  startHideAnnotTooltipTimeout, showAnnotTooltip, onWillShowAnnotTooltip
 }

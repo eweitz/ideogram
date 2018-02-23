@@ -43,12 +43,13 @@
     var config, sampleConfigs, id, i, container, sampleConfig, label;
 
     config = {
+      organism: 'human',
       chrHeight: 250,
       chrMargin: 2,
       orientation: 'horizontal',
-      showFullyBanded: false,
-      organism: 'human',
       annotationsLayout: 'overlay',
+      showFullyBanded: false,
+      showAnnotTooltip: false
     };
 
     sampleConfigs = [
@@ -62,10 +63,10 @@
       label = sampleConfig.label;
       id = label.toLowerCase().replace(' ', '');
       container =
-        '<div class='ideogram-container'>' +
-          '<div class='ideogram-name'>' + label + '</div>' +
-          '<div id='' + id + ''></div>' +
-        '</div>'
+        '<div class="ideogram-container">' +
+          '<div class="ideogram-name">' + label + '</div>' +
+          '<div id="' + id + '"></div>' +
+        '</div>';
       document.querySelector('#content').innerHTML += container;
       config.container = '#' + id;
       config.annotationsPath = sampleConfig.annotationsPath;
