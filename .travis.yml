@@ -7,4 +7,4 @@ addons:
 before_script:
   - yarn link
 script: yarn test
-after_script: yarn coveralls
+after_script: cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
