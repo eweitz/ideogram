@@ -40,6 +40,7 @@ var ideogram = new Ideogram({
 * [onBrushMove](#onbrushmove)
 * [onDrawAnnots](#ondrawannots)
 * [onLoad](#onload)
+* [onWillShowAnnotTooltip](#onwillshowannottooltip)
 * [organism](#organism)
 * [orientation](#orientation)
 * [ploidy](#ploidy)
@@ -48,6 +49,7 @@ var ideogram = new Ideogram({
 * [rows](#rows)
 * [showBandLabels](#showbandlabels)
 * [showChromosomeLabels](#showchromosomelabels)
+* [showAnnotTooltip](#showannottooltip)
 * [showFullyBanded](#showfullybanded)
 * [showNonNuclearChromosomes](#shownonnuclearchromosomes)
 
@@ -115,7 +117,10 @@ Function.  Optional.  Callback function to invoke when brush moves.  Example in 
 Function.  Optional.  Callback function to invoke when annotations are drawn.  This is useful for when loading and drawing large annotation datsets.  Example in [web-tests.js](https://github.com/eweitz/ideogram/blob/b701dc0b76089842d50860c8c6cf5aa6d8dec564/test/web-test.js#L395).
 
 ## onLoad
-Function.  Optional.  Callback function to invoke when chromosomes are loaded, i.e. rendered on the page.  Example in [Annotations, external data]( https://eweitz.github.io/ideogram/annotations-external-data).
+Function.  Optional.  Callback function to invoke when chromosomes are loaded, i.e. rendered on the page.  Example in [Annotations, external data](https://eweitz.github.io/ideogram/annotations-external-data).
+
+## onWillShowAnnotTooltip
+Function.  Optional.  Callback function to invoke immediately before annotation tooltip is shown.  The tooltip shows the genomic range and, if available, name of the annotation.  This option can be useful to e.g. enhance the displayed annotation name, say by transforming a gene name into a hyperlink to a gene record web page.  Example in [Annotations, external data](https://eweitz.github.io/ideogram/annotations-external-data).
 
 ## organism
 String or number or array.  Required.  Organism(s) to show chromosomes for.  Supply organism's name as a string (e.g. `"human"`) or organism's NCBI Taxonomy ID (taxid, e.g. `9606`) to display chromosomes from a single organism, or an array of organisms' names or taxids to display chromosomes from multiple species.  Example in [Human]( https://eweitz.github.io/ideogram/human).
@@ -143,6 +148,9 @@ Boolean.  Optional.  Default: false.  Whether to show cytogenetic band labels, e
 
 ## showChromosomeLabels
 Boolean.  Optional.  Defaut: true.  Whether to show chromosome labels, e.g. 1, 2, 3, X, Y.  Example in [Annotations, basic](https://eweitz.github.io/ideogram/annotations-basic).
+
+## showAnnotTooltip
+Boolean.  Optional.  Default: true.  Whether to show a tooltip upon mousing over an annotation.  Example in [Annotations, basic](https://eweitz.github.io/ideogram/annotations-basic).
 
 ## showFullyBanded
 Boolean.  Optional.  Default: true.  Whether to show fully banded chromosomes for genomes that have sufficient data.  Useful for showing simpler chromosomes of cytogenetically well-characterized organisms, e.g. human, beside chromosomes of less studied organisms, e.g. chimpanzee.  Example in [Multiple, primates](https://eweitz.github.io/ideogram/multiple-primates).
