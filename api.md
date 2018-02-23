@@ -150,7 +150,7 @@ Boolean.  Optional.  Default: false.  Whether to show cytogenetic band labels, e
 Boolean.  Optional.  Defaut: true.  Whether to show chromosome labels, e.g. 1, 2, 3, X, Y.  Example in [Annotations, basic](https://eweitz.github.io/ideogram/annotations-basic).
 
 ## showAnnotTooltip
-Boolean.  Optional.  Default: true.  Whether to show a tooltip upon mousing over an annotation.  Example in [Annotations, basic](https://eweitz.github.io/ideogram/annotations-basic).
+Boolean.  Optional.  Default: true.  Whether to show a tooltip upon mousing over an annotation.  Example in [Multiple, trio SV](https://eweitz.github.io/ideogram/multiple-trio-sv).
 
 ## showFullyBanded
 Boolean.  Optional.  Default: true.  Whether to show fully banded chromosomes for genomes that have sufficient data.  Useful for showing simpler chromosomes of cytogenetically well-characterized organisms, e.g. human, beside chromosomes of less studied organisms, e.g. chimpanzee.  Example in [Multiple, primates](https://eweitz.github.io/ideogram/multiple-primates).
