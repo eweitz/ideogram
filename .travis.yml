@@ -5,6 +5,6 @@ node_js:
 addons:
   chrome: stable
 before_script:
-  - npm link
-script: npm test
-after_script: npm run coveralls
+  - yarn link
+script: yarn test
+after_script: cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
