@@ -12,11 +12,24 @@ module.exports = {
     path: path.resolve(__dirname, 'dist/js'),
     publicPath: '/dist/js',
     libraryTarget: 'umd',
-    umdNamedDefine: true
+    umdNamedDefine: true,
+    publicPath: '/dist/js',
   },
   devtool: 'source-map',
   devServer: {
     contentBase: path.join(__dirname, '.'),
+    historyApiFallback: {
+      rewrites: [{
+        from: /^\/examples\/vanilla\/.*$/,
+        to: function(context) {
+          if (context.match === '/examples/vanilla/') {
+            return context.match + '/index.html';
+          } else {
+            return context.match + '.html';
+          }
+        }
+      }]
+    }
   },
   module: {
     rules: [

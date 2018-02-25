@@ -187,7 +187,7 @@ export class Chromosome {
       // Encountered when chromosome has any of:
       //  - One placeholder "band", e.g. pig genome GCF_000003025.5
       //  - Many (> 2) bands, e.g. human reference genome
-      //  - Ancestor colors in ploidy configuration, as in ploidy_basic.html
+      //  - Ancestor colors in ploidy configuration, as in ploidy-basic.html
       return {
         class: '',
         path:

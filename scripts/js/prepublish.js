@@ -19,8 +19,8 @@ fs.readFile('package.json', 'utf8', function(error, text) {
     'export default version;'
   );
 
-  // Update to new version in package-lock.json
-  execSync('npm install');
+  // Update to new version in yarn.lock
+  execSync('yarn install');
 
   // Update to new version in README.md
   fs.readFile('README.md', 'utf8', function(error, readmeText) {

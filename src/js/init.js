@@ -27,9 +27,6 @@ function configure(config) {
   // without picking up prior ideogram's settings
   this.config = JSON.parse(JSON.stringify(config));
 
-  // TODO: Document this
-  this._bandsXOffset = 30;
-
   if (!this.config.debug) {
     this.config.debug = false;
   }
@@ -125,7 +122,7 @@ function configure(config) {
   }
 
   if (!this.config.brush) {
-    this.config.brush = false;
+    this.config.brush = null;
   }
 
   if (!this.config.rows) {
@@ -175,6 +172,10 @@ function configure(config) {
 
   if (config.onBrushMove) {
     this.onBrushMoveCallback = config.onBrushMove;
+  }
+
+  if (config.onWillShowAnnotTooltip) {
+    this.onWillShowAnnotTooltipCallback = config.onWillShowAnnotTooltip;
   }
 
   this.coordinateSystem = 'iscn';
@@ -426,7 +427,7 @@ function init() {
     // If ploidy description is a string, then convert it to the canonical
     // array format.  String ploidyDesc is used when depicting e.g. parental
     // origin each member of chromosome pair in a human genome.
-    // See ploidy_basic.html for usage example.
+    // See ploidy-basic.html for usage example.
     if (
       'ploidyDesc' in ideo.config &&
       typeof ideo.config.ploidyDesc === 'string'
@@ -471,6 +472,19 @@ function init() {
       .attr('width', svgWidth)
       .attr('height', svgHeight)
       .html(gradients);
+
+    // Tooltip div setup w/ default styling.
+    d3.select(ideo.config.container).append("div")
+      .attr('class', 'tooltip')
+      .attr('id', 'tooltip')
+      .style('opacity', 0)
+      .style('position', 'absolute')
+      .style('text-align', 'center')
+      .style('padding', '4px')
+      .style('font', '12px sans-serif')
+      .style('background', 'white')
+      .style('border', '1px solid black')
+      .style('border-radius', '5px');
 
     finishInit();
   }
@@ -553,8 +567,8 @@ function init() {
         ideo.drawChromosomeLabels(ideo.chromosomes);
       }
 
-      if (ideo.config.brush === true) {
-        ideo.createBrush();
+      if (ideo.config.brush) {
+        ideo.createBrush(ideo.config.brush);
       }
 
       if (ideo.config.annotations) {

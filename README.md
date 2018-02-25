@@ -13,7 +13,7 @@ Check out [live examples](https://eweitz.github.io/ideogram/), get [up and runni
 
 To link directly to the latest release, copy this snippet:
 ```
-<script src="https://unpkg.com/ideogram@0.14.0/dist/js/ideogram.min.js"></script>
+<script src="https://unpkg.com/ideogram@0.16.0/dist/js/ideogram.min.js"></script>
 ```
 
 You can also easily use the library locally:
@@ -22,11 +22,11 @@ $ cd <your local web server document root>
 $ git clone https://github.com/eweitz/ideogram.git
 ```
 
-Then go to [http://localhost/ideogram/examples](http://localhost/ideogram/examples).
+Then go to [http://localhost/ideogram/examples/](http://localhost/ideogram/examples/).
 
-Or, if you use npm:
+Or, if you use [yarn](https://yarnpkg.com/en/):
 ```
-npm install ideogram
+yarn install ideogram
 ```
 
 You can then [import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import) Ideogram into an application like so:
@@ -38,7 +38,7 @@ import Ideogram from 'ideogram';
 # Usage
 ```html
 <head>
-  <script src="https://unpkg.com/ideogram@0.14.0/dist/js/ideogram.min.js"></script>
+  <script src="https://unpkg.com/ideogram@0.16.0/dist/js/ideogram.min.js"></script>
 </head>
 <body>
   <script>
