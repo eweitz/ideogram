@@ -120,7 +120,8 @@ function getBands(content, taxid, chromosomes) {
  * Stalks are small lines that visually connect labels to their bands.
  */
 function drawBandLabels(chromosomes) {
-  var i, chr, chrs, taxid, ideo, chrModel, chrIndex, textOffsets;
+  var i, chr, chrs, taxid, ideo, chrModel, chrIndex, textOffsets,
+    bandsToLabel;
 
   ideo = this;
 
@@ -139,6 +140,9 @@ function drawBandLabels(chromosomes) {
     chrIndex += 1;
 
     chrModel = chrs[i];
+
+    // Don't show "pter" label for telocentric chromosomes, e.g. mouse
+    bandsToLabel = chrModel.bands.filter(d => d.name !== 'pter');
 
     chr = d3.select(ideo.selector + ' #' + chrModel.id);
 
@@ -159,7 +163,7 @@ function drawBandLabels(chromosomes) {
     textOffsets[chrModel.id] = [];
 
     chr.selectAll('text')
-      .data(chrModel.bands)
+      .data(bandsToLabel)
       .enter()
       .append('g')
       .attr('class', function(d, i) {
@@ -185,7 +189,7 @@ function drawBandLabels(chromosomes) {
     // var view = Chromosome.getInstance(adapter, ideo.config, ideo);
 
     chr.selectAll('line.bandLabelStalk')
-      .data(chrModel.bands)
+      .data(bandsToLabel)
       .enter()
       .append('g')
       .attr('class', function(d, i) {

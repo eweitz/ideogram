@@ -290,6 +290,8 @@ function initDrawChromosomes(bandsArray) {
     if (ideo.config.showBandLabels === true) {
       ideo.drawBandLabels(ideo.chromosomes);
     }
+
+    ideo._gotChrModels = true; // Prevent issue with errant rat centromeres
   }
 }
 

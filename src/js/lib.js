@@ -200,35 +200,17 @@ function getChromosomeModel(bands, chrName, taxid, chrIndex) {
   chr.bands = bands;
   chr = this.getChromosomePixels(chr);
 
-
-  if (chr.name === '1') {
-    console.log('chr.centromerePosition');
-    console.log(chr.centromerePosition);
-  }
-
   firstBandArm = bands[0].name[0];
+
   chr.centromerePosition = '';
-  chrBorderSelector = this.selector + ' #' + chr.id + ' .chromosome-border';
-  firstChrBorder =
-    document.querySelector(chrBorderSelector + ' path:first-child');
 
   if (
-    firstBandArm === 'q' || // Happens when re-drawing
     hasBands && firstBandArm === 'p' && bands[1].name[0] === 'q' &&
     bands[0].bp.stop - bands[0].bp.start < 2E6
   ) {
     // As with almost all mouse chromosome, chimpanzee chr22
     chr.centromerePosition = 'telocentric';
-
-    if (
-      firstChrBorder === null ||
-      firstChrBorder.classList.contains('acen') === false
-    ) {
-      // Remove placeholder pter band
-      chr.bands = chr.bands.slice(1);
-    }
   }
-
 
   if (hasBands && chr.bands.length === 1) {
     // Encountered when processing an assembly that has chromosomes with
