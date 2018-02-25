@@ -75,11 +75,17 @@ Lay out annotations in tracks beside each chromosome.  There can be more than on
 ### annotationsLayout: 'histogram'
 Lay out annotations in a histogram.  This clusters annoatations by location, such that each cluster or bin is shown as a bar.  The height of the bar represent the number of annotations in that genomic range.  This option is useful for summarizing the distribution of many (1000+) features througout the genome.  Example in [Annotations, histogram](https://eweitz.github.io/ideogram/annotations-histogram).
 
-### annotationsLayout: 'overlay'
-Lay out annotations directly over chromosomes.  This is the most space-efficient annotation layout option.  Example in [Annotations, overlay](https://eweitz.github.io/ideogram/annotations_overlay).
+### annotationsLayout: '
+
+
+
+
+
+'
+Lay out annotations directly over chromosomes.  This is the most space-efficient annotation layout option.  Example in [Annotations, overlaid](https://eweitz.github.io/ideogram/annotations-overlaid).
 
 ## annotationsPath
-String.  Optional.  An absolute or relative URL to a JSON file containing annotation objects.  Example in [Annotations, overlay](https://eweitz.github.io/ideogram/annotations-overlay).
+String.  Optional.  An absolute or relative URL to a JSON file containing annotation objects.  Example in [Annotations, overlaid](https://eweitz.github.io/ideogram/annotations-overlaid).
 
 See also [annotations](#annotations).
 
