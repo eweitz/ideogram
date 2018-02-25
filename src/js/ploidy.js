@@ -6,9 +6,9 @@ export class Ploidy {
   }
 
   // Get number of chromosomes in a chromosome set
-  getChromosomesNumber(setNumber) {
+  getChromosomesNumber(setIndex) {
     if (this._config.ploidyDesc) {
-      var chrSetCode = this._config.ploidyDesc[setNumber];
+      var chrSetCode = this._config.ploidyDesc[setIndex];
       if (chrSetCode instanceof Object) {
         return Object.keys(chrSetCode)[0].length;
       } else {
@@ -64,18 +64,18 @@ export class Ploidy {
     return array;
   }
 
-  getSetSize(chrSetNumber) {
+  getSetSize(chrSetIndex) {
     if (this._description) {
-      return this._description[chrSetNumber].ancestors.length;
+      return this._description[chrSetIndex].ancestors.length;
     } else {
       return 1;
     }
   }
 
   // Get ancestor letter
-  getAncestor(chrSetNumber, chrNumber) {
+  getAncestor(chrSetIndex, chrIndex) {
     if (this._description) {
-      return this._description[chrSetNumber].ancestors[chrNumber];
+      return this._description[chrSetIndex].ancestors[chrIndex];
     } else {
       return '';
     }
@@ -84,10 +84,10 @@ export class Ploidy {
   // Check if chromosome's arm should be rendered.
   // If no description was provided, method returns true and
   // something another depending on user provided description.
-  exists(chrSetNumber, chrNumber, armNumber) {
+  exists(chrSetIndex, chrIndex, armIndex) {
     if (this._description) {
       var desc =
-        this._description[chrSetNumber].existence[chrNumber][armNumber];
+        this._description[chrSetIndex].existence[chrIndex][armIndex];
       return Number(desc) > 0;
     } else {
       return true;

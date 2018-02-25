@@ -18,19 +18,19 @@ export class Range {
     this.length = this.stop - this.start
   }
 
-  getColor(chrNumber) {
+  getColor(chrIndex) {
     if (!('ploidy' in this._data)) {
-      return this._getColor(chrNumber);
-    } else if ('ploidy' in this._data && this._data.ploidy[chrNumber]) {
-      return this._getColor(chrNumber);
+      return this._getColor(chrIndex);
+    } else if ('ploidy' in this._data && this._data.ploidy[chrIndex]) {
+      return this._getColor(chrIndex);
     } else {
       return 'transparent';
     }
   }
 
-  _getColor(chrNumber) {
+  _getColor(chrIndex) {
     if (Array.isArray(this._data.color)) {
-      return this._data.color[chrNumber];
+      return this._data.color[chrIndex];
     } else {
       return this._data.color;
     }

@@ -305,7 +305,7 @@ function drawChromosomeLabels() {
 
   // Append chromosomes labels
   d3.selectAll(ideo.selector + ' .chromosome-set-container')
-    .each(function(a, chrSetNumber) {
+    .each(function(a, chrSetIndex) {
       d3.select(this).selectAll('.chromosome')
         .append('text')
         .attr('class', 'chrLabel')
@@ -316,8 +316,8 @@ function drawChromosomeLabels() {
         .attr('y', function(d, i) {
           return ideo._layout.getChromosomeLabelYPosition(i);
         })
-        .text(function(d, chrNumber) {
-          return ideo._ploidy.getAncestor(chrSetNumber, chrNumber);
+        .text(function(d, chrIndex) {
+          return ideo._ploidy.getAncestor(chrSetIndex, chrIndex);
         })
         .attr('text-anchor', 'middle');
     });

@@ -8,32 +8,32 @@ export class Color {
     this._ploidy = new Ploidy(this._config);
   }
 
-  getArmColor(chrSetNumber, chrNumber, armNumber) {
+  getArmColor(chrSetIndex, chrIndex, armIndex) {
     if (this._config.armColors) {
-      return this._config.armColors[armNumber];
+      return this._config.armColors[armIndex];
     } else if (this._config.ancestors) {
-      return this._getPolyploidArmColor(chrSetNumber, chrNumber, armNumber);
+      return this._getPolyploidArmColor(chrSetIndex, chrIndex, armIndex);
     } else {
       return null;
     }
   }
 
-  getBorderColor(chrSetNumber, chrNumber, armNumber) {
-    if (chrNumber < this._config.ploidy) {
+  getBorderColor(chrSetIndex, chrIndex, armIndex) {
+    if (chrIndex < this._config.ploidy) {
       return '#000';
-    } else if (this._ploidy.exists(chrSetNumber, chrNumber, armNumber)) {
+    } else if (this._ploidy.exists(chrSetIndex, chrIndex, armIndex)) {
       return '#000';
     } else {
       return '#fff';
     }
   }
 
-  _getPolyploidArmColor(chrSetNumber, chrNumber, armNumber) {
-    if (!this._ploidy.exists(chrSetNumber, chrNumber, armNumber)) {
+  _getPolyploidArmColor(chrSetIndex, chrIndex, armIndex) {
+    if (!this._ploidy.exists(chrSetIndex, chrIndex, armIndex)) {
       return 'transparent';
     } else {
       var ancestor =
-        this._ploidy.getAncestor(chrSetNumber, chrNumber, armNumber);
+        this._ploidy.getAncestor(chrSetIndex, chrIndex, armIndex);
       return this._config.ancestors[ancestor];
     }
   }

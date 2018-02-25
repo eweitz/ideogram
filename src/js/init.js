@@ -238,7 +238,6 @@ function initDrawChromosomes(bandsArray) {
     ploidy = ideo.config.ploidy,
     taxid,
     chrIndex = 0,
-    chrSetNumber = 0,
     bands,
     i, j, chrs, chromosome, chrModel,
     transform;

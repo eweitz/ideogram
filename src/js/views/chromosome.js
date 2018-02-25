@@ -42,7 +42,7 @@ export class Chromosome {
   /**
    * Append bands container and apply clip-path to it
    */
-  render(container, chrSetNumber, chrNumber) {
+  render(container, chrSetIndex, chrIndex) {
 
     var self , isPArmRendered, isQArmRendered, clipPath, opacity, fill,
       isFullyBanded;
@@ -54,11 +54,11 @@ export class Chromosome {
       .attr('clip-path', 'url(#' + this._model.id + '-chromosome-set-clippath)');
 
     // Render chromosome arms
-    isPArmRendered = this._renderPArm(container, chrSetNumber, chrNumber);
-    isQArmRendered = this._renderQArm(container, chrSetNumber, chrNumber);
+    isPArmRendered = this._renderArm(container, chrSetIndex, chrIndex, 'p');
+    isQArmRendered = this._renderArm(container, chrSetIndex, chrIndex, 'q');
 
     // Render range set
-    this._renderRangeSet(container, chrSetNumber, chrNumber);
+    this._renderRangeSet(container, chrSetIndex, chrIndex);
 
     // Push arms shape string into clipPath array
     clipPath = [];
@@ -70,7 +70,7 @@ export class Chromosome {
     isFullyBanded = this.isFullyBanded();
     if ('ancestors' in this._ideo.config && !('rangeSet' in this._ideo.config)) {
       // E.g. diploid human genome (with translucent overlay)
-      fill = self._color.getArmColor(chrSetNumber, chrNumber, 0);
+      fill = self._color.getArmColor(chrSetIndex, chrIndex, 0);
       if (isFullyBanded) {
         opacity = '0.5';
       }
@@ -93,7 +93,7 @@ export class Chromosome {
       .attr('fill', fill)
       .style('fill-opacity', opacity)
       .attr('stroke', function(d, i) {
-        return self._color.getBorderColor(chrSetNumber, chrNumber, i);
+        return self._color.getBorderColor(chrSetIndex, chrIndex, i);
       })
       .attr('stroke-width', function(d) {
         return ('strokeWidth' in d ? d.strokeWidth : 1);
@@ -107,16 +107,16 @@ export class Chromosome {
     return clipPath;
   };
 
-  _renderRangeSet(container, chrSetNumber, chrNumber) {
+  _renderRangeSet(container, chrSetIndex, chrIndex) {
 
-    var self, rangeSet, rangesContainer, ideo, bandsXOffset;
+    var self, rangeSet, rangesContainer, ideo;
 
     if (!('rangeSet' in this._config)) {
       return;
     }
 
     rangeSet = this._config.rangeSet.filter(function(range) {
-      return range.chr - 1 === chrSetNumber;
+      return range.chr - 1 === chrSetIndex;
     }).map(function(range) {
       return new Range(range);
     });
@@ -138,7 +138,7 @@ export class Chromosome {
         return ideo.convertBpToPx(self._model, range.length);
       }).attr('height', this._config.chrWidth)
       .style('fill', function(range) {
-        return range.getColor(chrNumber);
+        return range.getColor(chrIndex);
       });
   };
 
@@ -262,16 +262,16 @@ export class Chromosome {
   /**
    * Render arm bands
    */
-  _renderBands(container, chrSetNumber, chrNumber, bands, arm) {
+  _renderBands(container, chrSetIndex, chrIndex, bands, arm) {
 
-    var self, armNumber, fill;
+    var self, armIndex, fill;
 
     self = this;
-    armNumber = arm === 'p' ? 0 : 1;
+    armIndex = arm === 'p' ? 0 : 1;
     fill = '';
 
     if ('ancestors' in self._ideo.config && !(self.isFullyBanded())) {
-      fill = self._color.getArmColor(chrSetNumber, chrNumber, armNumber);
+      fill = self._color.getArmColor(chrSetIndex, chrIndex, armIndex);
     }
 
     container.selectAll('path.band.' + arm)
@@ -299,32 +299,18 @@ export class Chromosome {
   };
 
   /**
-   * Render chromosome's p arm.
-   * Returns boolean which indicates is any bands was rendered.
+   * Render a chromosome arm.
+   * Returns boolean indicating if any bands were rendered.
    */
-  _renderPArm(container, chrSetNumber, chrNumber) {
+  _renderArm(container, chrSetIndex, chrIndex, arm) {
     var bands = this._model.bands.filter(function(band) {
-      return band.name[0] === 'p';
+      return band.name[0] === arm;
     });
 
-    this._renderBands(container, chrSetNumber, chrNumber, bands, 'p');
+    this._renderBands(container, chrSetIndex, chrIndex, bands, arm);
 
     return Boolean(bands.length);
-  };
-
-  /**
-   * Render chromosome's q arm.
-   * Returns boolean which indicates is any bands was rendered.
-   */
-  _renderQArm(container, chrSetNumber, chrNumber) {
-    var bands = this._model.bands.filter(function(band) {
-      return band.name[0] === 'q';
-    });
-
-    this._renderBands(container, chrSetNumber, chrNumber, bands, 'q');
-
-    return Boolean(bands.length);
-  };
+  }
 }
 
 
