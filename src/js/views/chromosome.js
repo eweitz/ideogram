@@ -125,7 +125,6 @@ export class Chromosome {
 
     self = this;
     ideo = self._ideo;
-    bandsXOffset = ideo._bandsXOffset;
 
     rangesContainer.selectAll('rect.range')
       .data(rangeSet)
@@ -133,12 +132,10 @@ export class Chromosome {
       .append('rect')
       .attr('class', 'range')
       .attr('x', function(range) {
-        var startPx = ideo.convertBpToPx(self._model, range.getStart());
-        return startPx - bandsXOffset;
+        return ideo.convertBpToPx(self._model, range.start);
       }).attr('y', 0)
       .attr('width', function(range) {
-        var lengthPx = ideo.convertBpToPx(self._model, range.getLength());
-        return lengthPx - bandsXOffset;
+        return ideo.convertBpToPx(self._model, range.length);
       }).attr('height', this._config.chrWidth)
       .style('fill', function(range) {
         return range.getColor(chrNumber);

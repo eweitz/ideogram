@@ -13,18 +13,9 @@ export class Range {
   */
   constructor(data) {
     this._data = data;
-  }
-
-  getStart() {
-    return this._data.start;
-  }
-
-  getStop() {
-    return this._data.stop;
-  }
-
-  getLength() {
-    return this._data.stop - this._data.start;
+    this.start = data.start;
+    this.stop = data.stop;
+    this.length = this.stop - this.start
   }
 
   getColor(chrNumber) {
