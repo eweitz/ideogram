@@ -236,11 +236,8 @@ function initDrawChromosomes(bandsArray) {
   var ideo = this,
     taxids = ideo.config.taxids,
     ploidy = ideo.config.ploidy,
-    taxid,
     chrIndex = 0,
-    bands,
-    i, j, chrs, chromosome, chrModel,
-    transform;
+    taxid, bands, i, j, chrs, chromosome, chrModel;
 
   for (i = 0; i < taxids.length; i++) {
     taxid = taxids[i];

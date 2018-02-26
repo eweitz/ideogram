@@ -121,18 +121,19 @@ export class Layout {
 
         ideoBounds = document.querySelector('#_ideogram').getBoundingClientRect();
 
-        if (this._class === 'VerticalLayout') {
+        if (ideo._layout._class === 'VerticalLayout') {
           elementLength = ideoBounds.width;
           windowLength = window.innerWidth;
         } else {
-          elementLength = ideoBounds.height;
-          windowLength = ideoBounds.height;
+          elementLength = ideoBounds.height - 10;
+          windowLength = window.innerHeight - 10;
         }
 
         // Set chromosome height to window length or ideogram element length,
         // whichever is smaller.  This keeps whole chromosome viewable, while
         // also ensuring the height doesn't exceed what the user specified.
         chrHeight = (windowLength < elementLength ? windowLength : elementLength);
+        chrHeight -= ideo.config.chrMargin * 2;
 
         // Account for chromosome label
         // TODO: Make this dynamic, not hard-coded
@@ -272,20 +273,18 @@ export class HorizontalLayout extends Layout {
   }
 
   rotateForward(setIndex, chrIndex, chrElement, callback) {
-    var xOffset = 30;
 
-    var ideoBox = d3.select(this._ideo.selector).node().getBoundingClientRect();
-    var chrBox = chrElement.getBoundingClientRect();
+    var xOffset, scaleY, yOffset, transform, labels;
 
-    var scaleX = (ideoBox.height / (chrBox.width + xOffset / 2)) * 0.9;
-    var scaleY = this._getYScale();
+    xOffset = 30;
 
-    var yOffset = (chrIndex + 1) * ((this._config.chrWidth * 2) * scaleY);
+    scaleY = this._getYScale();
 
-    var transform = (
+    yOffset = (chrIndex + 1) * ((this._config.chrWidth * 2) * scaleY);
+
+    transform = (
       'rotate(90) ' +
-      'translate(' + xOffset + ', -' + yOffset + ') ' +
-      'scale(' + scaleX + ', ' + scaleY + ')'
+      'translate(' + xOffset + ', -' + yOffset + ') '
     );
 
     d3.select(chrElement.parentNode)
@@ -294,7 +293,7 @@ export class HorizontalLayout extends Layout {
       .on('end', callback);
 
     // Append new chromosome labels
-    var labels = this.getChromosomeLabels(chrElement);
+    labels = this.getChromosomeLabels(chrElement);
     d3.select(this._ideo.getSvg())
       .append('g')
       .attr('class', 'tmp')
@@ -381,14 +380,14 @@ export class HorizontalLayout extends Layout {
 
   getChromosomeSetTranslate(setIndex) {
     var leftMargin = this._getLeftMargin();
-    var chromosomeSetYTranslate = this.getChromosomeSetYTranslate(setIndex);
-    return 'translate(' + leftMargin + ', ' + chromosomeSetYTranslate + ')';
+    var yTranslate = this.getChromosomeSetYTranslate(setIndex);
+    return 'translate(' + leftMargin + ', ' + yTranslate + ')';
   }
 
   getChromosomeSetYTranslate(setIndex) {
     // If no detailed description provided just use one formula for all cases.
     if (!this._config.ploidyDesc) {
-      return this._config.chrMargin * (setIndex + 1);
+      return this._config.chrMargin * setIndex;
     }
 
     // Id detailed description provided start to calculate offsets
