@@ -68,24 +68,22 @@ export class Layout {
     });
   }
 
-  // Rotate chromosome to original position
-  rotateBack() {
-    throw new Error(this._class + '#rotateBack not implemented');
-  }
-
-  // Rotate chromosome to opposite position
-  rotateForward() {
-    throw new Error(this._class + '#rotateForward not implemented');
-  }
-
   rotate(chrSetIndex, chrIndex, chrElement) {
-    var ideo = this._ideo;
+
+    var ideo, otherChrs, taxid, chrName, chrModel, bands, ideoBounds;
+
+    ideo = this._ideo;
+
+    taxid = ideo.config.taxid;
+    chrName = chrElement.id.split('-')[0].replace('chr', '');
+    chrModel = ideo.chromosomes[taxid][chrName];
+    bands = chrModel.bands;
+
+    ideoBounds = document.querySelector('#_ideogram').getBoundingClientRect();
 
     // Find chromosomes which should be hidden
-    var otherChrs = d3.selectAll(ideo.selector + ' g.chromosome')
-      .filter(function() {
-        return this !== chrElement;
-      });
+    otherChrs = d3.selectAll(ideo.selector + ' g.chromosome')
+      .filter(function() {return this !== chrElement;});
 
     if (this._isRotated) {
 
@@ -97,6 +95,14 @@ export class Layout {
         otherChrs.style('display', null);
         d3.selectAll(ideo.selector + ' .chrSetLabel, .chrLabel')
           .style('display', null);
+
+        ideo.config.chrHeight = ideo.config.chrHeightOriginal;
+        ideo.config.chrWidth = ideo.config.chrWidthOriginal;
+
+        chrModel = ideo.getChromosomeModel(bands, chrName, taxid, chrIndex);
+        ideo.chromosomes[taxid][chrName] = chrModel;
+        ideo.drawChromosome(chrName);
+        ideo.handleRotateOnClick();
       });
 
     } else {
@@ -111,15 +117,10 @@ export class Layout {
       // Rotate chromosome
       this.rotateForward(chrSetIndex, chrIndex, chrElement, function() {
 
-        var chrHeight, taxid, chrName, chrModel, bands, ideoBounds,
-          elementLength, windowLength;
+        var chrHeight, elementLength, windowLength;
 
-        taxid = ideo.config.taxid;
-        chrName = chrElement.id.split('-')[0].replace('chr', '');
-        chrModel = ideo.chromosomes[taxid][chrName];
-        bands = chrModel.bands;
-
-        ideoBounds = document.querySelector('#_ideogram').getBoundingClientRect();
+        ideo.config.chrHeightOriginal = ideo.config.chrHeight;
+        ideo.config.chrWidthOriginal = ideo.config.chrWidth;
 
         if (ideo._layout._class === 'VerticalLayout') {
           elementLength = ideoBounds.width;
