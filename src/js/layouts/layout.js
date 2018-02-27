@@ -68,16 +68,27 @@ export class Layout {
     });
   }
 
-  rotate(chrSetIndex, chrIndex, chrElement) {
+  didRotate(chrIndex, chrElement) {
 
-    var ideo, otherChrs, taxid, chrName, chrModel, bands, ideoBounds;
+    var ideo, taxid, chrName, bands, chrModel;
 
     ideo = this._ideo;
-
     taxid = ideo.config.taxid;
     chrName = chrElement.id.split('-')[0].replace('chr', '');
     chrModel = ideo.chromosomes[taxid][chrName];
     bands = chrModel.bands;
+
+    chrModel = ideo.getChromosomeModel(bands, chrName, taxid, chrIndex);
+    ideo.chromosomes[taxid][chrName] = chrModel;
+    ideo.drawChromosome(chrName);
+    ideo.handleRotateOnClick();
+  }
+
+  rotate(chrSetIndex, chrIndex, chrElement) {
+
+    var ideo, otherChrs, ideoBounds;
+
+    ideo = this._ideo;
 
     ideoBounds = document.querySelector('#_ideogram').getBoundingClientRect();
 
@@ -99,10 +110,7 @@ export class Layout {
         ideo.config.chrHeight = ideo.config.chrHeightOriginal;
         ideo.config.chrWidth = ideo.config.chrWidthOriginal;
 
-        chrModel = ideo.getChromosomeModel(bands, chrName, taxid, chrIndex);
-        ideo.chromosomes[taxid][chrName] = chrModel;
-        ideo.drawChromosome(chrName);
-        ideo.handleRotateOnClick();
+        ideo._layout.didRotate(chrIndex, chrElement);
       });
 
     } else {
@@ -135,17 +143,13 @@ export class Layout {
         // also ensuring the height doesn't exceed what the user specified.
         chrHeight = (windowLength < elementLength ? windowLength : elementLength);
         chrHeight -= ideo.config.chrMargin * 2;
+        ideo.config.chrHeight = chrHeight;
 
         // Account for chromosome label
         // TODO: Make this dynamic, not hard-coded
         ideo.config.chrWidth *= 1.7;
 
-        ideo.config.chrHeight = chrHeight;
-
-        chrModel = ideo.getChromosomeModel(bands, chrName, taxid, chrIndex);
-        ideo.chromosomes[taxid][chrName] = chrModel;
-        ideo.drawChromosome(chrName);
-        ideo.handleRotateOnClick();
+        ideo._layout.didRotate(chrIndex, chrElement);
       });
     }
   }
