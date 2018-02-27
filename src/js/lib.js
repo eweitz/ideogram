@@ -441,6 +441,7 @@ function appendHomolog(chrModel, chrIndex, homologIndex, container) {
     });
 }
 
+
 /**
  * Renders all the bands and outlining boundaries of a chromosome.
  */
@@ -488,8 +489,8 @@ function drawChromosome(chrName) {
  * Rotates a chromosome 90 degrees and shows or hides all other chromosomes
  * Useful for focusing or defocusing a particular chromosome
  */
-function rotateAndToggleDisplay(chromosome) {
-  // Do nothing if taxId not defined. But it should be defined.
+function rotateAndToggleDisplay(chrElement) {
+  // Do nothing if taxid not defined. But it should be defined.
   // To fix that bug we should have a way to find chromosome set number.
   if (!this.config.taxid) {
     return;
@@ -497,13 +498,13 @@ function rotateAndToggleDisplay(chromosome) {
 
   // TODO: Why not just use chrModel.chrIndex?
   var chrIndex = Array.prototype.slice.call(
-    d3.select(chromosome.parentNode).selectAll('g.chromosome')._groups[0]
-  ).indexOf(chromosome);
+    d3.select(chrElement.parentNode).selectAll('g.chromosome')._groups[0]
+  ).indexOf(chrElement);
 
-  var chrSetNumber =
-    Number(d3.select(chromosome.parentNode).attr('data-set-number'));
+  var chrSetIndex =
+    Number(d3.select(chrElement.parentNode).attr('data-set-number'));
 
-  return this._layout.rotate(chrSetNumber, chrIndex, chromosome);
+  return this._layout.rotate(chrSetIndex, chrIndex, chrElement);
 }
 
 /**

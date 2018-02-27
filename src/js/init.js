@@ -239,6 +239,8 @@ function initDrawChromosomes(bandsArray) {
     chrIndex = 0,
     taxid, bands, i, j, chrs, chromosome, chrModel;
 
+  ideo.bandsArray = {};
+
   for (i = 0; i < taxids.length; i++) {
     taxid = taxids[i];
     chrs = ideo.config.chromosomes[taxid];
@@ -254,7 +256,7 @@ function initDrawChromosomes(bandsArray) {
 
     ideo.setSexChromosomes(chrs);
 
-    ideo.bandsArray = bandsArray;
+    ideo.bandsArray[taxid] = bandsArray;
 
     for (j = 0; j < chrs.length; j++) {
       chromosome = chrs[j];
