@@ -290,9 +290,28 @@ function initDrawChromosomes(bandsArray) {
       ideo.drawBandLabels(ideo.chromosomes);
     }
 
+    ideo.handleRotateOnClick();
+
     ideo._gotChrModels = true; // Prevent issue with errant rat centromeres
   }
 }
+
+/**
+ * Attach any click handlers to rotate and toggle chromosomes
+ */
+function handleRotateOnClick() {
+  var ideo = this;
+
+  if (!('rotatable' in ideo.config && ideo.config.rotatable === false)) {
+    d3.selectAll(ideo.selector + ' .chromosome').on('click', function () {
+      ideo.rotateAndToggleDisplay(this);
+    });
+  } else {
+    d3.selectAll(ideo.selector + ' .chromosome')
+      .style('cursor', 'default');
+  }
+}
+
 
 /**
  * Called when Ideogram has finished initializing.
@@ -585,15 +604,6 @@ function init() {
         console.log('Time constructing ideogram: ' + (t1 - t0) + ' ms');
       }
 
-      if (!('rotatable' in ideo.config && ideo.config.rotatable === false)) {
-        d3.selectAll(ideo.selector + ' .chromosome').on('click', function() {
-          ideo.rotateAndToggleDisplay(this);
-        });
-      } else {
-        d3.selectAll(ideo.selector + ' .chromosome')
-          .style('cursor', 'default');
-      }
-
       if (ideo.onLoadCallback) {
         ideo.onLoadCallback();
       }
@@ -604,4 +614,4 @@ function init() {
   }
 }
 
-export {configure, initDrawChromosomes, onLoad, init};
+export {configure, initDrawChromosomes, handleRotateOnClick, onLoad, init};

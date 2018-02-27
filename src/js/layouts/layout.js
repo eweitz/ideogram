@@ -144,6 +144,7 @@ export class Layout {
         chrModel = ideo.getChromosomeModel(bands, chrName, taxid, chrIndex);
         ideo.chromosomes[taxid][chrName] = chrModel;
         ideo.drawChromosome(chrName);
+        ideo.handleRotateOnClick();
       });
     }
   }

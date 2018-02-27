@@ -15,7 +15,8 @@ import * as d3promise from 'd3.promise';
 
 import version from './version';
 
-import {configure, initDrawChromosomes, onLoad, init} from './init';
+import {configure, initDrawChromosomes, handleRotateOnClick, onLoad, init}
+from './init';
 
 import {
   onDrawAnnots, processAnnotData, initAnnotSettings, fetchAnnots, drawAnnots,
@@ -56,6 +57,7 @@ export default class Ideogram {
     this.configure = configure;
     this.initDrawChromosomes = initDrawChromosomes;
     this.onLoad = onLoad;
+    this.handleRotateOnClick = handleRotateOnClick;
     this.init = init;
 
     // Functions from annotations.js
