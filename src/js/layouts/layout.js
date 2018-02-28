@@ -100,15 +100,15 @@ export class Layout {
 
       this._isRotated = false;
 
+      ideo.config.chrHeight = ideo.config.chrHeightOriginal;
+      ideo.config.chrWidth = ideo.config.chrWidthOriginal;
+
       // Rotate chromosome back
       this.rotateBack(chrSetIndex, chrIndex, chrElement, function() {
         // Show all other chromosomes and chromosome labels
         otherChrs.style('display', null);
         d3.selectAll(ideo.selector + ' .chrSetLabel, .chrLabel')
           .style('display', null);
-
-        ideo.config.chrHeight = ideo.config.chrHeightOriginal;
-        ideo.config.chrWidth = ideo.config.chrWidthOriginal;
 
         ideo._layout.didRotate(chrIndex, chrElement);
       });
@@ -124,6 +124,14 @@ export class Layout {
 
       // Rotate chromosome
       this.rotateForward(chrSetIndex, chrIndex, chrElement, function() {
+
+        var chrSetElement, transform, scale, scaleRE;
+
+        chrSetElement = d3.select(chrElement.parentNode);
+        transform = chrSetElement.attr('transform');
+        scaleRE = /scale\(.*\)/;
+        scale = scaleRE.exec(transform);
+        transform = transform.replace(scale, '');
 
         var chrHeight, elementLength, windowLength;
 
@@ -736,7 +744,7 @@ export class VerticalLayout extends Layout {
     var scaleY = this._getYScale();
 
     var transform =
-      'translate(' + xOffset + ', 25)';
+      'translate(' + xOffset + ', 25) scale(' + scaleX + ', ' + scaleY + ')';
 
     d3.select(chrElement.parentNode)
       .transition()
