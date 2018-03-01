@@ -132,6 +132,7 @@ export class Layout {
         scaleRE = /scale\(.*\)/;
         scale = scaleRE.exec(transform);
         transform = transform.replace(scale, '');
+        chrSetElement.attr('transform', transform);
 
         var chrHeight, elementLength, windowLength;
 
