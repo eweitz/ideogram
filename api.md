@@ -90,7 +90,7 @@ String.  Optional.  An absolute or relative URL to a JSON file containing annota
 See also [annotations](#annotations).
 
 ## assembly
-String.  Optional.  Default: latest RefSeq assembly for specified organism.  The genome assembly to display.  Takes assembly name (e.g. "GRCh37"), RefSeq accession (e.g. "GCF_000306695.2"), or GenBank accession (e.g. "GCA_000005005.5").
+String.  Optional.  Default: latest RefSeq assembly for specified organism.  The genome assembly to display.  Takes assembly name (e.g. "GRCh37"), RefSeq accession (e.g. "GCF_000306695.2"), or GenBank accession (e.g. "GCA_000005005.5").  Example in [Annotations, histogram](https://eweitz.github.io/ideogram/annotations-histogram).
 
 ## barWidth
 Number.  Optional.  Default: 3.  The pixel width of bars drawn when `annotationsLayout: 'histogram'`.  Example in [Annotations, histogram](https://eweitz.github.io/ideogram/annotations-histogram).
