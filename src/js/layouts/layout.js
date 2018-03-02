@@ -738,14 +738,10 @@ export class VerticalLayout extends Layout {
 
     var xOffset = 20;
 
-    var ideoBox = d3.select(this._ideo.selector).node().getBoundingClientRect();
-    var chrBox = chrElement.getBoundingClientRect();
-
-    var scaleX = (ideoBox.width / chrBox.height) * 0.97;
-    var scaleY = this._getYScale();
+    var scale = this.getChromosomeScale(chrElement);
 
     var transform =
-      'translate(' + xOffset + ', 25) scale(' + scaleX + ', ' + scaleY + ')';
+      'translate(' + xOffset + ', 25) ' + scale;
 
     d3.select(chrElement.parentNode)
       .transition()
@@ -801,9 +797,19 @@ export class VerticalLayout extends Layout {
     return 'rotate(-90)';
   }
 
+  getChromosomeScale(chrElement) {
+    var ideoBox = d3.select(this._ideo.selector).node().getBoundingClientRect();
+    var chrBox = chrElement.getBoundingClientRect();
+
+    var scaleX = (ideoBox.width / chrBox.height) * 0.97;
+    var scaleY = this._getYScale();
+
+    return 'scale(' + scaleX + ', ' + scaleY + ')';
+  }
+
   getChromosomeSetTranslate(setIndex) {
     var marginTop = this.margin.top;
-    var chromosomeSetYTranslate = this.getChromosomeSetYTranslate(setIndex);
+      var chromosomeSetYTranslate = this.getChromosomeSetYTranslate(setIndex);
     return (
       'rotate(90) ' +
       'translate(' + marginTop + ', -' + chromosomeSetYTranslate + ')'
