@@ -70,7 +70,8 @@ export class Layout {
 
   didRotate(chrIndex, chrElement) {
 
-    var ideo, taxid, chrName, bands, chrModel;
+    var ideo, taxid, chrName, bands, chrModel, oldWidth,
+      chrSetElement, transform, scale, scaleRE;
 
     ideo = this._ideo;
     taxid = ideo.config.taxid;
@@ -78,7 +79,19 @@ export class Layout {
     chrModel = ideo.chromosomes[taxid][chrName];
     bands = chrModel.bands;
 
+    chrSetElement = d3.select(chrElement.parentNode);
+    transform = chrSetElement.attr('transform');
+    scaleRE = /scale\(.*\)/;
+    scale = scaleRE.exec(transform);
+    transform = transform.replace(scale, '');
+    chrSetElement.attr('transform', transform);
+
+    oldWidth = chrModel.width;
+
     chrModel = ideo.getChromosomeModel(bands, chrName, taxid, chrIndex);
+
+    chrModel.oldWidth = oldWidth
+
     ideo.chromosomes[taxid][chrName] = chrModel;
     ideo.drawChromosome(chrName);
     ideo.handleRotateOnClick();
@@ -100,8 +113,8 @@ export class Layout {
 
       this._isRotated = false;
 
-      ideo.config.chrHeight = ideo.config.chrHeightOriginal;
-      ideo.config.chrWidth = ideo.config.chrWidthOriginal;
+        ideo.config.chrHeight = ideo.config.chrHeightOriginal;
+        ideo.config.chrWidth = ideo.config.chrWidthOriginal;
 
       // Rotate chromosome back
       this.rotateBack(chrSetIndex, chrIndex, chrElement, function() {
@@ -124,15 +137,6 @@ export class Layout {
 
       // Rotate chromosome
       this.rotateForward(chrSetIndex, chrIndex, chrElement, function() {
-
-        var chrSetElement, transform, scale, scaleRE;
-
-        chrSetElement = d3.select(chrElement.parentNode);
-        transform = chrSetElement.attr('transform');
-        scaleRE = /scale\(.*\)/;
-        scale = scaleRE.exec(transform);
-        transform = transform.replace(scale, '');
-        chrSetElement.attr('transform', transform);
 
         var chrHeight, elementLength, windowLength;
 
@@ -769,11 +773,13 @@ export class VerticalLayout extends Layout {
   }
 
   rotateBack(setIndex, chrIndex, chrElement, callback) {
+
+    var scale = this.getChromosomeScaleBack(chrElement);
     var translate = this.getChromosomeSetTranslate(setIndex);
 
     d3.select(chrElement.parentNode)
       .transition()
-      .attr('transform', translate)
+      .attr('transform', translate + ' ' + scale)
       .on('end', callback);
 
     d3.selectAll(this._ideo.selector + ' g.tmp')
@@ -798,18 +804,35 @@ export class VerticalLayout extends Layout {
   }
 
   getChromosomeScale(chrElement) {
-    var ideoBox = d3.select(this._ideo.selector).node().getBoundingClientRect();
-    var chrBox = chrElement.getBoundingClientRect();
+    var ideoBox, chrBox, scaleX, scaleY;
 
-    var scaleX = (ideoBox.width / chrBox.height) * 0.97;
-    var scaleY = this._getYScale();
+    ideoBox = d3.select(this._ideo.selector).node().getBoundingClientRect();
+    chrBox = chrElement.getBoundingClientRect();
+
+    scaleX = (ideoBox.width / chrBox.height) * 0.97;
+    scaleY = this._getYScale();
 
     return 'scale(' + scaleX + ', ' + scaleY + ')';
   }
 
+  getChromosomeScaleBack(chrElement) {
+    var scale, scaleX, scaleY, chrName, chrModel, taxid, ideo, config;
+
+    ideo = this._ideo;
+    config = ideo.config;
+    taxid = config.taxid;
+
+    chrName = chrElement.id.split('-')[0].replace('chr', '');
+    chrModel = this._ideo.chromosomes[taxid][chrName];
+    scaleX = (chrModel.oldWidth/(config.chrHeight*3)) * 0.97;
+    scaleY = 1/this._getYScale();
+    scale = 'scale(' + scaleX + ', ' + scaleY + ')';
+    return scale;
+  }
+
   getChromosomeSetTranslate(setIndex) {
     var marginTop = this.margin.top;
-      var chromosomeSetYTranslate = this.getChromosomeSetYTranslate(setIndex);
+    var chromosomeSetYTranslate = this.getChromosomeSetYTranslate(setIndex);
     return (
       'rotate(90) ' +
       'translate(' + marginTop + ', -' + chromosomeSetYTranslate + ')'
