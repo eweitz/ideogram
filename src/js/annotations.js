@@ -308,7 +308,7 @@ function getHistogramBars(annots) {
     chrAnnots = annots[chr].annots;
     chrName = annots[chr].chr;
     chrModel = chrModels[chrName];
-    chrIndex = chrModel.chrIndex - 1;
+    chrIndex = chrModel.chrIndex;
     barAnnots = bars[chrIndex].annots;
     for (i = 0; i < chrAnnots.length; i++) {
       annot = chrAnnots[i];
@@ -599,7 +599,7 @@ function drawProcessedAnnots(annots) {
         y1 = chrWidth;
         y2 = chrWidth + d.height;
 
-        var thisChrWidth = ideo.chromosomesArray[d.chrIndex - 1].width;
+        var thisChrWidth = ideo.chromosomesArray[d.chrIndex].width;
 
         if (x2 > thisChrWidth) {
           x2 = thisChrWidth;
