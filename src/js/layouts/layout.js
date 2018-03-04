@@ -406,7 +406,7 @@ export class HorizontalLayout extends Layout {
   getChromosomeSetYTranslate(setIndex) {
     // If no detailed description provided just use one formula for all cases.
     if (!this._config.ploidyDesc) {
-      return this._config.chrMargin * setIndex;
+      return this._config.chrMargin * (setIndex + 1);
     }
 
     // Id detailed description provided start to calculate offsets
