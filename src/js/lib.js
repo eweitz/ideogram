@@ -188,7 +188,7 @@ function getChromosomeModel(bands, chrName, taxid, chrIndex) {
     chr = chrName;
   }
 
-  chr.chrIndex = chrIndex;
+  chr.chrIndex = chrIndex - 1;
 
   chr.id = 'chr' + chr.name + '-' + taxid;
 
@@ -520,4 +520,3 @@ export {
   round, appendHomolog, drawChromosome, rotateAndToggleDisplay, getSvg,
   Object
 };
-
