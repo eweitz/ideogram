@@ -120,6 +120,7 @@ export class Layout {
 
         ideo.config.chrHeight = ideo.config.chrHeightOriginal;
         ideo.config.chrWidth = ideo.config.chrWidthOriginal;
+        ideo.config.annotationHeight = ideo.config.annotationHeightOriginal;
 
       // Rotate chromosome back
       this.rotateBack(chrSetIndex, chrIndex, chrElement, function() {
@@ -147,6 +148,7 @@ export class Layout {
 
         ideo.config.chrHeightOriginal = ideo.config.chrHeight;
         ideo.config.chrWidthOriginal = ideo.config.chrWidth;
+        ideo.config.annotationHeightOriginal = ideo.config.annotationHeight;
 
         if (ideo._layout._class === 'VerticalLayout') {
           elementLength = ideoBounds.width;
@@ -166,6 +168,8 @@ export class Layout {
         // Account for chromosome label
         // TODO: Make this dynamic, not hard-coded
         ideo.config.chrWidth *= 1.7;
+
+        ideo.config.annotationHeight *= 1.7;
 
         ideo._layout.didRotate(chrIndex, chrElement);
       });
