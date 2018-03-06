@@ -94,7 +94,12 @@ export class Layout {
 
     ideo.chromosomes[taxid][chrName] = chrModel;
     ideo.drawChromosome(chrName);
+
     ideo.handleRotateOnClick();
+
+    ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
+    ideo.drawProcessedAnnots(ideo.annots)
+
   }
 
   rotate(chrSetIndex, chrIndex, chrElement) {

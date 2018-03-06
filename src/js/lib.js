@@ -439,6 +439,7 @@ function appendHomolog(chrModel, chrIndex, homologIndex, container) {
     .attr('class', function (d) {
       return d.class;
     });
+
 }
 
 
@@ -453,6 +454,8 @@ function drawChromosome(chrName) {
   chrIndex = chrModel.chrIndex;
 
   transform = this._layout.getChromosomeSetTranslate(chrIndex);
+
+  d3.selectAll('#' + chrModel.id + '-chromosome-set g').remove();
 
   container = d3.select('#' + chrModel.id + '-chromosome-set');
 

@@ -495,6 +495,9 @@ function drawProcessedAnnots(annots) {
     filledAnnots,
     ideo = this;
 
+  // Clear any existing annotations
+  d3.selectAll(ideo.selector + ' .annot').remove();
+
   chrWidth = this.config.chrWidth;
 
   layout = 'tracks';
