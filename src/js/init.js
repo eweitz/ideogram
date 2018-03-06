@@ -261,9 +261,11 @@ function initDrawChromosomes(bandsArray) {
     for (j = 0; j < chrs.length; j++) {
       chromosome = chrs[j];
       bands = bandsArray[chrIndex];
-      chrIndex += 1;
 
       chrModel = ideo.getChromosomeModel(bands, chromosome, taxid, chrIndex);
+
+      chrIndex += 1;
+
 
       if (typeof chromosome !== 'string') {
         chromosome = chromosome.name;

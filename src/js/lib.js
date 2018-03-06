@@ -188,7 +188,7 @@ function getChromosomeModel(bands, chrName, taxid, chrIndex) {
     chr = chrName;
   }
 
-  chr.chrIndex = chrIndex - 1;
+  chr.chrIndex = chrIndex;
 
   chr.id = 'chr' + chr.name + '-' + taxid;
 
@@ -493,18 +493,20 @@ function drawChromosome(chrName) {
  * Useful for focusing or defocusing a particular chromosome
  */
 function rotateAndToggleDisplay(chrElement) {
+
+  var chrName, chrModel, chrIndex, chrSetIndex;
+
   // Do nothing if taxid not defined. But it should be defined.
   // To fix that bug we should have a way to find chromosome set number.
   if (!this.config.taxid) {
     return;
   }
 
-  // TODO: Why not just use chrModel.chrIndex?
-  var chrIndex = Array.prototype.slice.call(
-    d3.select(chrElement.parentNode).selectAll('g.chromosome')._groups[0]
-  ).indexOf(chrElement);
+  chrName = chrElement.id.split('-')[0].replace('chr', '');
+  chrModel = this.chromosomes[this.config.taxid][chrName];
+  chrIndex = chrModel.chrIndex;
 
-  var chrSetIndex =
+  chrSetIndex =
     Number(d3.select(chrElement.parentNode).attr('data-set-number'));
 
   return this._layout.rotate(chrSetIndex, chrIndex, chrElement);

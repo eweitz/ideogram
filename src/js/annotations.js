@@ -328,7 +328,10 @@ function getHistogramBars(annots) {
     }
   }
 
-  if (firstGet === true || histogramScaling === 'relative') {
+  if (
+  //  firstGet === true ||
+    histogramScaling === 'relative'
+  ) {
     maxAnnotsPerBar = 0;
     for (i = 0; i < bars.length; i++) {
       annots = bars[i].annots;
@@ -349,7 +352,7 @@ function getHistogramBars(annots) {
     for (j = 0; j < annots.length; j++) {
       barCount = annots[j].count;
       height = (barCount / ideo.maxAnnotsPerBar[chr]) * ideo.config.chrMargin;
-      // console.log(height)
+      console.log(height)
       bars[i].annots[j].height = height;
     }
   }
