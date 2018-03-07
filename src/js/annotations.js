@@ -258,8 +258,8 @@ function getHistogramBars(annots) {
     chrModel, chrModels, chrPxStop, px, bp,
     chrAnnots, chrName, chrIndex, annot,
     bars, bar, barPx, nextBarPx, barWidth,
-    maxAnnotsPerBar, color, lastBand,
-    numBins, barAnnots, barCount, height,
+    maxAnnotsPerBar, maxAnnotsPerBarAllChrs, color, lastBand,
+    numBins, barAnnots, barCount, barCountRatio, height, ideoIsRotated,
     firstGet = false,
     histogramScaling,
     ideo = this;
@@ -269,11 +269,12 @@ function getHistogramBars(annots) {
   barWidth = ideo.config.barWidth;
   chrModels = ideo.chromosomes[ideo.config.taxid];
   color = ideo.config.annotationsColor;
+  ideoIsRotated = ideo._layout._isRotated;
 
   if ('histogramScaling' in ideo.config) {
     histogramScaling = ideo.config.histogramScaling;
   } else {
-    histogramScaling = 'relative';
+    histogramScaling = 'absolute';
   }
 
   if (typeof ideo.maxAnnotsPerBar === 'undefined') {
@@ -281,6 +282,7 @@ function getHistogramBars(annots) {
     firstGet = true;
   }
 
+  // Group individual annotations into higher-level "bar" annotations
   for (chr in chrModels) {
     chrModel = chrModels[chr];
     chrIndex = chrModel.chrIndex;
@@ -304,6 +306,7 @@ function getHistogramBars(annots) {
     bars.push(bar);
   }
 
+  // Determine how many, and which annotations each bar contains
   for (chr in annots) {
     chrAnnots = annots[chr].annots;
     chrName = annots[chr].chr;
@@ -332,28 +335,41 @@ function getHistogramBars(annots) {
     firstGet === true ||
     histogramScaling === 'relative'
   ) {
-    maxAnnotsPerBar = 0;
+    maxAnnotsPerBarAllChrs = 0;
     for (i = 0; i < bars.length; i++) {
+      maxAnnotsPerBar = 0;
       annots = bars[i].annots;
+      chr = bars[i].chr;
       for (j = 0; j < annots.length; j++) {
         barCount = annots[j].count;
         if (barCount > maxAnnotsPerBar) {
           maxAnnotsPerBar = barCount;
         }
+        if (barCount > maxAnnotsPerBarAllChrs) {
+          maxAnnotsPerBarAllChrs = barCount;
+        }
       }
+      ideo.maxAnnotsPerBar[chr] = maxAnnotsPerBar;
     }
-    ideo.maxAnnotsPerBar[chr] = maxAnnotsPerBar;
+    ideo.maxAnnotsPerBarAllChrs = maxAnnotsPerBarAllChrs;
   }
 
   // Set each bar's height to be proportional to
   // the height of the bar with the most annotations
   for (i = 0; i < bars.length; i++) {
     annots = bars[i].annots;
+    chr = bars[i].chr;
     for (j = 0; j < annots.length; j++) {
       barCount = annots[j].count;
-      height = (barCount / ideo.maxAnnotsPerBar[chr]) * ideo.config.chrMargin;
-      if (ideo._layout._isRotated) {
-        height *= 10;
+      if (histogramScaling === 'relative') {
+        barCountRatio = barCount / ideo.maxAnnotsPerBar[chr];
+      } else {
+        barCountRatio = barCount / ideo.maxAnnotsPerBarAllChrs;
+      }
+      if (ideoIsRotated === false) {
+        height = barCountRatio * ideo.config.chrMargin;
+      } else {
+        height = barCountRatio * ideo.config.chrHeightOriginal*3;
       }
       bars[i].annots[j].height = height;
     }
