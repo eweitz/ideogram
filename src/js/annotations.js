@@ -329,7 +329,7 @@ function getHistogramBars(annots) {
   }
 
   if (
-  //  firstGet === true ||
+    firstGet === true ||
     histogramScaling === 'relative'
   ) {
     maxAnnotsPerBar = 0;
@@ -352,7 +352,9 @@ function getHistogramBars(annots) {
     for (j = 0; j < annots.length; j++) {
       barCount = annots[j].count;
       height = (barCount / ideo.maxAnnotsPerBar[chr]) * ideo.config.chrMargin;
-      console.log(height)
+      if (ideo._layout._isRotated) {
+        height *= 10;
+      }
       bars[i].annots[j].height = height;
     }
   }
@@ -492,7 +494,7 @@ function showAnnotTooltip(annot, context) {
  * running parallel to each chromosome.
  */
 function drawProcessedAnnots(annots) {
-  var chrWidth, layout,
+  var chrWidth, chrWidths, chrs, chr, layout,
     annotHeight, triangle, circle, r, chrAnnot,
     x1, x2, y1, y2,
     filledAnnots,
@@ -502,6 +504,12 @@ function drawProcessedAnnots(annots) {
   d3.selectAll(ideo.selector + ' .annot').remove();
 
   chrWidth = this.config.chrWidth;
+
+  chrWidths = {};
+  chrs = ideo.chromosomes[ideo.config.taxid];
+  for (chr in chrs) {
+    chrWidths[chr] = chrs[chr].width;
+  }
 
   layout = 'tracks';
   if (this.config.annotationsLayout) {
@@ -605,7 +613,7 @@ function drawProcessedAnnots(annots) {
         y1 = chrWidth;
         y2 = chrWidth + d.height;
 
-        var thisChrWidth = ideo.chromosomesArray[d.chrIndex].width;
+        var thisChrWidth = chrWidths[d.chrName].width;
 
         if (x2 > thisChrWidth) {
           x2 = thisChrWidth;

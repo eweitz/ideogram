@@ -90,7 +90,7 @@ export class Layout {
 
     chrModel = ideo.getChromosomeModel(bands, chrName, taxid, chrIndex);
 
-    chrModel.oldWidth = oldWidth
+    chrModel.oldWidth = oldWidth;
 
     ideo.chromosomes[taxid][chrName] = chrModel;
     ideo.drawChromosome(chrName);
