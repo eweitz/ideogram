@@ -28,7 +28,7 @@ function drawSexChromosomes(container, chrIndex) {
   for (homologIndex = 0; homologIndex < sciLength; homologIndex++) {
     sci = sexChromosomeIndexes[homologIndex] + chrIndex;
     chromosome = chrs[sci];
-    bands = bandsArray[sci];
+    bands = bandsArray[taxid][sci];
     chrModel = this.getChromosomeModel(bands, chromosome, taxid, sci);
     this.appendHomolog(chrModel, chrIndex, homologIndex, container);
   }
