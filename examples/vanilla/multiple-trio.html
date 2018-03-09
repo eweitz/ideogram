@@ -37,7 +37,7 @@
       document.querySelector('body').innerHTML += container;
       config.container = '#' + id;
       config.sex = genomes[i][1];
-      new Ideogram(config);
+      window['ideogram_' + id] = new Ideogram(config);
     }
   </script>
 </body>
