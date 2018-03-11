@@ -18,7 +18,14 @@
   </p>
   <script type="text/javascript">
 
-  var shape = 'triangle';
+  var annotHeight = 3.5;
+
+  var shape =
+    'm0,0 l 0 ' + (2 * annotHeight) +
+    'l ' + annotHeight/2 + ' 0' +
+    'l 0 -' + (2 * annotHeight) + 'z';
+
+  // var shape = 'triangle';
 
   var annotationTracks = [
     {id: 'pathogenicTrack', displayName: 'Pathogenic', color: '#F00', shape: shape},
@@ -32,7 +39,7 @@
     chrWidth: 8,
     annotationsPath: '../../data/annotations/1000_virtual_snvs.json',
     annotationTracks: annotationTracks,
-    annotationHeight: 3.5
+    annotationHeight: annotHeight
   };
 
   var ideogram = new Ideogram(config);

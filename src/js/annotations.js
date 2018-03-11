@@ -560,6 +560,8 @@ function drawProcessedAnnots(annots) {
           return circle;
         } else if (d.shape === 'rectangle') {
           return rectangle;
+        } else {
+          return d.shape;
         }
       })
       .attr('fill', function(d) {
