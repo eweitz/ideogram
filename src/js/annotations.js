@@ -512,7 +512,7 @@ function drawProcessedAnnots(annots) {
   annotHeight = ideo.config.annotationHeight;
 
   triangle =
-    'l -' + annotHeight + ' ' +
+    'm0,0 l -' + annotHeight + ' ' +
     (2 * annotHeight) +
     ' l ' + (2 * annotHeight) + ' 0 z';
 
@@ -527,7 +527,7 @@ function drawProcessedAnnots(annots) {
     'a ' + r + ',' + r + ' 0 1,0 -' + (r * 2) + ',0';
 
   rectangle =
-    'l 0 ' + (2 * annotHeight) +
+    'm0,0 l 0 ' + (2 * annotHeight) +
     'l ' + annotHeight + ' 0' +
     'l 0 -' + (2 * annotHeight) + 'z';
 
@@ -555,11 +555,11 @@ function drawProcessedAnnots(annots) {
       .append('path')
       .attr('d', function(d) {
         if (!d.shape || d.shape === 'triangle') {
-          return 'm0,0' + triangle;
+          return triangle;
         } else if (d.shape === 'circle') {
           return circle;
         } else if (d.shape === 'rectangle') {
-          return 'm0,0' + rectangle;
+          return rectangle;
         }
       })
       .attr('fill', function(d) {
