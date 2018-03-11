@@ -40,7 +40,7 @@ function processAnnotData(rawAnnots) {
     i, j, k, m, annot, annots, annotsByChr,
     chr,
     chrModel, ra,
-    startPx, stopPx, px, color,
+    startPx, stopPx, px, annotTrack, color, shape,
     ideo = this;
 
   keys = rawAnnots.keys;
@@ -85,7 +85,9 @@ function processAnnotData(rawAnnots) {
       color = ideo.config.annotationsColor;
       if (ideo.config.annotationTracks) {
         annot.trackIndex = ra[3];
-        color = ideo.config.annotationTracks[annot.trackIndex].color;
+        annotTrack = ideo.config.annotationTracks[annot.trackIndex];
+        color = annotTrack.color;
+        shape = annotTrack.shape;
       } else {
         annot.trackIndex = 0;
       }
@@ -100,6 +102,7 @@ function processAnnotData(rawAnnots) {
       annot.startPx = startPx;
       annot.stopPx = stopPx;
       annot.color = color;
+      annot.shape = shape;
 
       annots[m].annots.push(annot);
     }
@@ -490,7 +493,7 @@ function showAnnotTooltip(annot, context) {
  */
 function drawProcessedAnnots(annots) {
   var chrWidth, layout,
-    annotHeight, triangle, circle, r, chrAnnot,
+    annotHeight, triangle, circle, rectangle, r, chrAnnot,
     x1, x2, y1, y2,
     filledAnnots,
     ideo = this;
@@ -523,6 +526,11 @@ function drawProcessedAnnots(annots) {
     'a ' + r + ',' + r + ' 0 1,0 ' + (r * 2) + ',0' +
     'a ' + r + ',' + r + ' 0 1,0 -' + (r * 2) + ',0';
 
+  rectangle =
+    'l 0 ' + (2 * annotHeight) +
+    'l ' + annotHeight + ' 0' +
+    'l 0 -' + (2 * annotHeight) + 'z';
+
   filledAnnots = ideo.fillAnnots(annots);
 
   chrAnnot = d3.selectAll(ideo.selector + ' .chromosome')
@@ -550,6 +558,8 @@ function drawProcessedAnnots(annots) {
           return 'm0,0' + triangle;
         } else if (d.shape === 'circle') {
           return circle;
+        } else if (d.shape === 'rectangle') {
+          return 'm0,0' + rectangle;
         }
       })
       .attr('fill', function(d) {
