@@ -41,17 +41,19 @@ import Ideogram from 'ideogram';
   <script src="https://unpkg.com/ideogram@0.16.0/dist/js/ideogram.min.js"></script>
 </head>
 <body>
-  <script>
-      var ideogram = new Ideogram({
-        organism: 'human',
-        annotations: [{
-          name: 'BRCA1',
-          chr: '17',
-          start: 43044294,
-          stop: 43125482
-        }]
-      });
-  </script>
+<script>
+  var ideogram = new Ideogram({
+    organism: 'human',
+    chromosome: '17',
+    orientation: 'horizontal',
+    annotations: [{
+      name: 'BRCA1',
+      chr: '17',
+      start: 43044294,
+      stop: 43125482
+    }]
+  });
+</script>
 </body>
 ```
 
