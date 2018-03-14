@@ -22,6 +22,13 @@ d3.promise = d3promise;
 /**
  * Optional callback, invoked when annotations are drawn
  */
+function onLoadAnnots() {
+  call(this.onLoadAnnotsCallback);
+}
+
+/**
+ * Optional callback, invoked when annotations are drawn
+ */
 function onDrawAnnots() {
   call(this.onDrawAnnotsCallback);
 }
@@ -167,6 +174,9 @@ function fetchAnnots(annotsUrl) {
         ideo.rawAnnots = data;
       }
     );
+    if (ideo.onLoadAnnotsCallback) {
+      ideo.onLoadAnnotsCallback();
+    }
     return;
   }
 
@@ -187,6 +197,9 @@ function fetchAnnots(annotsUrl) {
       ideo.rawAnnots = new BedParser(data.response, ideo).rawAnnots;
     } else {
       ideo.rawAnnots = JSON.parse(data.response);
+    }
+    if (ideo.onLoadAnnotsCallback) {
+      ideo.onLoadAnnotsCallback();
     }
   });
 
@@ -729,7 +742,8 @@ function drawSynteny(syntenicRegions) {
 }
 
 export {
-  onDrawAnnots, processAnnotData, initAnnotSettings, fetchAnnots, drawAnnots,
-  getHistogramBars, fillAnnots, drawProcessedAnnots, drawSynteny,
-  startHideAnnotTooltipTimeout, showAnnotTooltip, onWillShowAnnotTooltip
+  onLoadAnnots, onDrawAnnots, processAnnotData, initAnnotSettings,
+  fetchAnnots, drawAnnots, getHistogramBars, fillAnnots, drawProcessedAnnots,
+  drawSynteny, startHideAnnotTooltipTimeout, showAnnotTooltip,
+  onWillShowAnnotTooltip
 }
