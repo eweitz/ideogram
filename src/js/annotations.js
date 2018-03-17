@@ -103,6 +103,10 @@ function processAnnotData(rawAnnots) {
         color = annot.color;
       }
 
+      if ('shape' in annot) {
+        shape = annot.shape;
+      }
+
       annot.chr = chr;
       annot.chrIndex = i;
       annot.px = px;
