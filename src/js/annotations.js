@@ -175,11 +175,11 @@ function fetchAnnots(annotsUrl) {
       ideo.config.annotationsPath,
       function(data) {
         ideo.rawAnnots = data;
+        if (ideo.onLoadAnnotsCallback) {
+          ideo.onLoadAnnotsCallback();
+        }
       }
     );
-    if (ideo.onLoadAnnotsCallback) {
-      ideo.onLoadAnnotsCallback();
-    }
     return;
   }
 
