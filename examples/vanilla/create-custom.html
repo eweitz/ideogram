@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create custom | Ideogram</title>
+    <style>
+        body {
+            font: 12px Arial;
+            line-height: 19.6px;
+            max-width: 1200px;
+        }
+
+        #container {
+            float: left;
+            width: 88%;
+        }
+
+        #config-list {
+            float: left;
+            width: 12%;
+            padding-left: 0;
+        }
+
+        li ul {
+            padding: 2px 0 10px 10px;
+        }
+
+        li ul li {
+            list-style-type: none;
+        }
+    </style>
+    <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
+</head>
+<body>
+<h1>Create custom | Ideogram</h1>
+<a href="../">Back to overview</a> |
+<a href="annotations-overlaid">Previous</a> |
+<a href="annotations-external-data">Next</a>
+<p>
+    Create a custom ideogram by configuring options below.
+</p>
+
+<ul id="config-list">
+<li>
+    Organism
+    <select id="organism-menu">
+        <option>Homo sapiens (human)</option>
+        <option>Mus musculus (mouse)</option>
+        <option>Rattus norvegicus (rat)</option>
+        <option>Drosophila melanogaster (fruit fly)</option>
+        <option>Caenorhabditis elegans (worm)</option>
+    </select>
+    <span id="custom-organism-input-container" style="display: none;">
+<input id="custom-organism-input" type="text"/><button id="custom-organism-button">Go</button>
+</span>
+</li>
+<li>
+    Shape
+    <select id="shape-menu">
+        <option>Triangle</option>
+        <option>Circle</option>
+        <option>Rectangle</option>
+        <option>Custom</option>
+    </select>
+    <span id="path-input-container" style="display: none;">
+    <input id="path-input" type="text"/><button id="path-button">Go</button>
+    </span>
+</li>
+<li>
+    Color
+    <select id="color-menu">
+        <option>Red</option>
+        <option>Blue</option>
+        <option>Green</option>
+        <option>Custom</option>
+    </select>
+    <span id="custom-color-input-container" style="display: none;">
+<input id="custom-color-input" type="text"/><button id="custom-color-button">Go</button>
+</span>
+</li>
+</ul>
+
+
+<div id="container">
+
+</div>
+<script type="text/javascript">
+
+  var d3 = Ideogram.d3,
+    organism = 'human',
+    shape = 'triangle';
+
+  function getSelection(menu) {
+    return menu.options[menu.selectedIndex].text.toLowerCase();
+  }
+
+  d3.selectAll('#shape-menu').on('change', function(d) {
+    shape = getSelection(this);
+    if (shape === 'custom') {
+      return;
+    }
+    d3.select('#_ideogram').remove();
+    drawIdeogram();
+  });
+
+  d3.selectAll('#organism-menu').on('change', function(d) {
+    organism = getSelection(this).split(' (')[0].replace(' ', '-');
+    if (organism === 'custom') {
+      return;
+    }
+    d3.select('#_ideogram').remove();
+    drawIdeogram();
+  });
+
+  function drawIdeogram() {
+
+    var annotationTracks = [
+      {id: 'pathogenicTrack', displayName: 'Pathogenic', color: '#F00', shape: shape},
+      {id: 'uncertainSignificanceTrack', displayName: 'Uncertain significance', color: '#CCC', shape: shape},
+      {id: 'benignTrack',  displayName: 'Benign', color: '#8D4', shape: shape}
+    ];
+
+    var config = {
+      organism: organism,
+      orientation: 'vertical',
+      container: '#container',
+//      chrWidth: 8,
+      chrHeight: 300,
+//      chrMargin: 1,
+//      annotationsPath: '../../data/annotations/1000_virtual_snvs.json',
+//      annotationTracks: annotationTracks,
+//      annotationHeight: 3.5
+    };
+
+    var ideogram = new Ideogram(config);
+  }
+
+  drawIdeogram(organism, shape);
+
+
+</script>
+</body>
+</html>
