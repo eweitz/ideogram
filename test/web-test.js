@@ -513,6 +513,49 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
+  it('should have narrow rectangles as custom annotations shape', function(done) {
+    // Tests use case from ../examples/vanilla/annotations-tracks.html
+
+    function callback() {
+      var annot, box;
+
+      annot = document.querySelector('#chr6-9606 > g:nth-child(7)');
+      box = annot.getBBox();
+
+      assert.equal(box.height, 7);
+      assert.equal(box.width, 1.75);
+
+      done();
+    }
+
+    var annotHeight = 3.5;
+
+    var shape =
+      'm0,0 l 0 ' + (2 * annotHeight) +
+      'l ' + annotHeight/2 + ' 0' +
+      'l 0 -' + (2 * annotHeight) + 'z';
+
+    var annotationTracks = [
+      {id: 'pathogenicTrack', displayName: 'Pathogenic', color: '#F00', shape: shape},
+      {id: 'uncertainSignificanceTrack', displayName: 'Uncertain significance', color: '#CCC', shape: shape},
+      {id: 'benignTrack',  displayName: 'Benign', color: '#8D4', shape: shape},
+    ];
+
+    var config = {
+      organism: 'human',
+      orientation: 'vertical',
+      chrWidth: 8,
+      annotationsPath: '../dist/data/annotations/1000_virtual_snvs.json',
+      annotationTracks: annotationTracks,
+      annotationHeight: annotHeight,
+      dataDir: '/dist/data/bands/native/',
+      onDrawAnnots: callback
+    };
+
+    ideogram = new Ideogram(config);
+  });
+
+
   it('should have 114 annotations for BED file at remote URL', function(done) {
     // Tests use case from ../examples/vanilla/annotations-file-url.html
 

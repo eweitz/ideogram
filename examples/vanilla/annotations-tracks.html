@@ -33,9 +33,7 @@
 
   d3.selectAll('select').on('change', function() {
 
-    var shape;
-
-    shape = this.options[this.selectedIndex].text.toLowerCase();
+    var shape = this.options[this.selectedIndex].text.toLowerCase();
 
     if (shape === 'narrow rectangle') {
       shape =
@@ -50,6 +48,7 @@
 
 
   function drawIdeogram(shape) {
+
     var annotationTracks = [
       {id: 'pathogenicTrack', displayName: 'Pathogenic', color: '#F00', shape: shape},
       {id: 'uncertainSignificanceTrack', displayName: 'Uncertain significance', color: '#CCC', shape: shape},
