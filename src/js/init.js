@@ -166,6 +166,10 @@ function configure(config) {
     this.onLoadCallback = config.onLoad;
   }
 
+  if (config.onLoadAnnots) {
+    this.onLoadAnnotsCallback = config.onLoadAnnots;
+  }
+
   if (config.onDrawAnnots) {
     this.onDrawAnnotsCallback = config.onDrawAnnots;
   }

@@ -39,6 +39,7 @@ var ideogram = new Ideogram({
 * [dataDir](#datadir)
 * [onBrushMove](#onbrushmove)
 * [onDrawAnnots](#ondrawannots)
+* [onLoadAnnots](#onloadannots)
 * [onLoad](#onload)
 * [onWillShowAnnotTooltip](#onwillshowannottooltip)
 * [organism](#organism)
@@ -75,16 +76,22 @@ Lay out annotations in tracks beside each chromosome.  There can be more than on
 ### annotationsLayout: 'histogram'
 Lay out annotations in a histogram.  This clusters annoatations by location, such that each cluster or bin is shown as a bar.  The height of the bar represent the number of annotations in that genomic range.  This option is useful for summarizing the distribution of many (1000+) features througout the genome.  Example in [Annotations, histogram](https://eweitz.github.io/ideogram/annotations-histogram).
 
-### annotationsLayout: 'overlay'
-Lay out annotations directly over chromosomes.  This is the most space-efficient annotation layout option.  Example in [Annotations, overlay](https://eweitz.github.io/ideogram/annotations_overlay).
+### annotationsLayout: '
+
+
+
+
+
+'
+Lay out annotations directly over chromosomes.  This is the most space-efficient annotation layout option.  Example in [Annotations, overlaid](https://eweitz.github.io/ideogram/annotations-overlaid).
 
 ## annotationsPath
-String.  Optional.  An absolute or relative URL to a JSON file containing annotation objects.  Example in [Annotations, overlay](https://eweitz.github.io/ideogram/annotations-overlay).
+String.  Optional.  An absolute or relative URL to a JSON file containing annotation objects.  Example in [Annotations, overlaid](https://eweitz.github.io/ideogram/annotations-overlaid).
 
 See also [annotations](#annotations).
 
 ## assembly
-String.  Optional.  Default: latest RefSeq assembly for specified organism.  The genome assembly to display.  Takes assembly name (e.g. "GRCh37"), RefSeq accession (e.g. "GCF_000306695.2"), or GenBank accession (e.g. "GCA_000005005.5").
+String.  Optional.  Default: latest RefSeq assembly for specified organism.  The genome assembly to display.  Takes assembly name (e.g. "GRCh37"), RefSeq accession (e.g. "GCF_000306695.2"), or GenBank accession (e.g. "GCA_000005005.5").  Example in [Annotations, histogram](https://eweitz.github.io/ideogram/annotations-histogram).
 
 ## barWidth
 Number.  Optional.  Default: 3.  The pixel width of bars drawn when `annotationsLayout: 'histogram'`.  Example in [Annotations, histogram](https://eweitz.github.io/ideogram/annotations-histogram).
@@ -119,6 +126,9 @@ Function.  Optional.  Callback function to invoke when annotations are drawn.  T
 ## onLoad
 Function.  Optional.  Callback function to invoke when chromosomes are loaded, i.e. rendered on the page.  Example in [Annotations, external data](https://eweitz.github.io/ideogram/annotations-external-data).
 
+## onLoadAnnots
+Function.  Optional.  Callback function to invoke when annotations are downloaded and ready for data transformation.
+
 ## onWillShowAnnotTooltip
 Function.  Optional.  Callback function to invoke immediately before annotation tooltip is shown.  The tooltip shows the genomic range and, if available, name of the annotation.  This option can be useful to e.g. enhance the displayed annotation name, say by transforming a gene name into a hyperlink to a gene record web page.  Example in [Annotations, external data](https://eweitz.github.io/ideogram/annotations-external-data).
 
@@ -150,7 +160,7 @@ Boolean.  Optional.  Default: false.  Whether to show cytogenetic band labels, e
 Boolean.  Optional.  Defaut: true.  Whether to show chromosome labels, e.g. 1, 2, 3, X, Y.  Example in [Annotations, basic](https://eweitz.github.io/ideogram/annotations-basic).
 
 ## showAnnotTooltip
-Boolean.  Optional.  Default: true.  Whether to show a tooltip upon mousing over an annotation.  Example in [Annotations, basic](https://eweitz.github.io/ideogram/annotations-basic).
+Boolean.  Optional.  Default: true.  Whether to show a tooltip upon mousing over an annotation.  Example in [Multiple, trio SV](https://eweitz.github.io/ideogram/multiple-trio-sv).
 
 ## showFullyBanded
 Boolean.  Optional.  Default: true.  Whether to show fully banded chromosomes for genomes that have sufficient data.  Useful for showing simpler chromosomes of cytogenetically well-characterized organisms, e.g. human, beside chromosomes of less studied organisms, e.g. chimpanzee.  Example in [Multiple, primates](https://eweitz.github.io/ideogram/multiple-primates).
