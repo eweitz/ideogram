@@ -9,22 +9,36 @@
             max-width: 1200px;
         }
 
-        #container {
+        #ideo-container {
             float: left;
-            width: 88%;
+            width: 80%;
         }
 
-        #config-list {
+        #_ideogram {
+            margin-left: 15px;
+        }
+
+        #config-container {
             float: left;
-            width: 12%;
+            width: 20%;
             padding-left: 0;
         }
 
-        li ul {
-            padding: 2px 0 10px 10px;
+        #config-container div {
+            border-top: 1px solid grey;
+            padding-top: 5px;
         }
 
-        li ul li {
+        select {
+            margin-bottom: 7px;
+        }
+
+        ul {
+            padding: 2px 0 10px 0px;
+            margin-top: 0;
+        }
+
+        li {
             list-style-type: none;
         }
     </style>
@@ -39,74 +53,103 @@
     Create a custom ideogram by configuring options below.
 </p>
 
-<ul id="config-list">
-<li>
-    Organism
-    <select id="organism-menu">
-        <option>Homo sapiens (human)</option>
-        <option>Mus musculus (mouse)</option>
-        <option>Rattus norvegicus (rat)</option>
-        <option>Drosophila melanogaster (fruit fly)</option>
-        <option>Caenorhabditis elegans (worm)</option>
-    </select>
-    <span id="custom-organism-input-container" style="display: none;">
+<div id="config-container">
+
+Organism
+<select id="organism-menu">
+    <option>Homo sapiens (human)</option>
+    <option>Mus musculus (mouse)</option>
+    <option>Rattus norvegicus (rat)</option>
+    <option>Drosophila melanogaster (fruit fly)</option>
+    <option>Caenorhabditis elegans (worm)</option>
+    <option>Custom</option>
+</select>
+<span id="custom-organism-input-container" style="display: none;">
 <input id="custom-organism-input" type="text"/><button id="custom-organism-button">Go</button>
 </span>
-</li>
-<li>
-    Shape
-    <select id="shape-menu">
-        <option>Triangle</option>
-        <option>Circle</option>
-        <option>Rectangle</option>
-        <option>Custom</option>
-    </select>
-    <span id="path-input-container" style="display: none;">
-    <input id="path-input" type="text"/><button id="path-button">Go</button>
+
+Ploidy
+<select id="ploidy-menu">
+    <option>Haploid (1)</option>
+    <option>Diploid (2)</option>
+</select>
+<br/>
+
+Orientation
+<select id="orientation-menu">
+    <option>Vertical</option>
+    <option>Horizontal</option>
+</select>
+<br/>
+    
+<div>
+    <i>Annotations</i>
+    <ul>
+    <li>
+        Shape
+        <select id="shape-menu">
+            <option>Triangle</option>
+            <option>Circle</option>
+            <option>Rectangle</option>
+            <option>Custom</option>
+        </select>
+        <span id="path-input-container" style="display: none;">
+        <input id="path-input" type="text"/><button id="path-button">Go</button>
+        </span>
+    </li>
+    <li>
+        Color
+        <select id="color-menu">
+            <option>Red</option>
+            <option>Blue</option>
+            <option>Green</option>
+            <option>Custom</option>
+        </select>
+        <span id="custom-color-input-container" style="display: none;">
+    <input id="custom-color-input" type="text"/><button id="custom-color-button">Go</button>
     </span>
-</li>
-<li>
-    Color
-    <select id="color-menu">
-        <option>Red</option>
-        <option>Blue</option>
-        <option>Green</option>
-        <option>Custom</option>
-    </select>
-    <span id="custom-color-input-container" style="display: none;">
-<input id="custom-color-input" type="text"/><button id="custom-color-button">Go</button>
-</span>
-</li>
-</ul>
+    </li>
+    </ul>
+</div>
+</div>
 
 
-<div id="container">
+<div id="ideo-container">
 
 </div>
 <script type="text/javascript">
 
   var d3 = Ideogram.d3,
     organism = 'human',
-    shape = 'triangle';
+    ploidy = 1,
+    orientation = 'vertical',
+    shape = 'triangle',
+    color = 'red';
 
   function getSelection(menu) {
     return menu.options[menu.selectedIndex].text.toLowerCase();
   }
 
-  d3.selectAll('#shape-menu').on('change', function(d) {
-    shape = getSelection(this);
-    if (shape === 'custom') {
-      return;
-    }
-    d3.select('#_ideogram').remove();
-    drawIdeogram();
-  });
+  d3.selectAll('select').on('change', function(d) {
+    var id, ideoParam, selection;
 
-  d3.selectAll('#organism-menu').on('change', function(d) {
-    organism = getSelection(this).split(' (')[0].replace(' ', '-');
-    if (organism === 'custom') {
+    id = d3.select(this).attr('id');
+    ideoParam = id.split('-')[0];
+
+    selection = getSelection(this);
+
+    if (ideoParam === 'organism') {
+      selection = selection.split(' (')[0].replace(' ', '-');
+    } else if (ideoParam === 'ploidy') {
+      selection = parseInt(selection.split(' (')[1].replace(')', ''));
+    }
+
+    if (selection === 'custom') {
       return;
     }
+
+    window[ideoParam] = selection;
+
     d3.select('#_ideogram').remove();
     drawIdeogram();
   });
@@ -121,8 +164,9 @@
 
     var config = {
       organism: organism,
-      orientation: 'vertical',
-      container: '#container',
+      orientation: orientation,
+      container: '#ideo-container',
+      ploidy: ploidy,
 //      chrWidth: 8,
       chrHeight: 300,
 //      chrMargin: 1,
