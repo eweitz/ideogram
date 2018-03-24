@@ -26,7 +26,7 @@ Then go to [http://localhost/ideogram/examples/](http://localhost/ideogram/examp
 
 Or, if you use [yarn](https://yarnpkg.com/en/):
 ```
-yarn install ideogram
+yarn add ideogram
 ```
 
 You can then [import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import) Ideogram into an application like so:
