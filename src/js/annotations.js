@@ -22,6 +22,13 @@ d3.promise = d3promise;
 /**
  * Optional callback, invoked when annotations are drawn
  */
+function onLoadAnnots() {
+  call(this.onLoadAnnotsCallback);
+}
+
+/**
+ * Optional callback, invoked when annotations are drawn
+ */
 function onDrawAnnots() {
   call(this.onDrawAnnotsCallback);
 }
@@ -40,7 +47,7 @@ function processAnnotData(rawAnnots) {
     i, j, k, m, annot, annots, annotsByChr,
     chr,
     chrModel, ra,
-    startPx, stopPx, px, color,
+    startPx, stopPx, px, annotTrack, color, shape,
     ideo = this;
 
   keys = rawAnnots.keys;
@@ -85,7 +92,9 @@ function processAnnotData(rawAnnots) {
       color = ideo.config.annotationsColor;
       if (ideo.config.annotationTracks) {
         annot.trackIndex = ra[3];
-        color = ideo.config.annotationTracks[annot.trackIndex].color;
+        annotTrack = ideo.config.annotationTracks[annot.trackIndex];
+        color = annotTrack.color;
+        shape = annotTrack.shape;
       } else {
         annot.trackIndex = 0;
       }
@@ -94,12 +103,17 @@ function processAnnotData(rawAnnots) {
         color = annot.color;
       }
 
+      if ('shape' in annot) {
+        shape = annot.shape;
+      }
+
       annot.chr = chr;
       annot.chrIndex = i;
       annot.px = px;
       annot.startPx = startPx;
       annot.stopPx = stopPx;
       annot.color = color;
+      annot.shape = shape;
 
       annots[m].annots.push(annot);
     }
@@ -165,6 +179,9 @@ function fetchAnnots(annotsUrl) {
       ideo.config.annotationsPath,
       function(data) {
         ideo.rawAnnots = data;
+        if (ideo.onLoadAnnotsCallback) {
+          ideo.onLoadAnnotsCallback();
+        }
       }
     );
     return;
@@ -187,6 +204,9 @@ function fetchAnnots(annotsUrl) {
       ideo.rawAnnots = new BedParser(data.response, ideo).rawAnnots;
     } else {
       ideo.rawAnnots = JSON.parse(data.response);
+    }
+    if (ideo.onLoadAnnotsCallback) {
+      ideo.onLoadAnnotsCallback();
     }
   });
 
@@ -490,7 +510,7 @@ function showAnnotTooltip(annot, context) {
  */
 function drawProcessedAnnots(annots) {
   var chrWidth, layout,
-    annotHeight, triangle, circle, r, chrAnnot,
+    annotHeight, triangle, circle, rectangle, r, chrAnnot,
     x1, x2, y1, y2,
     filledAnnots,
     ideo = this;
@@ -509,7 +529,7 @@ function drawProcessedAnnots(annots) {
   annotHeight = ideo.config.annotationHeight;
 
   triangle =
-    'l -' + annotHeight + ' ' +
+    'm0,0 l -' + annotHeight + ' ' +
     (2 * annotHeight) +
     ' l ' + (2 * annotHeight) + ' 0 z';
 
@@ -522,6 +542,11 @@ function drawProcessedAnnots(annots) {
     'm -' + r + ', ' + r +
     'a ' + r + ',' + r + ' 0 1,0 ' + (r * 2) + ',0' +
     'a ' + r + ',' + r + ' 0 1,0 -' + (r * 2) + ',0';
+
+  rectangle =
+    'm0,0 l 0 ' + (2 * annotHeight) +
+    'l ' + annotHeight + ' 0' +
+    'l 0 -' + (2 * annotHeight) + 'z';
 
   filledAnnots = ideo.fillAnnots(annots);
 
@@ -547,9 +572,13 @@ function drawProcessedAnnots(annots) {
       .append('path')
       .attr('d', function(d) {
         if (!d.shape || d.shape === 'triangle') {
-          return 'm0,0' + triangle;
+          return triangle;
         } else if (d.shape === 'circle') {
           return circle;
+        } else if (d.shape === 'rectangle') {
+          return rectangle;
+        } else {
+          return d.shape;
         }
       })
       .attr('fill', function(d) {
@@ -729,7 +758,8 @@ function drawSynteny(syntenicRegions) {
 }
 
 export {
-  onDrawAnnots, processAnnotData, initAnnotSettings, fetchAnnots, drawAnnots,
-  getHistogramBars, fillAnnots, drawProcessedAnnots, drawSynteny,
-  startHideAnnotTooltipTimeout, showAnnotTooltip, onWillShowAnnotTooltip
+  onLoadAnnots, onDrawAnnots, processAnnotData, initAnnotSettings,
+  fetchAnnots, drawAnnots, getHistogramBars, fillAnnots, drawProcessedAnnots,
+  drawSynteny, startHideAnnotTooltipTimeout, showAnnotTooltip,
+  onWillShowAnnotTooltip
 }

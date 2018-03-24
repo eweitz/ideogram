@@ -39,6 +39,7 @@ var ideogram = new Ideogram({
 * [dataDir](#datadir)
 * [onBrushMove](#onbrushmove)
 * [onDrawAnnots](#ondrawannots)
+* [onLoadAnnots](#onloadannots)
 * [onLoad](#onload)
 * [onWillShowAnnotTooltip](#onwillshowannottooltip)
 * [organism](#organism)
@@ -124,6 +125,9 @@ Function.  Optional.  Callback function to invoke when annotations are drawn.  T
 
 ## onLoad
 Function.  Optional.  Callback function to invoke when chromosomes are loaded, i.e. rendered on the page.  Example in [Annotations, external data](https://eweitz.github.io/ideogram/annotations-external-data).
+
+## onLoadAnnots
+Function.  Optional.  Callback function to invoke when annotations are downloaded and ready for data transformation.
 
 ## onWillShowAnnotTooltip
 Function.  Optional.  Callback function to invoke immediately before annotation tooltip is shown.  The tooltip shows the genomic range and, if available, name of the annotation.  This option can be useful to e.g. enhance the displayed annotation name, say by transforming a gene name into a hyperlink to a gene record web page.  Example in [Annotations, external data](https://eweitz.github.io/ideogram/annotations-external-data).
