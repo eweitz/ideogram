@@ -44,8 +44,6 @@ import Ideogram from 'ideogram';
 <script>
   var ideogram = new Ideogram({
     organism: 'human',
-    chromosome: '17',
-    orientation: 'horizontal',
     annotations: [{
       name: 'BRCA1',
       chr: '17',
