@@ -3,7 +3,9 @@
 [![Build Status](https://travis-ci.org/eweitz/ideogram.svg?branch=master)](https://travis-ci.org/eweitz/ideogram)
 [![Coverage Status](https://coveralls.io/repos/github/eweitz/ideogram/badge.svg)](https://coveralls.io/github/eweitz/ideogram)
 
-[Ideogram.js](https://eweitz.github.io/ideogram/) is a JavaScript library for chromosome visualization. Ideogram supports drawing and animating genome-wide datasets for human, mouse and many other eukaryotes.
+[Ideogram.js](https://eweitz.github.io/ideogram/) is a JavaScript library for chromosome visualization. 
+
+Ideogram supports drawing and animating genome-wide datasets for [human](https://eweitz.github.io/ideogram/human), [mouse](https://eweitz.github.io/ideogram/mouse), and [many other eukaryotes](https://eweitz.github.io/ideogram/eukaryotes). It can be embedded as a [reusable component](https://github.com/eweitz/ideogram#Usage) in any web page or application, and leverages D3.js and SVG to achieve fast, crisp client-side rendering. The [Ideogram API](https://github.com/eweitz/ideogram/blob/master/api.md) for annotations supports [histograms](https://eweitz.github.io/ideogram/annotations-histogram), [overlays](https://eweitz.github.io/ideogram/annotations-overlaid), and points of arbitrary shape and color layered in [tracks](https://eweitz.github.io/ideogram/annotations-tracks). Ideogram can depict haploid, [diploid](https://eweitz.github.io/ideogram/ploidy-basic) or higher ploidy genomes (e.g. plants), as well as aneuploidy, [genetic recombination](https://eweitz.github.io/ideogram/ploidy-recombination), and [homologous features](https://eweitz.github.io/ideogram/homology-basic) between chromosomes. Use cases include depicting transcriptomic profiles, structural variation, chromosome abnormalities in cancer, ancestry analysis, and making genomics more understandable for the general public. 
 
 [![All human genes](https://raw.githubusercontent.com/eweitz/ideogram/master/examples/vanilla/ideogram_histogram_all_human_genes.png)](https://eweitz.github.io/ideogram/annotations_histogram.html)
 
