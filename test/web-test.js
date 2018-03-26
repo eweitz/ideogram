@@ -1089,6 +1089,74 @@ describe('Ideogram', function() {
   });
 
 
+  it('should show border of band-labeled chromosome when multiple ideograms exist', function(done) {
+    // Tests fix for https://github.com/eweitz/ideogram/issues/96
+
+    var config1, ideogram1, config2, ideogram2, width;
+
+    function callback() {
+      width =
+        document
+          .querySelectorAll('#chr7-9606-example2 .chromosome-border path')[1]
+          .getBBox().width;
+
+      width = Math.round(width);
+      assert.equal(width, 495);
+      done();
+    }
+
+    document.querySelector('body').innerHTML +=
+      '<div id="example1"></div>' +
+      '<div id="example2"></div>';
+
+    config1 = {
+      container: '#example1',
+      organism: 'human',
+      orientation: 'horizontal',
+      dataDir: '/dist/data/bands/native/',
+      annotations: [
+        {
+          chr: '2',
+          start: 34294,
+          stop: 125482
+        },
+        {
+          chr: '17',
+          start: 43125400,
+          stop: 43125482
+        }
+      ]
+    };
+
+    ideogram1 = new Ideogram(config1);
+    
+    config2 = {
+      container: '#example2',
+      organism: 'human',
+      chromosome: '7',
+      orientation: 'horizontal',
+      annotations: [
+        {
+          chr: '7',
+          start: 199999,
+          stop: 3000000
+        },
+        {
+          chr: '7',
+          start: 6000000,
+          stop: 9000000
+        }
+      ],
+      annotationsLayout: 'overlay',
+      dataDir: '/dist/data/bands/native/',
+      onDrawAnnots: callback
+    };
+
+    ideogram2 = new Ideogram(config2);
+
+  });
+
+
     it('should show XX chromosomes for a diploid human female', function(done) {
       // Tests use case from ../examples/vanilla/ploidy-basic.html
 

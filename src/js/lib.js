@@ -107,7 +107,7 @@ function getChromosomeModel(bands, chromosome, taxid, chrIndex) {
     chrHeight = this.config.chrHeight,
     maxLength = this.maxLength,
     leaf = '',
-    container, chrLength, cs, hasBands;
+    chrLength, cs, hasBands;
 
   cs = this.coordinateSystem;
   hasBands = (typeof bands !== 'undefined');
