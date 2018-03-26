@@ -106,8 +106,8 @@ function getChromosomeModel(bands, chromosome, taxid, chrIndex) {
     width, pxStop,
     chrHeight = this.config.chrHeight,
     maxLength = this.maxLength,
-    chrLength,
-    cs, hasBands;
+    leaf = '',
+    container, chrLength, cs, hasBands;
 
   cs = this.coordinateSystem;
   hasBands = (typeof bands !== 'undefined');
@@ -122,7 +122,13 @@ function getChromosomeModel(bands, chromosome, taxid, chrIndex) {
 
   chr.chrIndex = chrIndex;
 
-  chr.id = 'chr' + chr.name + '-' + taxid;
+  if (this.isOnlyIdeogram === false) {
+    // Disambiguates chromosome ID when multiple ideograms exist
+    // Fixes https://github.com/eweitz/ideogram/issues/96
+    leaf = '-' + this.config.container.replace('#', '').replace('.', '');
+  }
+
+  chr.id = 'chr' + chr.name + '-' + taxid + leaf;
 
   if (this.config.fullChromosomeLabels === true) {
     var orgName = this.organisms[taxid].scientificNameAbbr;

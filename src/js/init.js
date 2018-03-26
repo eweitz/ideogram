@@ -515,6 +515,8 @@ function init() {
       .attr('height', svgHeight)
       .html(gradients);
 
+    ideo.isOnlyIdeogram = document.querySelectorAll('#_ideogram').length === 1;
+
     // Tooltip div setup w/ default styling.
     d3.select(ideo.config.container).append("div")
       .attr('class', 'tooltip')
