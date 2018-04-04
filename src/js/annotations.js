@@ -387,21 +387,19 @@ function getHistogramBars(annots) {
 function drawHeatmaps(annots) {
 
   var ideo = this,
-    ideoRect = d3.select(ideogram.selector).nodes()[0].getBoundingClientRect();
-  console.log(ideoRect);
+    ideoRect = d3.select(ideo.selector).nodes()[0].getBoundingClientRect();
 
   annots.forEach((annotsContainer, i) => {
 
-    var annots = annotsContainer.annots;
-    var chr = ideo.chromosomesArray[i];
-    var chrRect = d3.select('#' + chr.id).nodes()[0].getBoundingClientRect();
+    var annots, chr, chrRect, heatmapLeft, canvas, context;
 
-    var heatmapLeft = chrRect.x - ideo.config.chrWidth*2 + 10;
+    annots = annotsContainer.annots;
+    chr = ideo.chromosomesArray[i];
+    chrRect = d3.select('#' + chr.id).nodes()[0].getBoundingClientRect();
 
-    console.log('chrRect')
-    console.log(chrRect)
+    heatmapLeft = chrRect.x - ideo.config.chrWidth*2 + 10;
 
-    var canvas = d3.select(ideo.config.container)
+    canvas = d3.select(ideo.config.container)
       .append('canvas')
       .attr('id', chr.id + '-canvas')
       .attr('width', 10)
@@ -410,7 +408,7 @@ function drawHeatmaps(annots) {
       .style('top', ideoRect.top)
       .style('left', heatmapLeft);
 
-    var context = canvas.nodes()[0].getContext('2d');
+    context = canvas.nodes()[0].getContext('2d');
 
     annots.forEach((annot) => {
       context.fillStyle = annot.color;
