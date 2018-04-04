@@ -384,6 +384,41 @@ function getHistogramBars(annots) {
   return bars;
 }
 
+function drawHeatmaps(annots) {
+
+  var ideo = this,
+    ideoRect = d3.select(ideogram.selector).nodes()[0].getBoundingClientRect();
+  console.log(ideoRect);
+
+  annots.forEach((annotsContainer, i) => {
+
+    var annots = annotsContainer.annots;
+    var chr = ideo.chromosomesArray[i];
+    var chrRect = d3.select('#' + chr.id).nodes()[0].getBoundingClientRect();
+
+    var heatmapLeft = chrRect.x - ideo.config.chrWidth*2 + 10;
+
+    console.log('chrRect')
+    console.log(chrRect)
+
+    var canvas = d3.select(ideo.config.container)
+      .append('canvas')
+      .attr('id', chr.id + '-canvas')
+      .attr('width', 10)
+      .attr('height', ideoRect.height)
+      .style('position', 'absolute')
+      .style('top', ideoRect.top)
+      .style('left', heatmapLeft);
+
+    var context = canvas.nodes()[0].getContext('2d');
+
+    annots.forEach((annot) => {
+      context.fillStyle = annot.color;
+      context.fillRect(0, annot.startPx + 30, 10, 1);
+    });
+  });
+}
+
 /**
  * Fills out annotations data structure such that its top-level list of arrays
  * matches that of this ideogram's chromosomes list in order and number
@@ -759,7 +794,7 @@ function drawSynteny(syntenicRegions) {
 
 export {
   onLoadAnnots, onDrawAnnots, processAnnotData, initAnnotSettings,
-  fetchAnnots, drawAnnots, getHistogramBars, fillAnnots, drawProcessedAnnots,
-  drawSynteny, startHideAnnotTooltipTimeout, showAnnotTooltip,
-  onWillShowAnnotTooltip
+  fetchAnnots, drawAnnots, getHistogramBars, drawHeatmaps, fillAnnots,
+  drawProcessedAnnots, drawSynteny, startHideAnnotTooltipTimeout,
+  showAnnotTooltip, onWillShowAnnotTooltip
 }

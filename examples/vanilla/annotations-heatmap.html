@@ -94,36 +94,7 @@
   function test() {
     d3 = Ideogram.d3;
     d3.selectAll('.annot').remove();
-    ideoRect = d3.select(ideogram.selector).nodes()[0].getBoundingClientRect();
-    console.log(ideoRect);
-
-    ideogram.annots.forEach((annotsContainer, i) => {
-
-      var annots = annotsContainer.annots;
-      var chr = ideogram.chromosomesArray[i];
-      var chrRect = d3.select('#' + chr.id).nodes()[0].getBoundingClientRect();
-
-      var heatmapLeft = chrRect.x - ideogram.config.chrWidth*2 + 10;
-
-      console.log('chrRect')
-      console.log(chrRect)
-
-      var canvas = d3.select(ideogram.config.container)
-        .append('canvas')
-        .attr('id', chr.id + '-canvas')
-        .attr('width', 10)
-        .attr('height', ideoRect.height)
-        .style('position', 'absolute')
-        .style('top', ideoRect.top)
-        .style('left', heatmapLeft);
-
-      context = canvas.nodes()[0].getContext('2d');
-
-      annots.forEach((annot) => {
-        context.fillStyle = annot.color;
-        context.fillRect(0, annot.startPx + 30, 10, 1);
-      });
-    });
+    ideogram.drawHeatmaps(ideogram.annots);
   }
 
   var annotHeight = 3.5;
