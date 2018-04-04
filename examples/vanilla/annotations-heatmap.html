@@ -91,6 +91,35 @@
     }
   }
 
+  function test() {
+//    return;
+
+    d3 = Ideogram.d3;
+// d3.select('#_ideogram').remove();
+    ideoRect = d3.select(ideogram.selector).nodes()[0].getBoundingClientRect();
+    console.log(ideoRect);
+
+    var canvas = d3.select(ideogram.config.container)
+      .append('canvas')
+      .attr('width', ideoRect.width)
+      .attr('height', ideoRect.height)
+      .style('position', 'absolute')
+      .style('top', ideoRect.top);
+
+    context = canvas.nodes()[0].getContext('2d');
+
+    colors = ['red', 'green', 'blue'];
+    for (var i = 0; i < colors.length; i++) {
+      context.fillStyle = colors[i];
+      context.fillRect(50, 10*i, 10, 10);
+    }
+
+//    ideogram.annots.forEach((chr, i) => {
+//      annots = chr.annots;
+//      console.log(annots)
+//    });
+  }
+
   var annotHeight = 3.5;
   var shape =
     'm0,0 l 0 ' + (3 * annotHeight) +
@@ -110,7 +139,8 @@
     chrHeight: 275,
     annotationsPath: '../../data/annotations/SRR562646.json',
     annotationTracks: annotationsTracks,
-    onLoadAnnots: colorAnnotsByExpression
+    onLoadAnnots: colorAnnotsByExpression,
+    onDrawAnnots: test
   };
 
   var ideogram = new Ideogram(config);
