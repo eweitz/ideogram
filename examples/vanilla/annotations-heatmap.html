@@ -92,32 +92,38 @@
   }
 
   function test() {
-//    return;
-
     d3 = Ideogram.d3;
-// d3.select('#_ideogram').remove();
+    d3.selectAll('.annot').remove();
     ideoRect = d3.select(ideogram.selector).nodes()[0].getBoundingClientRect();
     console.log(ideoRect);
 
-    var canvas = d3.select(ideogram.config.container)
-      .append('canvas')
-      .attr('width', ideoRect.width)
-      .attr('height', ideoRect.height)
-      .style('position', 'absolute')
-      .style('top', ideoRect.top);
+    ideogram.annots.forEach((annotsContainer, i) => {
 
-    context = canvas.nodes()[0].getContext('2d');
+      var annots = annotsContainer.annots;
+      var chr = ideogram.chromosomesArray[i];
+      var chrRect = d3.select('#' + chr.id).nodes()[0].getBoundingClientRect();
 
-    colors = ['red', 'green', 'blue'];
-    for (var i = 0; i < colors.length; i++) {
-      context.fillStyle = colors[i];
-      context.fillRect(50, 10*i, 10, 10);
-    }
+      var heatmapLeft = chrRect.x - ideogram.config.chrWidth*2 + 10;
 
-//    ideogram.annots.forEach((chr, i) => {
-//      annots = chr.annots;
-//      console.log(annots)
-//    });
+      console.log('chrRect')
+      console.log(chrRect)
+
+      var canvas = d3.select(ideogram.config.container)
+        .append('canvas')
+        .attr('id', chr.id + '-canvas')
+        .attr('width', 10)
+        .attr('height', ideoRect.height)
+        .style('position', 'absolute')
+        .style('top', ideoRect.top)
+        .style('left', heatmapLeft);
+
+      context = canvas.nodes()[0].getContext('2d');
+
+      annots.forEach((annot) => {
+        context.fillStyle = annot.color;
+        context.fillRect(0, annot.startPx + 30, 10, 1);
+      });
+    });
   }
 
   var annotHeight = 3.5;
