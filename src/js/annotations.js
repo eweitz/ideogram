@@ -385,7 +385,7 @@ function getHistogramBars(annots) {
 }
 
 /**
- * Draws a heatmap of annotations along each chromosome.
+ * Draws a 1D heatmap of annotations along each chromosome.
  * Ideal for representing very dense annotation sets in a granular manner
  * without subsampling.
  *
@@ -403,29 +403,37 @@ function drawHeatmaps(annotsContainers) {
 
   for (i = 0; i < annotsContainers.length; i++) {
 
-    var annots, chr, chrRect, heatmapLeft, canvas, context, annot;
+    var annots, chr, chrRect, heatmapLeft, canvas, contextArray,
+      context, annot, x, annotHeight;
 
     annots = annotsContainers[i].annots;
     chr = ideo.chromosomesArray[i];
     chrRect = d3.select('#' + chr.id).nodes()[0].getBoundingClientRect();
+    contextArray = [];
 
-    heatmapLeft = chrRect.x - ideo.config.chrWidth*2 + 10;
+    heatmapLeft = chrRect.x - ideo.config.chrWidth * 2 + 10;
 
-    canvas = d3.select(ideo.config.container)
-      .append('canvas')
-      .attr('id', chr.id + '-canvas')
-      .attr('width', 10)
-      .attr('height', ideoRect.height)
-      .style('position', 'absolute')
-      .style('top', ideoRect.top)
-      .style('left', heatmapLeft);
+    annotHeight = ideo.config.annotationHeight;
 
-    context = canvas.nodes()[0].getContext('2d');
+    for (j = 0; j < ideo.config.numAnnotTracks; j++) {
+      canvas = d3.select(ideo.config.container)
+        .append('canvas')
+        .attr('id', chr.id + '-canvas-' + j)
+        .attr('width', 10)
+        .attr('height', ideoRect.height)
+        .style('position', 'absolute')
+        .style('top', ideoRect.top)
+        .style('left', heatmapLeft - 12*j);
+      context = canvas.nodes()[0].getContext('2d');
+      contextArray.push(context)
+    }
 
     for (j = 0; j < annots.length; j++) {
       annot = annots[j];
+      context = contextArray[annot.trackIndex];
       context.fillStyle = annot.color;
-      context.fillRect(0, annot.startPx + 30, 10, 1);
+      x = annot.trackIndex - 2;
+      context.fillRect(x, annot.startPx + 30, 10, 0.5);
     }
   }
 }
