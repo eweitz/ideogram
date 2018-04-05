@@ -405,14 +405,16 @@ function drawHeatmaps(annotsContainers) {
   for (i = 0; i < annotsContainers.length; i++) {
 
     var annots, chr, chrRect, heatmapLeft, canvas, contextArray,
-      context, annot, x, annotHeight;
+      chrWidth, context, annot, x, annotHeight;
 
     annots = annotsContainers[i].annots;
     chr = ideo.chromosomesArray[i];
     chrRect = d3.select('#' + chr.id).nodes()[0].getBoundingClientRect();
+    chrWidth = ideo.config.chrWidth;
+
     contextArray = [];
 
-    heatmapLeft = chrRect.x - ideo.config.chrWidth * 2 + 10;
+    heatmapLeft = chrRect.x - chrWidth;
 
     annotHeight = ideo.config.annotationHeight;
 
@@ -421,11 +423,11 @@ function drawHeatmaps(annotsContainers) {
       canvas = d3.select(ideo.config.container)
         .append('canvas')
         .attr('id', chr.id + '-canvas-' + j)
-        .attr('width', 10)
+        .attr('width', chrWidth - 1)
         .attr('height', ideoRect.height)
         .style('position', 'absolute')
         .style('top', ideoRect.top)
-        .style('left', heatmapLeft - 12*j);
+        .style('left', heatmapLeft - chrWidth*j);
       context = canvas.nodes()[0].getContext('2d');
       contextArray.push(context)
     }
@@ -436,7 +438,7 @@ function drawHeatmaps(annotsContainers) {
       context = contextArray[annot.trackIndex];
       context.fillStyle = annot.color;
       x = annot.trackIndex - 1;
-      context.fillRect(x, annot.startPx + 30, 10, 0.5);
+      context.fillRect(x, annot.startPx + 30, chrWidth, 0.5);
     }
   }
 }
