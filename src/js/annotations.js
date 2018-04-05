@@ -172,23 +172,31 @@ function initAnnotSettings() {
  */
 function fetchAnnots(annotsUrl) {
 
-  var ideo = this;
+  var ideo = this,
+    tmp, extension;
+
+  function afterRawAnnots(rawAnnots) {
+    if (ideo.config.heatmaps) {
+      ideo.deserializeAnnotsForHeatmap(rawAnnots);
+    }
+    if (ideo.onLoadAnnotsCallback) {
+      ideo.onLoadAnnotsCallback();
+    }
+  }
 
   if (annotsUrl.slice(0, 4) !== 'http') {
     d3.json(
       ideo.config.annotationsPath,
       function(data) {
         ideo.rawAnnots = data;
-        if (ideo.onLoadAnnotsCallback) {
-          ideo.onLoadAnnotsCallback();
-        }
+        afterRawAnnots(ideo.rawAnnots);
       }
     );
     return;
   }
 
-  var tmp = annotsUrl.split('.');
-  var extension = tmp[tmp.length - 1];
+  tmp = annotsUrl.split('.');
+  extension = tmp[tmp.length - 1];
 
   if (extension !== 'bed' && extension !== 'json') {
     extension = extension.toUpperCase();
@@ -205,9 +213,7 @@ function fetchAnnots(annotsUrl) {
     } else {
       ideo.rawAnnots = JSON.parse(data.response);
     }
-    if (ideo.onLoadAnnotsCallback) {
-      ideo.onLoadAnnotsCallback();
-    }
+    afterRawAnnots(ideo.rawAnnots);
   });
 
 }
@@ -440,6 +446,83 @@ function drawHeatmaps(annotsContainers) {
       x = annot.trackIndex - 1;
       context.fillRect(x, annot.startPx + 30, chrWidth, 0.5);
     }
+  }
+}
+
+
+function deserializeAnnotsForHeatmap(rawAnnotsObject) {
+
+  var t0 = new Date().getTime();
+
+  var raContainer, chr, ra, i, j, trackIndex, rawAnnots,
+    newRaContainers, newRa, newRas, expressionValue, color,
+    geneType,
+    keys = rawAnnotsObject.keys,
+    rawAnnotContainers = rawAnnotsObject.annots,
+    ideo = this;
+
+  newRaContainers = [];
+
+  for (i = 0; i < rawAnnotContainers.length; i++) {
+
+    raContainer = rawAnnotContainers[i];
+    chr = raContainer.chr;
+    rawAnnots = raContainer.annots;
+    newRas = [];
+
+    for (j = 0; j < rawAnnots.length; j++) {
+
+      ra = rawAnnots[j]; // [name, start, length, expression-value, gene-type]
+      expressionValue = ra[3];
+
+      newRa = ra.slice(0, 3); // name, start, length
+      if (expressionValue > 3) {
+        color = '#F33'; // red
+      } else if (expressionValue > 0 && expressionValue <= 3) {
+        color = '#88F'; // blue
+      } else {
+        color = '#AAA'; // grey
+      }
+      trackIndex = 0;
+      newRa.push(trackIndex, color, expressionValue);
+      newRas.push(newRa);
+
+      geneType = ra[4];
+      newRa = ra.slice(0, 3);
+      switch (geneType) {
+        case 4:
+          color = '#F00';
+          break;
+        case 3:
+          color = '#FA0';
+          break;
+        case 2:
+          color = '#AAA';
+          break;
+        case 1:
+          color = '#0AF';
+          break;
+        case 0:
+          color = '#00F';
+          break;
+      }
+      trackIndex = 1;
+      newRa.push(trackIndex, color, geneType);
+      newRas.push(newRa);
+
+    }
+    newRaContainers.push({chr: chr, annots: newRas});
+  }
+
+  keys.splice(3, 0, 'trackIndex');
+  keys.splice(4, 0, 'color');
+
+  ideo.rawAnnots.keys = keys;
+  ideo.rawAnnots.annots = newRaContainers;
+  
+  var t1 = new Date().getTime();
+  if (ideogram.config.debug) {
+    console.log('Time in deserializeAnnotsForHeatmap: ' + (t1 - t0) + ' ms');
   }
 }
 
@@ -787,6 +870,7 @@ function drawSynteny(syntenicRegions) {
         d3.selectAll(ideo.selector + ' .syntenicRegion')
           .classed('ghost', false);
       });
+
     var chrWidth = ideo.config.chrWidth;
     var x1 = this._layout.getChromosomeSetYTranslate(0);
     var x2 = this._layout.getChromosomeSetYTranslate(1) - chrWidth;
@@ -823,7 +907,7 @@ function drawSynteny(syntenicRegions) {
 
 export {
   onLoadAnnots, onDrawAnnots, processAnnotData, initAnnotSettings,
-  fetchAnnots, drawAnnots, getHistogramBars, drawHeatmaps, fillAnnots,
-  drawProcessedAnnots, drawSynteny, startHideAnnotTooltipTimeout,
-  showAnnotTooltip, onWillShowAnnotTooltip
+  fetchAnnots, drawAnnots, getHistogramBars, drawHeatmaps,
+  deserializeAnnotsForHeatmap, fillAnnots, drawProcessedAnnots, drawSynteny,
+  startHideAnnotTooltipTimeout, showAnnotTooltip, onWillShowAnnotTooltip
 }

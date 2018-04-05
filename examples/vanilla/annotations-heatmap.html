@@ -39,82 +39,6 @@
 </div>
 <script type="text/javascript">
 
-  function colorAnnotsByExpression() {
-
-    var t0 = new Date().getTime();
-
-    var raContainer, chr, rawAnnots, ra, i, j, trackIndex,
-      newRaContainers, newRa, newRas, expressionValue, color,
-      geneType,
-      keys = ideogram.rawAnnots.keys,
-      rawAnnotContainers = ideogram.rawAnnots.annots;
-
-    newRaContainers = [];
-
-    for (i = 0; i < rawAnnotContainers.length; i++) {
-
-      raContainer = rawAnnotContainers[i];
-      chr = raContainer.chr;
-      rawAnnots = raContainer.annots;
-      newRas = [];
-
-      for (j = 0; j < rawAnnots.length; j++) {
-
-        ra = rawAnnots[j]; // [name, start, length, expression-value, gene-type]
-        expressionValue = ra[3];
-
-        newRa = ra.slice(0, 3); // name, start, length
-        if (expressionValue > 3) {
-          color = '#F33'; // red
-        } else if (expressionValue > 0 && expressionValue <= 3) {
-          color = '#88F'; // blue
-        } else {
-          color = '#AAA'; // grey
-        }
-        trackIndex = 0;
-        newRa.push(trackIndex, color, expressionValue);
-        newRas.push(newRa);
-
-        geneType = ra[4];
-        newRa = ra.slice(0, 3);
-        switch (geneType) {
-          case 4:
-            color = '#F00';
-            break;
-          case 3:
-            color = '#FA0';
-            break;
-          case 2:
-            color = '#AAA';
-            break;
-          case 1:
-            color = '#0AF';
-            break;
-          case 0:
-            color = '#00F';
-            break;
-        }
-        trackIndex = 1;
-        newRa.push(trackIndex, color, geneType);
-//        console.log(newRa)
-        newRas.push(newRa);
-
-      }
-      newRaContainers.push({chr: chr, annots: newRas});
-    }
-
-    keys.splice(3, 0, 'trackIndex');
-    keys.splice(4, 0, 'color');
-
-    ideogram.rawAnnots.keys = keys;
-    ideogram.rawAnnots.annots = newRaContainers;
-
-    var t1 = new Date().getTime();
-    if (ideogram.config.debug) {
-      console.log('Time in colorAnnotsByExpression: ' + (t1 - t0) + ' ms');
-    }
-  }
-
   var annotationTracks = [
     {id: 'expressionLevelTrack', displayName: 'Expression level'},
     {id: 'geneTypeTrack', displayName: 'Gene type'},
@@ -127,8 +51,17 @@
     chrHeight: 275,
     annotationsPath: '../../data/annotations/SRR562646.json',
     annotationsLayout: 'heatmap',
-    annotationTracks: annotationTracks,
-    onLoadAnnots: colorAnnotsByExpression
+    heatmaps: [
+      {
+        key: 'expression-level',
+        thresholds: [['> 3', '#F33'], ['0 - 3', '#88F'], ['<= 0', '#AAA']]
+      },
+      {
+        key: 'gene-type',
+        thresholds: [['0', '#00F'], ['1', '#0AF'], ['2', '#AAA'], ['3', '#FA0'], ['4', '#F00']]
+      }
+    ],
+    annotationTracks: annotationTracks
   };
 
   var ideogram = new Ideogram(config);
