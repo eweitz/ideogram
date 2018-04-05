@@ -384,16 +384,28 @@ function getHistogramBars(annots) {
   return bars;
 }
 
-function drawHeatmaps(annots) {
+/**
+ * Draws a heatmap of annotations along each chromosome.
+ * Ideal for representing very dense annotation sets in a granular manner
+ * without subsampling.
+ *
+ * TODO:
+ * - Support in 'horizontal' orientation
+ * - Support after rotating chromosome on click
+ *
+ * @param annots {Array} Processed annotation objects
+ */
+function drawHeatmaps(annotsContainers) {
 
   var ideo = this,
-    ideoRect = d3.select(ideo.selector).nodes()[0].getBoundingClientRect();
+    ideoRect = d3.select(ideo.selector).nodes()[0].getBoundingClientRect(),
+    i, j;
 
-  annots.forEach((annotsContainer, i) => {
+  for (i = 0; i < annotsContainers.length; i++) {
 
-    var annots, chr, chrRect, heatmapLeft, canvas, context;
+    var annots, chr, chrRect, heatmapLeft, canvas, context, annot;
 
-    annots = annotsContainer.annots;
+    annots = annotsContainers[i].annots;
     chr = ideo.chromosomesArray[i];
     chrRect = d3.select('#' + chr.id).nodes()[0].getBoundingClientRect();
 
@@ -410,11 +422,12 @@ function drawHeatmaps(annots) {
 
     context = canvas.nodes()[0].getContext('2d');
 
-    annots.forEach((annot) => {
+    for (j = 0; j < annots.length; j++) {
+      annot = annots[j];
       context.fillStyle = annot.color;
       context.fillRect(0, annot.startPx + 30, 10, 1);
-    });
-  });
+    }
+  }
 }
 
 /**
@@ -557,6 +570,11 @@ function drawProcessedAnnots(annots) {
 
   if (layout === 'histogram') {
     annots = ideo.getHistogramBars(annots);
+  }
+
+  if (layout === 'heatmap') {
+    ideo.drawHeatmaps(annots);
+    return;
   }
 
   annotHeight = ideo.config.annotationHeight;

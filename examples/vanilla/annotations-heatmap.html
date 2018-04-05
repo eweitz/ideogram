@@ -91,33 +91,14 @@
     }
   }
 
-  function test() {
-    d3 = Ideogram.d3;
-    d3.selectAll('.annot').remove();
-    ideogram.drawHeatmaps(ideogram.annots);
-  }
-
-  var annotHeight = 3.5;
-  var shape =
-    'm0,0 l 0 ' + (3 * annotHeight) +
-    'l ' + annotHeight/3 + ' 0' +
-    'l 0 -' + (3 * annotHeight) + 'z';
-
-
-  var annotationsTracks = [
-    {id: 'expressionTrack', displayName: 'Expression', shape: shape},
-  ];
-
   var config = {
     container: '#container',
-    orientation: 'vertical',
     organism: 'human',
     assembly: 'GRCh37',
     chrHeight: 275,
     annotationsPath: '../../data/annotations/SRR562646.json',
-    annotationTracks: annotationsTracks,
-    onLoadAnnots: colorAnnotsByExpression,
-    onDrawAnnots: test
+    annotationsLayout: 'heatmap',
+    onLoadAnnots: colorAnnotsByExpression
   };
 
   var ideogram = new Ideogram(config);
