@@ -432,7 +432,7 @@ function drawHeatmaps(annotsContainers) {
       annot = annots[j];
       context = contextArray[annot.trackIndex];
       context.fillStyle = annot.color;
-      x = annot.trackIndex - 2;
+      x = annot.trackIndex - 1;
       context.fillRect(x, annot.startPx + 30, 10, 0.5);
     }
   }
