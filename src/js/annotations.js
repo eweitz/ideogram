@@ -454,14 +454,27 @@ function deserializeAnnotsForHeatmap(rawAnnotsObject) {
 
   var t0 = new Date().getTime();
 
-  var raContainer, chr, ra, i, j, trackIndex, rawAnnots,
-    newRaContainers, newRa, newRas, expressionValue, color,
-    geneType,
+  var raContainer, chr, ra, i, j, k, m, trackIndex, rawAnnots,
+    newRaContainers, newRa, newRas, color,
+    heatmapKey, heatmapKeyIndexes, heatmapValue,
+    thresholds, threshold, thresholdColor, thresholdValue,
     keys = rawAnnotsObject.keys,
     rawAnnotContainers = rawAnnotsObject.annots,
     ideo = this;
 
+  console.log('rawAnnotsObject')
+  console.log(rawAnnotsObject)
+
   newRaContainers = [];
+
+  heatmapKeyIndexes = [];
+  for (i = 0; i < ideo.config.heatmaps.length; i++) {
+    heatmapKey = ideo.config.heatmaps[i].key;
+    heatmapKeyIndexes.push(keys.indexOf(heatmapKey));
+  }
+
+  console.log('heatmapKeyIndexes')
+  console.log(heatmapKeyIndexes)
 
   for (i = 0; i < rawAnnotContainers.length; i++) {
 
@@ -473,42 +486,79 @@ function deserializeAnnotsForHeatmap(rawAnnotsObject) {
     for (j = 0; j < rawAnnots.length; j++) {
 
       ra = rawAnnots[j]; // [name, start, length, expression-value, gene-type]
-      expressionValue = ra[3];
 
-      newRa = ra.slice(0, 3); // name, start, length
-      if (expressionValue > 3) {
-        color = '#F33'; // red
-      } else if (expressionValue > 0 && expressionValue <= 3) {
-        color = '#88F'; // blue
-      } else {
-        color = '#AAA'; // grey
-      }
-      trackIndex = 0;
-      newRa.push(trackIndex, color, expressionValue);
-      newRas.push(newRa);
+      for (k = 0; k < heatmapKeyIndexes.length; k++) {
 
-      geneType = ra[4];
-      newRa = ra.slice(0, 3);
-      switch (geneType) {
-        case 4:
-          color = '#F00';
-          break;
-        case 3:
-          color = '#FA0';
-          break;
-        case 2:
-          color = '#AAA';
-          break;
-        case 1:
-          color = '#0AF';
-          break;
-        case 0:
-          color = '#00F';
-          break;
+        newRa = ra.slice(0, 3); // name, start, length
+
+        heatmapValue = ra[heatmapKeyIndexes[k]];
+        thresholds = ideo.config.heatmaps[k].thresholds;
+        for (m = 0; m < thresholds.length; m++) {
+          threshold = thresholds[m];
+          thresholdValue = parseInt(threshold[0]);
+          thresholdColor = threshold[1];
+          if (
+            m === thresholds.length - 1 && (
+              thresholdValue === '+' && heatmapValue > parseInt(thresholds[m - 1][0])
+            ) ||
+            heatmapValue === thresholdValue ||
+            m !== 0 && m !== thresholds.length - 1 && (
+              heatmapValue <= thresholdValue &&
+              heatmapValue > parseInt(thresholds[m - 1][0])
+            ) ||
+            m === 0 && heatmapValue <= thresholdValue
+          ) {
+            color = thresholdColor;
+          }
+          if (i === 0 && j === 0) {
+            console.log('keys[heatmapKeyIndexes[k]]')
+            console.log(keys[heatmapKeyIndexes[k]])
+            console.log('heatmapValue')
+            console.log(heatmapValue)
+            console.log('threshold');
+            console.log(threshold)
+            console.log('color')
+            console.log(color)
+          }
+        }
+
+        trackIndex = k;
+        newRa.push(trackIndex, color, heatmapValue);
+        newRas.push(newRa);
       }
-      trackIndex = 1;
-      newRa.push(trackIndex, color, geneType);
-      newRas.push(newRa);
+      // if (expressionValue > 3) {
+      //   color = '#F33'; // red
+      // } else if (expressionValue > 0 && expressionValue <= 3) {
+      //   color = '#88F'; // blue
+      // } else {
+      //   color = '#AAA'; // grey
+      // }
+      // trackIndex = 0;
+      // newRa.push(trackIndex, color, expressionValue);
+      // newRas.push(newRa);
+      //
+      // geneType = ra[4];
+      // newRa = ra.slice(0, 3);
+      // switch (geneType) {
+      //   case 4:
+      //     color = '#F00';
+      //     break;
+      //   case 3:
+      //     color = '#FA0';
+      //     break;
+      //   case 2:
+      //     color = '#AAA';
+      //     break;
+      //   case 1:
+      //     color = '#0AF';
+      //     break;
+      //   case 0:
+      //     color = '#00F';
+      //     break;
+      // }
+      // trackIndex = 1;
+      // newRa.push(trackIndex, color, geneType);
+      // newRas.push(newRa);
 
     }
     newRaContainers.push({chr: chr, annots: newRas});
@@ -519,7 +569,10 @@ function deserializeAnnotsForHeatmap(rawAnnotsObject) {
 
   ideo.rawAnnots.keys = keys;
   ideo.rawAnnots.annots = newRaContainers;
-  
+
+  console.log('after, ideo.rawAnnots')
+  console.log(ideo.rawAnnots)
+
   var t1 = new Date().getTime();
   if (ideogram.config.debug) {
     console.log('Time in deserializeAnnotsForHeatmap: ' + (t1 - t0) + ' ms');
