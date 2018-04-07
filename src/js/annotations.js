@@ -449,15 +449,19 @@ function drawHeatmaps(annotsContainers) {
   }
 }
 
-
+/**
+ * Deserializes compressed annotation data into a format suitable for heatmaps.
+ *
+ * @param rawAnnotsObject
+ */
 function deserializeAnnotsForHeatmap(rawAnnotsObject) {
 
   var t0 = new Date().getTime();
 
   var raContainer, chr, ra, i, j, k, m, trackIndex, rawAnnots,
     newRaContainers, newRa, newRas, color,
-    heatmapKey, heatmapKeyIndexes, heatmapValue,
-    thresholds, threshold, thresholdColor, thresholdValue, tvInt,
+    heatmapKey, heatmapKeyIndexes, value,
+    thresholds, thresholdList, thresholdColor, threshold, tvInt, numThresholds,
     keys = rawAnnotsObject.keys,
     rawAnnotContainers = rawAnnotsObject.annots,
     ideo = this;
@@ -479,40 +483,59 @@ function deserializeAnnotsForHeatmap(rawAnnotsObject) {
 
     for (j = 0; j < rawAnnots.length; j++) {
 
-      ra = rawAnnots[j]; // [name, start, length, expression-value, gene-type]
+      ra = rawAnnots[j];
 
       for (k = 0; k < heatmapKeyIndexes.length; k++) {
 
         newRa = ra.slice(0, 3); // name, start, length
 
-        heatmapValue = ra[heatmapKeyIndexes[k]];
+        value = ra[heatmapKeyIndexes[k]];
         thresholds = ideo.config.heatmaps[k].thresholds;
+
         for (m = 0; m < thresholds.length; m++) {
-          threshold = thresholds[m];
-          thresholdValue = threshold[0];
-          tvInt = parseInt(thresholdValue)
+          numThresholds = thresholds.length - 1;
+          thresholdList = thresholds[m];
+          threshold = thresholdList[0];
+
+          // The threshold value is usually an integer,
+          // but can also be a "+" character indicating that
+          // this threshold is anything greater than the previous threshold.
+          tvInt = parseInt(threshold);
           if (isNaN(tvInt) === false) {
-            thresholdValue = tvInt;
+            threshold = tvInt;
           }
-          thresholdColor = threshold[1];
+
+          thresholdColor = thresholdList[1];
 
           if (
-            m === thresholds.length - 1 && (
-              thresholdValue === '+' && heatmapValue > parseInt(thresholds[m - 1][0])
+
+            // If this is the last threshold, and
+            // its value is "+" and the value is greater than the previous threshold...
+            m === numThresholds && (
+              threshold === '+' && value > parseInt(thresholds[m - 1][0])
             ) ||
-            heatmapValue === thresholdValue ||
-            m !== 0 && m !== thresholds.length - 1 && (
-              heatmapValue <= thresholdValue &&
-              heatmapValue > parseInt(thresholds[m - 1][0])
+
+            // ... or if the value matches the threshold...
+            value === threshold ||
+
+            // ... or if this isn't the first or last threshold, and
+            // the heatmap value is between this threshold and the
+            // previous one
+            m !== 0 && m !== numThresholds && (
+              value <= threshold &&
+              value > parseInt(thresholds[m - 1][0])
             ) ||
-            m === 0 && heatmapValue <= thresholdValue
+
+            // ... or if this is the first threshold and the value is
+            // at or below the threshold
+            m === 0 && value <= threshold
           ) {
             color = thresholdColor;
           }
         }
 
         trackIndex = k;
-        newRa.push(trackIndex, color, heatmapValue);
+        newRa.push(trackIndex, color, value);
         newRas.push(newRa);
       }
     }
