@@ -401,19 +401,19 @@ function getHistogramBars(annots) {
  *
  * @param annots {Array} Processed annotation objects
  */
-function drawHeatmaps(annotsContainers) {
+function drawHeatmaps(annotContainers) {
 
   var ideo = this,
     ideoRect = d3.select(ideo.selector).nodes()[0].getBoundingClientRect(),
     i, j;
 
   // Each "annotationContainer" represents annotations for a chromosome
-  for (i = 0; i < annotsContainers.length; i++) {
+  for (i = 0; i < annotContainers.length; i++) {
 
     var annots, chr, chrRect, heatmapLeft, canvas, contextArray,
       chrWidth, context, annot, x, annotHeight;
 
-    annots = annotsContainers[i].annots;
+    annots = annotContainers[i].annots;
     chr = ideo.chromosomesArray[i];
     chrRect = d3.select('#' + chr.id).nodes()[0].getBoundingClientRect();
     chrWidth = ideo.config.chrWidth;
@@ -450,7 +450,7 @@ function drawHeatmaps(annotsContainers) {
 }
 
 /**
- * Deserializes compressed annotation data into a format suitable for heatmaps.
+ * Deserializes compressed annotation data into a format suited for heatmaps.
  *
  * This enables the annotations to be downloaded from a server without the
  * requested annotations JSON needing to explicitly specify track index or
@@ -529,7 +529,7 @@ function deserializeAnnotsForHeatmap(rawAnnotsContainer) {
             value === threshold ||
 
             // ... or if this isn't the first or last threshold, and
-            // the value is between this threshold and the previous one
+            // the value is between this threshold and the previous one...
             m !== 0 && m !== numThresholds && (
               value <= threshold &&
               value > prevThreshold
@@ -688,10 +688,8 @@ function showAnnotTooltip(annot, context) {
  * running parallel to each chromosome.
  */
 function drawProcessedAnnots(annots) {
-  var chrWidth, layout,
-    annotHeight, triangle, circle, rectangle, r, chrAnnot,
-    x1, x2, y1, y2,
-    filledAnnots,
+  var chrWidth, layout, annotHeight, triangle, circle, rectangle, r,
+    chrAnnot, i, numAnnots, x1, x2, y1, y2, filledAnnots,
     ideo = this;
 
   chrWidth = this.config.chrWidth;
@@ -708,6 +706,22 @@ function drawProcessedAnnots(annots) {
   if (layout === 'heatmap') {
     ideo.drawHeatmaps(annots);
     return;
+  }
+
+  if (
+    layout !== 'heatmap' && layout !== 'histogram'
+  ) {
+    numAnnots = 0;
+    for (i = 0; i < annots.length; i++) {
+      numAnnots += annots[i].annots.length;
+    }
+    if (numAnnots > 2000) {
+      console.warn(
+        'Rendering more than 2000 annotations in Ideogram?\n' +
+        'Try setting "annotationsLayout" to "heatmap" or "histogram" in your ' +
+        'Ideogram configuration object for better layout and performance.'
+      );
+    }
   }
 
   annotHeight = ideo.config.annotationHeight;
