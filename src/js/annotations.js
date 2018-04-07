@@ -452,6 +452,13 @@ function drawHeatmaps(annotsContainers) {
 /**
  * Deserializes compressed annotation data into a format suitable for heatmaps.
  *
+ * This enables the annotations to be downloaded from a server without the
+ * requested annotations JSON needing to explicitly specify track index or
+ * color.  The track index and color are inferred from the "heatmaps" Ideogram
+ * configuration option defined before ideogram initialization.
+ *
+ * This saves time for the user.
+ *
  * @param rawAnnotsObject
  */
 function deserializeAnnotsForHeatmap(rawAnnotsObject) {
@@ -461,7 +468,8 @@ function deserializeAnnotsForHeatmap(rawAnnotsObject) {
   var raContainer, chr, ra, i, j, k, m, trackIndex, rawAnnots,
     newRaContainers, newRa, newRas, color,
     heatmapKey, heatmapKeyIndexes, value,
-    thresholds, thresholdList, thresholdColor, threshold, tvInt, numThresholds,
+    thresholds, thresholdList, thresholdColor, threshold, prevThreshold,
+    tvInt, numThresholds,
     keys = rawAnnotsObject.keys,
     rawAnnotContainers = rawAnnotsObject.annots,
     ideo = this;
@@ -504,26 +512,27 @@ function deserializeAnnotsForHeatmap(rawAnnotsObject) {
           if (isNaN(tvInt) === false) {
             threshold = tvInt;
           }
-
+          if (m !== 0) {
+            prevThreshold = parseInt(thresholds[m - 1][0]);
+          }
           thresholdColor = thresholdList[1];
 
           if (
 
             // If this is the last threshold, and
-            // its value is "+" and the value is greater than the previous threshold...
+            // its value is "+" and the value is above the previous threshold...
             m === numThresholds && (
-              threshold === '+' && value > parseInt(thresholds[m - 1][0])
+              threshold === '+' && value > prevThreshold
             ) ||
 
             // ... or if the value matches the threshold...
             value === threshold ||
 
             // ... or if this isn't the first or last threshold, and
-            // the heatmap value is between this threshold and the
-            // previous one
+            // the value is between this threshold and the previous one
             m !== 0 && m !== numThresholds && (
               value <= threshold &&
-              value > parseInt(thresholds[m - 1][0])
+              value > prevThreshold
             ) ||
 
             // ... or if this is the first threshold and the value is
