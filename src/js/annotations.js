@@ -459,9 +459,9 @@ function drawHeatmaps(annotsContainers) {
  *
  * This saves time for the user.
  *
- * @param rawAnnotsObject
+ * @param rawAnnotsContainer {Object} Raw annotations as passed from server
  */
-function deserializeAnnotsForHeatmap(rawAnnotsObject) {
+function deserializeAnnotsForHeatmap(rawAnnotsContainer) {
 
   var t0 = new Date().getTime();
 
@@ -470,8 +470,8 @@ function deserializeAnnotsForHeatmap(rawAnnotsObject) {
     heatmapKey, heatmapKeyIndexes, value,
     thresholds, thresholdList, thresholdColor, threshold, prevThreshold,
     tvInt, numThresholds,
-    keys = rawAnnotsObject.keys,
-    rawAnnotContainers = rawAnnotsObject.annots,
+    keys = rawAnnotsContainer.keys,
+    rawAnnotBoxes = rawAnnotsContainer.annots,
     ideo = this;
 
   newRaContainers = [];
@@ -482,9 +482,9 @@ function deserializeAnnotsForHeatmap(rawAnnotsObject) {
     heatmapKeyIndexes.push(keys.indexOf(heatmapKey));
   }
 
-  for (i = 0; i < rawAnnotContainers.length; i++) {
+  for (i = 0; i < rawAnnotBoxes.length; i++) {
 
-    raContainer = rawAnnotContainers[i];
+    raContainer = rawAnnotBoxes[i];
     chr = raContainer.chr;
     rawAnnots = raContainer.annots;
     newRas = [];
