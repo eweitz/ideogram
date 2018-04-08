@@ -447,6 +447,10 @@ function drawHeatmaps(annotContainers) {
       context.fillRect(x, annot.startPx + 30, chrWidth, 0.5);
     }
   }
+
+  if (ideo.onDrawAnnotsCallback) {
+    ideo.onDrawAnnotsCallback();
+  }
 }
 
 /**
