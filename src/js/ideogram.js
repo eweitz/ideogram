@@ -19,10 +19,10 @@ import {configure, initDrawChromosomes, onLoad, init} from './init';
 
 import {
   onLoadAnnots, onDrawAnnots, processAnnotData, initAnnotSettings,
-  fetchAnnots, drawAnnots, getHistogramBars, fillAnnots, drawProcessedAnnots,
-  drawSynteny, startHideAnnotTooltipTimeout, showAnnotTooltip,
-  onWillShowAnnotTooltip
-} from './annotations';
+  fetchAnnots, drawAnnots, getHistogramBars, drawHeatmaps,
+  deserializeAnnotsForHeatmap, fillAnnots, drawProcessedAnnots, drawSynteny,
+  startHideAnnotTooltipTimeout, showAnnotTooltip, onWillShowAnnotTooltip
+} from './annotations'
 
 import {
   eutils, esearch, esummary, elink,
@@ -66,6 +66,8 @@ export default class Ideogram {
     this.fetchAnnots = fetchAnnots;
     this.drawAnnots = drawAnnots;
     this.getHistogramBars = getHistogramBars;
+    this.drawHeatmaps = drawHeatmaps;
+    this.deserializeAnnotsForHeatmap = deserializeAnnotsForHeatmap;
     this.fillAnnots = fillAnnots;
     this.drawProcessedAnnots = drawProcessedAnnots;
     this.drawSynteny = drawSynteny;

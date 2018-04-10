@@ -1,0 +1,71 @@
+<html>
+<head>
+    <title>Annotations, heatmap | Ideogram</title>
+    <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
+    <style>
+        body {
+            font: 12px Arial;
+            line-height: 19.6px;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 10px;
+            float: left;
+        }
+
+        .note {
+            font-style: italic;
+            padding-left: 10px;
+            clear: left;
+        }
+    </style>
+</head>
+<body>
+<h1>Annotations, heatmap | Ideogram</h1>
+<a href="../">Back to overview</a> |
+<a href="annotations-histogram">Previous</a> |
+<a href="annotations-animated">Next</a>
+<br/><br/>
+<div>
+    All human genes, annotated in heatmaps.  The proximal heatmap for each chromosome shows gene distribution
+    by expression.  The distal heatmap shows gene distribution by type.
+</div>
+<div id="container"></div>
+
+<div class="note">
+    Expression data from NCBI SRA and GEO (<a href="https://trace.ncbi.nlm.nih.gov/Traces/sra/?run=SRR562645">SRR562645</a>, <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE40705">GSE40705</a>)
+    via <a href="https://github.com/NCBI-Hackathons/rnaseqview#rnaseqview">rnaseqview</a> pipeline.
+</div>
+<script type="text/javascript">
+
+  var annotationTracks = [
+    {id: 'expressionLevelTrack', displayName: 'Expression level'},
+    {id: 'geneTypeTrack', displayName: 'Gene type'},
+  ];
+
+  var config = {
+    container: '#container',
+    organism: 'human',
+    assembly: 'GRCh37',
+    chrHeight: 275,
+    annotationsPath: '../../data/annotations/SRR562646.json',
+    annotationsLayout: 'heatmap',
+    heatmaps: [
+      {
+        key: 'expression-level',
+        thresholds: [['2', '#88F'], ['4', '#CCC'], ['+', '#F33']]
+      },
+      {
+        key: 'gene-type',
+        thresholds: [['0', '#00F'], ['1', '#0AF'], ['2', '#AAA'], ['3', '#FA0'], ['4', '#F00']]
+      }
+    ],
+    annotationTracks: annotationTracks,
+    rotatable: false // Support for rotatable heatmaps is planned
+  };
+
+  var ideogram = new Ideogram(config);
+</script>
+</body>
+</html>

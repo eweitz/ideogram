@@ -172,23 +172,31 @@ function initAnnotSettings() {
  */
 function fetchAnnots(annotsUrl) {
 
-  var ideo = this;
+  var ideo = this,
+    tmp, extension;
+
+  function afterRawAnnots(rawAnnots) {
+    if (ideo.config.heatmaps) {
+      ideo.deserializeAnnotsForHeatmap(rawAnnots);
+    }
+    if (ideo.onLoadAnnotsCallback) {
+      ideo.onLoadAnnotsCallback();
+    }
+  }
 
   if (annotsUrl.slice(0, 4) !== 'http') {
     d3.json(
       ideo.config.annotationsPath,
       function(data) {
         ideo.rawAnnots = data;
-        if (ideo.onLoadAnnotsCallback) {
-          ideo.onLoadAnnotsCallback();
-        }
+        afterRawAnnots(ideo.rawAnnots);
       }
     );
     return;
   }
 
-  var tmp = annotsUrl.split('.');
-  var extension = tmp[tmp.length - 1];
+  tmp = annotsUrl.split('.');
+  extension = tmp[tmp.length - 1];
 
   if (extension !== 'bed' && extension !== 'json') {
     extension = extension.toUpperCase();
@@ -205,9 +213,7 @@ function fetchAnnots(annotsUrl) {
     } else {
       ideo.rawAnnots = JSON.parse(data.response);
     }
-    if (ideo.onLoadAnnotsCallback) {
-      ideo.onLoadAnnotsCallback();
-    }
+    afterRawAnnots(ideo.rawAnnots);
   });
 
 }
@@ -385,6 +391,183 @@ function getHistogramBars(annots) {
 }
 
 /**
+ * Draws a 1D heatmap of annotations along each chromosome.
+ * Ideal for representing very dense annotation sets in a granular manner
+ * without subsampling.
+ *
+ * TODO:
+ * - Support in 'horizontal' orientation
+ * - Support after rotating chromosome on click
+ *
+ * @param annots {Array} Processed annotation objects
+ */
+function drawHeatmaps(annotContainers) {
+
+  var ideo = this,
+    ideoRect = d3.select(ideo.selector).nodes()[0].getBoundingClientRect(),
+    i, j;
+
+  // Each "annotationContainer" represents annotations for a chromosome
+  for (i = 0; i < annotContainers.length; i++) {
+
+    var annots, chr, chrRect, heatmapLeft, canvas, contextArray,
+      chrWidth, context, annot, x, annotHeight;
+
+    annots = annotContainers[i].annots;
+    chr = ideo.chromosomesArray[i];
+    chrRect = d3.select('#' + chr.id).nodes()[0].getBoundingClientRect();
+    chrWidth = ideo.config.chrWidth;
+
+    contextArray = [];
+
+    heatmapLeft = chrRect.x - chrWidth;
+
+    annotHeight = ideo.config.annotationHeight;
+
+    // Create a canvas for each annotation track on this chromosome
+    for (j = 0; j < ideo.config.numAnnotTracks; j++) {
+      canvas = d3.select(ideo.config.container)
+        .append('canvas')
+        .attr('id', chr.id + '-canvas-' + j)
+        .attr('width', chrWidth - 1)
+        .attr('height', ideoRect.height)
+        .style('position', 'absolute')
+        .style('top', ideoRect.top)
+        .style('left', heatmapLeft - chrWidth*j);
+      context = canvas.nodes()[0].getContext('2d');
+      contextArray.push(context)
+    }
+
+    // Fill in the canvas(es) with annotation colors to draw a heatmap
+    for (j = 0; j < annots.length; j++) {
+      annot = annots[j];
+      context = contextArray[annot.trackIndex];
+      context.fillStyle = annot.color;
+      x = annot.trackIndex - 1;
+      context.fillRect(x, annot.startPx + 30, chrWidth, 0.5);
+    }
+  }
+
+  if (ideo.onDrawAnnotsCallback) {
+    ideo.onDrawAnnotsCallback();
+  }
+}
+
+/**
+ * Deserializes compressed annotation data into a format suited for heatmaps.
+ *
+ * This enables the annotations to be downloaded from a server without the
+ * requested annotations JSON needing to explicitly specify track index or
+ * color.  The track index and color are inferred from the "heatmaps" Ideogram
+ * configuration option defined before ideogram initialization.
+ *
+ * This saves time for the user.
+ *
+ * @param rawAnnotsContainer {Object} Raw annotations as passed from server
+ */
+function deserializeAnnotsForHeatmap(rawAnnotsContainer) {
+
+  var t0 = new Date().getTime();
+
+  var raContainer, chr, ra, i, j, k, m, trackIndex, rawAnnots,
+    newRaContainers, newRa, newRas, color,
+    heatmapKey, heatmapKeyIndexes, value,
+    thresholds, thresholdList, thresholdColor, threshold, prevThreshold,
+    tvInt, numThresholds,
+    keys = rawAnnotsContainer.keys,
+    rawAnnotBoxes = rawAnnotsContainer.annots,
+    ideo = this;
+
+  newRaContainers = [];
+
+  heatmapKeyIndexes = [];
+  for (i = 0; i < ideo.config.heatmaps.length; i++) {
+    heatmapKey = ideo.config.heatmaps[i].key;
+    heatmapKeyIndexes.push(keys.indexOf(heatmapKey));
+  }
+
+  for (i = 0; i < rawAnnotBoxes.length; i++) {
+
+    raContainer = rawAnnotBoxes[i];
+    chr = raContainer.chr;
+    rawAnnots = raContainer.annots;
+    newRas = [];
+
+    for (j = 0; j < rawAnnots.length; j++) {
+
+      ra = rawAnnots[j];
+
+      for (k = 0; k < heatmapKeyIndexes.length; k++) {
+
+        newRa = ra.slice(0, 3); // name, start, length
+
+        value = ra[heatmapKeyIndexes[k]];
+        thresholds = ideo.config.heatmaps[k].thresholds;
+
+        for (m = 0; m < thresholds.length; m++) {
+          numThresholds = thresholds.length - 1;
+          thresholdList = thresholds[m];
+          threshold = thresholdList[0];
+
+          // The threshold value is usually an integer,
+          // but can also be a "+" character indicating that
+          // this threshold is anything greater than the previous threshold.
+          tvInt = parseInt(threshold);
+          if (isNaN(tvInt) === false) {
+            threshold = tvInt;
+          }
+          if (m !== 0) {
+            prevThreshold = parseInt(thresholds[m - 1][0]);
+          }
+          thresholdColor = thresholdList[1];
+
+          if (
+
+            // If this is the last threshold, and
+            // its value is "+" and the value is above the previous threshold...
+            m === numThresholds && (
+              threshold === '+' && value > prevThreshold
+            ) ||
+
+            // ... or if the value matches the threshold...
+            value === threshold ||
+
+            // ... or if this isn't the first or last threshold, and
+            // the value is between this threshold and the previous one...
+            m !== 0 && m !== numThresholds && (
+              value <= threshold &&
+              value > prevThreshold
+            ) ||
+
+            // ... or if this is the first threshold and the value is
+            // at or below the threshold
+            m === 0 && value <= threshold
+          ) {
+            color = thresholdColor;
+          }
+        }
+
+        trackIndex = k;
+        newRa.push(trackIndex, color, value);
+        newRas.push(newRa);
+      }
+    }
+    newRaContainers.push({chr: chr, annots: newRas});
+  }
+
+  keys.splice(3, 0, 'trackIndex');
+  keys.splice(4, 0, 'color');
+
+  ideo.rawAnnots.keys = keys;
+  ideo.rawAnnots.annots = newRaContainers;
+
+  var t1 = new Date().getTime();
+  if (ideogram.config.debug) {
+    console.log('Time in deserializeAnnotsForHeatmap: ' + (t1 - t0) + ' ms');
+  }
+}
+
+/**
  * Fills out annotations data structure such that its top-level list of arrays
  * matches that of this ideogram's chromosomes list in order and number
  * Fixes https://github.com/eweitz/ideogram/issues/66
@@ -509,10 +692,8 @@ function showAnnotTooltip(annot, context) {
  * running parallel to each chromosome.
  */
 function drawProcessedAnnots(annots) {
-  var chrWidth, layout,
-    annotHeight, triangle, circle, rectangle, r, chrAnnot,
-    x1, x2, y1, y2,
-    filledAnnots,
+  var chrWidth, layout, annotHeight, triangle, circle, rectangle, r,
+    chrAnnot, i, numAnnots, x1, x2, y1, y2, filledAnnots,
     ideo = this;
 
   chrWidth = this.config.chrWidth;
@@ -524,6 +705,27 @@ function drawProcessedAnnots(annots) {
 
   if (layout === 'histogram') {
     annots = ideo.getHistogramBars(annots);
+  }
+
+  if (layout === 'heatmap') {
+    ideo.drawHeatmaps(annots);
+    return;
+  }
+
+  if (
+    layout !== 'heatmap' && layout !== 'histogram'
+  ) {
+    numAnnots = 0;
+    for (i = 0; i < annots.length; i++) {
+      numAnnots += annots[i].annots.length;
+    }
+    if (numAnnots > 2000) {
+      console.warn(
+        'Rendering more than 2000 annotations in Ideogram?\n' +
+        'Try setting "annotationsLayout" to "heatmap" or "histogram" in your ' +
+        'Ideogram configuration object for better layout and performance.'
+      );
+    }
   }
 
   annotHeight = ideo.config.annotationHeight;
@@ -723,6 +925,7 @@ function drawSynteny(syntenicRegions) {
         d3.selectAll(ideo.selector + ' .syntenicRegion')
           .classed('ghost', false);
       });
+
     var chrWidth = ideo.config.chrWidth;
     var x1 = this._layout.getChromosomeSetYTranslate(0);
     var x2 = this._layout.getChromosomeSetYTranslate(1) - chrWidth;
@@ -759,7 +962,7 @@ function drawSynteny(syntenicRegions) {
 
 export {
   onLoadAnnots, onDrawAnnots, processAnnotData, initAnnotSettings,
-  fetchAnnots, drawAnnots, getHistogramBars, fillAnnots, drawProcessedAnnots,
-  drawSynteny, startHideAnnotTooltipTimeout, showAnnotTooltip,
-  onWillShowAnnotTooltip
+  fetchAnnots, drawAnnots, getHistogramBars, drawHeatmaps,
+  deserializeAnnotsForHeatmap, fillAnnots, drawProcessedAnnots, drawSynteny,
+  startHideAnnotTooltipTimeout, showAnnotTooltip, onWillShowAnnotTooltip
 }

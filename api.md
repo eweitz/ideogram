@@ -37,6 +37,7 @@ var ideogram = new Ideogram({
 * [chromosomes](#chromosomes)
 * [container](#container)
 * [dataDir](#datadir)
+* [heatmaps](#heatmaps)
 * [onBrushMove](#onbrushmove)
 * [onDrawAnnots](#ondrawannots)
 * [onLoadAnnots](#onloadannots)
@@ -73,16 +74,13 @@ The layout of this ideogram's annotations.  One of "tracks", "histogram", or "ov
 ### annotationsLayout: 'tracks'
 Lay out annotations in tracks beside each chromosome.  There can be more than one track, which is useful for displaying annotations by category (e.g. pathogenic, unknown significance, benign).  Example in [Annotations, tracks](https://eweitz.github.io/ideogram/annotations-tracks).
 
+### annotationsLayout: 'heatmap'
+Lay out annotations in heatmap beside each chromosome.  Plot individual annotations like `annotationsLayout: 'tracks'`, with the scalability of `annotationsLayout: 'histogram'`.  Each chromosome can have one or more heatmap tracks.  Use with the [heatmaps](#heatmaps) configuration option.  Example in [Annotations, heatmap](https://eweitz.github.io/ideogram/annotations-heatmap).
+
 ### annotationsLayout: 'histogram'
 Lay out annotations in a histogram.  This clusters annoatations by location, such that each cluster or bin is shown as a bar.  The height of the bar represent the number of annotations in that genomic range.  This option is useful for summarizing the distribution of many (1000+) features througout the genome.  Example in [Annotations, histogram](https://eweitz.github.io/ideogram/annotations-histogram).
 
-### annotationsLayout: '
-
-
-
-
-
-'
+### annotationsLayout: 'overlay'
 Lay out annotations directly over chromosomes.  This is the most space-efficient annotation layout option.  Example in [Annotations, overlaid](https://eweitz.github.io/ideogram/annotations-overlaid).
 
 ## annotationsPath
@@ -116,6 +114,10 @@ String.  Optional.  Default: "body".  CSS selector of the HTML element that will
 
 ## dataDir
 String.  Optional.  Default: "../data/bands/native/".  Absolute or relative URL of the directory containing data needed to draw banded chromosomes.  Example in [GeneExpressionAging/ideogram](https://ncbi-hackathons.github.io/GeneExpressionAging/ideogram).
+
+## heatmaps
+Array.  Optional.  Array of heatmap objects.  Each heatmap object has a `key` string and a `thresholds` array.  The `key` property specifies the annotations key value to depict in the heatmap.  The `thresholds` property specifies a list of two-element "threshold" lists, where the first element is the threshold value and the second is the threshold color.  The threshold values are a list of ranges to use in coloring
+the heatmap.  Threshold values are specified in ascending order.  Example in [Annotations, heatmap](https://eweitz.github.io/ideogram/annotations-heatmap).
 
 ## onBrushMove
 Function.  Optional.  Callback function to invoke when brush moves.  Example in [Brush](https://eweitz.github.io/ideogram/brush).
