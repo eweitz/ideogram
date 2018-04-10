@@ -117,7 +117,7 @@ String.  Optional.  Default: "../data/bands/native/".  Absolute or relative URL 
 
 ## heatmaps
 Array.  Optional.  Array of heatmap objects.  Each heatmap object has a `key` string and a `thresholds` array.  The `key` property specifies the annotations key value to depict in the heatmap.  The `thresholds` property specifies a list of two-element "threshold" lists, where the first element is the threshold value and the second is the threshold color.  The threshold values are a list of ranges to use in coloring
-the heatmap.  Thresholds values are specified in ascending order.  Example in [Annotations, heatmap](https://eweitz.github.io/ideogram/annotations-heatmap).
+the heatmap.  Threshold values are specified in ascending order.  Example in [Annotations, heatmap](https://eweitz.github.io/ideogram/annotations-heatmap).
 
 ## onBrushMove
 Function.  Optional.  Callback function to invoke when brush moves.  Example in [Brush](https://eweitz.github.io/ideogram/brush).
