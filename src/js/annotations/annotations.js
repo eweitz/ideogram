@@ -13,8 +13,12 @@ import * as d3request from 'd3-request';
 import * as d3dispatch from 'd3-dispatch';
 import * as d3promise from 'd3.promise';
 
-import {BedParser} from './parsers/bed-parser';
-import {Object} from './lib.js';
+import {BedParser} from '../parsers/bed-parser';
+import {Object} from '../lib.js';
+import {
+  drawHeatmaps, deserializeAnnotsForHeatmap
+} from './heatmap'
+import {getHistogramBars} from './histogram';
 
 var d3 = Object.assign({}, d3selection, d3request, d3dispatch);
 d3.promise = d3promise;
@@ -195,13 +199,13 @@ function fetchAnnots(annotsUrl) {
     return;
   }
 
-  tmp = annotsUrl.split('.');
+  tmp = annotsUrl.split('?')[0].split('.');
   extension = tmp[tmp.length - 1];
 
   if (extension !== 'bed' && extension !== 'json') {
     extension = extension.toUpperCase();
     alert(
-      'This Ideogram.js only supports BED and native format at the ' +
+      'This Ideogram.js only supports BED and Ideogram JSON at the ' +
       'moment.  Sorry, check back soon for ' + extension + ' support!'
     );
     return;
@@ -272,299 +276,6 @@ function drawAnnots(friendlyAnnots) {
   ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
 
   ideo.drawProcessedAnnots(ideo.annots);
-}
-
-/**
- * Returns and sets bars used for histogram
- */
-function getHistogramBars(annots) {
-  var t0 = new Date().getTime();
-
-  var i, j, chr,
-    chrModel, chrModels, chrPxStop, px, bp,
-    chrAnnots, chrName, chrIndex, annot,
-    bars, bar, barPx, nextBarPx, barWidth,
-    maxAnnotsPerBar, color, lastBand,
-    numBins, barAnnots, barCount, height,
-    firstGet = false,
-    histogramScaling,
-    ideo = this;
-
-  bars = [];
-
-  barWidth = ideo.config.barWidth;
-  chrModels = ideo.chromosomes[ideo.config.taxid];
-  color = ideo.config.annotationsColor;
-
-  if ('histogramScaling' in ideo.config) {
-    histogramScaling = ideo.config.histogramScaling;
-  } else {
-    histogramScaling = 'relative';
-  }
-
-  if (typeof ideo.maxAnnotsPerBar === 'undefined') {
-    ideo.maxAnnotsPerBar = {};
-    firstGet = true;
-  }
-
-  for (chr in chrModels) {
-    chrModel = chrModels[chr];
-    chrIndex = chrModel.chrIndex;
-    lastBand = chrModel.bands[chrModel.bands.length - 1];
-    chrPxStop = lastBand.px.stop;
-    numBins = Math.round(chrPxStop / barWidth);
-    bar = {chr: chr, annots: []};
-    for (i = 0; i < numBins; i++) {
-      px = i * barWidth - ideo.bump;
-      bp = ideo.convertPxToBp(chrModel, px + ideo.bump);
-      bar.annots.push({
-        bp: bp,
-        px: px,
-        count: 0,
-        chrIndex: chrIndex,
-        chrName: chr,
-        color: color,
-        annots: []
-      });
-    }
-    bars.push(bar);
-  }
-
-  for (chr in annots) {
-    chrAnnots = annots[chr].annots;
-    chrName = annots[chr].chr;
-    chrModel = chrModels[chrName];
-    chrIndex = chrModel.chrIndex - 1;
-    barAnnots = bars[chrIndex].annots;
-    for (i = 0; i < chrAnnots.length; i++) {
-      annot = chrAnnots[i];
-      px = annot.px - ideo.bump;
-      for (j = 0; j < barAnnots.length; j++) {
-        barPx = barAnnots[j].px;
-        nextBarPx = barPx + barWidth;
-        if (j === barAnnots.length - 1) {
-          nextBarPx += barWidth;
-        }
-        if (px >= barPx && px < nextBarPx) {
-          bars[chrIndex].annots[j].count += 1;
-          bars[chrIndex].annots[j].annots.push(annot);
-          break;
-        }
-      }
-    }
-  }
-
-  if (firstGet === true || histogramScaling === 'relative') {
-    maxAnnotsPerBar = 0;
-    for (i = 0; i < bars.length; i++) {
-      annots = bars[i].annots;
-      for (j = 0; j < annots.length; j++) {
-        barCount = annots[j].count;
-        if (barCount > maxAnnotsPerBar) {
-          maxAnnotsPerBar = barCount;
-        }
-      }
-    }
-    ideo.maxAnnotsPerBar[chr] = maxAnnotsPerBar;
-  }
-
-  // Set each bar's height to be proportional to
-  // the height of the bar with the most annotations
-  for (i = 0; i < bars.length; i++) {
-    annots = bars[i].annots;
-    for (j = 0; j < annots.length; j++) {
-      barCount = annots[j].count;
-      height = (barCount / ideo.maxAnnotsPerBar[chr]) * ideo.config.chrMargin;
-      // console.log(height)
-      bars[i].annots[j].height = height;
-    }
-  }
-
-  var t1 = new Date().getTime();
-  if (ideo.config.debug) {
-    console.log('Time spent in getHistogramBars: ' + (t1 - t0) + ' ms');
-  }
-
-  ideo.bars = bars;
-
-  return bars;
-}
-
-/**
- * Draws a 1D heatmap of annotations along each chromosome.
- * Ideal for representing very dense annotation sets in a granular manner
- * without subsampling.
- *
- * TODO:
- * - Support in 'horizontal' orientation
- * - Support after rotating chromosome on click
- *
- * @param annots {Array} Processed annotation objects
- */
-function drawHeatmaps(annotContainers) {
-
-  var ideo = this,
-    ideoRect = d3.select(ideo.selector).nodes()[0].getBoundingClientRect(),
-    i, j;
-
-  // Each "annotationContainer" represents annotations for a chromosome
-  for (i = 0; i < annotContainers.length; i++) {
-
-    var annots, chr, chrRect, heatmapLeft, canvas, contextArray,
-      chrWidth, context, annot, x, annotHeight;
-
-    annots = annotContainers[i].annots;
-    chr = ideo.chromosomesArray[i];
-    chrRect = d3.select('#' + chr.id).nodes()[0].getBoundingClientRect();
-    chrWidth = ideo.config.chrWidth;
-
-    contextArray = [];
-
-    heatmapLeft = chrRect.x - chrWidth;
-
-    annotHeight = ideo.config.annotationHeight;
-
-    // Create a canvas for each annotation track on this chromosome
-    for (j = 0; j < ideo.config.numAnnotTracks; j++) {
-      canvas = d3.select(ideo.config.container)
-        .append('canvas')
-        .attr('id', chr.id + '-canvas-' + j)
-        .attr('width', chrWidth - 1)
-        .attr('height', ideoRect.height)
-        .style('position', 'absolute')
-        .style('top', ideoRect.top)
-        .style('left', heatmapLeft - chrWidth*j);
-      context = canvas.nodes()[0].getContext('2d');
-      contextArray.push(context)
-    }
-
-    // Fill in the canvas(es) with annotation colors to draw a heatmap
-    for (j = 0; j < annots.length; j++) {
-      annot = annots[j];
-      context = contextArray[annot.trackIndex];
-      context.fillStyle = annot.color;
-      x = annot.trackIndex - 1;
-      context.fillRect(x, annot.startPx + 30, chrWidth, 0.5);
-    }
-  }
-
-  if (ideo.onDrawAnnotsCallback) {
-    ideo.onDrawAnnotsCallback();
-  }
-}
-
-/**
- * Deserializes compressed annotation data into a format suited for heatmaps.
- *
- * This enables the annotations to be downloaded from a server without the
- * requested annotations JSON needing to explicitly specify track index or
- * color.  The track index and color are inferred from the "heatmaps" Ideogram
- * configuration option defined before ideogram initialization.
- *
- * This saves time for the user.
- *
- * @param rawAnnotsContainer {Object} Raw annotations as passed from server
- */
-function deserializeAnnotsForHeatmap(rawAnnotsContainer) {
-
-  var t0 = new Date().getTime();
-
-  var raContainer, chr, ra, i, j, k, m, trackIndex, rawAnnots,
-    newRaContainers, newRa, newRas, color,
-    heatmapKey, heatmapKeyIndexes, value,
-    thresholds, thresholdList, thresholdColor, threshold, prevThreshold,
-    tvInt, numThresholds,
-    keys = rawAnnotsContainer.keys,
-    rawAnnotBoxes = rawAnnotsContainer.annots,
-    ideo = this;
-
-  newRaContainers = [];
-
-  heatmapKeyIndexes = [];
-  for (i = 0; i < ideo.config.heatmaps.length; i++) {
-    heatmapKey = ideo.config.heatmaps[i].key;
-    heatmapKeyIndexes.push(keys.indexOf(heatmapKey));
-  }
-
-  for (i = 0; i < rawAnnotBoxes.length; i++) {
-
-    raContainer = rawAnnotBoxes[i];
-    chr = raContainer.chr;
-    rawAnnots = raContainer.annots;
-    newRas = [];
-
-    for (j = 0; j < rawAnnots.length; j++) {
-
-      ra = rawAnnots[j];
-
-      for (k = 0; k < heatmapKeyIndexes.length; k++) {
-
-        newRa = ra.slice(0, 3); // name, start, length
-
-        value = ra[heatmapKeyIndexes[k]];
-        thresholds = ideo.config.heatmaps[k].thresholds;
-
-        for (m = 0; m < thresholds.length; m++) {
-          numThresholds = thresholds.length - 1;
-          thresholdList = thresholds[m];
-          threshold = thresholdList[0];
-
-          // The threshold value is usually an integer,
-          // but can also be a "+" character indicating that
-          // this threshold is anything greater than the previous threshold.
-          tvInt = parseInt(threshold);
-          if (isNaN(tvInt) === false) {
-            threshold = tvInt;
-          }
-          if (m !== 0) {
-            prevThreshold = parseInt(thresholds[m - 1][0]);
-          }
-          thresholdColor = thresholdList[1];
-
-          if (
-
-            // If this is the last threshold, and
-            // its value is "+" and the value is above the previous threshold...
-            m === numThresholds && (
-              threshold === '+' && value > prevThreshold
-            ) ||
-
-            // ... or if the value matches the threshold...
-            value === threshold ||
-
-            // ... or if this isn't the first or last threshold, and
-            // the value is between this threshold and the previous one...
-            m !== 0 && m !== numThresholds && (
-              value <= threshold &&
-              value > prevThreshold
-            ) ||
-
-            // ... or if this is the first threshold and the value is
-            // at or below the threshold
-            m === 0 && value <= threshold
-          ) {
-            color = thresholdColor;
-          }
-        }
-
-        trackIndex = k;
-        newRa.push(trackIndex, color, value);
-        newRas.push(newRa);
-      }
-    }
-    newRaContainers.push({chr: chr, annots: newRas});
-  }
-
-  keys.splice(3, 0, 'trackIndex');
-  keys.splice(4, 0, 'color');
-
-  ideo.rawAnnots.keys = keys;
-  ideo.rawAnnots.annots = newRaContainers;
-
-  var t1 = new Date().getTime();
-  if (ideogram.config.debug) {
-    console.log('Time in deserializeAnnotsForHeatmap: ' + (t1 - t0) + ' ms');
-  }
 }
 
 /**

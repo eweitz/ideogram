@@ -22,7 +22,7 @@ import {
   fetchAnnots, drawAnnots, getHistogramBars, drawHeatmaps,
   deserializeAnnotsForHeatmap, fillAnnots, drawProcessedAnnots, drawSynteny,
   startHideAnnotTooltipTimeout, showAnnotTooltip, onWillShowAnnotTooltip
-} from './annotations'
+} from './annotations/annotations'
 
 import {
   eutils, esearch, esummary, elink,
