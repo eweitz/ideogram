@@ -4,7 +4,6 @@
 
 import * as d3request from 'd3-request';
 import * as d3selection from 'd3-selection';
-import {Promise} from 'es6-promise';
 
 import {Ploidy} from './ploidy';
 import {Layout} from './layouts/layout';

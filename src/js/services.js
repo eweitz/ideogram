@@ -1,7 +1,6 @@
 import * as d3request from 'd3-request';
 import * as d3dispatch from 'd3-dispatch';
 import * as d3promise from 'd3.promise';
-import {Promise} from 'es6-promise';
 
 import {Object} from './lib.js';
 
