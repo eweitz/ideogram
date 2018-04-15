@@ -6,12 +6,11 @@
  */
 
 import * as d3selection from 'd3-selection';
-import * as d3request from 'd3-request';
+import * as d3fetch from 'd3-fetch';
 import * as d3brush from 'd3-brush';
 import * as d3dispatch from 'd3-dispatch';
 import {scaleLinear} from 'd3-scale';
 import {max} from 'd3-array';
-import * as d3promise from 'd3.promise';
 
 import version from './version';
 
@@ -44,8 +43,7 @@ import {
   getSvg, Object
 } from './lib';
 
-var d3 = Object.assign({}, d3selection, d3request, d3brush, d3dispatch);
-d3.promise = d3promise;
+var d3 = Object.assign({}, d3selection, d3fetch, d3brush, d3dispatch);
 d3.scaleLinear = scaleLinear;
 d3.max = max;
 

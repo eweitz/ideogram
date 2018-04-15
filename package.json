@@ -42,10 +42,9 @@
     "d3-array": "^1.2.0",
     "d3-brush": "^1.0.4",
     "d3-dispatch": "^1.0.3",
-    "d3-request": "^1.0.6",
+    "d3-fetch": "^1.1.0",
     "d3-scale": "^1.0.6",
-    "d3-selection": "^1.1.0",
-    "d3.promise": "^2.0.0"
+    "d3-selection": "^1.1.0"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",

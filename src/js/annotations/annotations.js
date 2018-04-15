@@ -9,9 +9,8 @@
 import * as d3selection from 'd3-selection';
 // See https://github.com/d3/d3/issues/2733
 import {event as currentEvent} from 'd3-selection';
-import * as d3request from 'd3-request';
+import * as d3fetch from 'd3-fetch';
 import * as d3dispatch from 'd3-dispatch';
-import * as d3promise from 'd3.promise';
 
 import {BedParser} from '../parsers/bed-parser';
 import {Object} from '../lib.js';
@@ -20,8 +19,7 @@ import {
 } from './heatmap'
 import {getHistogramBars} from './histogram';
 
-var d3 = Object.assign({}, d3selection, d3request, d3dispatch);
-d3.promise = d3promise;
+var d3 = Object.assign({}, d3selection, d3fetch, d3dispatch);
 
 /**
  * Optional callback, invoked when annotations are drawn
@@ -189,13 +187,11 @@ function fetchAnnots(annotsUrl) {
   }
 
   if (annotsUrl.slice(0, 4) !== 'http') {
-    d3.json(
-      ideo.config.annotationsPath,
-      function(data) {
+    d3.json(ideo.config.annotationsPath)
+      .then(function(data) {
         ideo.rawAnnots = data;
         afterRawAnnots(ideo.rawAnnots);
-      }
-    );
+      });
     return;
   }
 
@@ -211,11 +207,11 @@ function fetchAnnots(annotsUrl) {
     return;
   }
 
-  d3.request(annotsUrl, function(data) {
+  d3.text(annotsUrl).then(function(text) {
     if (extension === 'bed') {
-      ideo.rawAnnots = new BedParser(data.response, ideo).rawAnnots;
+      ideo.rawAnnots = new BedParser(text, ideo).rawAnnots;
     } else {
-      ideo.rawAnnots = JSON.parse(data.response);
+      ideo.rawAnnots = JSON.parse(text);
     }
     afterRawAnnots(ideo.rawAnnots);
   });
