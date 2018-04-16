@@ -12,16 +12,12 @@ import * as d3fetch from 'd3-fetch';
 import {BedParser} from '../parsers/bed-parser';
 import {Object} from '../lib.js';
 import {
-  onLoadAnnots, onDrawAnnots, startHideAnnotTooltipTimeout,
-  onWillShowAnnotTooltip, showAnnotTooltip
-} from './annotation-events';
-import {
   drawHeatmaps, deserializeAnnotsForHeatmap
 } from './heatmap';
 import {
   onLoadAnnots, onDrawAnnots, startHideAnnotTooltipTimeout,
   onWillShowAnnotTooltip, showAnnotTooltip
-} from './annotation-events';
+} from './events';
 import {drawAnnots, drawProcessedAnnots} from './draw';
 import {getHistogramBars} from './histogram';
 import {drawSynteny} from './synteny';
