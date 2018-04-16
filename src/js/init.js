@@ -2,15 +2,14 @@
  * @fileoveriew Methods for initialization
  */
 
-import * as d3request from 'd3-request';
+import * as d3fetch from 'd3-fetch';
 import * as d3selection from 'd3-selection';
-import {Promise} from 'es6-promise';
 
 import {Ploidy} from './ploidy';
 import {Layout} from './layouts/layout';
 import {Object} from './lib.js';
 
-var d3 = Object.assign({}, d3request, d3selection);
+var d3 = Object.assign({}, d3fetch, d3selection);
 
 /**
  * High-level helper method for Ideogram constructor.
@@ -427,23 +426,26 @@ function init() {
         /GCA_/.test(ideo.config.assembly) === false &&
         typeof chrBands === 'undefined' && taxid in bandDataFileNames
       ) {
-        d3.request(ideo.config.dataDir + bandDataFileNames[taxid])
-          .on('beforesend', function(data) {
-            // Ensures correct taxid is processed in response callback; using
-            // simply 'taxid' variable gives the last *requested* taxid, which
-            // fails when dealing with multiple taxa.
-            data.taxid = taxid;
-          })
-          .get(function(error, data) {
-            eval(data.response);
 
-            ideo.bandData[data.taxid] = chrBands;
-            numBandDataResponses += 1;
+        var bandDataUrl = ideo.config.dataDir + bandDataFileNames[taxid];
+        // Ensures correct taxid is processed in response callback; using
+        // simply 'taxid' variable gives the last *requested* taxid, which
+        // fails when dealing with multiple taxa.
+        bandDataUrl += '?taxid=' + taxid;
 
-            if (numBandDataResponses === taxids.length) {
-              bandsArray = ideo.processBandData();
-              writeContainer();
-            }
+        fetch(bandDataUrl)
+          .then(function(response) {
+            return response.text().then(function(text) {
+              eval(text);
+              var taxid = response.url.split('taxid=')[1];
+              ideo.bandData[taxid] = chrBands;
+              numBandDataResponses += 1;
+
+              if (numBandDataResponses === taxids.length) {
+                bandsArray = ideo.processBandData();
+                writeContainer();
+              }
+            });
           });
       } else {
         if (typeof chrBands !== 'undefined') {
