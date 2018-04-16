@@ -428,17 +428,30 @@ function init() {
       ) {
 
         var bandDataUrl = ideo.config.dataDir + bandDataFileNames[taxid];
-        // Ensures correct taxid is processed in response callback; using
-        // simply 'taxid' variable gives the last *requested* taxid, which
-        // fails when dealing with multiple taxa.
-        bandDataUrl += '?taxid=' + taxid;
 
         fetch(bandDataUrl)
           .then(function(response) {
             return response.text().then(function(text) {
+
+              // Fetched data is a JavaScript variable, so assign it
               eval(text);
-              var taxid = response.url.split('taxid=')[1];
-              ideo.bandData[taxid] = chrBands;
+
+              // Ensures correct taxid is processed
+              // in response callback; using simply upstream 'taxid' variable
+              // gives the last *requested* taxid, which fails when dealing
+              // with multiple taxa.
+              var fetchedTaxid, tid, bandDataFileName;
+              for (tid in bandDataFileNames) {
+                bandDataFileName = bandDataFileNames[tid];
+                if (
+                  response.url.includes(bandDataFileName) &&
+                  bandDataFileName !== ''
+                ) {
+                  fetchedTaxid = tid;
+                }
+              }
+
+              ideo.bandData[fetchedTaxid] = chrBands;
               numBandDataResponses += 1;
 
               if (numBandDataResponses === taxids.length) {
