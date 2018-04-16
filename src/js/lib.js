@@ -7,42 +7,6 @@ import * as d3selection from 'd3-selection';
 import {ModelAdapter} from './model-adapter';
 import {Chromosome} from './views/chromosome';
 
-/**
- * Polyfill for Object.assign, to enable usage in IE 10.
- *
- * This is a lightly modified version of
- * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign#Polyfill
- */
-if (typeof Object.assign !== 'function') {
-  // Must be writable: true, enumerable: false, configurable: true
-  Object.defineProperty(Object, "assign", {
-    value: function assign(target, varArgs) { // .length of function is 2
-      'use strict';
-      if (target === null) { // TypeError if undefined or null
-        throw new TypeError('Cannot convert undefined or null to object');
-      }
-
-      var to = Object(target);
-
-      for (var index = 1; index < arguments.length; index++) {
-        var nextSource = arguments[index];
-
-        if (nextSource !== null) { // Skip over if undefined or null
-          for (var nextKey in nextSource) {
-            // Avoid bugs when hasOwnProperty is shadowed
-            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
-              to[nextKey] = nextSource[nextKey];
-            }
-          }
-        }
-      }
-      return to;
-    },
-    writable: true,
-    configurable: true
-  });
-}
-
 var d3 = Object.assign({}, d3selection);
 
 /**
@@ -106,8 +70,8 @@ function getChromosomeModel(bands, chromosome, taxid, chrIndex) {
     width, pxStop,
     chrHeight = this.config.chrHeight,
     maxLength = this.maxLength,
-    chrLength,
-    cs, hasBands;
+    leaf = '',
+    chrLength, cs, hasBands;
 
   cs = this.coordinateSystem;
   hasBands = (typeof bands !== 'undefined');
@@ -122,7 +86,13 @@ function getChromosomeModel(bands, chromosome, taxid, chrIndex) {
 
   chr.chrIndex = chrIndex;
 
-  chr.id = 'chr' + chr.name + '-' + taxid;
+  if (this.isOnlyIdeogram === false) {
+    // Disambiguates chromosome ID when multiple ideograms exist
+    // Fixes https://github.com/eweitz/ideogram/issues/96
+    leaf = '-' + this.config.container.replace('#', '').replace('.', '');
+  }
+
+  chr.id = 'chr' + chr.name + '-' + taxid + leaf;
 
   if (this.config.fullChromosomeLabels === true) {
     var orgName = this.organisms[taxid].scientificNameAbbr;

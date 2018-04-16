@@ -101,7 +101,6 @@ describe('Ideogram', function() {
 
     config.taxid = 10090;
     config.orientation = 'horizontal';
-    config.chromosomes = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', 'X', 'Y'];
 
     config.onLoad = callback;
     var ideogram = new Ideogram(config);
@@ -600,6 +599,50 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
+  it('should have two heatmap tracks for each chromosome', function(done) {
+    // Tests use case from ../examples/vanilla/annotations-heatmap.html
+
+    function callback() {
+      var numHeatmaps = document.querySelectorAll('canvas').length;
+      var chr1HeatmapTrackTwo = document.querySelectorAll('canvas#chr1-9606-canvas-1').length;
+      assert.equal(numHeatmaps, 48);
+      assert.equal(chr1HeatmapTrackTwo, 1);
+      done();
+    }
+
+    document.getElementsByTagName('body')[0].innerHTML +=
+      '<div id="container"></div>';
+
+    var annotationTracks = [
+      {id: 'expressionLevelTrack', displayName: 'Expression level'},
+      {id: 'geneTypeTrack', displayName: 'Gene type'},
+    ];
+
+    var config = {
+      container: '#container',
+      organism: 'human',
+      assembly: 'GRCh37',
+      chrHeight: 275,
+      annotationsPath: '../dist/data/annotations/SRR562646.json',
+      annotationsLayout: 'heatmap',
+      heatmaps: [
+        {
+          key: 'expression-level',
+          thresholds: [['0', '#AAA'], ['3', '#88F'], ['+', '#F33']]
+        },
+        {
+          key: 'gene-type',
+          thresholds: [['0', '#00F'], ['1', '#0AF'], ['2', '#AAA'], ['3', '#FA0'], ['4', '#F00']]
+        }
+      ],
+      annotationTracks: annotationTracks,
+      dataDir: '/dist/data/bands/native/',
+      onDrawAnnots: callback
+    };
+
+    ideogram = new Ideogram(config);
+  });
+
   it('should show tooltip upon hovering over annotation ', function(done) {
     // Tests use case from ../examples/vanilla/annotations-basic.html
 
@@ -1085,6 +1128,77 @@ describe('Ideogram', function() {
       config.organism = id;
       new Ideogram(config);
     }
+
+  });
+
+
+  it('should show border of band-labeled chromosome when multiple ideograms exist', function(done) {
+    // Tests fix for https://github.com/eweitz/ideogram/issues/96
+
+    var config1, ideogram1, config2, ideogram2, width;
+
+    function callback() {
+      width =
+        document
+          .querySelectorAll('#chr7-9606-example2 .chromosome-border path')[1]
+          .getBBox().width;
+
+      width = Math.round(width);
+
+      // Allow wiggle room to avoid odd false-positive with Travis CI
+      assert.isAtMost(495 - width, 10);
+
+      done();
+    }
+
+    document.querySelector('body').innerHTML +=
+      '<div id="example1"></div>' +
+      '<div id="example2"></div>';
+
+    config1 = {
+      container: '#example1',
+      organism: 'human',
+      orientation: 'horizontal',
+      dataDir: '/dist/data/bands/native/',
+      annotations: [
+        {
+          chr: '2',
+          start: 34294,
+          stop: 125482
+        },
+        {
+          chr: '17',
+          start: 43125400,
+          stop: 43125482
+        }
+      ]
+    };
+
+    ideogram1 = new Ideogram(config1);
+    
+    config2 = {
+      container: '#example2',
+      organism: 'human',
+      chromosome: '7',
+      orientation: 'horizontal',
+      annotations: [
+        {
+          chr: '7',
+          start: 199999,
+          stop: 3000000
+        },
+        {
+          chr: '7',
+          start: 6000000,
+          stop: 9000000
+        }
+      ],
+      annotationsLayout: 'overlay',
+      dataDir: '/dist/data/bands/native/',
+      onDrawAnnots: callback
+    };
+
+    ideogram2 = new Ideogram(config2);
 
   });
 

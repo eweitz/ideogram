@@ -61,12 +61,12 @@
     weights = [];
 
     url = esearch + '&term=Homo-sapiens[Organism] AND ' + geneClause;
-    d3.json(url, function(error, data) {
+    d3.json(url).then(function(data) {
       geneIDs = data.esearchresult.idlist;
 
       // Batch request genomic coordinates for all ACMG genes
       url = esummary + '&id=' + geneIDs.join(',');
-      d3.json(url, function(error, data) {
+      d3.json(url).then(function(data) {
         var result, gene, chr, loc, start, stop, weight;
         for (i = 0; i < geneIDs.length; i++) {
           geneID = geneIDs[i];
