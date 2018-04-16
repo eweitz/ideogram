@@ -34,10 +34,7 @@ var d3 = Object.assign({}, d3selection, d3fetch);
  * Also adds pixel offset information.
  */
 function processAnnotData(rawAnnots) {
-  var keys,
-    i, j, k, m, annot, annots, annotsByChr,
-    chr,
-    chrModel, ra,
+  var keys, i, j, k, m, annot, annots, annotsByChr, chr, chrModel, ra,
     startPx, stopPx, px, annotTrack, color, shape,
     ideo = this;
 
@@ -163,8 +160,8 @@ function initAnnotSettings() {
  */
 function fetchAnnots(annotsUrl) {
 
-  var ideo = this,
-    tmp, extension;
+  var tmp, extension,
+    ideo = this;
 
   function afterRawAnnots(rawAnnots) {
     if (ideo.config.heatmaps) {

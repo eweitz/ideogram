@@ -6,11 +6,9 @@ var d3 = Object.assign({}, d3selection);
  * Draws annotations defined by user
  */
 function drawAnnots(friendlyAnnots) {
-  var ideo = this,
-    i, j, annot,
+  var i, j, annot, rawAnnot, keys, chr,
     rawAnnots = [],
-    rawAnnot, keys,
-    chr,
+    ideo = this,
     chrs = ideo.chromosomes[ideo.config.taxid]; // TODO: multiorganism
 
   // Occurs when filtering
