@@ -344,6 +344,33 @@ function onLoad() {
   call(this.onLoadCallback);
 }
 
+function setOverflowScroll() {
+
+  var ideo, config, ideoWidth, ideoContainer, ideoSvg, chrOffset, minWidth;
+
+  ideo = this;
+  config = ideo.config;
+
+  ideoSvg = d3.select(config.container + ' svg#_ideogram');
+  ideoContainer = d3.select(ideoSvg.node().parentNode);
+
+  if (
+    config.orientation === 'vertical' &&
+    config.perspective !== 'comparative'
+  ) {
+    ideoWidth = (ideo.numChromosomes + 2) * (config.chrWidth + config.chrMargin);
+  } else {
+    return;
+    // chrOffset = ideoSvg.select('.chromosome').nodes()[0].getBoundingClientRect();
+    // ideoWidth = config.chrHeight + chrOffset.x + 1;
+  }
+  ideoWidth = Math.round(ideoWidth / config.rows);
+  ideoContainer
+    .style('max-width', ideoWidth + 'px')
+    .style('overflow-x', 'scroll');
+  ideoSvg.style('min-width', (ideoWidth - 5) + 'px');
+}
+
 /**
  * Initializes an ideogram.
  * Sets some high-level properties based on instance configuration,
@@ -558,13 +585,15 @@ function init() {
     try {
       var t0A = new Date().getTime();
 
-      var i;
+      var i, config;
+
+      config = ideo.config;
 
       ideo.initDrawChromosomes(bandsArray);
 
       // Waits for potentially large annotation dataset
       // to be received by the client, then triggers annotation processing
-      if (ideo.config.annotationsPath) {
+      if (config.annotationsPath) {
         function pa() {
           if (typeof ideo.timeout !== 'undefined') {
             window.clearTimeout(ideo.timeout);
@@ -595,7 +624,7 @@ function init() {
         }
       }
 
-      if (ideo.config.showBandLabels === true) {
+      if (config.showBandLabels === true) {
         var bandsToShow = ideo.bandsToShow.join(',');
 
         // d3.selectAll resolves to querySelectorAll (QSA).
@@ -609,11 +638,11 @@ function init() {
           .style('display', 'none');
         d3.selectAll(bandsToShow).style('display', '');
         var t1C = new Date().getTime();
-        if (ideo.config.debug) {
+        if (config.debug) {
           console.log('Time in showing bands: ' + (t1C - t0C) + ' ms');
         }
 
-        if (ideo.config.orientation === 'vertical') {
+        if (config.orientation === 'vertical') {
           var chrID;
           for (i = 0; i < ideo.chromosomesArray.length; i++) {
             chrID = '#' + ideo.chromosomesArray[i].id;
@@ -622,29 +651,29 @@ function init() {
         }
       }
 
-      if (ideo.config.showChromosomeLabels === true) {
+      if (config.showChromosomeLabels === true) {
         ideo.drawChromosomeLabels(ideo.chromosomes);
       }
 
-      if (ideo.config.brush) {
-        ideo.createBrush(ideo.config.brush);
+      if (config.brush) {
+        ideo.createBrush(config.brush);
       }
 
-      if (ideo.config.annotations) {
-        ideo.drawAnnots(ideo.config.annotations);
+      if (config.annotations) {
+        ideo.drawAnnots(config.annotations);
       }
 
       var t1A = new Date().getTime();
-      if (ideo.config.debug) {
+      if (config.debug) {
         console.log('Time in drawChromosome: ' + (t1A - t0A) + ' ms');
       }
 
       var t1 = new Date().getTime();
-      if (ideo.config.debug) {
+      if (config.debug) {
         console.log('Time constructing ideogram: ' + (t1 - t0) + ' ms');
       }
 
-      if (!('rotatable' in ideo.config && ideo.config.rotatable === false)) {
+      if (!('rotatable' in config && config.rotatable === false)) {
         d3.selectAll(ideo.selector + ' .chromosome').on('click', function() {
           ideo.rotateAndToggleDisplay(this);
         });
@@ -652,6 +681,8 @@ function init() {
         d3.selectAll(ideo.selector + ' .chromosome')
           .style('cursor', 'default');
       }
+
+      ideo.setOverflowScroll();
 
       if (ideo.onLoadCallback) {
         ideo.onLoadCallback();
@@ -663,4 +694,4 @@ function init() {
   }
 }
 
-export {configure, initDrawChromosomes, onLoad, init};
+export {configure, initDrawChromosomes, onLoad, setOverflowScroll, init};

@@ -14,7 +14,9 @@ import {max} from 'd3-array';
 
 import version from './version';
 
-import {configure, initDrawChromosomes, onLoad, init} from './init';
+import {
+  configure, initDrawChromosomes, onLoad, setOverflowScroll, init
+} from './init';
 
 import {
   onLoadAnnots, onDrawAnnots, processAnnotData, initAnnotSettings,
@@ -54,6 +56,7 @@ export default class Ideogram {
     this.configure = configure;
     this.initDrawChromosomes = initDrawChromosomes;
     this.onLoad = onLoad;
+    this.setOverflowScroll = setOverflowScroll;
     this.init = init;
 
     // Functions from annotations.js
