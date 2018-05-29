@@ -346,7 +346,7 @@ function onLoad() {
 
 function setOverflowScroll() {
 
-  var ideo, config, ideoWidth, ideoContainer, ideoSvg, chrOffset, minWidth;
+  var ideo, config, ideoWidth, ideoContainer, ideoSvg;
 
   ideo = this;
   config = ideo.config;
