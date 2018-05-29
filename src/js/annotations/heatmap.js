@@ -19,6 +19,8 @@ function drawHeatmaps(annotContainers) {
     ideoRect = d3.select(ideo.selector).nodes()[0].getBoundingClientRect(),
     i, j;
 
+  d3.selectAll(ideo.config.container + ' canvas').remove();
+
   // Each "annotationContainer" represents annotations for a chromosome
   for (i = 0; i < annotContainers.length; i++) {
 

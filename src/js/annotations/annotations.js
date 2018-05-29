@@ -114,42 +114,52 @@ function processAnnotData(rawAnnots) {
  * Initializes various annotation settings.  Constructor help function.
  */
 function initAnnotSettings() {
+  var ideo = this,
+      config = ideo.config;
+
   if (
-    this.config.annotationsPath ||
-    this.config.localAnnotationsPath ||
-    this.annots || this.config.annotations
+    config.annotationsPath ||
+    config.localAnnotationsPath ||
+    ideo.annots || config.annotations
   ) {
-    if (!this.config.annotationHeight) {
-      var annotHeight = Math.round(this.config.chrHeight / 100);
+    if (!config.annotationHeight) {
+      var annotHeight = Math.round(config.chrHeight / 100);
       this.config.annotationHeight = annotHeight;
     }
 
-    if (this.config.annotationTracks) {
-      this.config.numAnnotTracks = this.config.annotationTracks.length;
+    if (config.annotationTracks) {
+      this.config.numAnnotTracks = config.annotationTracks.length;
     } else {
       this.config.numAnnotTracks = 1;
     }
     this.config.annotTracksHeight =
-      this.config.annotationHeight * this.config.numAnnotTracks;
+      config.annotationHeight * config.numAnnotTracks;
 
-    if (typeof this.config.barWidth === 'undefined') {
+    if (typeof config.barWidth === 'undefined') {
       this.config.barWidth = 3;
     }
   } else {
     this.config.annotTracksHeight = 0;
   }
 
-  if (typeof this.config.annotationsColor === 'undefined') {
+  if (typeof config.annotationsColor === 'undefined') {
     this.config.annotationsColor = '#F00';
   }
 
-  if (this.config.showAnnotTooltip !== false) {
+  if (config.showAnnotTooltip !== false) {
     this.config.showAnnotTooltip = true;
   }
 
-  if (this.config.onWillShowAnnotTooltip) {
-    this.onWillShowAnnotTooltipCallback = this.config.onWillShowAnnotTooltip;
+  if (config.onWillShowAnnotTooltip) {
+    this.onWillShowAnnotTooltipCallback = config.onWillShowAnnotTooltip;
   }
+
+  if (config.annotationsLayout === 'heatmap') {
+    window.onresize = function() {
+      ideo.drawHeatmaps(ideo.annots);
+    };
+  }
+
 }
 
 /**
