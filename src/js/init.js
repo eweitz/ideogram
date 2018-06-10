@@ -346,7 +346,8 @@ function onLoad() {
 
 function setOverflowScroll() {
 
-  var ideo, config, ideoWidth, ideoInnerWrap, ideoOuterWrap, ideoSvg;
+  var ideo, config, ideoWidth, ideoInnerWrap, ideoOuterWrap, ideoSvg,
+    ploidy, ploidyPad;
 
   ideo = this;
   config = ideo.config;
@@ -355,17 +356,21 @@ function setOverflowScroll() {
   ideoInnerWrap = d3.select(config.container + ' #_ideogramInnerWrap');
   ideoOuterWrap = d3.select(config.container + ' #_ideogramOuterWrap');
 
+  ploidy = config.ploidy;
+  ploidyPad = (ploidy - 1);
+
   if (
     config.orientation === 'vertical' &&
     config.perspective !== 'comparative'
   ) {
-    ideoWidth = (ideo.numChromosomes + 2) * (config.chrWidth + config.chrMargin);
+    ideoWidth = (ideo.numChromosomes + 2) * (config.chrWidth + config.chrMargin + ploidyPad);
   } else {
     return;
     // chrOffset = ideoSvg.select('.chromosome').nodes()[0].getBoundingClientRect();
     // ideoWidth = config.chrHeight + chrOffset.x + 1;
   }
-  ideoWidth = Math.round(ideoWidth / config.rows);
+
+  ideoWidth = Math.round(ideoWidth * ploidy / config.rows);
 
   // Ensures absolutely-positioned elements, e.g. heatmap overlaps, display
   // properly if ideogram container also has position: absolute
