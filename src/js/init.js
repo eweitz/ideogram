@@ -346,13 +346,14 @@ function onLoad() {
 
 function setOverflowScroll() {
 
-  var ideo, config, ideoWidth, ideoContainer, ideoSvg;
+  var ideo, config, ideoWidth, ideoInnerWrap, ideoOuterWrap, ideoSvg;
 
   ideo = this;
   config = ideo.config;
 
   ideoSvg = d3.select(config.container + ' svg#_ideogram');
-  ideoContainer = d3.select(ideoSvg.node().parentNode);
+  ideoInnerWrap = d3.select(config.container + ' #_ideogramInnerWrap');
+  ideoOuterWrap = d3.select(config.container + ' #_ideogramOuterWrap');
 
   if (
     config.orientation === 'vertical' &&
@@ -365,9 +366,16 @@ function setOverflowScroll() {
     // ideoWidth = config.chrHeight + chrOffset.x + 1;
   }
   ideoWidth = Math.round(ideoWidth / config.rows);
-  ideoContainer
+
+  // Ensures absolutely-positioned elements, e.g. heatmap overlaps, display
+  // properly if ideogram container also has position: absolute
+  ideoOuterWrap
+    .style('height', ideo._layout.getHeight() + 'px')
+
+  ideoInnerWrap
     .style('max-width', ideoWidth + 'px')
-    .style('overflow-x', 'scroll');
+    .style('overflow-x', 'scroll')
+    .style('position', 'absolute');
   ideoSvg.style('min-width', (ideoWidth - 5) + 'px');
 }
 
@@ -550,6 +558,9 @@ function init() {
 
     d3.select(ideo.config.container)
       .append('div')
+      .attr('id', '_ideogramOuterWrap')
+      .append('div')
+      .attr('id', '_ideogramInnerWrap')
       .append('svg')
       .attr('id', '_ideogram')
       .attr('class', svgClass)

@@ -34,22 +34,21 @@ function drawHeatmaps(annotContainers) {
 
     contextArray = [];
 
-    heatmapLeft = chrRect.x - chrWidth;
+    heatmapLeft = chrRect.x - chrWidth*1.8;
 
     annotHeight = ideo.config.annotationHeight;
 
     // Create a canvas for each annotation track on this chromosome
     for (j = 0; j < ideo.config.numAnnotTracks; j++) {
-      canvas = d3.select(ideo.config.container)
+      canvas = d3.select(ideo.config.container + ' > div')
         .append('canvas')
         .attr('id', chr.id + '-canvas-' + j)
         .attr('width', chrWidth - 1)
         .attr('height', ideoRect.height)
         .style('position', 'absolute')
-        .style('top', ideoRect.top)
         .style('left', heatmapLeft - chrWidth*j);
       context = canvas.nodes()[0].getContext('2d');
-      contextArray.push(context)
+      contextArray.push(context);
     }
 
     // Fill in the canvas(es) with annotation colors to draw a heatmap
