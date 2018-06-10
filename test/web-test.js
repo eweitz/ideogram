@@ -1145,11 +1145,8 @@ describe('Ideogram', function() {
 
       width = Math.round(width);
 
-      console.log('495 - width')
-      console.log(495 - width)
-
       // Allow wiggle room to avoid odd false-positive with Travis CI
-      assert.isAtMost(495 - width, 10);
+      assert.isAtMost(495 - width, 20);
 
       done();
     }
