@@ -17,15 +17,13 @@ function drawHeatmaps(annotContainers) {
 
   var ideo = this,
     ideoRect = d3.select(ideo.selector).nodes()[0].getBoundingClientRect(),
-    i, j;
+    annots, chr, chrRect, heatmapLeft, canvas, contextArray,
+    chrWidth, context, annot, x, annotHeight, i, j;
 
   d3.selectAll(ideo.config.container + ' canvas').remove();
 
   // Each "annotationContainer" represents annotations for a chromosome
   for (i = 0; i < annotContainers.length; i++) {
-
-    var annots, chr, chrRect, heatmapLeft, canvas, contextArray,
-      chrWidth, context, annot, x, annotHeight;
 
     annots = annotContainers[i].annots;
     chr = ideo.chromosomesArray[i];
@@ -34,7 +32,7 @@ function drawHeatmaps(annotContainers) {
 
     contextArray = [];
 
-    heatmapLeft = chrRect.x - chrWidth*1.8;
+    heatmapLeft = chrRect.x - chrWidth;
 
     annotHeight = ideo.config.annotationHeight;
 
