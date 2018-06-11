@@ -16,9 +16,11 @@ var d3 = Object.assign({}, d3selection);
 function drawHeatmaps(annotContainers) {
 
   var ideo = this,
-    ideoRect = d3.select(ideo.selector).nodes()[0].getBoundingClientRect(),
-    annots, chr, chrRect, heatmapLeft, canvas, contextArray,
-    chrWidth, context, annot, x, annotHeight, i, j;
+    ideoMarginTop = ideo._layout.margin.top,
+    ideoHeight = ideo.config.chrHeight + ideoMarginTop,
+    numAnnotTracks = ideo.config.numAnnotTracks,
+    annots, chr, chrLeft, trackLeft, trackWidth, canvas, contextArray,
+    chrWidth, context, annot, x, i, j;
 
   d3.selectAll(ideo.config.container + ' canvas').remove();
 
@@ -27,24 +29,22 @@ function drawHeatmaps(annotContainers) {
 
     annots = annotContainers[i].annots;
     chr = ideo.chromosomesArray[i];
-    chrRect = d3.select('#' + chr.id).nodes()[0].getBoundingClientRect();
     chrWidth = ideo.config.chrWidth;
+    chrLeft = ideo._layout.getChromosomeSetYTranslate(i)
 
     contextArray = [];
 
-    heatmapLeft = chrRect.x - chrWidth;
-
-    annotHeight = ideo.config.annotationHeight;
-
     // Create a canvas for each annotation track on this chromosome
-    for (j = 0; j < ideo.config.numAnnotTracks; j++) {
+    for (j = 0; j < numAnnotTracks; j++) {
+      trackWidth = chrWidth - 1;
+      trackLeft = chrLeft + j * chrWidth - (trackWidth * numAnnotTracks);
       canvas = d3.select(ideo.config.container + ' > div')
         .append('canvas')
         .attr('id', chr.id + '-canvas-' + j)
         .attr('width', chrWidth - 1)
-        .attr('height', ideoRect.height)
+        .attr('height', ideoHeight)
         .style('position', 'absolute')
-        .style('left', heatmapLeft - chrWidth*j);
+        .style('left', trackLeft);
       context = canvas.nodes()[0].getContext('2d');
       contextArray.push(context);
     }
@@ -55,7 +55,7 @@ function drawHeatmaps(annotContainers) {
       context = contextArray[annot.trackIndex];
       context.fillStyle = annot.color;
       x = annot.trackIndex - 1;
-      context.fillRect(x, annot.startPx + 30, chrWidth, 0.5);
+      context.fillRect(x, annot.startPx + ideoMarginTop, chrWidth, 0.5);
     }
   }
 
