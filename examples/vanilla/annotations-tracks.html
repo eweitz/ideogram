@@ -64,8 +64,9 @@
       annotationHeight: annotHeight
     };
 
-
-    d3.select('#_ideogram').remove();
+    if (typeof ideogram !== 'undefined') {
+      d3.select(ideogram.config.container + '> div').remove();
+    }
 
     ideogram = new Ideogram(config);
   }
