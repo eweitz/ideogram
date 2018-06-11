@@ -44,7 +44,7 @@ function drawHeatmaps(annotContainers) {
         .attr('width', chrWidth - 1)
         .attr('height', ideoHeight)
         .style('position', 'absolute')
-        .style('left', trackLeft);
+        .style('left', trackLeft + 'px');
       context = canvas.nodes()[0].getContext('2d');
       contextArray.push(context);
     }
