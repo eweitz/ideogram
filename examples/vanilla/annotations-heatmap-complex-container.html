@@ -30,6 +30,14 @@
             border-bottom: none;
         }
 
+        .tab-content > div {
+            display: none;
+        }
+
+        .tab-content > div.active {
+            display: block;
+        }
+
         .note {
             font-style: italic;
             padding-left: 10px;
@@ -52,12 +60,14 @@
     <li><a href="#ideogram">Ideogram</a></li>
 </ul>
 
-<div id="summary">
-    All human genes, annotated in heatmaps.  The proximal heatmap for each chromosome shows gene distribution
-    by expression.  The distal heatmap shows gene distribution by type.
-</div>
-<div id="ideogram" style="display: none;">
-    <!-- Ideogram goes here. -->
+<div class="tab-content">
+    <div id="summary" class="active">
+        Click the 'Ideogram' tab above to see chromosomes.  This demonstrates support for ideogram layout
+        in containers that are initially hidden.
+    </div>
+    <div id="ideogram">
+        <!-- Ideogram goes here. -->
+    </div>
 </div>
 
 <div class="note">
@@ -68,7 +78,7 @@
 
   var annotationTracks = [
     {id: 'expressionLevelTrack', displayName: 'Expression level'},
-    {id: 'geneTypeTrack', displayName: 'Gene type'},
+    {id: 'geneTypeTrack', displayName: 'Gene type'}
   ];
 
   var config = {
@@ -96,9 +106,25 @@
 </script>
 
 <script>
-  document.querySelectorAll('a').forEach(function(element) {
-    element.addEventListener('click', function() {
-      console.log(event);
+  var links = document.querySelectorAll('li > a');
+  links.forEach(function(link) {
+    link.addEventListener('click', function(event) {
+        var targetLink = event.target,
+            targetId;
+
+        // Deactivate all tabs
+        links.forEach(function(link2) {
+          link2.parentElement.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-content > div').forEach(function(div) {
+          div.classList.remove('active')
+        });
+
+        // Active selected tab
+        targetLink.parentElement.classList += 'active';
+        targetId = targetLink.href.split('#')[1];
+        document.getElementById(targetId).classList += 'active';
+
     });
   });
 </script>
