@@ -38,7 +38,7 @@ function drawHeatmaps(annotContainers) {
     for (j = 0; j < numAnnotTracks; j++) {
       trackWidth = chrWidth - 1;
       trackLeft = chrLeft + j * chrWidth - (trackWidth * numAnnotTracks);
-      canvas = d3.select(ideo.config.container + ' > div')
+      canvas = d3.select(ideo.config.container + ' #_ideogramOuterWrap')
         .append('canvas')
         .attr('id', chr.id + '-canvas-' + j)
         .attr('width', chrWidth - 1)
