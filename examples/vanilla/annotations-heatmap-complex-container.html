@@ -32,6 +32,8 @@
 
         .tab-content > div {
             display: none;
+            padding-top: 20px;
+            clear: both;
         }
 
         .tab-content > div.active {
@@ -67,12 +69,12 @@
     </div>
     <div id="ideogram">
         <!-- Ideogram goes here. -->
-    </div>
-</div>
 
-<div class="note">
-    Expression data from NCBI SRA and GEO (<a href="https://trace.ncbi.nlm.nih.gov/Traces/sra/?run=SRR562645">SRR562645</a>, <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE40705">GSE40705</a>)
-    via <a href="https://github.com/NCBI-Hackathons/rnaseqview#rnaseqview">rnaseqview</a> pipeline.
+        <div class="note">
+            Expression data from NCBI SRA and GEO (<a href="https://trace.ncbi.nlm.nih.gov/Traces/sra/?run=SRR562645">SRR562645</a>, <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE40705">GSE40705</a>)
+            via <a href="https://github.com/NCBI-Hackathons/rnaseqview#rnaseqview">rnaseqview</a> pipeline.
+        </div>
+    </div>
 </div>
 <script type="text/javascript">
 
@@ -87,6 +89,7 @@
     assembly: 'GRCh37',
     chrHeight: 400,
     annotationsPath: '../../data/annotations/SRR562646.json',
+    annotationTracks: annotationTracks,
     annotationsLayout: 'heatmap',
     heatmaps: [
       {
@@ -97,9 +100,7 @@
         key: 'gene-type',
         thresholds: [['0', '#00F'], ['1', '#0AF'], ['2', '#AAA'], ['3', '#FA0'], ['4', '#F00']]
       }
-    ],
-    annotationTracks: annotationTracks,
-    rotatable: false // Support for rotatable heatmaps is planned
+    ]
   };
 
   var ideogram = new Ideogram(config);
