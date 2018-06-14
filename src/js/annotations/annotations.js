@@ -34,8 +34,8 @@ var d3 = Object.assign({}, d3selection, d3fetch);
  * Also adds pixel offset information.
  */
 function processAnnotData(rawAnnots) {
-  var keys, i, j, k, m, annot, annots, annotsByChr, chr, chrModel, ra,
-    startPx, stopPx, px, annotTrack, color, shape,
+  var keys, i, j, k, m, annot, annots, annotsByChr, chr, chrs, chrModel, ra,
+    startPx, stopPx, px, annotTrack, color, shape, unorderedAnnots,
     ideo = this;
 
   keys = rawAnnots.keys;
@@ -104,6 +104,20 @@ function processAnnotData(rawAnnots) {
       annot.shape = shape;
 
       annots[m].annots.push(annot);
+    }
+  }
+
+  unorderedAnnots = annots;
+  annots = [];
+
+  chrs = ideo.chromosomesArray;
+  for (i = 0; i < chrs.length; i++) {
+    chr = chrs[i].name;
+    for (j = 0; j < unorderedAnnots.length; j++) {
+      annot = unorderedAnnots[j];
+      if (annot.chr === chr) {
+        annots.push(annot);
+      }
     }
   }
 
