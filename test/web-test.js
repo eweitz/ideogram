@@ -1132,6 +1132,8 @@ describe('Ideogram', function() {
   });
 
 
+  // This test is flaky in Travis CI.
+  // Disabled until a way to detect Travis environment is found.
   // it('should show border of band-labeled chromosome when multiple ideograms exist', function(done) {
   //   // Tests fix for https://github.com/eweitz/ideogram/issues/96
   //
@@ -1148,7 +1150,7 @@ describe('Ideogram', function() {
   //     console.log('495 - width')
   //     console.log(495 - width)
   //
-  //     assert.equals(495 - width, 0);
+  //     assert.equal(495 - width, 0);
   //
   //     console.log('ok')
   //
