@@ -11,23 +11,37 @@
         ul {
             list-style: none;
             padding-left: 10px;
-            float: left;
+            border-bottom: 1px solid #CCC;
+            box-sizing: border-box;
+            margin-bottom: 0;
+            padding-left: 0;
+        }
+
+        .nav:before, .nav:after {
+            content: " ";
+            display: table;
+            clear: both;
         }
 
         li {
             float: left;
             margin-right: 2px;
+            display: block;
+            margin-bottom: -1px;
         }
 
         li > a {
             padding: 10px 15px;
             text-decoration: none;
             border-radius: 4px 4px 0 0;
+            display: block;
+            position: relative;
         }
 
         li.active > a {
             border: 1px solid #CCC;
             border-bottom: none;
+            background-color: white;
         }
 
         .tab-content > div {
@@ -38,6 +52,8 @@
 
         .tab-content > div.active {
             display: block;
+            border: 1px solid #CCC;
+            border-top: none;
         }
 
         .note {
@@ -53,26 +69,23 @@
 <a href="annotations-histogram">Previous</a> |
 <a href="annotations-animated">Next</a>
 <br/><br/>
-<div>
-
-</div>
-
-<ul>
+<div class="tab-panel">
+<ul class="nav">
     <li class="active"><a href="#summary">Summary</a></li>
     <li><a href="#ideogram">Ideogram</a></li>
 </ul>
+    <div class="tab-content">
+        <div id="summary" class="active">
+            Click the 'Ideogram' tab above to see chromosomes.  This demonstrates support for ideogram layout
+            in containers that are initially hidden.
+        </div>
+        <div id="ideogram">
+            <!-- Ideogram goes here. -->
 
-<div class="tab-content">
-    <div id="summary" class="active">
-        Click the 'Ideogram' tab above to see chromosomes.  This demonstrates support for ideogram layout
-        in containers that are initially hidden.
-    </div>
-    <div id="ideogram">
-        <!-- Ideogram goes here. -->
-
-        <div class="note">
-            Expression data from NCBI SRA and GEO (<a href="https://trace.ncbi.nlm.nih.gov/Traces/sra/?run=SRR562645">SRR562645</a>, <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE40705">GSE40705</a>)
-            via <a href="https://github.com/NCBI-Hackathons/rnaseqview#rnaseqview">rnaseqview</a> pipeline.
+            <div class="note">
+                Expression data from NCBI SRA and GEO (<a href="https://trace.ncbi.nlm.nih.gov/Traces/sra/?run=SRR562645">SRR562645</a>, <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE40705">GSE40705</a>)
+                via <a href="https://github.com/NCBI-Hackathons/rnaseqview#rnaseqview">rnaseqview</a> pipeline.
+            </div>
         </div>
     </div>
 </div>
