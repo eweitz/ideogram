@@ -26,12 +26,10 @@ var d3 = Object.assign({}, d3selection, d3fetch);
 
 /**
  * Proccesses genome annotation data.
- * Genome annotations represent features like a gene, SNP, etc. as
- * a small graphical object on or beside a chromosome.
- * Converts raw annotation data from server, which is structured as
- * an array of arrays, into a more verbose data structure consisting
- * of an array of objects.
- * Also adds pixel offset information.
+ *
+ * This method converts raw annotation data from server, which is structured as
+ * an array of arrays, into a more verbose data structure consisting of an
+ * array of objects.  It also adds pixel offset information.
  */
 function processAnnotData(rawAnnots) {
   var keys, i, j, k, m, annot, annots, annotsByChr, chr, chrs, chrModel, ra,
@@ -107,9 +105,9 @@ function processAnnotData(rawAnnots) {
     }
   }
 
+  // Ensure annotation containers are ordered by chromosome
   unorderedAnnots = annots;
   annots = [];
-
   chrs = ideo.chromosomesArray;
   for (i = 0; i < chrs.length; i++) {
     chr = chrs[i].name;
@@ -129,7 +127,7 @@ function processAnnotData(rawAnnots) {
  */
 function initAnnotSettings() {
   var ideo = this,
-      config = ideo.config;
+    config = ideo.config;
 
   if (
     config.annotationsPath ||
@@ -235,8 +233,8 @@ function fetchAnnots(annotsUrl) {
   if (extension !== 'bed' && extension !== 'json') {
     extension = extension.toUpperCase();
     alert(
-      'This Ideogram.js only supports BED and Ideogram JSON at the ' +
-      'moment.  Sorry, check back soon for ' + extension + ' support!'
+      'Ideogram.js only supports BED and Ideogram JSON at the moment.  ' +
+      'Sorry, check back soon for ' + extension + ' support!'
     );
     return;
   }
