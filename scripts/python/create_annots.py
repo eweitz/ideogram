@@ -12,7 +12,19 @@ TODO:
     - HGVS expression
 '''
 
-import json, random
+import json
+import random
+import argparse
+
+parser = argparse.ArgumentParser(
+	description=__doc__,
+	formatter_class=argparse.RawDescriptionHelpFormatter)
+parser.add_argument('--output_dir',
+					help='Directory to send output data to',
+					default='../../data/annotations/')
+
+args = parser.parse_args()
+output_dir = args.output_dir
 
 annots = []
 
@@ -77,4 +89,4 @@ top_annots["keys"] = ["name", "start", "length", "trackIndex"]
 top_annots["annots"] = annots
 annots = json.dumps(top_annots)
 
-open("data/annotations/" + str(n) + "_virtual_snvs.json", "w").write(annots)
+open(output_dir + "/" + str(n) + "_virtual_snvs.json", "w").write(annots)
