@@ -59,14 +59,14 @@ lengths_GRCh37 = {
 for chr in chrs:
     annots.append({"chr": chr, "annots": []});
 
-n = 1000
+num_annots = 1000
 
 #
 trackIndexPool = [0]*5 + [1]*80 + [2]*15
 poolSize = len(trackIndexPool)
 
 i = 0
-while i < n:
+while i < num_annots:
     j = str(i + 1)
     chr = i % 24
 
@@ -89,4 +89,4 @@ top_annots["keys"] = ["name", "start", "length", "trackIndex"]
 top_annots["annots"] = annots
 annots = json.dumps(top_annots)
 
-open(output_dir + "/" + str(n) + "_virtual_snvs.json", "w").write(annots)
+open(output_dir + "/" + str(num_annots) + "_virtual_snvs.json", "w").write(annots)
