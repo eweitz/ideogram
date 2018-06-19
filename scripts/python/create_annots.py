@@ -85,7 +85,11 @@ while i < num_annots:
     j = str(i + 1)
     chr = i % 24
 
-    start = int((i * chr_lengths[chrs[chr]])/1000 + 1)
+    chr_length = chr_lengths[chrs[chr]]
+
+    # Distribute annotations evenly across this chromosome
+    start = int((i * chr_length)/num_annots + 1)
+
     length = 0
 
     random_index = random.randrange(0, pool_size - 1)
