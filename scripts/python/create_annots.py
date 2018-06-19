@@ -2,6 +2,9 @@
 
 Data is currently simulated single-nucleotide variations (SNVs).
 
+Examples:
+    python3 create_annots.py --track_annot_percents 5 80 15
+
 TODO:
 - Add handling for non-human organisms
 - Enhance with more data than simply position, e.g.:
@@ -15,6 +18,7 @@ TODO:
 import json
 import random
 import argparse
+import math
 
 parser = argparse.ArgumentParser(
 	description=__doc__,
@@ -29,11 +33,33 @@ parser.add_argument('--num_annots',
 parser.add_argument('--assembly',
                     help='Genome assembly reference to use: GRCh38 or GRCh37',
                     default='GRCh38')
+parser.add_argument('--num_tracks',
+                    help='Number of annotation tracks',
+                    type=int,
+                    default=3)
+parser.add_argument('--track_annot_percents',
+                    help=(
+                      'Percentage of total annotations in each track, e.g. ' +
+                      '5,80,15 for 5% in 1st track, 80% in 2nd, 15% in 3rd.  ' +
+                      'Defaults to even distribution of annots among tracks.'
+                    ),
+                    metavar='int', type=int, nargs='*')
 
 args = parser.parse_args()
 output_dir = args.output_dir
 num_annots = args.num_annots
 assembly = args.assembly
+num_tracks = args.num_tracks
+track_annot_percents = args.track_annot_percents
+
+track_index_pool = []
+if track_annot_percents is None:
+    track_annot_percents = []
+    for i in range(0, num_tracks):
+        track_annot_percents.append(math.floor(100/num_tracks))
+
+for i, track_annot_percent in enumerate(track_annot_percents):
+    track_index_pool += [i]*track_annot_percent
 
 annots = []
 
@@ -73,13 +99,6 @@ else:
 for chr in chrs:
     annots.append({'chr': chr, 'annots': []})
 
-# Percentage of annotations in each track
-# For example:
-#   [0] * 5 + [1] * 80 + [2] * 15
-#   means 5% in 1st track, 80% in 2nd, 15% in 3rd
-track_index_pool = [0] * 5 + [1] * 80 + [2] * 15
-pool_size = len(track_index_pool)
-
 i = 0
 while i < num_annots:
     j = str(i + 1)
@@ -92,7 +111,7 @@ while i < num_annots:
 
     length = 0
 
-    random_index = random.randrange(0, pool_size - 1)
+    random_index = random.randrange(0, 99)
     track_index = track_index_pool[random_index]
 
     annot = [
