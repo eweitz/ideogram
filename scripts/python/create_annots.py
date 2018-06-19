@@ -75,8 +75,8 @@ for chr in chrs:
     annots.append({"chr": chr, "annots": []});
 
 #
-trackIndexPool = [0]*5 + [1]*80 + [2]*15
-poolSize = len(trackIndexPool)
+track_index_pool = [0] * 5 + [1] * 80 + [2] * 15
+pool_size = len(track_index_pool)
 
 i = 0
 while i < num_annots:
@@ -90,7 +90,7 @@ while i < num_annots:
         "rs" + j,
         start,
         length,
-        trackIndexPool[random.randrange(0, poolSize - 1)]
+        track_index_pool[random.randrange(0, pool_size - 1)]
     ]
 
     annots[chr]["annots"].append(annot)
