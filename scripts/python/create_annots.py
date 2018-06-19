@@ -22,9 +22,19 @@ parser = argparse.ArgumentParser(
 parser.add_argument('--output_dir',
 					help='Directory to send output data to',
 					default='../../data/annotations/')
+parser.add_argument('--num_annots',
+					help='Number of annotations to create',
+					type=int,
+					default=1000)
+parser.add_argument('--assembly',
+                    help='Genome assembly reference to use: GRCh38 or GRCh37',
+                    default='GRCh38')
+
 
 args = parser.parse_args()
 output_dir = args.output_dir
+num_annots = args.num_annots
+assembly = args.assembly
 
 annots = []
 
@@ -56,10 +66,13 @@ lengths_GRCh37 = {
     "22": 51304566, "X": 155270560, "Y": 59373566
 }
 
+if assembly == 'GRCh38':
+    chr_lengths = lengths_GRCh38
+else:
+    chr_lengths = lengths_GRCh37
+
 for chr in chrs:
     annots.append({"chr": chr, "annots": []});
-
-num_annots = 1000
 
 #
 trackIndexPool = [0]*5 + [1]*80 + [2]*15
@@ -70,7 +83,7 @@ while i < num_annots:
     j = str(i + 1)
     chr = i % 24
 
-    start = int((i * lengths_GRCh38[chrs[chr]])/1000 + 1)
+    start = int((i * chr_lengths[chrs[chr]])/1000 + 1)
     length = 0
 
     annot = [
@@ -89,4 +102,12 @@ top_annots["keys"] = ["name", "start", "length", "trackIndex"]
 top_annots["annots"] = annots
 annots = json.dumps(top_annots)
 
-open(output_dir + "/" + str(num_annots) + "_virtual_snvs.json", "w").write(annots)
+num_annots = str(num_annots)
+output_path = output_dir + "/" + num_annots + "_virtual_snvs.json"
+
+open(output_path, "w").write(annots)
+print(
+    'Output ' + num_annots + ' annotations ' +
+    'on assembly ' + assembly + ' ' +
+    'to ' + output_path
+)
