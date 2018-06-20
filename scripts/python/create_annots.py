@@ -3,7 +3,12 @@
 Data is currently simulated single-nucleotide variations (SNVs).
 
 Examples:
+
+    # Create 1000 annots in 3 tracks with 5% in 1st track, 80% in 2nd, 15% in 3rd
     python3 create_annots.py --track_annot_percents 5 80 15
+
+    # Create 90000 annots evenly distributed among 3 tracks
+    python3 create_annots.py --num_annots 90000 --num_tracks 5
 
 TODO:
 - Add handling for non-human organisms
@@ -131,7 +136,7 @@ top_annots['annots'] = annots
 annots = json.dumps(top_annots)
 
 num_annots = str(num_annots)
-output_path = output_dir + '/' + num_annots + '_virtual_snvs.json'
+output_path = output_dir + num_annots + '_virtual_snvs.json'
 
 open(output_path, 'w').write(annots)
 print(
