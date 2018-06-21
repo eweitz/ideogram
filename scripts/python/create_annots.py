@@ -8,7 +8,7 @@ Examples:
     python3 create_annots.py --track_annot_percents 5 80 15
 
     # Create 90000 annots evenly distributed among 3 tracks
-    python3 create_annots.py --num_annots 90000 --num_tracks 5
+    python3 create_annots.py --num_annots 1000 --num_tracks 5
 
 TODO:
 - Add handling for non-human organisms
@@ -20,21 +20,22 @@ TODO:
     - HGVS expression
 """
 
-import json
-import random
+
 import argparse
+import json
 import math
+import random
 
 parser = argparse.ArgumentParser(
-	description=__doc__,
-	formatter_class=argparse.RawDescriptionHelpFormatter)
+    description=__doc__,
+    formatter_class=argparse.RawDescriptionHelpFormatter)
 parser.add_argument('--output_dir',
-					help='Directory to send output data to',
-					default='../../data/annotations/')
+                    help='Directory to send output data to',
+                    default='../../data/annotations/')
 parser.add_argument('--num_annots',
-					help='Number of annotations to create',
-					type=int,
-					default=1000)
+                    help='Number of annotations to create',
+                    type=int,
+                    default=1000)
 parser.add_argument('--assembly',
                     help='Genome assembly reference to use: GRCh38 or GRCh37',
                     default='GRCh38')
@@ -104,11 +105,10 @@ else:
 for chr in chrs:
     annots.append({'chr': chr, 'annots': []})
 
-i = 0
-while i < num_annots:
+for i in range(0, num_annots):
     j = str(i + 1)
-    chr = i % 24
 
+    chr = i % 24
     chr_length = chr_lengths[chrs[chr]]
 
     # Distribute annotations evenly across this chromosome
@@ -128,8 +128,6 @@ while i < num_annots:
 
     annots[chr]['annots'].append(annot)
 
-    i += 1
-
 top_annots = {}
 top_annots['keys'] = ['name', 'start', 'length', 'trackIndex']
 top_annots['annots'] = annots
@@ -141,6 +139,7 @@ output_path = output_dir + num_annots + '_virtual_snvs.json'
 open(output_path, 'w').write(annots)
 print(
     'Output ' + num_annots + ' annotations ' +
+    'on ' + str(num_tracks) + ' tracks ' +
     'on assembly ' + assembly + ' ' +
     'to ' + output_path
 )
