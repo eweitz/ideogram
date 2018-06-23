@@ -16,11 +16,12 @@ These two dimensions of annotation formats – density and origin – each have 
 
 Thus, four broad annotation formats are supported, each optimizing for specific trade-offs of user and developer experience and capacity, as well as different biological use cases.
 
-* Format. Control. Configuration. Transfer. Information.  Usabliity.  Example scenario.
-* Sparse client. Dynamic. Complex. Fast. Low. Interactive and glanceable. Front-end. Clinical variation.
-* Sparse server. Static. Simple. Slow. Low. Easy and glanceable.  Front-end. Clinical variation.
-* Dense client. Dynamic.  Complex. Slow. Low. Interactive and rich. Back-end. Gene expression research.
-* Dense server. Static. Simple. Slow. Low. Back-end. Easy and rich. Gene expression research.
+| Format | Control | Configuration | Transfer | Information |  Usabliity |  Developer capacity | Example scenario |
+|---|---|---|---|---|---|---|---|
+| Sparse client | Dynamic | Complex | Fast | Low | Interactive and glanceable | Front-end | Clinical variation |
+| Sparse server | Static | Simple | Fast | Low | Easy and glanceable |  Front-end | Clinical variation  |
+| Dense client | Dynamic |  Complex | Slow | High | Interactive and rich | Back-end | Gene expression research |
+| Dense server | Static | Simple | Slow | High | Easy and rich | Back-end | Gene expression research |
 
 ## Advanced formats
 Ideogram provides a simple, easy, and fast annotation interface by default.  The defaults can be adjusted with minor developer effort.  Advanced implementations of annotation formatting are also possible.  
