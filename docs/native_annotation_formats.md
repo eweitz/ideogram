@@ -19,8 +19,8 @@ Thus, four broad annotation formats are supported, each optimizing for specific 
 | Format | Control | Configuration | Transfer | Information |  Usabliity |  Developer capacity | Example scenario |
 |---|---|---|---|---|---|---|---|
 | Sparse client | Dynamic | Complex | Fast | Low | Interactive and glanceable | Front-end | Clinical variation |
-| Sparse server | Static | Simple | Fast | Low | Easy and glanceable |  Front-end | Clinical variation  |
-| Dense client | Dynamic |  Complex | Slow | High | Interactive and rich | Back-end | Gene expression research |
+| Sparse server | Static | Simple | Fast | Low | Easy and glanceable |  Back-end | Clinical variation  |
+| Dense client | Dynamic |  Complex | Slow | High | Interactive and rich | Front-end | Gene expression research |
 | Dense server | Static | Simple | Slow | High | Easy and rich | Back-end | Gene expression research |
 
 ## Advanced formats
