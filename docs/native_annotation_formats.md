@@ -2,7 +2,7 @@
 
 Ideogram.js supports specifying annotations in native formats, in addition to standard bioinformatics file formats like BED.
 
-These native Ideogram annotation formats have two dimensions: density and origin.  Particular formats excel in different scenarios.  The default annotation format is designed for ease of use, but sophisticated extensions are possible.
+These native Ideogram annotation formats have two dimensions: [density and origin](#density-and-origin).  Particular formats excel [in different scenarios](#use-case-matrix).  The default annotation format is designed for ease of use, but [sophisticated extensions](#advanced-formats) are possible.
 
 Note that these native formats all have a similar schema.  They are distinguished implicitly by their data layout, not explicitly as ideogram configuration properties.
 
