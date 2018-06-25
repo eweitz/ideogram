@@ -32,11 +32,24 @@ var d3 = Object.assign({}, d3selection, d3fetch);
  * array of objects.  It also adds pixel offset information.
  */
 function processAnnotData(rawAnnots) {
-  var keys, i, j, k, m, annot, annots, annotsByChr, chr, chrs, chrModel, ra,
-    startPx, stopPx, px, annotTrack, color, shape, unorderedAnnots,
+  var keys, metadata, i, j, k, m, annot, annots, annotsByChr, chr, chrs,
+    chrModel, ra, startPx, stopPx, px, annotTrack, color, shape,
+    unorderedAnnots, colorMap,
     ideo = this;
 
+  colorMap = [
+    ['F00', 'CCC', '00F'],
+    ['F00', 'FA0', '0AF', '00F'],
+    ['F00', 'FA0', 'CCC', '0AF', '00F'],
+    ['F00', 'FA0', '875', '578', '0AF', '00F'],
+    ['F00', 'FA0', '875', 'CCC', '578', '0AF', '00F'],
+    ['F00', 'FA0', '875', '7A0', '0A7', '578', '0AF', '00F'],
+    ['F00', 'FA0', '875', '7A0', 'CCC', '0A7', '578', '0AF', '00F'],
+    ['F00', 'FA0', '875', '7A0', '552', '255', '0A7', '578', '0AF', '00F']
+  ];
+
   keys = rawAnnots.keys;
+  metadata = rawAnnots.metadata;
   rawAnnots = rawAnnots.annots;
 
   annots = [];
@@ -81,6 +94,9 @@ function processAnnotData(rawAnnots) {
         annotTrack = ideo.config.annotationTracks[annot.trackIndex];
         color = annotTrack.color;
         shape = annotTrack.shape;
+      } else if (keys[3] === 'trackIndex' && typeof metadata !== 'undefined') {
+        annot.trackIndex = ra[3];
+        color = '#' + colorMap[metadata.numTracks][annot.trackIndex];
       } else {
         annot.trackIndex = 0;
       }
