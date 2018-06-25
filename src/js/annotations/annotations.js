@@ -34,8 +34,10 @@ var d3 = Object.assign({}, d3selection, d3fetch);
 function processAnnotData(rawAnnots) {
   var keys, numTracks, i, j, k, m, annot, annots, annotsByChr, chr, chrs,
     chrModel, ra, startPx, stopPx, px, annotTrack, color, shape,
-    unorderedAnnots, colorMap,
+    unorderedAnnots, colorMap, omittedAnnots, numOmittedTracks,
     ideo = this;
+
+  omittedAnnots = {};
 
   colorMap = [
     ['F00', 'CCC', '00F'],
@@ -98,6 +100,16 @@ function processAnnotData(rawAnnots) {
       } else if (keys[3] === 'trackIndex' && numTracks !== 1) {
         annot.trackIndex = ra[3];
         color = '#' + colorMap[numTracks][annot.trackIndex];
+
+        if (annot.trackIndex > numTracks - 1) {
+          if (annot.trackIndex in omittedAnnots) {
+            omittedAnnots[annot.trackIndex].push(annot);
+          } else {
+            omittedAnnots[annot.trackIndex] = [annot];
+          }
+          continue;
+        }
+
       } else {
         annot.trackIndex = 0;
       }
@@ -120,6 +132,18 @@ function processAnnotData(rawAnnots) {
 
       annots[m].annots.push(annot);
     }
+  }
+
+  numOmittedTracks = Object.keys(omittedAnnots).length;
+
+  if (numOmittedTracks) {
+    console.warn(
+      'Ideogram configuration specified ' + numTracks + ' tracks, ' +
+      'but loaded annotations contain ' + numOmittedTracks + ' ' +
+      'extra tracks.\n\n' +
+      'Omitted annotations by track index:'
+    );
+    console.warn(omittedAnnots);
   }
 
   // Ensure annotation containers are ordered by chromosome
