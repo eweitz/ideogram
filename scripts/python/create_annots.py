@@ -129,11 +129,6 @@ for i in range(0, num_annots):
     annots[chr]['annots'].append(annot)
 
 top_annots = {}
-top_annots['metadata'] = {
-    'name': 'Test track',
-    'numTracks': num_tracks,
-    'assembly': assembly
-}
 top_annots['keys'] = ['name', 'start', 'length', 'trackIndex']
 top_annots['annots'] = annots
 annots = json.dumps(top_annots)

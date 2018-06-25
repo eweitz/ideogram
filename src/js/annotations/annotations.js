@@ -32,7 +32,7 @@ var d3 = Object.assign({}, d3selection, d3fetch);
  * array of objects.  It also adds pixel offset information.
  */
 function processAnnotData(rawAnnots) {
-  var keys, metadata, i, j, k, m, annot, annots, annotsByChr, chr, chrs,
+  var keys, numTracks, i, j, k, m, annot, annots, annotsByChr, chr, chrs,
     chrModel, ra, startPx, stopPx, px, annotTrack, color, shape,
     unorderedAnnots, colorMap,
     ideo = this;
@@ -49,8 +49,9 @@ function processAnnotData(rawAnnots) {
   ];
 
   keys = rawAnnots.keys;
-  metadata = rawAnnots.metadata;
   rawAnnots = rawAnnots.annots;
+
+  numTracks = ideo.config.numAnnotTracks;
 
   annots = [];
 
@@ -94,9 +95,9 @@ function processAnnotData(rawAnnots) {
         annotTrack = ideo.config.annotationTracks[annot.trackIndex];
         color = annotTrack.color;
         shape = annotTrack.shape;
-      } else if (keys[3] === 'trackIndex' && typeof metadata !== 'undefined') {
+      } else if (keys[3] === 'trackIndex' && numTracks !== 1) {
         annot.trackIndex = ra[3];
-        color = '#' + colorMap[metadata.numTracks][annot.trackIndex];
+        color = '#' + colorMap[numTracks][annot.trackIndex];
       } else {
         annot.trackIndex = 0;
       }
@@ -157,6 +158,8 @@ function initAnnotSettings() {
 
     if (config.annotationTracks) {
       this.config.numAnnotTracks = config.annotationTracks.length;
+    } else if (config.annotationsNumTracks) {
+      this.config.numAnnotTracks = config.annotationsNumTracks;
     } else {
       this.config.numAnnotTracks = 1;
     }
