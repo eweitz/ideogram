@@ -50,6 +50,14 @@ parser.add_argument('--track_annot_percents',
                       'Defaults to even distribution of annots among tracks.'
                     ),
                     metavar='int', type=int, nargs='*')
+parser.add_argument('--density',
+                    help=(
+                      'Whether annotations are "dense" or "sparse".  ' +
+                      'Dense is where each genomic feature (e.g. each ' +
+                      'gene) has annotations on all tracks. Sparse is ' +
+                      'where each feature has an annotation on only one track.'
+                    ),
+                    default='sparse')
 
 args = parser.parse_args()
 output_dir = args.output_dir
@@ -57,6 +65,7 @@ num_annots = args.num_annots
 assembly = args.assembly
 num_tracks = args.num_tracks
 track_annot_percents = args.track_annot_percents
+density = args.density
 
 track_index_pool = []
 if track_annot_percents is None:
@@ -116,20 +125,32 @@ for i in range(0, num_annots):
 
     length = 0
 
-    random_index = random.randrange(0, 99)
-    track_index = track_index_pool[random_index]
-
     annot = [
         'rs' + j,
         start,
-        length,
-        track_index
+        length
     ]
+
+    if density == 'sparse':
+        random_index = random.randrange(0, 99)
+        track_index = track_index_pool[random_index]
+        annot.append(track_index)
+    else:
+        for k in range(0, num_tracks):
+            annot_value = random.randrange(0, 99)
+            annot.append(annot_value)
 
     annots[chr]['annots'].append(annot)
 
+if density == 'sparse':
+    track_keys = ['trackIndex']
+else:
+    track_keys = []
+    for i in range(0, num_tracks):
+        track_keys.append('track_' + str(i + 1))
+
 top_annots = {}
-top_annots['keys'] = ['name', 'start', 'length', 'trackIndex']
+top_annots['keys'] = ['name', 'start', 'length'] + track_keys
 top_annots['annots'] = annots
 annots = json.dumps(top_annots)
 
@@ -138,7 +159,7 @@ output_path = output_dir + num_annots + '_virtual_snvs.json'
 
 open(output_path, 'w').write(annots)
 print(
-    'Output ' + num_annots + ' annotations ' +
+    'Output ' + num_annots + ' ' + density + ' annotations ' +
     'on ' + str(num_tracks) + ' tracks ' +
     'on assembly ' + assembly + ' ' +
     'to ' + output_path
