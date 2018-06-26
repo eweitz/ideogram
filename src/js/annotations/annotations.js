@@ -40,14 +40,16 @@ function processAnnotData(rawAnnots) {
   omittedAnnots = {};
 
   colorMap = [
-    ['F00', 'CCC', '00F'],
-    ['F00', 'FA0', '0AF', '00F'],
-    ['F00', 'FA0', 'CCC', '0AF', '00F'],
-    ['F00', 'FA0', '875', '578', '0AF', '00F'],
-    ['F00', 'FA0', '875', 'CCC', '578', '0AF', '00F'],
-    ['F00', 'FA0', '875', '7A0', '0A7', '578', '0AF', '00F'],
-    ['F00', 'FA0', '875', '7A0', 'CCC', '0A7', '578', '0AF', '00F'],
-    ['F00', 'FA0', '875', '7A0', '552', '255', '0A7', '578', '0AF', '00F']
+    ['F00'],
+    ['F00', '88F'],
+    ['F00', 'CCC', '88F'],
+    ['F00', 'FA0', '0AF', '88F'],
+    ['F00', 'FA0', 'CCC', '0AF', '88F'],
+    ['F00', 'FA0', '875', '578', '0AF', '88F'],
+    ['F00', 'FA0', '875', 'CCC', '578', '0AF', '88F'],
+    ['F00', 'FA0', '875', '7A0', '0A7', '578', '0AF', '88F'],
+    ['F00', 'FA0', '875', '7A0', 'CCC', '0A7', '578', '0AF', '88F'],
+    ['F00', 'FA0', '875', '7A0', '552', '255', '0A7', '578', '0AF', '88F']
   ];
 
   keys = rawAnnots.keys;
@@ -99,8 +101,9 @@ function processAnnotData(rawAnnots) {
         shape = annotTrack.shape;
       } else if (keys[3] === 'trackIndex' && numTracks !== 1) {
         annot.trackIndex = ra[3];
-        color = '#' + colorMap[numTracks][annot.trackIndex];
+        color = '#' + colorMap[numTracks - 1][annot.trackIndex];
 
+        // Catch annots that will be omitted from display
         if (annot.trackIndex > numTracks - 1) {
           if (annot.trackIndex in omittedAnnots) {
             omittedAnnots[annot.trackIndex].push(annot);
@@ -135,15 +138,14 @@ function processAnnotData(rawAnnots) {
   }
 
   numOmittedTracks = Object.keys(omittedAnnots).length;
-
   if (numOmittedTracks) {
     console.warn(
       'Ideogram configuration specified ' + numTracks + ' tracks, ' +
       'but loaded annotations contain ' + numOmittedTracks + ' ' +
       'extra tracks.\n\n' +
-      'Omitted annotations by track index:'
+      'Omitted annotations by 0-based track index:\n',
+      omittedAnnots
     );
-    console.warn(omittedAnnots);
   }
 
   // Ensure annotation containers are ordered by chromosome
