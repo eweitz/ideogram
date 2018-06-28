@@ -32,10 +32,11 @@ var d3 = Object.assign({}, d3selection, d3fetch);
  * array of objects.  It also adds pixel offset information.
  */
 function processAnnotData(rawAnnots) {
-  var keys, numTracks, i, j, k, m, annot, annots, annotsByChr, chr, chrs,
+  var keys, numTracks, i, j, k, m, n, annot, annots, thisAnnot, annotsByChr, chr, chrs,
     chrModel, ra, startPx, stopPx, px, annotTrack, color, shape,
     unorderedAnnots, colorMap, omittedAnnots, numOmittedTracks,
-    ideo = this;
+    ideo = this,
+    config = ideo.config;
 
   omittedAnnots = {};
 
@@ -55,7 +56,7 @@ function processAnnotData(rawAnnots) {
   keys = rawAnnots.keys;
   rawAnnots = rawAnnots.annots;
 
-  numTracks = ideo.config.numAnnotTracks;
+  numTracks = config.numAnnotTracks;
 
   annots = [];
 
@@ -65,7 +66,7 @@ function processAnnotData(rawAnnots) {
     annotsByChr = rawAnnots[i];
 
     chr = annotsByChr.chr;
-    chrModel = ideo.chromosomes[ideo.config.taxid][chr];
+    chrModel = ideo.chromosomes[config.taxid][chr];
 
     if (typeof chrModel === 'undefined') {
       console.warn(
@@ -93,29 +94,7 @@ function processAnnotData(rawAnnots) {
 
       px = Math.round((startPx + stopPx) / 2);
 
-      color = ideo.config.annotationsColor;
-      if (ideo.config.annotationTracks) {
-        annot.trackIndex = ra[3];
-        annotTrack = ideo.config.annotationTracks[annot.trackIndex];
-        color = annotTrack.color;
-        shape = annotTrack.shape;
-      } else if (keys[3] === 'trackIndex' && numTracks !== 1) {
-        annot.trackIndex = ra[3];
-        color = '#' + colorMap[numTracks - 1][annot.trackIndex];
-
-        // Catch annots that will be omitted from display
-        if (annot.trackIndex > numTracks - 1) {
-          if (annot.trackIndex in omittedAnnots) {
-            omittedAnnots[annot.trackIndex].push(annot);
-          } else {
-            omittedAnnots[annot.trackIndex] = [annot];
-          }
-          continue;
-        }
-
-      } else {
-        annot.trackIndex = 0;
-      }
+      color = config.annotationsColor;
 
       if ('color' in annot) {
         color = annot.color;
@@ -133,7 +112,44 @@ function processAnnotData(rawAnnots) {
       annot.color = color;
       annot.shape = shape;
 
-      annots[m].annots.push(annot);
+      if (config.annotationTracks) {
+        // Client annotations
+        annot.trackIndex = ra[3];
+        annotTrack = config.annotationTracks[annot.trackIndex];
+        if ('color' in annot === false) {
+          annot.color = annotTrack.color;
+        }
+        annot.shape = annotTrack.shape;
+        annots[m].annots.push(annot);
+      } else if (keys[3] === 'trackIndex' && numTracks !== 1) {
+        // Sparse server annotations
+        annot.trackIndex = ra[3];
+        annot.color = '#' + colorMap[numTracks - 1][annot.trackIndex];
+
+        // Catch annots that will be omitted from display
+        if (annot.trackIndex > numTracks - 1) {
+          if (annot.trackIndex in omittedAnnots) {
+            omittedAnnots[annot.trackIndex].push(annot);
+          } else {
+            omittedAnnots[annot.trackIndex] = [annot];
+          }
+        }
+        annots[m].annots.push(annot);
+      } else if (
+        keys.length > 3 &&
+        keys[3] in {trackIndex: 1, color: 1, shape: 1} === false
+      ) {
+        // Dense server annotations
+        for (n = 3; n < keys.length; n++) {
+          thisAnnot = Object.assign({}, annot);
+          thisAnnot.trackIndex = n - 3;
+          thisAnnot.color = '#' + colorMap[numTracks - 1][thisAnnot.trackIndex];
+          annots[m].annots.push(thisAnnot);
+        }
+      } else {
+        annot.trackIndex = 0;
+        annots[m].annots.push(annot);
+      }
     }
   }
 
@@ -161,6 +177,7 @@ function processAnnotData(rawAnnots) {
       }
     }
   }
+
 
   return annots;
 }
