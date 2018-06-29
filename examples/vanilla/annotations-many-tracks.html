@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Annotations, many tracks | Ideogram</title>
+    <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
+    <style>
+        html, body {
+            height: 100%;
+            font: 12px Arial;
+            line-height: 19.6px;
+        }
+    </style>
+</head>
+<body>
+<h1>Annotations, many tracks | Ideogram</h1>
+<a href="../">Back to overview</a> |
+<a href="homology-interspecies">Previous</a> |
+<a href="annotations-overlaid">Next</a>
+<p>
+    Select which of the 20 tracks you would like to display.
+</p>
+
+<ul id="tracks to display">
+    Tracks to display
+    <li><label for="filter_1"><input type="checkbox" id="filter_1">1</input></label></li>
+    <li><label for="filter_2"><input type="checkbox" id="filter_2">2</input></label></li>
+    <li><label for="filter_3"><input type="checkbox" id="filter_3">3</input></label></li>
+    <li><label for="filter_4"><input type="checkbox" id="filter_4">4</input></label></li>
+    <li><label for="filter_5"><input type="checkbox" id="filter_5">5</input></label></li>
+    <li><label for="filter_6"><input type="checkbox" id="filter_6">6</input></label></li>
+    <li><label for="filter_7"><input type="checkbox" id="filter_7">7</input></label></li>
+    <li><label for="filter_8"><input type="checkbox" id="filter_8">8</input></label></li>
+    <li><label for="filter_9"><input type="checkbox" id="filter_9">9</input></label></li>
+    <li><label for="filter_10"><input type="checkbox" id="filter_10">10</input></label></li>
+    <li><label for="filter_11"><input type="checkbox" id="filter_11">11</input></label></li>
+    <li><label for="filter_12"><input type="checkbox" id="filter_12">12</input></label></li>
+    <li><label for="filter_13"><input type="checkbox" id="filter_13">13</input></label></li>
+    <li><label for="filter_14"><input type="checkbox" id="filter_14">14</input></label></li>
+    <li><label for="filter_15"><input type="checkbox" id="filter_15">15</input></label></li>
+    <li><label for="filter_16"><input type="checkbox" id="filter_16">16</input></label></li>
+    <li><label for="filter_17"><input type="checkbox" id="filter_17">17</input></label></li>
+    <li><label for="filter_18"><input type="checkbox" id="filter_18">18</input></label></li>
+    <li><label for="filter_19"><input type="checkbox" id="filter_19">19</input></label></li>
+    <li><label for="filter_20"><input type="checkbox" id="filter_20">20</input></label></li>
+</ul>
+
+<script type="text/javascript">
+
+  var config = {
+    organism: 'human',
+    annotationsPath: '../../data/annotations/20_tracks_virtual_snvs.json',
+    annotationsNumTracks: 20
+  };
+
+  var ideogram = new Ideogram(config);
+
+</script>
+</body>
+</html>
