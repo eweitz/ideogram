@@ -46,7 +46,7 @@ parser.add_argument('--num_tracks',
 parser.add_argument('--track_annot_percents',
                     help=(
                       'Percentage of total annotations in each track, e.g. ' +
-                      '5,80,15 for 5% in 1st track, 80% in 2nd, 15% in 3rd.  ' +
+                      '5,80,15 for 5%% in 1st track, 80%% in 2nd, 15%% in 3rd.  ' +
                       'Defaults to even distribution of annots among tracks.'
                     ),
                     metavar='int', type=int, nargs='*')
