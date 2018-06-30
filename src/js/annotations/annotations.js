@@ -48,15 +48,23 @@ function processAnnotData(rawAnnots) {
     ['F00', 'FA0', 'CCC', '0AF', '88F'],
     ['F00', 'FA0', '875', '578', '0AF', '88F'],
     ['F00', 'FA0', '875', 'CCC', '578', '0AF', '88F'],
-    ['F00', 'FA0', '875', '7A0', '0A7', '578', '0AF', '88F'],
-    ['F00', 'FA0', '875', '7A0', 'CCC', '0A7', '578', '0AF', '88F'],
-    ['F00', 'FA0', '875', '7A0', '552', '255', '0A7', '578', '0AF', '88F']
+    ['F00', 'FA0', '7A0', '875', '0A7', '578', '0AF', '88F'],
+    ['F00', 'FA0', '7A0', '875', 'CCC', '0A7', '578', '0AF', '88F'],
+    ['F00', 'FA0', '7A0', '875', '552', '255', '0A7', '578', '0AF', '88F']
   ];
 
   keys = rawAnnots.keys;
   rawAnnots = rawAnnots.annots;
 
   numTracks = config.numAnnotTracks;
+
+  if (numTracks > 10) {
+    console.error(
+      'Ideogram only displays up to 10 tracks at a time.  ' +
+      'You specified ' + numTracks + ' tracks.  ' +
+      'Perhaps consider a different way to visualize your data.'
+    );
+  }
 
   annots = [];
 
@@ -113,7 +121,7 @@ function processAnnotData(rawAnnots) {
       annot.shape = shape;
 
       if (config.annotationTracks) {
-        // Client annotations
+        // Client annotations, as in annotations-external-data.html
         annot.trackIndex = ra[3];
         annotTrack = config.annotationTracks[annot.trackIndex];
         if ('color' in annot === false) {
@@ -122,7 +130,7 @@ function processAnnotData(rawAnnots) {
         annot.shape = annotTrack.shape;
         annots[m].annots.push(annot);
       } else if (keys[3] === 'trackIndex' && numTracks !== 1) {
-        // Sparse server annotations
+        // Sparse server annotations, as in annotations-many-tracks.html
         annot.trackIndex = ra[3];
         annot.color = '#' + colorMap[numTracks - 1][annot.trackIndex];
 
@@ -133,6 +141,7 @@ function processAnnotData(rawAnnots) {
           } else {
             omittedAnnots[annot.trackIndex] = [annot];
           }
+          continue;
         }
         annots[m].annots.push(annot);
       } else if (
@@ -147,6 +156,7 @@ function processAnnotData(rawAnnots) {
           annots[m].annots.push(thisAnnot);
         }
       } else {
+        // Basic annotations, as in annotations-basic.html
         annot.trackIndex = 0;
         annots[m].annots.push(annot);
       }
@@ -177,7 +187,6 @@ function processAnnotData(rawAnnots) {
       }
     }
   }
-
 
   return annots;
 }
