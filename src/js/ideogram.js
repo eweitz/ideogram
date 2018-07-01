@@ -19,8 +19,8 @@ import {
 } from './init';
 
 import {
-  onLoadAnnots, onDrawAnnots, processAnnotData, initAnnotSettings,
-  fetchAnnots, drawAnnots, getHistogramBars, drawHeatmaps,
+  onLoadAnnots, onDrawAnnots, processAnnotData, updateDisplayedTracks,
+  initAnnotSettings, fetchAnnots, drawAnnots, getHistogramBars, drawHeatmaps,
   deserializeAnnotsForHeatmap, fillAnnots, drawProcessedAnnots, drawSynteny,
   startHideAnnotTooltipTimeout, showAnnotTooltip, onWillShowAnnotTooltip
 } from './annotations/annotations'
@@ -63,6 +63,7 @@ export default class Ideogram {
     this.onLoadAnnots = onLoadAnnots;
     this.onDrawAnnots = onDrawAnnots;
     this.processAnnotData = processAnnotData;
+    this.updateDisplayedTracks = updateDisplayedTracks;
     this.initAnnotSettings = initAnnotSettings;
     this.fetchAnnots = fetchAnnots;
     this.drawAnnots = drawAnnots;

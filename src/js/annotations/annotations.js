@@ -192,6 +192,34 @@ function processAnnotData(rawAnnots) {
 }
 
 /**
+ * Adds or removes tracks from the displayed list of tracks.
+ *
+ * @param trackIndexes Array of indexes of tracks to display
+ */
+function updateDisplayedTracks(trackIndexes) {
+  var displayedAnnotsByChr, displayedAnnots, i, j, annots, annot,
+    ideo = this,
+    annotsByChr = ideo.annots;
+
+  displayedAnnotsByChr = [];
+
+  for (i = 0; i < annotsByChr.length; i++) {
+    annots = annotsByChr[i];
+    displayedAnnots = [];
+    for (j = 0; j < annots.annots.length; j++) {
+      annot = annots.annots[j];
+      if (trackIndexes.includes(annot.trackIndex)) {
+        displayedAnnots.push(annot);
+      }
+    }
+    displayedAnnotsByChr.push({chr: annots.chr, annots: displayedAnnots});
+  }
+
+  d3.selectAll(ideo.selector + ' .annot').remove();
+  ideo.drawAnnots(displayedAnnotsByChr);
+}
+
+/**
  * Initializes various annotation settings.  Constructor help function.
  */
 function initAnnotSettings() {
@@ -351,8 +379,8 @@ function fillAnnots(annots) {
 }
 
 export {
-  onLoadAnnots, onDrawAnnots, processAnnotData, initAnnotSettings,
-  fetchAnnots, drawAnnots, getHistogramBars, drawHeatmaps,
+  onLoadAnnots, onDrawAnnots, processAnnotData, updateDisplayedTracks,
+  initAnnotSettings, fetchAnnots, drawAnnots, getHistogramBars, drawHeatmaps,
   deserializeAnnotsForHeatmap, fillAnnots, drawProcessedAnnots, drawSynteny,
   startHideAnnotTooltipTimeout, showAnnotTooltip, onWillShowAnnotTooltip
 }
