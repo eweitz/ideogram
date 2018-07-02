@@ -192,35 +192,40 @@ function processAnnotData(rawAnnots) {
 }
 
 /**
+ * Reset displayed tracks to the originally displayed
+ */
+function restoreDefaultTracks() {
+  var ideo = this;
+  ideo.config.numAnnotTracks = ideo.config.annotationsNumTracks;
+  d3.selectAll(ideo.selector + ' .annot').remove();
+  ideo.drawAnnots(ideo.processAnnotData(ideo.rawAnnots));
+}
+
+/**
  * Adds or removes tracks from the displayed list of tracks.
  * Only works when raw annotations are dense.
  *
  * @param trackIndexes Array of indexes of tracks to display
  */
 function updateDisplayedTracks(trackIndexes) {
-  var displayedRawAnnotsByChr, displayedAnnots, i, j,
-    rawAnnots, annots, annot, trackIndex,
+  var displayedRawAnnotsByChr, displayedAnnots, i, j, rawAnnots, annots, annot,
+    trackIndex,
     ideo = this,
     annotsByChr = ideo.rawAnnots.annots;
 
-  if (trackIndexes.length === 0) {
-    ideo.config.numAnnotTracks = ideo.config.annotationsNumTracks;
-    displayedAnnots = ideo.processAnnotData(ideo.rawAnnots);
-    d3.selectAll(ideo.selector + ' .annot').remove();
-    ideo.drawAnnots(displayedAnnots);
-    return;
-  }
-
   displayedRawAnnotsByChr = [];
 
+  ideo.config.numAnnotTracks = trackIndexes.length;
+
+  // Filter displayed tracks by selected track indexes
   for (i = 0; i < annotsByChr.length; i++) {
     annots = annotsByChr[i];
     displayedAnnots = [];
     for (j = 0; j < annots.annots.length; j++) {
-      annot = annots.annots[j];
-      trackIndex = annot[3];
-      if (trackIndexes.includes(trackIndex + 1)) {
-        annot[3] = trackIndexes.indexOf(trackIndex) + 1;
+      annot = Object.assign({}, annots.annots[j]); // copy by value
+      trackIndex = annot[3] + 1;
+      if (trackIndexes.includes(trackIndex)) {
+        annot[3] = trackIndexes.indexOf(trackIndex);
         displayedAnnots.push(annot);
       }
     }
@@ -394,8 +399,9 @@ function fillAnnots(annots) {
 }
 
 export {
-  onLoadAnnots, onDrawAnnots, processAnnotData, updateDisplayedTracks,
-  initAnnotSettings, fetchAnnots, drawAnnots, getHistogramBars, drawHeatmaps,
-  deserializeAnnotsForHeatmap, fillAnnots, drawProcessedAnnots, drawSynteny,
-  startHideAnnotTooltipTimeout, showAnnotTooltip, onWillShowAnnotTooltip
+  onLoadAnnots, onDrawAnnots, processAnnotData, restoreDefaultTracks,
+  updateDisplayedTracks, initAnnotSettings, fetchAnnots, drawAnnots,
+  getHistogramBars, drawHeatmaps, deserializeAnnotsForHeatmap, fillAnnots,
+  drawProcessedAnnots, drawSynteny, startHideAnnotTooltipTimeout,
+  showAnnotTooltip, onWillShowAnnotTooltip
 }
