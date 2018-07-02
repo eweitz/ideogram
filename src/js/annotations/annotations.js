@@ -193,30 +193,45 @@ function processAnnotData(rawAnnots) {
 
 /**
  * Adds or removes tracks from the displayed list of tracks.
+ * Only works when raw annotations are dense.
  *
  * @param trackIndexes Array of indexes of tracks to display
  */
 function updateDisplayedTracks(trackIndexes) {
-  var displayedAnnotsByChr, displayedAnnots, i, j, annots, annot,
+  var displayedRawAnnotsByChr, displayedAnnots, i, j,
+    rawAnnots, annots, annot, trackIndex,
     ideo = this,
-    annotsByChr = ideo.annots;
+    annotsByChr = ideo.rawAnnots.annots;
 
-  displayedAnnotsByChr = [];
+  if (trackIndexes.length === 0) {
+    ideo.config.numAnnotTracks = ideo.config.annotationsNumTracks;
+    displayedAnnots = ideo.processAnnotData(ideo.rawAnnots);
+    d3.selectAll(ideo.selector + ' .annot').remove();
+    ideo.drawAnnots(displayedAnnots);
+    return;
+  }
+
+  displayedRawAnnotsByChr = [];
 
   for (i = 0; i < annotsByChr.length; i++) {
     annots = annotsByChr[i];
     displayedAnnots = [];
     for (j = 0; j < annots.annots.length; j++) {
       annot = annots.annots[j];
-      if (trackIndexes.includes(annot.trackIndex)) {
+      trackIndex = annot[3];
+      if (trackIndexes.includes(trackIndex + 1)) {
+        annot[3] = trackIndexes.indexOf(trackIndex) + 1;
         displayedAnnots.push(annot);
       }
     }
-    displayedAnnotsByChr.push({chr: annots.chr, annots: displayedAnnots});
+    displayedRawAnnotsByChr.push({chr: annots.chr, annots: displayedAnnots});
   }
 
+  rawAnnots = {keys: ideo.rawAnnots.keys, annots: displayedRawAnnotsByChr};
+  displayedAnnots = ideo.processAnnotData(rawAnnots);
+
   d3.selectAll(ideo.selector + ' .annot').remove();
-  ideo.drawAnnots(displayedAnnotsByChr);
+  ideo.drawAnnots(displayedAnnots);
 }
 
 /**
