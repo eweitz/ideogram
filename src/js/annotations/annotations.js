@@ -104,8 +104,10 @@ function processAnnotData(rawAnnots) {
 
       color = config.annotationsColor;
 
-      if ('color' in annot) {
+      if ('color' in annot && !config.annotationTracks) {
         color = annot.color;
+        annot.color = color;
+        annot.shape = shape;
       }
 
       if ('shape' in annot) {
@@ -117,16 +119,12 @@ function processAnnotData(rawAnnots) {
       annot.px = px;
       annot.startPx = startPx;
       annot.stopPx = stopPx;
-      annot.color = color;
-      annot.shape = shape;
 
       if (config.annotationTracks) {
-        // Client annotations, as in annotations-external-data.html
+        // Client annotations, as in annotations-tracks.html
         annot.trackIndex = ra[3];
         annotTrack = config.annotationTracks[annot.trackIndex];
-        if ('color' in annot === false) {
-          annot.color = annotTrack.color;
-        }
+        annot.color = annotTrack.color;
         annot.shape = annotTrack.shape;
         annots[m].annots.push(annot);
       } else if (keys[3] === 'trackIndex' && numTracks !== 1) {
@@ -156,8 +154,15 @@ function processAnnotData(rawAnnots) {
           annots[m].annots.push(thisAnnot);
         }
       } else {
-        // Basic annotations, as in annotations-basic.html
+        // Basic annotations, as in annotations-basic.html,
+        // and annotations-external.html
         annot.trackIndex = 0;
+        if (!annot.color) {
+          annot.color = config.annotationsColor;
+        }
+        if (!annot.shape) {
+          annot.shape = 'triangle';
+        }
         annots[m].annots.push(annot);
       }
     }
@@ -247,8 +252,7 @@ function initAnnotSettings() {
     config = ideo.config;
 
   if (
-    config.annotationsPath ||
-    config.localAnnotationsPath ||
+    config.annotationsPath || config.localAnnotationsPath ||
     ideo.annots || config.annotations
   ) {
     if (!config.annotationHeight) {
