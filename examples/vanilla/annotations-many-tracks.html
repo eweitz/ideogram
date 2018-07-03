@@ -4,12 +4,8 @@
     <title>Annotations, many tracks | Ideogram</title>
     <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
     <style>
-        html, body {
-            height: 100%;
-            font: 12px Arial;
-            line-height: 19.6px;
-        }
-        ul { float: left; }
+        html, body { height: 100%; font: 12px Arial; line-height: 19.6px; }
+        ul { float: left; padding-left: 5px}
         li { list-style: none; }
         #ideogram-container { float: left;}
     </style>
@@ -25,40 +21,39 @@
 
 <ul id="tracks-to-display">
     Tracks to display
-    <li><label for="filter_1"><input type="checkbox" id="filter_1"/>1</label></li>
-    <li><label for="filter_2"><input type="checkbox" id="filter_2"/>2</label></li>
-    <li><label for="filter_3"><input type="checkbox" id="filter_3"/>3</label></li>
-    <li><label for="filter_4"><input type="checkbox" id="filter_4"/>4</label></li>
-    <li><label for="filter_5"><input type="checkbox" id="filter_5"/>5</label></li>
-    <li><label for="filter_6"><input type="checkbox" id="filter_6"/>6</label></li>
-    <li><label for="filter_7"><input type="checkbox" id="filter_7"/>7</label></li>
-    <li><label for="filter_8"><input type="checkbox" id="filter_8"/>8</label></li>
-    <li><label for="filter_9"><input type="checkbox" id="filter_9"/>9</label></li>
-    <li><label for="filter_10"><input type="checkbox" id="filter_10"/>10</label></li>
-    <li><label for="filter_11"><input type="checkbox" id="filter_11"/>11</label></li>
-    <li><label for="filter_12"><input type="checkbox" id="filter_12"/>12</label></li>
-    <li><label for="filter_13"><input type="checkbox" id="filter_13"/>13</label></li>
-    <li><label for="filter_14"><input type="checkbox" id="filter_14"/>14</label></li>
-    <li><label for="filter_15"><input type="checkbox" id="filter_15"/>15</label></li>
-    <li><label for="filter_16"><input type="checkbox" id="filter_16"/>16</label></li>
-    <li><label for="filter_17"><input type="checkbox" id="filter_17"/>17</label></li>
-    <li><label for="filter_18"><input type="checkbox" id="filter_18"/>18</label></li>
-    <li><label for="filter_19"><input type="checkbox" id="filter_19"/>19</label></li>
-    <li><label for="filter_20"><input type="checkbox" id="filter_20"/>20</label></li>
+    <li><label for="filter_1"><input type="checkbox" id="filter_1"/>A</label></li>
+    <li><label for="filter_2"><input type="checkbox" id="filter_2"/>B</label></li>
+    <li><label for="filter_3"><input type="checkbox" id="filter_3"/>C</label></li>
+    <li><label for="filter_4"><input type="checkbox" id="filter_4"/>D</label></li>
+    <li><label for="filter_5"><input type="checkbox" id="filter_5"/>E</label></li>
+    <li><label for="filter_6"><input type="checkbox" id="filter_6"/>F</label></li>
+    <li><label for="filter_7"><input type="checkbox" id="filter_7"/>G</label></li>
+    <li><label for="filter_8"><input type="checkbox" id="filter_8"/>H</label></li>
+    <li><label for="filter_9"><input type="checkbox" id="filter_9"/>I</label></li>
+    <li><label for="filter_10"><input type="checkbox" id="filter_10"/>J</label></li>
+    <li><label for="filter_11"><input type="checkbox" id="filter_11"/>K</label></li>
+    <li><label for="filter_12"><input type="checkbox" id="filter_12"/>L</label></li>
+    <li><label for="filter_13"><input type="checkbox" id="filter_13"/>M</label></li>
+    <li><label for="filter_14"><input type="checkbox" id="filter_14"/>N</label></li>
+    <li><label for="filter_15"><input type="checkbox" id="filter_15"/>O</label></li>
+    <li><label for="filter_16"><input type="checkbox" id="filter_16"/>P</label></li>
+    <li><label for="filter_17"><input type="checkbox" id="filter_17"/>Q</label></li>
+    <li><label for="filter_18"><input type="checkbox" id="filter_18"/>R</label></li>
+    <li><label for="filter_19"><input type="checkbox" id="filter_19"/>S</label></li>
+    <li><label for="filter_20"><input type="checkbox" id="filter_20"/>T</label></li>
 </ul>
 <div id="ideogram-container"></div>
 
 <script type="text/javascript">
 
-  var config, ideogram, inputs, selectedTracks;
+  var config, ideogram, inputs;
 
   config = {
     organism: 'human',
     container: '#ideogram-container',
     chrHeight: 400,
     annotationsPath: '../../data/annotations/20_tracks_virtual_snvs.json',
-    annotationsNumTracks: 9,
-    onAnnotLoad: getSelectedInputs
+    annotationsNumTracks: 3
   };
 
   ideogram = new Ideogram(config);
@@ -67,18 +62,22 @@
 
   inputs.forEach(function(input) {
     input.addEventListener('click', function() {
-      getSelectedInputs();
+      updateTracks();
     });
   });
 
-  function getSelectedInputs() {
-    selectedTracks = [];
+  function updateTracks() {
+
+    // Get selected tracks
+    var selectedTracks = [];
     inputs.forEach(function(input) {
-      var track = input.getAttribute('id').split('_')[1];
+      var trackIndex = parseInt(input.getAttribute('id').split('_')[1]);
       if (input.checked) {
-        selectedTracks.push(track);
+        selectedTracks.push(trackIndex);
       }
     });
+
+    ideogram.updateDisplayedTracks(selectedTracks);
   }
 
 </script>
