@@ -128,7 +128,7 @@ function processAnnotData(rawAnnots) {
         annot.shape = annotTrack.shape;
         annots[m].annots.push(annot);
       } else if (keys[3] === 'trackIndex' && numTracks !== 1) {
-        // Sparse server annotations, as in annotations-many-tracks.html
+        // Sparse server annotations, as in annotations-track-filters.html
         annot.trackIndex = ra[3];
         annot.color = '#' + colorMap[numTracks - 1][annot.trackIndex];
 

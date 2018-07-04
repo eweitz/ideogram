@@ -485,8 +485,8 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
-  it('should have filterable tracks in many-tracks example', function(done) {
-    // Tests use case from ../examples/vanilla/annotations-many-tracks.html
+  it('should have filterable tracks in track-filters example', function(done) {
+    // Tests use case from ../examples/vanilla/annotations-track-filters.html
 
     var firstRun = true;
 
