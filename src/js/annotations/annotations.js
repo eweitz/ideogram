@@ -32,8 +32,8 @@ var d3 = Object.assign({}, d3selection, d3fetch);
  * array of objects.  It also adds pixel offset information.
  */
 function processAnnotData(rawAnnots) {
-  var keys, numTracks, i, j, k, m, n, annot, annots, thisAnnot, annotsByChr, chr, chrs,
-    chrModel, ra, startPx, stopPx, px, annotTrack, color, shape,
+  var keys, numTracks, i, j, k, m, n, annot, annots, thisAnnot, annotsByChr,
+    chr, chrs, chrModel, ra, startPx, stopPx, px, annotTrack,
     unorderedAnnots, colorMap, omittedAnnots, numOmittedTracks,
     ideo = this,
     config = ideo.config;
@@ -139,13 +139,13 @@ function processAnnotData(rawAnnots) {
       ) {
         // Dense server annotations
         for (n = 3; n < keys.length; n++) {
-          thisAnnot = Object.assign({}, annot);
+          thisAnnot = Object.assign({}, annot); // copy by value
           thisAnnot.trackIndex = n - 3;
           thisAnnot.color = '#' + colorMap[numTracks - 1][thisAnnot.trackIndex];
           annots[m].annots.push(thisAnnot);
         }
       } else {
-        // Basic client annotations, as in annotations-basic.html,
+        // Basic client annotations, as in annotations-basic.html
         // and annotations-external.html
         annot.trackIndex = 0;
         if (!annot.color) {
