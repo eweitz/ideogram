@@ -485,6 +485,41 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
+  it('should have filterable tracks in many-tracks example', function(done) {
+    // Tests use case from ../examples/vanilla/annotations-many-tracks.html
+
+    var firstRun = true;
+
+    function callback() {
+
+      if (firstRun) {
+        firstRun = false;
+      } else {
+        return;
+      }
+
+      var numAnnots = document.getElementsByClassName('annot').length;
+      assert.equal(numAnnots, 771);
+
+      // Filters tracks to show only 4th and 5th track (of 20)
+      ideogram.updateDisplayedTracks([4, 5]);
+      numAnnots = document.getElementsByClassName('annot').length;
+      assert.equal(numAnnots, 513);
+
+      done();
+    }
+
+    var config = {
+      organism: 'human',
+      annotationsPath: '../dist/data/annotations/20_tracks_virtual_snvs.json',
+      dataDir: '/dist/data/bands/native/',
+      annotationsNumTracks: 3,
+      onDrawAnnots: callback
+    };
+
+    ideogram = new Ideogram(config);
+  });
+
   it('should have 2015 annotations in histogram annotations example', function(done) {
     // Tests use case from ../examples/vanilla/annotations-histogram.html
     // TODO: Add class to annots indicating track

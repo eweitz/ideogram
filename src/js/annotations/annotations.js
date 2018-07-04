@@ -173,9 +173,7 @@ function processAnnotData(rawAnnots) {
     console.warn(
       'Ideogram configuration specified ' + numTracks + ' tracks, ' +
       'but loaded annotations contain ' + numOmittedTracks + ' ' +
-      'extra tracks.\n\n' +
-      'Omitted annotations by 0-based track index:\n',
-      omittedAnnots
+      'extra tracks.'
     );
   }
 
