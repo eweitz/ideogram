@@ -80,12 +80,11 @@
     var bedUrl = d3.select('#bed-url').nodes()[0].value;
     var asm = d3.select('input[name="asm"]:checked').nodes()[0].value;
     d3.select('#ideo-container').nodes()[0].innerHTML = '';
-    delete chrBands; // TODO: this shold be deleted automatically in Ideogram.js
+    delete chrBands; // TODO: this should be deleted automatically in Ideogram.js
     ideogram = new Ideogram({
       organism: 'human',
       assembly: asm,
       annotationsPath: bedUrl,
-      annotationTracks: annotsTracks,
       annotationHeight: annotsHeight,
       container: '#ideo-container',
       onDrawAnnots: displayAnnotsCaption
@@ -106,7 +105,6 @@
     }
   }
 
-  var annotsTracks = [{'id': 'myTrack', 'displayName': 'Genome features', 'color': '#F00'}];
   var annotsHeight = 3.5;
 
   var config = {
@@ -119,7 +117,6 @@
     // Example annotationsPath:
     // 'https://raw.githubusercontent.com/NCBI-Hackathons/Global_Screening_Arrays/master/files/output/pennTest2_gsrcCNVcall.bed',
     config.annotationsPath = urlParams.annotsUrl;
-    config.annotationTracks = annotsTracks;
     config.annotationHeight = annotsHeight;
     config.onDrawAnnots = displayAnnotsCaption;
   }
