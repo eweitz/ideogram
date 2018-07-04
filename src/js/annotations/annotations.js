@@ -124,7 +124,9 @@ function processAnnotData(rawAnnots) {
         // Client annotations, as in annotations-tracks.html
         annot.trackIndex = ra[3];
         annotTrack = config.annotationTracks[annot.trackIndex];
-        annot.color = annotTrack.color;
+        if (annotTrack.color) {
+          annot.color = annotTrack.color;
+        }
         annot.shape = annotTrack.shape;
         annots[m].annots.push(annot);
       } else if (keys[3] === 'trackIndex' && numTracks !== 1) {
