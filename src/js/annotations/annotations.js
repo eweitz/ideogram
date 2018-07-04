@@ -99,20 +99,7 @@ function processAnnotData(rawAnnots) {
 
       startPx = ideo.convertBpToPx(chrModel, annot.start);
       stopPx = ideo.convertBpToPx(chrModel, annot.stop);
-
       px = Math.round((startPx + stopPx) / 2);
-
-      color = config.annotationsColor;
-
-      if ('color' in annot && !config.annotationTracks) {
-        color = annot.color;
-        annot.color = color;
-        annot.shape = shape;
-      }
-
-      if ('shape' in annot) {
-        shape = annot.shape;
-      }
 
       annot.chr = chr;
       annot.chrIndex = i;
@@ -127,7 +114,9 @@ function processAnnotData(rawAnnots) {
         if (annotTrack.color) {
           annot.color = annotTrack.color;
         }
-        annot.shape = annotTrack.shape;
+        if (annotTrack.shape) {
+          annot.shape = annotTrack.shape;
+        }
         annots[m].annots.push(annot);
       } else if (keys[3] === 'trackIndex' && numTracks !== 1) {
         // Sparse server annotations, as in annotations-track-filters.html
@@ -156,7 +145,7 @@ function processAnnotData(rawAnnots) {
           annots[m].annots.push(thisAnnot);
         }
       } else {
-        // Basic annotations, as in annotations-basic.html,
+        // Basic client annotations, as in annotations-basic.html,
         // and annotations-external.html
         annot.trackIndex = 0;
         if (!annot.color) {
