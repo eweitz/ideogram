@@ -16,7 +16,7 @@
 <a href="homology-interspecies">Previous</a> |
 <a href="annotations-overlaid">Next</a>
 <p>
-    Select up to 3 of 20 tracks to display.  See also <a href="annotations-tracks">Annotations, tracks</a>.
+    Select up to 3 of 7 tracks to display.  See also <a href="annotations-tracks">Annotations, tracks</a>.
 </p>
 
 <ul id="tracks-to-display">
@@ -28,19 +28,6 @@
     <li><label for="filter_5"><input type="checkbox" id="filter_5"/>E</label></li>
     <li><label for="filter_6"><input type="checkbox" id="filter_6"/>F</label></li>
     <li><label for="filter_7"><input type="checkbox" id="filter_7"/>G</label></li>
-    <li><label for="filter_8"><input type="checkbox" id="filter_8"/>H</label></li>
-    <li><label for="filter_9"><input type="checkbox" id="filter_9"/>I</label></li>
-    <li><label for="filter_10"><input type="checkbox" id="filter_10"/>J</label></li>
-    <li><label for="filter_11"><input type="checkbox" id="filter_11"/>K</label></li>
-    <li><label for="filter_12"><input type="checkbox" id="filter_12"/>L</label></li>
-    <li><label for="filter_13"><input type="checkbox" id="filter_13"/>M</label></li>
-    <li><label for="filter_14"><input type="checkbox" id="filter_14"/>N</label></li>
-    <li><label for="filter_15"><input type="checkbox" id="filter_15"/>O</label></li>
-    <li><label for="filter_16"><input type="checkbox" id="filter_16"/>P</label></li>
-    <li><label for="filter_17"><input type="checkbox" id="filter_17"/>Q</label></li>
-    <li><label for="filter_18"><input type="checkbox" id="filter_18"/>R</label></li>
-    <li><label for="filter_19"><input type="checkbox" id="filter_19"/>S</label></li>
-    <li><label for="filter_20"><input type="checkbox" id="filter_20"/>T</label></li>
 </ul>
 <div id="ideogram-container"></div>
 
@@ -53,7 +40,8 @@
     container: '#ideogram-container',
     chrHeight: 400,
     annotationsPath: '../../data/annotations/20_tracks_virtual_snvs.json',
-    annotationsNumTracks: 3
+    annotationsNumTracks: 3,
+    annotationsDisplayedTracks: [1, 4, 7]
   };
 
   ideogram = new Ideogram(config);

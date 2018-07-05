@@ -7,8 +7,11 @@ Examples:
     # Create 1000 annots in 3 tracks with 5% in 1st track, 80% in 2nd, 15% in 3rd
     python3 create_annots.py --track_annot_percents 5 80 15
 
+    # Create 2500 annots in 10 tracks and include track metadata
+    python3 create_annots.py --num_annots 2500 --num_tracks 7 --include_metadata
+
     # Create 90000 annots evenly distributed among 3 tracks
-    python3 create_annots.py --num_annots 1000 --num_tracks 5
+    python3 create_annots.py --num_annots 90000 --num_tracks 5
 
 TODO:
 - Add handling for non-human organisms
@@ -43,6 +46,10 @@ parser.add_argument('--num_tracks',
                     help='Number of annotation tracks',
                     type=int,
                     default=3)
+parser.add_argument('--include_metadata',
+                    help='Whether to include metadata about the track set',
+                    action='store_true'
+                    )
 parser.add_argument('--track_annot_percents',
                     help=(
                       'Percentage of total annotations in each track, e.g. ' +
@@ -64,6 +71,7 @@ output_dir = args.output_dir
 num_annots = args.num_annots
 assembly = args.assembly
 num_tracks = args.num_tracks
+include_metadata = args.include_metadata
 track_annot_percents = args.track_annot_percents
 density = args.density
 
@@ -71,7 +79,7 @@ track_index_pool = []
 if track_annot_percents is None:
     track_annot_percents = []
     for i in range(0, num_tracks):
-        track_annot_percents.append(math.floor(100/num_tracks))
+        track_annot_percents.append(math.ceil(100/num_tracks))
 
 for i, track_annot_percent in enumerate(track_annot_percents):
     track_index_pool += [i]*track_annot_percent
@@ -150,8 +158,16 @@ else:
         track_keys.append('track_' + str(i + 1))
 
 top_annots = {}
+if include_metadata:
+    top_annots['metadata'] = {
+        'species': 'human',
+        'assembly': assembly,
+        'numTracks': num_tracks,
+        'numAnnots': num_annots
+    }
 top_annots['keys'] = ['name', 'start', 'length'] + track_keys
 top_annots['annots'] = annots
+
 annots = json.dumps(top_annots)
 
 num_annots = str(num_annots)
