@@ -117,7 +117,10 @@
 
     var uls = '';
 
-    var keysToSkip = {'name': 1, 'start': 1, 'length': 1, 'trackIndex': 1};
+    var keysToSkip = {
+      'name': 1, 'start': 1, 'length': 1,
+      'trackIndex': 1, 'trackIndexOriginal': 1
+    };
 
     for (var i = 0; i < ideogram.rawAnnots.keys.length; i++) {
 

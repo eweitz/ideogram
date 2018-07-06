@@ -39,7 +39,7 @@ function setOriginalTrackIndexes(rawAnnots) {
     return rawAnnots;
   }
 
-  numAvailTracks = 0;
+  numAvailTracks = 1;
 
   annotsByChr = rawAnnots.annots;
   setAnnotsByChr = [];
@@ -50,8 +50,8 @@ function setOriginalTrackIndexes(rawAnnots) {
     for (j = 0; j < annots.annots.length; j++) {
       annot = annots.annots[j].slice();
       trackIndexOriginal = annot[3];
-      if (trackIndexOriginal > numAvailTracks) {
-        numAvailTracks = trackIndexOriginal;
+      if (trackIndexOriginal + 1 > numAvailTracks) {
+        numAvailTracks = trackIndexOriginal + 1;
       }
       annot.splice(4, 0, trackIndexOriginal);
       setAnnots.push(annot);
@@ -168,7 +168,6 @@ function processAnnotData(rawAnnots) {
         // Sparse server annotations, as in annotations-track-filters.html
         annot.trackIndex = ra[3];
         annot.trackIndexOriginal = ra[4];
-        console.log(annot.trackIndex + ' ' + annot.trackIndexOriginal)
         annot.color = '#' + colors[annot.trackIndexOriginal];
 
         // Catch annots that will be omitted from display
@@ -183,7 +182,8 @@ function processAnnotData(rawAnnots) {
         annots[m].annots.push(annot);
       } else if (
         keys.length > 3 &&
-        keys[3] in {trackIndex: 1, color: 1, shape: 1} === false
+        keys[3] in {trackIndex: 1, color: 1, shape: 1} === false &&
+        keys[4] === 'trackIndexOriginal'
       ) {
         // Dense server annotations
         for (n = 4; n < keys.length; n++) {

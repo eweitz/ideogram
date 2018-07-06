@@ -384,18 +384,19 @@ describe('Ideogram', function() {
     }
 
     config.annotationsPath = '../dist/data/annotations/1000_virtual_snvs.json';
+    config.annotationsNumTracks = 3;
 
     config.onDrawAnnots = callback;
     var ideogram = new Ideogram(config);
   });
 
 
-  it('should have 1000 annotations in overlaid annotations example', function(done) {
+  it('should have 48 annotations in overlaid annotations example', function(done) {
     // Tests use case from old ../examples/vanilla/annotations-overlaid.html
 
     function callback() {
       var numAnnots = document.getElementsByClassName('annot').length;
-      assert.equal(numAnnots, 1000);
+      assert.equal(numAnnots, 48);
       done();
     }
 
@@ -499,21 +500,22 @@ describe('Ideogram', function() {
       }
 
       var numAnnots = document.getElementsByClassName('annot').length;
-      assert.equal(numAnnots, 771);
+      assert.equal(numAnnots, 696);
 
       // Filters tracks to show only 4th and 5th track (of 20)
       ideogram.updateDisplayedTracks([4, 5]);
       numAnnots = document.getElementsByClassName('annot').length;
-      assert.equal(numAnnots, 513);
+      assert.equal(numAnnots, 620);
 
       done();
     }
 
     var config = {
       organism: 'human',
-      annotationsPath: '../dist/data/annotations/20_tracks_virtual_snvs.json',
+      annotationsPath: '../dist/data/annotations/9_tracks_virtual_snvs.json',
       dataDir: '/dist/data/bands/native/',
       annotationsNumTracks: 3,
+      annotationsDisplayedTracks: [1, 5, 9],
       onDrawAnnots: callback
     };
 
