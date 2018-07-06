@@ -615,8 +615,10 @@ function init() {
             window.clearTimeout(ideo.timeout);
           }
 
+          ideo.rawAnnots = ideo.setOriginalTrackIndexes(ideo.rawAnnots);
+
           if (config.annotationsDisplayedTracks) {
-            ideo.updateDisplayedTracks(config.annotationsDisplayedTracks);
+            ideo.annots = ideo.updateDisplayedTracks(config.annotationsDisplayedTracks);
           } else {
             ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
             ideo.drawProcessedAnnots(ideo.annots);

@@ -24,6 +24,49 @@ import {drawSynteny} from './synteny';
 
 var d3 = Object.assign({}, d3selection, d3fetch);
 
+function setOriginalTrackIndexes(rawAnnots) {
+  var keys, annotsByChr, annots, annot, i, j, trackIndexOriginal,
+    setAnnotsByChr, setAnnots, numAvailTracks;
+
+  keys = rawAnnots.keys;
+
+  // If this method is unnecessary, pass through
+  if (
+    keys.length < 4 ||
+    keys[3] !== 'trackIndex' ||
+    keys[4] === 'trackIndexOriginal'
+  ) {
+    return rawAnnots;
+  }
+
+  numAvailTracks = 0;
+
+  annotsByChr = rawAnnots.annots;
+  setAnnotsByChr = [];
+
+  for (i = 0; i < annotsByChr.length; i++) {
+    annots = annotsByChr[i];
+    setAnnots = [];
+    for (j = 0; j < annots.annots.length; j++) {
+      annot = annots.annots[j].slice();
+      trackIndexOriginal = annot[3];
+      if (trackIndexOriginal > numAvailTracks) {
+        numAvailTracks = trackIndexOriginal;
+      }
+      annot.splice(4, 0, trackIndexOriginal);
+      setAnnots.push(annot);
+    }
+    setAnnotsByChr.push({chr: annots.chr, annots: setAnnots});
+  }
+
+  keys.splice(4, 0, 'trackIndexOriginal');
+  rawAnnots = {keys: keys, annots: setAnnotsByChr};
+
+  this.numAvailTracks = numAvailTracks;
+
+  return rawAnnots;
+}
+
 /**
  * Proccesses genome annotation data.
  *
@@ -34,7 +77,7 @@ var d3 = Object.assign({}, d3selection, d3fetch);
 function processAnnotData(rawAnnots) {
   var keys, numTracks, i, j, k, m, n, annot, annots, thisAnnot, annotsByChr,
     chr, chrs, chrModel, ra, startPx, stopPx, px, annotTrack,
-    unorderedAnnots, colorMap, omittedAnnots, numOmittedTracks,
+    unorderedAnnots, colorMap, colors, omittedAnnots, numOmittedTracks, numAvailTracks,
     ideo = this,
     config = ideo.config;
 
@@ -57,6 +100,9 @@ function processAnnotData(rawAnnots) {
   rawAnnots = rawAnnots.annots;
 
   numTracks = config.numAnnotTracks;
+  numAvailTracks = ideo.numAvailTracks;
+
+  colors = colorMap[numAvailTracks - 1];
 
   if (numTracks > 10) {
     console.error(
@@ -118,10 +164,12 @@ function processAnnotData(rawAnnots) {
           annot.shape = annotTrack.shape;
         }
         annots[m].annots.push(annot);
-      } else if (keys[3] === 'trackIndex' && numTracks !== 1) {
+      } else if (keys[3] === 'trackIndex' && numAvailTracks !== 1) {
         // Sparse server annotations, as in annotations-track-filters.html
         annot.trackIndex = ra[3];
-        annot.color = '#' + colorMap[numTracks - 1][annot.trackIndex];
+        annot.trackIndexOriginal = ra[4];
+        console.log(annot.trackIndex + ' ' + annot.trackIndexOriginal)
+        annot.color = '#' + colors[annot.trackIndexOriginal];
 
         // Catch annots that will be omitted from display
         if (annot.trackIndex > numTracks - 1) {
@@ -138,10 +186,11 @@ function processAnnotData(rawAnnots) {
         keys[3] in {trackIndex: 1, color: 1, shape: 1} === false
       ) {
         // Dense server annotations
-        for (n = 3; n < keys.length; n++) {
+        for (n = 4; n < keys.length; n++) {
           thisAnnot = Object.assign({}, annot); // copy by value
-          thisAnnot.trackIndex = n - 3;
-          thisAnnot.color = '#' + colorMap[numTracks - 1][thisAnnot.trackIndex];
+          thisAnnot.trackIndex = n - 4;
+          thisAnnot.trackIndexOriginal = n - 3;
+          thisAnnot.color = '#' + colors[thisAnnot.trackIndexOriginal];
           annots[m].annots.push(thisAnnot);
         }
       } else {
@@ -216,7 +265,7 @@ function updateDisplayedTracks(trackIndexes) {
     annots = annotsByChr[i];
     displayedAnnots = [];
     for (j = 0; j < annots.annots.length; j++) {
-      annot = Object.assign({}, annots.annots[j]); // copy by value
+      annot = annots.annots[j].slice(); // copy array by value
       trackIndex = annot[3] + 1;
       if (trackIndexes.includes(trackIndex)) {
         annot[3] = trackIndexes.indexOf(trackIndex);
@@ -227,10 +276,12 @@ function updateDisplayedTracks(trackIndexes) {
   }
 
   rawAnnots = {keys: ideo.rawAnnots.keys, annots: displayedRawAnnotsByChr};
+
   displayedAnnots = ideo.processAnnotData(rawAnnots);
 
   d3.selectAll(ideo.selector + ' .annot').remove();
   ideo.drawAnnots(displayedAnnots);
+  return displayedAnnots;
 }
 
 /**
@@ -396,5 +447,5 @@ export {
   updateDisplayedTracks, initAnnotSettings, fetchAnnots, drawAnnots,
   getHistogramBars, drawHeatmaps, deserializeAnnotsForHeatmap, fillAnnots,
   drawProcessedAnnots, drawSynteny, startHideAnnotTooltipTimeout,
-  showAnnotTooltip, onWillShowAnnotTooltip
+  showAnnotTooltip, onWillShowAnnotTooltip, setOriginalTrackIndexes
 }
