@@ -12,16 +12,16 @@ Examples:
 
     # Create 90000 annots evenly distributed among 3 tracks
     python3 create_annots.py --num_annots 90000 --num_tracks 5
-
-TODO:
-- Add handling for non-human organisms
-- Enhance with more data than simply position, e.g.:
-    - Variant type (use Sequence Ontology ID)
-    - Molecular consequence (use SO ID)
-    - Clinical significance
-    - Transcript accession
-    - HGVS expression
 """
+
+# TODO:
+# - Add handling for non-human organisms
+#     - Enhance with more data than simply position, e.g.:
+#     - Variant type (use Sequence Ontology ID)
+#     - Molecular consequence (use SO ID)
+#     - Clinical significance
+#     - Transcript accession
+#     - HGVS expression
 
 
 import argparse
