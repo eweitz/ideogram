@@ -400,7 +400,7 @@ top_annots["keys"] = [
 ]
 top_annots["annots"] = clin_annots
 annots = json.dumps(top_annots)
-open(data_dir + "ancestrydna_tracks.json", "w").write(annots)
+open(data_dir + "ancestrydna-tracks.json", "w").write(annots)
 
 bed = "\n".join(bed)
 open(data_dir + "ancestrydna.bed", "w").write(bed)
@@ -435,11 +435,11 @@ output = "\n".join(output)
 open(output_file, "w").write(output)
 
 shutil.copy("../../examples/vanilla/ancestry.html", data_dir)
-shutil.copy("../../examples/vanilla/ancestry_tracks.html", data_dir)
+shutil.copy("../../examples/vanilla/ancestry-tracks.html", data_dir)
 
 print(
     "\nAnalysis of AncestryDNA data in:\n" +
     "\t../data/analysis/genome_analysis.txt\n" +
     "\thttp://localhost/ideogram/data/analysis/ancestry.html\n" +
-    "\thttp://localhost/ideogram/data/analysis/ancestry_tracks.html\n"
+    "\thttp://localhost/ideogram/data/analysis/ancestry-tracks.html\n"
 )

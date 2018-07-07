@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser(
     description=__doc__,
     formatter_class=argparse.RawDescriptionHelpFormatter)
 parser.add_argument('--output_dir',
-    help='Diretory to sent output data to',
+    help='Directory to send output data to',
     default='../../data/bands/native/')
 # parser.add_argument('--fresh_run',
 #     help='Do you want to use cached data, or fresh data fetched over ' +
