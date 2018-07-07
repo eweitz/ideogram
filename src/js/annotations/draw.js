@@ -67,6 +67,8 @@ function drawProcessedAnnots(annots) {
     chrAnnot, i, numAnnots, x1, x2, y1, y2, filledAnnots,
     ideo = this;
 
+  d3.selectAll('.annot').remove();
+
   chrWidth = this.config.chrWidth;
 
   layout = 'tracks';

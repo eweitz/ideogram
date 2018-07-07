@@ -615,8 +615,14 @@ function init() {
             window.clearTimeout(ideo.timeout);
           }
 
-          ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
-          ideo.drawProcessedAnnots(ideo.annots);
+          ideo.rawAnnots = ideo.setOriginalTrackIndexes(ideo.rawAnnots);
+
+          if (config.annotationsDisplayedTracks) {
+            ideo.annots = ideo.updateDisplayedTracks(config.annotationsDisplayedTracks);
+          } else {
+            ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
+            ideo.drawProcessedAnnots(ideo.annots);
+          }
 
           if (typeof crossfilter !== 'undefined' && ideo.initCrossFilter) {
             ideo.initCrossFilter();
