@@ -14,13 +14,16 @@ import {max} from 'd3-array';
 
 import version from './version';
 
-import {configure, initDrawChromosomes, onLoad, init} from './init';
+import {
+  configure, initDrawChromosomes, onLoad, setOverflowScroll, init
+} from './init';
 
 import {
-  onLoadAnnots, onDrawAnnots, processAnnotData, initAnnotSettings,
-  fetchAnnots, drawAnnots, getHistogramBars, drawHeatmaps,
-  deserializeAnnotsForHeatmap, fillAnnots, drawProcessedAnnots, drawSynteny,
-  startHideAnnotTooltipTimeout, showAnnotTooltip, onWillShowAnnotTooltip
+  onLoadAnnots, onDrawAnnots, processAnnotData, restoreDefaultTracks,
+  updateDisplayedTracks, initAnnotSettings, fetchAnnots, drawAnnots,
+  getHistogramBars, drawHeatmaps, deserializeAnnotsForHeatmap, fillAnnots,
+  drawProcessedAnnots, drawSynteny, startHideAnnotTooltipTimeout,
+  showAnnotTooltip, onWillShowAnnotTooltip, setOriginalTrackIndexes
 } from './annotations/annotations'
 
 import {
@@ -54,12 +57,15 @@ export default class Ideogram {
     this.configure = configure;
     this.initDrawChromosomes = initDrawChromosomes;
     this.onLoad = onLoad;
+    this.setOverflowScroll = setOverflowScroll;
     this.init = init;
 
     // Functions from annotations.js
     this.onLoadAnnots = onLoadAnnots;
     this.onDrawAnnots = onDrawAnnots;
     this.processAnnotData = processAnnotData;
+    this.restoreDefaultTracks = restoreDefaultTracks;
+    this.updateDisplayedTracks = updateDisplayedTracks;
     this.initAnnotSettings = initAnnotSettings;
     this.fetchAnnots = fetchAnnots;
     this.drawAnnots = drawAnnots;
@@ -72,6 +78,7 @@ export default class Ideogram {
     this.startHideAnnotTooltipTimeout = startHideAnnotTooltipTimeout;
     this.showAnnotTooltip = showAnnotTooltip;
     this.onWillShowAnnotTooltip = onWillShowAnnotTooltip;
+    this.setOriginalTrackIndexes = setOriginalTrackIndexes;
 
     // Variables and functions from services.js
     this.eutils = eutils;
