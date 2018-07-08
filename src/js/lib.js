@@ -448,16 +448,19 @@ function appendHomolog(chrModel, chrIndex, homologIndex, container) {
  */
 function drawChromosome(chrName) {
 
-  var chrModel, chrIndex, container, numChrsInSet, transform, homologIndex;
+  var chrModel, chrIndex, container, numChrsInSet, transform, homologIndex,
+    chrSetSelector;
 
   chrModel = this.chromosomes[this.config.taxid][chrName];
   chrIndex = chrModel.chrIndex;
 
   transform = this._layout.getChromosomeSetTranslate(chrIndex);
 
-  d3.selectAll('#' + chrModel.id + '-chromosome-set g').remove();
+  chrSetSelector = this.selector + ' #' + chrModel.id + '-chromosome-set';
 
-  container = d3.select('#' + chrModel.id + '-chromosome-set');
+  d3.selectAll(chrSetSelector + ' g').remove();
+
+  container = d3.select(chrSetSelector);
 
   if (container.nodes().length === 0) {
     // Append chromosome set container

@@ -108,7 +108,7 @@ export class Layout {
 
     ideo = this._ideo;
 
-    ideoBounds = document.querySelector('#_ideogram').getBoundingClientRect();
+    ideoBounds = document.querySelector(ideo.selector).getBoundingClientRect();
 
     // Find chromosomes which should be hidden
     otherChrs = d3.selectAll(ideo.selector + ' g.chromosome')
