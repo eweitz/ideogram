@@ -61,9 +61,15 @@ export class Layout {
 
   // Get chromosome labels
   getChromosomeLabels(chrElement) {
-    var util = new ChromosomeUtil(chrElement);
+    var util = new ChromosomeUtil(chrElement),
+      labels = [];
 
-    return [util.getSetLabel(), util.getLabel()].filter(function(d) {
+    if (this._ideo.config.ploidy > 1) {
+      labels.push(util.getSetLabel());
+    }
+    labels.push(util.getLabel());
+
+    return labels.filter(function(d) {
       return d.length > 0;
     });
   }
@@ -97,16 +103,22 @@ export class Layout {
 
     ideo.handleRotateOnClick();
 
-    ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
-    ideo.drawProcessedAnnots(ideo.annots)
+    if (ideo.rawAnnots) {
+      ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
+      ideo.drawProcessedAnnots(ideo.annots);
+    }
 
   }
 
   rotate(chrSetIndex, chrIndex, chrElement) {
 
-    var ideo, otherChrs, ideoBounds;
+    var ideo, otherChrs, ideoBounds, labelSelectors;
 
     ideo = this._ideo;
+
+    labelSelectors = (
+      ideo.selector + ' .chrSetLabel, ' + ideo.selector + ' .chrLabel'
+    );
 
     ideoBounds = document.querySelector(ideo.selector).getBoundingClientRect();
 
@@ -118,16 +130,15 @@ export class Layout {
 
       this._isRotated = false;
 
-        ideo.config.chrHeight = ideo.config.chrHeightOriginal;
-        ideo.config.chrWidth = ideo.config.chrWidthOriginal;
-        ideo.config.annotationHeight = ideo.config.annotationHeightOriginal;
+      ideo.config.chrHeight = ideo.config.chrHeightOriginal;
+      ideo.config.chrWidth = ideo.config.chrWidthOriginal;
+      ideo.config.annotationHeight = ideo.config.annotationHeightOriginal;
 
       // Rotate chromosome back
       this.rotateBack(chrSetIndex, chrIndex, chrElement, function() {
         // Show all other chromosomes and chromosome labels
         otherChrs.style('display', null);
-        d3.selectAll(ideo.selector + ' .chrSetLabel, .chrLabel')
-          .style('display', null);
+        d3.selectAll(labelSelectors).style('display', null);
 
         ideo._layout.didRotate(chrIndex, chrElement);
       });
@@ -138,8 +149,7 @@ export class Layout {
 
       // Hide all other chromosomes and chromosome labels
       otherChrs.style('display', 'none');
-      d3.selectAll(ideo.selector + ' .chrSetLabel, .chrLabel')
-        .style('display', 'none');
+      d3.selectAll(labelSelectors).style('display', 'none');
 
       // Rotate chromosome
       this.rotateForward(chrSetIndex, chrIndex, chrElement, function() {
@@ -747,6 +757,7 @@ export class VerticalLayout extends Layout {
   }
 
   rotateForward(setIndex, chrIndex, chrElement, callback) {
+
     var self = this;
 
     var xOffset = 20;

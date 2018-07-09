@@ -44,7 +44,7 @@ export class Chromosome {
    */
   render(container, chrSetIndex, chrIndex) {
 
-    var self , isPArmRendered, isQArmRendered, clipPath, opacity, fill,
+    var self, isPArmRendered, isQArmRendered, clipPath, opacity, fill,
       isFullyBanded;
 
     self = this;

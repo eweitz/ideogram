@@ -236,11 +236,11 @@ function drawChromosomeLabels() {
   var chrSetLabelXPosition = ideo._layout.getChromosomeSetLabelXPosition();
   var chrSetLabelTranslate = ideo._layout.getChromosomeSetLabelTranslate();
 
-  // Append chromosomes set's labels
+  // Append chromosome set's labels
   d3.selectAll(ideo.selector + ' .chromosome-set-container')
-    .append('text')
+    .insert('text', ':first-child')
     .data(ideo.chromosomesArray)
-    .attr('class', 'chromosome-set-label ' + chromosomeLabelClass)
+    .attr('class', chromosomeLabelClass)
     .attr('transform', chrSetLabelTranslate)
     .attr('x', chrSetLabelXPosition)
     .attr('y', function(d, i) {
@@ -280,7 +280,8 @@ function drawChromosomeLabels() {
         .attr('class', function(a, i) {
           var fullLabels = ideo.config.fullChromosomeLabels;
           return i === 1 && fullLabels ? 'italic' : null;
-        }).text(String);
+        })
+        .text(String);
     });
 
   var setLabelTranslate = ideo._layout.getChromosomeSetLabelTranslate();
@@ -512,7 +513,7 @@ function rotateAndToggleDisplay(chrElement) {
   chrSetIndex =
     Number(d3.select(chrElement.parentNode).attr('data-set-number'));
 
-  return this._layout.rotate(chrSetIndex, chrIndex, chrElement);
+  this._layout.rotate(chrSetIndex, chrIndex, chrElement);
 }
 
 /**
