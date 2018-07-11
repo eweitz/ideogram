@@ -312,13 +312,11 @@ export class HorizontalLayout extends Layout {
 
   rotateForward(setIndex, chrIndex, chrElement, callback) {
 
-    var xOffset, scaleY, yOffset, transform, labels;
+    var xOffset, yOffset, transform, labels;
 
     xOffset = 30;
 
-    scaleY = this._getYScale();
-
-    yOffset = (chrIndex + 1) * ((this._config.chrWidth * 2) * scaleY);
+    yOffset = xOffset + 7.5;
 
     transform = (
       'rotate(90) ' +
