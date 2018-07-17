@@ -74,6 +74,31 @@ export class Layout {
     });
   }
 
+  getChromosomeBandLabelTranslate(band) {
+
+    var x, y, translate,
+      ideo = this._ideo,
+      tickSize = this._tickSize,
+      chrMargin = ideo.config.chrMargin,
+      orientation = ideo.config.orientation;
+
+    if (orientation === 'vertical') {
+      x = tickSize;
+      y = ideo.round(2 + band.px.start + band.px.width/2);
+      translate = "rotate(-90)translate(" + x + "," + y + ")";
+    } else if (orientation === 'horizontal') {
+      x = ideo.round(-tickSize + band.px.start + band.px.width / 2);
+      y = -10;
+      translate = 'translate(' + x + ',' + y + ')';
+    }
+
+    return {
+      x: x,
+      y: y,
+      translate: translate
+    };
+  }
+
   didRotate(chrIndex, chrElement) {
 
     var ideo, taxid, chrName, bands, chrModel, oldWidth,
@@ -108,6 +133,10 @@ export class Layout {
       ideo.drawProcessedAnnots(ideo.annots);
     }
 
+    if (ideo.config.showBandLabels === true) {
+      ideo.drawBandLabels(ideo.chromosomes);
+    }
+
   }
 
   rotate(chrSetIndex, chrIndex, chrElement) {
@@ -139,7 +168,6 @@ export class Layout {
         // Show all other chromosomes and chromosome labels
         otherChrs.style('display', null);
         d3.selectAll(labelSelectors).style('display', null);
-
         ideo._layout.didRotate(chrIndex, chrElement);
       });
 
@@ -349,6 +377,8 @@ export class HorizontalLayout extends Layout {
       .text(String)
       .transition()
       .style('opacity', 1);
+
+    this._ideo.config.orientation = 'vertical';
   }
 
   rotateBack(setIndex, chrIndex, chrElement, callback) {
@@ -362,6 +392,8 @@ export class HorizontalLayout extends Layout {
     d3.selectAll(this._ideo.selector + ' g.tmp')
       .style('opacity', 0)
       .remove();
+
+    this._ideo.config.orientation = 'vertical';
   }
 
   getHeight(taxid) {
@@ -396,18 +428,6 @@ export class HorizontalLayout extends Layout {
 
   getChromosomeBandTickY2() {
     return 10;
-  }
-
-  getChromosomeBandLabelTranslate(band) {
-    var x =
-      this._ideo.round(-this._tickSize + band.px.start + band.px.width / 2);
-    var y = -10;
-
-    return {
-      x: x,
-      y: y,
-      translate: 'translate(' + x + ',' + y + ')'
-    };
   }
 
   getChromosomeSetLabelTranslate() {
