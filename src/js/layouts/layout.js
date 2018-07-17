@@ -79,7 +79,6 @@ export class Layout {
     var x, y, translate,
       ideo = this._ideo,
       tickSize = this._tickSize,
-      chrMargin = ideo.config.chrMargin,
       orientation = ideo.config.orientation;
 
     if (orientation === 'vertical') {
@@ -393,7 +392,7 @@ export class HorizontalLayout extends Layout {
       .style('opacity', 0)
       .remove();
 
-    this._ideo.config.orientation = 'vertical';
+    this._ideo.config.orientation = 'horizontal';
   }
 
   getHeight(taxid) {

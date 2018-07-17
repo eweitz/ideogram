@@ -109,7 +109,6 @@ function getBands(content, taxid, chromosomes) {
     lines[chr].push(line);
   }
 
-
   return lines;
 }
 
@@ -119,19 +118,16 @@ function getBands(content, taxid, chromosomes) {
 function setBandsToShow(chrs, textOffsets) {
   var textsLength, overlappingLabelXRight, index, prevHiddenBoxIndex, xLeft,
     prevLabelXRight, prevTextBoxLeft, prevTextBoxWidth, textPadding, i,
-    indexesToShow, chrModel,
+    indexesToShow, chrModel, selectorsToShow, ithLength, j,
     ideo = this;
 
   for (i = 0; i < chrs.length; i++) {
 
     indexesToShow = [];
-
     chrModel = chrs[i];
-
     textsLength = textOffsets[chrModel.id].length
 
     overlappingLabelXRight = 0;
-
     textPadding = 5;
 
     for (index = 0; index < textsLength; index++) {
@@ -172,16 +168,15 @@ function setBandsToShow(chrs, textOffsets) {
       }
     }
 
-    var selectorsToShow = [],
-      ithLength = indexesToShow.length,
-      j;
+    selectorsToShow = [];
+    ithLength = indexesToShow.length;
 
     for (j = 0; j < ithLength; j++) {
       index = indexesToShow[j];
       selectorsToShow.push('#' + chrModel.id + ' .bsbsl-' + index);
     }
 
-    this.bandsToShow = this.bandsToShow.concat(selectorsToShow);
+    ideo.bandsToShow = ideo.bandsToShow.concat(selectorsToShow);
   }
 }
 
