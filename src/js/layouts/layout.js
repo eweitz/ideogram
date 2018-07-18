@@ -807,6 +807,8 @@ export class VerticalLayout extends Layout {
       .text(String)
       .transition()
       .style('opacity', 1);
+
+    this._ideo.config.orientation = 'horizontal';
   }
 
   rotateBack(setIndex, chrIndex, chrElement, callback) {
@@ -822,6 +824,8 @@ export class VerticalLayout extends Layout {
     d3.selectAll(this._ideo.selector + ' g.tmp')
       .style('opacity', 0)
       .remove();
+
+    this._ideo.config.orientation = 'vertical';
   }
 
   getHeight() {
