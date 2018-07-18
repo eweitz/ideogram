@@ -22,8 +22,8 @@ export class Layout {
     if ('chrSetMargin' in config) {
       this.chrSetMargin = config.chrSetMargin;
     } else {
-      var k = this._config.chrMargin;
-      this.chrSetMargin = (this._config.ploidy > 1 ? k : 0);
+      var chrMargin = this._config.chrMargin;
+      this.chrSetMargin = (this._config.ploidy > 1 ? chrMargin : 0);
     }
 
     // Chromosome band's size.
@@ -832,12 +832,20 @@ export class VerticalLayout extends Layout {
     return '97%';
   }
 
-  getChromosomeBandLabelTranslate() {
+  getChromosomeBandTickY1() {
+    return 2;
+  }
 
+  getChromosomeBandTickY2() {
+    return 10;
   }
 
   getChromosomeSetLabelTranslate() {
     return 'rotate(-90)';
+  }
+
+  getChromosomeBandLabelAnchor() {
+    return null;
   }
 
   getChromosomeScale(chrElement) {

@@ -267,9 +267,9 @@ function drawBandLabels(chromosomes) {
         var x, y;
 
         x = ideo.round(d.px.start + d.px.width / 2);
+        y = -10;
 
         textOffsets[chrModel.id].push(x + 13);
-        y = -10;
 
         return 'translate(' + x + ',' + y + ')';
       })
