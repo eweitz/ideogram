@@ -558,18 +558,7 @@ function init() {
       }
 
       if (ideo.config.showBandLabels === true) {
-        var bandsToShow = ideo.bandsToShow.join(',');
-
-        // d3.selectAll resolves to querySelectorAll (QSA).
-        // QSA takes a surprisingly long time to complete,
-        // and scales with the number of selectors.
-        // Most bands are hidden, so we can optimize by
-        // Hiding all bands, then QSA'ing and displaying the
-        // relatively few bands that are shown.
-        var t0C = new Date().getTime();
-        d3.selectAll(ideo.selector + ' .bandLabel, .bandLabelStalk')
-          .style('display', 'none');
-        d3.selectAll(bandsToShow).style('display', '');
+        ideo.hideUnshownBandLabels();
         var t1C = new Date().getTime();
         if (ideo.config.debug) {
           console.log('Time in showing bands: ' + (t1C - t0C) + ' ms');

@@ -32,7 +32,7 @@ import {
 
 import {
   getBands, drawBandLabels, getBandColorGradients, processBandData,
-  setBandsToShow
+  setBandsToShow, hideUnshownBandLabels
 } from './bands';
 
 import {onBrushMove, createBrush} from './brush';
@@ -91,6 +91,7 @@ export default class Ideogram {
     this.getBandColorGradients = getBandColorGradients;
     this.processBandData = processBandData;
     this.setBandsToShow = setBandsToShow;
+    this.hideUnshownBandLabels = hideUnshownBandLabels;
 
     // Functions from brush.js
     this.onBrushMove = onBrushMove;

@@ -134,6 +134,7 @@ export class Layout {
 
     if (ideo.config.showBandLabels === true) {
       ideo.drawBandLabels(ideo.chromosomes);
+      ideo.hideUnshownBandLabels();
     }
 
   }

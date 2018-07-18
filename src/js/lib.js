@@ -440,7 +440,6 @@ function appendHomolog(chrModel, chrIndex, homologIndex, container) {
     .attr('class', function (d) {
       return d.class;
     });
-
 }
 
 
