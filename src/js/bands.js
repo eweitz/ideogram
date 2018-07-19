@@ -121,6 +121,8 @@ function setBandsToShow(chrs, textOffsets) {
     indexesToShow, chrModel, selectorsToShow, ithLength, j,
     ideo = this;
 
+  ideo.bandsToShow = [];
+
   for (i = 0; i < chrs.length; i++) {
 
     indexesToShow = [];
