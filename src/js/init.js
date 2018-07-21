@@ -284,7 +284,7 @@ function initDrawChromosomes(bandsArray) {
         continue;
       }
 
-      ideo.drawChromosome(chrModel.name);
+      ideo.drawChromosome(chrModel);
 
     }
 

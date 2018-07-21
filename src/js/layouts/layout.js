@@ -123,7 +123,7 @@ export class Layout {
     chrModel.oldWidth = oldWidth;
 
     ideo.chromosomes[taxid][chrName] = chrModel;
-    ideo.drawChromosome(chrName);
+    ideo.drawChromosome(chrModel);
 
     ideo.handleRotateOnClick();
 

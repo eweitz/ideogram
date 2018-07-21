@@ -446,12 +446,11 @@ function appendHomolog(chrModel, chrIndex, homologIndex, container) {
 /**
  * Renders all the bands and outlining boundaries of a chromosome.
  */
-function drawChromosome(chrName) {
+function drawChromosome(chrModel) {
 
-  var chrModel, chrIndex, container, numChrsInSet, transform, homologIndex,
+  var chrIndex, container, numChrsInSet, transform, homologIndex,
     chrSetSelector;
 
-  chrModel = this.chromosomes[this.config.taxid][chrName];
   chrIndex = chrModel.chrIndex;
 
   transform = this._layout.getChromosomeSetTranslate(chrIndex);
