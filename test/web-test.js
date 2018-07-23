@@ -625,7 +625,7 @@ describe('Ideogram', function() {
           // console.log("pterEnd - firstAnnotEnd: " + (pterEnd - firstAnnotEnd));
           // console.log("qterEnd - lastAnnotEnd: " + (qterEnd - lastAnnotEnd));
           assert.isBelow(pterEnd - firstAnnotEnd, -1);
-          assert.isAbove(qterEnd - lastAnnotEnd, -18);
+          assert.isAbove(qterEnd - lastAnnotEnd, -19);
 
       done();
     }
@@ -697,8 +697,8 @@ describe('Ideogram', function() {
         var lastBpAnnotRight = getRight('#chr17-9606 > .annot:nth-child(317)');
         var lastBpSliderRight = getRight('#_ideogram > g:nth-child(7) > rect.selection');
         var lastBpRight = getRight('#chr17-9606');
-        assert.isBelow(Math.abs(lastBpAnnotRight - lastBpSliderRight), 2);
-        assert.isBelow(Math.abs(lastBpSliderRight - lastBpRight), 2);
+        assert.isBelow(Math.abs(lastBpAnnotRight - lastBpSliderRight), 3);
+        assert.isBelow(Math.abs(lastBpSliderRight - lastBpRight), 3);
 
         done();
       },
