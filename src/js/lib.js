@@ -175,7 +175,7 @@ function getChromosomePixels(chr) {
  */
 function getChromosomeModel(bands, chrName, taxid, chrIndex) {
   var chr = {},
-    cs, hasBands, firstBandArm, chrBorderSelector, firstChrBorder;
+    cs, hasBands, firstBandArm;
 
   cs = this.coordinateSystem;
   hasBands = (typeof bands !== 'undefined');
@@ -200,12 +200,10 @@ function getChromosomeModel(bands, chrName, taxid, chrIndex) {
   chr.bands = bands;
   chr = this.getChromosomePixels(chr);
 
-  firstBandArm = bands[0].name[0];
-
   chr.centromerePosition = '';
 
   if (
-    hasBands && firstBandArm === 'p' && bands[1].name[0] === 'q' &&
+    hasBands && bands[0].name[0] === 'p' && bands[1].name[0] === 'q' &&
     bands[0].bp.stop - bands[0].bp.start < 2E6
   ) {
     // As with almost all mouse chromosome, chimpanzee chr22
