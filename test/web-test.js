@@ -887,7 +887,7 @@ describe('Ideogram', function() {
   //         chrLabel, chrLabelMiddle;
   //
   //     band = d3.selectAll(".chromosome .band").nodes()[0].getBoundingClientRect();
-  //     chrLabel = d3.selectAll(".chromosome-set-label").nodes()[0].getBoundingClientRect();
+  //     chrLabel = d3.selectAll(".chrSetLabel").nodes()[0].getBoundingClientRect();
   //
   //     bandMiddle = band.top + band.height/2;
   //     chrLabelMiddle = chrLabel.top + chrLabel.height/2;
@@ -924,7 +924,7 @@ describe('Ideogram', function() {
         chrLabel, chrLabelMiddle;
 
       band = d3.selectAll('.chromosome .band').nodes()[0].getBoundingClientRect();
-      chrLabel = d3.selectAll('.chromosome-set-label').nodes()[0].getBoundingClientRect();
+      chrLabel = d3.selectAll('.chrLabel').nodes()[0].getBoundingClientRect();
 
       bandMiddle = band.left + band.width / 2;
       chrLabelMiddle = chrLabel.left + chrLabel.width / 2;
@@ -1036,7 +1036,7 @@ describe('Ideogram', function() {
     // Tests use case from ../examples/vanilla/ploidy-basic.html
 
     function callback() {
-      var selector = '#chrX-9606-chromosome-set .chromosome-set-label tspan';
+      var selector = '#chrX-9606-chromosome-set .chrSetLabel tspan';
       var chrSetLabel = getSvgText(selector);
       assert.equal(chrSetLabel, 'XX');
       done();
@@ -1058,7 +1058,7 @@ describe('Ideogram', function() {
     // Tests use case from ../examples/vanilla/ploidy-basic.html
 
     function callback() {
-      var selector = '#chrX-9606-chromosome-set .chromosome-set-label tspan';
+      var selector = '#chrX-9606-chromosome-set .chrSetLabel tspan';
       var chrSetLabel = getSvgText(selector);
       assert.equal(chrSetLabel, 'XY');
       done();
