@@ -481,6 +481,46 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
+  it('should have properly scaled annotations after rotating', function(done) {
+    // Tests use case from ../examples/vanilla/annotations-tracks.html
+
+    function callback() {
+      var annot, annotBox;
+
+      annot = document.getElementsByClassName('annot')[3];
+      annotBox = annot.getBoundingClientRect();
+
+      assert.equal(annotBox.x, 21);
+      assert.equal(annotBox.y, 506);
+      assert.equal(annotBox.height, 8);
+      assert.equal(annotBox.right, 29);
+      assert.equal(annotBox.bottom, 514);
+      assert.equal(annotBox.left, 21);
+
+      done();
+    }
+
+    var annotationTracks = [
+      {id: 'pathogenicTrack', displayName: 'Pathogenic', color: '#F00'},
+      {id: 'uncertainSignificanceTrack', displayName: 'Uncertain significance', color: '#CCC'},
+      {id: 'benignTrack', displayName: 'Benign', color: '#8D4'}
+    ];
+
+    var config = {
+      organism: 'human',
+      chrWidth: 8,
+      showChromosomeLabels: true,
+      annotationsPath: '../dist/data/annotations/1000_virtual_snvs.json',
+      annotationTracks: annotationTracks,
+      annotHeight: 3.5,
+      dataDir: '/dist/data/bands/native/',
+      onDrawAnnots: callback
+    };
+
+    ideogram = new Ideogram(config);
+  });
+
+
   it('should have filterable tracks in track-filters example', function(done) {
     // Tests use case from ../examples/vanilla/annotations-track-filters.html
 
