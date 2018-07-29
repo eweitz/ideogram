@@ -759,9 +759,6 @@ export class SmallLayout extends Layout {
 
 }
 
-
-
-
 export class VerticalLayout extends Layout {
 
   constructor(config, ideo) {

@@ -6,23 +6,26 @@
  */
 
 import * as d3selection from 'd3-selection';
-import * as d3request from 'd3-request';
+import * as d3fetch from 'd3-fetch';
 import * as d3brush from 'd3-brush';
 import * as d3dispatch from 'd3-dispatch';
 import {scaleLinear} from 'd3-scale';
 import {max} from 'd3-array';
-import * as d3promise from 'd3.promise';
 
 import version from './version';
 
-import {configure, initDrawChromosomes, handleRotateOnClick, onLoad, init}
-from './init';
+import {
+  configure, initDrawChromosomes, handleRotateOnClick, onLoad,
+  setOverflowScroll, init
+} from './init';
 
 import {
-  onDrawAnnots, processAnnotData, initAnnotSettings, fetchAnnots, drawAnnots,
-  getHistogramBars, fillAnnots, drawProcessedAnnots, drawSynteny,
-  startHideAnnotTooltipTimeout, showAnnotTooltip, onWillShowAnnotTooltip
-} from './annotations';
+  onLoadAnnots, onDrawAnnots, processAnnotData, restoreDefaultTracks,
+  updateDisplayedTracks, initAnnotSettings, fetchAnnots, drawAnnots,
+  getHistogramBars, drawHeatmaps, deserializeAnnotsForHeatmap, fillAnnots,
+  drawProcessedAnnots, drawSynteny, startHideAnnotTooltipTimeout,
+  showAnnotTooltip, onWillShowAnnotTooltip, setOriginalTrackIndexes
+} from './annotations/annotations'
 
 import {
   eutils, esearch, esummary, elink,
@@ -46,8 +49,7 @@ import {
   Object
 } from './lib';
 
-var d3 = Object.assign({}, d3selection, d3request, d3brush, d3dispatch);
-d3.promise = d3promise;
+var d3 = Object.assign({}, d3selection, d3fetch, d3brush, d3dispatch);
 d3.scaleLinear = scaleLinear;
 d3.max = max;
 
@@ -59,21 +61,28 @@ export default class Ideogram {
     this.initDrawChromosomes = initDrawChromosomes;
     this.onLoad = onLoad;
     this.handleRotateOnClick = handleRotateOnClick;
+    this.setOverflowScroll = setOverflowScroll;
     this.init = init;
 
     // Functions from annotations.js
+    this.onLoadAnnots = onLoadAnnots;
     this.onDrawAnnots = onDrawAnnots;
     this.processAnnotData = processAnnotData;
+    this.restoreDefaultTracks = restoreDefaultTracks;
+    this.updateDisplayedTracks = updateDisplayedTracks;
     this.initAnnotSettings = initAnnotSettings;
     this.fetchAnnots = fetchAnnots;
     this.drawAnnots = drawAnnots;
     this.getHistogramBars = getHistogramBars;
+    this.drawHeatmaps = drawHeatmaps;
+    this.deserializeAnnotsForHeatmap = deserializeAnnotsForHeatmap;
     this.fillAnnots = fillAnnots;
     this.drawProcessedAnnots = drawProcessedAnnots;
     this.drawSynteny = drawSynteny;
     this.startHideAnnotTooltipTimeout = startHideAnnotTooltipTimeout;
     this.showAnnotTooltip = showAnnotTooltip;
     this.onWillShowAnnotTooltip = onWillShowAnnotTooltip;
+    this.setOriginalTrackIndexes = setOriginalTrackIndexes;
 
     // Variables and functions from services.js
     this.eutils = eutils;

@@ -1,12 +1,9 @@
-import * as d3request from 'd3-request';
+import * as d3fetch from 'd3-fetch';
 import * as d3dispatch from 'd3-dispatch';
-import * as d3promise from 'd3.promise';
-import {Promise} from 'es6-promise';
 
 import {Object} from './lib.js';
 
-var d3 = Object.assign({}, d3request, d3dispatch);
-d3.promise = d3promise;
+var d3 = Object.assign({}, d3fetch, d3dispatch);
 
 // The E-Utilies In Depth: Parameters, Syntax and More:
 // https://www.ncbi.nlm.nih.gov/books/NBK25499/
@@ -26,7 +23,7 @@ function getTaxidFromEutils(callback) {
 
   taxonomySearch = ideo.esearch + '&db=taxonomy&term=' + organism;
 
-  d3.json(taxonomySearch, function(data) {
+  d3.json(taxonomySearch).then(function(data) {
     taxid = data.esearchresult.idlist[0];
     return callback(taxid);
   });
@@ -46,7 +43,7 @@ function getOrganismFromEutils(callback) {
 
   taxonomySearch = ideo.esummary + '&db=taxonomy&id=' + taxid;
 
-  d3.json(taxonomySearch, function(data) {
+  d3.json(taxonomySearch).then(function(data) {
     organism = data.result[String(taxid)].commonname;
     ideo.config.organism = organism;
     return callback(organism);
@@ -136,16 +133,19 @@ function getTaxids(callback) {
         }
         var chromosomesUrl = dataDir + urlOrg + '.js';
 
-        var promise = new Promise(function(resolve, reject) {
-          d3.request(chromosomesUrl).get(function(error, data) {
-            if (error) {
-              reject(Error(error));
+        var promise2 = new Promise(function(resolve, reject) {
+          fetch(chromosomesUrl).then(function(response) {
+            if (response.ok === false) {
+              reject(Error('Fetch failed for ' + chromosomesUrl));
+            } else {
+              return response.text().then(function(text) {
+                resolve(text);
+              });
             }
-            resolve(data);
           });
         });
 
-        return promise
+        return promise2
           .then(
             function(data) {
               // Check if chromosome data exists locally.
@@ -157,7 +157,7 @@ function getTaxids(callback) {
                 seenChrs = {},
                 chr;
 
-              eval(data.response);
+              eval(data);
 
               asmAndChrArray.push('');
 
@@ -254,7 +254,7 @@ function getAssemblyAndChromosomesFromEutils(callback) {
     'AND%20(%22chromosome%20level%22[filter]%20' +
     'OR%20%22complete%20genome%22[filter])';
 
-  var promise = d3.promise.json(asmSearch);
+  var promise = d3.json(asmSearch);
 
   promise
     .then(function(data) {
@@ -262,7 +262,7 @@ function getAssemblyAndChromosomesFromEutils(callback) {
       asmUid = data.esearchresult.idlist[0];
       asmSummary = ideo.esummary + '&db=assembly&id=' + asmUid;
 
-      return d3.promise.json(asmSummary);
+      return d3.json(asmSummary);
     })
     .then(function(data) {
       // GenBank UID for this assembly
@@ -279,13 +279,13 @@ function getAssemblyAndChromosomesFromEutils(callback) {
       var qs = '&db=nuccore&linkname=gencoll_nuccore_chr&from_uid=' + gbUid;
       nuccoreLink = ideo.elink + qs;
 
-      return d3.promise.json(nuccoreLink);
+      return d3.json(nuccoreLink);
     })
     .then(function(data) {
       links = data.linksets[0].linksetdbs[0].links.join(',');
       ntSummary = ideo.esummary + '&db=nucleotide&id=' + links;
 
-      return d3.promise.json(ntSummary);
+      return d3.json(ntSummary);
     })
     .then(function(data) {
       results = data.result;

@@ -61,12 +61,12 @@
     weights = [];
 
     url = esearch + '&term=Homo-sapiens[Organism] AND ' + geneClause;
-    d3.json(url, function(error, data) {
+    d3.json(url).then(function(data) {
       geneIDs = data.esearchresult.idlist;
 
       // Batch request genomic coordinates for all ACMG genes
       url = esummary + '&id=' + geneIDs.join(',');
-      d3.json(url, function(error, data) {
+      d3.json(url).then(function(data) {
         var result, gene, chr, loc, start, stop, weight;
         for (i = 0; i < geneIDs.length; i++) {
           geneID = geneIDs[i];
@@ -113,14 +113,14 @@
 
         // This block highlights the 10 most important ACMG genes.
         for (i = 0; i < annots.length; i++) {
-          color = (i < 10) ? '#F00' : '#FAA';
+          color = (i < 10) ? '#825' : '#BAB';
           annots[i].shape = 'triangle';
           annots[i].color = color;
 
           // BRCA1 is the most widely-recognized gene name.  Make it stand out.
           if (annots[i].name === 'BRCA1') {
-            annots[i].shape = 'circle';
-            annots[i].color = '#0A0';
+            annots[i].shape = 'triangle';
+            annots[i].color = '#F00';
           }
         }
 

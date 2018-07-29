@@ -2,15 +2,14 @@
  * @fileoveriew Methods for initialization
  */
 
-import * as d3request from 'd3-request';
+import * as d3fetch from 'd3-fetch';
 import * as d3selection from 'd3-selection';
-import {Promise} from 'es6-promise';
 
 import {Ploidy} from './ploidy';
 import {Layout} from './layouts/layout';
 import {Object} from './lib.js';
 
-var d3 = Object.assign({}, d3request, d3selection);
+var d3 = Object.assign({}, d3fetch, d3selection);
 
 /**
  * High-level helper method for Ideogram constructor.
@@ -164,6 +163,10 @@ function configure(config) {
 
   if (config.onLoad) {
     this.onLoadCallback = config.onLoad;
+  }
+
+  if (config.onLoadAnnots) {
+    this.onLoadAnnotsCallback = config.onLoadAnnots;
   }
 
   if (config.onDrawAnnots) {
@@ -330,6 +333,46 @@ function onLoad() {
   call(this.onLoadCallback);
 }
 
+function setOverflowScroll() {
+
+  var ideo, config, ideoWidth, ideoInnerWrap, ideoOuterWrap, ideoSvg,
+    ploidy, ploidyPad;
+
+  ideo = this;
+  config = ideo.config;
+
+  ideoSvg = d3.select(config.container + ' svg#_ideogram');
+  ideoInnerWrap = d3.select(config.container + ' #_ideogramInnerWrap');
+  ideoOuterWrap = d3.select(config.container + ' #_ideogramOuterWrap');
+
+  ploidy = config.ploidy;
+  ploidyPad = (ploidy - 1);
+
+  if (
+    config.orientation === 'vertical' &&
+    config.perspective !== 'comparative'
+  ) {
+    ideoWidth = (ideo.numChromosomes + 2) * (config.chrWidth + config.chrMargin + ploidyPad);
+  } else {
+    return;
+    // chrOffset = ideoSvg.select('.chromosome').nodes()[0].getBoundingClientRect();
+    // ideoWidth = config.chrHeight + chrOffset.x + 1;
+  }
+
+  ideoWidth = Math.round(ideoWidth * ploidy / config.rows);
+
+  // Ensures absolutely-positioned elements, e.g. heatmap overlaps, display
+  // properly if ideogram container also has position: absolute
+  ideoOuterWrap
+    .style('height', ideo._layout.getHeight() + 'px')
+
+  ideoInnerWrap
+    .style('max-width', ideoWidth + 'px')
+    .style('overflow-x', 'scroll')
+    .style('position', 'absolute');
+  ideoSvg.style('min-width', (ideoWidth - 5) + 'px');
+}
+
 /**
  * Initializes an ideogram.
  * Sets some high-level properties based on instance configuration,
@@ -412,23 +455,39 @@ function init() {
         /GCA_/.test(ideo.config.assembly) === false &&
         typeof chrBands === 'undefined' && taxid in bandDataFileNames
       ) {
-        d3.request(ideo.config.dataDir + bandDataFileNames[taxid])
-          .on('beforesend', function(data) {
-            // Ensures correct taxid is processed in response callback; using
-            // simply 'taxid' variable gives the last *requested* taxid, which
-            // fails when dealing with multiple taxa.
-            data.taxid = taxid;
-          })
-          .get(function(error, data) {
-            eval(data.response);
 
-            ideo.bandData[data.taxid] = chrBands;
-            numBandDataResponses += 1;
+        var bandDataUrl = ideo.config.dataDir + bandDataFileNames[taxid];
 
-            if (numBandDataResponses === taxids.length) {
-              bandsArray = ideo.processBandData();
-              writeContainer();
-            }
+        fetch(bandDataUrl)
+          .then(function(response) {
+            return response.text().then(function(text) {
+
+              // Fetched data is a JavaScript variable, so assign it
+              eval(text);
+
+              // Ensures correct taxid is processed
+              // in response callback; using simply upstream 'taxid' variable
+              // gives the last *requested* taxid, which fails when dealing
+              // with multiple taxa.
+              var fetchedTaxid, tid, bandDataFileName;
+              for (tid in bandDataFileNames) {
+                bandDataFileName = bandDataFileNames[tid];
+                if (
+                  response.url.includes(bandDataFileName) &&
+                  bandDataFileName !== ''
+                ) {
+                  fetchedTaxid = tid;
+                }
+              }
+
+              ideo.bandData[fetchedTaxid] = chrBands;
+              numBandDataResponses += 1;
+
+              if (numBandDataResponses === taxids.length) {
+                bandsArray = ideo.processBandData();
+                writeContainer();
+              }
+            });
           });
       } else {
         if (typeof chrBands !== 'undefined') {
@@ -493,12 +552,17 @@ function init() {
 
     d3.select(ideo.config.container)
       .append('div')
+      .attr('id', '_ideogramOuterWrap')
+      .append('div')
+      .attr('id', '_ideogramInnerWrap')
       .append('svg')
       .attr('id', '_ideogram')
       .attr('class', svgClass)
       .attr('width', svgWidth)
       .attr('height', svgHeight)
       .html(gradients);
+
+    ideo.isOnlyIdeogram = document.querySelectorAll('#_ideogram').length === 1;
 
     // Tooltip div setup w/ default styling.
     d3.select(ideo.config.container).append("div")
@@ -526,20 +590,28 @@ function init() {
     try {
       var t0A = new Date().getTime();
 
-      var i;
+      var i, config;
+
+      config = ideo.config;
 
       ideo.initDrawChromosomes(bandsArray);
 
       // Waits for potentially large annotation dataset
       // to be received by the client, then triggers annotation processing
-      if (ideo.config.annotationsPath) {
+      if (config.annotationsPath) {
         function pa() {
           if (typeof ideo.timeout !== 'undefined') {
             window.clearTimeout(ideo.timeout);
           }
 
-          ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
-          ideo.drawProcessedAnnots(ideo.annots);
+          ideo.rawAnnots = ideo.setOriginalTrackIndexes(ideo.rawAnnots);
+
+          if (config.annotationsDisplayedTracks) {
+            ideo.annots = ideo.updateDisplayedTracks(config.annotationsDisplayedTracks);
+          } else {
+            ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
+            ideo.drawProcessedAnnots(ideo.annots);
+          }
 
           if (typeof crossfilter !== 'undefined' && ideo.initCrossFilter) {
             ideo.initCrossFilter();
@@ -566,11 +638,11 @@ function init() {
       if (ideo.config.showBandLabels === true) {
         ideo.hideUnshownBandLabels();
         var t1C = new Date().getTime();
-        if (ideo.config.debug) {
+        if (config.debug) {
           console.log('Time in showing bands: ' + (t1C - t0C) + ' ms');
         }
 
-        if (ideo.config.orientation === 'vertical') {
+        if (config.orientation === 'vertical') {
           var chrID;
           for (i = 0; i < ideo.chromosomesArray.length; i++) {
             chrID = '#' + ideo.chromosomesArray[i].id;
@@ -579,27 +651,29 @@ function init() {
         }
       }
 
-      if (ideo.config.showChromosomeLabels === true) {
+      if (config.showChromosomeLabels === true) {
         ideo.drawChromosomeLabels(ideo.chromosomes);
       }
 
-      if (ideo.config.brush) {
-        ideo.createBrush(ideo.config.brush);
+      if (config.brush) {
+        ideo.createBrush(config.brush);
       }
 
-      if (ideo.config.annotations) {
-        ideo.drawAnnots(ideo.config.annotations);
+      if (config.annotations) {
+        ideo.drawAnnots(config.annotations);
       }
 
       var t1A = new Date().getTime();
-      if (ideo.config.debug) {
+      if (config.debug) {
         console.log('Time in drawChromosome: ' + (t1A - t0A) + ' ms');
       }
 
       var t1 = new Date().getTime();
-      if (ideo.config.debug) {
+      if (config.debug) {
         console.log('Time constructing ideogram: ' + (t1 - t0) + ' ms');
       }
+
+      ideo.setOverflowScroll();
 
       if (ideo.onLoadCallback) {
         ideo.onLoadCallback();
@@ -611,4 +685,7 @@ function init() {
   }
 }
 
-export {configure, initDrawChromosomes, handleRotateOnClick, onLoad, init};
+export {
+  configure, initDrawChromosomes, handleRotateOnClick, setOverflowScroll,
+  onLoad, init
+}
