@@ -59,7 +59,7 @@ function getHistogramBars(annots) {
     chrAnnots = annots[chr].annots;
     chrName = annots[chr].chr;
     chrModel = chrModels[chrName];
-    chrIndex = chrModel.chrIndex - 1;
+    chrIndex = chrModel.chrIndex;
     barAnnots = bars[chrIndex].annots;
     for (i = 0; i < chrAnnots.length; i++) {
       annot = chrAnnots[i];
