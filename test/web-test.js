@@ -1309,7 +1309,7 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  it('should handle toggling single- and multi-chromosome view, in horizontal orientation', function(done) {
+  it('should handle toggling single- and multi-chromosome view, in vertical orientation', function(done) {
 
     function callback() {
 
@@ -1364,6 +1364,51 @@ describe('Ideogram', function() {
 
     config.onLoad = callback;
     config.orientation = 'horizontal';
+    var ideogram = new Ideogram(config);
+  });
+
+  it('should handle toggling single- and multi-chromosome view, in labeled vertical orientation', function(done) {
+    // Tests that band labels remain visible after rotating vertical chromosomes
+
+    function callback() {
+
+      d3.select('#chr1-9606').dispatch('click');
+
+      var shownChrs = d3.selectAll('.chromosome').nodes().filter(function(d) {
+        return d.style.display !== 'none';
+      });
+      var shownChrID = shownChrs[0].id;
+      assert.equal(shownChrs.length, 1);
+      assert.equal(shownChrID, 'chr1-9606');
+      d3.select('#chr1-9606').dispatch('click');
+      setTimeout(function() {
+
+        var shownChrs = d3.selectAll('.chromosome').nodes().filter(function(d) {
+          return d.style.display !== 'none';
+        });
+
+        assert.equal(shownChrs.length, 24);
+
+        var band = d3.select('.bandLabel.bsbsl-0');
+        var bandRect = band.nodes()[0].getBoundingClientRect();
+
+        var bandX = parseInt(bandRect.x);
+        var bandY = parseInt(bandRect.y);
+
+        assert.equal(bandX, 13);
+        assert.equal(bandY, 1604);
+
+        done();
+      }, 500);
+    }
+
+    var config = {
+      organism: 'human',
+      showBandLabels: true,
+      dataDir: '/dist/data/bands/native/',
+      onLoad: callback
+    };
+
     var ideogram = new Ideogram(config);
   });
 
