@@ -40,6 +40,7 @@ var ideogram = new Ideogram({
 * [histogramScaling](#histogramscaling)
 * [heatmaps](#heatmaps)
 * [onBrushMove](#onbrushmove)
+* [onDidRotate](#ondidrotate)
 * [onDrawAnnots](#ondrawannots)
 * [onLoadAnnots](#onloadannots)
 * [onLoad](#onload)
@@ -127,6 +128,9 @@ the heatmap.  Threshold values are specified in ascending order.  Example in [An
 
 ## onBrushMove
 Function.  Optional.  Callback function to invoke when brush moves.  Example in [Brush](https://eweitz.github.io/ideogram/brush).
+
+## onDidRotate
+Function.  Optional.  Callback function to invoke after chromosome has rotated.
 
 ## onDrawAnnots
 Function.  Optional.  Callback function to invoke when annotations are drawn.  This is useful for when loading and drawing large annotation datsets.  Example in [web-tests.js](https://github.com/eweitz/ideogram/blob/b701dc0b76089842d50860c8c6cf5aa6d8dec564/test/web-test.js#L395).
