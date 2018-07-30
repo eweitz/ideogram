@@ -490,12 +490,12 @@ describe('Ideogram', function() {
       annot = document.getElementsByClassName('annot')[3];
       annotBox = annot.getBoundingClientRect();
 
-      assert.equal(parseInt(annotBox.x), 75);
-      assert.equal(parseInt(annotBox.y), 505);
-      assert.equal(parseInt(annotBox.height), 13);
-      assert.equal(parseInt(annotBox.right), 88);
-      assert.equal(parseInt(annotBox.bottom), 518);
-      assert.equal(parseInt(annotBox.left), 75);
+      assert.equal(Math.round(annotBox.x), 75);
+      assert.equal(Math.round(annotBox.y), 505);
+      assert.equal(Math.round(annotBox.height), 14);
+      assert.equal(Math.round(annotBox.right), 89);
+      assert.equal(Math.round(annotBox.bottom), 519);
+      assert.equal(Math.round(annotBox.left), 75);
 
       done();
     }
