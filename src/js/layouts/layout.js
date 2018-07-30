@@ -128,8 +128,12 @@ export class Layout {
     ideo.handleRotateOnClick();
 
     if (ideo.rawAnnots) {
-      ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
-      ideo.drawProcessedAnnots(ideo.annots);
+      if (ideo.displayedTrackIndexes) {
+        ideo.updateDisplayedTracks(ideo.displayedTrackIndexes);
+      } else {
+        ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
+        ideo.drawProcessedAnnots(ideo.annots);
+      }
     }
 
     if (ideo.config.showBandLabels === true) {
@@ -137,6 +141,9 @@ export class Layout {
       ideo.hideUnshownBandLabels();
     }
 
+    if (ideo.onDidRotateCallback) {
+      ideo.onDidRotateCallback(chrModel);
+    }
   }
 
   rotate(chrSetIndex, chrIndex, chrElement) {

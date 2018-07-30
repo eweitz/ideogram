@@ -476,6 +476,10 @@ function rotateAndToggleDisplay(chrElement) {
   this._layout.rotate(chrSetIndex, chrIndex, chrElement);
 }
 
+function onDidRotate(chrModel) {
+  call(this.onDidRotateCallback, chrModel);
+}
+
 /**
  * Get ideogram SVG container
  */
@@ -486,6 +490,6 @@ function getSvg() {
 export {
   assemblyIsAccession, getDataDir, getChromosomeModel,
   getChromosomePixels, drawChromosomeLabels, rotateChromosomeLabels,
-  round, appendHomolog, drawChromosome, rotateAndToggleDisplay, getSvg,
-  Object
+  round, appendHomolog, drawChromosome, rotateAndToggleDisplay, onDidRotate,
+  getSvg, Object
 };

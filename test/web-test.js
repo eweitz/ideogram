@@ -490,14 +490,21 @@ describe('Ideogram', function() {
       annot = document.getElementsByClassName('annot')[3];
       annotBox = annot.getBoundingClientRect();
 
-      assert.equal(annotBox.x, 21);
-      assert.equal(annotBox.y, 506);
-      assert.equal(annotBox.height, 8);
-      assert.equal(annotBox.right, 29);
-      assert.equal(annotBox.bottom, 514);
-      assert.equal(annotBox.left, 21);
+      assert.equal(parseInt(annotBox.x), 75);
+      assert.equal(parseInt(annotBox.y), 505);
+      assert.equal(parseInt(annotBox.height), 13);
+      assert.equal(parseInt(annotBox.right), 88);
+      assert.equal(parseInt(annotBox.bottom), 518);
+      assert.equal(parseInt(annotBox.left), 75);
 
       done();
+    }
+
+    // Click chromosome 1 after it's loaded and had time to draw annotations.
+    function loadCallback() {
+      setTimeout(function() {
+        d3.select('#chr1-9606').dispatch('click');
+      }, 200);
     }
 
     var annotationTracks = [
@@ -514,12 +521,12 @@ describe('Ideogram', function() {
       annotationTracks: annotationTracks,
       annotHeight: 3.5,
       dataDir: '/dist/data/bands/native/',
-      onDrawAnnots: callback
+      onLoad: loadCallback,
+      onDidRotate: callback
     };
 
     ideogram = new Ideogram(config);
   });
-
 
   it('should have filterable tracks in track-filters example', function(done) {
     // Tests use case from ../examples/vanilla/annotations-track-filters.html

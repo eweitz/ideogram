@@ -181,6 +181,10 @@ function configure(config) {
     this.onWillShowAnnotTooltipCallback = config.onWillShowAnnotTooltip;
   }
 
+  if (config.onDidRotate) {
+    this.onDidRotateCallback = config.onDidRotate;
+  }
+
   this.coordinateSystem = 'iscn';
 
   this.maxLength = {

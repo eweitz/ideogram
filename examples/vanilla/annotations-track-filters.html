@@ -43,7 +43,8 @@
     chrHeight: 400,
     annotationsPath: '../../data/annotations/9_tracks_virtual_snvs.json',
     annotationsNumTracks: 3,
-    annotationsDisplayedTracks: [1, 5, 9]
+    annotationsDisplayedTracks: [1, 5, 9],
+    onDidRotate: function() { console.log('onDidRotate')}
   };
 
   ideogram = new Ideogram(config);
