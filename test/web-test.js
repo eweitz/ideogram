@@ -1439,11 +1439,8 @@ describe('Ideogram', function() {
         var band = d3.select('.bandLabel.bsbsl-0');
         var bandRect = band.nodes()[0].getBoundingClientRect();
 
-        var bandX = parseInt(bandRect.x);
-        var bandY = parseInt(bandRect.y);
-
-        assert.equal(bandX, 13);
-        assert.equal(bandY, 1604);
+        assert.isBelow(Math.abs(bandRect.x - 13), 2);
+        assert.isBelow(Math.abs(bandRect.y - 1604), 2);
 
         done();
       }, 500);
