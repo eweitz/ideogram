@@ -19,6 +19,7 @@ function getHistogramBars(annots) {
 
   barWidth = ideo.config.barWidth;
   chrModels = ideo.chromosomes[ideo.config.taxid];
+
   color = ideo.config.annotationsColor;
   ideoIsRotated = ideo._layout._isRotated;
 
@@ -120,7 +121,7 @@ function getHistogramBars(annots) {
       if (ideoIsRotated === false) {
         height = barCountRatio * ideo.config.chrMargin;
       } else {
-        height = barCountRatio * ideo.config.chrHeightOriginal*3;
+        height = barCountRatio * ideo.config.chrHeightOriginal * 3;
       }
       bars[i].annots[j].height = height;
     }

@@ -133,6 +133,10 @@ export class Layout {
       } else {
         ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
         ideo.drawProcessedAnnots(ideo.annots);
+
+        if (typeof crossfilter !== 'undefined' && ideo.initCrossFilter) {
+          ideo.initCrossFilter();
+        }
       }
     }
 
