@@ -569,7 +569,7 @@ function init() {
     ideo.isOnlyIdeogram = document.querySelectorAll('#_ideogram').length === 1;
 
     // Tooltip div setup w/ default styling.
-    d3.select(ideo.config.container).append("div")
+    d3.select(ideo.config.container + ' #_ideogramOuterWrap').append("div")
       .attr('class', 'tooltip')
       .attr('id', 'tooltip')
       .style('opacity', 0)
