@@ -281,6 +281,9 @@ function updateDisplayedTracks(trackIndexes) {
 
   d3.selectAll(ideo.selector + ' .annot').remove();
   ideo.drawAnnots(displayedAnnots);
+
+  ideogram.displayedTrackIndexes = trackIndexes;
+
   return displayedAnnots;
 }
 

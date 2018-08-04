@@ -63,13 +63,19 @@ function drawAnnots(friendlyAnnots) {
  * running parallel to each chromosome.
  */
 function drawProcessedAnnots(annots) {
-  var chrWidth, layout, annotHeight, triangle, circle, rectangle, r,
-    chrAnnot, i, numAnnots, x1, x2, y1, y2, filledAnnots,
+  var chrWidth, chrWidths, layout, annotHeight, triangle, circle, rectangle,
+    chr, chrs, r, chrAnnot, i, numAnnots, x1, x2, y1, y2, filledAnnots,
     ideo = this;
 
   d3.selectAll('.annot').remove();
 
   chrWidth = this.config.chrWidth;
+
+  chrWidths = {};
+  chrs = ideo.chromosomes[ideo.config.taxid];
+  for (chr in chrs) {
+    chrWidths[chr] = chrs[chr].width;
+  }
 
   layout = 'tracks';
   if (this.config.annotationsLayout) {
@@ -203,7 +209,7 @@ function drawProcessedAnnots(annots) {
         y1 = chrWidth;
         y2 = chrWidth + d.height;
 
-        var thisChrWidth = ideo.chromosomesArray[d.chrIndex - 1].width;
+        var thisChrWidth = chrWidths[d.chrName].width;
 
         if (x2 > thisChrWidth) {
           x2 = thisChrWidth;

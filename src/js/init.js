@@ -181,6 +181,10 @@ function configure(config) {
     this.onWillShowAnnotTooltipCallback = config.onWillShowAnnotTooltip;
   }
 
+  if (config.onDidRotate) {
+    this.onDidRotateCallback = config.onDidRotate;
+  }
+
   this.coordinateSystem = 'iscn';
 
   this.maxLength = {
@@ -239,14 +243,12 @@ function initDrawChromosomes(bandsArray) {
   var ideo = this,
     taxids = ideo.config.taxids,
     ploidy = ideo.config.ploidy,
-    taxid,
     chrIndex = 0,
-    chrSetNumber = 0,
-    bands,
-    i, j, chrs, chromosome, chrModel,
-    defs, transform;
+    taxid, bands, i, j, chrs, chromosome, chrModel;
 
-  defs = d3.select(ideo.selector + ' defs');
+  if (bandsArray.length > 0) {
+    ideo.bandsArray = {};
+  }
 
   for (i = 0; i < taxids.length; i++) {
     taxid = taxids[i];
@@ -263,12 +265,20 @@ function initDrawChromosomes(bandsArray) {
 
     ideo.setSexChromosomes(chrs);
 
+    if ('bandsArray' in ideo) {
+      ideo.bandsArray[taxid] = bandsArray;
+    }
+
     for (j = 0; j < chrs.length; j++) {
       chromosome = chrs[j];
-      bands = bandsArray[chrIndex];
-      chrIndex += 1;
+      if ('bandsArray' in ideo) {
+        bands = bandsArray[chrIndex];
+      }
 
       chrModel = ideo.getChromosomeModel(bands, chromosome, taxid, chrIndex);
+
+      chrIndex += 1;
+
 
       if (typeof chromosome !== 'string') {
         chromosome = chromosome.name;
@@ -287,53 +297,36 @@ function initDrawChromosomes(bandsArray) {
         continue;
       }
 
-      transform = ideo._layout.getChromosomeSetTranslate(chrSetNumber);
-      chrSetNumber += 1;
+      ideo.drawChromosome(chrModel);
 
-      // Append chromosome set container
-      var container = d3.select(ideo.selector)
-        .append('g')
-        .attr('class', 'chromosome-set-container')
-        .attr('data-set-number', j)
-        .attr('transform', transform)
-        .attr('id', chrModel.id + '-chromosome-set');
-
-      if (
-        'sex' in ideo.config &&
-        ploidy === 2 &&
-        ideo.sexChromosomes.index + 1 === chrIndex
-      ) {
-        ideo.drawSexChromosomes(bandsArray, taxid, container, defs, j, chrs);
-        continue;
-      }
-
-      var shape;
-      var numChrsInSet = 1;
-      if (ploidy > 1) {
-        numChrsInSet = this._ploidy.getChromosomesNumber(j);
-      }
-      for (var k = 0; k < numChrsInSet; k++) {
-        shape = ideo.drawChromosome(chrModel, chrIndex - 1, container, k);
-      }
-
-      defs.append('clipPath')
-        .attr('id', chrModel.id + '-chromosome-set-clippath')
-        .selectAll('path')
-        .data(shape)
-        .enter()
-        .append('path')
-        .attr('d', function(d) {
-          return d.path;
-        }).attr('class', function(d) {
-        return d.class;
-      });
     }
 
     if (ideo.config.showBandLabels === true) {
       ideo.drawBandLabels(ideo.chromosomes);
     }
+
+    ideo.handleRotateOnClick();
+
+    ideo._gotChrModels = true; // Prevent issue with errant rat centromeres
   }
 }
+
+/**
+ * Attach any click handlers to rotate and toggle chromosomes
+ */
+function handleRotateOnClick() {
+  var ideo = this;
+
+  if (!('rotatable' in ideo.config && ideo.config.rotatable === false)) {
+    d3.selectAll(ideo.selector + ' .chromosome').on('click', function () {
+      ideo.rotateAndToggleDisplay(this);
+    });
+  } else {
+    d3.selectAll(ideo.selector + ' .chromosome')
+      .style('cursor', 'default');
+  }
+}
+
 
 /**
  * Called when Ideogram has finished initializing.
@@ -576,7 +569,7 @@ function init() {
     ideo.isOnlyIdeogram = document.querySelectorAll('#_ideogram').length === 1;
 
     // Tooltip div setup w/ default styling.
-    d3.select(ideo.config.container).append("div")
+    d3.select(ideo.config.container + ' #_ideogramOuterWrap').append("div")
       .attr('class', 'tooltip')
       .attr('id', 'tooltip')
       .style('opacity', 0)
@@ -646,19 +639,8 @@ function init() {
         }
       }
 
-      if (config.showBandLabels === true) {
-        var bandsToShow = ideo.bandsToShow.join(',');
-
-        // d3.selectAll resolves to querySelectorAll (QSA).
-        // QSA takes a surprisingly long time to complete,
-        // and scales with the number of selectors.
-        // Most bands are hidden, so we can optimize by
-        // Hiding all bands, then QSA'ing and displaying the
-        // relatively few bands that are shown.
-        var t0C = new Date().getTime();
-        d3.selectAll(ideo.selector + ' .bandLabel, .bandLabelStalk')
-          .style('display', 'none');
-        d3.selectAll(bandsToShow).style('display', '');
+      if (ideo.config.showBandLabels === true) {
+        ideo.hideUnshownBandLabels();
         var t1C = new Date().getTime();
         if (config.debug) {
           console.log('Time in showing bands: ' + (t1C - t0C) + ' ms');
@@ -695,15 +677,6 @@ function init() {
         console.log('Time constructing ideogram: ' + (t1 - t0) + ' ms');
       }
 
-      if (!('rotatable' in config && config.rotatable === false)) {
-        d3.selectAll(ideo.selector + ' .chromosome').on('click', function() {
-          ideo.rotateAndToggleDisplay(this);
-        });
-      } else {
-        d3.selectAll(ideo.selector + ' .chromosome')
-          .style('cursor', 'default');
-      }
-
       ideo.setOverflowScroll();
 
       if (ideo.onLoadCallback) {
@@ -716,4 +689,7 @@ function init() {
   }
 }
 
-export {configure, initDrawChromosomes, onLoad, setOverflowScroll, init};
+export {
+  configure, initDrawChromosomes, handleRotateOnClick, setOverflowScroll,
+  onLoad, init
+}

@@ -13,33 +13,24 @@ export class Range {
   */
   constructor(data) {
     this._data = data;
+    this.start = data.start;
+    this.stop = data.stop;
+    this.length = this.stop - this.start
   }
 
-  getStart() {
-    return this._data.start;
-  }
-
-  getStop() {
-    return this._data.stop;
-  }
-
-  getLength() {
-    return this._data.stop - this._data.start;
-  }
-
-  getColor(chrNumber) {
+  getColor(chrIndex) {
     if (!('ploidy' in this._data)) {
-      return this._getColor(chrNumber);
-    } else if ('ploidy' in this._data && this._data.ploidy[chrNumber]) {
-      return this._getColor(chrNumber);
+      return this._getColor(chrIndex);
+    } else if ('ploidy' in this._data && this._data.ploidy[chrIndex]) {
+      return this._getColor(chrIndex);
     } else {
       return 'transparent';
     }
   }
 
-  _getColor(chrNumber) {
+  _getColor(chrIndex) {
     if (Array.isArray(this._data.color)) {
-      return this._data.color[chrNumber];
+      return this._data.color[chrIndex];
     } else {
       return this._data.color;
     }

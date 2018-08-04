@@ -73,6 +73,10 @@ Ideogram.prototype.initCrossFilter = function() {
           return d[facet];
         });
   }
+
+  if ('filterSelections' in ideo) {
+    ideo.filterAnnots(ideo.filterSelections);
+  }
 };
 
 /*
@@ -107,6 +111,8 @@ Ideogram.prototype.filterAnnots = function(selections) {
     counts = {},
     ideo = this;
 
+  ideo.filterSelections = selections;
+
   if (Object.keys(selections).length === 0) {
     results = ideo.unpackedAnnots;
   } else {
@@ -133,6 +139,9 @@ Ideogram.prototype.filterAnnots = function(selections) {
   }
 
   results = ideo.packAnnots(results);
+
+  delete ideo.maxAnnotsPerBar;
+  delete ideo.maxAnnotsPerBarAllChrs;
 
   d3.selectAll(ideo.selector + ' polygon.annot').remove();
   ideo.drawAnnots(results);

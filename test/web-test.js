@@ -42,15 +42,15 @@ describe('Ideogram', function() {
       var date = new Date();
       var filename = 'screenshots/' + date.getTime();
       console.log('Taking screenshot ' + filename);
-      callPhantom({'screenshot': filename});
+      callPhantom({screenshot: filename});
     }
   }
 
-  afterEach(function () {
+  afterEach(function() {
     if (this.currentTest.state === 'failed') {
-      takeScreenshot()
+      takeScreenshot();
     }
-  })
+  });
 
   it('should have a non-body container when specified', function() {
     config.container = '.small-ideogram';
@@ -72,7 +72,6 @@ describe('Ideogram', function() {
     // assert.equal(svg, 1);
   });
 
-
   it('should have 24 chromosomes for a human ideogram instance', function(done) {
     // Tests use case from ../examples/vanilla/human.html
 
@@ -85,7 +84,6 @@ describe('Ideogram', function() {
     config.onLoad = callback;
     var ideogram = new Ideogram(config);
   });
-
 
   it('should have 21 chromosomes for a mouse ideogram instance', function(done) {
     // Tests use case from ../examples/vanilla/mouse.html
@@ -151,7 +149,7 @@ describe('Ideogram', function() {
       };
 
       // 1q12
-      r5Band = chr1.bands[24]
+      r5Band = chr1.bands[24];
       range5 = {
         chr: chr1,
         start: r5Band.bp.start,
@@ -167,7 +165,7 @@ describe('Ideogram', function() {
       };
 
       // 1q24
-      r7Band = chr1.bands[29]
+      r7Band = chr1.bands[29];
       range7 = {
         chr: chr1,
         start: r7Band.bp.start,
@@ -182,10 +180,10 @@ describe('Ideogram', function() {
       };
 
       syntenicRegions.push(
-        {'r1': range1, 'r2': range2},
-        {'r1': range3, 'r2': range4},
-        {'r1': range5, 'r2': range6},
-        {'r1': range7, 'r2': range8}
+        {r1: range1, r2: range2},
+        {r1: range3, r2: range4},
+        {r1: range5, r2: range6},
+        {r1: range7, r2: range8}
       );
 
       ideogram.drawSynteny(syntenicRegions);
@@ -208,7 +206,6 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-
   it('should have 25 syntenic regions for advanced example', function(done) {
     // Tests use case from ../examples/vanilla/homology-advanced.html
 
@@ -217,8 +214,8 @@ describe('Ideogram', function() {
       var chrs = ideogram.chromosomes,
         chr1 = chrs['10090']['1'],
         chr2 = chrs['10090']['2'],
-        r1Band = chr1['bands'][7],
-        r2Band = chr2['bands'][17],
+        r1Band = chr1.bands[8],
+        r2Band = chr2.bands[18],
         range1, range2, range3, range4, range5, range6,
         syntenicRegions = [];
 
@@ -234,7 +231,7 @@ describe('Ideogram', function() {
           start: 6000000 * i,
           stop: 6500000 * i
         };
-        syntenicRegions.push({'r1': range1, 'r2': range2, color: '#F55'});
+        syntenicRegions.push({r1: range1, r2: range2, color: '#F55'});
       }
 
       var range3 = {
@@ -311,7 +308,6 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-
   it('should have 1 syntenic region between a human and a mouse chromosome', function(done) {
     // Tests use case from ../examples/vanilla/homology-interspecies.html
 
@@ -353,7 +349,7 @@ describe('Ideogram', function() {
       assert.equal(numMouseChromosomes, 1, 'numMouseChromosomes');
 
       var numSyntenicRegions = document.getElementsByClassName('syntenicRegion').length;
-      //console.log(d3.selectAll('.syntenicRegion'));
+      // console.log(d3.selectAll('.syntenicRegion'));
 
       console.log(document.getElementsByClassName('syntenicRegion')[0][0]);
 
@@ -389,7 +385,6 @@ describe('Ideogram', function() {
     config.onDrawAnnots = callback;
     var ideogram = new Ideogram(config);
   });
-
 
   it('should have 48 annotations in overlaid annotations example', function(done) {
     // Tests use case from old ../examples/vanilla/annotations-overlaid.html
@@ -466,7 +461,7 @@ describe('Ideogram', function() {
       {id: 'likelyPathogenicTrack', displayName: 'Likely pathogenic', color: '#DB9'},
       {id: 'uncertainSignificanceTrack', displayName: 'Uncertain significance', color: '#CCC'},
       {id: 'likelyBenignTrack', displayName: 'Likely benign', color: '#BD9'},
-      {id: 'benignTrack',  displayName: 'Benign', color: '#8D4'}
+      {id: 'benignTrack', displayName: 'Benign', color: '#8D4'}
     ];
 
     var config = {
@@ -481,6 +476,53 @@ describe('Ideogram', function() {
       orientation: 'vertical',
       dataDir: '/dist/data/bands/native/',
       onDrawAnnots: callback
+    };
+
+    ideogram = new Ideogram(config);
+  });
+
+  it('should have properly scaled annotations after rotating', function(done) {
+    // Tests use case from ../examples/vanilla/annotations-tracks.html
+
+    function callback() {
+      var annot, annotBox;
+
+      annot = document.getElementsByClassName('annot')[3];
+      annotBox = annot.getBoundingClientRect();
+
+      assert.isBelow(Math.abs(annotBox.x - 75), 2);
+      assert.isBelow(Math.abs(annotBox.y - 510), 2);
+      assert.isBelow(Math.abs(annotBox.height - 14), 2);
+      assert.isBelow(Math.abs(annotBox.right - 89), 2);
+      assert.isBelow(Math.abs(annotBox.bottom - 523), 2);
+      assert.isBelow(Math.abs(annotBox.left - 75), 2);
+
+      done();
+    }
+
+    // Click chromosome 1 after it's loaded and had time to draw annotations.
+    function loadCallback() {
+      setTimeout(function() {
+        d3.select('#chr1-9606').dispatch('click');
+      }, 200);
+    }
+
+    var annotationTracks = [
+      {id: 'pathogenicTrack', displayName: 'Pathogenic', color: '#F00'},
+      {id: 'uncertainSignificanceTrack', displayName: 'Uncertain significance', color: '#CCC'},
+      {id: 'benignTrack', displayName: 'Benign', color: '#8D4'}
+    ];
+
+    var config = {
+      organism: 'human',
+      chrWidth: 8,
+      showChromosomeLabels: true,
+      annotationsPath: '../dist/data/annotations/1000_virtual_snvs.json',
+      annotationTracks: annotationTracks,
+      annotHeight: 3.5,
+      dataDir: '/dist/data/bands/native/',
+      onLoad: loadCallback,
+      onDidRotate: callback
     };
 
     ideogram = new Ideogram(config);
@@ -596,7 +638,7 @@ describe('Ideogram', function() {
     // Tests use case from ../examples/vanilla/annotations-file-url.html
 
     function callback() {
-        var numAnnots = document.getElementsByClassName('annot').length;
+      var numAnnots = document.getElementsByClassName('annot').length;
       assert.equal(numAnnots, 114);
       done();
     }
@@ -631,7 +673,6 @@ describe('Ideogram', function() {
       dataDir: '/dist/data/bands/native/',
       onDrawAnnots: callback
     };
-
 
     ideogram = new Ideogram(config);
   });
@@ -697,15 +738,14 @@ describe('Ideogram', function() {
       chrHeight: 600,
       orientation: 'horizontal',
       annotations: [{
-        'name': 'BRCA1',
-        'chr': '17',
-        'start': 43044294,
-        'stop': 43125482
+        name: 'BRCA1',
+        chr: '17',
+        start: 43044294,
+        stop: 43125482
       }],
       dataDir: '/dist/data/bands/native/',
       onDrawAnnots: callback
     };
-
 
     ideogram = new Ideogram(config);
   });
@@ -717,38 +757,38 @@ describe('Ideogram', function() {
     function getTerEnd(arm) {
       // Helper function to get the x coordinate of the outermost
       // edge of the p or q arm of chromosome 1
-        var armIndex = (arm === 'p') ? 1 : 2,
-          ter = d3.selectAll('.chromosome-border path:nth-child(' + armIndex + ')'),
-          terEnd,
-          inst = ter.attr('d').split(' '), // Path instructions in description ('d')
-          terCurve = parseInt(inst[4].replace('Q', '').split(',')[0]),
-          terCurveX = parseInt(inst[0].replace('M', '').split(',')[0]),
-          terStroke = parseFloat(ter.style("stroke-width").slice(0, -2));
+      var armIndex = (arm === 'p') ? 1 : 2,
+        ter = d3.selectAll('.chromosome-border path:nth-child(' + armIndex + ')'),
+        terEnd,
+        inst = ter.attr('d').split(' '), // Path instructions in description ('d')
+        terCurve = parseInt(inst[4].replace('Q', '').split(',')[0]),
+        terCurveX = parseInt(inst[0].replace('M', '').split(',')[0]),
+        terStroke = parseFloat(ter.style("stroke-width").slice(0, -2));
 
-          if (arm === 'p') {
-            terEnd = terCurve;
-          } else {
-            terEnd = terCurve + terCurveX - terStroke;
-          }
+      if (arm === 'p') {
+        terEnd = terCurve;
+      } else {
+        terEnd = terCurve + terCurveX - terStroke;
+      }
 
-          terEnd = terEnd.toFixed(2);
+      terEnd = terEnd.toFixed(2);
 
-          return terEnd;
+      return terEnd;
     }
 
     function onIdeogramLoadAnnots() {
 
       var pterEnd = getTerEnd("p"),
-          firstAnnotEnd = d3.selectAll("#chr1-9606 .annot").nodes()[0].getBBox().x,
-          qterEnd = getTerEnd("q"),
-          tmp = d3.selectAll("#chr1-9606 .annot").nodes(),
-          tmp = tmp[tmp.length - 1].getBBox(),
-          lastAnnotEnd = tmp.x + tmp.width;
+        firstAnnotEnd = d3.selectAll("#chr1-9606 .annot").nodes()[0].getBBox().x,
+        qterEnd = getTerEnd("q"),
+        tmp = d3.selectAll("#chr1-9606 .annot").nodes(),
+        tmp = tmp[tmp.length - 1].getBBox(),
+        lastAnnotEnd = tmp.x + tmp.width;
 
-          // console.log("pterEnd - firstAnnotEnd: " + (pterEnd - firstAnnotEnd));
-          // console.log("qterEnd - lastAnnotEnd: " + (qterEnd - lastAnnotEnd));
-          assert.isBelow(pterEnd - firstAnnotEnd, -1);
-          assert.isAbove(qterEnd - lastAnnotEnd, -18);
+      // console.log("pterEnd - firstAnnotEnd: " + (pterEnd - firstAnnotEnd));
+      // console.log("qterEnd - lastAnnotEnd: " + (qterEnd - lastAnnotEnd));
+      assert.isBelow(pterEnd - firstAnnotEnd, -1);
+      assert.isAbove(qterEnd - lastAnnotEnd, -19);
 
       done();
     }
@@ -775,13 +815,13 @@ describe('Ideogram', function() {
     // and related issues.
 
     function getLeft(selector) {
-      return  Math.round(document
+      return Math.round(document
         .querySelector(selector)
         .getBoundingClientRect().x);
     }
 
     function getRight(selector) {
-      return  Math.round(document
+      return Math.round(document
         .querySelector(selector)
         .getBoundingClientRect().right);
     }
@@ -796,8 +836,8 @@ describe('Ideogram', function() {
       chromosomes: ['17'],
 
       brush: 'chr17:5000000-10000000',
-      onBrushMove: function () {},
-      onLoad: function () {
+      onBrushMove: function() {},
+      onLoad: function() {
         this.createBrush('17', 1, 2);
         this.createBrush('17', 40900000, 44900000);
         this.createBrush('17', 81094108, 81094109);
@@ -820,8 +860,8 @@ describe('Ideogram', function() {
         var lastBpAnnotRight = getRight('#chr17-9606 > .annot:nth-child(317)');
         var lastBpSliderRight = getRight('#_ideogram > g:nth-child(7) > rect.selection');
         var lastBpRight = getRight('#chr17-9606');
-        assert.isBelow(Math.abs(lastBpAnnotRight - lastBpSliderRight), 2);
-        assert.isBelow(Math.abs(lastBpSliderRight - lastBpRight), 2);
+        assert.isBelow(Math.abs(lastBpAnnotRight - lastBpSliderRight), 3);
+        assert.isBelow(Math.abs(lastBpSliderRight - lastBpRight), 3);
 
         done();
       },
@@ -835,81 +875,79 @@ describe('Ideogram', function() {
         start: 1,
         stop: 2
       },
-        {
-          name: 'band_q21-31',
-          chr: '17',
-          start: 40900000,
-          stop: 40900001
-        },
-        {
-          name: 'last_band_start',
-          chr: '17',
-          start: 75300000,
-          stop: 75300001
-        },
-        {
-          name: 'last_band_stop',
-          chr: '17',
-          start: 81195208,
-          stop: 81195209
-        }]
+      {
+        name: 'band_q21-31',
+        chr: '17',
+        start: 40900000,
+        stop: 40900001
+      },
+      {
+        name: 'last_band_start',
+        chr: '17',
+        start: 75300000,
+        stop: 75300001
+      },
+      {
+        name: 'last_band_stop',
+        chr: '17',
+        start: 81195208,
+        stop: 81195209
+      }]
     };
 
     var ideogram = new Ideogram(config);
   });
 
   it('should have 12 chromosomes per row in small layout example', function(done) {
-      // Tests use case from ../examples/vanilla/layout-small.html
+    // Tests use case from ../examples/vanilla/layout-small.html
 
-      function callback() {
+    function callback() {
 
-        t1 = d3.select('#chr12-9606-chromosome-set').attr('transform');
-        t2 = d3.select('#chr13-9606-chromosome-set').attr('transform');
+      t1 = d3.select('#chr12-9606-chromosome-set').attr('transform');
+      t2 = d3.select('#chr13-9606-chromosome-set').attr('transform');
 
-        lastChrRow1Y = parseInt(t1.split('translate(')[1].split(',')[0], 10);
-        firstChrRow2Y = parseInt(t2.split('translate(')[1].split(',')[0], 10);
+      lastChrRow1Y = parseInt(t1.split('translate(')[1].split(',')[0], 10);
+      firstChrRow2Y = parseInt(t2.split('translate(')[1].split(',')[0], 10);
 
-        assert.isTrue(firstChrRow2Y > lastChrRow1Y + config.chrHeight);
+      assert.isTrue(firstChrRow2Y > lastChrRow1Y + config.chrHeight);
 
-        done();
-      }
+      done();
+    }
 
-      document.getElementsByTagName('body')[0].innerHTML +=
-        '<div class="small-ideogram"></div>';
+    document.getElementsByTagName('body')[0].innerHTML +=
+      '<div class="small-ideogram"></div>';
 
-      var config = {
-        container: '.small-ideogram',
-        organism: 'human',
-        resolution: 550,
-        chrWidth: 10,
-        chrHeight: 150,
-        chrMargin: 10,
-        rows: 2,
-        showChromosomeLabels: true,
-        orientation: 'vertical',
-        dataDir: '/dist/data/bands/native/'
-      };
+    var config = {
+      container: '.small-ideogram',
+      organism: 'human',
+      resolution: 550,
+      chrWidth: 10,
+      chrHeight: 150,
+      chrMargin: 10,
+      rows: 2,
+      showChromosomeLabels: true,
+      orientation: 'vertical',
+      dataDir: '/dist/data/bands/native/'
+    };
 
-      config.onLoad = callback;
-      var ideogram = new Ideogram(config);
-    });
+    config.onLoad = callback;
+    var ideogram = new Ideogram(config);
+  });
 
+  it('should use GRCh37 when specified in "assembly" parameter', function(done) {
+    // Tests use case from ../examples/vanilla/human.html
 
-    it('should use GRCh37 when specified in "assembly" parameter', function(done) {
-      // Tests use case from ../examples/vanilla/human.html
+    function callback() {
+      var bands = ideogram.chromosomes['9606']['1'].bands;
+      var chr1Length = bands[bands.length - 1].bp.stop;
+      assert.equal(chr1Length, 249250621);
+      done();
+    }
 
-      function callback() {
-        var bands = ideogram.chromosomes['9606']['1'].bands;
-        var chr1Length = bands[bands.length - 1].bp.stop;
-        assert.equal(chr1Length, 249250621);
-        done();
-      }
-
-      config.assembly = 'GRCh37';
-      config.onLoad = callback;
-      var ideogram = new Ideogram(config);
-    });
-
+    config.assembly = 'GRCh37';
+    config.onLoad = callback;
+    var ideogram = new Ideogram(config);
+  });
 
   it('should use GCF_000001405.12 when specified in "assembly" parameter', function(done) {
     // Tests use case from ../examples/vanilla/human.html with NCBI36 / hg18
@@ -926,215 +964,211 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-    it('should support RefSeq accessions in "assembly" parameter', function(done) {
-      // Tests use case for non-default assemblies.
-      // GCF_000306695.2 is commonly called CHM1_1.1
-      // https://www.ncbi.nlm.nih.gov/assembly/GCF_000306695.2/
+  it('should support RefSeq accessions in "assembly" parameter', function(done) {
+    // Tests use case for non-default assemblies.
+    // GCF_000306695.2 is commonly called CHM1_1.1
+    // https://www.ncbi.nlm.nih.gov/assembly/GCF_000306695.2/
 
-      function callback() {
-        var chr1Length = ideogram.chromosomes['9606']['1'].length
-        // For reference, see length section of LOCUS field in GenBank record at
-        // https://www.ncbi.nlm.nih.gov/nuccore/CM001609.2
-        assert.equal(chr1Length, 250522664);
+    function callback() {
+      var chr1Length = ideogram.chromosomes['9606']['1'].length;
+      // For reference, see length section of LOCUS field in GenBank record at
+      // https://www.ncbi.nlm.nih.gov/nuccore/CM001609.2
+      assert.equal(chr1Length, 250522664);
+      done();
+    }
+
+    config.assembly = 'GCF_000306695.2';
+    config.onLoad = callback;
+    var ideogram = new Ideogram(config);
+  });
+
+  it('should support GenBank accessions in "assembly" parameter', function(done) {
+    // Tests use case for non-default assemblies.
+    // GCA_000002125.2 is commonly called HuRef
+    // https://www.ncbi.nlm.nih.gov/assembly/GCA_000002125.2
+
+    function callback() {
+      var chr1Length = ideogram.chromosomes['9606']['1'].length;
+      // For reference, see length section of LOCUS field in GenBank record at
+      // https://www.ncbi.nlm.nih.gov/nuccore/CM001609.2
+      assert.equal(chr1Length, 219475005);
+      done();
+    }
+
+    config.assembly = 'GCA_000002125.2';
+    config.onLoad = callback;
+    var ideogram = new Ideogram(config);
+  });
+
+  it('should handle arrayed objects in "annotations" parameter', function(done) {
+    // Tests use case from ../examples/vanilla/human.html
+
+    function callback() {
+      var numAnnots = d3.selectAll('.annot').nodes().length;
+      assert.equal(numAnnots, 1);
+      done();
+    }
+
+    config.annotations = [{
+      name: 'BRCA1',
+      chr: '17',
+      start: 43044294,
+      stop: 43125482
+    }];
+    config.onDrawAnnots = callback;
+    var ideogram = new Ideogram(config);
+  });
+
+  it('should create a brush when specified', function(done) {
+    // Tests use case from ../examples/vanilla/brush.html
+
+    function callback() {
+      assert.equal(ideogram.selectedRegion.from, 5000000);
+      assert.equal(ideogram.selectedRegion.to, 10000000);
+      assert.equal(ideogram.selectedRegion.extent, 5000000);
+      assert.equal(d3.selectAll('.selection').nodes().length, 1);
+      done();
+    }
+
+    var config = {
+      organism: 'human',
+      chromosome: '19',
+      brush: 'chr19:5000000-10000000',
+      chrHeight: 900,
+      orientation: 'horizontal',
+      onBrushMove: callback, // placeholder
+      onLoad: callback,
+      dataDir: '/dist/data/bands/native/'
+    };
+    var ideogram = new Ideogram(config);
+  });
+
+  // TODO: Re-enable when there is a decent package that enables
+  //       PhantomJS-like screenshots from automated tests
+  //       cf.:
+  //        if (window.callPhantom) {
+  //        callPhantom({'screenshot': filename})
+  //
+  // it('should align chr. label with thick horizontal chromosome', function(done) {
+  //   // Tests use case from ../examples/vanilla/annotations_basic.html
+  //
+  //   function callback() {
+  //     var band, bandMiddle,
+  //         chrLabel, chrLabelMiddle;
+  //
+  //     band = d3.selectAll(".chromosome .band").nodes()[0].getBoundingClientRect();
+  //     chrLabel = d3.selectAll(".chrSetLabel").nodes()[0].getBoundingClientRect();
+  //
+  //     bandMiddle = band.top + band.height/2;
+  //     chrLabelMiddle = chrLabel.top + chrLabel.height/2;
+  //
+  //     labelsDiff = Math.abs(bandMiddle - chrLabelMiddle);
+  //
+  //     assert.isAtMost(labelsDiff, 1);
+  //     done();
+  //   }
+  //
+  //   config = {
+  //     organism: 'human',
+  //     chrHeight: 600,
+  //     chrWidth: 20,
+  //     orientation: 'horizontal',
+  //     chromosomes: ["17"],
+  //     annotations: [{
+  //       "name": "BRCA1",
+  //       "chr": "17",
+  //       "start": 43044294,
+  //       "stop": 43125482
+  //     }],
+  //     annotationHeight: 6
+  //   };
+  //   config.onDrawAnnots = callback;
+  //   var ideogram = new Ideogram(config);
+  // });
+
+  it('should align chr. label with vertical chromosome', function(done) {
+    // Tests use case from ../examples/vanilla/human.html
+
+    function callback() {
+      var band, bandMiddle,
+        chrLabel, chrLabelMiddle;
+
+      band = d3.selectAll('.chromosome .band').nodes()[0].getBoundingClientRect();
+      chrLabel = d3.selectAll('.chrLabel').nodes()[0].getBoundingClientRect();
+
+      bandMiddle = band.left + band.width / 2;
+      chrLabelMiddle = chrLabel.left + chrLabel.width / 2;
+
+      labelsDiff = Math.abs(bandMiddle - chrLabelMiddle);
+
+      assert.isAtMost(labelsDiff, 1);
+      done();
+    }
+
+    var annotationTracks = [
+      {id: 'pathogenicTrack', displayName: 'Pathogenic', color: '#F00'},
+      {id: 'likelyPathogenicTrack', displayName: 'Likely pathogenic', color: '#DB9'},
+      {id: 'uncertainSignificanceTrack', displayName: 'Uncertain significance', color: '#CCC'},
+      {id: 'likelyBenignTrack', displayName: 'Likely benign', color: '#BD9'},
+      {id: 'benignTrack', displayName: 'Benign', color: '#8D4'}
+    ];
+
+    var config = {
+      organism: 'human',
+      chrWidth: 20,
+      chrHeight: 500,
+      annotationsPath: '../dist/data/annotations/1000_virtual_snvs.json',
+      annotationTracks: annotationTracks,
+      annotationHeight: 2.5,
+      dataDir: '/dist/data/bands/native/'
+    };
+    config.onDrawAnnots = callback;
+    var ideogram = new Ideogram(config);
+  });
+
+  it('should show three human genomes in one page', function(done) {
+    // Tests use case from ../examples/vanilla/multiple-trio.html
+
+    var config, containerIDs, id, i, container,
+      ideogramsLoaded = 0;
+
+    function callback() {
+      var numChromosomes;
+
+      ideogramsLoaded += 1;
+
+      if (ideogramsLoaded === 3) {
+        numChromosomes = document.querySelectorAll('.chromosome').length;
+        assert.equal(numChromosomes, 24 * 3);
         done();
       }
+    }
 
-      config.assembly = 'GCF_000306695.2';
-      config.onLoad = callback;
-      var ideogram = new Ideogram(config);
-    });
+    config = {
+      organism: 'human',
+      chrHeight: 125,
+      resolution: 400,
+      orientation: 'vertical',
+      dataDir: '/dist/data/bands/native/',
+      onLoad: callback
+    };
 
-    it('should support GenBank accessions in "assembly" parameter', function(done) {
-      // Tests use case for non-default assemblies.
-      // GCA_000002125.2 is commonly called HuRef
-      // https://www.ncbi.nlm.nih.gov/assembly/GCA_000002125.2
+    containerIDs = ['mother', 'father', 'proband'];
+    for (i = 0; i < containerIDs.length; i++) {
+      id = containerIDs[i];
+      container = '<div id="' + id + '"></div>';
+      document.querySelector('body').innerHTML += container;
+      config.container = '#' + id;
+      new Ideogram(config);
+    }
 
-      function callback() {
-        var chr1Length = ideogram.chromosomes['9606']['1'].length
-        // For reference, see length section of LOCUS field in GenBank record at
-        // https://www.ncbi.nlm.nih.gov/nuccore/CM001609.2
-        assert.equal(chr1Length, 219475005);
-        done();
-      }
-
-      config.assembly = 'GCA_000002125.2';
-      config.onLoad = callback;
-      var ideogram = new Ideogram(config);
-    });
-
-    it('should handle arrayed objects in "annotations" parameter', function(done) {
-      // Tests use case from ../examples/vanilla/human.html
-
-      function callback() {
-        var numAnnots = d3.selectAll('.annot').nodes().length;
-        assert.equal(numAnnots, 1);
-        done();
-      }
-
-      config.annotations = [{
-        name: 'BRCA1',
-        chr: '17',
-        start: 43044294,
-        stop: 43125482
-      }];
-      config.onDrawAnnots = callback;
-      var ideogram = new Ideogram(config);
-    });
-
-
-    it('should create a brush when specified', function(done) {
-      // Tests use case from ../examples/vanilla/brush.html
-
-      function callback() {
-        assert.equal(ideogram.selectedRegion.from, 5000000);
-        assert.equal(ideogram.selectedRegion.to, 10000000);
-        assert.equal(ideogram.selectedRegion.extent, 5000000);
-        assert.equal(d3.selectAll('.selection').nodes().length, 1);
-        done();
-      }
-
-      var config = {
-        organism: 'human',
-        chromosome: '19',
-        brush: 'chr19:5000000-10000000',
-        chrHeight: 900,
-        orientation: 'horizontal',
-        onBrushMove: callback, // placeholder
-        onLoad: callback,
-        dataDir: '/dist/data/bands/native/'
-      };
-      var ideogram = new Ideogram(config);
-    });
-
-
-    // TODO: Re-enable when there is a decent package that enables
-    //       PhantomJS-like screenshots from automated tests
-    //       cf.:
-    //        if (window.callPhantom) {
-    //        callPhantom({'screenshot': filename})
-    //
-    // it('should align chr. label with thick horizontal chromosome', function(done) {
-    //   // Tests use case from ../examples/vanilla/annotations_basic.html
-    //
-    //   function callback() {
-    //     var band, bandMiddle,
-    //         chrLabel, chrLabelMiddle;
-    //
-    //     band = d3.selectAll(".chromosome .band").nodes()[0].getBoundingClientRect();
-    //     chrLabel = d3.selectAll(".chromosome-set-label").nodes()[0].getBoundingClientRect();
-    //
-    //     bandMiddle = band.top + band.height/2;
-    //     chrLabelMiddle = chrLabel.top + chrLabel.height/2;
-    //
-    //     labelsDiff = Math.abs(bandMiddle - chrLabelMiddle);
-    //
-    //     assert.isAtMost(labelsDiff, 1);
-    //     done();
-    //   }
-    //
-    //   config = {
-    //     organism: 'human',
-    //     chrHeight: 600,
-    //     chrWidth: 20,
-    //     orientation: 'horizontal',
-    //     chromosomes: ["17"],
-    //     annotations: [{
-    //       "name": "BRCA1",
-    //       "chr": "17",
-    //       "start": 43044294,
-    //       "stop": 43125482
-    //     }],
-    //     annotationHeight: 6
-    //   };
-    //   config.onDrawAnnots = callback;
-    //   var ideogram = new Ideogram(config);
-    // });
-
-    it('should align chr. label with vertical chromosome', function(done) {
-      // Tests use case from ../examples/vanilla/human.html
-
-      function callback() {
-        var band, bandMiddle,
-            chrLabel, chrLabelMiddle;
-
-        band = d3.selectAll('.chromosome .band').nodes()[0].getBoundingClientRect();
-        chrLabel = d3.selectAll('.chromosome-set-label').nodes()[0].getBoundingClientRect();
-
-        bandMiddle = band.left + band.width/2;
-        chrLabelMiddle = chrLabel.left + chrLabel.width/2;
-
-        labelsDiff = Math.abs(bandMiddle - chrLabelMiddle);
-
-        assert.isAtMost(labelsDiff, 1);
-        done();
-      }
-
-
-      var annotationTracks = [
-        {id: 'pathogenicTrack', displayName: 'Pathogenic', color: '#F00'},
-        {id: 'likelyPathogenicTrack', displayName: 'Likely pathogenic', color: '#DB9'},
-        {id: 'uncertainSignificanceTrack', displayName: 'Uncertain significance', color: '#CCC'},
-        {id: 'likelyBenignTrack', displayName: 'Likely benign', color: '#BD9'},
-        {id: 'benignTrack',  displayName: 'Benign', color: '#8D4'}
-      ];
-
-      var config = {
-        organism: 'human',
-        chrWidth: 20,
-        chrHeight: 500,
-        annotationsPath: '../dist/data/annotations/1000_virtual_snvs.json',
-        annotationTracks: annotationTracks,
-        annotationHeight: 2.5,
-        dataDir: '/dist/data/bands/native/'
-      };
-      config.onDrawAnnots = callback;
-      var ideogram = new Ideogram(config);
-    });
-
-
-    it('should show three human genomes in one page', function(done) {
-      // Tests use case from ../examples/vanilla/multiple-trio.html
-
-      var config, containerIDs, id, i, container,
-          ideogramsLoaded = 0;
-
-      function callback() {
-        var numChromosomes;
-
-        ideogramsLoaded += 1;
-
-        if (ideogramsLoaded === 3) {
-          numChromosomes = document.querySelectorAll('.chromosome').length;
-          assert.equal(numChromosomes, 24*3);
-          done();
-        }
-      }
-
-      config = {
-        organism: 'human',
-        chrHeight: 125,
-        resolution: 400,
-        orientation: 'vertical',
-        dataDir: '/dist/data/bands/native/',
-        onLoad: callback
-      };
-
-      containerIDs = ['mother', 'father', 'proband'];
-      for (i = 0; i < containerIDs.length; i++) {
-        id = containerIDs[i];
-        container = '<div id="' + id + '"></div>';
-        document.querySelector('body').innerHTML += container;
-        config.container = '#' + id;
-        new Ideogram(config);
-      }
-
-    });
+  });
 
   it('should show three unbanded primated genomes in one page', function(done) {
     // Tests use case from ../examples/vanilla/multiple-primates.html
 
     var config, containerIDs, id, i, container,
-        ideogramsLoaded = 0;
+      ideogramsLoaded = 0;
 
     function callback() {
       var numChromosomes;
@@ -1142,7 +1176,7 @@ describe('Ideogram', function() {
       ideogramsLoaded += 1;
       if (ideogramsLoaded === 3) {
         numChromosomes = document.querySelectorAll('.chromosome').length;
-        assert.equal(numChromosomes, 24+25+21);
+        assert.equal(numChromosomes, 24 + 25 + 21);
         done();
       }
     }
@@ -1167,7 +1201,6 @@ describe('Ideogram', function() {
     }
 
   });
-
 
   // This test is flaky in Travis CI.
   // Disabled until a way to detect Travis environment is found.
@@ -1246,113 +1279,112 @@ describe('Ideogram', function() {
   // });
 
 
-    it('should show XX chromosomes for a diploid human female', function(done) {
-      // Tests use case from ../examples/vanilla/ploidy-basic.html
+  it('should show XX chromosomes for a diploid human female', function(done) {
+    // Tests use case from ../examples/vanilla/ploidy-basic.html
 
-      function callback() {
-        var selector = '#chrX-9606-chromosome-set .chromosome-set-label tspan';
-        var chrSetLabel = getSvgText(selector);
-        assert.equal(chrSetLabel, 'XX');
-        done();
-      }
+    function callback() {
+      var selector = '#chrX-9606-chromosome-set .chrSetLabel tspan';
+      var chrSetLabel = getSvgText(selector);
+      assert.equal(chrSetLabel, 'XX');
+      done();
+    }
 
-      var config = {
-        organism: 'human',
-        sex: 'female',
-        chrHeight: 300,
-        chrWidth: 8,
-        ploidy: 2,
-        dataDir: '/dist/data/bands/native/',
-        onLoad: callback
-      };
-      var ideogram = new Ideogram(config);
-    });
+    var config = {
+      organism: 'human',
+      sex: 'female',
+      chrHeight: 300,
+      chrWidth: 8,
+      ploidy: 2,
+      dataDir: '/dist/data/bands/native/',
+      onLoad: callback
+    };
+    var ideogram = new Ideogram(config);
+  });
 
+  it('should show XY chromosomes for a diploid human male', function(done) {
+    // Tests use case from ../examples/vanilla/ploidy-basic.html
 
-    it('should show XY chromosomes for a diploid human male', function(done) {
-      // Tests use case from ../examples/vanilla/ploidy-basic.html
+    function callback() {
+      var selector = '#chrX-9606-chromosome-set .chrSetLabel tspan';
+      var chrSetLabel = getSvgText(selector);
+      assert.equal(chrSetLabel, 'XY');
+      done();
+    }
 
-      function callback() {
-        var selector = '#chrX-9606-chromosome-set .chromosome-set-label tspan';
-        var chrSetLabel = getSvgText(selector);
-        assert.equal(chrSetLabel, 'XY');
-        done();
-      }
+    var config = {
+      organism: 'human',
+      sex: "male",
+      chrHeight: 300,
+      chrWidth: 8,
+      ploidy: 2,
+      dataDir: '/dist/data/bands/native/',
+      onLoad: callback
+    };
+    var ideogram = new Ideogram(config);
+  });
 
-      var config = {
-        organism: 'human',
-        sex: "male",
-        chrHeight: 300,
-        chrWidth: 8,
-        ploidy: 2,
-        dataDir: '/dist/data/bands/native/',
-        onLoad: callback
-      };
-      var ideogram = new Ideogram(config);
-    });
+  it('should omit Y chromosome in haploid human female', function(done) {
 
-    it('should omit Y chromosome in haploid human female', function(done) {
+    function callback() {
+      var hasChrY = d3.selectAll('#chrY-9606').nodes().length >= 1;
+      assert.isFalse(hasChrY);
+      done();
+    }
 
-      function callback() {
-        var hasChrY = d3.selectAll('#chrY-9606').nodes().length >= 1;
-        assert.isFalse(hasChrY);
-        done();
-      }
+    var config = {
+      organism: 'human',
+      sex: 'female',
+      dataDir: '/dist/data/bands/native/'
+    };
+    config.onLoad = callback;
+    var ideogram = new Ideogram(config);
+  });
 
-      var config = {
-        organism: 'human',
-        sex: 'female',
-        dataDir: '/dist/data/bands/native/'
-      };
-      config.onLoad = callback;
-      var ideogram = new Ideogram(config);
-    });
+  it('should support using NCBI Taxonomy ID in "organism" option', function(done) {
 
-    it('should support using NCBI Taxonomy ID in "organism" option', function(done) {
+    function callback() {
+      var numChromosomes = Object.keys(ideogram.chromosomes[9606]).length;
+      assert.equal(numChromosomes, 24);
+      done();
+    }
 
-      function callback() {
-        var numChromosomes = Object.keys(ideogram.chromosomes[9606]).length;
-        assert.equal(numChromosomes, 24);
-        done();
-      }
+    var config = {
+      organism: 9606,
+      dataDir: '/dist/data/bands/native/'
+    };
+    config.onLoad = callback;
+    var ideogram = new Ideogram(config);
+  });
 
-      var config = {
-        organism: 9606,
-        dataDir: '/dist/data/bands/native/'
-      };
-      config.onLoad = callback;
-      var ideogram = new Ideogram(config);
-    });
+  it('should handle toggling single- and multi-chromosome view, in vertical orientation', function(done) {
 
-  it('should handle toggling single- and multi-chromosome view, in horizontal orientation', function(done) {
+    function callback() {
 
-      function callback() {
+      d3.select('#chr1-9606').dispatch('click');
 
-        d3.select('#chr1-9606').dispatch('click');
+      var shownChrs = d3.selectAll('.chromosome').nodes().filter(function(d) {
+        return d.style.display !== 'none';
+      });
+      var shownChrID = shownChrs[0].id;
+      assert.equal(shownChrs.length, 1);
+      assert.equal(shownChrID, 'chr1-9606');
+
+      d3.select('#chr1-9606').dispatch('click');
+      setTimeout(function() {
 
         var shownChrs = d3.selectAll('.chromosome').nodes().filter(function(d) {
           return d.style.display !== 'none';
         });
-        var shownChrID = shownChrs[0].id;
-        assert.equal(shownChrs.length, 1);
-        assert.equal(shownChrID, 'chr1-9606');
+        assert.equal(shownChrs.length, 24);
 
-        d3.select('#chr1-9606').dispatch('click');
-        setTimeout(function() {
+        done();
+      }, 500);
 
-          var shownChrs = d3.selectAll('.chromosome').nodes().filter(function(d) {
-            return d.style.display !== 'none';
-          });
-          assert.equal(shownChrs.length, 24);
+    }
 
-          done();
-        }, 500);
-
-      }
-
-      config.onLoad = callback;
-      var ideogram = new Ideogram(config);
-    });
+    config.onLoad = callback;
+    var ideogram = new Ideogram(config);
+  });
 
   it('should handle toggling single- and multi-chromosome view, in horizontal orientation', function(done) {
 
@@ -1382,6 +1414,48 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
+  it('should handle toggling single- and multi-chromosome view, in labeled vertical orientation', function(done) {
+    // Tests that band labels remain visible after rotating vertical chromosomes
+
+    function callback() {
+
+      d3.select('#chr1-9606').dispatch('click');
+
+      var shownChrs = d3.selectAll('.chromosome').nodes().filter(function(d) {
+        return d.style.display !== 'none';
+      });
+      var shownChrID = shownChrs[0].id;
+      assert.equal(shownChrs.length, 1);
+      assert.equal(shownChrID, 'chr1-9606');
+      d3.select('#chr1-9606').dispatch('click');
+      setTimeout(function() {
+
+        var shownChrs = d3.selectAll('.chromosome').nodes().filter(function(d) {
+          return d.style.display !== 'none';
+        });
+
+        assert.equal(shownChrs.length, 24);
+
+        var band = d3.select('.bandLabel.bsbsl-0');
+        var bandRect = band.nodes()[0].getBoundingClientRect();
+
+        assert.isBelow(Math.abs(bandRect.x - 13), 2);
+        assert.isBelow(Math.abs(bandRect.y - 1604), 2);
+
+        done();
+      }, 500);
+    }
+
+    var config = {
+      organism: 'human',
+      showBandLabels: true,
+      dataDir: '/dist/data/bands/native/',
+      onLoad: callback
+    };
+
+    var ideogram = new Ideogram(config);
+  });
+
   it('should depict chromosomal rearrangements', function(done) {
     // Covers case in ../examples/vanilla/ploidy-rearrangements.html
     function callback() {
@@ -1389,7 +1463,7 @@ describe('Ideogram', function() {
       var lastCopyChr1 = d3.selectAll('#chr1-4641').nodes().slice(-1)[0];
       lastCopyChr1Fill = d3.select(lastCopyChr1).select('.p-band').nodes()[0].style.fill;
       assert.equal(lastCopyChr1Fill, 'transparent');
-      done()
+      done();
     }
 
     function initIdeo() {
@@ -1427,12 +1501,12 @@ describe('Ideogram', function() {
     d3.select('body')
       .append('script')
       .attr('src', '/dist/data/bands/native/banana.js');
-    
+
     // Check for banana.js content every 50 ms.
     // If/when that content exists, initialize ideogram.
     (function checkBandData() {
-      window.bandTimeout = setTimeout(function () {
-        if (typeof(window.chrBands) === 'undefined') {
+      window.bandTimeout = setTimeout(function() {
+        if (typeof (window.chrBands) === 'undefined') {
           checkBandData();
         } else {
           initIdeo();
@@ -1481,7 +1555,7 @@ describe('Ideogram', function() {
           ploidy: [0, 1, 0],
           start: 17120000,
           stop: 25120000,
-          color: [0, '#7396be', 0,]
+          color: [0, '#7396be', 0]
         }, {
           chr: 2,
           ploidy: [0, 1, 1],
@@ -1503,8 +1577,8 @@ describe('Ideogram', function() {
     // Check for banana.js content every 50 ms.
     // If/when that content exists, initialize ideogram.
     (function checkBandData() {
-      window.bandTimeout = setTimeout(function () {
-        if (typeof(window.chrBands) === 'undefined') {
+      window.bandTimeout = setTimeout(function() {
+        if (typeof (window.chrBands) === 'undefined') {
           checkBandData();
         } else {
           initIdeo();
@@ -1514,34 +1588,33 @@ describe('Ideogram', function() {
 
   });
 
-    // it('should align chr. label with band-labeled vertical chromosome', function(done) {
-    //   // Tests use case from ../examples/vanilla/human.html
-    //
-    //   function callback() {
-    //
-    //     var band, bandMiddle,
-    //         chrLabel, chrLabelMiddle;
-    //
-    //     band = d3.select(".chromosome .band").nodes()[0].getBoundingClientRect();
-    //     chrLabel = d3.select(".chromosome .chrLabel").nodes()[0].getBoundingClientRect();
-    //
-    //     bandMiddle = band.left + band.width/2;
-    //     chrLabelMiddle = chrLabel.left + chrLabel.width/2;
-    //
-    //     labelsDiff = Math.abs(bandMiddle - chrLabelMiddle);
-    //
-    //     assert.isAtMost(labelsDiff, 1);
-    //     done();
-    //   }
-    //
-    //   var config = {
-    //     organism: 'human',
-    //     showBandLabels: true,
-    //     chrHeight: 500
-    //   };
-    //   config.onLoad = callback;
-    //   var ideogram = new Ideogram(config);
-    // });
-
+  // it('should align chr. label with band-labeled vertical chromosome', function(done) {
+  //   // Tests use case from ../examples/vanilla/human.html
+  //
+  //   function callback() {
+  //
+  //     var band, bandMiddle,
+  //         chrLabel, chrLabelMiddle;
+  //
+  //     band = d3.select(".chromosome .band").nodes()[0].getBoundingClientRect();
+  //     chrLabel = d3.select(".chromosome .chrLabel").nodes()[0].getBoundingClientRect();
+  //
+  //     bandMiddle = band.left + band.width/2;
+  //     chrLabelMiddle = chrLabel.left + chrLabel.width/2;
+  //
+  //     labelsDiff = Math.abs(bandMiddle - chrLabelMiddle);
+  //
+  //     assert.isAtMost(labelsDiff, 1);
+  //     done();
+  //   }
+  //
+  //   var config = {
+  //     organism: 'human',
+  //     showBandLabels: true,
+  //     chrHeight: 500
+  //   };
+  //   config.onLoad = callback;
+  //   var ideogram = new Ideogram(config);
+  // });
 
 });

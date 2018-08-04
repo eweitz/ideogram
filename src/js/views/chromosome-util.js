@@ -16,7 +16,7 @@ export class ChromosomeUtil {
   getLabel() {
     var label =
       d3
-        .select(this._node)
+        .select(this._node.parentNode)
         .select('text.chrLabel')
         .text();
     return label;
@@ -29,7 +29,7 @@ export class ChromosomeUtil {
     var setLabel =
       d3
         .select(this._node.parentNode)
-        .select('text.chromosome-set-label')
+        .select('text.chrSetLabel')
         .text();
     return setLabel;
   }
