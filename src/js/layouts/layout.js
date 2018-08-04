@@ -216,7 +216,7 @@ export class Layout {
 
         // Account for chromosome label
         // TODO: Make this dynamic, not hard-coded
-        ideo.config.chrWidth *= 1.7;
+        ideo.config.chrWidth *= 2.3;
 
         ideo.config.annotationHeight *= 1.7;
 

@@ -491,10 +491,10 @@ describe('Ideogram', function() {
       annotBox = annot.getBoundingClientRect();
 
       assert.isBelow(Math.abs(annotBox.x - 75), 2);
-      assert.isBelow(Math.abs(annotBox.y - 505), 2);
+      assert.isBelow(Math.abs(annotBox.y - 510), 2);
       assert.isBelow(Math.abs(annotBox.height - 14), 2);
       assert.isBelow(Math.abs(annotBox.right - 89), 2);
-      assert.isBelow(Math.abs(annotBox.bottom - 519), 2);
+      assert.isBelow(Math.abs(annotBox.bottom - 523), 2);
       assert.isBelow(Math.abs(annotBox.left - 75), 2);
 
       done();
