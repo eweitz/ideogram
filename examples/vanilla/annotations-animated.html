@@ -41,9 +41,7 @@
 <div style="margin-top: 50px"></div>
 <div class="facets"></div>
 <script>
-  var counts, key, count;
   var d3 = Ideogram.d3;
-
 
   // e.g. "very-low" -> "Very low"
   function desluggify(value) {
@@ -51,12 +49,9 @@
   }
 
   function updateFilters() {
-    var tmp, facet,
-      checkedFilter,
-      checkedFilters,
-      selections = {},
-      i, facet, counts, count,
-      filterID;
+    var tmp, checkedFilter, checkedFilters,  i, facet, counts, count,
+      filterID, key,
+      selections = {};
 
     checkedFilters = d3.selectAll("input:checked").nodes();
 
@@ -66,7 +61,7 @@
       checkedFilter = tmp[tmp.length - 1];
 
       filterID = filterMap[facet][checkedFilter];
-      if (facet in selections == false) {
+      if (facet in selections === false) {
         selections[facet] = {};
       }
       selections[facet][filterID] = 1;
@@ -103,7 +98,7 @@
   seenF10 = false;
   seenF150 = false;
   filterMap = {};
-  function onDrawAnnots() {
+  function onDrawAnnotsCallback() {
 
     if (annotsLoaded === true) {
       return;
@@ -195,7 +190,7 @@
     annotationsLayout: 'histogram',
     annotationsColor: 'orangered',
     container: '.ideogram-container',
-    onDrawAnnots: onDrawAnnots
+    onDrawAnnots: onDrawAnnotsCallback
   };
 
   var ideogram = new Ideogram(config);

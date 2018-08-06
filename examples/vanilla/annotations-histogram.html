@@ -123,43 +123,38 @@
   </div>
   <script type="text/javascript">
 
-  var counts, key, count;
   var d3 = Ideogram.d3;
 
-  d3.selectAll('input').on('click', function() {
-    var filterMap,
-        tmp, facet,
-        checkedFilter,
-        checkedFilters,
-        selections = {},
-        i, facet, counts, count,
-        filterID;
+  var filterMap = {
+    'expression-level': {
+      'extremely-high': 7,
+      'very-high': 6,
+      'high': 5,
+      'moderately-high': 4,
+      'moderate': 3,
+      'low': 2,
+      'very-low': 1
+    },
+    'gene-type': {
+      'mrna': 1,
+      'misc-rna': 2,
+      'mirna': 3,
+      'trna': 4,
+      'lncrna': 5
+    },
+    'tissue-type': {
+      'cerebral-cortex': 1,
+      'heart': 2,
+      'liver': 3,
+      'skin': 4,
+      'skeletal-muscle': 5
+    }
+  };
 
-    filterMap = {
-      'expression-level': {
-        'extremely-high': 7,
-        'very-high': 6,
-        'high': 5,
-        'moderately-high': 4,
-        'moderate': 3,
-        'low': 2,
-        'very-low': 1
-      },
-      'gene-type': {
-        'mrna': 1,
-        'misc-rna': 2,
-        'mirna': 3,
-        'trna': 4,
-        'lncrna': 5
-      },
-      'tissue-type': {
-        'cerebral-cortex': 1,
-        'heart': 2,
-        'liver': 3,
-        'skin': 4,
-        'skeletal-muscle': 5
-      }
-    };
+  d3.selectAll('input').on('click', function() {
+    var tmp, checkedFilter, checkedFilters,  i, facet, counts, count,
+      filterID, key,
+      selections = {};
 
     checkedFilters = d3.selectAll('input:checked').nodes();
 
@@ -169,7 +164,7 @@
       checkedFilter = tmp[2];
 
       filterID = filterMap[facet][checkedFilter];
-      if (facet in selections == false) {
+      if (facet in selections === false) {
         selections[facet] = {};
       }
       selections[facet][filterID] = 1;
