@@ -89,7 +89,7 @@
       config.organism = orgConfig.organism
       config.container = '#' + id;
       config.annotations = orgConfig.annotations;
-      new Ideogram(config);
+      window['ideogram_' + id.replace('-', '_')] = new Ideogram(config);
     }
   </script>
 </body>
