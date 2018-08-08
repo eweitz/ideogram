@@ -67,7 +67,7 @@ function drawProcessedAnnots(annots) {
     chr, chrs, r, chrAnnot, i, numAnnots, x1, x2, y1, y2, filledAnnots,
     ideo = this;
 
-  d3.selectAll('.annot').remove();
+  d3.selectAll(ideo.selector + ' .annot').remove();
 
   chrWidth = this.config.chrWidth;
 

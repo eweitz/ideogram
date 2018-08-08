@@ -28,8 +28,7 @@ var d3 = Object.assign({}, d3selection);
 function getBands(content, taxid, chromosomes) {
   var lines = {},
     delimiter, tsvLines, columns, line, stain, chr,
-    i, init, tsvLinesLength, source,
-    start, stop, firstColumn, tmp;
+    i, init, tsvLinesLength, source, tmp;
 
   if (content.slice(0, 15) === 'window.chrBands') {
     source = 'native';
