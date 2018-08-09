@@ -528,6 +528,8 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
+
+
   it('should have filterable tracks in track-filters example', function(done) {
     // Tests use case from ../examples/vanilla/annotations-track-filters.html
 
@@ -1164,11 +1166,12 @@ describe('Ideogram', function() {
 
   });
 
-  it('should show three unbanded primated genomes in one page', function(done) {
+  it('should show three unbanded, annotated primate genomes in one page', function(done) {
     // Tests use case from ../examples/vanilla/multiple-primates.html
 
     var config, containerIDs, id, i, container,
-      ideogramsLoaded = 0;
+      ideogramsLoaded = 0,
+      annotSetsDrawn = 0;
 
     function callback() {
       var numChromosomes;
@@ -1177,9 +1180,44 @@ describe('Ideogram', function() {
       if (ideogramsLoaded === 3) {
         numChromosomes = document.querySelectorAll('.chromosome').length;
         assert.equal(numChromosomes, 24 + 25 + 21);
+      }
+    }
+
+    function onDrawAnnotsCallback() {
+      var numAnnots;
+
+      annotSetsDrawn += 1;
+      if (annotSetsDrawn === 3) {
+        numAnnots = document.querySelectorAll('.annot').length;
+        assert.equal(numAnnots, 6);
+        console.log('done?')
         done();
       }
     }
+
+    var orgConfigs = [
+      {
+        organism: 'homo-sapiens',
+        annotations: [
+          {name: 'APOB', chr: '2', start: 21001429, stop: 21044073, color: '#F00'},
+          {name: 'CTLA4', chr: '2', start: 203867788, stop: 203873960, color: '#77F', shape: 'circle'}
+        ]
+      },
+      {
+        organism: 'pan-troglodytes',
+        annotations: [
+          {name: 'APOB', chr: '2A', start: 21371172, stop: 21413720, color: '#F00'},
+          {name: 'CTLA4', chr: '2B', start: 94542849, stop: 94550230, color: '#77F', shape: 'circle'}
+        ]
+      },
+      {
+        organism: 'macaca-fascicularis',
+        annotations: [
+          {name: 'APOB', chr: '13', start: 89924186, stop: 89966894, color: '#F00'},
+          {name: 'CTLA4', chr: '12', start: 93412707, stop: 93419132, color: '#77F', shape: 'circle'}
+        ]
+      }
+    ];
 
     config = {
       chrHeight: 250,
@@ -1187,7 +1225,8 @@ describe('Ideogram', function() {
       orientation: 'horizontal',
       showFullyBanded: false,
       dataDir: '/dist/data/bands/native/',
-      onLoad: callback
+      onLoad: callback,
+      onDrawAnnots: onDrawAnnotsCallback
     };
 
     containerIDs = ['homo-sapiens', 'pan-troglodytes', 'macaca-fascicularis'];
@@ -1197,6 +1236,7 @@ describe('Ideogram', function() {
       document.querySelector('body').innerHTML += container;
       config.container = '#' + id;
       config.organism = id;
+      config.annotations = orgConfigs[i].annotations;
       new Ideogram(config);
     }
 
