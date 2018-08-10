@@ -617,7 +617,7 @@ function init() {
             ideo.drawProcessedAnnots(ideo.annots);
           }
 
-          if (typeof crossfilter !== 'undefined' && ideo.initCrossFilter) {
+          if (ideo.config.filterable) {
             ideo.initCrossFilter();
           }
         }

@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html>
 <title>Annotations, animated | Ideogram</title>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter/1.3.12/crossfilter.min.js"></script>
 <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
-<script type="text/javascript" src="../../src/js/filter.js"></script>
 <style>
   body {
     font: 12px Arial;
@@ -84,7 +82,6 @@
   function animateFilters(nodes) {
     setTimeout(function() {
       var node = nodes.shift(); // remove first element from list, assign it here
-      console.log(node.id);
       d3.selectAll('input').attr('checked', null);
       d3.select('#' + node.id).attr('checked', true);
       updateFilters();
@@ -190,7 +187,8 @@
     annotationsLayout: 'histogram',
     annotationsColor: 'orangered',
     container: '.ideogram-container',
-    onDrawAnnots: onDrawAnnotsCallback
+    onDrawAnnots: onDrawAnnotsCallback,
+    filterable: true
   };
 
   var ideogram = new Ideogram(config);

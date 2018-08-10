@@ -41,6 +41,7 @@ import {
 import {onBrushMove, createBrush} from './brush';
 import {drawSexChromosomes, setSexChromosomes} from './sex-chromosomes';
 import {convertBpToPx, convertPxToBp} from './coordinate-converters';
+import {unpackAnnots, packAnnots, initCrossFilter, filterAnnots} from './filter';
 
 import {
   assemblyIsAccession, getDataDir, getChromosomeModel,
@@ -113,6 +114,12 @@ export default class Ideogram {
     // Functions from coordinate-converters.js
     this.convertBpToPx = convertBpToPx;
     this.convertPxToBp = convertPxToBp;
+
+    // Functions from filter.js
+    this.unpackAnnots = unpackAnnots;
+    this.packAnnots = packAnnots;
+    this.initCrossFilter = initCrossFilter;
+    this.filterAnnots = filterAnnots;
 
     // Functions from lib.js
     this.assemblyIsAccession = assemblyIsAccession;

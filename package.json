@@ -39,6 +39,7 @@
   "homepage": "https://github.com/eweitz/ideogram",
   "dependencies": {
     "commander": "*",
+    "crossfilter": "1.3.12",
     "d3-array": "^1.2.0",
     "d3-brush": "^1.0.4",
     "d3-dispatch": "^1.0.3",

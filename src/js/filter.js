@@ -1,3 +1,8 @@
+import * as d3selection from 'd3-selection';
+import * as crossfilter from 'crossfilter';
+
+var d3 = Object.assign({}, d3selection);
+
 /* Decompresses ideogram's annotations for crossfilter initialization
 By default, annotations are clustered by chromosome, e.g.
 [
@@ -13,7 +18,7 @@ This method flattens that structure to e.g.
 ]
 See also: packAnnots
 */
-Ideogram.prototype.unpackAnnots = function() {
+function unpackAnnots() {
   var chr, annots, i,
     unpackedAnnots = [],
     ideo = this,
@@ -26,12 +31,12 @@ Ideogram.prototype.unpackAnnots = function() {
   }
 
   return unpackedAnnots;
-};
+}
 
 /*
   Compresses annots back to default state.  Inverse of unpackAnnots.
 */
-Ideogram.prototype.packAnnots = function(unpackedAnnots) {
+function packAnnots(unpackedAnnots) {
   var chr, annot, i,
     annots = [],
     ideo = this,
@@ -47,13 +52,13 @@ Ideogram.prototype.packAnnots = function(unpackedAnnots) {
   }
 
   return annots;
-};
+}
 
 /*
   Initializes crossfilter.  Needed for client-side filtering.
   More: https://github.com/square/crossfilter/wiki/API-Reference
 */
-Ideogram.prototype.initCrossFilter = function() {
+function initCrossFilter() {
   var ideo = this,
     keys = ideo.rawAnnots.keys,
     i, facet;
@@ -77,7 +82,7 @@ Ideogram.prototype.initCrossFilter = function() {
   if ('filterSelections' in ideo) {
     ideo.filterAnnots(ideo.filterSelections);
   }
-};
+}
 
 /*
   Filters annotations based on the given selections
@@ -102,7 +107,7 @@ Ideogram.prototype.initCrossFilter = function() {
     * Range filters
     * Integrate server-side filtering for very large datasets
 */
-Ideogram.prototype.filterAnnots = function(selections) {
+function filterAnnots(selections) {
   var t0 = Date.now();
 
   var i, facet,
@@ -149,4 +154,6 @@ Ideogram.prototype.filterAnnots = function(selections) {
   console.log('Time in filterAnnots: ' + (Date.now() - t0) + ' ms');
 
   return counts;
-};
+}
+
+export {unpackAnnots, packAnnots, initCrossFilter, filterAnnots}
