@@ -528,7 +528,189 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
+  it('should have filterable annotations', function(done) {
+    // Tests use case from ../examples/vanilla/annotations-histogram.html
 
+    var priorBody = document.querySelector('body').innerHTML;
+
+    var firstRun = true;
+    var numAnnotsInFirstBar;
+
+    // Ensure the first histogram bar represents
+    // 110 annotations before filtering, and
+    // 2 annotations after filtering
+    function callback() {
+
+      numAnnotsInFirstBar = ideogram.bars[0].annots[0].count;
+
+      if (firstRun) {
+        assert.equal(numAnnotsInFirstBar, 110);
+        firstRun = false;
+        document.querySelector('#filter_expression-level_extremely-high').click();
+        return;
+      }
+      
+      assert.equal(numAnnotsInFirstBar, 2);
+      document.querySelector('body').innerHTML = priorBody;
+      done();
+    }
+
+  var htmlScaffolding = '<div id="container"></div>' +
+      '<ul id="expression-level">' +
+      'Expression level' +
+    '<li>' +
+    '<label for="filter_expression-level_extremely-high">' +
+      '<input type="checkbox" id="filter_expression-level_extremely-high">Extremely high</input>' +
+    '<span class="count"></span>' +
+      '</label>' +
+      '</li>' +
+      '<li>' +
+      '<label for="filter_expression-level_very-high">' +
+      '<input type="checkbox" id="filter_expression-level_very-high">Very high</input>' +
+    '<span class="count"></span>' +
+      '</label>' +
+      '</li>' +
+      '<li>' +
+      '<label for="filter_expression-level_high">' +
+      '<input type="checkbox" id="filter_expression-level_high">High</input>' +
+      '<span class="count"></span>' +
+      '</label>' +
+      '</li>' +
+      '<li>' +
+      '<label for="filter_expression-level_moderately-high">' +
+      '<input type="checkbox" id="filter_expression-level_moderately-high">Moderately high</input>' +
+    '<span class="count"></span>' +
+      '</label>' +
+      '</li>' +
+      '<li>' +
+      '<label for="filter_expression-level_moderate">' +
+      '<input type="checkbox" id="filter_expression-level_moderate">Moderate</input>' +
+      '<span class="count"></span>' +
+      '</label>' +
+      '</li>' +
+      '<li>' +
+      '<label for="filter_expression-level_low">' +
+      '<input type="checkbox" id="filter_expression-level_low">Low</input>' +
+      '<span class="count"></span>' +
+      '</label>' +
+      '</li>' +
+      '<li>' +
+      '<label for="filter_expression-level_very-low">' +
+      '<input type="checkbox" id="filter_expression-level_very-low">Very low</input>' +
+    '<span class="count"></span>' +
+      '</label>' +
+      '</li>' +
+      '</ul>' +
+      '<ul id="gene-type">' +
+      'Gene type' +
+    '<li>' +
+    '<label for="filter_gene-type_mrna">' +
+      '<input type="checkbox" id="filter_gene-type_mrna">mRNA</input>' +
+      '<span class="count"></span>' +
+      '</label>' +
+      '</li>' +
+      '<li>' +
+      '<label for="filter_gene-type_misc-rna">' +
+      '<input type="checkbox" id="filter_gene-type_misc-rna">misc_RNA</input>' +
+      '<span class="count"></span>' +
+      '</label>' +
+      '</li>' +
+      '<li>' +
+      '<label for="filter_gene-type_mirna">' +
+      '<input type="checkbox" id="filter_gene-type_mirna">miRNA</input>' +
+      '<span class="count"></span>' +
+      '</label>' +
+      '</li>' +
+      '<li>' +
+      '<label for="filter_gene-type_trna">' +
+      '<input type="checkbox" id="filter_gene-type_trna">tRNA</input>' +
+      '<span class="count"></span>' +
+      '</label>' +
+      '</li>' +
+      '<li>' +
+      '<label for="filter_gene-type_lncrna">' +
+      '<input type="checkbox" id="filter_gene-type_lncrna">lncRNA</input>' +
+      '<span class="count"></span>' +
+      '</label>' +
+      '</li>' +
+      '</ul>';
+
+    document.querySelector('body').innerHTML = htmlScaffolding;
+
+    var filterMap = {
+      'expression-level': {
+        'extremely-high': 7,
+        'very-high': 6,
+        'high': 5,
+        'moderately-high': 4,
+        'moderate': 3,
+        'low': 2,
+        'very-low': 1
+      },
+      'gene-type': {
+        'mrna': 1,
+        'misc-rna': 2,
+        'mirna': 3,
+        'trna': 4,
+        'lncrna': 5
+      },
+      'tissue-type': {
+        'cerebral-cortex': 1,
+        'heart': 2,
+        'liver': 3,
+        'skin': 4,
+        'skeletal-muscle': 5
+      }
+    };
+
+    d3.selectAll('input').on('click', function() {
+      var tmp, checkedFilter, checkedFilters,  i, facet, counts, count,
+        filterID, key,
+        selections = {};
+
+      checkedFilters = d3.selectAll('input:checked').nodes();
+
+      for (i = 0; i < checkedFilters.length; i++) {
+        tmp = checkedFilters[i].id.split('_');
+        facet = tmp[1];
+        checkedFilter = tmp[2];
+
+        filterID = filterMap[facet][checkedFilter];
+        if (facet in selections === false) {
+          selections[facet] = {};
+        }
+        selections[facet][filterID] = 1;
+      }
+
+      counts = ideogram.filterAnnots(selections);
+
+      for (facet in counts) {
+        for (i = 0; i < counts[facet].length; i++) {
+          count = counts[facet][i];
+          key = count.key - 1;
+          value = '(' + count.value + ')';
+
+          // document.querySelectorAll('#' + facet + ' .count')[key].innerHTML = value;
+        }
+      }
+    });
+
+    var config = {
+      container: '#container',
+      orientation: 'vertical',
+      organism: 'human',
+      assembly: 'GRCh37',
+      chrHeight: 275,
+      annotationsPath: '/dist/data/annotations/SRR562646.json',
+      dataDir: '/dist/data/bands/native/',
+      annotationsLayout: 'histogram',
+      barWidth: 3,
+      filterable: true,
+      onDrawAnnots: callback
+    };
+
+    ideogram = new Ideogram(config);
+  });
 
   it('should have filterable tracks in track-filters example', function(done) {
     // Tests use case from ../examples/vanilla/annotations-track-filters.html

@@ -614,11 +614,12 @@ function init() {
             ideo.annots = ideo.updateDisplayedTracks(config.annotationsDisplayedTracks);
           } else {
             ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
-            ideo.drawProcessedAnnots(ideo.annots);
-          }
 
-          if (ideo.config.filterable) {
-            ideo.initCrossFilter();
+            if (ideo.config.filterable) {
+              ideo.initCrossFilter();
+            }
+
+            ideo.drawProcessedAnnots(ideo.annots);
           }
         }
 
