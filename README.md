@@ -28,9 +28,9 @@ $ git clone https://github.com/eweitz/ideogram.git
 
 Then go to [http://localhost/ideogram/examples/](http://localhost/ideogram/examples/).
 
-Or, if you use [yarn](https://yarnpkg.com/en/):
+Or, if you use npm:
 ```
-yarn add ideogram
+npm install ideogram
 ```
 
 You can then [import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import) Ideogram into an application like so:
