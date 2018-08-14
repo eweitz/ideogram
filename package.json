@@ -36,7 +36,7 @@
   "bugs": {
     "url": "https://github.com/eweitz/ideogram/issues"
   },
-  "homepage": "https://github.com/eweitz/ideogram",
+  "homepage": "https://eweitz.github.io/ideogram",
   "dependencies": {
     "commander": "*",
     "crossfilter": "1.3.12",
