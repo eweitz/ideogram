@@ -134,7 +134,7 @@ export class Layout {
         ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
         ideo.drawProcessedAnnots(ideo.annots);
 
-        if (typeof crossfilter !== 'undefined' && ideo.initCrossFilter) {
+        if (ideo.config.filterable) {
           ideo.initCrossFilter();
         }
       }
