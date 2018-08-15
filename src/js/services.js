@@ -227,9 +227,7 @@ function getTaxids(callback) {
 function getAssemblyAndChromosomesFromEutils(callback) {
   var asmAndChrArray, // [assembly_accession, chromosome_objects_array]
     organism, assemblyAccession, chromosomes, termStem, asmSearch,
-    asmUid, asmSummary,
-    gbUid, nuccoreLink,
-    links, ntSummary,
+    asmUid, asmSummary, rsUid, nuccoreLink, links, ntSummary, qs,
     results, result, cnIndex, chrName, chrLength, chromosome, type,
     ideo = this;
 
@@ -265,18 +263,14 @@ function getAssemblyAndChromosomesFromEutils(callback) {
       return d3.json(asmSummary);
     })
     .then(function(data) {
-      // GenBank UID for this assembly
-      gbUid = data.result[asmUid].gbuid;
+      // RefSeq UID for this assembly
+      rsUid = data.result[asmUid].rsuid;
       assemblyAccession = data.result[asmUid].assemblyaccession;
 
       asmAndChrArray.push(assemblyAccession);
 
-      // Get a list of IDs for the chromosomes in this genome.
-      //
-      // This information does not seem to be available from well-known
-      // NCBI databases like Assembly or Nucleotide, so we use GenColl,
-      // a lesser-known NCBI database.
-      var qs = '&db=nuccore&linkname=gencoll_nuccore_chr&from_uid=' + gbUid;
+      // Get a list of IDs for the chromosomes in this genome
+      qs = '&db=nuccore&linkname=assembly_nuccore_refseq&from_uid=' + asmUid;
       nuccoreLink = ideo.elink + qs;
 
       return d3.json(nuccoreLink);
