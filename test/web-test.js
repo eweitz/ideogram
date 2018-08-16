@@ -1184,6 +1184,44 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
+  it('should recover chromosomes when given scaffolds', function(done) {
+    // Tests use case from ../examples/vanilla/human.html
+
+    function callback() {
+      var numChromosomes = document.querySelectorAll('.chromosome').length;
+      assert.equal(numChromosomes, 20);
+      done();
+    }
+
+    var config = {
+      organism: 'Sus scrofa', // pig
+      onLoad: callback
+    };
+
+    var ideogram = new Ideogram(config);
+  });
+
+  it('should support mitochondrial and chloroplast chromosomes', function(done) {
+    // Tests use case from ../examples/vanilla/human.html
+
+    function callback() {
+      var chromosomes = Array.from(document.querySelectorAll('.chromosome'));
+      var nonNuclearChrs = chromosomes.slice(-2);
+      assert.equal(chromosomes.length, 21);
+      assert.equal(nonNuclearChrs[0].id, 'chrCP-29760'); // chloroplast (CP)
+      assert.equal(nonNuclearChrs[1].id, 'chrMT-29760'); // mitochrondrion (MT)
+      done();
+    }
+
+    var config = {
+      organism: 'vitis-vinifera', // grape
+      showNonNuclearChromosomes: true,
+      onLoad: callback
+    };
+
+    var ideogram = new Ideogram(config);
+  });
+
   it('should handle arrayed objects in "annotations" parameter', function(done) {
     // Tests use case from ../examples/vanilla/human.html
 
