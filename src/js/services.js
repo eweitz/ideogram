@@ -268,20 +268,23 @@ function getAssemblyAndChromosomesFromEutils(callback, recovering) {
 
       rsUid = assembly.rsuid; // RefSeq UID for this assembly
       gbUid = assembly.gbuid; // GenBank UID
-
       assemblyAccession = assembly.assemblyaccession;
 
       asmAndChrArray.push(assemblyAccession);
 
       // Get a list of IDs for the chromosomes in this genome.
       //
-      // If this is our first pass, or if assembly is GenBank-only,
-      // then query RefSeq sequences in Nucleotide DB.
-      // Otherwise, query the lesser-known GenColl (Genomic Collections) DB.
-      if (typeof recovering === 'undefined') { // TODO: account for GenBank-only
-        qs = '&db=nuccore&linkname=assembly_nuccore_refseq&from_uid=' + asmUid;
-      } else {
+      // If this is our first pass, or if assembly is GenBank-only, or if
+      // a GenBank assembly was explicitly requested (GCA_), then query RefSeq
+      // sequences in Nucleotide DB.  Otherwise, query the lesser-known
+      // GenColl (Genomic Collections) DB.
+      if (
+        'assembly' in ideo.config && /GCA_/.test(ideo.config.assembly) ||
+        typeof recovering !== 'undefined'
+      ) { // TODO: account for GenBank-only
         qs = '&db=nuccore&linkname=gencoll_nuccore_chr&from_uid=' + gbUid;
+      } else {
+        qs = '&db=nuccore&linkname=assembly_nuccore_refseq&from_uid=' + asmUid;
       }
       nuccoreLink = ideo.elink + qs;
 
