@@ -353,8 +353,16 @@ function getAssemblyAndChromosomesFromEutils(callback, recovering) {
           } else {
             continue;
           }
+        } else if (result.genome === 'apicoplast') {
+          type = 'apicoplast';
+          if (ideo.config.showNonNuclearChromosomes) {
+            chrName = 'AP';
+          } else {
+            continue;
+          }
         } else {
           type = 'nuclear';
+
           cnIndex = result.subtype.split('|').indexOf('chromosome');
 
           chrName = result.subname.split('|')[cnIndex];

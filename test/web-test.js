@@ -1202,7 +1202,7 @@ describe('Ideogram', function() {
   });
 
   it('should support mitochondrial and chloroplast chromosomes', function(done) {
-    // Tests use case from ../examples/vanilla/human.html
+    // Tests use case from ../examples/vanilla/eukaryotes.html
 
     function callback() {
       var chromosomes = Array.from(document.querySelectorAll('.chromosome'));
@@ -1215,6 +1215,26 @@ describe('Ideogram', function() {
 
     var config = {
       organism: 'vitis-vinifera', // grape
+      showNonNuclearChromosomes: true,
+      onLoad: callback
+    };
+
+    var ideogram = new Ideogram(config);
+  });
+
+  it('should support apicoplast chromosomes of malaria parasite', function(done) {
+    // Tests use case from ../examples/vanilla/eukaryotes.html
+
+    function callback() {
+      var chromosomes = Array.from(document.querySelectorAll('.chromosome'));
+      var nonNuclearChrs = chromosomes.slice(-1);
+      assert.equal(chromosomes.length, 15);
+      assert.equal(nonNuclearChrs[0].id, 'chrAP-5833'); // apicoplast (CP)
+      done();
+    }
+
+    var config = {
+      organism: 'plasmodium-falciparum', // P. falciparum, malaria parasite
       showNonNuclearChromosomes: true,
       onLoad: callback
     };
