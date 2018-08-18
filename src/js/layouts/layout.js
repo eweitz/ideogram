@@ -379,7 +379,7 @@ export class HorizontalLayout extends Layout {
       .attr('class', function(d, i) {
         return i === 0 && labels.length === 2 ? 'chrSetLabel' : null;
       })
-      .attr('x', 30)
+      .attr('x', xOffset - 4)
       .attr('y', function(d, i) {
         return (i + 1 + labels.length % 2) * 12;
       })
