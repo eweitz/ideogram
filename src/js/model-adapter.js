@@ -32,7 +32,7 @@ export class ModelNoBandsAdapter extends ModelAdapter {
   getModel() {
     this._model.bands = [];
 
-      // If chromosome width more, then 1 add single band to bands array
+    // If chromosome width more than 1, add single band to bands array
     if (this._model.width > 1) {
       this._model.bands.push({
         name: 'q',
@@ -40,6 +40,10 @@ export class ModelNoBandsAdapter extends ModelAdapter {
           start: 0,
           stop: this._model.width,
           width: this._model.width
+        },
+        bp: {
+          start: 1,
+          stop: this._model.length
         }
       });
     }
