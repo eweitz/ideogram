@@ -2,9 +2,7 @@
 <html>
 <head>
   <title>Annotations, histogram | Ideogram</title>
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter/1.3.12/crossfilter.min.js"></script>
   <script type="text/javascript" src="dist/js/ideogram.min.js"></script>
-  <script type="text/javascript" src="src/js/filter.js"></script>
   <style>
     body {
       font: 12px Arial;
@@ -123,43 +121,38 @@
   </div>
   <script type="text/javascript">
 
-  var counts, key, count;
   var d3 = Ideogram.d3;
 
-  d3.selectAll('input').on('click', function() {
-    var filterMap,
-        tmp, facet,
-        checkedFilter,
-        checkedFilters,
-        selections = {},
-        i, facet, counts, count,
-        filterID;
+  var filterMap = {
+    'expression-level': {
+      'extremely-high': 7,
+      'very-high': 6,
+      'high': 5,
+      'moderately-high': 4,
+      'moderate': 3,
+      'low': 2,
+      'very-low': 1
+    },
+    'gene-type': {
+      'mrna': 1,
+      'misc-rna': 2,
+      'mirna': 3,
+      'trna': 4,
+      'lncrna': 5
+    },
+    'tissue-type': {
+      'cerebral-cortex': 1,
+      'heart': 2,
+      'liver': 3,
+      'skin': 4,
+      'skeletal-muscle': 5
+    }
+  };
 
-    filterMap = {
-      'expression-level': {
-        'extremely-high': 7,
-        'very-high': 6,
-        'high': 5,
-        'moderately-high': 4,
-        'moderate': 3,
-        'low': 2,
-        'very-low': 1
-      },
-      'gene-type': {
-        'mrna': 1,
-        'misc-rna': 2,
-        'mirna': 3,
-        'trna': 4,
-        'lncrna': 5
-      },
-      'tissue-type': {
-        'cerebral-cortex': 1,
-        'heart': 2,
-        'liver': 3,
-        'skin': 4,
-        'skeletal-muscle': 5
-      }
-    };
+  d3.selectAll('input').on('click', function() {
+    var tmp, checkedFilter, checkedFilters,  i, facet, counts, count,
+      filterID, key,
+      selections = {};
 
     checkedFilters = d3.selectAll('input:checked').nodes();
 
@@ -169,7 +162,7 @@
       checkedFilter = tmp[2];
 
       filterID = filterMap[facet][checkedFilter];
-      if (facet in selections == false) {
+      if (facet in selections === false) {
         selections[facet] = {};
       }
       selections[facet][filterID] = 1;
@@ -196,7 +189,8 @@
     chrHeight: 275,
     annotationsPath: 'data/annotations/SRR562646.json',
     annotationsLayout: 'histogram',
-    barWidth: 3
+    barWidth: 3,
+    filterable: true
   };
 
   var ideogram = new Ideogram(config);

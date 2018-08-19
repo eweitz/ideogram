@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html>
 <title>Annotations, animated | Ideogram</title>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter/1.3.12/crossfilter.min.js"></script>
 <script type="text/javascript" src="dist/js/ideogram.min.js"></script>
-<script type="text/javascript" src="src/js/filter.js"></script>
 <style>
   body {
     font: 12px Arial;
@@ -41,9 +39,7 @@
 <div style="margin-top: 50px"></div>
 <div class="facets"></div>
 <script>
-  var counts, key, count;
   var d3 = Ideogram.d3;
-
 
   // e.g. "very-low" -> "Very low"
   function desluggify(value) {
@@ -51,12 +47,9 @@
   }
 
   function updateFilters() {
-    var tmp, facet,
-      checkedFilter,
-      checkedFilters,
-      selections = {},
-      i, facet, counts, count,
-      filterID;
+    var tmp, checkedFilter, checkedFilters,  i, facet, counts, count,
+      filterID, key,
+      selections = {};
 
     checkedFilters = d3.selectAll("input:checked").nodes();
 
@@ -66,7 +59,7 @@
       checkedFilter = tmp[tmp.length - 1];
 
       filterID = filterMap[facet][checkedFilter];
-      if (facet in selections == false) {
+      if (facet in selections === false) {
         selections[facet] = {};
       }
       selections[facet][filterID] = 1;
@@ -89,7 +82,6 @@
   function animateFilters(nodes) {
     setTimeout(function() {
       var node = nodes.shift(); // remove first element from list, assign it here
-      console.log(node.id);
       d3.selectAll('input').attr('checked', null);
       d3.select('#' + node.id).attr('checked', true);
       updateFilters();
@@ -103,7 +95,7 @@
   seenF10 = false;
   seenF150 = false;
   filterMap = {};
-  function onDrawAnnots() {
+  function onDrawAnnotsCallback() {
 
     if (annotsLoaded === true) {
       return;
@@ -195,7 +187,8 @@
     annotationsLayout: 'histogram',
     annotationsColor: 'orangered',
     container: '.ideogram-container',
-    onDrawAnnots: onDrawAnnots
+    onDrawAnnots: onDrawAnnotsCallback,
+    filterable: true
   };
 
   var ideogram = new Ideogram(config);

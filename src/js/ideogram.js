@@ -15,7 +15,8 @@ import {max} from 'd3-array';
 import version from './version';
 
 import {
-  configure, initDrawChromosomes, onLoad, setOverflowScroll, init
+  configure, initDrawChromosomes, handleRotateOnClick, onLoad,
+  setOverflowScroll, init
 } from './init';
 
 import {
@@ -33,16 +34,19 @@ import {
 } from './services';
 
 import {
-  getBands, drawBandLabels, getBandColorGradients, processBandData
+  getBands, drawBandLabels, getBandColorGradients, processBandData,
+  setBandsToShow, hideUnshownBandLabels
 } from './bands';
 
 import {onBrushMove, createBrush} from './brush';
 import {drawSexChromosomes, setSexChromosomes} from './sex-chromosomes';
 import {convertBpToPx, convertPxToBp} from './coordinate-converters';
+import {unpackAnnots, packAnnots, initCrossFilter, filterAnnots} from './filter';
 
 import {
-  assemblyIsAccession, getDataDir, getChromosomeModel, drawChromosomeLabels,
-  rotateChromosomeLabels, round, drawChromosome, rotateAndToggleDisplay,
+  assemblyIsAccession, getDataDir, getChromosomeModel,
+  getChromosomePixels, drawChromosomeLabels, rotateChromosomeLabels,
+  round, drawChromosome, appendHomolog, rotateAndToggleDisplay, onDidRotate,
   getSvg, Object
 } from './lib';
 
@@ -57,6 +61,7 @@ export default class Ideogram {
     this.configure = configure;
     this.initDrawChromosomes = initDrawChromosomes;
     this.onLoad = onLoad;
+    this.handleRotateOnClick = handleRotateOnClick;
     this.setOverflowScroll = setOverflowScroll;
     this.init = init;
 
@@ -95,12 +100,14 @@ export default class Ideogram {
     this.drawBandLabels = drawBandLabels;
     this.getBandColorGradients = getBandColorGradients;
     this.processBandData = processBandData;
+    this.setBandsToShow = setBandsToShow;
+    this.hideUnshownBandLabels = hideUnshownBandLabels;
 
     // Functions from brush.js
     this.onBrushMove = onBrushMove;
     this.createBrush = createBrush;
 
-    // Functions from set-chromosomes.js
+    // Functions from sex-chromosomes.js
     this.drawSexChromosomes = drawSexChromosomes;
     this.setSexChromosomes = setSexChromosomes;
 
@@ -108,15 +115,24 @@ export default class Ideogram {
     this.convertBpToPx = convertBpToPx;
     this.convertPxToBp = convertPxToBp;
 
+    // Functions from filter.js
+    this.unpackAnnots = unpackAnnots;
+    this.packAnnots = packAnnots;
+    this.initCrossFilter = initCrossFilter;
+    this.filterAnnots = filterAnnots;
+
     // Functions from lib.js
     this.assemblyIsAccession = assemblyIsAccession;
     this.getDataDir = getDataDir;
     this.getChromosomeModel = getChromosomeModel;
+    this.getChromosomePixels = getChromosomePixels;
     this.drawChromosomeLabels = drawChromosomeLabels;
     this.rotateChromosomeLabels = rotateChromosomeLabels;
     this.round = round;
+    this.appendHomolog = appendHomolog;
     this.drawChromosome = drawChromosome;
     this.rotateAndToggleDisplay = rotateAndToggleDisplay;
+    this.onDidRotate = onDidRotate;
     this.getSvg = getSvg;
 
     this.configure(config)

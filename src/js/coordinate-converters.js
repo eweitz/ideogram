@@ -21,24 +21,32 @@ function convertBpToPx(chr, bp) {
   var i, band, bpToIscnScale, iscn, px, pxStart, pxLength,
     iscnStart, iscnStop, iscnLength, bpStart, bpStop, bpLength;
 
-  for (i = 0; i < chr.bands.length; i++) {
-    band = chr.bands[i];
+  if (chr.bands.length > 1) {
+    for (i = 0; i < chr.bands.length; i++) {
+      band = chr.bands[i];
 
-    bpStart = band.bp.start;
-    bpStop = band.bp.stop;
-    bpLength = bpStop - bpStart;
-    iscnStart = band.iscn.start;
-    iscnStop = band.iscn.stop;
-    iscnLength = iscnStop - iscnStart;
-    pxStart = band.px.start;
-    pxLength = band.px.width;
+      bpStart = band.bp.start;
+      bpStop = band.bp.stop;
+      bpLength = bpStop - bpStart;
+      iscnStart = band.iscn.start;
+      iscnStop = band.iscn.stop;
+      iscnLength = iscnStop - iscnStart;
+      pxStart = band.px.start;
+      pxLength = band.px.width;
 
-    if (bp >= bpStart && bp <= bpStop) {
-      bpToIscnScale = iscnLength / bpLength;
-      iscn = iscnStart + (bp - bpStart) * bpToIscnScale;
+      if (bp >= bpStart && bp <= bpStop) {
+        bpToIscnScale = iscnLength / bpLength;
+        iscn = iscnStart + (bp - bpStart) * bpToIscnScale;
 
-      px = pxStart + (pxLength * (iscn - iscnStart) / (iscnLength));
+        px = pxStart + (pxLength * (iscn - iscnStart) / (iscnLength));
 
+        return px;
+      }
+    }
+  } else {
+    pxLength = chr.width;
+    if (bp >= 1 && bp <= chr.length) {
+      px = chr.scale.bp * bp;
       return px;
     }
   }

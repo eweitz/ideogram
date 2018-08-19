@@ -1,6 +1,6 @@
 {
   "name": "ideogram",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Chromosome visualization with D3.js",
   "main": "src/js/index.js",
   "directories": {
@@ -36,9 +36,10 @@
   "bugs": {
     "url": "https://github.com/eweitz/ideogram/issues"
   },
-  "homepage": "https://github.com/eweitz/ideogram",
+  "homepage": "https://eweitz.github.io/ideogram",
   "dependencies": {
     "commander": "*",
+    "crossfilter": "1.3.12",
     "d3-array": "^1.2.0",
     "d3-brush": "^1.0.4",
     "d3-dispatch": "^1.0.3",
@@ -51,13 +52,13 @@
     "@babel/preset-env": "^7.0.0-beta.44",
     "babel-loader": "^8.0.0-beta.2",
     "chai": "^3.2.0",
-    "coveralls": "^2.13.1",
+    "coveralls": "^3.0.2",
     "eslint": "^4.6.1",
     "eslint-config-google": "^0.5.0",
     "eslint-config-standard": "^5.3.1",
     "eslint-plugin-promise": "^3.3.0",
     "istanbul-instrumenter-loader": "^3.0.1",
-    "karma": "^1.7.1",
+    "karma": "^3.0.0",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^2.2.0",
     "karma-coverage": "^1.1.1",
@@ -65,7 +66,7 @@
     "karma-coveralls": "^1.1.2",
     "karma-mocha": "^1.3.0",
     "karma-webpack": "^3.0.0",
-    "mocha": "^2.3.0",
+    "mocha": "^5.2.0",
     "webpack": "^4.5.0",
     "webpack-cli": "^2.0.14",
     "webpack-dev-server": "^3.1.3"

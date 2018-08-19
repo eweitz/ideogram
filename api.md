@@ -37,8 +37,10 @@ var ideogram = new Ideogram({
 * [chromosomes](#chromosomes)
 * [container](#container)
 * [dataDir](#datadir)
+* [histogramScaling](#histogramscaling)
 * [heatmaps](#heatmaps)
 * [onBrushMove](#onbrushmove)
+* [onDidRotate](#ondidrotate)
 * [onDrawAnnots](#ondrawannots)
 * [onLoadAnnots](#onloadannots)
 * [onLoad](#onload)
@@ -115,12 +117,19 @@ String.  Optional.  Default: "body".  CSS selector of the HTML element that will
 ## dataDir
 String.  Optional.  Default: "../data/bands/native/".  Absolute or relative URL of the directory containing data needed to draw banded chromosomes.  Example in [GeneExpressionAging/ideogram](https://ncbi-hackathons.github.io/GeneExpressionAging/ideogram).
 
+
+## histogramScaling
+String.  Optional.  Default: "absolute".  One of "absolute" or "relative".  The technique to use in scaling the height of histogram bars.  The "absolute" value sets bar height relative to tallest bar in _all_ chromosomes, while "relative" sets bar height relative to tallest bar in _each_ chromosome.
+
 ## heatmaps
 Array.  Optional.  Array of heatmap objects.  Each heatmap object has a `key` string and a `thresholds` array.  The `key` property specifies the annotations key value to depict in the heatmap.  The `thresholds` property specifies a list of two-element "threshold" lists, where the first element is the threshold value and the second is the threshold color.  The threshold values are a list of ranges to use in coloring
 the heatmap.  Threshold values are specified in ascending order.  Example in [Annotations, heatmap](https://eweitz.github.io/ideogram/annotations-heatmap).
 
 ## onBrushMove
 Function.  Optional.  Callback function to invoke when brush moves.  Example in [Brush](https://eweitz.github.io/ideogram/brush).
+
+## onDidRotate
+Function.  Optional.  Callback function to invoke after chromosome has rotated.
 
 ## onDrawAnnots
 Function.  Optional.  Callback function to invoke when annotations are drawn.  This is useful for when loading and drawing large annotation datsets.  Example in [web-tests.js](https://github.com/eweitz/ideogram/blob/b701dc0b76089842d50860c8c6cf5aa6d8dec564/test/web-test.js#L395).

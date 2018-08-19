@@ -281,6 +281,9 @@ function updateDisplayedTracks(trackIndexes) {
 
   d3.selectAll(ideo.selector + ' .annot').remove();
   ideo.drawAnnots(displayedAnnots);
+
+  ideogram.displayedTrackIndexes = trackIndexes;
+
   return displayedAnnots;
 }
 
@@ -373,6 +376,12 @@ function fetchAnnots(annotsUrl) {
     ideo = this;
 
   function afterRawAnnots(rawAnnots) {
+
+    // Ensure annots are ordered by chromosome
+    ideo.rawAnnots.annots = rawAnnots.annots.sort(function(a, b) {
+      return Ideogram.naturalSort(a.chr, b.chr);
+    });
+
     if (ideo.config.heatmaps) {
       ideo.deserializeAnnotsForHeatmap(rawAnnots);
     }

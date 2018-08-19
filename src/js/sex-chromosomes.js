@@ -8,34 +8,29 @@
 /**
  * Appends SVG elements depicting sex chromosomes to the document.
  */
-function drawSexChromosomes(bandsArray, taxid, container, defs, j, chrs) {
-  var chromosome, bands, chrModel, shape, sci, k,
-    sexChromosomeIndexes,
-    ideo = this;
+function drawSexChromosomes(container, chrIndex) {
+  var bandsArray, taxid, chrs,
+    sexChromosomeIndexes, sciLength,
+    chromosome, bands, chrModel, sci, homologIndex;
 
-  if (ideo.config.sex === 'male') {
+  bandsArray = this.bandsArray;
+  taxid = this.config.taxid;
+  chrs = this.config.chromosomes[taxid];
+
+  if (this.config.sex === 'male') {
     sexChromosomeIndexes = [1, 0];
   } else {
     sexChromosomeIndexes = [0, 0];
   }
 
-  for (k = 0; k < sexChromosomeIndexes.length; k++) {
-    sci = sexChromosomeIndexes[k] + j;
+  sciLength = sexChromosomeIndexes.length;
+
+  for (homologIndex = 0; homologIndex < sciLength; homologIndex++) {
+    sci = sexChromosomeIndexes[homologIndex] + chrIndex;
     chromosome = chrs[sci];
-    bands = bandsArray[sci];
-    chrModel = ideo.getChromosomeModel(bands, chromosome, taxid, sci);
-    shape = ideo.drawChromosome(chrModel, j, container, k);
-    defs.append('clipPath')
-      .attr('id', chrModel.id + '-chromosome-set-clippath')
-      .selectAll('path')
-      .data(shape)
-      .enter()
-      .append('path')
-      .attr('d', function(d) {
-        return d.path;
-      }).attr('class', function(d) {
-      return d.class;
-    });
+    bands = bandsArray[taxid][sci];
+    chrModel = this.getChromosomeModel(bands, chromosome, taxid, sci);
+    this.appendHomolog(chrModel, chrIndex, homologIndex, container);
   }
 }
 

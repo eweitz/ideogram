@@ -223,14 +223,13 @@ function getTaxids(callback) {
  * EUtils web API.
  *
  * @param callback Function to call upon completion of this async method
+ * @param recovering Boolean indicating attempt at failure recovery
  */
-function getAssemblyAndChromosomesFromEutils(callback) {
-  var asmAndChrArray, // [assembly_accession, chromosome_objects_array]
-    organism, assemblyAccession, chromosomes, termStem, asmSearch,
-    asmUid, asmSummary,
-    gbUid, nuccoreLink,
-    links, ntSummary,
-    results, result, cnIndex, chrName, chrLength, chromosome, type,
+function getAssemblyAndChromosomesFromEutils(callback, recovering) {
+  var asmAndChrArray, assembly, organism, assemblyAccession, chromosomes,
+    termStem, asmSearch, asmUid, asmSummary, rsUid, gbUid, nuccoreLink,
+    links, ntSummary, qs, results, result, cnIndex, chrName, chrLength,
+    chromosome, type,
     ideo = this;
 
   organism = ideo.config.organism;
@@ -265,23 +264,51 @@ function getAssemblyAndChromosomesFromEutils(callback) {
       return d3.json(asmSummary);
     })
     .then(function(data) {
-      // GenBank UID for this assembly
-      gbUid = data.result[asmUid].gbuid;
-      assemblyAccession = data.result[asmUid].assemblyaccession;
+      assembly = data.result[asmUid];
+
+      rsUid = assembly.rsuid; // RefSeq UID for this assembly
+      gbUid = assembly.gbuid; // GenBank UID
+      assemblyAccession = assembly.assemblyaccession;
 
       asmAndChrArray.push(assemblyAccession);
 
       // Get a list of IDs for the chromosomes in this genome.
       //
-      // This information does not seem to be available from well-known
-      // NCBI databases like Assembly or Nucleotide, so we use GenColl,
-      // a lesser-known NCBI database.
-      var qs = '&db=nuccore&linkname=gencoll_nuccore_chr&from_uid=' + gbUid;
+      // If this is our first pass, or if assembly is GenBank-only, or if
+      // a GenBank assembly was explicitly requested (GCA_), then query RefSeq
+      // sequences in Nucleotide DB.  Otherwise, query the lesser-known
+      // GenColl (Genomic Collections) DB.
+      if (
+        'assembly' in ideo.config && /GCA_/.test(ideo.config.assembly) ||
+        typeof recovering !== 'undefined'
+      ) { // TODO: account for GenBank-only
+        qs = '&db=nuccore&linkname=gencoll_nuccore_chr&from_uid=' + gbUid;
+      } else {
+        qs = '&db=nuccore&linkname=assembly_nuccore_refseq&from_uid=' + asmUid;
+      }
       nuccoreLink = ideo.elink + qs;
 
       return d3.json(nuccoreLink);
     })
     .then(function(data) {
+      if (data.linksets[0].linksetdbs[0].links.length > 100) {
+        // If the list of presumed chromosomes is longer than 100 elements, then
+        // we've likely fetched scaffolds instead of chromosomes.  This
+        // happens with e.g. Sus scrofa (pig).  Try recovering once via a
+        // different query, and throw an error upon any subsequent failure.
+        if (typeof recovering === 'undefined') {
+          ideo.getAssemblyAndChromosomesFromEutils(callback, true);
+          return Promise.reject(
+            'Unexpectedly found genomic scaffolds instead of chromosomes ' +
+            'while querying RefSeq.  Recovering.'
+          );
+        } else {
+          // Avoid flooding NCBI with EUtils requests.
+          throw Error(
+            'Failed to find chromosomes for genome ' + assemblyAccession
+          );
+        }
+      }
       links = data.linksets[0].linksetdbs[0].links.join(',');
       ntSummary = ideo.esummary + '&db=nucleotide&id=' + links;
 
@@ -293,7 +320,7 @@ function getAssemblyAndChromosomesFromEutils(callback) {
       for (var x in results) {
         result = results[x];
 
-        // omit list of reult uids
+        // omit list of result uids
         if (x === 'uids') {
           continue;
         }
@@ -326,8 +353,16 @@ function getAssemblyAndChromosomesFromEutils(callback) {
           } else {
             continue;
           }
+        } else if (result.genome === 'apicoplast') {
+          type = 'apicoplast';
+          if (ideo.config.showNonNuclearChromosomes) {
+            chrName = 'AP';
+          } else {
+            continue;
+          }
         } else {
           type = 'nuclear';
+
           cnIndex = result.subtype.split('|').indexOf('chromosome');
 
           chrName = result.subname.split('|')[cnIndex];
@@ -358,6 +393,8 @@ function getAssemblyAndChromosomesFromEutils(callback) {
       ideo.coordinateSystem = 'bp';
 
       return callback(asmAndChrArray);
+    }, function(rejectedReason) {
+      console.warn(rejectedReason);
     });
 }
 

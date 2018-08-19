@@ -59,57 +59,38 @@ function getDataDir() {
   return '../data/bands/native/';
 }
 
-/**
- * Generates a model object for each chromosome containing information on
- * its name, DOM ID, length in base pairs or ISCN coordinates, cytogenetic
- * bands, centromere position, etc.
- */
-function getChromosomeModel(bands, chromosome, taxid, chrIndex) {
-  var chr = {},
-    band,
-    width, pxStop,
-    chrHeight = this.config.chrHeight,
-    maxLength = this.maxLength,
-    leaf = '',
-    chrLength, cs, hasBands;
+function getChromosomePixels(chr) {
 
+  var bands, chrHeight, pxStop, hasBands, maxLength, band, cs, csLength,
+    width, chrLength;
+
+  bands = chr.bands;
+  chrHeight = this.config.chrHeight;
+  pxStop = 0;
   cs = this.coordinateSystem;
   hasBands = (typeof bands !== 'undefined');
-
-  if (hasBands) {
-    chr.name = chromosome;
-    chr.length = bands[bands.length - 1][cs].stop;
-    chr.type = 'nuclear';
-  } else {
-    chr = chromosome;
-  }
-
-  chr.chrIndex = chrIndex;
-
-  if (this.isOnlyIdeogram === false) {
-    // Disambiguates chromosome ID when multiple ideograms exist
-    // Fixes https://github.com/eweitz/ideogram/issues/96
-    leaf = '-' + this.config.container.replace('#', '').replace('.', '');
-  }
-
-  chr.id = 'chr' + chr.name + '-' + taxid + leaf;
-
-  if (this.config.fullChromosomeLabels === true) {
-    var orgName = this.organisms[taxid].scientificNameAbbr;
-    chr.name = orgName + ' chr' + chr.name;
-  }
-
+  maxLength = this.maxLength;
   chrLength = chr.length;
-
-  pxStop = 0;
 
   if (hasBands) {
     for (var i = 0; i < bands.length; i++) {
       band = bands[i];
-      var csLength = band[cs].stop - band[cs].start;
-      width = chrHeight * chr.length / maxLength[cs] * csLength / chrLength;
+      csLength = band[cs].stop - band[cs].start;
 
-      bands[i].px = {start: pxStop, stop: pxStop + width, width: width};
+      // If ideogram is rotated (and thus showing only one chromosome),
+      // then set its width independent of the longest chromosome in this
+      // genome.
+      if (this._layout._isRotated) {
+        width = chrHeight * csLength / chrLength;
+      } else {
+        width = chrHeight * chr.length / maxLength[cs] * csLength / chrLength;
+      }
+
+      bands[i].px = {
+        start: pxStop,
+        stop: pxStop + width,
+        width: width
+      };
 
       pxStop = bands[i].px.stop;
 
@@ -148,16 +129,49 @@ function getChromosomeModel(bands, chromosome, taxid, chrIndex) {
   }
   chr.bands = bands;
 
+  return chr;
+}
+
+/**
+ * Generates a model object for each chromosome containing information on
+ * its name, DOM ID, length in base pairs or ISCN coordinates, cytogenetic
+ * bands, centromere position, etc.
+ */
+function getChromosomeModel(bands, chrName, taxid, chrIndex) {
+  var chr = {},
+    cs, hasBands;
+
+  cs = this.coordinateSystem;
+  hasBands = (typeof bands !== 'undefined');
+
+  if (hasBands) {
+    chr.name = chrName;
+    chr.length = bands[bands.length - 1][cs].stop;
+    chr.type = 'nuclear';
+  } else {
+    chr = chrName;
+  }
+
+  chr.chrIndex = chrIndex;
+
+  chr.id = 'chr' + chr.name + '-' + taxid;
+
+  if (this.config.fullChromosomeLabels === true) {
+    var orgName = this.organisms[taxid].scientificNameAbbr;
+    chr.name = orgName + ' chr' + chr.name;
+  }
+
+  chr.bands = bands;
+  chr = this.getChromosomePixels(chr);
+
   chr.centromerePosition = '';
+
   if (
     hasBands && bands[0].name[0] === 'p' && bands[1].name[0] === 'q' &&
     bands[0].bp.stop - bands[0].bp.start < 2E6
   ) {
     // As with almost all mouse chromosome, chimpanzee chr22
     chr.centromerePosition = 'telocentric';
-
-    // Remove placeholder pter band
-    chr.bands = chr.bands.slice(1);
   }
 
   if (hasBands && chr.bands.length === 1) {
@@ -184,11 +198,11 @@ function drawChromosomeLabels() {
   var chrSetLabelXPosition = ideo._layout.getChromosomeSetLabelXPosition();
   var chrSetLabelTranslate = ideo._layout.getChromosomeSetLabelTranslate();
 
-  // Append chromosomes set's labels
+  // Append chromosome set's labels
   d3.selectAll(ideo.selector + ' .chromosome-set-container')
-    .append('text')
+    .insert('text', ':first-child')
     .data(ideo.chromosomesArray)
-    .attr('class', 'chromosome-set-label ' + chromosomeLabelClass)
+    .attr('class', chromosomeLabelClass)
     .attr('transform', chrSetLabelTranslate)
     .attr('x', chrSetLabelXPosition)
     .attr('y', function(d, i) {
@@ -228,14 +242,15 @@ function drawChromosomeLabels() {
         .attr('class', function(a, i) {
           var fullLabels = ideo.config.fullChromosomeLabels;
           return i === 1 && fullLabels ? 'italic' : null;
-        }).text(String);
+        })
+        .text(String);
     });
 
   var setLabelTranslate = ideo._layout.getChromosomeSetLabelTranslate();
 
   // Append chromosomes labels
   d3.selectAll(ideo.selector + ' .chromosome-set-container')
-    .each(function(a, chrSetNumber) {
+    .each(function(a, chrSetIndex) {
       d3.select(this).selectAll('.chromosome')
         .append('text')
         .attr('class', 'chrLabel')
@@ -246,8 +261,8 @@ function drawChromosomeLabels() {
         .attr('y', function(d, i) {
           return ideo._layout.getChromosomeLabelYPosition(i);
         })
-        .text(function(d, chrNumber) {
-          return ideo._ploidy.getAncestor(chrSetNumber, chrNumber);
+        .text(function(d, chrIndex) {
+          return ideo._ploidy.getAncestor(chrSetIndex, chrIndex);
         })
         .attr('text-anchor', 'middle');
     });
@@ -331,6 +346,7 @@ function rotateChromosomeLabels(chr, chrIndex, orientation, scale) {
   }
 }
 
+
 /**
  * Rounds an SVG coordinates to two decimal places
  *
@@ -343,45 +359,125 @@ function round(coord) {
 }
 
 /**
- * Renders all the bands and outlining boundaries of a chromosome.
+ * Adds a copy of a chromosome (i.e. a homologous chromosome, homolog) to DOM
+ *
+ * @param chrModel
+ * @param chrIndex
+ * @param homologIndex
+ * @param container
  */
-function drawChromosome(chrModel, chrIndex, container, k) {
-  var chrMargin = this.config.chrMargin;
+function appendHomolog(chrModel, chrIndex, homologIndex, container) {
 
+  var homologOffset, chromosome, shape, defs, adapter;
+
+  defs = d3.select(this.selector + ' defs');
   // Get chromosome model adapter class
-  var adapter = ModelAdapter.getInstance(chrModel);
+  adapter = ModelAdapter.getInstance(chrModel);
+
+  // How far this copy of the chromosome is from another
+  homologOffset = homologIndex * this.config.chrMargin;
 
   // Append chromosome's container
-  var chromosome = container
+  chromosome = container
     .append('g')
     .attr('id', chrModel.id)
     .attr('class', 'chromosome ' + adapter.getCssClass())
-    .attr('transform', 'translate(0, ' + k * chrMargin + ')');
+    .attr('transform', 'translate(0, ' + homologOffset + ')');
 
   // Render chromosome
-  return Chromosome.getInstance(adapter, this.config, this)
-    .render(chromosome, chrIndex, k);
+  shape = Chromosome.getInstance(adapter, this.config, this)
+    .render(chromosome, chrIndex, homologIndex);
+
+  d3.select('#' + chrModel.id + '-chromosome-set-clippath').remove();
+
+  defs.append('clipPath')
+    .attr('id', chrModel.id + '-chromosome-set-clippath')
+    .selectAll('path')
+    .data(shape)
+    .enter()
+    .append('path')
+    .attr('d', function (d) {
+      return d.path;
+    })
+    .attr('class', function (d) {
+      return d.class;
+    });
+}
+
+
+/**
+ * Renders all the bands and outlining boundaries of a chromosome.
+ */
+function drawChromosome(chrModel) {
+
+  var chrIndex, container, numChrsInSet, transform, homologIndex,
+    chrSetSelector;
+
+  chrIndex = chrModel.chrIndex;
+
+  transform = this._layout.getChromosomeSetTranslate(chrIndex);
+
+  chrSetSelector = this.selector + ' #' + chrModel.id + '-chromosome-set';
+
+  d3.selectAll(chrSetSelector + ' g').remove();
+
+  container = d3.select(chrSetSelector);
+
+  if (container.nodes().length === 0) {
+    // Append chromosome set container
+    container = d3.select(this.selector)
+      .append('g')
+      .attr('class', 'chromosome-set-container')
+      .attr('data-set-number', chrIndex)
+      .attr('transform', transform)
+      .attr('id', chrModel.id + '-chromosome-set');
+  }
+
+  if (
+    'sex' in this.config &&
+    this.config.ploidy === 2 &&
+    this.sexChromosomes.index === chrIndex
+  ) {
+    this.drawSexChromosomes(container, chrIndex);
+    return;
+  }
+
+  numChrsInSet = 1;
+  if (this.config.ploidy > 1) {
+    numChrsInSet = this._ploidy.getChromosomesNumber(chrIndex);
+  }
+
+  for (homologIndex = 0; homologIndex < numChrsInSet; homologIndex++) {
+    this.appendHomolog(chrModel, chrIndex, homologIndex, container);
+  }
 }
 
 /**
  * Rotates a chromosome 90 degrees and shows or hides all other chromosomes
  * Useful for focusing or defocusing a particular chromosome
  */
-function rotateAndToggleDisplay(chromosome) {
-  // Do nothing if taxId not defined. But it should be defined.
+function rotateAndToggleDisplay(chrElement) {
+
+  var chrName, chrModel, chrIndex, chrSetIndex;
+
+  // Do nothing if taxid not defined. But it should be defined.
   // To fix that bug we should have a way to find chromosome set number.
   if (!this.config.taxid) {
     return;
   }
 
-  var chrSetNumber =
-    Number(d3.select(chromosome.parentNode).attr('data-set-number'));
+  chrName = chrElement.id.split('-')[0].replace('chr', '');
+  chrModel = this.chromosomes[this.config.taxid][chrName];
+  chrIndex = chrModel.chrIndex;
 
-  var chrNumber = Array.prototype.slice.call(
-    d3.select(chromosome.parentNode).selectAll('g.chromosome')._groups[0]
-  ).indexOf(chromosome);
+  chrSetIndex =
+    Number(d3.select(chrElement.parentNode).attr('data-set-number'));
 
-  return this._layout.rotate(chrSetNumber, chrNumber, chromosome);
+  this._layout.rotate(chrSetIndex, chrIndex, chrElement);
+}
+
+function onDidRotate(chrModel) {
+  call(this.onDidRotateCallback, chrModel);
 }
 
 /**
@@ -392,8 +488,8 @@ function getSvg() {
 }
 
 export {
-  assemblyIsAccession, getDataDir, getChromosomeModel, drawChromosomeLabels,
-  rotateChromosomeLabels, round, drawChromosome, rotateAndToggleDisplay,
+  assemblyIsAccession, getDataDir, getChromosomeModel,
+  getChromosomePixels, drawChromosomeLabels, rotateChromosomeLabels,
+  round, appendHomolog, drawChromosome, rotateAndToggleDisplay, onDidRotate,
   getSvg, Object
 };
-
