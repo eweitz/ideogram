@@ -123,7 +123,7 @@ function setTaxidAndAssemblyAndChromosomes(callback) {
   .then(function(asmChrTaxidsArray) {
     assembly = asmChrTaxidsArray[0];
     chromosomes = asmChrTaxidsArray[1];
-    taxids = asmChrTaxidsArray[2];
+    taxids = ideo.config.taxids;
     ideo.config.chromosomes = chromosomes;
     ideo.organisms[taxid].assemblies = {
       default: assembly

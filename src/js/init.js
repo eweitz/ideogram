@@ -406,9 +406,10 @@ function init() {
     }
   });
 
-  promise.then(function() {
-    taxids = ideo.config.taxids;
+  promise.then(function(taxids) {
     taxid = taxids[0];
+    ideo.config.taxid = taxid;
+    ideo.config.taxids = taxids;
 
     var assemblies,
       bandFileName;
