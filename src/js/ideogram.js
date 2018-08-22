@@ -28,10 +28,11 @@ import {
 } from './annotations/annotations'
 
 import {
-  eutils, esearch, esummary, elink,
+  esearch, esummary, elink,
   getTaxidFromEutils, getOrganismFromEutils, getTaxids,
+  setTaxidAndAssemblyAndChromosomes, setTaxidData,
   getAssemblyAndChromosomesFromEutils
-} from './services';
+} from './services/services';
 
 import {
   getBands, drawBandLabels, getBandColorGradients, processBandData,
@@ -86,11 +87,12 @@ export default class Ideogram {
     this.setOriginalTrackIndexes = setOriginalTrackIndexes;
 
     // Variables and functions from services.js
-    this.eutils = eutils;
     this.esearch = esearch;
     this.esummary = esummary;
     this.elink = elink;
     this.getTaxidFromEutils = getTaxidFromEutils;
+    this.setTaxidData = setTaxidData;
+    this.setTaxidAndAssemblyAndChromosomes = setTaxidAndAssemblyAndChromosomes;
     this.getOrganismFromEutils = getOrganismFromEutils;
     this.getTaxids = getTaxids;
     this.getAssemblyAndChromosomesFromEutils = getAssemblyAndChromosomesFromEutils;
