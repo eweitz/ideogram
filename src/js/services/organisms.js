@@ -25,32 +25,23 @@ function getTaxidFromEutils(callback) {
 }
 
 function setTaxidData(taxid) {
-  var organism, dataDir, urlOrg,
-    ideo = this,
-    multiorganism = ideo.config.multiorganism,
-    taxids = [];
+  var organism, dataDir, urlOrg, taxids,
+    ideo = this;
 
   organism = ideo.config.organism;
   dataDir = ideo.config.dataDir;
   urlOrg = organism.replace(' ', '-');
 
+  taxids = [taxid];
 
-  // if (taxids.indexOf(taxid) === -1) {
-    taxids.push(taxid);
-  // }
-
-  ideo.config.taxids = taxids;
   ideo.organisms[taxid] = {
     commonName: '',
-    scientificName: ideo.config.organism,
+    scientificName: organism,
     scientificNameAbbr: ''
   };
 
   var fullyBandedTaxids = ['9606', '10090', '10116'];
-  if (
-      fullyBandedTaxids.indexOf(taxid) !== -1 &&
-      ideo.config.showFullyBanded === false
-  ) {
+  if (fullyBandedTaxids.includes(taxid) && !ideo.config.showFullyBanded) {
     urlOrg += '-no-bands';
   }
   var chromosomesUrl = dataDir + urlOrg + '.js';
@@ -68,43 +59,39 @@ function setTaxidData(taxid) {
   });
 
   return promise2
-  .then(
-      function(data) {
-        // Check if chromosome data exists locally.
-        // This is used for pre-processed centromere data,
-        // which is not accessible via EUtils.  See get_chromosomes.py.
+  .then(function(data) {
+    // Check if chromosome data exists locally.
+    // This is used for pre-processed centromere data,
+    // which is not accessible via EUtils.  See get_chromosomes.py.
 
-        var asmAndChrTaxidsArray = [],
-            chromosomes = [],
-            seenChrs = {},
-            chr;
+    var asmAndChrTaxidsArray = [''],
+        chromosomes = [],
+        seenChrs = {},
+        chr;
 
-        eval(data);
+    eval(data);
 
-        asmAndChrTaxidsArray.push('');
-
-        for (var i = 0; i < chrBands.length; i++) {
-          chr = chrBands[i].split(' ')[0];
-          if (chr in seenChrs) {
-            continue;
-          } else {
-            chromosomes.push({name: chr, type: 'nuclear'});
-            seenChrs[chr] = 1;
-          }
-        }
-        chromosomes = chromosomes.sort(Ideogram.sortChromosomes);
-        asmAndChrTaxidsArray.push(chromosomes);
-        asmAndChrTaxidsArray.push(taxids);
-        ideo.coordinateSystem = 'iscn';
-        return asmAndChrTaxidsArray;
-      },
-      function() {
-        return new Promise(function(resolve) {
-          ideo.coordinateSystem = 'bp';
-          ideo.getAssemblyAndChromosomesFromEutils(resolve);
-        });
+    for (var i = 0; i < chrBands.length; i++) {
+      chr = chrBands[i].split(' ')[0];
+      if (chr in seenChrs) {
+        continue;
+      } else {
+        chromosomes.push({name: chr, type: 'nuclear'});
+        seenChrs[chr] = 1;
       }
-  );
+    }
+    chromosomes = chromosomes.sort(Ideogram.sortChromosomes);
+    asmAndChrTaxidsArray.push(chromosomes);
+    asmAndChrTaxidsArray.push(taxids);
+    ideo.coordinateSystem = 'iscn';
+    return asmAndChrTaxidsArray;
+  },
+  function() {
+    return new Promise(function(resolve) {
+      ideo.coordinateSystem = 'bp';
+      ideo.getAssemblyAndChromosomesFromEutils(resolve);
+    });
+  });
 }
 
 function setTaxidAndAssemblyAndChromosomes(callback) {
@@ -139,11 +126,8 @@ function setTaxidAndAssemblyAndChromosomes(callback) {
  * multiorganism, and adjusts chromosomes parameters as needed
  **/
 function getTaxids(callback) {
-  var ideo = this,
-      taxid, taxids,
-      org, orgs, i,
-      taxidInit, tmpChrs,
-      multiorganism;
+  var taxid, taxids, org, orgs, i, taxidInit, tmpChrs, multiorganism,
+    ideo = this;
 
   taxidInit = 'taxid' in ideo.config;
 
