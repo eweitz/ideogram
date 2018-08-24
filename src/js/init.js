@@ -384,19 +384,16 @@ function setOverflowScroll() {
  * writes an SVG element to the document to contain the ideogram
  */
 function init() {
-  var taxid, i, svgClass;
-
-  var ideo = this;
-
-  var t0 = new Date().getTime();
-
-  var bandsArray = [],
+  var taxid, i, svgClass, accession, promise,
+    t0 = new Date().getTime(),
+    ideo = this,
+    config = ideo.config,
+    bandsArray = [],
     numBandDataResponses = 0,
-    resolution = this.config.resolution,
-    accession;
+    resolution = config.resolution;
 
-  var promise = new Promise(function(resolve) {
-    if (typeof ideo.config.organism === 'number') {
+  promise = new Promise(function(resolve) {
+    if (typeof config.organism === 'number') {
       // 'organism' is a taxid, e.g. 9606
       ideo.getOrganismFromEutils(function() {
         ideo.getTaxids(resolve);
@@ -407,6 +404,8 @@ function init() {
   });
 
   promise.then(function(taxids) {
+    var organism;
+
     taxid = taxids[0];
     ideo.config.taxid = taxid;
     ideo.config.taxids = taxids;
@@ -421,29 +420,27 @@ function init() {
 
     for (i = 0; i < taxids.length; i++) {
       taxid = String(taxids[i]);
+      organism = ideo.organisms[taxid];
 
-      if (!ideo.config.assembly) {
+      if (!config.assembly) {
         ideo.config.assembly = 'default';
       }
-      assemblies = ideo.organisms[taxid].assemblies;
+      assemblies = organism.assemblies;
 
       if (ideo.assemblyIsAccession()) {
-        accession = ideo.config.assembly;
+        accession = config.assembly;
       } else {
-        accession = assemblies[ideo.config.assembly];
+        accession = assemblies[config.assembly];
       }
 
-      bandFileName = [];
-      bandFileName.push(
-        Ideogram.slugify(ideo.organisms[taxid].scientificName)
-      );
+      bandFileName = [Ideogram.slugify(organism.scientificName)];
       if (accession !== assemblies.default) {
         bandFileName.push(accession);
       }
       if (
         taxid === '9606' &&
         (accession in assemblies === 'false' &&
-          Object.values(assemblies).indexOf(ideo.config.assembly) === -1 ||
+          Object.values(assemblies).includes(config.assembly) ||
           (resolution !== '' && resolution !== 850))
       ) {
         bandFileName.push(resolution);
@@ -456,11 +453,11 @@ function init() {
 
       if (
         typeof accession !== 'undefined' &&
-        /GCA_/.test(ideo.config.assembly) === false &&
+        /GCA_/.test(config.assembly) === false &&
         typeof chrBands === 'undefined' && taxid in bandDataFileNames
       ) {
 
-        var bandDataUrl = ideo.config.dataDir + bandDataFileNames[taxid];
+        var bandDataUrl = config.dataDir + bandDataFileNames[taxid];
 
         fetch(bandDataUrl)
           .then(function(response) {
@@ -592,9 +589,8 @@ function init() {
    */
   function finishInit() {
     try {
-      var t0A = new Date().getTime();
-
-      var i, config;
+      var i, config,
+        t0A = new Date().getTime();
 
       config = ideo.config;
 
@@ -615,7 +611,7 @@ function init() {
           } else {
             ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
 
-            if (ideo.config.filterable) {
+            if (config.filterable) {
               ideo.initCrossFilter();
             }
 
@@ -640,7 +636,7 @@ function init() {
         }
       }
 
-      if (ideo.config.showBandLabels === true) {
+      if (config.showBandLabels === true) {
         ideo.hideUnshownBandLabels();
         var t1C = new Date().getTime();
         if (config.debug) {
