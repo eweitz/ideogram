@@ -12,7 +12,8 @@
  */
 
 import {
-  drawBandLabels, getBandColorGradients, hideUnshownBandLabels, setBandsToShow
+  drawBandLabels, getBandColorGradients, hideUnshownBandLabels, setBandsToShow,
+  drawBandLabelText, drawBandLabelStalk
 } from './draw'
 
 import * as d3selection from 'd3-selection';
@@ -218,5 +219,5 @@ function processBandData() {
 
 export {
   parseBands, drawBandLabels, getBandColorGradients, processBandData,
-  setBandsToShow, hideUnshownBandLabels
+  setBandsToShow, hideUnshownBandLabels, drawBandLabelText, drawBandLabelStalk
 }

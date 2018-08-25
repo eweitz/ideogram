@@ -9,80 +9,42 @@ import {hideUnshownBandLabels, setBandsToShow} from './show.js';
 
 var d3 = Object.assign({}, d3selection);
 
-/**
- * Draws labels and stalks for cytogenetic bands.
- *
- * Band labels are text like "p11.11".
- * Stalks are small lines that visually connect labels to their bands.
- */
-function drawBandLabels(chromosomes) {
-  var i, chr, chrs, taxid, chrModel, textOffsets, bandsToLabel,
-    ideo = this,
-    orientation = ideo.config.orientation;
+function drawBandLabelText(chr, bandsToLabel, chrModel, textOffsets) {
+  var ideo = this,
+    layout = ideo._layout,
+    chrIndex = chrModel.index;
 
-  chrs = [];
+  chr.selectAll('text')
+    .data(bandsToLabel)
+    .enter()
+    .append('g')
+    .attr('class', function (d, i) {
+      return 'bandLabel bsbsl-' + i;
+    })
+    .attr('transform', function (d) {
+      var transform = layout.getChromosomeBandLabelTranslate(d, chrIndex);
 
-  for (taxid in chromosomes) {
-    for (chr in chromosomes[taxid]) {
-      chrs.push(chromosomes[taxid][chr]);
-    }
-  }
+      if (ideo.config.orientation === 'horizontal') {
+        textOffsets[chrModel.id].push(transform.x + 13);
+      } else {
+        textOffsets[chrModel.id].push(transform.y + 6);
+      }
 
-  textOffsets = {};
+      return transform.translate;
+    })
+    .append('text')
+    .attr('text-anchor', layout.getChromosomeBandLabelAnchor(chrIndex))
+    .text(function (d) {
+      return d.name;
+    });
 
-  for (i = 0; i < chrs.length; i++) {
+  return textOffsets;
+}
 
-    chrModel = chrs[i];
+function drawBandLabelStalk(chr, bandsToLabel, chrModel, textOffsets) {
+  var ideo = this;
 
-    // Don't show "pter" label for telocentric chromosomes, e.g. mouse
-    bandsToLabel = chrModel.bands.filter(d => d.name !== 'pter');
-
-    chr = d3.select(ideo.selector + ' #' + chrModel.id);
-
-    // var chrMargin = this.config.chrMargin * chrIndex,
-    //   lineY1, lineY2;
-    //
-    // lineY1 = chrMargin;
-    // lineY2 = chrMargin - 8;
-    //
-    // if (
-    //   chrIndex === 1 &&
-    //   "perspective" in this.config && this.config.perspective === "comparative"
-    // ) {
-    //   lineY1 += 18;
-    //   lineY2 += 18;
-    // }
-
-    textOffsets[chrModel.id] = [];
-
-    chr.selectAll('text')
-      .data(bandsToLabel)
-      .enter()
-      .append('g')
-      .attr('class', function (d, i) {
-        return 'bandLabel bsbsl-' + i;
-      })
-      .attr('transform', function (d) {
-        var transform = ideo._layout.getChromosomeBandLabelTranslate(d, i);
-
-        if (orientation === 'horizontal') {
-          textOffsets[chrModel.id].push(transform.x + 13);
-        } else {
-          textOffsets[chrModel.id].push(transform.y + 6);
-        }
-
-        return transform.translate;
-      })
-      .append('text')
-      .attr('text-anchor', ideo._layout.getChromosomeBandLabelAnchor(i))
-      .text(function (d) {
-        return d.name;
-      });
-
-    // var adapter = ModelAdapter.getInstance(ideo.chromosomesArray[i]);
-    // var view = Chromosome.getInstance(adapter, ideo.config, ideo);
-
-    chr.selectAll('line.bandLabelStalk')
+  chr.selectAll('line.bandLabelStalk')
       .data(bandsToLabel)
       .enter()
       .append('g')
@@ -102,12 +64,44 @@ function drawBandLabels(chromosomes) {
       .append('line')
       .attr('x1', 0)
       .attr('y1', function () {
-        return ideo._layout.getChromosomeBandTickY1(i);
+        return ideo._layout.getChromosomeBandTickY1(chrModel.index);
       })
       .attr('x2', 0)
       .attr('y2', function () {
-        return ideo._layout.getChromosomeBandTickY2(i);
+        return ideo._layout.getChromosomeBandTickY2(chrModel.index);
       });
+}
+
+/**
+ * Draws text and stalks for cytogenetic band labels.
+ *
+ * Band labels are text like "p11.11".
+ * Stalks are small lines that visually connect labels to their bands.
+ */
+function drawBandLabels(chromosomes) {
+  var i, chr, taxid, chrModel, textOffsets, bandsToLabel,
+    ideo = this,
+    textOffsets = {},
+    chrs = [];
+
+  for (taxid in chromosomes) {
+    for (chr in chromosomes[taxid]) {
+      chrs.push(chromosomes[taxid][chr]);
+    }
+  }
+
+  for (i = 0; i < chrs.length; i++) {
+    chrModel = chrs[i];
+    chr = d3.select(ideo.selector + ' #' + chrModel.id);
+    textOffsets[chrModel.id] = [];
+
+    // Don't show "pter" label for telocentric chromosomes, e.g. mouse
+    bandsToLabel = chrModel.bands.filter(d => d.name !== 'pter');
+
+    textOffsets =
+      ideo.drawBandLabelText(chr, bandsToLabel, chrModel, textOffsets);
+
+    ideo.drawBandLabelStalk(chr, bandsToLabel, chrModel, textOffsets);
   }
 
   ideo.setBandsToShow(chrs, textOffsets);
@@ -221,5 +215,6 @@ function getBandColorGradients() {
 }
 
 export {
-  drawBandLabels, getBandColorGradients, hideUnshownBandLabels, setBandsToShow
+  drawBandLabels, getBandColorGradients, hideUnshownBandLabels, setBandsToShow,
+  drawBandLabelText, drawBandLabelStalk
 }
