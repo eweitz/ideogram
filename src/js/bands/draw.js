@@ -1,5 +1,5 @@
 /**
- * @fileoverview Methods to draw cytogenetic bands and associated data
+ * @fileoverview Methods to draw cytogenetic bands and their labels
  *
  */
 
@@ -9,6 +9,9 @@ import {hideUnshownBandLabels, setBandsToShow} from './show.js';
 
 var d3 = Object.assign({}, d3selection);
 
+/**
+ * Draws text of cytoband label
+ */
 function drawBandLabelText(chr, bandsToLabel, chrModel, textOffsets) {
   var ideo = this,
     layout = ideo._layout,
@@ -41,35 +44,34 @@ function drawBandLabelText(chr, bandsToLabel, chrModel, textOffsets) {
   return textOffsets;
 }
 
+/**
+ * Draws line between cytoband and its text label
+ */
 function drawBandLabelStalk(chr, bandsToLabel, chrModel, textOffsets) {
   var ideo = this;
 
   chr.selectAll('line.bandLabelStalk')
-      .data(bandsToLabel)
-      .enter()
-      .append('g')
-      .attr('class', function (d, i) {
-        return 'bandLabelStalk bsbsl-' + i;
-      })
-      .attr('transform', function (d) {
-        var x, y;
+    .data(bandsToLabel)
+    .enter()
+    .append('g')
+    .attr('class', function (d, i) {
+      return 'bandLabelStalk bsbsl-' + i;
+    })
+    .attr('transform', function (d) {
+      var x, y;
 
-        x = ideo.round(d.px.start + d.px.width / 2);
-        y = -10;
+      x = ideo.round(d.px.start + d.px.width / 2);
+      y = -10;
 
-        textOffsets[chrModel.id].push(x + 13);
+      textOffsets[chrModel.id].push(x + 13);
 
-        return 'translate(' + x + ',' + y + ')';
-      })
-      .append('line')
-      .attr('x1', 0)
-      .attr('y1', function () {
-        return ideo._layout.getChromosomeBandTickY1(chrModel.index);
-      })
-      .attr('x2', 0)
-      .attr('y2', function () {
-        return ideo._layout.getChromosomeBandTickY2(chrModel.index);
-      });
+      return 'translate(' + x + ',' + y + ')';
+    })
+    .append('line')
+    .attr('x1', 0)
+    .attr('y1', ideo._layout.getChromosomeBandTickY1(chrModel.index))
+    .attr('x2', 0)
+    .attr('y2', ideo._layout.getChromosomeBandTickY2(chrModel.index));
 }
 
 /**
