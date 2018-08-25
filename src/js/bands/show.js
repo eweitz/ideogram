@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Methods to show (or hide) cytogenetic banding data
+ */
+
 import * as d3selection from 'd3-selection';
 
 import {Object} from '../lib.js';

@@ -1,9 +1,9 @@
 /**
- * @fileoverview Methods for processing chromosome length and band data.
+ * @fileoverview Methods for processing chromosome length and banding data.
  *
  * Ideogram.js depicts chromosomes using data on their length, name, and
  * (if dealing with a very well-studied organism) cytogenetic banding data.
- * This file processes band data that comes from biological research
+ * This file processes cytoband data that comes from biological research
  * institutions.
  *
  * For background on cytogenetic bands and how they are used in genomics, see:

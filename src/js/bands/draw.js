@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Methods to draw cytogenetic bands and associated data
+ *
+ */
+
 import * as d3selection from 'd3-selection';
 import {Object} from '../lib.js';
 import {hideUnshownBandLabels, setBandsToShow} from './show.js';
@@ -11,8 +16,7 @@ var d3 = Object.assign({}, d3selection);
  * Stalks are small lines that visually connect labels to their bands.
  */
 function drawBandLabels(chromosomes) {
-  var i, chr, chrs, taxid, chrModel, chrIndex, textOffsets,
-    bandsToLabel,
+  var i, chr, chrs, taxid, chrModel, textOffsets, bandsToLabel,
     ideo = this,
     orientation = ideo.config.orientation;
 
@@ -26,9 +30,7 @@ function drawBandLabels(chromosomes) {
 
   textOffsets = {};
 
-  chrIndex = 0;
   for (i = 0; i < chrs.length; i++) {
-    chrIndex += 1;
 
     chrModel = chrs[i];
 
