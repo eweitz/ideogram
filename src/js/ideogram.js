@@ -35,9 +35,9 @@ import {
 } from './services/services';
 
 import {
-  getBands, drawBandLabels, getBandColorGradients, processBandData,
+  parseBands, drawBandLabels, getBandColorGradients, processBandData,
   setBandsToShow, hideUnshownBandLabels
-} from './bands';
+} from './bands/bands';
 
 import {onBrushMove, createBrush} from './brush';
 import {drawSexChromosomes, setSexChromosomes} from './sex-chromosomes';
@@ -98,7 +98,7 @@ export default class Ideogram {
     this.getAssemblyAndChromosomesFromEutils = getAssemblyAndChromosomesFromEutils;
 
     // Functions from bands.js
-    this.getBands = getBands;
+    this.parseBands = parseBands;
     this.drawBandLabels = drawBandLabels;
     this.getBandColorGradients = getBandColorGradients;
     this.processBandData = processBandData;
