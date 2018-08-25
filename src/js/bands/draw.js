@@ -1,6 +1,6 @@
 import * as d3selection from 'd3-selection';
-
 import {Object} from '../lib.js';
+import {hideUnshownBandLabels, setBandsToShow} from './show.js';
 
 var d3 = Object.assign({}, d3selection);
 
@@ -11,23 +11,23 @@ var d3 = Object.assign({}, d3selection);
  * Stalks are small lines that visually connect labels to their bands.
  */
 function drawBandLabels(chromosomes) {
-var i, chr, chrs, taxid, chrModel, chrIndex, textOffsets,
+  var i, chr, chrs, taxid, chrModel, chrIndex, textOffsets,
     bandsToLabel,
     ideo = this,
     orientation = ideo.config.orientation;
 
-chrs = [];
+  chrs = [];
 
-for (taxid in chromosomes) {
+  for (taxid in chromosomes) {
     for (chr in chromosomes[taxid]) {
-    chrs.push(chromosomes[taxid][chr]);
+      chrs.push(chromosomes[taxid][chr]);
     }
-}
+  }
 
-textOffsets = {};
+  textOffsets = {};
 
-chrIndex = 0;
-for (i = 0; i < chrs.length; i++) {
+  chrIndex = 0;
+  for (i = 0; i < chrs.length; i++) {
     chrIndex += 1;
 
     chrModel = chrs[i];
@@ -54,40 +54,40 @@ for (i = 0; i < chrs.length; i++) {
     textOffsets[chrModel.id] = [];
 
     chr.selectAll('text')
-    .data(bandsToLabel)
-    .enter()
-    .append('g')
-    .attr('class', function(d, i) {
+      .data(bandsToLabel)
+      .enter()
+      .append('g')
+      .attr('class', function (d, i) {
         return 'bandLabel bsbsl-' + i;
-    })
-    .attr('transform', function(d) {
+      })
+      .attr('transform', function (d) {
         var transform = ideo._layout.getChromosomeBandLabelTranslate(d, i);
 
         if (orientation === 'horizontal') {
-        textOffsets[chrModel.id].push(transform.x + 13);
+          textOffsets[chrModel.id].push(transform.x + 13);
         } else {
-        textOffsets[chrModel.id].push(transform.y + 6);
+          textOffsets[chrModel.id].push(transform.y + 6);
         }
 
         return transform.translate;
-    })
-    .append('text')
-    .attr('text-anchor', ideo._layout.getChromosomeBandLabelAnchor(i))
-    .text(function(d) {
+      })
+      .append('text')
+      .attr('text-anchor', ideo._layout.getChromosomeBandLabelAnchor(i))
+      .text(function (d) {
         return d.name;
-    });
+      });
 
     // var adapter = ModelAdapter.getInstance(ideo.chromosomesArray[i]);
     // var view = Chromosome.getInstance(adapter, ideo.config, ideo);
 
     chr.selectAll('line.bandLabelStalk')
-    .data(bandsToLabel)
-    .enter()
-    .append('g')
-    .attr('class', function(d, i) {
+      .data(bandsToLabel)
+      .enter()
+      .append('g')
+      .attr('class', function (d, i) {
         return 'bandLabelStalk bsbsl-' + i;
-    })
-    .attr('transform', function(d) {
+      })
+      .attr('transform', function (d) {
         var x, y;
 
         x = ideo.round(d.px.start + d.px.width / 2);
@@ -96,19 +96,19 @@ for (i = 0; i < chrs.length; i++) {
         textOffsets[chrModel.id].push(x + 13);
 
         return 'translate(' + x + ',' + y + ')';
-    })
-    .append('line')
-    .attr('x1', 0)
-    .attr('y1', function() {
+      })
+      .append('line')
+      .attr('x1', 0)
+      .attr('y1', function () {
         return ideo._layout.getChromosomeBandTickY1(i);
-    })
-    .attr('x2', 0)
-    .attr('y2', function() {
+      })
+      .attr('x2', 0)
+      .attr('y2', function () {
         return ideo._layout.getChromosomeBandTickY2(i);
-    });
-}
+      });
+  }
 
-ideo.setBandsToShow(chrs, textOffsets);
+  ideo.setBandsToShow(chrs, textOffsets);
 }
 
 /**
@@ -234,20 +234,6 @@ function getBandColorGradients() {
     return gradients;
 }
 
-function hideUnshownBandLabels() {
-    var ideo = this;
-    var bandsToShow = ideo.bandsToShow.join(',');
-  
-    // d3.selectAll resolves to querySelectorAll (QSA).
-    // QSA takes a surprisingly long time to complete,
-    // and scales with the number of selectors.
-    // Most bands are hidden, so we can optimize by
-    // Hiding all bands, then QSA'ing and displaying the
-    // relatively few bands that are shown.
-    var t0C = new Date().getTime();
-    d3.selectAll(ideo.selector + ' .bandLabel, .bandLabelStalk')
-      .style('display', 'none');
-    d3.selectAll(bandsToShow).style('display', '');
-  }
-
-export {drawBandLabels, getBandColorGradients, hideUnshownBandLabels}
+export {
+  drawBandLabels, getBandColorGradients, hideUnshownBandLabels, setBandsToShow
+}
