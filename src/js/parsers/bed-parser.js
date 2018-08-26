@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Parse raw Ideogram.js annotations from a BED file
+ * BED documentation: https://genome.ucsc.edu/FAQ/FAQformat#format1
+ */
+
 export class BedParser {
 
   constructor(bed, ideo) {
@@ -19,6 +24,9 @@ export class BedParser {
     );
   }
 
+  /**
+   * Parses an annotation from a tab-separated line of a BED file
+   */
   parseAnnotFromTsvLine(tsvLine, chrs, ucscStyle) {
     var annot, columns, chrIndex, chr, start, stop, rgb, color, label;
 
@@ -54,10 +62,8 @@ export class BedParser {
     return [chrIndex, annot];
   }
 
-
-  /*
+  /**
   * Parses a BED file, returns raw annotations
-  * BED documentation: https://genome.ucsc.edu/FAQ/FAQformat#format1
   */
   parseBed(bed, ideo) {
     var tsvLines, i, chrs, chr, ucscStyle, chrIndex, annots, annot, line,
