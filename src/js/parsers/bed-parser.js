@@ -19,15 +19,49 @@ export class BedParser {
     );
   }
 
+  parseAnnotFromTsvLine(tsvLine, chrs, ucscStyle) {
+    var annot, columns, chrIndex, chr, start, stop, rgb, color, label;
+
+    columns = tsvLine.split(/\s/g);
+
+    // These three columns (i.e. fields) are required
+    chr = columns[0];
+    start = parseInt(columns[1], 10);
+    stop = parseInt(columns[2], 10);
+
+    length = stop - start;
+
+    if (ucscStyle) {
+      chr = chr.slice(3);
+    }
+    chrIndex = chrs.indexOf(chr);
+    if (chrIndex === -1) {
+      return [null, null];
+    }
+    annot = ['', start, length, 0];
+
+    if (columns.length >= 4) {
+      label = columns[3];
+      annot[0] = label;
+    }
+
+    if (columns.length >= 8) {
+      rgb = columns[8].split(',');
+      color = BedParser.rgbToHex(rgb[0], rgb[1], rgb[2]);
+      annot.push(color);
+    }
+
+    return [chrIndex, annot];
+  }
+
+
   /*
   * Parses a BED file, returns raw annotations
   * BED documentation: https://genome.ucsc.edu/FAQ/FAQformat#format1
   */
   parseBed(bed, ideo) {
-
-    var tsvLines, i, columns, chrs, chr, start, stop, chrIndex, annots, annot,
-      bedStartIndex, ucscStyle, rgb, color, label, keys,
-      rawAnnots;
+    var tsvLines, i, chrs, chr, ucscStyle, chrIndex, annots, annot, line,
+      bedStartIndex, keys, rawAnnots;
 
     annots = [];
 
@@ -51,36 +85,11 @@ export class BedParser {
     }
 
     for (i = bedStartIndex; i < tsvLines.length; i++) {
-      columns = tsvLines[i].split(/\s/g);
-
-      // These three columns (i.e. fields) are required
-      chr = columns[0];
-      start = parseInt(columns[1], 10);
-      stop = parseInt(columns[2], 10);
-
-      length = stop - start;
-
-      if (ucscStyle) {
-        chr = chr.slice(3);
+      line = tsvLines[i];
+      [chrIndex, annot] = this.parseAnnotFromTsvLine(line, chrs, ucscStyle);
+      if (chrIndex !== null) {
+        annots[chrIndex].annots.push(annot);
       }
-      chrIndex = chrs.indexOf(chr);
-      if (chrIndex === -1) {
-        continue;
-      }
-      annot = ["", start, length, 0];
-
-      if (columns.length >= 4) {
-        label = columns[3];
-        annot[0] = label;
-      }
-
-      if (columns.length >= 8) {
-        rgb = columns[8].split(',');
-        color = BedParser.rgbToHex(rgb[0], rgb[1], rgb[2]);
-        annot.push(color);
-      }
-
-      annots[chrIndex].annots.push(annot);
     }
     keys = ['name', 'start', 'length', 'trackIndex'];
     if (tsvLines[bedStartIndex].length >= 8) {
