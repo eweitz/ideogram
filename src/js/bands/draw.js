@@ -158,6 +158,19 @@ function getBandColorGradients() {
     // More: http://ux.stackexchange.com/a/3334
     '#_ideogram text {font: 9px Tahoma; fill: #000;} ' +
     '#_ideogram .italic {font-style: italic;} ' +
+    '#_ideogram .chromosome {cursor: pointer; fill: #AAA;}' +
+    '#_ideogram .chrSetLabel {font-weight: bolder;}' +
+    '#_ideogram .ghost {opacity: 0.2;}' +
+    '#_ideogram .hidden {display: none;}' +
+    '#_ideogram .bandLabelStalk line {stroke: #AAA; stroke-width: 1;}' +
+    '#_ideogram .syntenyBorder {stroke:#AAA;stroke-width:1;}' +
+    '#_ideogram .brush .selection {' +
+    '  fill: #F00;' +
+    '  stroke: #F00;' +
+    '  fill-opacity: .3;' +
+    '  shape-rendering: crispEdges;' +
+    '}' +
+    '#_ideogram .noBands {fill: #AAA;}' +
     // NCBI stain density colors
     '#_ideogram .gneg {fill: #FFF}' +
     '#_ideogram .gpos25 {fill: #BBB}' +
