@@ -16,7 +16,7 @@ import version from './version';
 
 import {
   configure, initDrawChromosomes, handleRotateOnClick, onLoad,
-  setOverflowScroll, init
+  setOverflowScroll, init, finishInit
 } from './init/init';
 
 import {
@@ -65,6 +65,7 @@ export default class Ideogram {
     this.handleRotateOnClick = handleRotateOnClick;
     this.setOverflowScroll = setOverflowScroll;
     this.init = init;
+    this.finishInit = finishInit;
 
     // Functions from annotations.js
     this.onLoadAnnots = onLoadAnnots;
