@@ -17,7 +17,7 @@ import version from './version';
 import {
   configure, initDrawChromosomes, handleRotateOnClick, onLoad,
   setOverflowScroll, init
-} from './init';
+} from './init/init';
 
 import {
   onLoadAnnots, onDrawAnnots, processAnnotData, restoreDefaultTracks,
