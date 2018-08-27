@@ -5,11 +5,10 @@
 import * as d3fetch from 'd3-fetch';
 import * as d3selection from 'd3-selection';
 
-import {Ploidy} from '../ploidy';
-import {Layout} from '../layouts/layout';
 import {Object} from '../lib';
 import {configure} from './configure';
 import {finishInit} from './finish-init';
+import {writeContainer} from './write-container';
 
 var d3 = Object.assign({}, d3fetch, d3selection);
 
@@ -112,46 +111,6 @@ function handleRotateOnClick() {
  */
 function onLoad() {
   call(this.onLoadCallback);
-}
-
-function setOverflowScroll() {
-
-  var ideo, config, ideoWidth, ideoInnerWrap, ideoOuterWrap, ideoSvg,
-    ploidy, ploidyPad;
-
-  ideo = this;
-  config = ideo.config;
-
-  ideoSvg = d3.select(config.container + ' svg#_ideogram');
-  ideoInnerWrap = d3.select(config.container + ' #_ideogramInnerWrap');
-  ideoOuterWrap = d3.select(config.container + ' #_ideogramOuterWrap');
-
-  ploidy = config.ploidy;
-  ploidyPad = (ploidy - 1);
-
-  if (
-    config.orientation === 'vertical' &&
-    config.perspective !== 'comparative'
-  ) {
-    ideoWidth = (ideo.numChromosomes + 2) * (config.chrWidth + config.chrMargin + ploidyPad);
-  } else {
-    return;
-    // chrOffset = ideoSvg.select('.chromosome').nodes()[0].getBoundingClientRect();
-    // ideoWidth = config.chrHeight + chrOffset.x + 1;
-  }
-
-  ideoWidth = Math.round(ideoWidth * ploidy / config.rows);
-
-  // Ensures absolutely-positioned elements, e.g. heatmap overlaps, display
-  // properly if ideogram container also has position: absolute
-  ideoOuterWrap
-    .style('height', ideo._layout.getHeight() + 'px')
-
-  ideoInnerWrap
-    .style('max-width', ideoWidth + 'px')
-    .style('overflow-x', 'scroll')
-    .style('position', 'absolute');
-  ideoSvg.style('min-width', (ideoWidth - 5) + 'px');
 }
 
 /**
@@ -263,7 +222,7 @@ function init() {
 
               if (numBandDataResponses === taxids.length) {
                 bandsArray = ideo.processBandData();
-                writeContainer();
+                ideo.writeContainer(bandsArray, taxid, t0);
               }
             });
           });
@@ -274,93 +233,13 @@ function init() {
           ideo.bandData[taxid] = chrBands;
         }
         bandsArray = ideo.processBandData();
-        writeContainer();
+        ideo.writeContainer(bandsArray, taxid, t0);
       }
     }
   });
-
-  /**
-   * Writes the HTML elements that contain this ideogram instance.
-   */
-  function writeContainer() {
-
-    if (ideo.config.annotationsPath) {
-      ideo.fetchAnnots(ideo.config.annotationsPath);
-    }
-
-    // If ploidy description is a string, then convert it to the canonical
-    // array format.  String ploidyDesc is used when depicting e.g. parental
-    // origin each member of chromosome pair in a human genome.
-    // See ploidy-basic.html for usage example.
-    if (
-      'ploidyDesc' in ideo.config &&
-      typeof ideo.config.ploidyDesc === 'string'
-    ) {
-      var tmp = [];
-      for (var i = 0; i < ideo.numChromosomes; i++) {
-        tmp.push(ideo.config.ploidyDesc);
-      }
-      ideo.config.ploidyDesc = tmp;
-    }
-    // Organism ploidy description
-    ideo._ploidy = new Ploidy(ideo.config);
-
-    // Chromosome's layout
-    ideo._layout = Layout.getInstance(ideo.config, ideo);
-
-    svgClass = '';
-    if (ideo.config.showChromosomeLabels) {
-      if (ideo.config.orientation === 'horizontal') {
-        svgClass += 'labeledLeft ';
-      } else {
-        svgClass += 'labeled ';
-      }
-    }
-
-    if (
-      ideo.config.annotationsLayout &&
-      ideo.config.annotationsLayout === 'overlay'
-    ) {
-      svgClass += 'faint';
-    }
-
-    var gradients = ideo.getBandColorGradients();
-    var svgWidth = ideo._layout.getWidth(taxid);
-    var svgHeight = ideo._layout.getHeight(taxid);
-
-    d3.select(ideo.config.container)
-      .append('div')
-      .attr('id', '_ideogramOuterWrap')
-      .append('div')
-      .attr('id', '_ideogramInnerWrap')
-      .append('svg')
-      .attr('id', '_ideogram')
-      .attr('class', svgClass)
-      .attr('width', svgWidth)
-      .attr('height', svgHeight)
-      .html(gradients);
-
-    ideo.isOnlyIdeogram = document.querySelectorAll('#_ideogram').length === 1;
-
-    // Tooltip div setup w/ default styling.
-    d3.select(ideo.config.container + ' #_ideogramOuterWrap').append("div")
-      .attr('class', 'tooltip')
-      .attr('id', 'tooltip')
-      .style('opacity', 0)
-      .style('position', 'absolute')
-      .style('text-align', 'center')
-      .style('padding', '4px')
-      .style('font', '12px sans-serif')
-      .style('background', 'white')
-      .style('border', '1px solid black')
-      .style('border-radius', '5px');
-
-    ideo.finishInit(bandsArray, t0);
-  }
-
 }
 
 export {
   configure, initDrawChromosomes, handleRotateOnClick, setOverflowScroll,
-  onLoad, init, finishInit,
+  onLoad, init, finishInit, writeContainer
 }

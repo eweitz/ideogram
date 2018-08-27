@@ -16,7 +16,7 @@ import version from './version';
 
 import {
   configure, initDrawChromosomes, handleRotateOnClick, onLoad,
-  setOverflowScroll, init, finishInit
+  init, finishInit, writeContainer
 } from './init/init';
 
 import {
@@ -45,11 +45,20 @@ import {convertBpToPx, convertPxToBp} from './coordinate-converters';
 import {unpackAnnots, packAnnots, initCrossFilter, filterAnnots} from './filter';
 
 import {
-  assemblyIsAccession, getDataDir, getChromosomeModel,
-  getChromosomePixels, drawChromosomeLabels, rotateChromosomeLabels,
-  round, drawChromosome, appendHomolog, rotateAndToggleDisplay, onDidRotate,
-  getSvg, Object
+  assemblyIsAccession, getDataDir, round, onDidRotate, getSvg, Object
 } from './lib';
+
+import {
+  getChromosomeModel, getChromosomePixels
+} from './views/chromosome-model';
+
+import {
+  appendHomolog, drawChromosome, rotateAndToggleDisplay, setOverflowScroll
+} from './views/draw-chromosomes';
+
+import {
+  drawChromosomeLabels, rotateChromosomeLabels
+} from './views/chromosome-labels.js';
 
 var d3 = Object.assign({}, d3selection, d3fetch, d3brush, d3dispatch);
 d3.scaleLinear = scaleLinear;
@@ -63,9 +72,9 @@ export default class Ideogram {
     this.initDrawChromosomes = initDrawChromosomes;
     this.onLoad = onLoad;
     this.handleRotateOnClick = handleRotateOnClick;
-    this.setOverflowScroll = setOverflowScroll;
     this.init = init;
     this.finishInit = finishInit;
+    this.writeContainer = writeContainer;
 
     // Functions from annotations.js
     this.onLoadAnnots = onLoadAnnots;
@@ -129,16 +138,23 @@ export default class Ideogram {
     // Functions from lib.js
     this.assemblyIsAccession = assemblyIsAccession;
     this.getDataDir = getDataDir;
+    this.round = round;
+    this.onDidRotate = onDidRotate;
+    this.getSvg = getSvg;
+
+    // Functions from views/chromosome-model.js
     this.getChromosomeModel = getChromosomeModel;
     this.getChromosomePixels = getChromosomePixels;
+
+    // Functions from views/chromosome-labels.js
     this.drawChromosomeLabels = drawChromosomeLabels;
     this.rotateChromosomeLabels = rotateChromosomeLabels;
-    this.round = round;
+
+    // Functions from views/draw-chromosomes.js
     this.appendHomolog = appendHomolog;
     this.drawChromosome = drawChromosome;
     this.rotateAndToggleDisplay = rotateAndToggleDisplay;
-    this.onDidRotate = onDidRotate;
-    this.getSvg = getSvg;
+    this.setOverflowScroll = setOverflowScroll;
 
     this.configure(config)
   }
