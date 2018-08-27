@@ -15,7 +15,7 @@ var d3 = Object.assign({}, d3selection);
 function drawBandLabelText(chr, bandsToLabel, chrModel, textOffsets) {
   var ideo = this,
     layout = ideo._layout,
-    chrIndex = chrModel.index;
+    chrIndex = chrModel.chrIndex;
 
   chr.selectAll('text')
     .data(bandsToLabel)
@@ -69,9 +69,9 @@ function drawBandLabelStalk(chr, bandsToLabel, chrModel, textOffsets) {
     })
     .append('line')
     .attr('x1', 0)
-    .attr('y1', ideo._layout.getChromosomeBandTickY1(chrModel.index))
+    .attr('y1', ideo._layout.getChromosomeBandTickY1(chrModel.chrIndex))
     .attr('x2', 0)
-    .attr('y2', ideo._layout.getChromosomeBandTickY2(chrModel.index));
+    .attr('y2', ideo._layout.getChromosomeBandTickY2(chrModel.chrIndex));
 }
 
 /**
