@@ -37,11 +37,11 @@ function orderAnnotContainers(annots, ideo) {
 /**
  * Add client annotations, as in annotations-tracks.html
  */
-function addClientAnnot(annots, annot, config, ra, m) {
+function addClientAnnot(annots, annot, ra, m, ideo) {
   var annotTrack;
 
   annot.trackIndex = ra[3];
-  annotTrack = config.annotationTracks[annot.trackIndex];
+  annotTrack = ideo.config.annotationTracks[annot.trackIndex];
   if (annotTrack.color) {
     annot.color = annotTrack.color;
   }
@@ -57,13 +57,15 @@ function addClientAnnot(annots, annot, config, ra, m) {
 /**
  * Add sparse server annotations, as in annotations-track-filters.html
  */
-function addSparseServertAnnot(annot, ra, colors, omittedAnnots, annots, numTracks, m) {
+function addSparseServertAnnot(annot, ra, omittedAnnots, annots, m, ideo) {
+  var colors = colorMap[ideo.numAvailTracks - 1];
+
   annot.trackIndex = ra[3];
   annot.trackIndexOriginal = ra[4];
   annot.color = '#' + colors[annot.trackIndexOriginal];
 
   // Catch annots that will be omitted from display
-  if (annot.trackIndex > numTracks - 1) {
+  if (annot.trackIndex > ideo.config.numTracks - 1) {
     if (annot.trackIndex in omittedAnnots) {
       omittedAnnots[annot.trackIndex].push(annot);
     } else {
@@ -95,10 +97,10 @@ function addDenseServerAnnot(keys, annots, annot, m) {
  * Basic client annotations, as in annotations-basic.html
  * and annotations-external.html
  */
-function addBasicClientAnnot(annots, annot, config, m) {
+function addBasicClientAnnot(annots, annot, m, ideo) {
   annot.trackIndex = 0;
   if (!annot.color) {
-    annot.color = config.annotationsColor;
+    annot.color = ideo.config.annotationsColor;
   }
   if (!annot.shape) {
     annot.shape = 'triangle';
@@ -108,14 +110,13 @@ function addBasicClientAnnot(annots, annot, config, m) {
   return annots;
 }
 
-function addAnnot(annot, keys, ra, config, omittedAnnots, annots, m,
-  numAvailTracks, numTracks, colors) {
+function addAnnot(annot, keys, ra, omittedAnnots, annots, m, ideo) {
 
-  if (config.annotationTracks) {
-    annots = addClientAnnot(annots, annot, config, ra, m);
-  } else if (keys[3] === 'trackIndex' && numAvailTracks !== 1) {
+  if (ideo.config.annotationTracks) {
+    annots = addClientAnnot(annots, annot, ra, m, ideo);
+  } else if (keys[3] === 'trackIndex' && ideo.numAvailTracks !== 1) {
     [annots, omittedAnnots] = 
-      addSparseServertAnnot(annot, ra, colors, omittedAnnots, annots, numTracks, m);
+      addSparseServertAnnot(annot, ra, omittedAnnots, annots, m, ideo);
   } else if (
     keys.length > 3 &&
     keys[3] in {trackIndex: 1, color: 1, shape: 1} === false &&
@@ -123,16 +124,15 @@ function addAnnot(annot, keys, ra, config, omittedAnnots, annots, m,
   ) {
     annots = addDenseServerAnnot(keys, annots, annot, m);
   } else {
-    annots = addBasicClientAnnot(annots, annot, config, m);
+    annots = addBasicClientAnnot(annots, annot, m, ideo);
   }
 
   return [annots, omittedAnnots];
 }
 
-function addAnnotsForChr(annots, omittedAnnots, annotsByChr, chr, chrModel,
-  colors, m, keys, numTracks, ideo, i, numAvailTracks) {
-  var j, k, annot, startPx, stopPx, px, ra,
-    config = ideo.config;
+function addAnnotsForChr(annots, omittedAnnots, annotsByChr, chrModel,
+  m, keys, ideo) {
+  var j, k, annot, ra;
 
   for (j = 0; j < annotsByChr.annots.length; j++) {
     ra = annotsByChr.annots[j];
@@ -144,45 +144,38 @@ function addAnnotsForChr(annots, omittedAnnots, annotsByChr, chr, chrModel,
 
     annot.stop = annot.start + annot.length;
 
-    startPx = ideo.convertBpToPx(chrModel, annot.start);
-    stopPx = ideo.convertBpToPx(chrModel, annot.stop);
-    px = Math.round((startPx + stopPx) / 2);
-
-    annot.chr = chr;
-    annot.chrIndex = i;
-    annot.px = px;
-    annot.startPx = startPx;
-    annot.stopPx = stopPx;  
+    annot.chr = annotsByChr.chr;
+    annot.chrIndex = m;
+    annot.startPx = ideo.convertBpToPx(chrModel, annot.start);
+    annot.stopPx = ideo.convertBpToPx(chrModel, annot.stop);
+    annot.px = Math.round((annot.startPx + annot.stopPx) / 2);
 
     [annots, omittedAnnots] = 
-      addAnnot(annot, keys, ra, config, omittedAnnots, annots, m, numAvailTracks, numTracks, colors);
+      addAnnot(annot, keys, ra, omittedAnnots, annots, m, ideo);
   }
 
   return [annots, omittedAnnots];
 }
 
-function addAnnots(rawAnnots, keys, numTracks, numAvailTracks, ideo) {
-  var annots, omittedAnnots, m, i, annotsByChr, chr, chrModel, colors,
-    config = ideo.config;
+function warnOfUndefinedChromosome(annotsByChr) {
+  console.warn(
+    'Chromosome "' + annotsByChr.chr + '" undefined in ideogram; ' +
+    annotsByChr.annots.length + ' annotations not shown'
+  );
+}
 
-  annots = [];
-  omittedAnnots = {};
-
-  colors = colorMap[numAvailTracks - 1];
+function addAnnots(rawAnnots, keys, ideo) {
+  var m, i, annotsByChr, chrModel,
+    annots = [],
+    omittedAnnots = {};
 
   m = -1;
   for (i = 0; i < rawAnnots.length; i++) {
-
     annotsByChr = rawAnnots[i];
-
-    chr = annotsByChr.chr;
-    chrModel = ideo.chromosomes[config.taxid][chr];
+    chrModel = ideo.chromosomes[ideo.config.taxid][annotsByChr.chr];
 
     if (typeof chrModel === 'undefined') {
-      console.warn(
-        'Chromosome "' + chr + '" undefined in ideogram; ' +
-        annotsByChr.annots.length + ' annotations not shown'
-      );
+      warnOfUndefinedChromosome(annotsByChr);
       continue;
     }
 
@@ -190,15 +183,16 @@ function addAnnots(rawAnnots, keys, numTracks, numAvailTracks, ideo) {
     annots.push({chr: annotsByChr.chr, annots: []});
 
     [annots, omittedAnnots] =
-      addAnnotsForChr(annots, omittedAnnots, annotsByChr, chr, chrModel,
-        colors, m, keys, numTracks, ideo, i, numAvailTracks);
+      addAnnotsForChr(annots, omittedAnnots, annotsByChr, chrModel,
+        m, keys, ideo);
   }
 
-  return [annots, omittedAnnots]
+  return [annots, omittedAnnots];
 }
 
-function sendTrackAndAnnotWarnings(numTracks, omittedAnnots) {
-  var numOmittedTracks;
+function sendTrackAndAnnotWarnings(omittedAnnots, ideo) {
+  var numOmittedTracks,
+    numTracks = ideo.config.numAnnotTracks;;
 
   if (numTracks > 10) {
     console.error(
@@ -226,21 +220,16 @@ function sendTrackAndAnnotWarnings(numTracks, omittedAnnots) {
  * array of objects.  It also adds pixel offset information.
  */
 function processAnnotData(rawAnnots) {
-  var numTracks, keys, annots, omittedAnnots, numAvailTracks, 
+  var keys, annots, omittedAnnots,
     ideo = this;
 
   keys = rawAnnots.keys;
   rawAnnots = rawAnnots.annots;
 
-  numTracks = ideo.config.numAnnotTracks;
-  numAvailTracks = ideo.numAvailTracks;
-
-  [annots, omittedAnnots] = 
-    addAnnots(rawAnnots, keys, numTracks, numAvailTracks, ideo);
-
-  sendTrackAndAnnotWarnings(numTracks, omittedAnnots)
-
+  [annots, omittedAnnots] = addAnnots(rawAnnots, keys, ideo);
   annots = orderAnnotContainers(annots, ideo);
+
+  sendTrackAndAnnotWarnings(omittedAnnots, ideo)
 
   return annots;
 }
