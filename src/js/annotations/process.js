@@ -78,20 +78,21 @@ function addSparseServertAnnot(annot, ra, omittedAnnots, annots, m, ideo) {
   return [annots, omittedAnnots];
 }
 
-function addDenseServerAnnot(keys, annots, annot, m) {
-  var n, thisAnnot;
+// TODO: This needs a working test case.
+// function addDenseServerAnnot(keys, annots, annot, m) {
+//   var n, thisAnnot;
 
-  // Dense server annotations
-  for (n = 4; n < keys.length; n++) {
-    thisAnnot = Object.assign({}, annot); // copy by value
-    thisAnnot.trackIndex = n - 4;
-    thisAnnot.trackIndexOriginal = n - 3;
-    thisAnnot.color = '#' + colors[thisAnnot.trackIndexOriginal];
-    annots[m].annots.push(thisAnnot);
-  }
+//   // Dense server annotations
+//   for (n = 4; n < keys.length; n++) {
+//     thisAnnot = Object.assign({}, annot); // copy by value
+//     thisAnnot.trackIndex = n - 4;
+//     thisAnnot.trackIndexOriginal = n - 3;
+//     thisAnnot.color = '#' + colors[thisAnnot.trackIndexOriginal];
+//     annots[m].annots.push(thisAnnot);
+//   }
 
-  return annots;
-}
+//   return annots;
+// }
 
 /**
  * Basic client annotations, as in annotations-basic.html
@@ -117,12 +118,12 @@ function addAnnot(annot, keys, ra, omittedAnnots, annots, m, ideo) {
   } else if (keys[3] === 'trackIndex' && ideo.numAvailTracks !== 1) {
     [annots, omittedAnnots] = 
       addSparseServertAnnot(annot, ra, omittedAnnots, annots, m, ideo);
-  } else if (
-    keys.length > 3 &&
-    keys[3] in {trackIndex: 1, color: 1, shape: 1} === false &&
-    keys[4] === 'trackIndexOriginal'
-  ) {
-    annots = addDenseServerAnnot(keys, annots, annot, m);
+  // } else if (
+  //   keys.length > 3 &&
+  //   keys[3] in {trackIndex: 1, color: 1, shape: 1} === false &&
+  //   keys[4] === 'trackIndexOriginal'
+  // ) {
+  //   annots = addDenseServerAnnot(keys, annots, annot, m);
   } else {
     annots = addBasicClientAnnot(annots, annot, m, ideo);
   }
