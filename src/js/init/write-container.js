@@ -7,20 +7,12 @@ import {Layout} from '../layouts/layout';
 var d3 = Object.assign({}, d3selection);
 
 /**
- * Writes the HTML elements that contain this ideogram instance.
+ * If ploidy description is a string, then convert it to the canonical
+ * array format.  String ploidyDesc is used when depicting e.g. parental
+ * origin each member of chromosome pair in a human genome.
+ * See ploidy-basic.html for usage example.
  */
-function writeContainer(bandsArray, taxid, t0) {
-  var svgClass,
-    ideo = this;
-
-  if (ideo.config.annotationsPath) {
-    ideo.fetchAnnots(ideo.config.annotationsPath);
-  }
-
-  // If ploidy description is a string, then convert it to the canonical
-  // array format.  String ploidyDesc is used when depicting e.g. parental
-  // origin each member of chromosome pair in a human genome.
-  // See ploidy-basic.html for usage example.
+function setPloidy(ideo) {
   if (
     'ploidyDesc' in ideo.config &&
     typeof ideo.config.ploidyDesc === 'string'
@@ -33,11 +25,10 @@ function writeContainer(bandsArray, taxid, t0) {
   }
   // Organism ploidy description
   ideo._ploidy = new Ploidy(ideo.config);
+}
 
-  // Chromosome's layout
-  ideo._layout = Layout.getInstance(ideo.config, ideo);
-
-  svgClass = '';
+function getContainerSvgClass(ideo) {
+  var svgClass = '';
   if (ideo.config.showChromosomeLabels) {
     if (ideo.config.orientation === 'horizontal') {
       svgClass += 'labeledLeft ';
@@ -53,25 +44,13 @@ function writeContainer(bandsArray, taxid, t0) {
     svgClass += 'faint';
   }
 
-  var gradients = ideo.getBandColorGradients();
-  var svgWidth = ideo._layout.getWidth(taxid);
-  var svgHeight = ideo._layout.getHeight(taxid);
+  return svgClass
+}
 
-  d3.select(ideo.config.container)
-    .append('div')
-    .attr('id', '_ideogramOuterWrap')
-    .append('div')
-    .attr('id', '_ideogramInnerWrap')
-    .append('svg')
-    .attr('id', '_ideogram')
-    .attr('class', svgClass)
-    .attr('width', svgWidth)
-    .attr('height', svgHeight)
-    .html(gradients);
-
-  ideo.isOnlyIdeogram = document.querySelectorAll('#_ideogram').length === 1;
-
-  // Tooltip div setup w/ default styling.
+/**
+ * Write tooltip div setup with default styling.
+ */
+function writeTooltipContainer(ideo) {
   d3.select(ideo.config.container + ' #_ideogramOuterWrap').append("div")
     .attr('class', 'tooltip')
     .attr('id', 'tooltip')
@@ -83,7 +62,39 @@ function writeContainer(bandsArray, taxid, t0) {
     .style('background', 'white')
     .style('border', '1px solid black')
     .style('border-radius', '5px');
+}
 
+function writeContainerDom(taxid, ideo) {
+  d3.select(ideo.config.container)
+    .append('div')
+    .attr('id', '_ideogramOuterWrap')
+    .append('div')
+    .attr('id', '_ideogramInnerWrap')
+    .append('svg')
+    .attr('id', '_ideogram')
+    .attr('class', getContainerSvgClass(ideo))
+    .attr('width', ideo.getBandColorGradients())
+    .attr('height', ideo._layout.getHeight(taxid))
+    .html(ideo.getBandColorGradients());
+}
+
+/**
+ * Writes the HTML elements that contain this ideogram instance.
+ */
+function writeContainer(bandsArray, taxid, t0) {
+  var ideo = this;
+
+  if (ideo.config.annotationsPath) {
+    ideo.fetchAnnots(ideo.config.annotationsPath);
+  }
+
+  setPloidy(ideo);
+  ideo._layout = Layout.getInstance(ideo.config, ideo);
+
+  writeContainerDom(taxid, ideo);
+
+  ideo.isOnlyIdeogram = document.querySelectorAll('#_ideogram').length === 1;
+  writeTooltipContainer(ideo);
   ideo.finishInit(bandsArray, t0);
 }
 
