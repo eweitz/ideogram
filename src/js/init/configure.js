@@ -1,5 +1,4 @@
 function configurePloidy(ideo) {
-
   if (!ideo.config.ploidy) ideo.config.ploidy = 1;
 
   if (ideo.config.ploidy > 1) {
@@ -127,16 +126,37 @@ function configureCallbacks(config, ideo) {
 }
 
 function configureMiscellaneous(ideo) {
-  // A flat array of chromosomes
-  // (ideo.chromosomes is an object of
-  // arrays of chromosomes, keyed by organism)
   ideo.chromosomesArray = [];
-
   ideo.coordinateSystem = 'iscn';
   ideo.maxLength = {bp: 0, iscn: 0};
-  ideo.bandsToShow = [];
   ideo.chromosomes = {};
   ideo.numChromosomes = 0;
+  if (!ideo.config.debug) ideo.config.debug = false;
+  if (!ideo.config.dataDir) ideo.config.dataDir = ideo.getDataDir();
+  if (!ideo.config.container) ideo.config.container = 'body';
+  ideo.selector = ideo.config.container + ' #_ideogram';
+  if (!ideo.config.resolution) ideo.config.resolution = '';
+  if (!ideo.config.orientation) ideo.config.orientation = 'vertical';
+  if (!ideo.config.brush) ideo.config.brush = null;
+  if (!ideo.config.rows) ideo.config.rows = 1;
+  if ('showChromosomeLabels' in ideo.config === false) {
+    ideo.config.showChromosomeLabels = true;
+  }
+  if (!ideo.config.showNonNuclearChromosomes) {
+    ideo.config.showNonNuclearChromosomes = false;
+  }
+}
+
+function configureBands(ideo) {
+  if (!ideo.config.showBandLabels) ideo.config.showBandLabels = false;
+
+  if ('showFullyBanded' in ideo.config) {
+    ideo.config.showFullyBanded = ideo.config.showFullyBanded;
+  } else {
+    ideo.config.showFullyBanded = true;
+  }
+
+  ideo.bandsToShow = [];
   ideo.bandData = {};
 }
 
@@ -146,64 +166,26 @@ function configureMiscellaneous(ideo) {
  * @param config Configuration object.  Enables setting Ideogram properties.
  */
 function configure(config) {
-
+  
   // Clone the config object, to allow multiple instantiations
   // without picking up prior ideogram's settings
   this.config = JSON.parse(JSON.stringify(config));
 
-  if (!this.config.debug) this.config.debug = false;
-
-  if (!this.config.dataDir) this.config.dataDir = this.getDataDir();
-
+  configureMiscellaneous(this);
   configurePloidy(this);
-
-  if (!this.config.container) this.config.container = 'body';
-
-  this.selector = this.config.container + ' #_ideogram';
-
-  if (!this.config.resolution) this.config.resolution = '';
-
-  if ('showChromosomeLabels' in this.config === false) {
-    this.config.showChromosomeLabels = true;
-  }
-
-  if (!this.config.orientation) this.config.orientation = 'vertical';
-
-  if (!this.config.showBandLabels) this.config.showBandLabels = false;
-
+  configureBands(this);
   configureHeight(this);
   configureWidth(this);
   configureMargin(this);
-
-  if ('showFullyBanded' in this.config) {
-    this.config.showFullyBanded = config.showFullyBanded;
-  } else {
-    this.config.showFullyBanded = true;
-  }
-
-  if (!this.config.brush) this.config.brush = null;
-
-  if (!this.config.rows) this.config.rows = 1;
-
+  configureCallbacks(config, this);
+  configureOrganisms(this);
   configureBump(this);
   configureSingleChromosome(config, this);
-
-  if (!this.config.showNonNuclearChromosomes) {
-    this.config.showNonNuclearChromosomes = false;
-  }
-
   this.initAnnotSettings();
-
   this.config.chrMargin += (
     this.config.chrWidth +
     this.config.annotTracksHeight * 2
   );
-
-  configureCallbacks(config, this);
-
-  configureOrganisms(this);
-  configureMiscellaneous(this);
-
   this.init();
 }
 
