@@ -18,7 +18,6 @@ function hideUnshownBandLabels() {
   // Most bands are hidden, so we can optimize by
   // Hiding all bands, then QSA'ing and displaying the
   // relatively few bands that are shown.
-  var t0C = new Date().getTime();
   d3.selectAll(ideo.selector + ' .bandLabel, .bandLabelStalk')
     .style('display', 'none');
   d3.selectAll(bandsToShow).style('display', '');
