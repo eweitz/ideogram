@@ -13,76 +13,76 @@ import {fetchBands} from '../bands/fetch';
 
 var d3 = Object.assign({}, d3fetch, d3selection);
 
+function isHeterogameticChromosome(chrModel, chrIndex, ideo) {
+  var ploidy = ideo.config.ploidy;
+  return (
+    'sex' in ideo.config &&
+      (
+        ploidy === 2 && ideo.sexChromosomes.index + 2 === chrIndex ||
+        ideo.config.sex === 'female' && chrModel.name === 'Y'
+      )
+  );
+}
+
+function prepareChromosomes(bandsArray, chrs, taxid, chrIndex, ideo) {
+  var j, bands, chromosome, chrModel
+
+  for (j = 0; j < chrs.length; j++) {
+    chromosome = chrs[j];
+    if ('bandsArray' in ideo) bands = bandsArray[chrIndex];
+
+    chrModel = ideo.getChromosomeModel(bands, chromosome, taxid, chrIndex);
+
+    chrIndex += 1;
+
+    if (typeof chromosome !== 'string') chromosome = chromosome.name;
+
+    ideo.chromosomes[taxid][chromosome] = chrModel;
+    ideo.chromosomesArray.push(chrModel);
+
+    if (isHeterogameticChromosome(chrModel, chrIndex, ideo)) continue;
+
+    ideo.drawChromosome(chrModel);
+  }
+
+  return chrIndex;
+}
+
+function setCoordinateSystem(chrBands, chrs, ideo) {
+  if (
+    typeof chrBands !== 'undefined' &&
+    chrs.length >= chrBands.length / 2
+  ) {
+    ideo.coordinateSystem = 'bp';
+  }
+}
+
 /**
  * Configures chromosome data and calls downstream chromosome drawing functions
  */
 function initDrawChromosomes(bandsArray) {
   var ideo = this,
     taxids = ideo.config.taxids,
-    ploidy = ideo.config.ploidy,
     chrIndex = 0,
-    taxid, bands, i, j, chrs, chromosome, chrModel;
+    taxid, i, chrs;
 
-  if (bandsArray.length > 0) {
-    ideo.bandsArray = {};
-  }
+  if (bandsArray.length > 0) ideo.bandsArray = {};
 
   for (i = 0; i < taxids.length; i++) {
     taxid = taxids[i];
     chrs = ideo.config.chromosomes[taxid];
 
-    if (
-      typeof chrBands !== 'undefined' &&
-      chrs.length >= chrBands.length / 2
-    ) {
-      ideo.coordinateSystem = 'bp';
-    }
+    setCoordinateSystem(chrBands, chrs, ideo);
 
     ideo.chromosomes[taxid] = {};
-
     ideo.setSexChromosomes(chrs);
 
-    if ('bandsArray' in ideo) {
-      ideo.bandsArray[taxid] = bandsArray;
-    }
+    if ('bandsArray' in ideo) ideo.bandsArray[taxid] = bandsArray;
 
-    for (j = 0; j < chrs.length; j++) {
-      chromosome = chrs[j];
-      if ('bandsArray' in ideo) {
-        bands = bandsArray[chrIndex];
-      }
+    chrIndex = prepareChromosomes(bandsArray, chrs, taxid, chrIndex, ideo);
 
-      chrModel = ideo.getChromosomeModel(bands, chromosome, taxid, chrIndex);
-
-      chrIndex += 1;
-
-      if (typeof chromosome !== 'string') {
-        chromosome = chromosome.name;
-      }
-
-      ideo.chromosomes[taxid][chromosome] = chrModel;
-      ideo.chromosomesArray.push(chrModel);
-
-      if (
-        'sex' in ideo.config &&
-        (
-          ploidy === 2 && ideo.sexChromosomes.index + 2 === chrIndex ||
-          ideo.config.sex === 'female' && chrModel.name === 'Y'
-        )
-      ) {
-        continue;
-      }
-
-      ideo.drawChromosome(chrModel);
-
-    }
-
-    if (ideo.config.showBandLabels === true) {
-      ideo.drawBandLabels(ideo.chromosomes);
-    }
-
+    if (ideo.config.showBandLabels) ideo.drawBandLabels(ideo.chromosomes);
     ideo.handleRotateOnClick();
-
     ideo._gotChrModels = true; // Prevent issue with errant rat centromeres
   }
 }
