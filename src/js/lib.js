@@ -19,6 +19,18 @@ function assemblyIsAccession() {
 }
 
 /**
+ * Is the assembly in this.config an NCBI Assembly accession?
+ *
+ * @returns {boolean}
+ */
+function hasNonGenBankAssembly(ideo) {
+  return (
+    'assembly' in ideo.config &&
+    /(GCA_)/.test(ideo.config.assembly) === false
+  );
+}
+
+/**
  * Returns directory used to fetch data for bands and annotations
  *
  * This simplifies ideogram configuration.  By default, the dataDir is
@@ -79,7 +91,8 @@ function getSvg() {
 }
 
 export {
-  assemblyIsAccession, getDataDir, drawChromosomeLabels, rotateChromosomeLabels,
-  round, appendHomolog, drawChromosome, rotateAndToggleDisplay, onDidRotate,
-  getSvg, setOverflowScroll, Object
+  assemblyIsAccession, hasNonGenBankAssembly, getDataDir,
+  drawChromosomeLabels, rotateChromosomeLabels, round, appendHomolog,
+  drawChromosome, rotateAndToggleDisplay, onDidRotate, getSvg,
+  setOverflowScroll, Object
 };

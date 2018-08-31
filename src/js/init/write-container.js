@@ -73,7 +73,7 @@ function writeContainerDom(taxid, ideo) {
     .append('svg')
     .attr('id', '_ideogram')
     .attr('class', getContainerSvgClass(ideo))
-    .attr('width', ideo.getBandColorGradients())
+    .attr('width', ideo._layout.getWidth(taxid))
     .attr('height', ideo._layout.getHeight(taxid))
     .html(ideo.getBandColorGradients());
 }
