@@ -48,7 +48,7 @@ function prepareChromosomes(bandsArray, chrs, taxid, chrIndex, ideo) {
   return chrIndex;
 }
 
-function setCoordinateSystem(chrBands, chrs, ideo) {
+function setCoordinateSystem(chrs, ideo) {
   if (
     typeof chrBands !== 'undefined' &&
     chrs.length >= chrBands.length / 2
@@ -72,7 +72,7 @@ function initDrawChromosomes(bandsArray) {
     taxid = taxids[i];
     chrs = ideo.config.chromosomes[taxid];
 
-    setCoordinateSystem(chrBands, chrs, ideo);
+    setCoordinateSystem(chrs, ideo);
 
     ideo.chromosomes[taxid] = {};
     ideo.setSexChromosomes(chrs);
