@@ -29,7 +29,147 @@ function getOrganismFromEutils(callback) {
     organism = data.result[String(taxid)].commonname;
     ideo.config.organism = organism;
     return callback(organism);
-  });}
+  });
+}
+
+function getNuccoreQueryString(gbUid, asmUid, recovering, ideo) {
+  var qs;
+
+  // Get a list of IDs for the chromosomes in this genome.
+  //
+  // If this is our first pass, or if assembly is GenBank-only, or if
+  // a GenBank assembly was explicitly requested (GCA_), then query RefSeq
+  // sequences in Nucleotide DB.  Otherwise, query the lesser-known
+  // GenColl (Genomic Collections) DB.
+  if (
+    'assembly' in ideo.config && /GCA_/.test(ideo.config.assembly) ||
+    typeof recovering !== 'undefined'
+  ) { // TODO: account for GenBank-only
+    qs = '&db=nuccore&linkname=gencoll_nuccore_chr&from_uid=' + gbUid;
+  } else {
+    qs = '&db=nuccore&linkname=assembly_nuccore_refseq&from_uid=' + asmUid;
+  }
+
+  return qs;
+}
+
+function getAssemblyAndNuccoreLink(data, asmUid, asmAndChrArray, recovering,
+  ideo) {
+  var assembly, qs, gbUid, nuccoreLink;
+
+  assembly = data.result[asmUid];
+  // rsUid = assembly.rsuid; // RefSeq UID for this assembly
+  gbUid = assembly.gbuid; // GenBank UID
+
+  asmAndChrArray.push(assembly.assemblyaccession);
+
+  qs = getNuccoreQueryString(gbUid, asmUid, recovering, ideo);
+  nuccoreLink = ideo.elink + qs;
+
+  return [asmAndChrArray, nuccoreLink];
+}
+
+/**
+ *  If the list of presumed chromosomes is longer than 100 elements, then
+ * we've likely fetched scaffolds instead of chromosomes.  This
+ * happens with e.g. Sus scrofa (pig).  Try recovering once via a
+ * different query, and throw an error upon any subsequent failure.
+ */
+function handleScaffoldData(data, assemblyAccession, callback, recovering,
+  ideo) {
+  if (data.linksets[0].linksetdbs[0].links.length > 100) {
+    if (typeof recovering === 'undefined') {
+      ideo.getAssemblyAndChromosomesFromEutils(callback, true);
+      return Promise.reject(
+        'Unexpectedly found genomic scaffolds instead of chromosomes ' +
+        'while querying RefSeq.  Recovering.'
+      );
+    } else {
+      // Avoid flooding NCBI with EUtils requests.
+      throw Error(
+        'Failed to find chromosomes for genome ' + assemblyAccession
+      );
+    }
+  }
+}
+
+function getNucleotideSummaryLink(data, assemblyAccession, callback,
+  recovering, ideo) {
+
+  var links, ntSummary;
+
+  handleScaffoldData(data, assemblyAccession, callback, recovering, ideo);
+
+  links = data.linksets[0].linksetdbs[0].links.join(',');
+  ntSummary = ideo.esummary + '&db=nucleotide&id=' + links;
+
+  return ntSummary
+}
+
+function parseMitochondrion(result, ideo) {
+  var type, cnIndex, chrName;
+
+  if (ideo.config.showNonNuclearChromosomes) {
+    type = result.genome;
+    cnIndex = result.subtype.split('|').indexOf('plasmid');
+    if (cnIndex === -1) {
+      chrName = 'MT';
+    } else {
+      // Seen in e.g. rice genome IRGSP-1.0 (GCF_001433935.1),
+      // From https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?retmode=json&db=nucleotide&id=996703432,996703431,996703430,996703429,996703428,996703427,996703426,996703425,996703424,996703423,996703422,996703421,194033210,11466763,7524755
+      // genome: 'mitochondrion',
+      // subtype: 'cell_line|plasmid',
+      // subname: 'A-58 CMS|B1',
+      chrName = result.subname.split('|')[cnIndex];
+    }
+  } else {
+    return [null, null];
+  }
+
+  return [chrName, type];
+}
+
+function parseChloroplastOrPlastid(ideo) {
+  // Plastid encountered with rice genome IRGSP-1.0 (GCF_001433935.1)
+  if (ideo.config.showNonNuclearChromosomes) {
+    return ['CP', 'chloroplast'];
+  } 
+  return [null, null];
+}
+
+function parseApicoplast(ideo) {
+  if (ideo.config.showNonNuclearChromosomes) {
+    return ['AP', 'apicoplast'];
+  } 
+  return [null, null];
+}
+
+function parseNuclear(result) {
+  var type, cnIndex, chrName;
+
+  type = 'nuclear';
+  cnIndex = result.subtype.split('|').indexOf('chromosome');
+  chrName = result.subname.split('|')[cnIndex];
+
+  if (typeof chrName !== 'undefined' && chrName.substr(0, 3) === 'chr') {
+    // Convert "chr12" to "12", e.g. for banana (GCF_000313855.2)
+    chrName = chrName.substr(3);
+  }
+
+  return [chrName, type];
+}
+
+function getChrNameAndType(result, ideo) {
+  if (result.genome === 'mitochondrion') {
+    return parseMitochondrion(result, ideo);
+  } else if (result.genome === 'chloroplast' || result.genome === 'plastid') {
+    return parseChloroplastOrPlastid(ideo);
+  } else if (result.genome === 'apicoplast') {
+    return parseApicoplast(ideo);
+  } else {
+    return parseNuclear(result);
+  }
+}
 
 /**
  * Returns names and lengths of chromosomes for an organism's best-known
@@ -40,9 +180,9 @@ function getOrganismFromEutils(callback) {
  * @param recovering Boolean indicating attempt at failure recovery
  */
 function getAssemblyAndChromosomesFromEutils(callback, recovering) {
-  var asmAndChrArray, assembly, organism, assemblyAccession, chromosomes,
-    termStem, asmSearch, asmUid, asmSummary, rsUid, gbUid, nuccoreLink,
-    links, ntSummary, qs, results, result, cnIndex, chrName, chrLength,
+  var asmAndChrArray,organism, assemblyAccession, chromosomes,
+    termStem, asmSearch, asmUid, asmSummary, nuccoreLink,
+    ntSummary, results, result, chrName, chrLength,
     chromosome, type,
     ideo = this;
 
@@ -78,53 +218,19 @@ function getAssemblyAndChromosomesFromEutils(callback, recovering) {
       return d3.json(asmSummary);
     })
     .then(function(data) {
-      assembly = data.result[asmUid];
 
-      rsUid = assembly.rsuid; // RefSeq UID for this assembly
-      gbUid = assembly.gbuid; // GenBank UID
-      assemblyAccession = assembly.assemblyaccession;
+      [asmAndChrArray, nuccoreLink] =
+        getAssemblyAndNuccoreLink(data, asmUid, asmAndChrArray, recovering,
+          ideo);
 
-      asmAndChrArray.push(assemblyAccession);
-
-      // Get a list of IDs for the chromosomes in this genome.
-      //
-      // If this is our first pass, or if assembly is GenBank-only, or if
-      // a GenBank assembly was explicitly requested (GCA_), then query RefSeq
-      // sequences in Nucleotide DB.  Otherwise, query the lesser-known
-      // GenColl (Genomic Collections) DB.
-      if (
-        'assembly' in ideo.config && /GCA_/.test(ideo.config.assembly) ||
-        typeof recovering !== 'undefined'
-      ) { // TODO: account for GenBank-only
-        qs = '&db=nuccore&linkname=gencoll_nuccore_chr&from_uid=' + gbUid;
-      } else {
-        qs = '&db=nuccore&linkname=assembly_nuccore_refseq&from_uid=' + asmUid;
-      }
-      nuccoreLink = ideo.elink + qs;
+      assemblyAccession = asmAndChrArray[0];
 
       return d3.json(nuccoreLink);
     })
     .then(function(data) {
-      if (data.linksets[0].linksetdbs[0].links.length > 100) {
-        // If the list of presumed chromosomes is longer than 100 elements, then
-        // we've likely fetched scaffolds instead of chromosomes.  This
-        // happens with e.g. Sus scrofa (pig).  Try recovering once via a
-        // different query, and throw an error upon any subsequent failure.
-        if (typeof recovering === 'undefined') {
-          ideo.getAssemblyAndChromosomesFromEutils(callback, true);
-          return Promise.reject(
-            'Unexpectedly found genomic scaffolds instead of chromosomes ' +
-            'while querying RefSeq.  Recovering.'
-          );
-        } else {
-          // Avoid flooding NCBI with EUtils requests.
-          throw Error(
-            'Failed to find chromosomes for genome ' + assemblyAccession
-          );
-        }
-      }
-      links = data.linksets[0].linksetdbs[0].links.join(',');
-      ntSummary = ideo.esummary + '&db=nucleotide&id=' + links;
+      ntSummary =
+        getNucleotideSummaryLink(data, assemblyAccession, callback,
+          recovering, ideo);
 
       return d3.json(ntSummary);
     })
@@ -139,56 +245,7 @@ function getAssemblyAndChromosomesFromEutils(callback, recovering) {
           continue;
         }
 
-        if (result.genome === 'mitochondrion') {
-          if (ideo.config.showNonNuclearChromosomes) {
-            type = result.genome;
-            cnIndex = result.subtype.split('|').indexOf('plasmid');
-            if (cnIndex === -1) {
-              chrName = 'MT';
-            } else {
-              // Seen in e.g. rice genome IRGSP-1.0 (GCF_001433935.1),
-              // From https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?retmode=json&db=nucleotide&id=996703432,996703431,996703430,996703429,996703428,996703427,996703426,996703425,996703424,996703423,996703422,996703421,194033210,11466763,7524755
-              // genome: 'mitochondrion',
-              // subtype: 'cell_line|plasmid',
-              // subname: 'A-58 CMS|B1',
-              chrName = result.subname.split('|')[cnIndex];
-            }
-          } else {
-            continue;
-          }
-        } else if (
-          result.genome === 'chloroplast' ||
-          result.genome === 'plastid'
-        ) {
-          type = 'chloroplast';
-          // Plastid encountered with rice genome IRGSP-1.0 (GCF_001433935.1)
-          if (ideo.config.showNonNuclearChromosomes) {
-            chrName = 'CP';
-          } else {
-            continue;
-          }
-        } else if (result.genome === 'apicoplast') {
-          type = 'apicoplast';
-          if (ideo.config.showNonNuclearChromosomes) {
-            chrName = 'AP';
-          } else {
-            continue;
-          }
-        } else {
-          type = 'nuclear';
-
-          cnIndex = result.subtype.split('|').indexOf('chromosome');
-
-          chrName = result.subname.split('|')[cnIndex];
-
-          if (
-            typeof chrName !== 'undefined' &&
-            chrName.substr(0, 3) === 'chr'
-          ) {
-            // Convert "chr12" to "12", e.g. for banana (GCF_000313855.2)
-            chrName = chrName.substr(3);
-          }
-        }
+        [chrName, type] = getChrNameAndType(result, ideo);
 
         chrLength = result.slen;
 
