@@ -14,21 +14,11 @@ function restoreDefaultTracks() {
   ideo.drawAnnots(ideo.processAnnotData(ideo.rawAnnots));
 }
 
-/**
- * Adds or removes tracks from the displayed list of tracks.
- * Only works when raw annotations are dense.
- *
- * @param trackIndexes Array of indexes of tracks to display
- */
-function updateDisplayedTracks(trackIndexes) {
-  var displayedRawAnnotsByChr, displayedAnnots, i, j, rawAnnots, annots, annot,
-    trackIndex,
-    ideo = this,
-    annotsByChr = ideo.rawAnnots.annots;
+function getDisplayedRawAnnotsByChr(annotsByChr, trackIndexes) {
+  var annot, displayedRawAnnotsByChr, annots, i, displayedAnnots, j,
+    trackIndex;
 
   displayedRawAnnotsByChr = [];
-
-  ideo.config.numAnnotTracks = trackIndexes.length;
 
   // Filter displayed tracks by selected track indexes
   for (i = 0; i < annotsByChr.length; i++) {
@@ -45,6 +35,25 @@ function updateDisplayedTracks(trackIndexes) {
     displayedRawAnnotsByChr.push({chr: annots.chr, annots: displayedAnnots});
   }
 
+  return displayedRawAnnotsByChr;
+}
+
+/**
+ * Adds or removes tracks from the displayed list of tracks.
+ * Only works when raw annotations are dense.
+ *
+ * @param trackIndexes Array of indexes of tracks to display
+ */
+function updateDisplayedTracks(trackIndexes) {
+  var displayedRawAnnotsByChr, displayedAnnots, rawAnnots, trackIndex,
+    ideo = this,
+    annotsByChr = ideo.rawAnnots.annots;
+
+  ideo.config.numAnnotTracks = trackIndexes.length;
+
+  displayedRawAnnotsByChr =
+    getDisplayedRawAnnotsByChr(annotsByChr, trackIndexes);
+
   rawAnnots = {keys: ideo.rawAnnots.keys, annots: displayedRawAnnotsByChr};
 
   displayedAnnots = ideo.processAnnotData(rawAnnots);
@@ -57,25 +66,11 @@ function updateDisplayedTracks(trackIndexes) {
   return displayedAnnots;
 }
 
-function setOriginalTrackIndexes(rawAnnots) {
-  var keys, annotsByChr, annots, annot, i, j, trackIndexOriginal,
-    setAnnotsByChr, setAnnots, numAvailTracks;
-
-  keys = rawAnnots.keys;
-
-  // If this method is unnecessary, pass through
-  if (
-    keys.length < 4 ||
-    keys[3] !== 'trackIndex' ||
-    keys[4] === 'trackIndexOriginal'
-  ) {
-    return rawAnnots;
-  }
+function getSetAnnotsByChr(annotsByChr, ideo) {
+  var i, j, annots, annot, setAnnots, trackIndexOriginal, numAvailTracks,
+    setAnnotsByChr = [];
 
   numAvailTracks = 1;
-
-  annotsByChr = rawAnnots.annots;
-  setAnnotsByChr = [];
 
   for (i = 0; i < annotsByChr.length; i++) {
     annots = annotsByChr[i];
@@ -92,10 +87,31 @@ function setOriginalTrackIndexes(rawAnnots) {
     setAnnotsByChr.push({chr: annots.chr, annots: setAnnots});
   }
 
+  ideo.numAvailTracks = numAvailTracks;
+
+  return setAnnotsByChr;
+}
+
+function setOriginalTrackIndexes(rawAnnots) {
+  var keys, annotsByChr, setAnnotsByChr,
+    ideo = this;
+
+  keys = rawAnnots.keys;
+
+  // If this method is unnecessary, pass through
+  if (
+    keys.length < 4 ||
+    keys[3] !== 'trackIndex' ||
+    keys[4] === 'trackIndexOriginal'
+  ) {
+    return rawAnnots;
+  }
+
+  annotsByChr = rawAnnots.annots;
+  setAnnotsByChr = getSetAnnotsByChr(annotsByChr, ideo);
+
   keys.splice(4, 0, 'trackIndexOriginal');
   rawAnnots = {keys: keys, annots: setAnnotsByChr};
-
-  this.numAvailTracks = numAvailTracks;
 
   return rawAnnots;
 }
