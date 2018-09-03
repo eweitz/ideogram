@@ -208,7 +208,28 @@ function getTaxids(callback) {
   }
 }
 
+/**
+ * Searches NCBI EUtils for the common organism name for this ideogram
+ * instance's taxid (i.e. NCBI Taxonomy ID)
+ *
+ * @param callback Function to call upon completing ESearch request
+ */
+function getOrganismFromEutils(callback) {
+  var organism, taxonomySearch, taxid,
+    ideo = this;
+
+  taxid = ideo.config.organism;
+
+  taxonomySearch = ideo.esummary + '&db=taxonomy&id=' + taxid;
+
+  d3.json(taxonomySearch).then(function(data) {
+    organism = data.result[String(taxid)].commonname;
+    ideo.config.organism = organism;
+    return callback(organism);
+  });
+}
+
 export {
   getTaxidFromEutils, setTaxidAndAssemblyAndChromosomes, getTaxids,
-  setTaxidData
+  setTaxidData, getOrganismFromEutils
 }

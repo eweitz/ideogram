@@ -19,7 +19,7 @@ function assemblyIsAccession() {
 }
 
 /**
- * Is the assembly in this.config an NCBI Assembly accession?
+ * Is the assembly in this.config not from GenBank?
  *
  * @returns {boolean}
  */
@@ -27,6 +27,18 @@ function hasNonGenBankAssembly(ideo) {
   return (
     'assembly' in ideo.config &&
     /(GCA_)/.test(ideo.config.assembly) === false
+  );
+}
+
+/**
+ * Is the assembly in this.config from GenBank?
+ *
+ * @returns {boolean}
+ */
+function hasGenBankAssembly(ideo) {
+  return (
+    'assembly' in ideo.config &&
+    /(GCA_)/.test(ideo.config.assembly)
   );
 }
 
@@ -91,7 +103,7 @@ function getSvg() {
 }
 
 export {
-  assemblyIsAccession, hasNonGenBankAssembly, getDataDir,
+  assemblyIsAccession, hasNonGenBankAssembly, hasGenBankAssembly, getDataDir,
   drawChromosomeLabels, rotateChromosomeLabels, round, appendHomolog,
   drawChromosome, rotateAndToggleDisplay, onDidRotate, getSvg,
   setOverflowScroll, Object

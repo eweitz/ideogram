@@ -1,36 +1,17 @@
 import * as d3fetch from 'd3-fetch';
 import * as d3dispatch from 'd3-dispatch';
 
-import {Object} from '../lib.js';
+import {Object, hasGenBankAssembly} from '../lib.js';
 
-import {esearch, esummary, elink} from './eutils-config.js';
+import {
+  esearch, esummary, elink, getAssemblySearchUrl
+} from './eutils-config.js';
 import {
   getTaxidFromEutils, getTaxids, setTaxidAndAssemblyAndChromosomes,
-  setTaxidData
+  setTaxidData, getOrganismFromEutils
 } from './organisms.js';
 
 var d3 = Object.assign({}, d3fetch, d3dispatch);
-
-/**
- * Searches NCBI EUtils for the common organism name for this ideogram
- * instance's taxid (i.e. NCBI Taxonomy ID)
- *
- * @param callback Function to call upon completing ESearch request
- */
-function getOrganismFromEutils(callback) {
-  var organism, taxonomySearch, taxid,
-    ideo = this;
-
-  taxid = ideo.config.organism;
-
-  taxonomySearch = ideo.esummary + '&db=taxonomy&id=' + taxid;
-
-  d3.json(taxonomySearch).then(function(data) {
-    organism = data.result[String(taxid)].commonname;
-    ideo.config.organism = organism;
-    return callback(organism);
-  });
-}
 
 function getNuccoreQueryString(gbUid, asmUid, recovering, ideo) {
   var qs;
@@ -41,10 +22,8 @@ function getNuccoreQueryString(gbUid, asmUid, recovering, ideo) {
   // a GenBank assembly was explicitly requested (GCA_), then query RefSeq
   // sequences in Nucleotide DB.  Otherwise, query the lesser-known
   // GenColl (Genomic Collections) DB.
-  if (
-    'assembly' in ideo.config && /GCA_/.test(ideo.config.assembly) ||
-    typeof recovering !== 'undefined'
-  ) { // TODO: account for GenBank-only
+  if (hasGenBankAssembly(ideo) || typeof recovering !== 'undefined') {
+    // TODO: account for GenBank-only
     qs = '&db=nuccore&linkname=gencoll_nuccore_chr&from_uid=' + gbUid;
   } else {
     qs = '&db=nuccore&linkname=assembly_nuccore_refseq&from_uid=' + asmUid;
@@ -57,7 +36,6 @@ function getAssemblyAndNuccoreLink(data, asmAndChrArray, recovering, ideo) {
   var assembly, qs, gbUid, nuccoreLink, asmUid;
 
   asmUid = data.result.uids[0];
-
   assembly = data.result[asmUid];
   // rsUid = assembly.rsuid; // RefSeq UID for this assembly
   gbUid = assembly.gbuid; // GenBank UID
@@ -76,12 +54,12 @@ function getAssemblyAndNuccoreLink(data, asmAndChrArray, recovering, ideo) {
  * happens with e.g. Sus scrofa (pig).  Try recovering once via a
  * different query, and throw an error upon any subsequent failure.
  */
-function handleScaffoldData(data, asmAndChrArray, callback, recovering,
-  ideo) {
-  var assemblyAccession = asmAndChrArray[0];
+function handleScaffoldData(data, asmAndChrArray, context) {
+  var assemblyAccession = asmAndChrArray[0],
+    ideo = context.ideo;
   if (data.linksets[0].linksetdbs[0].links.length > 100) {
-    if (typeof recovering === 'undefined') {
-      ideo.getAssemblyAndChromosomesFromEutils(callback, true);
+    if (typeof context.recovering === 'undefined') {
+      ideo.getAssemblyAndChromosomesFromEutils(context.callback, true);
       return Promise.reject(
         'Unexpectedly found genomic scaffolds instead of chromosomes ' +
         'while querying RefSeq.  Recovering.'
@@ -95,14 +73,13 @@ function handleScaffoldData(data, asmAndChrArray, callback, recovering,
   }
 }
 
-function fetchNucleotideSummary(data, assemblyAccession, callback,
-  recovering, ideo) {
+function fetchNucleotideSummary(data, assemblyAccession, context) {
   var links, ntSummary;
 
-  handleScaffoldData(data, assemblyAccession, callback, recovering, ideo);
+  handleScaffoldData(data, assemblyAccession, context);
 
   links = data.linksets[0].linksetdbs[0].links.join(',');
-  ntSummary = ideo.esummary + '&db=nucleotide&id=' + links;
+  ntSummary = context.ideo.esummary + '&db=nucleotide&id=' + links;
 
   return d3.json(ntSummary);
 }
@@ -208,30 +185,6 @@ function parseChromosomes(results, asmAndChrArray, ideo) {
   return asmAndChrArray;
 }
 
-function getAssemblySearchUrl(ideo) {
-  var organism, termStem, asmSearchUrl;
-
-  organism = ideo.config.organism;
-
-  if (ideo.assemblyIsAccession()) {
-    termStem = ideo.config.assembly + '%22[Assembly%20Accession]';
-  } else {
-    termStem = (
-      organism + '%22[organism]' +
-      'AND%20(%22latest%20refseq%22[filter])%20'
-    );
-  }
-
-  asmSearchUrl =
-    ideo.esearch +
-    '&db=assembly' +
-    '&term=%22' + termStem +
-    'AND%20(%22chromosome%20level%22[filter]%20' +
-    'OR%20%22complete%20genome%22[filter])';
-
-  return asmSearchUrl;
-}
-
 function fetchAssemblySummary(data, ideo) {
   var asmUid, asmSummaryUrl;
 
@@ -253,7 +206,8 @@ function fetchAssemblySummary(data, ideo) {
 function getAssemblyAndChromosomesFromEutils(callback, recovering) {
   var asmSearchUrl, nuccoreLink,
     asmAndChrArray = [],
-    ideo = this;
+    ideo = this,
+    context = {callback: callback, recovering: recovering, ideo: ideo};
 
   asmSearchUrl = getAssemblySearchUrl(ideo);
 
@@ -265,8 +219,7 @@ function getAssemblyAndChromosomesFromEutils(callback, recovering) {
       return d3.json(nuccoreLink);
     })
     .then(function(data) {
-      return fetchNucleotideSummary(data, asmAndChrArray, callback,
-        recovering, ideo);
+      return fetchNucleotideSummary(data, asmAndChrArray, context);
     })
     .then(function(data) {
       asmAndChrArray = parseChromosomes(data.result, asmAndChrArray, ideo);
@@ -277,8 +230,7 @@ function getAssemblyAndChromosomesFromEutils(callback, recovering) {
 }
 
 export {
-  esearch, esummary, elink,
-  getTaxidFromEutils, getOrganismFromEutils, getTaxids,
-  setTaxidAndAssemblyAndChromosomes, setTaxidData,
+  esearch, esummary, elink, getTaxidFromEutils, getOrganismFromEutils,
+  getTaxids, setTaxidAndAssemblyAndChromosomes, setTaxidData,
   getAssemblyAndChromosomesFromEutils
 }
