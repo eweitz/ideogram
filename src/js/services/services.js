@@ -53,9 +53,10 @@ function getNuccoreQueryString(gbUid, asmUid, recovering, ideo) {
   return qs;
 }
 
-function getAssemblyAndNuccoreLink(data, asmUid, asmAndChrArray, recovering,
-  ideo) {
-  var assembly, qs, gbUid, nuccoreLink;
+function getAssemblyAndNuccoreLink(data, asmAndChrArray, recovering, ideo) {
+  var assembly, qs, gbUid, nuccoreLink, asmUid;
+
+  asmUid = data.result.uids[0];
 
   assembly = data.result[asmUid];
   // rsUid = assembly.rsuid; // RefSeq UID for this assembly
@@ -75,8 +76,9 @@ function getAssemblyAndNuccoreLink(data, asmUid, asmAndChrArray, recovering,
  * happens with e.g. Sus scrofa (pig).  Try recovering once via a
  * different query, and throw an error upon any subsequent failure.
  */
-function handleScaffoldData(data, assemblyAccession, callback, recovering,
+function handleScaffoldData(data, asmAndChrArray, callback, recovering,
   ideo) {
+  var assemblyAccession = asmAndChrArray[0];
   if (data.linksets[0].linksetdbs[0].links.length > 100) {
     if (typeof recovering === 'undefined') {
       ideo.getAssemblyAndChromosomesFromEutils(callback, true);
@@ -93,9 +95,8 @@ function handleScaffoldData(data, assemblyAccession, callback, recovering,
   }
 }
 
-function getNucleotideSummaryLink(data, assemblyAccession, callback,
+function fetchNucleotideSummary(data, assemblyAccession, callback,
   recovering, ideo) {
-
   var links, ntSummary;
 
   handleScaffoldData(data, assemblyAccession, callback, recovering, ideo);
@@ -103,7 +104,7 @@ function getNucleotideSummaryLink(data, assemblyAccession, callback,
   links = data.linksets[0].linksetdbs[0].links.join(',');
   ntSummary = ideo.esummary + '&db=nucleotide&id=' + links;
 
-  return ntSummary
+  return d3.json(ntSummary);
 }
 
 function parseMitochondrion(result, ideo) {
@@ -160,15 +161,85 @@ function parseNuclear(result) {
 }
 
 function getChrNameAndType(result, ideo) {
-  if (result.genome === 'mitochondrion') {
+  var genome = result.genome;
+  if (genome === 'mitochondrion') {
     return parseMitochondrion(result, ideo);
-  } else if (result.genome === 'chloroplast' || result.genome === 'plastid') {
+  } else if (genome === 'chloroplast' || genome === 'plastid') {
     return parseChloroplastOrPlastid(ideo);
-  } else if (result.genome === 'apicoplast') {
+  } else if (genome === 'apicoplast') {
     return parseApicoplast(ideo);
   } else {
     return parseNuclear(result);
   }
+}
+
+function parseChromosome(result, ideo) {
+  var chrName, type, chromosome, result,
+
+  [chrName, type] = getChrNameAndType(result, ideo);
+
+  chromosome = {
+    name: chrName,
+    length: result.slen,
+    type: type
+  };
+
+  return chromosome;
+}
+
+function parseChromosomes(results, asmAndChrArray, ideo) {
+  var x, chromosome,
+    chromosomes = [];
+
+  for (x in results) {
+    // omit list of result uids
+    if (x === 'uids') continue;
+
+    chromosome = parseChromosome(results[x], ideo);
+    chromosomes.push(chromosome);
+  }
+
+  chromosomes = chromosomes.sort(Ideogram.sortChromosomes);
+
+  ideo.coordinateSystem = 'bp';
+
+  asmAndChrArray.push(chromosomes);
+
+  return asmAndChrArray;
+}
+
+function getAssemblySearchUrl(ideo) {
+  var organism, termStem, asmSearchUrl;
+
+  organism = ideo.config.organism;
+
+  if (ideo.assemblyIsAccession()) {
+    termStem = ideo.config.assembly + '%22[Assembly%20Accession]';
+  } else {
+    termStem = (
+      organism + '%22[organism]' +
+      'AND%20(%22latest%20refseq%22[filter])%20'
+    );
+  }
+
+  asmSearchUrl =
+    ideo.esearch +
+    '&db=assembly' +
+    '&term=%22' + termStem +
+    'AND%20(%22chromosome%20level%22[filter]%20' +
+    'OR%20%22complete%20genome%22[filter])';
+
+  return asmSearchUrl;
+}
+
+function fetchAssemblySummary(data, ideo) {
+  var asmUid, asmSummaryUrl;
+
+  // NCBI Assembly database's internal identifier (uid) for this assembly
+  asmUid = data.esearchresult.idlist[0];
+  asmSummaryUrl = ideo.esummary + '&db=assembly&id=' + asmUid;
+
+  return d3.json(asmSummaryUrl);
 }
 
 /**
@@ -180,89 +251,25 @@ function getChrNameAndType(result, ideo) {
  * @param recovering Boolean indicating attempt at failure recovery
  */
 function getAssemblyAndChromosomesFromEutils(callback, recovering) {
-  var asmAndChrArray,organism, assemblyAccession, chromosomes,
-    termStem, asmSearch, asmUid, asmSummary, nuccoreLink,
-    ntSummary, results, result, chrName, chrLength,
-    chromosome, type,
+  var asmSearchUrl, nuccoreLink,
+    asmAndChrArray = [],
     ideo = this;
 
-  organism = ideo.config.organism;
+  asmSearchUrl = getAssemblySearchUrl(ideo);
 
-  asmAndChrArray = [];
-  chromosomes = [];
-
-  if (ideo.assemblyIsAccession()) {
-    termStem = ideo.config.assembly + '%22[Assembly%20Accession]';
-  } else {
-    termStem = (
-      organism + '%22[organism]' +
-      'AND%20(%22latest%20refseq%22[filter])%20'
-    );
-  }
-
-  asmSearch =
-    ideo.esearch +
-    '&db=assembly' +
-    '&term=%22' + termStem +
-    'AND%20(%22chromosome%20level%22[filter]%20' +
-    'OR%20%22complete%20genome%22[filter])';
-
-  var promise = d3.json(asmSearch);
-
-  promise
+  d3.json(asmSearchUrl)
+    .then(function(data) { return fetchAssemblySummary(data, ideo); })
     .then(function(data) {
-      // NCBI Assembly database's internal identifier (uid) for this assembly
-      asmUid = data.esearchresult.idlist[0];
-      asmSummary = ideo.esummary + '&db=assembly&id=' + asmUid;
-
-      return d3.json(asmSummary);
-    })
-    .then(function(data) {
-
       [asmAndChrArray, nuccoreLink] =
-        getAssemblyAndNuccoreLink(data, asmUid, asmAndChrArray, recovering,
-          ideo);
-
-      assemblyAccession = asmAndChrArray[0];
-
+        getAssemblyAndNuccoreLink(data, asmAndChrArray, recovering, ideo);
       return d3.json(nuccoreLink);
     })
     .then(function(data) {
-      ntSummary =
-        getNucleotideSummaryLink(data, assemblyAccession, callback,
-          recovering, ideo);
-
-      return d3.json(ntSummary);
+      return fetchNucleotideSummary(data, asmAndChrArray, callback,
+        recovering, ideo);
     })
     .then(function(data) {
-      results = data.result;
-
-      for (var x in results) {
-        result = results[x];
-
-        // omit list of result uids
-        if (x === 'uids') {
-          continue;
-        }
-
-        [chrName, type] = getChrNameAndType(result, ideo);
-
-        chrLength = result.slen;
-
-        chromosome = {
-          name: chrName,
-          length: chrLength,
-          type: type
-        };
-
-        chromosomes.push(chromosome);
-      }
-
-      chromosomes = chromosomes.sort(Ideogram.sortChromosomes);
-      asmAndChrArray.push(chromosomes);
-
-      ideo.coordinateSystem = 'bp';
-
+      asmAndChrArray = parseChromosomes(data.result, asmAndChrArray, ideo);
       return callback(asmAndChrArray);
     }, function(rejectedReason) {
       console.warn(rejectedReason);
