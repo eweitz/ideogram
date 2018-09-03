@@ -126,7 +126,6 @@ function validateAnnotsUrl(annotsUrl) {
   return extension;
 }
 
-
 function afterRawAnnots(ideo) {
   // Ensure annots are ordered by chromosome
   ideo.rawAnnots.annots = ideo.rawAnnots.annots.sort(function(a, b) {
