@@ -23,64 +23,82 @@ function hideUnshownBandLabels() {
   d3.selectAll(bandsToShow).style('display', '');
 }
 
+function getPrevRight(prevLabelXRight, prevHiddenBoxIndex, i,
+  textOffsets, chrModel) {
+  var prevTextBoxLeft, prevTextBoxWidth;
+
+  if (prevHiddenBoxIndex !== i) {
+    // This getBoundingClientRect() forces Chrome's
+    // 'Recalculate Style' and 'Layout', which takes 30-40 ms on Chrome.
+    // TODO: This forced synchronous layout would be nice to eliminate.
+    // prevTextBox = texts[i].getBoundingClientRect();
+    // prevLabelXRight = prevTextBox.left + prevTextBox.width;
+
+    // TODO: Account for number of characters in prevTextBoxWidth,
+    // maybe also zoom.
+    prevTextBoxLeft = textOffsets[chrModel.id][i];
+    prevTextBoxWidth = 36;
+
+    prevLabelXRight = prevTextBoxLeft + prevTextBoxWidth;
+  }
+
+  return prevLabelXRight;
+}
+
+function updateShown(indexesToShow, overlapRight, left, pad, prevRight, i,
+  isBefore) {
+  var hiddenIndex, doSkip,
+    thisRight = isBefore ? overlapRight : prevRight;
+
+  if (left < pad + thisRight) {
+    overlapRight = prevRight;
+    hiddenIndex = i;
+    doSkip = isBefore ? true : false;
+  } else {
+    indexesToShow.push(i);
+  }
+
+  return [indexesToShow, overlapRight, hiddenIndex, doSkip];
+}
+
+function getIndexesToShow(offsets, chrModel) {
+  var i, hiddenIndex, left, prevRight, doSkip,
+    indexesToShow = [],
+    textsLength = offsets[chrModel.id].length,
+    overlapRight = 0, // Right X coordinate of overlapping label
+    pad = 5; // text padding
+
+  for (i = 0; i < textsLength; i++) {
+    // Ensures band labels don't overlap
+    left = offsets[chrModel.id][i];
+
+    [indexesToShow, overlapRight, hiddenIndex, doSkip] =
+      updateShown(indexesToShow, overlapRight, left, pad, prevRight, i, true);
+    if (doSkip) continue;
+
+    prevRight = getPrevRight(prevRight, hiddenIndex, i, offsets, chrModel);
+
+    [indexesToShow, overlapRight, hiddenIndex, doSkip] =
+      updateShown(indexesToShow, overlapRight, left, pad, prevRight, i, false);
+  }
+
+  return indexesToShow;
+}
 
 /**
  * Sets band labels to display on each chromosome, avoiding label overlap
  */
 function setBandsToShow(chrs, textOffsets) {
-  var textsLength, overlappingLabelXRight, index, prevHiddenBoxIndex, xLeft,
-    prevLabelXRight, prevTextBoxLeft, prevTextBoxWidth, textPadding, i,
-    indexesToShow, chrModel, selectorsToShow, ithLength, j,
+  var index, i, j, indexesToShow, chrModel, selectorsToShow, ithLength, j,
     ideo = this;
 
   ideo.bandsToShow = [];
 
   for (i = 0; i < chrs.length; i++) {
 
-    indexesToShow = [];
     chrModel = chrs[i];
-    textsLength = textOffsets[chrModel.id].length
 
-    overlappingLabelXRight = 0;
-    textPadding = 5;
-
-    for (index = 0; index < textsLength; index++) {
-      // Ensures band labels don't overlap
-
-      xLeft = textOffsets[chrModel.id][index];
-
-      if (xLeft < overlappingLabelXRight + textPadding === false) {
-        indexesToShow.push(index);
-      } else {
-        prevHiddenBoxIndex = index;
-        overlappingLabelXRight = prevLabelXRight;
-        continue;
-      }
-
-      if (prevHiddenBoxIndex !== index) {
-        // This getBoundingClientRect() forces Chrome's
-        // 'Recalculate Style' and 'Layout', which takes 30-40 ms on Chrome.
-        // TODO: This forced synchronous layout would be nice to eliminate.
-        // prevTextBox = texts[index].getBoundingClientRect();
-        // prevLabelXRight = prevTextBox.left + prevTextBox.width;
-
-        // TODO: Account for number of characters in prevTextBoxWidth,
-        // maybe also zoom.
-        prevTextBoxLeft = textOffsets[chrModel.id][index];
-        prevTextBoxWidth = 36;
-
-        prevLabelXRight = prevTextBoxLeft + prevTextBoxWidth;
-      }
-
-      if (
-        xLeft < prevLabelXRight + textPadding
-      ) {
-        prevHiddenBoxIndex = index;
-        overlappingLabelXRight = prevLabelXRight;
-      } else {
-        indexesToShow.push(index);
-      }
-    }
+    indexesToShow = getIndexesToShow(textOffsets, chrModel);
 
     selectorsToShow = [];
     ithLength = indexesToShow.length;
