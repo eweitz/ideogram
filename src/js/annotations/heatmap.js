@@ -120,9 +120,7 @@ function getHeatmapAnnotColor(thresholds, value) {
     useThresholdColor = shouldUseThresholdColor(m, numThresholds, value,
       prevThreshold, threshold);
 
-    if (useThresholdColor) {
-      color = thresholdColor;
-    }
+    if (useThresholdColor) color = thresholdColor;
   }
 
   return color;
