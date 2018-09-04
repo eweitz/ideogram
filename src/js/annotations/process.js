@@ -187,7 +187,6 @@ function addAnnots(rawAnnots, keys, ideo) {
       addAnnotsForChr(annots, omittedAnnots, annotsByChr, chrModel,
         m, keys, ideo);
   }
-
   return [annots, omittedAnnots];
 }
 
