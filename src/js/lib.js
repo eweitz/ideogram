@@ -53,10 +53,10 @@ function hasGenBankAssembly(ideo) {
  * @returns {String}
  */
 function getDataDir() {
-  var scripts = document.scripts,
+  var script, tmp, protocol, dataDir, ideogramInLeaf,
+    scripts = document.scripts,
     host = location.host.split(':')[0],
-    version = Ideogram.version,
-    script, tmp, protocol, dataDir;
+    version = Ideogram.version;
 
   if (host !== 'localhost' && host !== '127.0.0.1') {
     return (
@@ -66,10 +66,8 @@ function getDataDir() {
 
   for (var i = 0; i < scripts.length; i++) {
     script = scripts[i];
-    if (
-      'src' in script &&
-      /ideogram/.test(script.src.split('/').slice(-1))
-    ) {
+    ideogramInLeaf = /ideogram/.test(script.src.split('/').slice(-1));
+    if ('src' in script && ideogramInLeaf) {
       tmp = script.src.split('//');
       protocol = tmp[0];
       tmp = '/' + tmp[1].split('/').slice(0,-2).join('/');

@@ -21,15 +21,10 @@ export class Ploidy {
 
   // Normalize use defined description
   _normalize(description) {
-    var normalized, key, descValue;
+    var key, descValue,
+      normalized = [];
 
-    // Return the same if no description provided
-    if (!description) {
-      return description;
-    }
-
-    // Array of normalized description objects
-    normalized = [];
+    if (!description) return description;
 
     // Loop through description and normalize
     for (key in description) {
