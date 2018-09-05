@@ -29,23 +29,53 @@ function onBrushMove() {
   call(this.onBrushMoveCallback);
 }
 
-/**
- * Creates a sliding window along a chromosome
- *
- * @param chr Chromosome name (e.g. '1') or range, e.g. 'chr1:104325484-119977655'
- * @param from Genomic start coordinate in base pairs, e.g. 104325484
- * @param to Genomic end coordinate in base pairs, e.g. 119977655
- */
-function createBrush(chr, from, to) {
-  var ideo = this,
-    width = ideo.config.chrWidth + 6.5,
-    length = ideo.config.chrHeight,
-    xOffset = this._layout.margin.left,
-    chrModel, cm, chrLengthBp, nameSplit, fromToSplit,
-    lastBand, x0, x1, band, i,
+function setBrush(bpDomain, pxRange, xOffset, width, ideo) {
+  var xScale,
+    length = ideo.config.chrHeight;
+
+  xScale = d3.scaleLinear().domain(bpDomain).range(pxRange);
+
+  ideo.brush = d3.brushX()
+    .extent([[xOffset, 0], [length + xOffset, width]])
+    .on('brush', onBrushMove);
+
+  function onBrushMove() {
+    var extent = currentEvent.selection.map(xScale.invert),
+      from = Math.floor(extent[0]),
+      to = Math.ceil(extent[1]);
+
+    ideo.selectedRegion = {from: from, to: to, extent: (to - from)};
+
+    if (ideo.onBrushMove) {
+      ideo.onBrushMoveCallback();
+    }
+  }
+}
+
+function getBasePairDomainAndPixelRange(chrModel, xOffset) {
+  var band, i,
     bpDomain = [1],
     pxRange = [1],
-    xScale;
+    lastBand = chrModel.bands.slice(-1)[0];
+
+
+  for (i = 0; i < chrModel.bands.length; i++) {
+    band = chrModel.bands[i];
+    bpDomain.push(band.bp.start);
+    pxRange.push(band.px.start + xOffset);
+  }
+
+  bpDomain.push(lastBand.bp.stop - 1);
+  pxRange.push(lastBand.px.stop + xOffset);
+
+  return [bpDomain, pxRange];
+}
+
+/**
+ * Account for calls like createBrush('chr1:104325484-119977655')
+ */
+function refineGenomicCoordinates(chr, from, to) {
+  var nameSplit, fromToSplit;
 
   // Account for calls like createBrush('chr1:104325484-119977655')
   nameSplit = chr.split(':');
@@ -57,71 +87,76 @@ function createBrush(chr, from, to) {
     to = parseInt(fromToSplit[1] - 1);
   }
 
+  return [chr, from, to];
+}
+
+function getChrModel(chr, ideo) {
+  var i, cm, chrModel;
+
   for (i = 0; i < ideo.chromosomesArray.length; i++) {
     cm = ideo.chromosomesArray[i];
     if (cm.name === chr) {
       chrModel = cm;
-      break;
+      return chrModel;
     }
   }
+}
 
-  lastBand = chrModel.bands.slice(-1)[0];
-  chrLengthBp = lastBand.bp.stop;
+function writeBrush(chrModel, from, to, xOffset, width, ideo) {
+  var x0, x1, yTranslate, yOffset;
 
-  for (i = 0; i < chrModel.bands.length; i++) {
-    band = chrModel.bands[i];
-    bpDomain.push(band.bp.start);
-    pxRange.push(band.px.start + xOffset);
-  }
+  x0 = ideo.convertBpToPx(chrModel, from) + xOffset;
+  x1 = ideo.convertBpToPx(chrModel, to) + xOffset;
 
-  bpDomain.push(lastBand.bp.stop - 1);
-  pxRange.push(lastBand.px.stop + xOffset);
+  yTranslate = ideo._layout.getChromosomeSetYTranslate(0);
+  yOffset = yTranslate + (ideo.config.chrWidth - width) / 2;
 
-  xScale = d3.scaleLinear().domain(bpDomain).range(pxRange);
+  d3.select(ideo.selector).append('g')
+    .attr('class', 'brush')
+    .attr('transform', 'translate(0, ' + yOffset + ')')
+    .call(ideo.brush)
+    .call(ideo.brush.move, [x0, x1]);
+}
 
-  if (typeof from === 'undefined') {
-    from = Math.floor(chrLengthBp / 10);
-  }
-
-  if (typeof to === 'undefined') {
-    to = Math.ceil(from * 2);
-  }
-
-  // Genomics web UIs are 1-based, fully closed.
+function setSelectedRegion(from, to, ideo) {
+   // Genomics web UIs are 1-based, fully closed.
   // I.e. If start = 20 bp and stop = 10 bp, then extent = 11 bp.
   // Details:
   // http://genome.ucsc.edu/blog/the-ucsc-genome-browser-coordinate-counting-systems/
   // https://www.biostars.org/p/84686/
   var extent = to - from + 1;
   ideo.selectedRegion = {from: from, to: to, extent: extent};
+}
 
-  x0 = ideo.convertBpToPx(chrModel, from) + xOffset;
-  x1 = ideo.convertBpToPx(chrModel, to) + xOffset;
+/**
+ * Creates a sliding window along a chromosome
+ *
+ * @param chr Chromosome name (e.g. '1') or range, e.g. 'chr1:104325484-119977655'
+ * @param from Genomic start coordinate in base pairs, e.g. 104325484
+ * @param to Genomic end coordinate in base pairs, e.g. 119977655
+ */
+function createBrush(chr, from, to) {
+  var chrModel, chrLengthBp, bpDomain, pxRange, lastBand,
+    ideo = this,
+    width = ideo.config.chrWidth + 6.5,
+    xOffset = ideo._layout.margin.left;
 
-  ideo.brush = d3.brushX()
-    .extent([[xOffset, 0], [length + xOffset, width]])
-    .on('brush', onBrushMove);
+  [chr, from, to] = refineGenomicCoordinates(chr, from, to);
 
-  var yTranslate = this._layout.getChromosomeSetYTranslate(0);
-  var yOffset = yTranslate + (ideo.config.chrWidth - width) / 2;
-  d3.select(ideo.selector).append('g')
-    .attr('class', 'brush')
-    .attr('transform', 'translate(0, ' + yOffset + ')')
-    .call(ideo.brush)
-    .call(ideo.brush.move, [x0, x1]);
+  chrModel = getChrModel(chr, ideo);
 
-  function onBrushMove() {
+  [bpDomain, pxRange] = getBasePairDomainAndPixelRange(chrModel, xOffset);
 
-    var extent = currentEvent.selection.map(xScale.invert),
-      from = Math.floor(extent[0]),
-      to = Math.ceil(extent[1]);
+  lastBand = chrModel.bands.slice(-1)[0];
+  chrLengthBp = lastBand.bp.stop;
 
-    ideo.selectedRegion = {from: from, to: to, extent: (to - from)};
+  if (typeof from === 'undefined') from = Math.floor(chrLengthBp / 10);
+  if (typeof to === 'undefined') to = Math.ceil(from * 2);
 
-    if (ideo.onBrushMove) {
-      ideo.onBrushMoveCallback();
-    }
-  }
+  setBrush(bpDomain, pxRange, xOffset, width, ideo);
+
+  setSelectedRegion(from, to, ideo);
+  writeBrush(chrModel, from, to, xOffset, width, ideo);
 }
 
 export {onBrushMove, createBrush};

@@ -120,78 +120,116 @@ function setTaxidAndAssemblyAndChromosomes(callback) {
   });
 }
 
+function prepareTmpChrsAndTaxids(ideo) {
+  var orgs, taxids, tmpChrs, i, org, taxid,
+    config = ideo.config;
+
+  taxids = [];
+  tmpChrs = {};
+  orgs = (config.multiorganism) ? config.organism : [config.organism];
+
+  for (i = 0; i < orgs.length; i++) {
+    // Gets a list of taxids from common organism names
+    org = orgs[i];
+    for (taxid in ideo.organisms) {
+      if (ideo.organisms[taxid].commonName.toLowerCase() === org) {
+        taxids.push(taxid);
+        if (config.multiorganism) {
+          // Adjusts 'chromosomes' configuration parameter to make object
+          // keys use taxid instead of common organism name
+          tmpChrs[taxid] = config.chromosomes[org];
+        }
+      }
+    }
+  }
+
+  return [tmpChrs, taxids];
+}
+
+function getTaxidsForOrganismInConfig(taxids, callback, ideo) {
+
+  var tmpChrs;
+
+  [tmpChrs, taxids] = prepareTmpChrsAndTaxids(ideo);
+
+  if (
+    taxids.length === 0 ||
+    ideo.assemblyIsAccession() && /GCA_/.test(ideo.config.assembly)
+  ) {
+    ideo.setTaxidAndAssemblyAndChromosomes(callback);
+  } else {
+    ideo.config.taxids = taxids;
+    if (ideo.config.multiorganism) {
+      ideo.config.chromosomes = tmpChrs;
+    }
+    callback(taxids);
+  }
+}
+
+function getIsMultiorganism(taxidInit, ideo) {
+  return (
+    ('organism' in ideo.config && ideo.config.organism instanceof Array) ||
+    (taxidInit && ideo.config.taxid instanceof Array)
+  );
+}
+
+function getTaxidsForOrganismNotInConfig(taxids, taxidInit, callback, ideo) {
+  if (ideo.config.multiorganism) {
+    ideo.coordinateSystem = 'bp';
+    if (taxidInit) {
+      taxids = ideo.config.taxid;
+    }
+  } else {
+    if (taxidInit) {
+      taxids = [ideo.config.taxid];
+    }
+    ideo.config.taxids = taxids;
+  }
+  callback(taxids);
+}
+
 /**
  * Returns an array of taxids for the current ideogram
  * Also sets configuration parameters related to taxid(s), whether ideogram is
  * multiorganism, and adjusts chromosomes parameters as needed
  **/
 function getTaxids(callback) {
-  var taxid, taxids, org, orgs, i, taxidInit, tmpChrs, multiorganism,
+  var taxids, taxidInit,
     ideo = this;
 
   taxidInit = 'taxid' in ideo.config;
 
-  ideo.config.multiorganism = (
-      ('organism' in ideo.config && ideo.config.organism instanceof Array) ||
-      (taxidInit && ideo.config.taxid instanceof Array)
-  );
-
-  multiorganism = ideo.config.multiorganism;
+  ideo.config.multiorganism = getIsMultiorganism(taxidInit, ideo);
 
   if ('organism' in ideo.config) {
-    // Ideogram instance was constructed using common organism name(s)
-    if (multiorganism) {
-      orgs = ideo.config.organism;
-    } else {
-      orgs = [ideo.config.organism];
-    }
-
-    taxids = [];
-    tmpChrs = {};
-    for (i = 0; i < orgs.length; i++) {
-      // Gets a list of taxids from common organism names
-      org = orgs[i];
-      for (taxid in ideo.organisms) {
-        if (ideo.organisms[taxid].commonName.toLowerCase() === org) {
-          taxids.push(taxid);
-          if (multiorganism) {
-            // Adjusts 'chromosomes' configuration parameter to make object
-            // keys use taxid instead of common organism name
-            tmpChrs[taxid] = ideo.config.chromosomes[org];
-          }
-        }
-      }
-    }
-
-    if (
-        taxids.length === 0 ||
-        ideo.assemblyIsAccession() && /GCA_/.test(ideo.config.assembly)
-    ) {
-      ideo.setTaxidAndAssemblyAndChromosomes(callback);
-    } else {
-      ideo.config.taxids = taxids;
-      if (multiorganism) {
-        ideo.config.chromosomes = tmpChrs;
-      }
-      callback(taxids);
-    }
+    getTaxidsForOrganismInConfig(taxids, callback, ideo)
   } else {
-    if (multiorganism) {
-      ideo.coordinateSystem = 'bp';
-      if (taxidInit) {
-        taxids = ideo.config.taxid;
-      }
-    } else {
-      if (taxidInit) {
-        taxids = [ideo.config.taxid];
-      }
-      ideo.config.taxids = taxids;
-    }
-    callback(taxids);
+    getTaxidsForOrganismNotInConfig(taxids, taxidInit, callback, ideo);
   }
+}
+
+/**
+ * Searches NCBI EUtils for the common organism name for this ideogram
+ * instance's taxid (i.e. NCBI Taxonomy ID)
+ *
+ * @param callback Function to call upon completing ESearch request
+ */
+function getOrganismFromEutils(callback) {
+  var organism, taxonomySearch, taxid,
+    ideo = this;
+
+  taxid = ideo.config.organism;
+
+  taxonomySearch = ideo.esummary + '&db=taxonomy&id=' + taxid;
+
+  d3.json(taxonomySearch).then(function(data) {
+    organism = data.result[String(taxid)].commonname;
+    ideo.config.organism = organism;
+    return callback(organism);
+  });
 }
 
 export {
   getTaxidFromEutils, setTaxidAndAssemblyAndChromosomes, getTaxids,
-  setTaxidData
+  setTaxidData, getOrganismFromEutils
 }
