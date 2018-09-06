@@ -28,6 +28,63 @@ import {processAnnotData} from './process'
 
 var d3 = Object.assign({}, d3selection, d3fetch);
 
+function initNumTracksHeightAndBarWidth(ideo, config) {
+  var annotHeight;
+
+  if (!config.annotationHeight) {
+    annotHeight = Math.round(config.chrHeight / 100);
+    ideo.config.annotationHeight = annotHeight;
+  }
+
+  if (config.annotationTracks) {
+    ideo.config.numAnnotTracks = config.annotationTracks.length;
+  } else if (config.annotationsNumTracks) {
+    ideo.config.numAnnotTracks = config.annotationsNumTracks;
+  } else {
+    ideo.config.numAnnotTracks = 1;
+  }
+  ideo.config.annotTracksHeight =
+    config.annotationHeight * config.numAnnotTracks;
+
+  if (typeof config.barWidth === 'undefined') {
+    ideo.config.barWidth = 3;
+  }
+}
+
+function initHeatmap(ideo) {
+  if (ideo.config.annotationsLayout === 'heatmap') {
+    // window.onresize = function() { ideo.drawHeatmaps(ideo.annots); };
+
+    // ideo.isScrolling = null;
+
+    // Listen for scroll events
+    // window.addEventListener('scroll', function ( event ) {
+    //   // Clear our timeout throughout the scroll
+    //   window.clearTimeout( ideo.isScrolling );
+    //
+    //   // Set a timeout to run after scrolling ends
+    //   ideo.isScrolling = setTimeout(function() {
+    //     // Run the callback
+    //     console.log('Scrolling has stopped.');
+    //     ideo.drawHeatmaps(ideo.annots);
+    //   }, 300);
+    //
+    // // }, false);
+    //
+    // window.onscroll = function() { ideo.drawHeatmaps(ideo.annots); };
+  }
+}
+
+function initTooltip(ideo, config) {
+  if (config.showAnnotTooltip !== false) {
+    ideo.config.showAnnotTooltip = true;
+  }
+
+  if (config.onWillShowAnnotTooltip) {
+    ideo.onWillShowAnnotTooltipCallback = config.onWillShowAnnotTooltip;
+  }
+}
+
 /**
  * Initializes various annotation settings.  Constructor help function.
  */
@@ -39,106 +96,21 @@ function initAnnotSettings() {
     config.annotationsPath || config.localAnnotationsPath ||
     ideo.annots || config.annotations
   ) {
-    if (!config.annotationHeight) {
-      var annotHeight = Math.round(config.chrHeight / 100);
-      this.config.annotationHeight = annotHeight;
-    }
-
-    if (config.annotationTracks) {
-      this.config.numAnnotTracks = config.annotationTracks.length;
-    } else if (config.annotationsNumTracks) {
-      this.config.numAnnotTracks = config.annotationsNumTracks;
-    } else {
-      this.config.numAnnotTracks = 1;
-    }
-    this.config.annotTracksHeight =
-      config.annotationHeight * config.numAnnotTracks;
-
-    if (typeof config.barWidth === 'undefined') {
-      this.config.barWidth = 3;
-    }
+    initNumTracksHeightAndBarWidth(ideo, config);
   } else {
-    this.config.annotTracksHeight = 0;
+    ideo.config.annotTracksHeight = 0;
   }
 
   if (typeof config.annotationsColor === 'undefined') {
-    this.config.annotationsColor = '#F00';
+    ideo.config.annotationsColor = '#F00';
   }
 
-  if (config.showAnnotTooltip !== false) {
-    this.config.showAnnotTooltip = true;
-  }
-
-  if (config.onWillShowAnnotTooltip) {
-    this.onWillShowAnnotTooltipCallback = config.onWillShowAnnotTooltip;
-  }
-
-  if (config.annotationsLayout === 'heatmap') {
-    // window.onresize = function() {
-    //   ideo.drawHeatmaps(ideo.annots);
-    // };
-
-    // ideo.isScrolling = null;
-
-    // Listen for scroll events
-    // window.addEventListener('scroll', function ( event ) {
-    //
-    //   // Clear our timeout throughout the scroll
-    //   window.clearTimeout( ideo.isScrolling );
-    //
-    //   // Set a timeout to run after scrolling ends
-    //   ideo.isScrolling = setTimeout(function() {
-    //
-    //     // Run the callback
-    //     console.log('Scrolling has stopped.');
-    //     ideo.drawHeatmaps(ideo.annots);
-    //
-    //   }, 300);
-    //
-    // // }, false);
-    //
-    // window.onscroll = function() {
-    //   ideo.drawHeatmaps(ideo.annots);
-    //   // console.log('onscroll')
-    // };
-  }
-
+  initHeatmap(ideo);
+  initTooltip(ideo, config);
 }
 
-/**
- * Requests annotations URL via HTTP, sets ideo.rawAnnots for downstream
- * processing.
- *
- * @param annotsUrl Absolute or relative URL native or BED annotations file
- */
-function fetchAnnots(annotsUrl) {
-
-  var tmp, extension,
-    ideo = this;
-
-  function afterRawAnnots(rawAnnots) {
-
-    // Ensure annots are ordered by chromosome
-    ideo.rawAnnots.annots = rawAnnots.annots.sort(function(a, b) {
-      return Ideogram.naturalSort(a.chr, b.chr);
-    });
-
-    if (ideo.config.heatmaps) {
-      ideo.deserializeAnnotsForHeatmap(rawAnnots);
-    }
-    if (ideo.onLoadAnnotsCallback) {
-      ideo.onLoadAnnotsCallback();
-    }
-  }
-
-  if (annotsUrl.slice(0, 4) !== 'http') {
-    d3.json(ideo.config.annotationsPath)
-      .then(function(data) {
-        ideo.rawAnnots = data;
-        afterRawAnnots(ideo.rawAnnots);
-      });
-    return;
-  }
+function validateAnnotsUrl(annotsUrl) {
+  var tmp, extension;
 
   tmp = annotsUrl.split('?')[0].split('.');
   extension = tmp[tmp.length - 1];
@@ -151,6 +123,43 @@ function fetchAnnots(annotsUrl) {
     );
     return;
   }
+  return extension;
+}
+
+function afterRawAnnots(ideo) {
+  // Ensure annots are ordered by chromosome
+  ideo.rawAnnots.annots = ideo.rawAnnots.annots.sort(function(a, b) {
+    return Ideogram.naturalSort(a.chr, b.chr);
+  });
+
+  if (ideo.config.heatmaps) {
+    ideo.deserializeAnnotsForHeatmap(ideo.rawAnnots);
+  }
+  if (ideo.onLoadAnnotsCallback) {
+    ideo.onLoadAnnotsCallback();
+  }
+}
+
+/**
+ * Requests annotations URL via HTTP, sets ideo.rawAnnots for downstream
+ * processing.
+ *
+ * @param annotsUrl Absolute or relative URL native or BED annotations file
+ */
+function fetchAnnots(annotsUrl) {
+  var extension,
+    ideo = this;
+
+  if (annotsUrl.slice(0, 4) !== 'http') {
+    d3.json(ideo.config.annotationsPath)
+      .then(function(data) {
+        ideo.rawAnnots = data;
+        afterRawAnnots(ideo);
+      });
+    return;
+  }
+
+  extension = validateAnnotsUrl(annotsUrl);
 
   d3.text(annotsUrl).then(function(text) {
     if (extension === 'bed') {
@@ -158,9 +167,8 @@ function fetchAnnots(annotsUrl) {
     } else {
       ideo.rawAnnots = JSON.parse(text);
     }
-    afterRawAnnots(ideo.rawAnnots);
+    afterRawAnnots(ideo);
   });
-
 }
 
 /**

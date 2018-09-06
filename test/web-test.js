@@ -386,12 +386,12 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  it('should have 48 annotations in overlaid annotations example', function(done) {
+  it('should have 1000 annotations in overlaid annotations example', function(done) {
     // Tests use case from old ../examples/vanilla/annotations-overlaid.html
 
     function callback() {
       var numAnnots = document.getElementsByClassName('annot').length;
-      assert.equal(numAnnots, 48);
+      assert.equal(numAnnots, 1000);
       done();
     }
 

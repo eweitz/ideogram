@@ -137,4 +137,46 @@ function getHistogramBars(annots) {
   return bars;
 }
 
-export {getHistogramBars}
+
+function getHistogramPoints(d, chrWidth, chrWidths, ideo) {
+  var x1, x2, y1, y2;
+
+  x1 = d.px + ideo.bump;
+  x2 = d.px + ideo.config.barWidth + ideo.bump;
+  y1 = chrWidth;
+  y2 = chrWidth + d.height;
+
+  var thisChrWidth = chrWidths[d.chr];
+
+  if (x2 > thisChrWidth) {
+    x2 = thisChrWidth;
+  }
+
+  return (
+    x1 + ',' + y1 + ' ' +
+    x2 + ',' + y1 + ' ' +
+    x2 + ',' + y2 + ' ' +
+    x1 + ',' + y2
+  );
+}
+
+function writeHistogramAnnots(chrAnnot, ideo) {
+  var chrs, chr,
+    chrWidths = {},
+    chrWidth = ideo.config.chrWidth;
+
+  chrs = ideo.chromosomes[ideo.config.taxid];
+  for (chr in chrs) {
+    chrWidths[chr] = chrs[chr];
+  }
+
+  chrAnnot.append('polygon')
+    // .attr('id', function(d, i) { return d.id; })
+    .attr('class', 'annot')
+    .attr('points', function(d) {
+      return getHistogramPoints(d, chrWidth, chrWidths, ideo);
+    })
+    .attr('fill', function(d) { return d.color; });
+}
+
+export {getHistogramBars, writeHistogramAnnots}

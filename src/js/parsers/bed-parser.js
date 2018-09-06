@@ -24,13 +24,8 @@ export class BedParser {
     );
   }
 
-  /**
-   * Parses an annotation from a tab-separated line of a BED file
-   */
-  parseAnnotFromTsvLine(tsvLine, chrs, ucscStyle) {
-    var annot, columns, chrIndex, chr, start, stop, rgb, color, label;
-
-    columns = tsvLine.split(/\s/g);
+  parseGenomicCoordinates(columns, ucscStyle) {
+    var chr, start, stop, length;
 
     // These three columns (i.e. fields) are required
     chr = columns[0];
@@ -42,10 +37,23 @@ export class BedParser {
     if (ucscStyle) {
       chr = chr.slice(3);
     }
+
+    return [chr, start, stop, length];
+  }
+
+  /**
+   * Parses an annotation from a tab-separated line of a BED file
+   */
+  parseAnnotFromTsvLine(tsvLine, chrs, ucscStyle) {
+    var annot, chrIndex, chr, start, stop, rgb, color, label,
+      columns = tsvLine.split(/\s/g);
+
+    [chr, start, stop, length] =
+      this.parseGenomicCoordinates(columns, ucscStyle);
+
     chrIndex = chrs.indexOf(chr);
-    if (chrIndex === -1) {
-      return [null, null];
-    }
+    if (chrIndex === -1) return [null, null];
+    
     annot = ['', start, length, 0];
 
     if (columns.length >= 4) {
@@ -62,14 +70,35 @@ export class BedParser {
     return [chrIndex, annot];
   }
 
+  parseRawAnnots(annots, bedStartIndex, tsvLines, chrs) {
+    var i, line, chrIndex, annot, keys, rawAnnots, ucscStyle;
+
+    ucscStyle = true;
+    if (isNaN(parseInt(tsvLines[bedStartIndex], 10)) === false) {
+      ucscStyle = false;
+    }
+
+    for (i = bedStartIndex; i < tsvLines.length; i++) {
+      line = tsvLines[i];
+      [chrIndex, annot] = this.parseAnnotFromTsvLine(line, chrs, ucscStyle);
+      if (chrIndex !== null) annots[chrIndex].annots.push(annot);
+    }
+
+    keys = ['name', 'start', 'length', 'trackIndex'];
+    if (tsvLines[bedStartIndex].length >= 8) keys.push('color');
+    
+    rawAnnots = {keys: keys, annots: annots};
+
+    return rawAnnots;
+  }
+
   /**
   * Parses a BED file, returns raw annotations
   */
   parseBed(bed, ideo) {
-    var tsvLines, i, chrs, chr, ucscStyle, chrIndex, annots, annot, line,
-      bedStartIndex, keys, rawAnnots;
-
-    annots = [];
+    var i, chrs, chr, bedStartIndex, rawAnnots,
+      annots = [],
+      tsvLines = bed.split(/\r\n|\n/);
 
     chrs = Object.keys(ideo.chromosomes[ideo.config.taxid]);
 
@@ -78,33 +107,12 @@ export class BedParser {
       annots.push({chr: chr, annots: []});
     }
 
-    tsvLines = bed.split(/\r\n|\n/);
-
     bedStartIndex = 0; // 1 if BED has header (i.e. track line), 0 otherwise
-    ucscStyle = true;
     if (tsvLines[0].slice(0, 3) === 'chr' || isNaN(parseInt(tsvLines[0], 10))) {
       bedStartIndex = 1;
     }
-
-    if (isNaN(parseInt(tsvLines[bedStartIndex], 10)) === false) {
-      ucscStyle = false;
-    }
-
-    for (i = bedStartIndex; i < tsvLines.length; i++) {
-      line = tsvLines[i];
-      [chrIndex, annot] = this.parseAnnotFromTsvLine(line, chrs, ucscStyle);
-      if (chrIndex !== null) {
-        annots[chrIndex].annots.push(annot);
-      }
-    }
-    keys = ['name', 'start', 'length', 'trackIndex'];
-    if (tsvLines[bedStartIndex].length >= 8) {
-      keys.push('color');
-    }
-    rawAnnots = {
-      keys: keys,
-      annots: annots
-    };
+    
+    rawAnnots = this.parseRawAnnots(annots, bedStartIndex, tsvLines, chrs);
     return rawAnnots;
   }
 

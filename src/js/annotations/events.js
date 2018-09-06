@@ -39,6 +39,40 @@ function startHideAnnotTooltipTimeout() {
   }, 250);
 }
 
+function writeTooltip(tooltip, content, matrix, yOffset, ideo) {
+  tooltip.html(content)
+    .style('opacity', 1) // Make tooltip visible
+    .style('left', (window.pageXOffset + matrix.e) + 'px')
+    .style('top', (window.pageYOffset + matrix.f - yOffset) + 'px')
+    .style('pointer-events', null) // Prevent bug in clicking chromosome
+    .on('mouseover', function () {
+      clearTimeout(ideo.hideAnnotTooltipTimeout);
+    })
+    .on('mouseout', function () {
+      ideo.startHideAnnotTooltipTimeout();
+    });
+}
+
+function getContentAndYOffset(annot) {
+  var content, yOffset, range, displayName;
+
+  range = 'chr' + annot.chr + ':' + annot.start.toLocaleString();
+  if (annot.length > 0) {
+    // Only show range if stop differs from start
+    range += '-' + annot.stop.toLocaleString();
+  }
+  content = range;
+  yOffset = 24;
+
+  if (annot.name) {
+    displayName = annot.displayName ? annot.displayName : annot.name;
+    content = displayName + '<br/>' + content;
+    yOffset += 8;
+  }
+
+  return [content, yOffset];
+}
+
 /**
  * Optional callback, invoked before showing annotation tooltip
  */
@@ -55,12 +89,10 @@ function onWillShowAnnotTooltip(annot) {
  * @param context {Object} "This" of the caller -- an SVG path DOM object
  */
 function showAnnotTooltip(annot, context) {
-  var matrix, range, content, yOffset, displayName, tooltip,
+  var matrix, content, yOffset, tooltip,
     ideo = this;
 
-  if (ideo.config.showAnnotTooltip === false) {
-    return;
-  }
+  if (ideo.config.showAnnotTooltip === false) return;
 
   clearTimeout(ideo.hideAnnotTooltipTimeout);
 
@@ -74,32 +106,9 @@ function showAnnotTooltip(annot, context) {
   matrix = context.getScreenCTM()
     .translate(+context.getAttribute('cx'), +context.getAttribute('cy'));
 
-  range = 'chr' + annot.chr + ':' + annot.start.toLocaleString();
-  if (annot.length > 0) {
-    // Only show range if stop differs from start
-    range += '-' + annot.stop.toLocaleString();
-  }
-  content = range;
-  yOffset = 24;
+  [content, yOffset] = getContentAndYOffset(annot)
 
-  if (annot.name) {
-    displayName = annot.displayName ? annot.displayName : annot.name;
-    content = displayName + '<br/>' + content;
-    yOffset += 8;
-  }
-
-  tooltip
-    .html(content)
-    .style('opacity', 1) // Make tooltip visible
-    .style('left', (window.pageXOffset + matrix.e) + 'px')
-    .style('top', (window.pageYOffset + matrix.f - yOffset) + 'px')
-    .style('pointer-events', null) // Prevent bug in clicking chromosome
-    .on('mouseover', function () {
-      clearTimeout(ideo.hideAnnotTooltipTimeout);
-    })
-    .on('mouseout', function () {
-      ideo.startHideAnnotTooltipTimeout();
-    });
+  writeTooltip(tooltip, content, matrix, yOffset, ideo)
 }
 
 export {
