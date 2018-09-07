@@ -117,19 +117,10 @@ function parseBands(content, taxid, chromosomes) {
 }
 
 /**
- * Completes default ideogram initialization by calling downstream functions
- * to process raw band data into full JSON objects, render chromosome and
- * cytoband figures and labels, apply initial graphical transformations,
- * hide overlapping band labels, and execute callbacks defined by client code
+ * TODO: Should this be in services/organism.js?
  */
-function processBandData() {
-  var bandsArray, i, j, k, chromosome, bands,
-    chrLength, chr,
-    bandData, bandsByChr,
-    taxid, taxids, chrs, chrsByTaxid,
-    ideo = this;
-
-  bandsArray = [];
+function setTaxids(ideo) {
+  var i, taxid, taxids;
 
   if (ideo.config.multiorganism === true) {
     ideo.coordinateSystem = 'bp';
@@ -145,6 +136,48 @@ function processBandData() {
     taxids = [taxid];
     ideo.config.taxids = taxids;
   }
+
+  return [taxid, taxids];
+}
+
+function updateBandsArray(chromosome, bandsByChr, bandsArray, ideo) {
+  var bands, chrLength;
+
+  bands = bandsByChr[chromosome];
+  bandsArray.push(bands);
+
+  chrLength = {
+    iscn: bands[bands.length - 1].iscn.stop,
+    bp: bands[bands.length - 1].bp.stop
+  };
+
+  if (chrLength.iscn > ideo.maxLength.iscn) {
+    ideo.maxLength.iscn = chrLength.iscn;
+  }
+
+  if (chrLength.bp > ideo.maxLength.bp) {
+    ideo.maxLength.bp = chrLength.bp;
+  }
+
+  return bandsArray;
+}
+
+/**
+ * Completes default ideogram initialization by calling downstream functions
+ * to process raw band data into full JSON objects, render chromosome and
+ * cytoband figures and labels, apply initial graphical transformations,
+ * hide overlapping band labels, and execute callbacks defined by client code
+ */
+function processBandData() {
+  var bandsArray, i, j, k, chromosome, bands,
+    chrLength, chr,
+    bandData, bandsByChr,
+    taxid, taxids, chrs, chrsByTaxid,
+    ideo = this;
+
+  bandsArray = [];
+
+  [taxid, taxids] = setTaxids(ideo);
 
   if ('chromosomes' in ideo.config) {
     chrs = ideo.config.chromosomes;
@@ -178,21 +211,7 @@ function processBandData() {
 
       for (k = 0; k < chrs.length; k++) {
         chromosome = chrs[k];
-        bands = bandsByChr[chromosome];
-        bandsArray.push(bands);
-
-        chrLength = {
-          iscn: bands[bands.length - 1].iscn.stop,
-          bp: bands[bands.length - 1].bp.stop
-        };
-
-        if (chrLength.iscn > ideo.maxLength.iscn) {
-          ideo.maxLength.iscn = chrLength.iscn;
-        }
-
-        if (chrLength.bp > ideo.maxLength.bp) {
-          ideo.maxLength.bp = chrLength.bp;
-        }
+        bandsArray = updateBandsArray(chromosome, bandsByChr, bandsArray, ideo);
       }
     } else if (ideo.coordinateSystem === 'bp') {
       // If lacking band-level data
