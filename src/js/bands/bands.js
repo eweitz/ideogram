@@ -14,107 +14,9 @@
 import {
   drawBandLabels, getBandColorGradients, hideUnshownBandLabels, setBandsToShow,
   drawBandLabelText, drawBandLabelStalk
-} from './draw'
+} from './draw';
 
-import * as d3selection from 'd3-selection';
-
-import {Object} from '../lib.js';
-
-var d3 = Object.assign({}, d3selection);
-
-/**
- * Parses cytogenetic band data from a TSV file, or, if band data is
- * prefetched, from an array
- *
- * NCBI:
- * #chromosome arm band iscn_start iscn_stop bp_start bp_stop stain density
- * ftp://ftp.ncbi.nlm.nih.gov/pub/gdp/ideogram_9606_GCF_000001305.14_550_V1
- */
-function parseBands(content, taxid, chromosomes) {
-  var lines = {},
-    delimiter, tsvLines, columns, line, stain, chr,
-    i, init, tsvLinesLength, source, tmp;
-
-  if (content.slice(0, 15) === 'window.chrBands') {
-    source = 'native';
-  }
-
-  if (
-    chromosomes instanceof Array &&
-    typeof chromosomes[0] === 'object'
-  ) {
-    tmp = [];
-    for (i = 0; i < chromosomes.length; i++) {
-      tmp.push(chromosomes[i].name);
-    }
-    chromosomes = tmp;
-  }
-
-  if (typeof chrBands === 'undefined' && source !== 'native') {
-    delimiter = /\t/;
-    tsvLines = content.split(/\r\n|\n/);
-    init = 1;
-  } else {
-    delimiter = / /;
-    if (source === 'native') {
-      tsvLines = eval(content);
-    } else {
-      tsvLines = content;
-    }
-    init = 0;
-  }
-
-  tsvLinesLength = tsvLines.length;
-
-  for (i = init; i < tsvLinesLength; i++) {
-    columns = tsvLines[i].split(delimiter);
-
-    chr = columns[0];
-
-    if (
-      // If a specific set of chromosomes has been requested, and
-      // the current chromosome
-      typeof (chromosomes) !== 'undefined' &&
-      chromosomes.indexOf(chr) === -1
-    ) {
-      continue;
-    }
-
-    if (chr in lines === false) {
-      lines[chr] = [];
-    }
-
-    stain = columns[7];
-    if (columns[8]) {
-      // For e.g. acen and gvar, columns[8] (density) is undefined
-      stain += columns[8];
-    }
-
-    line = {
-      chr: chr,
-      bp: {
-        start: parseInt(columns[5], 10),
-        stop: parseInt(columns[6], 10)
-      },
-      iscn: {
-        start: parseInt(columns[3], 10),
-        stop: parseInt(columns[4], 10)
-      },
-      px: {
-        start: -1,
-        stop: -1,
-        width: -1
-      },
-      name: columns[1] + columns[2],
-      stain: stain,
-      taxid: taxid
-    };
-
-    lines[chr].push(line);
-  }
-
-  return lines;
-}
+import {parseBands} from './parse';
 
 /**
  * TODO: Should this be in services/organism.js?
@@ -140,6 +42,9 @@ function setTaxids(ideo) {
   return [taxid, taxids];
 }
 
+/**
+ * Updates bands array, sets ideo.maxLength
+ */
 function updateBandsArray(chromosome, bandsByChr, bandsArray, ideo) {
   var bands, chrLength;
 
@@ -163,76 +68,82 @@ function updateBandsArray(chromosome, bandsByChr, bandsArray, ideo) {
 }
 
 /**
+ * Updates bandsArray, sets ideo.config.chromosomes and ideo.numChromosomes
+ */
+function setChrsByTaxidsWithBands(taxid, chrs, bandsArray, ideo) {
+  var bandData, bandsByChr, chromosome, k;
+
+  bandData = ideo.bandData[taxid];
+
+  bandsByChr = ideo.parseBands(bandData, taxid, chrs);
+
+  chrs = Object.keys(bandsByChr).sort(function(a, b) {
+    return Ideogram.naturalSort(a, b);
+  });
+
+  ideo.config.chromosomes[taxid] = chrs.slice();
+  ideo.numChromosomes += ideo.config.chromosomes[taxid].length;
+
+  for (k = 0; k < chrs.length; k++) {
+    chromosome = chrs[k];
+    bandsArray = updateBandsArray(chromosome, bandsByChr, bandsArray, ideo);
+  }
+
+  return bandsArray;
+}
+
+function setChromosomesByTaxid(taxid, chrs, bandsArray, ideo) {
+  var chr, k;
+
+  if (ideo.coordinateSystem === 'iscn' || ideo.config.multiorganism) {
+    bandsArray = setChrsByTaxidsWithBands(taxid, chrs, bandsArray, ideo);
+  } else if (ideo.coordinateSystem === 'bp') {
+    // If lacking band-level data
+    ideo.config.chromosomes[taxid] = chrs.slice();
+    ideo.numChromosomes += ideo.config.chromosomes[taxid].length;
+
+    for (k = 0; k < chrs.length; k++) {
+      chr = chrs[k];
+      if (chr.length > ideo.maxLength.bp) ideo.maxLength.bp = chr.length;
+    }
+  }
+
+  return bandsArray;
+}
+
+function reportPerformance(t0, ideo) {
+  var t1 = new Date().getTime();
+  if (ideo.config.debug) {
+    console.log('Time in processBandData: ' + (t1 - t0) + ' ms');
+  }
+}
+
+/**
  * Completes default ideogram initialization by calling downstream functions
  * to process raw band data into full JSON objects, render chromosome and
  * cytoband figures and labels, apply initial graphical transformations,
  * hide overlapping band labels, and execute callbacks defined by client code
  */
 function processBandData() {
-  var bandsArray, i, j, k, chromosome, bands,
-    chrLength, chr,
-    bandData, bandsByChr,
-    taxid, taxids, chrs, chrsByTaxid,
+  var bandsArray, j, taxid, taxids, chrs, chrsByTaxid,
+    t0 = new Date().getTime(),
     ideo = this;
 
   bandsArray = [];
 
   [taxid, taxids] = setTaxids(ideo);
 
-  if ('chromosomes' in ideo.config) {
-    chrs = ideo.config.chromosomes;
-  }
-  if (ideo.config.multiorganism) {
-    chrsByTaxid = chrs;
-  }
-
+  if ('chromosomes' in ideo.config) chrs = ideo.config.chromosomes;
+  if (ideo.config.multiorganism) chrsByTaxid = chrs;
   ideo.config.chromosomes = {};
-
-  var t0B = new Date().getTime();
 
   for (j = 0; j < taxids.length; j++) {
     taxid = taxids[j];
-
-    if (ideo.config.multiorganism) {
-      chrs = chrsByTaxid[taxid];
-    }
-
-    if (ideo.coordinateSystem === 'iscn' || ideo.config.multiorganism) {
-      bandData = ideo.bandData[taxid];
-
-      bandsByChr = ideo.parseBands(bandData, taxid, chrs);
-
-      chrs = Object.keys(bandsByChr).sort(function(a, b) {
-        return Ideogram.naturalSort(a, b);
-      });
-
-      ideo.config.chromosomes[taxid] = chrs.slice();
-      ideo.numChromosomes += ideo.config.chromosomes[taxid].length;
-
-      for (k = 0; k < chrs.length; k++) {
-        chromosome = chrs[k];
-        bandsArray = updateBandsArray(chromosome, bandsByChr, bandsArray, ideo);
-      }
-    } else if (ideo.coordinateSystem === 'bp') {
-      // If lacking band-level data
-
-      ideo.config.chromosomes[taxid] = chrs.slice();
-      ideo.numChromosomes += ideo.config.chromosomes[taxid].length;
-
-      for (k = 0; k < chrs.length; k++) {
-        chr = chrs[k];
-        if (chr.length > ideo.maxLength.bp) {
-          ideo.maxLength.bp = chr.length;
-        }
-      }
-    }
+    if (ideo.config.multiorganism) chrs = chrsByTaxid[taxid];
+    bandsArray = setChromosomesByTaxid(taxid, chrs, bandsArray, ideo);
   }
 
-  var t1B = new Date().getTime();
-  if (ideo.config.debug) {
-    console.log('Time in processBandData: ' + (t1B - t0B) + ' ms');
-  }
-
+  reportPerformance(t0, ideo);
   return bandsArray;
 }
 
