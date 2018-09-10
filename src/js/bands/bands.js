@@ -11,11 +11,12 @@
  *
  */
 
+import naturalSort from 'es6-natural-sort';
+
 import {
   drawBandLabels, getBandColorGradients, hideUnshownBandLabels, setBandsToShow,
   drawBandLabelText, drawBandLabelStalk
 } from './draw';
-
 import {parseBands} from './parse';
 
 /**
@@ -78,7 +79,7 @@ function setChrsByTaxidsWithBands(taxid, chrs, bandsArray, ideo) {
   bandsByChr = ideo.parseBands(bandData, taxid, chrs);
 
   chrs = Object.keys(bandsByChr).sort(function(a, b) {
-    return Ideogram.naturalSort(a, b);
+    return naturalSort(a, b);
   });
 
   ideo.config.chromosomes[taxid] = chrs.slice();

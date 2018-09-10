@@ -8,6 +8,7 @@
 
 import * as d3selection from 'd3-selection';
 import * as d3fetch from 'd3-fetch';
+import naturalSort from 'es6-natural-sort';
 
 import {BedParser} from '../parsers/bed-parser';
 import {Object} from '../lib.js';
@@ -129,7 +130,7 @@ function validateAnnotsUrl(annotsUrl) {
 function afterRawAnnots(ideo) {
   // Ensure annots are ordered by chromosome
   ideo.rawAnnots.annots = ideo.rawAnnots.annots.sort(function(a, b) {
-    return Ideogram.naturalSort(a.chr, b.chr);
+    return naturalSort(a.chr, b.chr);
   });
 
   if (ideo.config.heatmaps) {

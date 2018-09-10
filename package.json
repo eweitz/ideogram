@@ -45,7 +45,8 @@
     "d3-dispatch": "^1.0.3",
     "d3-fetch": "^1.1.0",
     "d3-scale": "^1.0.6",
-    "d3-selection": "^1.1.0"
+    "d3-selection": "^1.1.0",
+    "es6-natural-sort": "1.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0-0",
