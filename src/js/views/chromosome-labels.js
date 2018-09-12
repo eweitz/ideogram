@@ -2,82 +2,82 @@ import * as d3selection from 'd3-selection';
 
 var d3 = Object.assign({}, d3selection);
 
-/**
- * Draws labels for each chromosome, e.g. "1", "2", "X".
- * If ideogram configuration has 'fullChromosomeLabels: True',
- * then labels includes name of taxon, which can help when
- * depicting orthologs.
- */
-function drawChromosomeLabels() {
-  var ideo = this;
+function getChrSetLabelLines(d, i, ideo) {
+  var lines;
 
-  var chromosomeLabelClass = ideo._layout.getChromosomeLabelClass();
+  if (d.name.indexOf(' ') === -1) {
+    lines = [d.name];
+  } else {
+    lines = d.name.match(/^(.*)\s+([^\s]+)$/).slice(1).reverse();
+  }
 
-  var chrSetLabelXPosition = ideo._layout.getChromosomeSetLabelXPosition();
-  var chrSetLabelTranslate = ideo._layout.getChromosomeSetLabelTranslate();
+  if (
+    'sex' in ideo.config &&
+    ideo.config.ploidy === 2 &&
+    i === ideo.sexChromosomes.index
+  ) {
+    if (ideo.config.sex === 'male') {
+      lines = ['XY'];
+    } else {
+      lines = ['XX'];
+    }
+  }
 
-  // Append chromosome set's labels
+  return lines
+}
+
+function renderChromosomeSetLabel(d, i, textElement, ideo) {
+  // Get label lines
+  var lines = getChrSetLabelLines(d, i, ideo);
+
+  // Render label lines
+  d3.select(textElement).selectAll('tspan')
+    .data(lines)
+    .enter()
+    .append('tspan')
+    .attr('dy', function(d, i) {
+      return i * -1.2 + 'em';
+    })
+    .attr('x', ideo._layout.getChromosomeSetLabelXPosition())
+    .attr('class', function(a, i) {
+      var fullLabels = ideo.config.fullChromosomeLabels;
+      return i === 1 && fullLabels ? 'italic' : null;
+    })
+    .text(String);
+}
+
+function appendChromosomeSetLabels(ideo) {
+  var layout = ideo._layout;
+
   d3.selectAll(ideo.selector + ' .chromosome-set-container')
     .insert('text', ':first-child')
     .data(ideo.chromosomesArray)
-    .attr('class', chromosomeLabelClass)
-    .attr('transform', chrSetLabelTranslate)
-    .attr('x', chrSetLabelXPosition)
+    .attr('class', layout.getChromosomeLabelClass())
+    .attr('transform', layout.getChromosomeSetLabelTranslate())
+    .attr('x', layout.getChromosomeSetLabelXPosition())
     .attr('y', function(d, i) {
-      return ideo._layout.getChromosomeSetLabelYPosition(i);
+      return layout.getChromosomeSetLabelYPosition(i);
     })
-    .attr('text-anchor', ideo._layout.getChromosomeSetLabelAnchor())
+    .attr('text-anchor', layout.getChromosomeSetLabelAnchor())
     .each(function(d, i) {
-      // Get label lines
-      var lines;
-      if (d.name.indexOf(' ') === -1) {
-        lines = [d.name];
-      } else {
-        lines = d.name.match(/^(.*)\s+([^\s]+)$/).slice(1).reverse();
-      }
-
-      if (
-        'sex' in ideo.config &&
-        ideo.config.ploidy === 2 &&
-        i === ideo.sexChromosomes.index
-      ) {
-        if (ideo.config.sex === 'male') {
-          lines = ['XY'];
-        } else {
-          lines = ['XX'];
-        }
-      }
-
-      // Render label lines
-      d3.select(this).selectAll('tspan')
-        .data(lines)
-        .enter()
-        .append('tspan')
-        .attr('dy', function(d, i) {
-          return i * -1.2 + 'em';
-        })
-        .attr('x', ideo._layout.getChromosomeSetLabelXPosition())
-        .attr('class', function(a, i) {
-          var fullLabels = ideo.config.fullChromosomeLabels;
-          return i === 1 && fullLabels ? 'italic' : null;
-        })
-        .text(String);
+      renderChromosomeSetLabel(d, i, this, ideo);
     });
+}
 
-  var setLabelTranslate = ideo._layout.getChromosomeSetLabelTranslate();
+function appendChromosomeLabels(ideo) {
+  var layout = ideo._layout;
 
-  // Append chromosomes labels
   d3.selectAll(ideo.selector + ' .chromosome-set-container')
     .each(function(a, chrSetIndex) {
       d3.select(this).selectAll('.chromosome')
         .append('text')
         .attr('class', 'chrLabel')
-        .attr('transform', setLabelTranslate)
+        .attr('transform', layout.getChromosomeSetLabelTranslate())
         .attr('x', function(d, i) {
-          return ideo._layout.getChromosomeLabelXPosition(i);
+          return layout.getChromosomeLabelXPosition(i);
         })
         .attr('y', function(d, i) {
-          return ideo._layout.getChromosomeLabelYPosition(i);
+          return layout.getChromosomeLabelYPosition(i);
         })
         .text(function(d, chrIndex) {
           return ideo._ploidy.getAncestor(chrSetIndex, chrIndex);
@@ -87,17 +87,19 @@ function drawChromosomeLabels() {
 }
 
 /**
- * Rotates chromosome labels by 90 degrees, e.g. upon clicking a chromosome to focus.
+ * Draws labels for each chromosome, e.g. "1", "2", "X".
+ * If ideogram configuration has 'fullChromosomeLabels: True',
+ * then labels includes name of taxon, which can help when
+ * depicting orthologs.
  */
-function rotateChromosomeLabels(chr, chrIndex, orientation, scale) {
-  var chrMargin, chrWidth, ideo, x, y,
-    numAnnotTracks, scaleSvg, tracksHeight, chrMargin2;
+function drawChromosomeLabels() {
+  var ideo = this;
+  appendChromosomeSetLabels(ideo);
+  appendChromosomeLabels(ideo);
+}
 
-  chrWidth = this.config.chrWidth;
-  chrMargin = this.config.chrMargin * chrIndex;
-  numAnnotTracks = this.config.numAnnotTracks;
-
-  ideo = this;
+function getLabelPositionAttrs(scale) {
+  var x, y, scaleSvg, scale;
 
   if (
     typeof (scale) !== 'undefined' &&
@@ -114,53 +116,73 @@ function rotateChromosomeLabels(chr, chrIndex, orientation, scale) {
     scaleSvg = '';
   }
 
+  return {x: x, y: y, scaleSvg: scaleSvg, scale: scale};
+}
+
+function updateChrIndex(chrIndex, config) {
+  if (config.numAnnotTracks > 1 || config.orientation === '') chrIndex -= 1;
+  return chrIndex
+}
+
+function rotateVerticalChromosomeLabels(chr, chrIndex, labelPosAttrs, ideo) {
+  var chrMargin2, chrMargin, y,
+    config = ideo.config;
+
+  chrIndex = updateChrIndex(chrIndex, config);
+
+  chrMargin2 = -4;
+  if (config.showBandLabels === true) {
+    chrMargin2 = config.chrMargin + config.chrWidth + 26;
+  }
+
+  chrMargin = config.chrMargin * chrIndex;
+  if (config.numAnnotTracks > 1 === false) chrMargin += 1;
+
+  y = chrMargin + chrMargin2;
+
+  chr.selectAll('text.chrLabel')
+    .attr('transform', labelPosAttrs.scaleSvg)
+    .selectAll('tspan')
+    .attr('x', labelPosAttrs.x)
+    .attr('y', y);
+}
+
+function rotateHorizontalChromosomeLabels(chr, chrIndex, labelPosAttrs, ideo) {
+  var chrMargin, chrMargin2, tracksHeight, x,
+    config = ideo.config;
+
+  chrMargin2 = -config.chrWidth - 2;
+  if (config.showBandLabels === true) chrMargin2 = config.chrMargin + 8;
+
+  tracksHeight = config.annotTracksHeight;
+  if (config.annotationsLayout !== 'overlay') tracksHeight *= 2;
+
+  chrMargin = config.chrMargin * chrIndex;
+  x = -(chrMargin + chrMargin2) + 3 + tracksHeight;
+  x /= labelPosAttrs.scale.x;
+
+  chr.selectAll('text.chrLabel')
+    .attr('transform', 'rotate(-90)' + labelPosAttrs.scaleSvg)
+    .selectAll('tspan')
+    .attr('x', x)
+    .attr('y', labelPosAttrs.y);
+}
+
+/**
+ * Rotates chromosome labels by 90 degrees, e.g. upon clicking a chromosome.
+ */
+function rotateChromosomeLabels(chr, chrIndex, orientation, scale) {
+  var labelPosAttrs,
+    ideo = this;
+
+  chrIndex -= 1;
+
+  labelPosAttrs = getLabelPositionAttrs(scale);
+
   if (orientation === 'vertical' || orientation === '') {
-    var ci = chrIndex - 1;
-
-    if (numAnnotTracks > 1 || orientation === '') {
-      ci -= 1;
-    }
-
-    chrMargin2 = -4;
-    if (ideo.config.showBandLabels === true) {
-      chrMargin2 = ideo.config.chrMargin + chrWidth + 26;
-    }
-
-    chrMargin = ideo.config.chrMargin * ci;
-
-    if (numAnnotTracks > 1 === false) {
-      chrMargin += 1;
-    }
-
-    y = chrMargin + chrMargin2;
-
-    chr.selectAll('text.chrLabel')
-      .attr('transform', scaleSvg)
-      .selectAll('tspan')
-      .attr('x', x)
-      .attr('y', y);
+    rotateVerticalChromosomeLabels(chr, chrIndex, labelPosAttrs, ideo);
   } else {
-    chrIndex -= 1;
-
-    chrMargin2 = -chrWidth - 2;
-    if (ideo.config.showBandLabels === true) {
-      chrMargin2 = ideo.config.chrMargin + 8;
-    }
-
-    tracksHeight = ideo.config.annotTracksHeight;
-    if (ideo.config.annotationsLayout !== 'overlay') {
-      tracksHeight *= 2;
-    }
-
-    chrMargin = ideo.config.chrMargin * chrIndex;
-    x = -(chrMargin + chrMargin2) + 3 + tracksHeight;
-    x /= scale.x;
-
-    chr.selectAll('text.chrLabel')
-      .attr('transform', 'rotate(-90)' + scaleSvg)
-      .selectAll('tspan')
-      .attr('x', x)
-      .attr('y', y);
+    rotateHorizontalChromosomeLabels(chr, chrIndex, labelPosAttrs, ideo);
   }
 }
 
