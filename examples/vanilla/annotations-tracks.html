@@ -4,6 +4,7 @@
 <head>
   <title>Annotations, tracks | Ideogram</title>
   <style>body {font: 12px Arial; line-height: 19.6px;}</style>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter/1.3.12/crossfilter.min.js"></script>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
 </head>
 <body>
@@ -48,40 +49,22 @@
   });
 
 
-    function callback() {
-      var band, bandMiddle,
-        chrLabel, chrLabelMiddle;
-
-      band = d3.selectAll('.chromosome .band').nodes()[0].getBoundingClientRect();
-      chrLabel = d3.selectAll('.chrLabel').nodes()[0].getBoundingClientRect();
-
-      bandMiddle = band.left + band.width / 2;
-      chrLabelMiddle = chrLabel.left + chrLabel.width / 2;
-
-      labelsDiff = Math.abs(bandMiddle - chrLabelMiddle);
-console.log(labelsDiff)
-    }
-
   function drawIdeogram(shape) {
 
     var annotationTracks = [
-      {id: 'pathogenicTrack', displayName: 'Pathogenic', color: '#F00'},
-      {id: 'likelyPathogenicTrack', displayName: 'Likely pathogenic', color: '#DB9'},
-      {id: 'uncertainSignificanceTrack', displayName: 'Uncertain significance', color: '#CCC'},
-      {id: 'likelyBenignTrack', displayName: 'Likely benign', color: '#BD9'},
-      {id: 'benignTrack', displayName: 'Benign', color: '#8D4'}
+      {id: 'pathogenicTrack', displayName: 'Pathogenic', color: '#F00', shape: shape},
+      {id: 'uncertainSignificanceTrack', displayName: 'Uncertain significance', color: '#CCC', shape: shape},
+      {id: 'benignTrack',  displayName: 'Benign', color: '#8D4', shape: shape}
     ];
 
     var config = {
       organism: 'human',
-      chrWidth: 20,
-      chrHeight: 500,
-      annotationsPath: '/dist/data/annotations/1000_virtual_snvs.json',
+      orientation: 'vertical',
+      chrWidth: 8,
+      annotationsPath: '../../data/annotations/1000_virtual_snvs.json',
       annotationTracks: annotationTracks,
-      annotationHeight: 2.5,
-      dataDir: '/dist/data/bands/native/'
+      annotationHeight: annotHeight
     };
-    config.onDrawAnnots = callback;
 
     if (typeof ideogram !== 'undefined') {
       d3.select(ideogram.config.container + '> div').remove();
