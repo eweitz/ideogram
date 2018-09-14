@@ -10,10 +10,11 @@ import io
 from concurrent.futures import ThreadPoolExecutor
 import time
 import pprint
-import settings
 
-import convert_band_data
-import get_cytobands_from_remote_dbs
+import fetch_chromosomes.settings as settings
+import fetch_chromosomes.convert_band_data as convert_band_data
+import fetch_chromosomes.fetch_cytobands_from_dbs as fetch_cytobands_from_dbs
+import fetch_chromosomes.utils as utils
 
 output_dir = '../../data/bands/native/'
 
@@ -25,7 +26,6 @@ if os.path.exists(output_dir) == False:
 orgs_with_centromere_data = {}
 
 ftp_domain = 'ftp.ncbi.nlm.nih.gov'
-
 
 manifest = {}
 
@@ -377,7 +377,7 @@ top_uid_list = data['esearchresult']['idlist']
 
 logger.info('Assembly UIDs returned in search results: ' + str(len(top_uid_list)))
 
-old_manifest = get_cytobands_from_remote_dbs.main()
+old_manifest = fetch_cytobands_from_dbs.main()
 
 # TODO: Make this configurable
 num_threads = 24

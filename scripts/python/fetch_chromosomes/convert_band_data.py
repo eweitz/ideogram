@@ -75,8 +75,8 @@ output_mappings = {
 
 
 def main():
-    in_dir = '../../data/bands/ncbi/'
-    out_dir = '../../data/bands/native/'
+    in_dir = '../../../data/bands/ncbi/'
+    out_dir = '../../../data/bands/native/'
 
     f = []
     for (dirpath, dirnames, filenames) in walk(in_dir):

@@ -1,6 +1,5 @@
 import logging
 
-
 def get_logger(output_dir, log_name):
     """Creates a log file and returns an object to interface with it.
     """
