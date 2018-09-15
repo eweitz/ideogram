@@ -50,7 +50,7 @@ from . import settings
 logger = settings.init(fresh_run, fill_cache, output_dir, cache_dir, log_name)
 
 from .utils import request, db_connect, time_ms, natural_sort, chunkify
-from .fetch_ucsc import fetch_from_ucsc
+from .ucsc import fetch_from_ucsc
 
 if os.path.exists(output_dir) is False:
     os.mkdir(output_dir)
@@ -140,7 +140,7 @@ def get_genbank_accession_from_ucsc_name(db):
 
     time_ncbi += time_ms() - t0
     return acc
-    
+
 
 def get_ensembl_chr_ids(cursor):
     """Get a map of Ensembl seq_region_ids to familiar chromosome names.
