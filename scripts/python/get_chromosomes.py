@@ -132,6 +132,7 @@ def download_genome_regions(ftp, regions_ftp):
 
 
 def write_centromere_data(organism, asm_name, asm_acc, output_dir, chrs):
+    print('entering write_centromere_data, get_chromosomes')
     global manifest
 
     logger.info(
@@ -194,6 +195,7 @@ def write_centromere_data(organism, asm_name, asm_acc, output_dir, chrs):
 
 
 def download_genome_agp(ftp, asm):
+    print('entering download_genome_agp, get_chromosomes')
 
     agp_ftp_wd = asm['agp_ftp_wd']
     asm_acc = asm['acc']
@@ -270,7 +272,7 @@ def download_genome_agp(ftp, asm):
 
 
 def find_genomes_with_centromeres(ftp, asm_summary_response):
-
+    print('entering find_genomes_with_centromeres, get_chromosomes')
     data = asm_summary_response
 
     logger.info('numbers of keys in asm_summary_response:')
@@ -349,6 +351,7 @@ def pool_processing(uid_list):
     ftp.login()
 
     find_genomes_with_centromeres(ftp, data)
+    print('exiting pool_process, get_chromosomes')
 
     ftp.quit()
 
@@ -379,6 +382,8 @@ logger.info('Assembly UIDs returned in search results: ' + str(len(top_uid_list)
 
 old_manifest = fetch_cytobands_from_dbs.main()
 
+print('after old_manifest, get_chromosomes')
+
 # TODO: Make this configurable
 num_threads = 24
 
@@ -386,6 +391,8 @@ uid_lists = chunkify(top_uid_list, num_threads)
 
 with ThreadPoolExecutor(max_workers=num_threads) as pool:
     pool.map(pool_processing, uid_lists)
+
+print('after TPE, get_chromosomes')
 
 manifest.update(old_manifest)
 
@@ -402,3 +409,5 @@ logger.info('Calling convert_band_data.py')
 convert_band_data.main()
 
 logger.info('Ending get_chromosomes.py')
+
+print('exiting get_chromosomes.py')

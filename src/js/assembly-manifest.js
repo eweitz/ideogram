@@ -26,5 +26,5 @@ assemblyManifest = {   'anopheles-gambiae': ['GCA_000005575.1', 'anopheles_gambi
     'oryza-sativa': ['GCA_001433935.1', 'oryza_sativa_core_40_93_7'],
     'pan-paniscus': ['GCF_000258655.2', 'panpan1.1'],
     'pan-troglodytes': ['GCF_002880755.1', 'Clint_PTRv2'],
-    'petromyzon-marinus': ['taeGut2', ''],
+    'petromyzon-marinus': ['taeGut2', None],
     'zea-mays': ['GCA_000005005.5', 'zea_mays_core_29_82_6']}

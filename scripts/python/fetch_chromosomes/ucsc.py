@@ -4,10 +4,45 @@ from functools import partial
 from .utils import *
 
 
-def query_ucsc_cytobandideo_db(db_tuples_list, logger):
+def get_genbank_accession_from_ucsc_name(db, times, unfound_dbs, logger):
+    """Queries NCBI EUtils for the GenBank accession of a UCSC asseembly name
+    """
+    t0 = time_ms()
+    logger.info('Fetching GenBank accession from NCBI EUtils for: ' + db)
+
+    eutils = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
+    esearch = eutils + 'esearch.fcgi?retmode=json'
+    esummary = eutils + 'esummary.fcgi?retmode=json'
+
+    asm_search = esearch + '&db=assembly&term=' + db
+
+    # Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=assembly&retmode=json&term=panTro4
+    data = json.loads(request(asm_search))
+    id_list = data['esearchresult']['idlist']
+    if len(id_list) > 0:
+        assembly_uid = id_list[0]
+    else:
+        unfound_dbs.append(db)
+        return [None, times, unfound_dbs]
+    asm_summary = esummary + '&db=assembly&id=' + assembly_uid
+
+    # Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?retmode=json&db=assembly&id=255628
+    data = json.loads(request(asm_summary))
+    result = data['result'][assembly_uid]
+    acc = result['assemblyaccession'] # Accession.version
+
+    # Return GenBank accession if it's default, else find and return it
+    if "GCA_" not in acc:
+        acc = result['synonym']['genbank']
+
+    times['ncbi'] += time_ms() - t0
+    return [acc, times, unfound_dbs]
+
+
+def query_ucsc_cytobandideo_db(db_tuples_list, times, unfound_dbs, logger):
     """Queries UCSC DBs, called via a thread pool in fetch_ucsc_data
     """
-
+    print('in query_ucsc_cytobandideo_db, ucsc')
     connection = db_connect(
         host='genome-mysql.soe.ucsc.edu',
         user='genome'
@@ -53,7 +88,8 @@ def query_ucsc_cytobandideo_db(db_tuples_list, logger):
         if has_bands is False:
             continue
 
-        genbank_accession = get_genbank_accession_from_ucsc_name(db)
+        genbank_accession, times, unfound_dbs =\
+            get_genbank_accession_from_ucsc_name(db, times, unfound_dbs, logger)
 
         # name_slug = db_map[db]
 
@@ -61,15 +97,16 @@ def query_ucsc_cytobandideo_db(db_tuples_list, logger):
 
         logger.info('Got UCSC data: ' + str(asm_data))
 
-        return asm_data
+        print('exiting query_ucsc_cytobandideo_db, ucsc')
+        return [asm_data, times, unfound_dbs]
 
-def fetch_from_ucsc(logger):
+def fetch_from_ucsc(logger, times, unfound_dbs):
     """Queries MySQL instances hosted by UCSC Genome Browser
 
     To connect via Terminal (e.g. to debug), run:
     mysql --user=genome --host=genome-mysql.soe.ucsc.edu -A
     """
-    global time_ucsc
+    print('Entering fetch_from_ucsc, ucsc')
     t0 = time_ms()
     logger.info('Entering fetch_from_ucsc')
     connection = db_connect(
@@ -104,17 +141,20 @@ def fetch_from_ucsc(logger):
     num_threads = 30
     db_tuples_lists = chunkify(db_tuples, num_threads)
     with ThreadPoolExecutor(max_workers=num_threads) as pool:
-        for result in pool.map(
-            partial(query_ucsc_cytobandideo_db, logger=logger),
+        print('in ThreadPoolExecutor, ucsc')
+        results = pool.map(
+            partial(query_ucsc_cytobandideo_db, 
+                logger=logger, times=times, unfound_dbs=unfound_dbs),
             db_tuples_lists
-        ):
+        )
+        for result in results:
             if result is None:
                 continue
-            asm_data = result
+            asm_data, times, unfound_dbs = result
             if name_slug in org_map:
                 org_map[name_slug].append(asm_data)
             else:
                 org_map[name_slug] = [asm_data]
 
-    time_ucsc += time_ms() - t0
-    return org_map
+    times['ucsc'] += time_ms() - t0
+    return [org_map, times, unfound_dbs]

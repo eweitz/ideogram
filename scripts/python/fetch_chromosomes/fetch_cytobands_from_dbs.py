@@ -9,6 +9,9 @@ import json
 from concurrent.futures import ThreadPoolExecutor
 import argparse
 
+from . import settings
+
+
 parser = argparse.ArgumentParser(
     description=__doc__,
     formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -49,8 +52,8 @@ log_name = 'fetch_cytobands_from_dbs'
 from . import settings
 logger = settings.init(fresh_run, fill_cache, output_dir, cache_dir, log_name)
 
-from .utils import request, db_connect, time_ms, natural_sort, chunkify
-from .ucsc import fetch_from_ucsc
+from .utils import *
+from .ucsc import *
 
 if os.path.exists(output_dir) is False:
     os.mkdir(output_dir)
@@ -88,58 +91,7 @@ time_ncbi = 0
 time_ucsc = 0
 time_ensembl = 0
 
-
-def update_bands_by_chr(bands_by_chr, chr, band_name, start, stop, stain):
-    chr = chr.replace('chr', '') # e.g. chr1 -> 1
-    # band_name and stain can be omitted,
-    # see e.g. Aspergillus oryzae, Anopheles gambiae
-    if band_name is None:
-        band_name = ''
-    if stain is None:
-        stain = ''
-    stain = stain.lower()
-    band = [band_name, str(start), str(stop), str(start), str(stop), stain]
-    if chr in bands_by_chr:
-        bands_by_chr[chr].append(band)
-    else:
-        bands_by_chr[chr] = [band]
-    return bands_by_chr
-
-
-def get_genbank_accession_from_ucsc_name(db):
-    """Queries NCBI EUtils for the GenBank accession of a UCSC asseembly name
-    """
-    global time_ncbi
-    t0 = time_ms()
-    logger.info('Fetching GenBank accession from NCBI EUtils for: ' + db)
-
-    eutils = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
-    esearch = eutils + 'esearch.fcgi?retmode=json'
-    esummary = eutils + 'esummary.fcgi?retmode=json'
-
-    asm_search = esearch + '&db=assembly&term=' + db
-
-    # Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=assembly&retmode=json&term=panTro4
-    data = json.loads(request(asm_search))
-    id_list = data['esearchresult']['idlist']
-    if len(id_list) > 0:
-        assembly_uid = id_list[0]
-    else:
-        unfound_dbs.append(db)
-        return ''
-    asm_summary = esummary + '&db=assembly&id=' + assembly_uid
-
-    # Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?retmode=json&db=assembly&id=255628
-    data = json.loads(request(asm_summary))
-    result = data['result'][assembly_uid]
-    acc = result['assemblyaccession'] # Accession.version
-
-    # Return GenBank accession if it's default, else find and return it
-    if "GCA_" not in acc:
-        acc = result['synonym']['genbank']
-
-    time_ncbi += time_ms() - t0
-    return acc
+times = {'ncbi': 0, 'ucsc': 0, 'ensembl': 0}
 
 
 def get_ensembl_chr_ids(cursor):
@@ -478,28 +430,34 @@ def pool_processing(party):
     """Called once per "party" (i.e. UCSC, Ensembl, or GenoMaize)
     to fetch cytoband data from each.
     """
+    global times
+    global unfound_dbs
+    print('in fetch_cytobands_from_dbs, pool_processing')
     logger.info('Entering pool processing, party: ' + party)
     if party == 'ensembl':
         org_map = fetch_from_ensembl_genomes()
     elif party == 'ucsc':
-        org_map = fetch_from_ucsc(logger)
+        org_map, times, unfound_dbs_subset =\
+            fetch_from_ucsc(logger, times, unfound_dbs)
+        unfound_dbs += unfound_dbs_subset
     elif party == 'genomaize':
         org_map = fetch_maize_centromeres()
 
     logger.info('exiting pool processing')
-    return [party, org_map]
+    return [party, org_map, times]
 
 
 party_list = []
 unfound_dbs = []
 zea_mays_centromeres = {}
 
-
 def main():
-
+    global unfound_dbs
+    
     # Request data from all parties simultaneously
     num_threads = 3
     with ThreadPoolExecutor(max_workers=num_threads) as pool:
+        print ('in fetch_cytobands_from_dbs, main')
         parties = ['ensembl', 'ucsc', 'genomaize']
         for result in pool.map(pool_processing, parties):
             party = result[0]
@@ -508,6 +466,7 @@ def main():
             else:
                 party_list.append(result)
 
+    print ('in fetch_cytobands_from_dbs, main after TPE')
     logger.info('')
     logger.info('UCSC databases not mapped to GenBank assembly IDs:')
     logger.info(', '.join(unfound_dbs))
@@ -517,7 +476,7 @@ def main():
     # Convert any such duplicate data into a non-redundant (NR) organism map.
     nr_org_map = {}
     seen_orgs = {}
-    for party, org_map in party_list:
+    for party, org_map, times in party_list:
         logger.info('Iterating organisms from ' + party)
         for org in org_map:
             logger.info('\t' + org)
@@ -567,6 +526,7 @@ def main():
     logger.info('time_ensembl:')
     logger.info(time_ensembl)
 
+    print('exiting main, fetch_cytobands_from_dbs')
     return manifest
 
 

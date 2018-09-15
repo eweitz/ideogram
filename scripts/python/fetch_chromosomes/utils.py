@@ -5,6 +5,7 @@ import urllib.request
 import time
 import re
 import ast
+import json
 
 fresh_run = settings.fresh_run
 fill_cache = settings.fill_cache
@@ -131,3 +132,20 @@ def time_ms():
 
 def chunkify(lst, n):
     return [lst[i::n] for i in range(n)]
+
+
+def update_bands_by_chr(bands_by_chr, chr, band_name, start, stop, stain):
+    chr = chr.replace('chr', '') # e.g. chr1 -> 1
+    # band_name and stain can be omitted,
+    # see e.g. Aspergillus oryzae, Anopheles gambiae
+    if band_name is None:
+        band_name = ''
+    if stain is None:
+        stain = ''
+    stain = stain.lower()
+    band = [band_name, str(start), str(stop), str(start), str(stop), stain]
+    if chr in bands_by_chr:
+        bands_by_chr[chr].append(band)
+    else:
+        bands_by_chr[chr] = [band]
+    return bands_by_chr
