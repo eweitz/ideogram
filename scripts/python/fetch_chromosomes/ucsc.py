@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 
 from .utils import *
 
@@ -103,7 +104,10 @@ def fetch_from_ucsc(logger):
     num_threads = 30
     db_tuples_lists = chunkify(db_tuples, num_threads)
     with ThreadPoolExecutor(max_workers=num_threads) as pool:
-        for result in pool.map(query_ucsc_cytobandideo_db, db_tuples_lists, logger):
+        for result in pool.map(
+            partial(query_ucsc_cytobandideo_db, logger=logger),
+            db_tuples_lists
+        ):
             if result is None:
                 continue
             asm_data = result
