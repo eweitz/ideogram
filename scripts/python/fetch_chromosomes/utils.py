@@ -118,6 +118,13 @@ def request(url, request_body=None):
     return data
 
 
+def get_cursor(host, user='anonymous', port=None, db=None, logger=None):
+    connection = db_connect(host=host, user=user, port=port)
+    cursor = connection.cursor()
+    logger.info('Connected to Ensembl Genomes database via pool')
+    return cursor
+
+
 def natural_sort(l):
     """From https://stackoverflow.com/a/4836734
     """

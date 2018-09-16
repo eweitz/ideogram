@@ -126,7 +126,6 @@ def query_ensembl_karyotype_db(db_tuples_list):
     :param db_tuples_list: List of (db, name_slug) tuples
     :return: List of [name_slug, asm_data] lists
     """
-
     connection = db_connect(
         host='mysql-eg-publicsql.ebi.ac.uk',
         user='anonymous',

@@ -132,7 +132,7 @@ def download_genome_regions(ftp, regions_ftp):
 
 
 def write_centromere_data(organism, asm_name, asm_acc, output_dir, chrs):
-    print('entering write_centromere_data, get_chromosomes')
+    print('entering write_centromere_data, get_chr')
     global manifest
 
     logger.info(
