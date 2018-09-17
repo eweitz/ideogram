@@ -9,6 +9,12 @@ esearch = eutils + 'esearch.fcgi?retmode=json'
 esummary = eutils + 'esummary.fcgi?retmode=json'
 
 
+def get_ucsc_cursor(logger):
+    cursor = get_cursor('genome-mysql.soe.ucsc.edu', 'genome', db='UCSC',
+        logger=logger)
+    return cursor
+
+
 def query_accession_from_eutils(assembly_uid):
     """Requests esummary from NCBI Assembly DB, returns assembly accession
     """
@@ -106,11 +112,10 @@ def get_cytobandideo_table(cursor, db):
 def fetch_assembly_data(db_tuples_list, times, unfound_dbs, logger):
     """Queries UCSC DBs, called via a thread pool in fetch_ucsc_data
     """
-    cursor = get_cursor('genome-mysql.soe.ucsc.edu', 'genome', db='UCSC',
-        logger=logger)
+    cursor = get_ucsc_cursor(logger)
 
     for db_tuple in db_tuples_list:
-        db = db_tuple[0]
+        db, name_slug = db_tuple
 
         cytobandideo_table = get_cytobandideo_table(cursor, db)
         if cytobandideo_table is None:
@@ -126,27 +131,11 @@ def fetch_assembly_data(db_tuples_list, times, unfound_dbs, logger):
         asm_data = [db, genbank_accession, bands_by_chr]
 
         logger.info('Got UCSC data: ' + str(asm_data))
-        return [asm_data, times, unfound_dbs]
+        return [name_slug, asm_data, times, unfound_dbs]
 
 
-def fetch_from_ucsc(logger, times, unfound_dbs):
-    """Queries MySQL instances hosted by UCSC Genome Browser
-
-    To connect via Terminal (e.g. to debug), run:
-    mysql --user=genome --host=genome-mysql.soe.ucsc.edu -A
-    """
-    print('Entering fetch_from_ucsc, ucsc')
-    t0 = time_ms()
-    logger.info('Entering fetch_from_ucsc')
-    connection = db_connect(
-        host='genome-mysql.soe.ucsc.edu',
-        user='genome'
-    )
-    logger.info('Connected to UCSC database')
-    cursor = connection.cursor()
-
+def query_db_tuples(cursor, logger):
     db_map = {}
-    org_map = {}
 
     cursor.execute('use hgcentral')
     cursor.execute('''
@@ -163,14 +152,18 @@ def fetch_from_ucsc(logger, times, unfound_dbs):
 
     db_tuples = [item for item in db_map.items()]
 
-    # Take the list of DBs we want to query for cytoBandIdeo data,
-    # split it into 30 smaller lists,
-    # then launch a new thread for each of those small new DB lists
-    # to divide up the work of querying remote DBs.
+    return db_tuples
+
+
+def pool_fetch_org_map(db_tuples, times, unfound_dbs, logger):
+    org_map = {}
+
+    # Take the list of DBs we want to query for cytoBandIdeo data, split it
+    # into 30 smaller lists, then launch a new thread for each of those small
+    # new DB lists to divide up the work of querying remote DBs.
     num_threads = 30
     db_tuples_lists = chunkify(db_tuples, num_threads)
     with ThreadPoolExecutor(max_workers=num_threads) as pool:
-        print('in ThreadPoolExecutor, ucsc')
         results = pool.map(
             partial(fetch_assembly_data, 
                 logger=logger, times=times, unfound_dbs=unfound_dbs),
@@ -179,11 +172,27 @@ def fetch_from_ucsc(logger, times, unfound_dbs):
         for result in results:
             if result is None:
                 continue
-            asm_data, times, unfound_dbs = result
+            name_slug, asm_data, times, unfound_dbs = result
             if name_slug in org_map:
                 org_map[name_slug].append(asm_data)
             else:
                 org_map[name_slug] = [asm_data]
+    return org_map
+
+
+def fetch_from_ucsc(logger, times, unfound_dbs):
+    """Queries MySQL instances hosted by UCSC Genome Browser
+
+    To connect via Terminal (e.g. to debug), run:
+    mysql --user=genome --host=genome-mysql.soe.ucsc.edu -A
+    """
+    print('Entering fetch_from_ucsc, ucsc')
+    t0 = time_ms()
+    cursor = get_ucsc_cursor(logger)
+    
+    db_tuples = query_db_tuples(cursor, logger)
+
+    org_map = pool_fetch_org_map(db_tuples, times, unfound_dbs, logger)
 
     times['ucsc'] += time_ms() - t0
     return [org_map, times, unfound_dbs]

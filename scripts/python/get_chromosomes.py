@@ -380,9 +380,9 @@ top_uid_list = data['esearchresult']['idlist']
 
 logger.info('Assembly UIDs returned in search results: ' + str(len(top_uid_list)))
 
-old_manifest = fetch_cytobands_from_dbs.main()
+#non_ncbi_manifest = fetch_cytobands_from_dbs.main()
 
-print('after old_manifest, get_chromosomes')
+print('after non_ncbi_manifest, get_chromosomes')
 
 # TODO: Make this configurable
 num_threads = 24
@@ -394,7 +394,14 @@ with ThreadPoolExecutor(max_workers=num_threads) as pool:
 
 print('after TPE, get_chromosomes')
 
-manifest.update(old_manifest)
+logger.info('manifest')
+logger.info(manifest)
+# logger.info('non_ncbi_manifest')
+# logger.info(non_ncbi_manifest)
+
+#non_ncbi_manifest.update(manifest)
+
+#manifest = non_ncbi_manifest
 
 # Write a manifest of organisms for which we have cytobands.
 # This enables Ideogram.js to more quickly load those organisms.

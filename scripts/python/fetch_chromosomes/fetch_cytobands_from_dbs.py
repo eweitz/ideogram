@@ -304,7 +304,6 @@ def merge_centromeres(bands_by_chr, centromeres):
             if int(band_stop) < int(cen_start):
                 arm = 'p'
             else:
-
                 arm = 'q'
 
                 if int(band_start) < int(cen_stop):
