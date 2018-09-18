@@ -10,7 +10,7 @@ crossfilter.min.js
 data/analysis/
 *.log
 scripts/env
-scripts/python/__pycache__/
+__pycache__/
 .ipynb_checkpoints/
 
 # Eclipse IDE files
