@@ -130,7 +130,7 @@ def fetch_assembly_data(db_tuples_list, times, unfound_dbs, logger):
 
         asm_data = [db, genbank_accession, bands_by_chr]
 
-        logger.info('Got UCSC data: ' + str(asm_data))
+        # logger.info('Got UCSC data: ' + str(asm_data))
         return [name_slug, asm_data, times, unfound_dbs]
 
 
