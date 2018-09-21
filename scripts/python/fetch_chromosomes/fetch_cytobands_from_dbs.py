@@ -55,6 +55,7 @@ logger = settings.init(fresh_run, fill_cache, output_dir, cache_dir, log_name)
 from .utils import *
 from .ucsc import *
 from .ensembl import *
+from .genomaize import *
 
 if os.path.exists(output_dir) is False:
     os.mkdir(output_dir)
@@ -93,56 +94,6 @@ time_ucsc = 0
 time_ensembl = 0
 
 times = {'ncbi': 0, 'ucsc': 0, 'ensembl': 0}
-
-
-def fetch_maize_centromeres():
-    """Reads local copy of centromeres from B73 v2 genome assembly for Zea mays
-
-    Old documentation:
-    Requests maize centromere data from Genomaize
-    This is a special case for maize, a request for which began this module.
-
-    To debug:
-    curl 'http://genomaize.org/cgi-bin/hgTables' --data 'jsh_pageVertPos=0&clade=monocots&org=Zea+mays&db=zeaMay_b73_v2&hgta_group=map&hgta_track=cytoBandIdeo&hgta_table=cytoBandIdeo&hgta_regionType=genome&position=chr1%3A1-301354135&hgta_outputType=primaryTable&boolshad.sendToGalaxy=0&boolshad.sendToGreat=0&hgta_outFileName=&hgta_compressType=none&hgta_doTopSubmit=get+output'
-    """
-    centromeres_by_chr = {}
-
-    '''
-    post_body = (
-        'jsh_pageVertPos=0' +
-        '&clade=monocots' +
-        '&org=Zea+mays' +
-        '&db=zeaMay_b73_v2' +
-        '&hgta_group=map' +
-        '&hgta_track=cytoBandIdeo' +
-        '&hgta_table=cytoBandIdeo' +
-        '&hgta_regionType=genome' +
-        '&position=chr1%3A1-301354135' +
-        '&hgta_outputType=primaryTable' +
-        '&boolshad.sendToGalaxy=0' +
-        '&boolshad.sendToGreat=0' +
-        '&hgta_outFileName=' +
-        '&hgta_compressType=none' +
-        '&hgta_doTopSubmit=get+output'
-    )
-    post_body = post_body.encode()
-    url = 'http://genomaize.org/cgi-bin/hgTables'
-    data = request(url, request_body=post_body)
-    rows = data.split('\n')[1:-1]
-    for row in rows:
-        # Headers: chrom, chromStart, chromEnd, name, score
-        chr, start, stop = row.split('\t')[:3]
-        chr = chr.replace('chr', '')
-        centromeres_by_chr[chr] = [start, stop]
-    '''
-
-    rows = open(output_dir + 'zea-mays-b73-v2-centromeres.tsv').readlines()
-    for row in rows[1:]:
-        chr, start, stop = row.split('\t')[:3]
-        chr = chr.replace('chr', '')
-        centromeres_by_chr[chr] = [start, stop]
-
-    return centromeres_by_chr
 
 
 def merge_centromeres(bands_by_chr, centromeres):
@@ -300,13 +251,13 @@ def pool_processing(party):
     print('in fetch_cytobands_from_dbs, pool_processing')
     logger.info('Entering pool processing, party: ' + party)
     if party == 'ensembl':
-        org_map = fetch_from_ensembl_genomes()
+        org_map = fetch_from_ensembl_genomes(times, logger)
     elif party == 'ucsc':
         org_map, times, unfound_dbs_subset =\
             fetch_from_ucsc(logger, times, unfound_dbs)
         unfound_dbs += unfound_dbs_subset
     elif party == 'genomaize':
-        org_map = fetch_maize_centromeres()
+        org_map = fetch_maize_centromeres(output_dir)
 
     logger.info('exiting pool processing')
     return [party, org_map, times]
