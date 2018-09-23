@@ -144,6 +144,17 @@ party_list = []
 unfound_dbs = []
 zea_mays_centromeres = {}
 
+def log_end_times():
+    logger.info('')
+
+    # How long did each part take?
+    logger.info('time_ucsc:')
+    logger.info(time_ucsc)
+    logger.info('time_ncbi:')
+    logger.info(time_ncbi)
+    logger.info('time_ensembl:')
+    logger.info(time_ensembl)
+
 def main():
     global unfound_dbs
     
@@ -208,16 +219,6 @@ def main():
         # e.g. ../data/bands/native/anopheles-gambiae.js
         with open(output_dir + org + '.js', 'w') as f:
             f.write('window.chrBands = ' + str(band_list))
-
-    logger.info('')
-
-    # How long did each part take?
-    logger.info('time_ucsc:')
-    logger.info(time_ucsc)
-    logger.info('time_ncbi:')
-    logger.info(time_ncbi)
-    logger.info('time_ensembl:')
-    logger.info(time_ensembl)
 
     print('exiting main, fetch_cytobands_from_dbs')
     return manifest
