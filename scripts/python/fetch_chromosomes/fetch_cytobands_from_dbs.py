@@ -155,6 +155,21 @@ def log_end_times():
     logger.info('time_ensembl:')
     logger.info(time_ensembl)
 
+def get_nonredundant_organisms(party_list):
+    # Third parties (e.g. UCSC, Ensembl) can have data for the same organism.
+    # Convert any such duplicate data into a non-redundant (NR) organism map.
+    nr_org_map = {}
+    seen_orgs = {}
+    for party, org_map, times in party_list:
+        logger.info('Iterating organisms from ' + party)
+        for org in org_map:
+            logger.info('\t' + org)
+            if org in seen_orgs:
+                logger.info('Already saw ' + org)
+                continue
+            nr_org_map[org] = org_map[org]
+    return nr_org_map
+
 def main():
     global unfound_dbs
     
@@ -176,18 +191,7 @@ def main():
     logger.info(', '.join(unfound_dbs))
     logger.info('')
 
-    # Third parties (e.g. UCSC, Ensembl) can have data for the same organism.
-    # Convert any such duplicate data into a non-redundant (NR) organism map.
-    nr_org_map = {}
-    seen_orgs = {}
-    for party, org_map, times in party_list:
-        logger.info('Iterating organisms from ' + party)
-        for org in org_map:
-            logger.info('\t' + org)
-            if org in seen_orgs:
-                logger.info('Already saw ' + org)
-                continue
-            nr_org_map[org] = org_map[org]
+    nr_org_map = get_nonredundant_organisms(party_list)
 
     manifest = {}
 
