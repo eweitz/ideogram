@@ -170,6 +170,36 @@ def get_nonredundant_organisms(party_list):
             nr_org_map[org] = org_map[org]
     return nr_org_map
 
+
+def write_chr_bands(org, nr_org_map):
+    asm_data = sorted(nr_org_map[org], reverse=True)[0]
+    genbank_accession, db, bands_by_chr = asm_data
+
+    manifest[org] = [genbank_accession, db]
+
+    if org == 'drosophila-melanogaster':
+        bands_by_chr = patch_telomeres(bands_by_chr)
+
+    # Assign cytogenetic arms for each band
+    if org == 'zea-mays':
+        bands_by_chr = merge_centromeres(bands_by_chr, zea_mays_centromeres)
+    else:
+        bands_by_chr = parse_centromeres(bands_by_chr)
+
+    # Collapse chromosome-to-band dict, making it a list of strings
+    band_list = []
+    chrs = natural_sort(list(bands_by_chr.keys()))
+    for chr in chrs:
+        bands = bands_by_chr[chr]
+        for band in bands:
+            band_list.append(chr + ' ' + ' '.join(band))
+
+    # Write actual cytoband data to file,
+    # e.g. ../data/bands/native/anopheles-gambiae.js
+    with open(output_dir + org + '.js', 'w') as f:
+        f.write('window.chrBands = ' + str(band_list))
+
+
 def main():
     global unfound_dbs
     
@@ -196,33 +226,7 @@ def main():
     manifest = {}
 
     for org in nr_org_map:
-
-        asm_data = sorted(nr_org_map[org], reverse=True)[0]
-        genbank_accession, db, bands_by_chr = asm_data
-
-        manifest[org] = [genbank_accession, db]
-
-        if org == 'drosophila-melanogaster':
-            bands_by_chr = patch_telomeres(bands_by_chr)
-
-        # Assign cytogenetic arms for each band
-        if org == 'zea-mays':
-            bands_by_chr = merge_centromeres(bands_by_chr, zea_mays_centromeres)
-        else:
-            bands_by_chr = parse_centromeres(bands_by_chr)
-
-        # Collapse chromosome-to-band dict, making it a list of strings
-        band_list = []
-        chrs = natural_sort(list(bands_by_chr.keys()))
-        for chr in chrs:
-            bands = bands_by_chr[chr]
-            for band in bands:
-                band_list.append(chr + ' ' + ' '.join(band))
-
-        # Write actual cytoband data to file,
-        # e.g. ../data/bands/native/anopheles-gambiae.js
-        with open(output_dir + org + '.js', 'w') as f:
-            f.write('window.chrBands = ' + str(band_list))
+        write_chr_bands(org, nr_org_map)
 
     print('exiting main, fetch_cytobands_from_dbs')
     return manifest
