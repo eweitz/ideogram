@@ -139,10 +139,8 @@ def pool_processing(party):
     logger.info('exiting pool processing')
     return [party, org_map, times]
 
-
-party_list = []
 unfound_dbs = []
-zea_mays_centromeres = {}
+maize_centromeres = {}
 
 def log_end_times():
     logger.info('')
@@ -171,7 +169,7 @@ def get_nonredundant_organisms(party_list):
     return nr_org_map
 
 
-def write_chr_bands(org, nr_org_map):
+def write_chr_bands(org, nr_org_map, maize_centromeres):
     asm_data = sorted(nr_org_map[org], reverse=True)[0]
     genbank_accession, db, bands_by_chr = asm_data
 
@@ -182,7 +180,7 @@ def write_chr_bands(org, nr_org_map):
 
     # Assign cytogenetic arms for each band
     if org == 'zea-mays':
-        bands_by_chr = merge_centromeres(bands_by_chr, zea_mays_centromeres)
+        bands_by_chr = merge_centromeres(bands_by_chr, maize_centromeres)
     else:
         bands_by_chr = parse_centromeres(bands_by_chr)
 
@@ -200,9 +198,10 @@ def write_chr_bands(org, nr_org_map):
         f.write('window.chrBands = ' + str(band_list))
 
 
-def main():
-    global unfound_dbs
-    
+def fetch_parties():
+
+    parties = []
+
     # Request data from all parties simultaneously
     num_threads = 3
     with ThreadPoolExecutor(max_workers=num_threads) as pool:
@@ -211,11 +210,18 @@ def main():
         for result in pool.map(pool_processing, parties):
             party = result[0]
             if party == 'genomaize':
-                zea_mays_centromeres = result[1]
+                maize_centromeres = result[1]
             else:
-                party_list.append(result)
+                parties.append(result)
 
-    print ('in fetch_cytobands_from_dbs, main after TPE')
+    return parties, maize_centromeres
+
+
+def main():
+    global unfound_dbs
+
+    party_list, maize_centromeres = fetch_parties()
+
     logger.info('')
     logger.info('UCSC databases not mapped to GenBank assembly IDs:')
     logger.info(', '.join(unfound_dbs))
@@ -226,7 +232,7 @@ def main():
     manifest = {}
 
     for org in nr_org_map:
-        write_chr_bands(org, nr_org_map)
+        write_chr_bands(org, nr_org_map, maize_centromeres)
 
     print('exiting main, fetch_cytobands_from_dbs')
     return manifest
