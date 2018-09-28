@@ -169,11 +169,7 @@ def get_nonredundant_organisms(party_list):
     return nr_org_map
 
 
-def write_chr_bands(org, nr_org_map, maize_centromeres):
-    asm_data = sorted(nr_org_map[org], reverse=True)[0]
-    genbank_accession, db, bands_by_chr = asm_data
-
-    manifest[org] = [genbank_accession, db]
+def refine_bands(org, bands_by_chr, maize_centromeres):
 
     if org == 'drosophila-melanogaster':
         bands_by_chr = patch_telomeres(bands_by_chr)
@@ -183,6 +179,15 @@ def write_chr_bands(org, nr_org_map, maize_centromeres):
         bands_by_chr = merge_centromeres(bands_by_chr, maize_centromeres)
     else:
         bands_by_chr = parse_centromeres(bands_by_chr)
+
+    return bands_by_chr
+
+
+def write_chr_bands(org, nr_org_map, maize_centromeres):
+    asm_data = sorted(nr_org_map[org], reverse=True)[0]
+    genbank_accession, db, bands_by_chr = asm_data
+
+    bands_by_chr = refine_bands(org, bands_by_chr, maize_centromeres)
 
     # Collapse chromosome-to-band dict, making it a list of strings
     band_list = []
@@ -196,6 +201,8 @@ def write_chr_bands(org, nr_org_map, maize_centromeres):
     # e.g. ../data/bands/native/anopheles-gambiae.js
     with open(output_dir + org + '.js', 'w') as f:
         f.write('window.chrBands = ' + str(band_list))
+
+    return [genbank_accession, db]
 
 
 def fetch_parties():
@@ -232,7 +239,8 @@ def main():
     manifest = {}
 
     for org in nr_org_map:
-        write_chr_bands(org, nr_org_map, maize_centromeres)
+        entry = write_chr_bands(org, nr_org_map, maize_centromeres)
+        manifest[org] = entry
 
     print('exiting main, fetch_cytobands_from_dbs')
     return manifest
