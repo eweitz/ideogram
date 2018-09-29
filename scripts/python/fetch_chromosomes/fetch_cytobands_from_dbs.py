@@ -58,6 +58,9 @@ from .ensembl import *
 from .genomaize import *
 from .centromeres import *
 
+times = {'ncbi': 0, 'ucsc': 0, 'ensembl': 0}
+unfound_dbs = []
+
 if os.path.exists(output_dir) is False:
     os.mkdir(output_dir)
 
@@ -89,12 +92,6 @@ if os.path.exists(cache_dir) is False:
             'No cache available.  ' +
             'Run with "--fresh_run=True --fill_cache=True" then try again.'
         )
-
-time_ncbi = 0
-time_ucsc = 0
-time_ensembl = 0
-
-times = {'ncbi': 0, 'ucsc': 0, 'ensembl': 0}
 
 
 def patch_telomeres(bands_by_chr):
@@ -142,23 +139,23 @@ def pool_processing(party):
 unfound_dbs = []
 maize_centromeres = {}
 
-def log_end_times():
+def log_end_times(times):
     logger.info('')
 
     # How long did each part take?
-    logger.info('time_ucsc:')
-    logger.info(time_ucsc)
-    logger.info('time_ncbi:')
-    logger.info(time_ncbi)
-    logger.info('time_ensembl:')
-    logger.info(time_ensembl)
+    logger.info('time ucsc:')
+    logger.info(times['ucsc'])
+    logger.info('time ncbi:')
+    logger.info(times['ncbi'])
+    logger.info('time ensembl:')
+    logger.info(times['ensembl'])
 
-def get_nonredundant_organisms(party_list):
+def get_nonredundant_organisms(asm_data_list):
     # Third parties (e.g. UCSC, Ensembl) can have data for the same organism.
     # Convert any such duplicate data into a non-redundant (NR) organism map.
     nr_org_map = {}
     seen_orgs = {}
-    for party, org_map, times in party_list:
+    for party, org_map, times in asm_data_list:
         logger.info('Iterating organisms from ' + party)
         for org in org_map:
             logger.info('\t' + org)
@@ -213,7 +210,7 @@ def fetch_parties():
     num_threads = 3
     with ThreadPoolExecutor(max_workers=num_threads) as pool:
         print ('in fetch_cytobands_from_dbs, main')
-        parties = ['ensembl', 'ucsc', 'genomaize']
+        party_list = ['ensembl', 'ucsc', 'genomaize']
         for result in pool.map(pool_processing, parties):
             party = result[0]
             if party == 'genomaize':
