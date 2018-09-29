@@ -1,4 +1,4 @@
-"""Fetch cytogenetic band data from third-party MySQL databases
+"""Fetch cytogenetic band data from remote MySQL databases
 """
 
 # TODO:
@@ -10,7 +10,6 @@ from concurrent.futures import ThreadPoolExecutor
 import argparse
 
 from . import settings
-
 
 parser = argparse.ArgumentParser(
     description=__doc__,
@@ -27,7 +26,6 @@ parser.add_argument('--output_dir',
 #     default='False')
 args = parser.parse_args()
 
-
 def t_or_f(arg):
     ua = str(arg).upper()
     if 'TRUE'.startswith(ua):
@@ -36,7 +34,6 @@ def t_or_f(arg):
         return False
     else:
         pass  #error condition maybe?
-
 
 # eweitz, 2017-12-01:
 # The arguments '--fresh_run=False and --fresh_run=False' do not yet work.
@@ -60,6 +57,7 @@ from .centromeres import *
 
 times = {'ncbi': 0, 'ucsc': 0, 'ensembl': 0}
 unfound_dbs = []
+maize_centromeres = {}
 
 if os.path.exists(output_dir) is False:
     os.mkdir(output_dir)
@@ -93,7 +91,6 @@ if os.path.exists(cache_dir) is False:
             'Run with "--fresh_run=True --fill_cache=True" then try again.'
         )
 
-
 def patch_telomeres(bands_by_chr):
     """Account for special case with Drosophila melanogaster
     """
@@ -115,17 +112,16 @@ def patch_telomeres(bands_by_chr):
 
     return bands_by_chr
 
-
 def pool_processing(party):
     """Called once per "party" (i.e. UCSC, Ensembl, or GenoMaize)
     to fetch cytoband data from each.
     """
-    global times
     global unfound_dbs
+    global times
     print('in fetch_cytobands_from_dbs, pool_processing')
     logger.info('Entering pool processing, party: ' + party)
     if party == 'ensembl':
-        org_map = fetch_from_ensembl_genomes(times, logger)
+        org_map, times = fetch_from_ensembl_genomes(times, logger)
     elif party == 'ucsc':
         org_map, times, unfound_dbs_subset =\
             fetch_from_ucsc(logger, times, unfound_dbs)
@@ -136,13 +132,11 @@ def pool_processing(party):
     logger.info('exiting pool processing')
     return [party, org_map, times]
 
-unfound_dbs = []
-maize_centromeres = {}
-
 def log_end_times(times):
+    """ How long did each part take?
+    """
     logger.info('')
 
-    # How long did each part take?
     logger.info('time ucsc:')
     logger.info(times['ucsc'])
     logger.info('time ncbi:')
@@ -151,12 +145,15 @@ def log_end_times(times):
     logger.info(times['ensembl'])
 
 def get_nonredundant_organisms(asm_data_list):
-    # Third parties (e.g. UCSC, Ensembl) can have data for the same organism.
-    # Convert any such duplicate data into a non-redundant (NR) organism map.
+    """ Third parties (e.g. UCSC) can have data for the same organism.
+    Convert any such duplicate data into a non-redundant (NR) organism map.
+    """
+    global times
     nr_org_map = {}
     seen_orgs = {}
-    for party, org_map, times in asm_data_list:
+    for party, org_map, party_times in asm_data_list:
         logger.info('Iterating organisms from ' + party)
+        times[party] = party_times
         for org in org_map:
             logger.info('\t' + org)
             if org in seen_orgs:
@@ -165,22 +162,24 @@ def get_nonredundant_organisms(asm_data_list):
             nr_org_map[org] = org_map[org]
     return nr_org_map
 
-
 def refine_bands(org, bands_by_chr, maize_centromeres):
-
+    """ Adjust telomeres and centromeres as needed in each organism
+    """
     if org == 'drosophila-melanogaster':
         bands_by_chr = patch_telomeres(bands_by_chr)
 
     # Assign cytogenetic arms for each band
     if org == 'zea-mays':
-        bands_by_chr = merge_centromeres(bands_by_chr, maize_centromeres)
+        bands_by_chr =\
+            merge_centromeres(bands_by_chr, maize_centromeres, logger)
     else:
-        bands_by_chr = parse_centromeres(bands_by_chr)
+        bands_by_chr = parse_centromeres(bands_by_chr, logger)
 
     return bands_by_chr
 
-
 def write_chr_bands(org, nr_org_map, maize_centromeres):
+    """ Write chromosome cytoband data to a file on disk
+    """
     asm_data = sorted(nr_org_map[org], reverse=True)[0]
     genbank_accession, db, bands_by_chr = asm_data
 
@@ -201,17 +200,16 @@ def write_chr_bands(org, nr_org_map, maize_centromeres):
 
     return [genbank_accession, db]
 
-
 def fetch_parties():
-
+    """ Request cytoband data from all relevant institutes, simultaneously
+    """
     parties = []
 
-    # Request data from all parties simultaneously
     num_threads = 3
     with ThreadPoolExecutor(max_workers=num_threads) as pool:
         print ('in fetch_cytobands_from_dbs, main')
         party_list = ['ensembl', 'ucsc', 'genomaize']
-        for result in pool.map(pool_processing, parties):
+        for result in pool.map(pool_processing, party_list):
             party = result[0]
             if party == 'genomaize':
                 maize_centromeres = result[1]
@@ -219,7 +217,6 @@ def fetch_parties():
                 parties.append(result)
 
     return parties, maize_centromeres
-
 
 def main():
     global unfound_dbs
@@ -241,7 +238,6 @@ def main():
 
     print('exiting main, fetch_cytobands_from_dbs')
     return manifest
-
 
 if __name__ == '__main__':
     main()

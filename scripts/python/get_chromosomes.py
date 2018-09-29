@@ -380,7 +380,7 @@ top_uid_list = data['esearchresult']['idlist']
 
 logger.info('Assembly UIDs returned in search results: ' + str(len(top_uid_list)))
 
-#non_ncbi_manifest = fetch_cytobands_from_dbs.main()
+non_ncbi_manifest = fetch_cytobands_from_dbs.main()
 
 print('after non_ncbi_manifest, get_chromosomes')
 

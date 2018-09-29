@@ -1,5 +1,5 @@
 
-def merge_centromeres(bands_by_chr, centromeres):
+def merge_centromeres(bands_by_chr, centromeres, logger_obj):
     """Adds p and q arms to cytobands; thus adds centromere to each chromosome.
 
     This is a special case for Zea mays (maize, i.e. corn).
@@ -8,6 +8,9 @@ def merge_centromeres(bands_by_chr, centromeres):
     This function merges those two datasets to provide input directly
     useable to Ideogram.js.
     """
+    global logger
+    logger = logger_obj
+
     logger.info('Entering merge_centromeres')
     new_bands = {}
 
@@ -69,7 +72,7 @@ def merge_centromeres(bands_by_chr, centromeres):
     return new_bands
 
 
-def parse_centromeres(bands_by_chr):
+def parse_centromeres(bands_by_chr, logger_obj):
     """Adds p and q arms to cytobands, by parsing embedded centromere bands.
 
     This is a special case for assigning cytogenetic arms to certain organisms
@@ -80,6 +83,10 @@ def parse_centromeres(bands_by_chr):
     Bands are assigned an arm based on their position relative to the embedded
     centromere.
     """
+    global logger
+
+    logger = logger_obj
+
     logger.info('Entering parse_centromeres')
 
     # If centromeres aren't embedded in the input banding data,
