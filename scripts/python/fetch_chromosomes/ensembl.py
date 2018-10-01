@@ -35,6 +35,7 @@ def query_ensembl_karyotype_db(db_tuples_list):
     :param db_tuples_list: List of (db, name_slug) tuples
     :return: List of [name_slug, asm_data] lists
     """
+    global logger
     connection = db_connect(
         host='mysql-eg-publicsql.ebi.ac.uk',
         user='anonymous',
@@ -82,28 +83,8 @@ def query_ensembl_karyotype_db(db_tuples_list):
 
     return pq_result
 
-
-def fetch_from_ensembl_genomes(times, logger_obj):
-    """Queries MySQL servers hosted by Ensembl Genomes
-
-    To connect via Terminal (e.g. to debug), run:
-    mysql --user=anonymous --host=mysql-eg-publicsql.ebi.ac.uk --port=4157 -A
-    """
-    global logger
-    logger = logger_obj
-    t0 = time_ms()
-    logger.info('Entering fetch_from_ensembl_genomes')
-    connection = db_connect(
-        host='mysql-eg-publicsql.ebi.ac.uk',
-        user='anonymous',
-        port=4157
-    )
-    logger.info('Connected to Ensembl Genomes database')
-
-    cursor = connection.cursor()
-
+def query_db_tuples(cursor):
     db_map = {}
-    org_map = {}
 
     # Get a list of databases we want to query for karyotype data
     cursor.execute('show databases like "%core_%"')
@@ -115,7 +96,10 @@ def fetch_from_ensembl_genomes(times, logger_obj):
         db_map[db] = name_slug
     db_tuples = [item for item in db_map.items()]
 
-    cursor.close()
+    return db_tuples
+
+def pool_fetch_org_map(db_tuples):
+    org_map = {}
 
     # Take the list of DBs we want to query for karyotype data,
     # split it into 100 smaller lists,
@@ -131,6 +115,35 @@ def fetch_from_ensembl_genomes(times, logger_obj):
                     org_map[name_slug].append(asm_data)
                 else:
                     org_map[name_slug] = [asm_data]
+
+    return org_map
+
+def fetch_from_ensembl_genomes(times_obj, logger_obj):
+    """Queries MySQL servers hosted by Ensembl Genomes
+
+    To connect via Terminal (e.g. to debug), run:
+    mysql --user=anonymous --host=mysql-eg-publicsql.ebi.ac.uk --port=4157 -A
+    """
+    global logger
+    logger = logger_obj
+    global times
+    times = times_obj
+    t0 = time_ms()
+    logger.info('Entering fetch_from_ensembl_genomes')
+    connection = db_connect(
+        host='mysql-eg-publicsql.ebi.ac.uk',
+        user='anonymous',
+        port=4157
+    )
+    logger.info('Connected to Ensembl Genomes database')
+
+    cursor = connection.cursor()
+
+    db_tuples = query_db_tuples(cursor)
+
+    cursor.close()
+
+    org_map = pool_fetch_org_map(db_tuples)
 
     logger.info('before exiting with clause')
 
