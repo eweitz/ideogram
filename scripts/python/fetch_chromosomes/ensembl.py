@@ -37,6 +37,28 @@ def get_ensembl_chr_ids(cursor):
 
     return chr_ids
 
+def get_ensembl_asm_data(cursor, rows, db):
+    chr_ids = get_ensembl_chr_ids(cursor)
+
+    bands_by_chr = {}
+
+    for row in rows:
+        pid, seq_region_id, start, stop, band_name, stain = row
+        chr = chr_ids[seq_region_id]
+        bands_by_chr = update_bands_by_chr(
+            bands_by_chr, chr, band_name, start, stop, stain
+        )
+
+    cursor.execute('''
+        SELECT meta_value FROM meta
+        where meta_key = "assembly.accession"
+    ''')
+    genbank_accession = cursor.fetchone()[0]
+
+    asm_data = [genbank_accession, db, bands_by_chr]
+
+    return asm_data
+
 def query_ensembl_karyotype_db(db_tuples_list):
     """Query for karyotype data in Ensembl Genomes.
     This function is launched many times simultaneously in a thread pool.
@@ -45,15 +67,12 @@ def query_ensembl_karyotype_db(db_tuples_list):
     :return: List of [name_slug, asm_data] lists
     """
     cursor = get_ensembl_cursor()
-
-    pq_result = []
+    pq_results = []
 
     for db_tuple in db_tuples_list:
         db, name_slug = db_tuple
-
         # Example for debugging: "USE zea_mays_core_35_88_7;"
         cursor.execute('USE ' + db)
-
         # Schema: https://www.ensembl.org/info/docs/api/core/core_schema.html#karyotype
         # | karyotype_id | seq_region_id | seq_region_start | seq_region_end | band | stain |
         cursor.execute('SELECT * FROM karyotype')
@@ -61,34 +80,16 @@ def query_ensembl_karyotype_db(db_tuples_list):
         # Omit assmblies that don't have cytoband data
         if len(rows) == 0:
             continue
+        asm_data = get_ensembl_asm_data(cursor, rows, db)
+        pq_results.append([name_slug, asm_data])
 
-        chr_ids = get_ensembl_chr_ids(cursor)
-
-        bands_by_chr = {}
-
-        for row in rows:
-            pid, seq_region_id, start, stop, band_name, stain = row
-            chr = chr_ids[seq_region_id]
-            bands_by_chr = update_bands_by_chr(
-                bands_by_chr, chr, band_name, start, stop, stain
-            )
-
-        cursor.execute('''
-          SELECT meta_value FROM meta
-          where meta_key = "assembly.accession"
-        ''')
-        genbank_accession = cursor.fetchone()[0]
-
-        asm_data = [genbank_accession, db, bands_by_chr]
-        pq_result.append([name_slug, asm_data])
-        logger.info('Got Ensembl Genomes data: ' + str(asm_data))
-
-    return pq_result
+    return pq_results
 
 def query_db_tuples(cursor):
+    """Get a list of databases we want to query for karyotype data
+    """
     db_map = {}
 
-    # Get a list of databases we want to query for karyotype data
     cursor.execute('show databases like "%core_%"')
     for row in cursor.fetchall():
         db = row[0]
