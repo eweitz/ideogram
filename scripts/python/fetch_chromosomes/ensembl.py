@@ -3,6 +3,16 @@ from functools import partial
 
 from .utils import *
 
+def get_ensembl_cursor():
+    connection = db_connect(
+        host='mysql-eg-publicsql.ebi.ac.uk',
+        user='anonymous',
+        port=4157
+    )
+    logger.info('Connected to Ensembl Genomes database')
+    cursor = connection.cursor()
+    return cursor
+
 def get_ensembl_chr_ids(cursor):
     """Get a map of Ensembl seq_region_ids to familiar chromosome names.
     Helper function for query_ensembl_karyotype_db.
@@ -27,7 +37,6 @@ def get_ensembl_chr_ids(cursor):
 
     return chr_ids
 
-
 def query_ensembl_karyotype_db(db_tuples_list):
     """Query for karyotype data in Ensembl Genomes.
     This function is launched many times simultaneously in a thread pool.
@@ -35,14 +44,7 @@ def query_ensembl_karyotype_db(db_tuples_list):
     :param db_tuples_list: List of (db, name_slug) tuples
     :return: List of [name_slug, asm_data] lists
     """
-    global logger
-    connection = db_connect(
-        host='mysql-eg-publicsql.ebi.ac.uk',
-        user='anonymous',
-        port=4157
-    )
-    cursor = connection.cursor()
-    logger.info('Connected to Ensembl Genomes database via pool')
+    cursor = get_ensembl_cursor()
 
     pq_result = []
 
@@ -124,20 +126,13 @@ def fetch_from_ensembl_genomes(times_obj, logger_obj):
     To connect via Terminal (e.g. to debug), run:
     mysql --user=anonymous --host=mysql-eg-publicsql.ebi.ac.uk --port=4157 -A
     """
-    global logger
+    global logger, times
     logger = logger_obj
-    global times
     times = times_obj
     t0 = time_ms()
     logger.info('Entering fetch_from_ensembl_genomes')
-    connection = db_connect(
-        host='mysql-eg-publicsql.ebi.ac.uk',
-        user='anonymous',
-        port=4157
-    )
-    logger.info('Connected to Ensembl Genomes database')
 
-    cursor = connection.cursor()
+    cursor = get_ensembl_cursor()
 
     db_tuples = query_db_tuples(cursor)
 
@@ -147,5 +142,5 @@ def fetch_from_ensembl_genomes(times_obj, logger_obj):
 
     logger.info('before exiting with clause')
 
-    times['ensembl'] += time_ms()
+    times['ensembl'] += time_ms() - t0
     return [org_map, times]
