@@ -36,27 +36,30 @@ def get_pcen_and_qcen(centromere, chr):
 def get_centromere_parts(centromere, chr, new_bands, bands, band, i, j, pcen_index):
     band_start, band_stop = band[1:3]
     cen_start, cen_stop = centromere
+    pcen = None
+    qcen = None
 
     if int(band_stop) < int(cen_start):
         arm = 'p'
     else:
         arm = 'q'
-
         if int(band_start) < int(cen_stop):
             # Omit any q-arm bands that start before q-arm pericentromeric band
             if chr == '1':
                 logger.info('Omit band:')
                 logger.info(band)
             j += 1
-            return None
+            return [j]
 
         if pcen_index is None:
             pcen_index = i - j
-            bands, new_bands = update_bands(centromere, bands,
-                new_bands, chr, i, j)
+            bands, new_bands = update_bands(centromere, bands, new_bands, chr,
+                i, j)
             pcen, qcen = get_pcen_and_qcen(centromere, chr)
 
-    return [arm, pcen, qcen, pcen_index, new_bands, bands, band, j, pcen_index]
+    print('[arm, pcen, qcen, pcen_index, j, pcen_index]')
+    print([arm, pcen, qcen, pcen_index, j, pcen_index])
+    return [arm, pcen, qcen, new_bands, bands, band, j, pcen_index]
 
 
 def merge_centromeres(bands_by_chr, centromeres, logger_obj):
@@ -84,9 +87,12 @@ def merge_centromeres(bands_by_chr, centromeres, logger_obj):
         for i, band in enumerate(bands):
             new_band = band
             # This is gross.  Can this function be small *and* readable?
-            [arm, pcen, qcen, pcen_index, new_bands, bands, band, j,
-                pcen_index] = get_centromere_parts(centromere, chr, 
-                    new_bands, bands, band, i, j, pcen_index)
+            parts = get_centromere_parts(centromere, chr, new_bands, bands, band, i, j, pcen_index)
+            if len(parts) > 1:
+                (arm, pcen, qcen, new_bands, bands, band, j, pcen_index) = parts
+            else:
+                j = parts
+                continue
             new_band.insert(0, arm)
             new_bands[chr].append(new_band)
         if pcen_index is not None:

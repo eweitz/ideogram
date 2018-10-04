@@ -191,6 +191,8 @@ def write_chr_bands(org, nr_org_map, maize_centromeres):
     for chr in chrs:
         bands = bands_by_chr[chr]
         for band in bands:
+            print('band')
+            print(band)
             band_list.append(chr + ' ' + ' '.join(band))
 
     # Write actual cytoband data to file,
