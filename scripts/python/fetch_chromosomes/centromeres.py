@@ -48,8 +48,12 @@ def get_centromere_parts(centromere, chr, new_bands, bands, band, i, j, pcen_ind
             if chr == '1':
                 logger.info('Omit band:')
                 logger.info(band)
+            print('j before')
+            print(j)
             j += 1
-            return [j]
+            print('j after')
+            print(j)
+            return j
 
         if pcen_index is None:
             pcen_index = i - j
@@ -88,7 +92,7 @@ def merge_centromeres(bands_by_chr, centromeres, logger_obj):
             new_band = band
             # This is gross.  Can this function be small *and* readable?
             parts = get_centromere_parts(centromere, chr, new_bands, bands, band, i, j, pcen_index)
-            if len(parts) > 1:
+            if isinstance(parts, int) is False:
                 (arm, pcen, qcen, new_bands, bands, band, j, pcen_index) = parts
             else:
                 j = parts
