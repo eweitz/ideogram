@@ -53,7 +53,7 @@ def get_centromere_parts(centromere, chr, new_bands, bands, band, i, j, pcen_ind
             j += 1
             print('j after')
             print(j)
-            return j
+            return [j, arm]
 
         if pcen_index is None:
             pcen_index = i - j
@@ -61,9 +61,9 @@ def get_centromere_parts(centromere, chr, new_bands, bands, band, i, j, pcen_ind
                 i, j)
             pcen, qcen = get_pcen_and_qcen(centromere, chr)
 
-    print('[arm, pcen, qcen, pcen_index, j, pcen_index]')
-    print([arm, pcen, qcen, pcen_index, j, pcen_index])
-    return [arm, pcen, qcen, new_bands, bands, band, j, pcen_index]
+    print('[arm, pcen, qcen, j, pcen_index]')
+    print([arm, pcen, qcen, j, pcen_index])
+    return [arm, pcen, qcen, new_bands, bands, j, pcen_index]
 
 
 def merge_centromeres(bands_by_chr, centromeres, logger_obj):
@@ -92,10 +92,10 @@ def merge_centromeres(bands_by_chr, centromeres, logger_obj):
             new_band = band
             # This is gross.  Can this function be small *and* readable?
             parts = get_centromere_parts(centromere, chr, new_bands, bands, band, i, j, pcen_index)
-            if isinstance(parts, int) is False:
-                (arm, pcen, qcen, new_bands, bands, band, j, pcen_index) = parts
+            if len(parts) > 2:
+                (arm, pcen, qcen, new_bands, bands, j, pcen_index) = parts
             else:
-                j = parts
+                (j, arm) = parts
                 continue
             new_band.insert(0, arm)
             new_bands[chr].append(new_band)
