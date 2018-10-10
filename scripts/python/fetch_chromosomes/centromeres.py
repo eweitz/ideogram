@@ -1,4 +1,6 @@
 def update_bands(centromere, bands, new_bands, chr, i, j):
+    """Helper function for Genomaize chromosome parsing
+    """
     cen_start, cen_stop = centromere
 
     # Extend nearest p-arm band's stop coordinate to the
@@ -17,6 +19,8 @@ def update_bands(centromere, bands, new_bands, chr, i, j):
 
 
 def get_pcen_and_qcen(centromere, chr):
+    """Helper function for Genomaize chromosome parsing
+    """
     cen_start, cen_stop = centromere
 
     # Coordinates of the centromere itself
@@ -34,6 +38,8 @@ def get_pcen_and_qcen(centromere, chr):
 
 
 def get_centromere_parts(centromere, chr, new_bands, bands, band, i, j, pcen_index):
+    """Helper function for Genomaize chromosome parsing
+    """
     band_start, band_stop = band[1:3]
     cen_start, cen_stop = centromere
     pcen = None
