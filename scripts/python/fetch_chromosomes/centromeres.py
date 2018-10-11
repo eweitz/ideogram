@@ -1,5 +1,5 @@
 def update_bands(centromere, bands, new_bands, chr, i, j):
-    """Helper function for Genomaize chromosome parsing
+    """Helper function for Ensembl-Genomaize centromere merging
     """
     cen_start, cen_stop = centromere
 
@@ -19,7 +19,7 @@ def update_bands(centromere, bands, new_bands, chr, i, j):
 
 
 def get_pcen_and_qcen(centromere, chr):
-    """Helper function for Genomaize chromosome parsing
+    """Helper function for Ensembl-Genomaize centromere merging
     """
     cen_start, cen_stop = centromere
 
@@ -38,7 +38,7 @@ def get_pcen_and_qcen(centromere, chr):
 
 
 def get_centromere_parts(centromere, chr, new_bands, bands, band, i, j, pcen_index):
-    """Helper function for Genomaize chromosome parsing
+    """Helper function for Ensembl-Genomaize centromere merging
     """
     band_start, band_stop = band[1:3]
     cen_start, cen_stop = centromere
@@ -100,11 +100,10 @@ def merge_centromeres(bands_by_chr, centromeres, logger_obj):
             parts = get_centromere_parts(centromere, chr, new_bands, bands, band, i, j, pcen_index)
             if len(parts) > 2:
                 (arm, pcen, qcen, new_bands, bands, j, pcen_index) = parts
+                new_band.insert(0, arm)
+                new_bands[chr].append(new_band)
             else:
                 (j, arm) = parts
-                continue
-            new_band.insert(0, arm)
-            new_bands[chr].append(new_band)
         if pcen_index is not None:
             new_bands[chr].insert(pcen_index, qcen)
             new_bands[chr].insert(pcen_index, pcen)
