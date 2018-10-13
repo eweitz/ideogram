@@ -39,6 +39,7 @@ var ideogram = new Ideogram({
 * [dataDir](#datadir)
 * [histogramScaling](#histogramscaling)
 * [heatmaps](#heatmaps)
+* [filterable](#filterable)
 * [onBrushMove](#onbrushmove)
 * [onDidRotate](#ondidrotate)
 * [onDrawAnnots](#ondrawannots)
@@ -117,13 +118,15 @@ String.  Optional.  Default: "body".  CSS selector of the HTML element that will
 ## dataDir
 String.  Optional.  Default: "../data/bands/native/".  Absolute or relative URL of the directory containing data needed to draw banded chromosomes.  Example in [GeneExpressionAging/ideogram](https://ncbi-hackathons.github.io/GeneExpressionAging/ideogram).
 
-
 ## histogramScaling
 String.  Optional.  Default: "absolute".  One of "absolute" or "relative".  The technique to use in scaling the height of histogram bars.  The "absolute" value sets bar height relative to tallest bar in _all_ chromosomes, while "relative" sets bar height relative to tallest bar in _each_ chromosome.
 
 ## heatmaps
 Array.  Optional.  Array of heatmap objects.  Each heatmap object has a `key` string and a `thresholds` array.  The `key` property specifies the annotations key value to depict in the heatmap.  The `thresholds` property specifies a list of two-element "threshold" lists, where the first element is the threshold value and the second is the threshold color.  The threshold values are a list of ranges to use in coloring
 the heatmap.  Threshold values are specified in ascending order.  Example in [Annotations, heatmap](https://eweitz.github.io/ideogram/annotations-heatmap).
+
+## filterable
+Boolean.  Optional.  Whether annotations should be filterable.  Example in [Annotations, histogram](https://eweitz.github.io/ideogram/annotations-histogram).
 
 ## onBrushMove
 Function.  Optional.  Callback function to invoke when brush moves.  Example in [Brush](https://eweitz.github.io/ideogram/brush).
