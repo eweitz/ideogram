@@ -40,6 +40,7 @@ var ideogram = new Ideogram({
 * [histogramScaling](#histogramscaling)
 * [heatmaps](#heatmaps)
 * [filterable](#filterable)
+* [fullChromosomeLabels](#fullChromosomeLabels)
 * [onBrushMove](#onbrushmove)
 * [onDidRotate](#ondidrotate)
 * [onDrawAnnots](#ondrawannots)
@@ -127,6 +128,9 @@ the heatmap.  Threshold values are specified in ascending order.  Example in [An
 
 ## filterable
 Boolean.  Optional.  Whether annotations should be filterable.  Example in [Annotations, histogram](https://eweitz.github.io/ideogram/annotations-histogram).
+
+## fullChromosomeLabels
+Boolean.  Optional.  Whether to include abbreviation species name in chromosome label.
 
 ## onBrushMove
 Function.  Optional.  Callback function to invoke when brush moves.  Example in [Brush](https://eweitz.github.io/ideogram/brush).
