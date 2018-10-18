@@ -49,6 +49,7 @@ var ideogram = new Ideogram({
 * [onWillShowAnnotTooltip](#onwillshowannottooltip)
 * [organism](#organism)
 * [orientation](#orientation)
+* [perspective](#perspective)
 * [ploidy](#ploidy)
 * [resolution](#resolution)
 * [rotatable](#rotatable)
@@ -156,8 +157,11 @@ String or number or array.  Required.  Organism(s) to show chromosomes for.  Sup
 ## orientation
 String.  Optional.  Default: horizontal.  The orientation of chromosomes on the page.  Example in [Mouse]( https://eweitz.github.io/ideogram/mouse).
 
+## perspective
+String.  Optional.  Use `perspective: 'comparative'` to enable annotations between two chromosomes, either within the same organism or different organisms.  Examples in [Homology, basic](https://eweitz.github.io/ideogram/homology-basic) and [Homology, interspecies](https://eweitz.github.io/ideogram/homology-interspecies).
+
 ## ploidy
-Number.  Optional.  Default: 1.  The ploidy -- i.e., number of chromosomes -- to depict for each chromosome set.  Useful for biologically accurate depicting of genomes that are diploid, triploid, etc.  Example in [Ploidy, basic](https://eweitz.github.io/ideogram/ploidy-basic).
+Number.  Optional.  Default: 1.  The ploidy, i.e. number of chromosomes to depict for each chromosome set.  Useful for biologically accurate depicting of genomes that are diploid, triploid, etc.  Example in [Ploidy, basic](https://eweitz.github.io/ideogram/ploidy-basic).
 
 ## resolution
 Number.  Optional.  Default: highest resolution available for specified genome assembly.  The resolution of cytogenetic bands to show for each chromosome.  The quantity refers to approximate value in bands per haploid set (bphs).  One of 450, 550, or 850.  Example in [Layout, small](https://eweitz.github.io/ideogram/layout-small).
