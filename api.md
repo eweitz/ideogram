@@ -23,6 +23,7 @@ var ideogram = new Ideogram({
 ```
 
 # Options
+* [ancestors](#ancestors)
 * [annotations](#annotations)
 * [annotationHeight](#annotationheight)
 * [annotationsColor](#annotationscolor)
@@ -59,6 +60,9 @@ var ideogram = new Ideogram({
 * [showAnnotTooltip](#showannottooltip)
 * [showFullyBanded](#showfullybanded)
 * [showNonNuclearChromosomes](#shownonnuclearchromosomes)
+
+## ancestors
+Object.  Optional.  A map associating ancestor labels to colors.  Used to color chromosomes from different ancestors in polyploid genomes.  Example in [Ploidy, recombination](https://eweitz.github.io/ideogram/ploidy_recombination).
 
 ## annotations
 Array.  Optional.  A list of annotation objects.  Each annotation object has at least a chromosome name (chr), start coordinate (start), and stop coordinate (stop).  Annotation objects can also have a name, color, shape, and track index.  Example in [Annotations, basic](https://eweitz.github.io/ideogram/annotations_basic).
