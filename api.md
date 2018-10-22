@@ -52,6 +52,7 @@ var ideogram = new Ideogram({
 * [orientation](#orientation)
 * [perspective](#perspective)
 * [ploidy](#ploidy)
+* [ploidyDesc](#ploidydesc)
 * [resolution](#resolution)
 * [rotatable](#rotatable)
 * [rows](#rows)
@@ -166,6 +167,9 @@ String.  Optional.  Use `perspective: 'comparative'` to enable annotations betwe
 
 ## ploidy
 Number.  Optional.  Default: 1.  The ploidy, i.e. number of chromosomes to depict for each chromosome set.  Useful for biologically accurate depicting of genomes that are diploid, triploid, etc.  Example in [Ploidy, basic](https://eweitz.github.io/ideogram/ploidy-basic).
+
+## ploidyDesc
+Array.  Optional.  Description of ploidy in each chromosome set in terms of ancestry composition.  Example in [Ploidy, recombination](https://eweitz.github.io/ideogram/ploidy-recombination).
 
 ## resolution
 Number.  Optional.  Default: highest resolution available for specified genome assembly.  The resolution of cytogenetic bands to show for each chromosome.  The quantity refers to approximate value in bands per haploid set (bphs).  One of 450, 550, or 850.  Example in [Layout, small](https://eweitz.github.io/ideogram/layout-small).
