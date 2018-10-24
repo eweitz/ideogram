@@ -29,6 +29,7 @@ var ideogram = new Ideogram({
 * [annotationsColor](#annotationscolor)
 * [annotationsLayout](#annotationslayout)
 * [annotationsPath](#annotationspath)
+* [annotationTracks](#annotationtracks)
 * [assembly](#assembly)
 * [barWidth](#barwidth)
 * [brush](#brush)
@@ -97,6 +98,9 @@ Lay out annotations directly over chromosomes.  This is the most space-efficient
 String.  Optional.  An absolute or relative URL to a JSON file containing annotation objects.  Example in [Annotations, overlaid](https://eweitz.github.io/ideogram/annotations-overlaid).
 
 See also [annotations](#annotations).
+
+## annotationTracks
+Array.  Optional.  A list of objects with metadata for each track, e.g. DOM `id`, display name, color, shape.  Example in [Annotations, tracks](https://eweitz.github.io/ideogram/annotations-tracks).
 
 ## assembly
 String.  Optional.  Default: latest RefSeq assembly for specified organism.  The genome assembly to display.  Takes assembly name (e.g. "GRCh37"), RefSeq accession (e.g. "GCF_000306695.2"), or GenBank accession (e.g. "GCA_000005005.5").  Example in [Annotations, histogram](https://eweitz.github.io/ideogram/annotations-histogram).
