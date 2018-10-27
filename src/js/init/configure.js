@@ -31,7 +31,7 @@ function configureHeight(ideo) {
       chrHeight = rect.width;
     }
 
-    if (container === 'body') chrHeight = 400;
+    if (container === 'body' || chrHeight === 0) chrHeight = 400;
     ideo.config.chrHeight = chrHeight;
   }
 }
