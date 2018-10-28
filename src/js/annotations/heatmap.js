@@ -61,10 +61,6 @@ function drawHeatmaps(annotContainers) {
 
   d3.selectAll(ideo.config.container + ' canvas').remove();
 
-  d3.select('#_ideogramOuterWrap')
-    .style('position', 'relative')
-    .style('overflow-x', 'scroll')
-
   // Each "annotationContainer" represents annotations for a chromosome
   for (i = 0; i < annotContainers.length; i++) {
 

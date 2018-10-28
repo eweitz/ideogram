@@ -68,6 +68,8 @@ function writeContainerDom(taxid, ideo) {
   d3.select(ideo.config.container)
     .append('div')
     .attr('id', '_ideogramOuterWrap')
+      .style('position', 'relative')
+      .style('overflow-x', 'scroll')
     .append('div')
     .attr('id', '_ideogramInnerWrap')
     .append('svg')
