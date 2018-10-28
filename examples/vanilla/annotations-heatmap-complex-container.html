@@ -76,14 +76,15 @@
 <div class="tab-panel">
 <ul class="nav">
     <li class="active"><a href="#summary">Summary</a></li>
-    <li><a href="#ideogram">Ideogram</a></li>
+    <li><a href="#ideogram-heatmap">Ideogram heatmap</a></li>
+    <li><a href="#ideogram-shapes">Ideogram shapes</a></li>
 </ul>
     <div class="tab-content">
         <div id="summary" class="active">
             Click the 'Ideogram' tab above to see chromosomes.  This demonstrates support for ideogram layout
             in containers that are initially hidden.
         </div>
-        <div id="ideogram">
+        <div id="ideogram-heatmap">
             <!-- Ideogram goes here. -->
 
             <div class="note">
@@ -91,6 +92,13 @@
                 via <a href="https://github.com/NCBI-Hackathons/rnaseqview#rnaseqview">rnaseqview</a> pipeline.
             </div>
         </div>
+        <div id="ideogram-shapes">
+          <!-- Ideogram goes here. -->
+
+          <div class="note">
+              These are simulated annotations.
+          </div>
+      </div>
     </div>
 </div>
 <script type="text/javascript">
@@ -101,10 +109,9 @@
   ];
 
   var config = {
-    container: '#ideogram',
+    container: '#ideogram-heatmap',
     organism: 'human',
     assembly: 'GRCh37',
-    chrHeight: 400,
     annotationsPath: '../../data/annotations/SRR562646.json',
     annotationTracks: annotationTracks,
     annotationsLayout: 'heatmap',
@@ -121,6 +128,25 @@
   };
 
   var ideogram = new Ideogram(config);
+
+
+  var annotationTracks = [
+    {id: 'pathogenicTrack', displayName: 'Pathogenic', color: '#F00'},
+    {id: 'uncertainSignificanceTrack', displayName: 'Uncertain significance', color: '#CCC'},
+    {id: 'benignTrack',  displayName: 'Benign', color: '#8D4'}
+  ];
+
+  var config2 = {
+    container: '#ideogram-shapes',
+    organism: 'human',
+    orientation: 'vertical',
+    chrWidth: 8,
+    annotationsPath: '../../data/annotations/1000_virtual_snvs.json',
+    annotationTracks: annotationTracks,
+    annotationHeight: 4
+  };
+
+  ideogram = new Ideogram(config2);
 </script>
 
 <script>
@@ -142,7 +168,6 @@
         targetLink.parentElement.classList += 'active';
         targetId = targetLink.href.split('#')[1];
         document.getElementById(targetId).classList += 'active';
-
     });
   });
 </script>
