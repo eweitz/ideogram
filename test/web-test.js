@@ -489,6 +489,9 @@ describe('Ideogram', function() {
 
       annot = document.getElementsByClassName('annot')[3];
       annotBox = annot.getBoundingClientRect();
+      
+      console.log('Math.abs(annotBox.x - 75)')
+      console.log(Math.abs(annotBox.x - 75))
 
       assert.isBelow(Math.abs(annotBox.x - 75), 2);
       assert.isBelow(Math.abs(annotBox.y - 510), 2);

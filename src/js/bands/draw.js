@@ -129,12 +129,13 @@ function getStainAndColors(i, colors) {
   return [stain, color1, color2, color3];
 }
 
-function getGradients(colors) {
+function getGradients(colors, ideo) {
   var i, stain, color1, color2, color3,
     gradients = '';
 
   for (i = 0; i < colors.length; i++) {
     [stain, color1, color2, color3] = getStainAndColors(i, colors);
+    stain = ideo.selector + stain;
     gradients +=
       '<linearGradient id="' + stain + '" x1="0%" y1="0%" x2="0%" y2="100%">';
     if (stain === "gneg") {
@@ -158,16 +159,18 @@ function getGradients(colors) {
 /**
  * Returns SVG gradients that give chromosomes a polished look
  */
-function getBandColorGradients() {
+function getBandColorGradients(ideo) {
   var css,
     gradients = '';
 
-  gradients = getGradients(staticColors);
+  gradients = getGradients(staticColors, ideo);
 
-  css = staticCss;
+  console.log(ideo.selector)
+  css = staticCss.map(d => ' ' + ideo.selector + d);
+  css = '<style>' + css + '</style>';
 
   gradients += staticGradients;
-  gradients = "<defs>" + gradients + "</defs>";
+  gradients = '<defs>' + gradients + '</defs>';
   gradients = css + gradients;
 
   return gradients;

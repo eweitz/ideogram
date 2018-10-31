@@ -79,7 +79,7 @@ function writeContainerDom(taxid, ideo) {
     .attr('class', getContainerSvgClass(ideo))
     .attr('width', ideo._layout.getWidth(taxid))
     .attr('height', ideo._layout.getHeight(taxid))
-    .html(ideo.getBandColorGradients());
+    .html(ideo.getBandColorGradients(ideo));
 }
 
 /**
