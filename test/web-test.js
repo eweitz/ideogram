@@ -24,8 +24,7 @@ describe('Ideogram', function() {
   beforeEach(function() {
 
     delete window.chrBands;
-    d3.selectAll('svg').remove();
-    d3.selectAll('#_ideogramOuterWrap').remove();
+    d3.selectAll('div').remove();
 
     config = {
       organism: 'human',
@@ -494,11 +493,17 @@ describe('Ideogram', function() {
       annotBox = annot.getBoundingClientRect();
 
       assert.isBelow(Math.abs(annotBox.x - 75), 2);
+      console.log('x passed')
       assert.isBelow(Math.abs(annotBox.y - 510), 2);
+      console.log('y passed')
       assert.isBelow(Math.abs(annotBox.height - 14), 2);
+      console.log('height passed')
       assert.isBelow(Math.abs(annotBox.right - 89), 2);
+      console.log('right passed')
       assert.isBelow(Math.abs(annotBox.bottom - 523), 2);
+      console.log('bottom passed')
       assert.isBelow(Math.abs(annotBox.left - 75), 2);
+      console.log('left passed')
 
       done();
     }
