@@ -25,6 +25,7 @@ describe('Ideogram', function() {
 
     delete window.chrBands;
     d3.selectAll('svg').remove();
+    d3.selectAll('#_ideogramOuterWrap').remove();
 
     config = {
       organism: 'human',
