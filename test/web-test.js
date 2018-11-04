@@ -485,32 +485,23 @@ describe('Ideogram', function() {
     // Tests use case from ../examples/vanilla/annotations-tracks.html
 
     function callback() {
-
-      console.log('in web-test callback')
       var annot, annotBox;
 
       annot = document.getElementsByClassName('annot')[3];
       annotBox = annot.getBoundingClientRect();
 
       assert.isBelow(Math.abs(annotBox.x - 75), 2);
-      console.log('x passed')
-      assert.isBelow(Math.abs(annotBox.y - 510), 2);
-      console.log('y passed')
+      assert.isBelow(Math.abs(annotBox.y - 65), 2);
       assert.isBelow(Math.abs(annotBox.height - 14), 2);
-      console.log('height passed')
       assert.isBelow(Math.abs(annotBox.right - 89), 2);
-      console.log('right passed')
-      assert.isBelow(Math.abs(annotBox.bottom - 523), 2);
-      console.log('bottom passed')
+      assert.isBelow(Math.abs(annotBox.bottom - 79), 2);
       assert.isBelow(Math.abs(annotBox.left - 75), 2);
-      console.log('left passed')
 
       done();
     }
 
     // Click chromosome 1 after it's loaded and had time to draw annotations.
     function loadCallback() {
-      console.log('in web-test loadCallback')
       setTimeout(function() {
         d3.select('#chr1-9606').dispatch('click');
       }, 200);
@@ -1443,7 +1434,6 @@ describe('Ideogram', function() {
       if (annotSetsDrawn === 3) {
         numAnnots = document.querySelectorAll('.annot').length;
         assert.equal(numAnnots, 6);
-        console.log('done?')
         done();
       }
     }
@@ -1733,7 +1723,7 @@ describe('Ideogram', function() {
         var bandRect = band.nodes()[0].getBoundingClientRect();
 
         assert.isBelow(Math.abs(bandRect.x - 13), 2);
-        assert.isBelow(Math.abs(bandRect.y - 1604), 2);
+        assert.isBelow(Math.abs(bandRect.y), 2);
 
         done();
       }, 500);

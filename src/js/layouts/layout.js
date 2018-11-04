@@ -99,9 +99,6 @@ export class Layout {
   }
 
   didRotate(chrIndex, chrElement) {
-
-    console.log('didRotate')
-
     var ideo, taxid, chrName, bands, chrModel, oldWidth,
       chrSetElement, transform, scale, scaleRE;
 
@@ -148,7 +145,6 @@ export class Layout {
     }
 
     if (ideo.onDidRotateCallback) {
-      console.log('calling onDidRotateCallback')
       ideo.onDidRotateCallback(chrModel);
     }
   }
