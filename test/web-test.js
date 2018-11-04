@@ -485,6 +485,8 @@ describe('Ideogram', function() {
     // Tests use case from ../examples/vanilla/annotations-tracks.html
 
     function callback() {
+
+      console.log('in web-test callback')
       var annot, annotBox;
 
       annot = document.getElementsByClassName('annot')[3];
@@ -502,6 +504,7 @@ describe('Ideogram', function() {
 
     // Click chromosome 1 after it's loaded and had time to draw annotations.
     function loadCallback() {
+      console.log('in web-test loadCallback')
       setTimeout(function() {
         d3.select('#chr1-9606').dispatch('click');
       }, 200);
