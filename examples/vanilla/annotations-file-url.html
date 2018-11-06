@@ -80,7 +80,6 @@
     var bedUrl = d3.select('#bed-url').nodes()[0].value;
     var asm = d3.select('input[name="asm"]:checked').nodes()[0].value;
     d3.select('#ideo-container').nodes()[0].innerHTML = '';
-    delete chrBands; // TODO: this should be deleted automatically in Ideogram.js
     ideogram = new Ideogram({
       organism: 'human',
       assembly: asm,

@@ -23,8 +23,8 @@ function fetchBands(bandDataFileNames, taxid, t0, ideo) {
     .then(function(response) {
       return response.text().then(function(rawBands) {
 
-        // Fetched data is a JavaScript variable, so assign it
-        eval(rawBands);
+        delete window.chrBands; // Remove any previous chrBands variable
+        eval(rawBands); // Fetched data is a JS variable 'chrBands'; assign it
 
         setBandData(response.url, bandDataFileNames, chrBands, ideo);
 
