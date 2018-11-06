@@ -7,11 +7,15 @@ function writeCanvases(chr, chrLeft, chrWidth, ideoHeight, ideo) {
     contextArray = [],
     numAnnotTracks = ideo.config.numAnnotTracks;
 
+  // TODO: Make this dynamic
+  var marginHack = 7;
+
   // Create a canvas for each annotation track on this chromosome
   for (j = 0; j < numAnnotTracks; j++) {
     trackWidth = chrWidth - 1;
     trackLeft = chrLeft + j * chrWidth - (trackWidth * numAnnotTracks);
-    canvas = d3.select(ideo.config.container + ' #_ideogramOuterWrap')
+    trackLeft -= marginHack;
+    canvas = d3.select(ideo.config.container + ' #_ideogramInnerWrap')
       .append('canvas')
       .attr('id', chr.id + '-canvas-' + j)
       .attr('width', chrWidth - 1)

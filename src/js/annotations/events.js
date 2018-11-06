@@ -32,7 +32,7 @@ function startHideAnnotTooltipTimeout() {
   }
 
   this.hideAnnotTooltipTimeout = window.setTimeout(function () {
-    d3.select('.tooltip').transition()
+    d3.select('._ideogramTooltip').transition()
       .duration(500)
       .style('opacity', 0)
       .style('pointer-events', 'none')
@@ -42,8 +42,8 @@ function startHideAnnotTooltipTimeout() {
 function writeTooltip(tooltip, content, matrix, yOffset, ideo) {
   tooltip.html(content)
     .style('opacity', 1) // Make tooltip visible
-    .style('left', (window.pageXOffset + matrix.e) + 'px')
-    .style('top', (window.pageYOffset + matrix.f - yOffset) + 'px')
+    .style('left', matrix.e + 'px')
+    .style('top', (matrix.f - yOffset) + 'px')
     .style('pointer-events', null) // Prevent bug in clicking chromosome
     .on('mouseover', function () {
       clearTimeout(ideo.hideAnnotTooltipTimeout);
@@ -100,7 +100,7 @@ function showAnnotTooltip(annot, context) {
     annot = ideo.onWillShowAnnotTooltipCallback(annot);
   }
 
-  tooltip = d3.select('.tooltip');
+  tooltip = d3.select('._ideogramTooltip');
   tooltip.interrupt(); // Stop any in-progress disapperance
 
   matrix = context.getScreenCTM()

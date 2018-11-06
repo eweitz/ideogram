@@ -124,7 +124,7 @@ function rotateAndToggleDisplay(chrElement) {
 }
 
 function setOverflowScroll() {
-  var ideo, config, ideoWidth, ideoInnerWrap, ideoOuterWrap, ideoSvg,
+  var ideo, config, ideoWidth, ideoInnerWrap, ideoMiddleWrap, ideoSvg,
     ploidy, ploidyPad;
 
   ideo = this;
@@ -132,7 +132,7 @@ function setOverflowScroll() {
 
   ideoSvg = d3.select(config.container + ' svg#_ideogram');
   ideoInnerWrap = d3.select(config.container + ' #_ideogramInnerWrap');
-  ideoOuterWrap = d3.select(config.container + ' #_ideogramOuterWrap');
+  ideoMiddleWrap = d3.select(config.container + ' #_ideogramMiddleWrap');
 
   ploidy = config.ploidy;
   ploidyPad = (ploidy - 1);
@@ -152,7 +152,7 @@ function setOverflowScroll() {
 
   // Ensures absolutely-positioned elements, e.g. heatmap overlaps, display
   // properly if ideogram container also has position: absolute
-  ideoOuterWrap
+  ideoMiddleWrap
     .style('height', ideo._layout.getHeight() + 'px')
 
   ideoInnerWrap

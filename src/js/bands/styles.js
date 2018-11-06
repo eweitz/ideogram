@@ -14,9 +14,9 @@ staticColors = [
 
 staticCss =
   '<style>' +
-  'svg#_ideogram  {padding-left: 5px;} ' +
-  'svg#_ideogram .labeled {padding-left: 15px;} ' +
-  'svg#_ideogram.labeledLeft {padding-left: 15px; padding-top: 15px;} ' +
+  '#_ideogram {padding-left: 5px;} ' +
+  '#_ideogram .labeled {padding-left: 15px;} ' +
+  '#_ideogram.labeledLeft {padding-left: 15px; padding-top: 15px;} ' +
   // Tahoma has great readability and space utilization at small sizes
   // More: http://ux.stackexchange.com/a/3334
   '#_ideogram text {font: 9px Tahoma; fill: #000;} ' +
@@ -58,6 +58,7 @@ staticCss =
   '#_ideogram.faint .acen {fill: #FEE}' +
   '#_ideogram.faint .stalk {fill: #EEF;}' +
   '#_ideogram.faint .gvar {fill: #EEF}' +
+  // For sheen, i.e. the soft shine in chromosomes
   '#_ideogram .gneg {fill: url("#gneg")} ' +
   '#_ideogram .gpos25 {fill: url("#gpos25")} ' +
   '#_ideogram .gpos33 {fill: url("#gpos33")} ' +

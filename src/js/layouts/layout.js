@@ -99,7 +99,6 @@ export class Layout {
   }
 
   didRotate(chrIndex, chrElement) {
-
     var ideo, taxid, chrName, bands, chrModel, oldWidth,
       chrSetElement, transform, scale, scaleRE;
 

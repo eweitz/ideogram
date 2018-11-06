@@ -24,7 +24,7 @@ describe('Ideogram', function() {
   beforeEach(function() {
 
     delete window.chrBands;
-    d3.selectAll('svg').remove();
+    d3.selectAll('div').remove();
 
     config = {
       organism: 'human',
@@ -491,10 +491,10 @@ describe('Ideogram', function() {
       annotBox = annot.getBoundingClientRect();
 
       assert.isBelow(Math.abs(annotBox.x - 75), 2);
-      assert.isBelow(Math.abs(annotBox.y - 510), 2);
+      assert.isBelow(Math.abs(annotBox.y - 65), 2);
       assert.isBelow(Math.abs(annotBox.height - 14), 2);
       assert.isBelow(Math.abs(annotBox.right - 89), 2);
-      assert.isBelow(Math.abs(annotBox.bottom - 523), 2);
+      assert.isBelow(Math.abs(annotBox.bottom - 79), 2);
       assert.isBelow(Math.abs(annotBox.left - 75), 2);
 
       done();
@@ -910,7 +910,7 @@ describe('Ideogram', function() {
 
     function callback() {
       d3.select('.annot path').dispatch('mouseover');
-      var content = d3.select('.tooltip').html();
+      var content = d3.select('._ideogramTooltip').html();
       assert.equal(content, 'BRCA1<br>chr17:43,044,294-43,125,482');
       d3.select('.annot path').dispatch('mouseout');
       done();
@@ -1434,7 +1434,6 @@ describe('Ideogram', function() {
       if (annotSetsDrawn === 3) {
         numAnnots = document.querySelectorAll('.annot').length;
         assert.equal(numAnnots, 6);
-        console.log('done?')
         done();
       }
     }
@@ -1724,7 +1723,7 @@ describe('Ideogram', function() {
         var bandRect = band.nodes()[0].getBoundingClientRect();
 
         assert.isBelow(Math.abs(bandRect.x - 13), 2);
-        assert.isBelow(Math.abs(bandRect.y - 1604), 2);
+        assert.isBelow(Math.abs(bandRect.y), 2);
 
         done();
       }, 500);

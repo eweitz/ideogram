@@ -1,6 +1,6 @@
 <html>
 <head>
-    <title>Annotations, heatmap complex container | Ideogram</title>
+    <title>Annotations, tabs and overflow | Ideogram</title>
     <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
     <style>
         body {
@@ -68,10 +68,10 @@
     </style>
 </head>
 <body>
-<h1>Annotations, heatmap complex container | Ideogram</h1>
+<h1>Layout, tabs and overflow | Ideogram</h1>
 <a href="../">Back to overview</a> |
-<a href="annotations-histogram">Previous</a> |
-<a href="annotations-animated">Next</a>
+<a href="layout-small">Previous</a> |
+<a href="brush">Next</a>
 <br/><br/>
 <div class="tab-panel">
 <ul class="nav">
@@ -96,8 +96,7 @@
 <script type="text/javascript">
 
   var annotationTracks = [
-    {id: 'expressionLevelTrack', displayName: 'Expression level'},
-    {id: 'geneTypeTrack', displayName: 'Gene type'}
+    {id: 'expressionLevelTrack', displayName: 'Expression level'}
   ];
 
   var config = {
@@ -105,6 +104,7 @@
     organism: 'human',
     assembly: 'GRCh37',
     chrHeight: 400,
+    chrMargin: 18,
     annotationsPath: '../../data/annotations/SRR562646.json',
     annotationTracks: annotationTracks,
     annotationsLayout: 'heatmap',
@@ -112,10 +112,6 @@
       {
         key: 'expression-level',
         thresholds: [['2', '#88F'], ['4', '#CCC'], ['+', '#F33']]
-      },
-      {
-        key: 'gene-type',
-        thresholds: [['0', '#00F'], ['1', '#0AF'], ['2', '#AAA'], ['3', '#FA0'], ['4', '#F00']]
       }
     ]
   };

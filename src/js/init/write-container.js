@@ -51,9 +51,9 @@ function getContainerSvgClass(ideo) {
  * Write tooltip div setup with default styling.
  */
 function writeTooltipContainer(ideo) {
-  d3.select(ideo.config.container + ' #_ideogramOuterWrap').append("div")
-    .attr('class', 'tooltip')
-    .attr('id', 'tooltip')
+  d3.select(ideo.config.container + ' #_ideogramOuterWrap').append('div')
+    .attr('class', '_ideogramTooltip')
+    .attr('id', '_ideogramTooltip')
     .style('opacity', 0)
     .style('position', 'absolute')
     .style('text-align', 'center')
@@ -67,9 +67,13 @@ function writeTooltipContainer(ideo) {
 function writeContainerDom(taxid, ideo) {
   d3.select(ideo.config.container)
     .append('div')
-    .attr('id', '_ideogramOuterWrap')
+    .attr('id', '_ideogramOuterWrap') // contains tooltip + all else
     .append('div')
-    .attr('id', '_ideogramInnerWrap')
+    .attr('id', '_ideogramMiddleWrap') // needed for overflow and scrolling
+      .style('position', 'relative')
+      .style('overflow-x', 'scroll')
+    .append('div')
+    .attr('id', '_ideogramInnerWrap') // needed for overflow and scrolling
     .append('svg')
     .attr('id', '_ideogram')
     .attr('class', getContainerSvgClass(ideo))
