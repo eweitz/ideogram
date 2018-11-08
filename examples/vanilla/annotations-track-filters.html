@@ -7,7 +7,7 @@
         html, body { height: 100%; font: 12px Arial; line-height: 19.6px; }
         ul { float: left; padding-left: 5px}
         li { list-style: none; }
-        #ideogram-container { float: left;}
+        #filters-container ul { clear: both; margin-right: 20px; }
     </style>
 </head>
 <body>
@@ -19,23 +19,32 @@
     Select up to 3 of 9 tracks to display.  See also <a href="annotations-tracks">Annotations, tracks</a>.
 </p>
 
-<ul id="tracks-to-display">
-    Tracks to display
-    <li><label for="filter_1"><input type="checkbox" id="filter_1" checked/>A</label></li>
-    <li><label for="filter_2"><input type="checkbox" id="filter_2"/>B</label></li>
-    <li><label for="filter_3"><input type="checkbox" id="filter_3"/>C</label></li>
-    <li><label for="filter_4"><input type="checkbox" id="filter_4"/>D</label></li>
-    <li><label for="filter_5"><input type="checkbox" id="filter_5" checked/>E</label></li>
-    <li><label for="filter_6"><input type="checkbox" id="filter_6"/>F</label></li>
-    <li><label for="filter_7"><input type="checkbox" id="filter_7"/>G</label></li>
-    <li><label for="filter_8"><input type="checkbox" id="filter_8"/>H</label></li>
-    <li><label for="filter_9"><input type="checkbox" id="filter_9" checked/>I</label></li>
-</ul>
+<div id="filters-container">
+  <ul id="tracks-to-display">
+      Tracks to display
+      <li><label for="filter_1"><input type="checkbox" id="filter_1" checked/>A</label></li>
+      <li><label for="filter_2"><input type="checkbox" id="filter_2"/>B</label></li>
+      <li><label for="filter_3"><input type="checkbox" id="filter_3"/>C</label></li>
+      <li><label for="filter_4"><input type="checkbox" id="filter_4"/>D</label></li>
+      <li><label for="filter_5"><input type="checkbox" id="filter_5" checked/>E</label></li>
+      <li><label for="filter_6"><input type="checkbox" id="filter_6"/>F</label></li>
+      <li><label for="filter_7"><input type="checkbox" id="filter_7"/>G</label></li>
+      <li><label for="filter_8"><input type="checkbox" id="filter_8"/>H</label></li>
+      <li><label for="filter_9"><input type="checkbox" id="filter_9" checked/>I</label></li>
+  </ul>
+
+  <ul id="annotations-layout">
+    Annotations layout
+    <li><label for="shapes"><input type="radio" id="tracks" name="layout" checked/>Shapes</label></li>
+    <li><label for="heatmap"><input type="radio" id="heatmap" name="layout"/>Heatmap</label></li>
+  </ul>
+</div>
+
 <div id="ideogram-container"></div>
 
 <script type="text/javascript">
 
-  var config, ideogram, inputs;
+  var config, ideogram, checkboxes, annotsLayout;
 
   config = {
     organism: 'human',
@@ -43,31 +52,53 @@
     chrHeight: 400,
     annotationsPath: '../../data/annotations/9_tracks_virtual_snvs.json',
     annotationsNumTracks: 3,
+    chrMargin: 8,
     annotationsDisplayedTracks: [1, 5, 9]
   };
 
   ideogram = new Ideogram(config);
 
-  inputs = document.querySelectorAll('input');
-
-  inputs.forEach(function(input) {
-    input.addEventListener('click', function() {
+  checkboxes = document.querySelectorAll('input[type=checkbox]');
+  checkboxes.forEach(function(checkbox) {
+    checkbox.addEventListener('click', function() {
       updateTracks();
     });
   });
 
-  function updateTracks() {
+  radioButtons = document.querySelectorAll('input[type=radio]');
+  radioButtons.forEach(function(radioButton) {
+    radioButton.addEventListener('click', function() {
+      updateIdeogram();
+    });
+  });
 
-    // Get selected tracks
+  function getSelectedTracks() {
     var selectedTracks = [];
-    inputs.forEach(function(input) {
-      var trackIndex = parseInt(input.getAttribute('id').split('_')[1]);
-      if (input.checked) {
+    
+    checkboxes.forEach(function(checkbox) {
+      var trackIndex = parseInt(checkbox.getAttribute('id').split('_')[1]);
+      if (checkbox.checked) {
         selectedTracks.push(trackIndex);
       }
     });
+    
+    return selectedTracks;
+  }
 
+  function updateTracks() {
+    var selectedTracks = getSelectedTracks();
     ideogram.updateDisplayedTracks(selectedTracks);
+  }
+
+  function updateIdeogram() {
+    
+    var tracks = getSelectedTracks();
+    var layout = document.querySelector('input[name=layout]:checked').id;
+    
+    config.annotationsDisplayedTracks = tracks;
+    config.annotationsLayout = layout;
+
+    ideogram = new Ideogram(config);
   }
 
 </script>

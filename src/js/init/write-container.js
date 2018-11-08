@@ -65,6 +65,10 @@ function writeTooltipContainer(ideo) {
 }
 
 function writeContainerDom(taxid, ideo) {
+
+  // Remove any previous container content
+  d3.selectAll(ideo.config.container + ' #_ideogramOuterWrap').remove();
+
   d3.select(ideo.config.container)
     .append('div')
     .attr('id', '_ideogramOuterWrap') // contains tooltip + all else
