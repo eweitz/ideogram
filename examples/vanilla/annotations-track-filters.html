@@ -35,8 +35,8 @@
 
   <ul id="annotations-layout">
     Annotations layout
-    <li><label for="shapes"><input type="radio" id="tracks" name="layout" checked/>Shapes</label></li>
-    <li><label for="heatmap"><input type="radio" id="heatmap" name="layout"/>Heatmap</label></li>
+    <li><label for="heatmap"><input type="radio" id="heatmap" name="layout" checked/>Heatmap</label></li>
+    <li><label for="tracks"><input type="radio" id="tracks" name="layout"/>Shapes</label></li>
   </ul>
 </div>
 
@@ -53,7 +53,8 @@
     annotationsPath: '../../data/annotations/9_tracks_virtual_snvs.json',
     annotationsNumTracks: 3,
     chrMargin: 8,
-    annotationsDisplayedTracks: [1, 5, 9]
+    annotationsDisplayedTracks: [1, 5, 9],
+    annotationsLayout: 'heatmap'
   };
 
   ideogram = new Ideogram(config);
