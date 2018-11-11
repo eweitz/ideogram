@@ -712,7 +712,7 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
-  it('should have filterable tracks in track-filters example', function(done) {
+  it('should have filterable tracks in track filters example', function(done) {
     // Tests use case from ../examples/vanilla/annotations-track-filters.html
 
     var firstRun = true;
@@ -728,7 +728,7 @@ describe('Ideogram', function() {
       var numAnnots = document.getElementsByClassName('annot').length;
       assert.equal(numAnnots, 696);
 
-      // Filters tracks to show only 4th and 5th track (of 20)
+      // Filters tracks to show only 4th and 5th track (of 9)
       ideogram.updateDisplayedTracks([4, 5]);
       numAnnots = document.getElementsByClassName('annot').length;
       assert.equal(numAnnots, 620);
@@ -743,6 +743,54 @@ describe('Ideogram', function() {
       annotationsNumTracks: 3,
       annotationsDisplayedTracks: [1, 5, 9],
       onDrawAnnots: callback
+    };
+
+    ideogram = new Ideogram(config);
+  });
+
+  it('should filter heatmap tracks', function(done) {
+    // Tests use case from ../examples/vanilla/annotations-track-filters.html
+
+    var firstRun = true;
+
+    function callback() {
+
+      var track1, track2, track3;
+
+      if (firstRun) {
+        firstRun = false;
+      } else {
+        return;
+      }
+
+      track1 = document.querySelector('#chr2-9606-canvas-0').getBoundingClientRect();
+      track2 = document.querySelector('#chr2-9606-canvas-1').getBoundingClientRect();
+      track3 = document.querySelector('#chr2-9606-canvas-2').getBoundingClientRect();
+
+      assert.equal(track1.x, 62);
+      assert.equal(track2.x, 71);
+      assert.equal(track3.x, 80);
+
+      // Filters tracks to show only 4th and 5th track (of 9)
+      ideogram.updateDisplayedTracks([4, 5]);
+
+      track1 = document.querySelector('#chr2-9606-canvas-0').getBoundingClientRect();
+      track2 = document.querySelector('#chr2-9606-canvas-1').getBoundingClientRect();
+
+      assert.equal(track1.x, 71);
+      assert.equal(track2.x, 80);
+
+      done();
+    }
+
+    var config = {
+      organism: 'human',
+      annotationsPath: '../dist/data/annotations/9_tracks_virtual_snvs.json',
+      dataDir: '/dist/data/bands/native/',
+      annotationsNumTracks: 3,
+      annotationsDisplayedTracks: [1, 5, 9],
+      onDrawAnnots: callback,
+      annotationsLayout: 'heatmap'
     };
 
     ideogram = new Ideogram(config);
