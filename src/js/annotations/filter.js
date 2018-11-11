@@ -45,7 +45,7 @@ function getDisplayedRawAnnotsByChr(annotsByChr, trackIndexes) {
  * @param trackIndexes Array of indexes of tracks to display
  */
 function updateDisplayedTracks(trackIndexes) {
-  var displayedRawAnnotsByChr, displayedAnnots, rawAnnots, trackIndex,
+  var displayedRawAnnotsByChr, displayedAnnots, rawAnnots,
     ideo = this,
     annotsByChr = ideo.rawAnnots.annots;
 
@@ -53,14 +53,12 @@ function updateDisplayedTracks(trackIndexes) {
 
   displayedRawAnnotsByChr =
     getDisplayedRawAnnotsByChr(annotsByChr, trackIndexes);
-
   rawAnnots = {keys: ideo.rawAnnots.keys, annots: displayedRawAnnotsByChr};
 
   displayedAnnots = ideo.processAnnotData(rawAnnots);
 
   d3.selectAll(ideo.selector + ' .annot').remove();
   ideo.drawAnnots(displayedAnnots);
-
   ideogram.displayedTrackIndexes = trackIndexes;
 
   return displayedAnnots;

@@ -13,12 +13,12 @@ function writeCanvases(chr, chrLeft, chrWidth, ideoHeight, ideo) {
   // Create a canvas for each annotation track on this chromosome
   for (j = 0; j < numAnnotTracks; j++) {
     trackWidth = chrWidth - 1;
-    trackLeft = chrLeft + j * chrWidth - (trackWidth * numAnnotTracks);
+    trackLeft = chrLeft - trackWidth * (numAnnotTracks - j);
     trackLeft -= marginHack;
     canvas = d3.select(ideo.config.container + ' #_ideogramInnerWrap')
       .append('canvas')
       .attr('id', chr.id + '-canvas-' + j)
-      .attr('width', chrWidth - 1)
+      .attr('width', trackWidth)
       .attr('height', ideoHeight)
       .style('position', 'absolute')
       .style('left', trackLeft + 'px');
@@ -69,7 +69,7 @@ function drawHeatmaps(annotContainers) {
     chrWidth = ideo.config.chrWidth;
     chrLeft = ideo._layout.getChromosomeSetYTranslate(i);
 
-    contextArray = writeCanvases(chr, chrLeft, chrWidth, ideoHeight, ideo)
+    contextArray = writeCanvases(chr, chrLeft, chrWidth, ideoHeight, ideo);
     fillCanvasAnnots(annots, contextArray, chrWidth, ideoMarginTop);
   }
 

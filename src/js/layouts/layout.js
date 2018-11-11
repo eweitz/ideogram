@@ -234,7 +234,7 @@ export class Layout {
 
   _getAdditionalOffset() {
     return (
-      (this._config.annotationHeight || 0) * (this._config.numAnnotTracks || 1)
+      (this._config.annotationHeight || 0) * (this._config.annotationsNumTracks || 1)
     );
   }
 
