@@ -2,22 +2,102 @@ import * as d3selection from 'd3-selection';
 
 var d3 = Object.assign({}, d3selection);
 
+// function labelTrack(trackWidth, trackIndex, chr, ideo) {
+//   var annotKeys, reservedWords, label, chrSetId;
+
+//   annotKeys = ideo.rawAnnots.keys;
+//   reservedWords = [
+//     'name', 'start', 'length', 'trackIndex', 'trackIndexOriginal', 'color'
+//   ];
+//   annotKeys = annotKeys.filter(d => !reservedWords.includes(d));
+//   label = annotKeys[trackIndex];
+
+//   chrSetId = chr.id + '-chromosome-set';
+//   console.log(chrSetId)
+//   var chrSet = d3.select(ideo.config.container + ' #' + chrSetId)
+//   console.log(chrSet)
+//   chrSet
+//     .append('text')
+//       .attr('id', chr.id + '-track-' + trackIndex + '-label')
+//       .attr('y', trackWidth * (trackIndex + 1) + ideo.config.chrWidth)
+//       .attr('text-anchor', 'end')
+//       .text(label);
+// }
+
+/**
+ * Write tooltip div setup with default styling.
+ */
+function writeTrackTooltipContainer(ideo) {
+  d3.select(ideo.config.container + ' #_ideogramOuterWrap').append('div')
+    .attr('class', '_ideogramTooltip')
+    .attr('id', '_ideogramTooltipTrackLabel')
+    .style('opacity', 0)
+    .style('position', 'absolute')
+    .style('text-align', 'center')
+    .style('padding', '1px')
+    .style('font', '12px sans-serif')
+    .style('background', 'white')
+    .style('line-height', '10px')
+}
+
+function showTrackLabel(trackCanvas, ideo) {
+
+    var annotKeys, reservedWords, labels, chr, trackIndex, trackBox,
+      trackChrId, ideoBox, chrBox, labelBox;
+
+    trackIndex = parseInt(trackCanvas.id.split('-').slice(-1)[0]);
+    annotKeys = ideo.rawAnnots.keys;
+    reservedWords = [
+      'name', 'start', 'length', 'trackIndex', 'trackIndexOriginal', 'color'
+    ];
+    annotKeys = annotKeys.filter(d => !reservedWords.includes(d));
+    labels = annotKeys.join('<br/>')
+    // labels = 'foo<br/>bar';
+
+    trackBox = trackCanvas.getBoundingClientRect();
+    console.log(ideo.chromosomesArray[0])
+    trackChrId = trackCanvas.id.split('-').slice(0, 2).join('-');
+    chr = d3.select(ideo.config.container + ' #' + trackChrId).nodes()[0];
+    chrBox = chr.getBoundingClientRect();
+    ideoBox = d3.select(ideogram.config.container).nodes()[0].getBoundingClientRect();
+
+    d3.select('#_ideogramTooltipTrackLabel').html(labels)
+
+    labelBox = d3.select('#_ideogramTooltipTrackLabel').nodes()[0].getBoundingClientRect();
+    console.log('labelBox')
+    console.log(labelBox)
+    d3.select('#_ideogramTooltipTrackLabel')
+      .style('opacity', 1) // Make tooltip visible
+      .style('top', ideoBox.top - labelBox.height)
+      .style('left', trackBox.left - (trackBox.width * (trackIndex + 4)))
+      .style('text-align', 'left')
+      .style('transform', 'rotate(-90deg)')
+      // .style('top', (matrix.f - yOffset) + 'px')
+      // .style('pointer-events', null) // Prevent bug in clicking chromosome
+      // .on('mouseover', function () {
+      //   clearTimeout(ideo.hideAnnotTooltipTimeout);
+      // })
+      // .on('mouseout', function () {
+      //   ideo.startHideAnnotTooltipTimeout();
+      // });
+
+  }
+
 function writeCanvases(chr, chrLeft, chrWidth, ideoHeight, ideo) {
-  var j, trackLeft, trackWidth, canvas, context,
+  var j, trackLeft, trackWidth, canvas, context, id,
     contextArray = [],
     numAnnotTracks = ideo.config.numAnnotTracks;
 
-  // TODO: Make this dynamic
-  var marginHack = 7;
+  var marginHack = 7; // TODO: Make this dynamic
 
   // Create a canvas for each annotation track on this chromosome
   for (j = 0; j < numAnnotTracks; j++) {
     trackWidth = chrWidth - 1;
-    trackLeft = chrLeft - trackWidth * (numAnnotTracks - j);
-    trackLeft -= marginHack;
+    id = chr.id + '-canvas-' + j;
+    trackLeft = chrLeft - trackWidth * (numAnnotTracks - j) - marginHack;
     canvas = d3.select(ideo.config.container + ' #_ideogramInnerWrap')
       .append('canvas')
-      .attr('id', chr.id + '-canvas-' + j)
+      .attr('id', id)
       .attr('width', trackWidth)
       .attr('height', ideoHeight)
       .style('position', 'absolute')
@@ -61,6 +141,8 @@ function drawHeatmaps(annotContainers) {
 
   d3.selectAll(ideo.config.container + ' canvas').remove();
 
+  writeTrackTooltipContainer(ideo);
+
   // Each "annotationContainer" represents annotations for a chromosome
   for (i = 0; i < annotContainers.length; i++) {
 
@@ -72,6 +154,10 @@ function drawHeatmaps(annotContainers) {
     contextArray = writeCanvases(chr, chrLeft, chrWidth, ideoHeight, ideo);
     fillCanvasAnnots(annots, contextArray, chrWidth, ideoMarginTop);
   }
+
+  d3.selectAll(ideo.config.container + ' canvas')
+    .on('mouseover', function() { showTrackLabel(this, ideo); })
+    // .on('mouseout', function() { ideo.hideTrackLabel(); });
 
   if (ideo.onDrawAnnotsCallback) {
     ideo.onDrawAnnotsCallback();
