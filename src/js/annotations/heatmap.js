@@ -2,35 +2,32 @@ import * as d3selection from 'd3-selection';
 
 var d3 = Object.assign({}, d3selection);
 
-// function labelTrack(trackWidth, trackIndex, chr, ideo) {
-//   var annotKeys, reservedWords, label, chrSetId;
+/**
+ * Starts a timer that, upon expiring, hides the track label.
+ *
+ * To enable users to copy label content to their clipboard, a timer is
+ * used to control when the label disappears.  It starts when the user's
+ * cursor leaves the track or the label.  If the user moves the cursor
+ * back over the annot or label after the timer starts and before it expires,
+ * then the timer is cleared.
+ */
+function startHideTrackLabelTimeout(ideo) {
 
-//   annotKeys = ideo.rawAnnots.keys;
-//   reservedWords = [
-//     'name', 'start', 'length', 'trackIndex', 'trackIndexOriginal', 'color'
-//   ];
-//   annotKeys = annotKeys.filter(d => !reservedWords.includes(d));
-//   label = annotKeys[trackIndex];
+  if (ideo.config.showTrackLabel === false) return;
 
-//   chrSetId = chr.id + '-chromosome-set';
-//   console.log(chrSetId)
-//   var chrSet = d3.select(ideo.config.container + ' #' + chrSetId)
-//   console.log(chrSet)
-//   chrSet
-//     .append('text')
-//       .attr('id', chr.id + '-track-' + trackIndex + '-label')
-//       .attr('y', trackWidth * (trackIndex + 1) + ideo.config.chrWidth)
-//       .attr('text-anchor', 'end')
-//       .text(label);
-// }
+  ideo.hideTrackLabelTimeout = window.setTimeout(function () {
+    d3.select('#_ideogramTrackLabel').transition()
+      .duration(500)
+      .style('opacity', 0)
+  }, 250);
+}
 
 /**
- * Write tooltip div setup with default styling.
+ * Write label div setup with default styling.
  */
-function writeTrackTooltipContainer(ideo) {
+function writeTrackLabelContainer(ideo) {
   d3.select(ideo.config.container + ' #_ideogramOuterWrap').append('div')
-    .attr('class', '_ideogramTooltip')
-    .attr('id', '_ideogramTooltipTrackLabel')
+    .attr('id', '_ideogramTrackLabel')
     .style('opacity', 0)
     .style('position', 'absolute')
     .style('text-align', 'center')
@@ -41,46 +38,45 @@ function writeTrackTooltipContainer(ideo) {
 }
 
 function showTrackLabel(trackCanvas, ideo) {
+    var annotKeys, reservedWords, labels, trackIndex, trackBox,
+      ideoBox, labelBox;
 
-    var annotKeys, reservedWords, labels, chr, trackIndex, trackBox,
-      trackChrId, ideoBox, chrBox, labelBox;
+    clearTimeout(ideo.hideTrackLabelTimeout);
 
     trackIndex = parseInt(trackCanvas.id.split('-').slice(-1)[0]);
-    annotKeys = ideo.rawAnnots.keys;
+    annotKeys = ideo.rawAnnots.keys.slice(0);
     reservedWords = [
       'name', 'start', 'length', 'trackIndex', 'trackIndexOriginal', 'color'
     ];
     annotKeys = annotKeys.filter(d => !reservedWords.includes(d));
-    labels = annotKeys.join('<br/>')
+    labels = annotKeys.join('<br>');
     // labels = 'foo<br/>bar';
 
     trackBox = trackCanvas.getBoundingClientRect();
-    console.log(ideo.chromosomesArray[0])
-    trackChrId = trackCanvas.id.split('-').slice(0, 2).join('-');
-    chr = d3.select(ideo.config.container + ' #' + trackChrId).nodes()[0];
-    chrBox = chr.getBoundingClientRect();
     ideoBox = d3.select(ideogram.config.container).nodes()[0].getBoundingClientRect();
 
-    d3.select('#_ideogramTooltipTrackLabel').html(labels)
+    d3.select('#_ideogramTrackLabel')
+      .interrupt() // Stop any in-progress disapperance
+      .style('top', '')
+      .style('left', '')
+      .style('transform', null)
+      .html(labels);
 
-    labelBox = d3.select('#_ideogramTooltipTrackLabel').nodes()[0].getBoundingClientRect();
-    console.log('labelBox')
-    console.log(labelBox)
-    d3.select('#_ideogramTooltipTrackLabel')
-      .style('opacity', 1) // Make tooltip visible
+    labelBox = d3.select('#_ideogramTrackLabel').nodes()[0]
+      .getBoundingClientRect();
+
+    d3.select('#_ideogramTrackLabel')
+      .style('opacity', 1) // Make label visible
       .style('top', ideoBox.top - labelBox.height)
-      .style('left', trackBox.left - (trackBox.width * (trackIndex + 4)))
+      .style('left', trackBox.left - trackBox.width * (trackIndex + 4))
       .style('text-align', 'left')
       .style('transform', 'rotate(-90deg)')
-      // .style('top', (matrix.f - yOffset) + 'px')
-      // .style('pointer-events', null) // Prevent bug in clicking chromosome
-      // .on('mouseover', function () {
-      //   clearTimeout(ideo.hideAnnotTooltipTimeout);
-      // })
-      // .on('mouseout', function () {
-      //   ideo.startHideAnnotTooltipTimeout();
-      // });
-
+      .on('mouseover', function () {
+        clearTimeout(ideo.hideTrackLabelTimeout);
+      })
+      .on('mouseout', function () {
+        startHideTrackLabelTimeout(ideo);
+      });
   }
 
 function writeCanvases(chr, chrLeft, chrWidth, ideoHeight, ideo) {
@@ -141,7 +137,7 @@ function drawHeatmaps(annotContainers) {
 
   d3.selectAll(ideo.config.container + ' canvas').remove();
 
-  writeTrackTooltipContainer(ideo);
+  writeTrackLabelContainer(ideo);
 
   // Each "annotationContainer" represents annotations for a chromosome
   for (i = 0; i < annotContainers.length; i++) {
@@ -157,7 +153,7 @@ function drawHeatmaps(annotContainers) {
 
   d3.selectAll(ideo.config.container + ' canvas')
     .on('mouseover', function() { showTrackLabel(this, ideo); })
-    // .on('mouseout', function() { ideo.hideTrackLabel(); });
+    .on('mouseout', function() { startHideTrackLabelTimeout(ideo); });
 
   if (ideo.onDrawAnnotsCallback) {
     ideo.onDrawAnnotsCallback();
