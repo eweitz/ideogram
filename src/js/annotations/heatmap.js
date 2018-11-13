@@ -12,7 +12,6 @@ var d3 = Object.assign({}, d3selection);
  * then the timer is cleared.
  */
 function startHideTrackLabelTimeout(ideo) {
-
   if (ideo.config.showTrackLabel === false) return;
 
   ideo.hideTrackLabelTimeout = window.setTimeout(function () {
@@ -39,7 +38,7 @@ function writeTrackLabelContainer(ideo) {
 
 function showTrackLabel(trackCanvas, ideo) {
     var annotKeys, reservedWords, labels, trackIndex, trackBox,
-      ideoBox, labelBox;
+      ideoBox, labelBox, top, left;
 
     clearTimeout(ideo.hideTrackLabelTimeout);
 
@@ -65,10 +64,13 @@ function showTrackLabel(trackCanvas, ideo) {
     labelBox = d3.select('#_ideogramTrackLabel').nodes()[0]
       .getBoundingClientRect();
 
+    top = Math.round(ideoBox.top - labelBox.height);
+    left = Math.round(trackBox.left - trackBox.width * (trackIndex + 4));
+
     d3.select('#_ideogramTrackLabel')
       .style('opacity', 1) // Make label visible
-      .style('top', ideoBox.top - labelBox.height)
-      .style('left', trackBox.left - trackBox.width * (trackIndex + 4))
+      .style('top', top + 'px')
+      .style('left', left + 'px')
       .style('text-align', 'left')
       .style('transform', 'rotate(-90deg)')
       .on('mouseover', function () {
