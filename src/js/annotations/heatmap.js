@@ -37,12 +37,11 @@ function writeTrackLabelContainer(ideo) {
 }
 
 function showTrackLabel(trackCanvas, ideo) {
-    var annotKeys, reservedWords, labels, trackIndex, trackBox,
-      ideoBox, labelBox, top, left;
+    var annotKeys, reservedWords, labels, firstTrackId, firstTrack,
+      trackBox, ideoBox, labelBox, top, left;
 
     clearTimeout(ideo.hideTrackLabelTimeout);
 
-    trackIndex = parseInt(trackCanvas.id.split('-').slice(-1)[0]);
     annotKeys = ideo.rawAnnots.keys.slice(0);
     reservedWords = [
       'name', 'start', 'length', 'trackIndex', 'trackIndexOriginal', 'color'
@@ -51,7 +50,9 @@ function showTrackLabel(trackCanvas, ideo) {
     labels = annotKeys.join('<br>');
     // labels = 'foo<br/>bar';
 
-    trackBox = trackCanvas.getBoundingClientRect();
+    firstTrackId = trackCanvas.id.split('-').slice(0, -1).join('-') + '-0';
+    firstTrack = d3.select('#' + firstTrackId).nodes()[0];
+    trackBox = firstTrack.getBoundingClientRect();
     ideoBox = d3.select(ideogram.config.container).nodes()[0].getBoundingClientRect();
 
     d3.select('#_ideogramTrackLabel')
@@ -59,20 +60,21 @@ function showTrackLabel(trackCanvas, ideo) {
       .style('top', '')
       .style('left', '')
       .style('transform', null)
+      .style('transform', 'rotate(-90deg)')
       .html(labels);
 
     labelBox = d3.select('#_ideogramTrackLabel').nodes()[0]
       .getBoundingClientRect();
 
-    top = Math.round(ideoBox.top - labelBox.height);
-    left = Math.round(trackBox.left - trackBox.width * (trackIndex + 4));
+    top = Math.round(ideoBox.top) + 3;
+    left = Math.round(trackBox.left + labelBox.width) - 4;
 
     d3.select('#_ideogramTrackLabel')
       .style('opacity', 1) // Make label visible
       .style('top', top + 'px')
       .style('left', left + 'px')
+      .style('transform-origin', 'bottom left')
       .style('text-align', 'left')
-      .style('transform', 'rotate(-90deg)')
       .on('mouseover', function () {
         clearTimeout(ideo.hideTrackLabelTimeout);
       })
