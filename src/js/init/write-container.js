@@ -71,8 +71,12 @@ function writeContainerDom(taxid, ideo) {
 
   d3.select(ideo.config.container)
     .append('div')
-    .attr('id', '_ideogramOuterWrap') // contains tooltip + all else
+    .attr('id', '_ideogramOuterWrap')
     .append('div')
+    .attr('id', '_ideogramTrackLabelContainer')
+    .style('position', 'absolute');
+
+  d3.select(ideo.config.container + ' #_ideogramOuterWrap').append('div')
     .attr('id', '_ideogramMiddleWrap') // needed for overflow and scrolling
       .style('position', 'relative')
       .style('overflow-x', 'scroll')

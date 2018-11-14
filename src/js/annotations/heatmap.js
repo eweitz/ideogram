@@ -25,35 +25,53 @@ function startHideTrackLabelTimeout(ideo) {
  * Write label div setup with default styling.
  */
 function writeTrackLabelContainer(ideo) {
-  d3.select(ideo.config.container + ' #_ideogramOuterWrap').append('div')
+  d3.select(ideo.config.container + ' #_ideogramTrackLabelContainer')
+    .append('div')
     .attr('id', '_ideogramTrackLabel')
     .style('opacity', 0)
     .style('position', 'absolute')
     .style('text-align', 'center')
     .style('padding', '1px')
-    .style('font', '12px sans-serif')
+    .style('font', '11px sans-serif')
     .style('background', 'white')
     .style('line-height', '10px')
 }
 
-function showTrackLabel(trackCanvas, ideo) {
-    var annotKeys, reservedWords, labels, firstTrackId, firstTrack,
-      trackBox, ideoBox, labelBox, top, left;
+function getLabels(ideo) {
+  var annotKeys, reservedWords, labels, heatmaps, i;
 
-    clearTimeout(ideo.hideTrackLabelTimeout);
-
+  if (ideo.config.heatmaps) {
+    labels = [];
+    heatmaps = ideo.config.heatmaps;
+    for (i = 0; i < heatmaps.length; i++) {
+      labels.push(heatmaps[i].key);
+    }
+    labels = labels.join('<br>')
+  } else {
     annotKeys = ideo.rawAnnots.keys.slice(0);
     reservedWords = [
       'name', 'start', 'length', 'trackIndex', 'trackIndexOriginal', 'color'
     ];
-    annotKeys = annotKeys.filter(d => !reservedWords.includes(d));
-    labels = annotKeys.join('<br>');
+    labels = annotKeys.filter(d => !reservedWords.includes(d));
+    labels = labels.join('<br>');
+    console.log('labels')
+    console.log(labels)
     // labels = 'foo<br/>bar';
+  }
+
+  return labels;
+}
+
+function showTrackLabel(trackCanvas, ideo) {
+    var labels, firstTrackId, firstTrack, trackBox, labelBox, left;
+
+    clearTimeout(ideo.hideTrackLabelTimeout);
+
+    labels = getLabels(ideo);
 
     firstTrackId = trackCanvas.id.split('-').slice(0, -1).join('-') + '-0';
     firstTrack = d3.select('#' + firstTrackId).nodes()[0];
     trackBox = firstTrack.getBoundingClientRect();
-    ideoBox = d3.select(ideogram.config.container).nodes()[0].getBoundingClientRect();
 
     d3.select('#_ideogramTrackLabel')
       .interrupt() // Stop any in-progress disapperance
@@ -66,13 +84,13 @@ function showTrackLabel(trackCanvas, ideo) {
     labelBox = d3.select('#_ideogramTrackLabel').nodes()[0]
       .getBoundingClientRect();
 
-    top = Math.round(ideoBox.top) + 3;
-    left = Math.round(trackBox.left + labelBox.width) - 4;
+    left = Math.round(trackBox.left + labelBox.width) - trackBox.width - 1;
 
     d3.select('#_ideogramTrackLabel')
       .style('opacity', 1) // Make label visible
-      .style('top', top + 'px')
       .style('left', left + 'px')
+      .style('top', '6px')
+      .style('width', 'max-content')
       .style('transform-origin', 'bottom left')
       .style('text-align', 'left')
       .on('mouseover', function () {
