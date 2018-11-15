@@ -182,10 +182,12 @@ function configure(config) {
   configureBump(this);
   configureSingleChromosome(config, this);
   this.initAnnotSettings();
-  this.config.chrMargin += (
-    this.config.chrWidth +
-    this.config.annotTracksHeight * 2
-  );
+  this.config.chrMargin += this.config.chrWidth;
+  if (this.config.annotationsLayout === 'heatmap') {
+    this.config.chrMargin += this.config.annotTracksHeight;
+  } else {
+    this.config.chrMargin += this.config.annotTracksHeight * 2;
+  }
   this.init();
 }
 

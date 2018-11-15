@@ -110,7 +110,7 @@ function writeCanvases(chr, chrLeft, chrWidth, ideoHeight, ideo) {
 
   // Create a canvas for each annotation track on this chromosome
   for (j = 0; j < numAnnotTracks; j++) {
-    trackWidth = chrWidth - 1;
+    trackWidth = ideo.config.annotationHeight;
     id = chr.id + '-canvas-' + j;
     trackLeft = chrLeft - trackWidth * (numAnnotTracks - j) - marginHack;
     canvas = d3.select(ideo.config.container + ' #_ideogramInnerWrap')

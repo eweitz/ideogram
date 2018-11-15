@@ -96,7 +96,8 @@
 <script type="text/javascript">
 
   var annotationTracks = [
-    {id: 'expressionLevelTrack', displayName: 'Expression level'}
+    {id: 'expressionLevelTrack', displayName: 'Expression level'},
+    // {id: 'geneTypeTrack', displayName: 'Gene type'},
   ];
 
   var config = {
@@ -112,7 +113,11 @@
       {
         key: 'expression-level',
         thresholds: [['2', '#88F'], ['4', '#CCC'], ['+', '#F33']]
-      }
+      },
+      // {
+      //   key: 'gene-type',
+      //   thresholds: [['0', '#00F'], ['1', '#0AF'], ['2', '#AAA'], ['3', '#FA0'], ['4', '#F00']]
+      // }
     ]
   };
 

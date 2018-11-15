@@ -33,7 +33,11 @@ function initNumTracksHeightAndBarWidth(ideo, config) {
   var annotHeight;
 
   if (!config.annotationHeight) {
-    annotHeight = Math.round(config.chrHeight / 100);
+    if (config.annotationsLayout === 'heatmap') {
+      annotHeight = config.chrWidth - 1;
+    } else {
+      annotHeight = Math.round(config.chrHeight / 100);
+    }
     ideo.config.annotationHeight = annotHeight;
   }
 
@@ -49,30 +53,6 @@ function initNumTracksHeightAndBarWidth(ideo, config) {
 
   if (typeof config.barWidth === 'undefined') {
     ideo.config.barWidth = 3;
-  }
-}
-
-function initHeatmap(ideo) {
-  if (ideo.config.annotationsLayout === 'heatmap') {
-    // window.onresize = function() { ideo.drawHeatmaps(ideo.annots); };
-
-    // ideo.isScrolling = null;
-
-    // Listen for scroll events
-    // window.addEventListener('scroll', function ( event ) {
-    //   // Clear our timeout throughout the scroll
-    //   window.clearTimeout( ideo.isScrolling );
-    //
-    //   // Set a timeout to run after scrolling ends
-    //   ideo.isScrolling = setTimeout(function() {
-    //     // Run the callback
-    //     console.log('Scrolling has stopped.');
-    //     ideo.drawHeatmaps(ideo.annots);
-    //   }, 300);
-    //
-    // // }, false);
-    //
-    // window.onscroll = function() { ideo.drawHeatmaps(ideo.annots); };
   }
 }
 
@@ -106,7 +86,6 @@ function initAnnotSettings() {
     ideo.config.annotationsColor = '#F00';
   }
 
-  initHeatmap(ideo);
   initTooltip(ideo, config);
 }
 
