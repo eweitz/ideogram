@@ -54,16 +54,16 @@ function getLabels(ideo) {
     ];
     labels = annotKeys.filter(d => !reservedWords.includes(d));
     labels = labels.join('<br>');
-    console.log('labels')
-    console.log(labels)
-    // labels = 'foo<br/>bar';
   }
+  // labels = 'foo';
+  // labels = 'foo<br>bar<br>baz<br>moo';
 
   return labels;
 }
 
 function showTrackLabel(trackCanvas, ideo) {
     var labels, firstTrackId, firstTrack, trackBox, labelBox, left, ideoBox,
+      top,
       marginHack = 7; // TODO: Make this dynamic
 
     clearTimeout(ideo.hideTrackLabelTimeout);
@@ -89,11 +89,12 @@ function showTrackLabel(trackCanvas, ideo) {
 
     left = Math.round(trackBox.left + labelBox.width) - trackBox.width - 1;
     left -= ideoBox.left - marginHack;
+    top = -(labels.split('<br>').length - 2) * trackBox.width + 2;
 
     d3.select('#_ideogramTrackLabel')
       .style('opacity', 1) // Make label visible
       .style('left', left + 'px')
-      .style('top', '6px')
+      .style('top', top + 'px')
       .style('width', 'max-content')
       .style('transform-origin', 'bottom left')
       .style('text-align', 'left')
