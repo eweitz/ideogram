@@ -63,7 +63,8 @@ function getLabels(ideo) {
 }
 
 function showTrackLabel(trackCanvas, ideo) {
-    var labels, firstTrackId, firstTrack, trackBox, labelBox, left;
+    var labels, firstTrackId, firstTrack, trackBox, labelBox, left, ideoBox,
+      marginHack = 7; // TODO: Make this dynamic
 
     clearTimeout(ideo.hideTrackLabelTimeout);
 
@@ -83,8 +84,11 @@ function showTrackLabel(trackCanvas, ideo) {
 
     labelBox = d3.select('#_ideogramTrackLabel').nodes()[0]
       .getBoundingClientRect();
+    ideoBox = d3.select(ideo.config.container).nodes()[0]
+      .getBoundingClientRect();
 
     left = Math.round(trackBox.left + labelBox.width) - trackBox.width - 1;
+    left -= ideoBox.left - marginHack;
 
     d3.select('#_ideogramTrackLabel')
       .style('opacity', 1) // Make label visible
