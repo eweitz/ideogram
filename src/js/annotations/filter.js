@@ -110,6 +110,7 @@ function setOriginalTrackIndexes(rawAnnots) {
 
   keys.splice(4, 0, 'trackIndexOriginal');
   rawAnnots = {keys: keys, annots: setAnnotsByChr};
+  if (ideo.rawAnnots.metadata) rawAnnots.metadata = ideo.rawAnnots.metadata;
 
   return rawAnnots;
 }

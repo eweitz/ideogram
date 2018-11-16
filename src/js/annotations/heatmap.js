@@ -40,21 +40,27 @@ function writeTrackLabelContainer(ideo) {
 function getLabels(ideo) {
   var annotKeys, reservedWords, labels, heatmaps, i;
 
-  if (ideo.config.heatmaps) {
+  if (ideo.rawAnnots.metadata) {
+    labels = ideo.rawAnnots.metadata.trackLabels;
+    if (ideo.displayedTrackIndexes) {
+      labels = labels.filter(function(d, i) {
+        return ideo.displayedTrackIndexes.includes(i + 1);
+      });
+    }
+  } else if (ideo.config.heatmaps) {
     labels = [];
     heatmaps = ideo.config.heatmaps;
     for (i = 0; i < heatmaps.length; i++) {
       labels.push(heatmaps[i].key);
     }
-    labels = labels.join('<br>')
   } else {
     annotKeys = ideo.rawAnnots.keys.slice(0);
     reservedWords = [
       'name', 'start', 'length', 'trackIndex', 'trackIndexOriginal', 'color'
     ];
     labels = annotKeys.filter(d => !reservedWords.includes(d));
-    labels = labels.join('<br>');
   }
+  labels = labels.join('<br>')
   // labels = 'foo';
   // labels = 'foo<br>bar<br>baz<br>moo';
 

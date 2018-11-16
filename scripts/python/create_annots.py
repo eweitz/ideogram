@@ -86,6 +86,8 @@ for i, track_annot_percent in enumerate(track_annot_percents):
 
 annots = []
 
+alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
 chrs = [
     '1', '2', '3', '4', '5', '6', '7', '8', '9', '10',
     '11', '12', '13', '14', '15', '16', '17', '18', '19', '20',
@@ -165,6 +167,10 @@ if include_metadata:
         'numTracks': num_tracks,
         'numAnnots': num_annots
     }
+    trackLabels = []
+    for i in range(num_tracks):
+        trackLabels.append('Sample ' + alphabet[i])
+    top_annots['metadata']['trackLabels'] = trackLabels
 top_annots['keys'] = ['name', 'start', 'length'] + track_keys
 top_annots['annots'] = annots
 
