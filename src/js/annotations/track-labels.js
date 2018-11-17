@@ -73,20 +73,51 @@ function getLabels(ideo) {
   return labels;
 }
 
+function renderTrackLabels(top, left, ideo) {
+  d3.select(ideo.config.container + ' #_ideogramTrackLabel')
+    .style('opacity', 1) // Make label visible
+    .style('left', left + 'px')
+    .style('top', top + 'px')
+    .style('width', 'max-content')
+    .style('transform-origin', 'bottom left')
+    .style('text-align', 'left')
+    .on('mouseover', function () {
+      clearTimeout(ideo.hideTrackLabelTimeout);
+    })
+    .on('mouseout', function () {
+      startHideTrackLabelTimeout(ideo);
+    });
+}
+
+function getTrackLabelOffsets(trackCanvas, ideo) {
+  var labels, firstTrackId, firstTrack, trackBox, labelBox, ideoBox, left, top,
+    marginHack = 7; // TODO: Make this dynamic
+
+  firstTrackId = trackCanvas.id.split('-').slice(0, -1).join('-') + '-0';
+  firstTrack = d3.select('#' + firstTrackId).nodes()[0];
+  trackBox = firstTrack.getBoundingClientRect();
+
+  labelBox = d3.select(ideo.config.container + ' #_ideogramTrackLabel')
+    .nodes()[0].getBoundingClientRect();
+  ideoBox = d3.select(ideo.config.container).nodes()[0]
+    .getBoundingClientRect();
+
+  left = Math.round(trackBox.left + labelBox.width) - trackBox.width - 1;
+  left -= ideoBox.left - marginHack;
+  top = -(labels.split('<br>').length - 2) * trackBox.width + 2;
+
+  return [left, top];
+}
+
 function showTrackLabel(trackCanvas, ideo) {
-    var labels, firstTrackId, firstTrack, trackBox, labelBox, left, ideoBox,
-      top,
-      marginHack = 7; // TODO: Make this dynamic
+    var labels, left, top;
 
     clearTimeout(ideo.hideTrackLabelTimeout);
 
     labels = getLabels(ideo);
 
-    firstTrackId = trackCanvas.id.split('-').slice(0, -1).join('-') + '-0';
-    firstTrack = d3.select('#' + firstTrackId).nodes()[0];
-    trackBox = firstTrack.getBoundingClientRect();
-
-    d3.select('#_ideogramTrackLabel')
+    // Clear any previous positioning, write track label text to DOM
+    d3.select(ideo.config.container + ' #_ideogramTrackLabel')
       .interrupt() // Stop any in-progress disapperance
       .style('top', '')
       .style('left', '')
@@ -94,28 +125,9 @@ function showTrackLabel(trackCanvas, ideo) {
       .style('transform', 'rotate(-90deg)')
       .html(labels);
 
-    labelBox = d3.select(ideo.config.container + ' #_ideogramTrackLabel')
-      .nodes()[0].getBoundingClientRect();
-    ideoBox = d3.select(ideo.config.container).nodes()[0]
-      .getBoundingClientRect();
+    [left, top] = getTrackLabelOffsets(trackCanvas, ideo);
 
-    left = Math.round(trackBox.left + labelBox.width) - trackBox.width - 1;
-    left -= ideoBox.left - marginHack;
-    top = -(labels.split('<br>').length - 2) * trackBox.width + 2;
-
-    d3.select('#_ideogramTrackLabel')
-      .style('opacity', 1) // Make label visible
-      .style('left', left + 'px')
-      .style('top', top + 'px')
-      .style('width', 'max-content')
-      .style('transform-origin', 'bottom left')
-      .style('text-align', 'left')
-      .on('mouseover', function () {
-        clearTimeout(ideo.hideTrackLabelTimeout);
-      })
-      .on('mouseout', function () {
-        startHideTrackLabelTimeout(ideo);
-      });
+    renderTrackLabels(top, left, ideo);
 }
 
 export {
