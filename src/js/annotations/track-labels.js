@@ -88,7 +88,7 @@ function renderTrackLabels(top, left, ideo) {
     });
 }
 
-function getTrackLabelOffsets(trackCanvas, ideo) {
+function getTrackLabelOffsets(labels, trackCanvas, ideo) {
   var labels, firstTrackId, firstTrack, trackBox, labelBox, ideoBox, left, top,
     marginHack = 7; // TODO: Make this dynamic
 
@@ -125,7 +125,7 @@ function showTrackLabel(trackCanvas, ideo) {
       .style('transform', 'rotate(-90deg)')
       .html(labels);
 
-    [left, top] = getTrackLabelOffsets(trackCanvas, ideo);
+    [left, top] = getTrackLabelOffsets(labels, trackCanvas, ideo);
 
     renderTrackLabels(top, left, ideo);
 }
