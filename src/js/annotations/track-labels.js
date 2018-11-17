@@ -8,6 +8,10 @@ import * as d3selection from 'd3-selection';
 
 var d3 = Object.assign({}, d3selection);
 
+var reservedTrackKeys = [
+  'name', 'start', 'length', 'trackIndex', 'trackIndexOriginal', 'color'
+];
+
 /**
  * Start a timer that, upon expiring, hides the track label.
  *
@@ -21,7 +25,7 @@ function startHideTrackLabelTimeout(ideo) {
   if (ideo.config.showTrackLabel === false) return;
 
   ideo.hideTrackLabelTimeout = window.setTimeout(function () {
-    d3.select('#_ideogramTrackLabel').transition()
+    d3.select(ideo.config.container + '#_ideogramTrackLabel').transition()
       .duration(500)
       .style('opacity', 0)
   }, 250);
@@ -44,7 +48,7 @@ function writeTrackLabelContainer(ideo) {
 }
 
 function getLabels(ideo) {
-  var annotKeys, reservedWords, labels, heatmaps, i;
+  var annotKeys, labels, heatmaps, i;
 
   if (ideo.rawAnnots.metadata) {
     labels = ideo.rawAnnots.metadata.trackLabels;
@@ -61,14 +65,9 @@ function getLabels(ideo) {
     }
   } else {
     annotKeys = ideo.rawAnnots.keys.slice(0);
-    reservedWords = [
-      'name', 'start', 'length', 'trackIndex', 'trackIndexOriginal', 'color'
-    ];
-    labels = annotKeys.filter(d => !reservedWords.includes(d));
+    labels = annotKeys.filter(d => !reservedTrackKeys.includes(d));
   }
-  labels = labels.join('<br>')
-  // labels = 'foo';
-  // labels = 'foo<br>bar<br>baz<br>moo';
+  labels = labels.join('<br>');
 
   return labels;
 }
@@ -94,7 +93,8 @@ function getTrackLabelOffsets(trackCanvas, ideo) {
     marginHack = 7; // TODO: Make this dynamic
 
   firstTrackId = trackCanvas.id.split('-').slice(0, -1).join('-') + '-0';
-  firstTrack = d3.select('#' + firstTrackId).nodes()[0];
+  firstTrack = d3.select(ideo.config.container + ' #' + firstTrackId)
+    .nodes()[0];
   trackBox = firstTrack.getBoundingClientRect();
 
   labelBox = d3.select(ideo.config.container + ' #_ideogramTrackLabel')
