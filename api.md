@@ -80,7 +80,7 @@ String.  Optional.  Default: "#F00" (i.e., red).  The color of each annotation. 
 ## annotationsLayout
 String.  Optional.  Default: "tracks".  
 
-The layout of this ideogram's annotations.  One of "tracks", "histogram", or "overlay".
+The layout of this ideogram's annotations.  One of "tracks", "heatmap", "histogram", or "overlay".
 
 ### annotationsLayout: 'tracks'
 Lay out annotations in tracks beside each chromosome.  There can be more than one track, which is useful for displaying annotations by category (e.g. pathogenic, unknown significance, benign).  Example in [Annotations, tracks](https://eweitz.github.io/ideogram/annotations-tracks).
