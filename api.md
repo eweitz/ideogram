@@ -58,6 +58,7 @@ var ideogram = new Ideogram({
 * [resolution](#resolution)
 * [rotatable](#rotatable)
 * [rows](#rows)
+* [sex](#sex)
 * [showBandLabels](#showbandlabels)
 * [showChromosomeLabels](#showchromosomelabels)
 * [showAnnotTooltip](#showannottooltip)
@@ -189,7 +190,7 @@ Boolean.  Optional.  Default: true.  Whether chromosomes are rotatable upon clic
 Number.  Optional.  Default: 1.  Number of rows to arrange chromosomes into.  Useful for putting ideogram into a small container, or when dealing with genomes that have many chromosomes.  Example in [Layout, small](https://eweitz.github.io/ideogram/layout-small).
 
 ## sex
-String.  Optional.  Default: male.  The biological sex of the organism.  Useful for omitting chromosome Y in female mammals.  Currently only supported for organisms that use XY sex-determination.  Examples in [Layout, small](https://eweitz.github.io/ideogram/layout-small).
+String.  Optional.  Default: male.  The biological sex of the organism.  Useful for omitting chromosome Y in female mammals.  Currently only supported for organisms that use XY sex-determination.  Examples in [Ploidy, basic](https://eweitz.github.io/ideogram/ploidy-basic).
 
 ## showBandLabels
 Boolean.  Optional.  Default: false.  Whether to show cytogenetic band labels, e.g. 1q21.  Example in [Annotations, basic](https://eweitz.github.io/ideogram/annotations-basic).
