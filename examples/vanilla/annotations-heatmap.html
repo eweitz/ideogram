@@ -44,6 +44,26 @@
     {id: 'geneTypeTrack', displayName: 'Gene type'},
   ];
 
+  var heatmaps = [
+      {
+        key: 'expression-level',
+        thresholds: [
+          ['2', '#88F', 'Low'],
+          ['4', '#CCC', 'Medium'],
+          ['+', '#F33', 'High']]
+      },
+      {
+        key: 'gene-type',
+        thresholds: [
+          ['0', '#00F', 'mRNA'],
+          ['1', '#0AF', 'misc_RNA'],
+          ['2', '#AAA', 'miRNA'],
+          ['3', '#FA0', 'tRNA'],
+          ['4', '#F00', 'lncRNA']
+        ]
+      }
+    ]
+
   var config = {
     container: '#container',
     organism: 'human',
@@ -51,16 +71,7 @@
     chrHeight: 275,
     annotationsPath: '../../data/annotations/SRR562646.json',
     annotationsLayout: 'heatmap',
-    heatmaps: [
-      {
-        key: 'expression-level',
-        thresholds: [['2', '#88F'], ['4', '#CCC'], ['+', '#F33']]
-      },
-      {
-        key: 'gene-type',
-        thresholds: [['0', '#00F'], ['1', '#0AF'], ['2', '#AAA'], ['3', '#FA0'], ['4', '#F00']]
-      }
-    ],
+    heatmaps: heatmaps,
     annotationTracks: annotationTracks,
     rotatable: false // Support for rotatable heatmaps is planned
   };

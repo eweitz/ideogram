@@ -9,9 +9,10 @@ import * as d3selection from 'd3-selection';
 
 var d3 = Object.assign({}, d3selection);
 
+import { writeLegend } from './legend'
 import {
   startHideTrackLabelTimeout, writeTrackLabelContainer, showTrackLabel
-} from './track-labels'
+} from './track-labels';
 
 /**
  * Add canvases that will contain annotations.  One canvas per track.
@@ -237,6 +238,8 @@ function deserializeAnnotsForHeatmap(rawAnnotsContainer) {
 
   ideo.rawAnnots.keys = keys;
   ideo.rawAnnots.annots = newRaContainers;
+
+  writeLegend(ideo);
 
   reportPerformance(t0, ideo);
 }
