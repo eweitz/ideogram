@@ -55,13 +55,14 @@ function writeTooltipContainer(ideo) {
     .attr('class', '_ideogramTooltip')
     .attr('id', '_ideogramTooltip')
     .style('opacity', 0)
-    .style('position', 'absolute')
+    .style('position', 'fixed')
     .style('text-align', 'center')
     .style('padding', '4px')
     .style('font', '12px sans-serif')
     .style('background', 'white')
     .style('border', '1px solid black')
-    .style('border-radius', '5px');
+    .style('border-radius', '5px')
+    .style('z-index', '100');
 }
 
 function writeContainerDom(taxid, ideo) {
