@@ -7,7 +7,7 @@ function writeHeatmapLegend(ideo) {
     row, y, color, label;
 
   legend = [];
-  heatmaps = config.heatmaps,
+  heatmaps = ideo.config.heatmaps,
   thresholdHasLabel = heatmaps[0].thresholds[0].length > 2;
 
   if (!thresholdHasLabel) return;
@@ -25,9 +25,6 @@ function writeHeatmapLegend(ideo) {
       legend.push(row);
     }
   }
-  // legend = '<g>' + legend.join('</g><g>') + '</g>';
-
-  console.log(legend);
 
   d3.select(ideo.config.container + ' #_ideogramOuterWrap')
     .append('svg')
