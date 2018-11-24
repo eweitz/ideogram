@@ -5,13 +5,15 @@ var d3 = Object.assign({}, d3selection);
 var lineHeight = 19;
 
 function getListItems(labels, svg, hasDisplayName, heatmap) {
-  var j, threshold, color, label, y;
+  var j, threshold, color, label, y, rectAttrs;
+
+  rectAttrs = 'height="10" width="10"  y="5" style="stroke: #888;"';
 
   for (j = 0; j < heatmap.thresholds.length; j++) {
     threshold = heatmap.thresholds[j];
     y = j * lineHeight;
     if (hasDisplayName) y += lineHeight;
-    color = '<rect height="10" width="10" y="5" fill="' + threshold[1] + '"/>';
+    color = '<rect ' + rectAttrs + ' fill="' + threshold[1] + '"/>';
     label = '<li>' + threshold[2] + '</li>';
     svg += '<g transform="translate(0, ' + y + ')">' + color + '</g>'
     labels += label;
