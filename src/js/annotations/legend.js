@@ -33,6 +33,8 @@ function getListItems(labels, svg, list) {
 function writeLegend(ideo) {
   var i, legend, svg, labels, list, content;
 
+  d3.select(ideo.config.container + ' #_ideogramLegend').remove();
+
   legend = ideo.config.legend;
   content = '';
 
