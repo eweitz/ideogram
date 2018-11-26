@@ -9,14 +9,14 @@ var legendStyle =
   '#_ideogramLegend svg {float: left;} ' +
   '#_ideogramLegend ul {' +
     'position: relative; left: -14px; list-style: none; float: left; ' +
-    'padding-left: 10px;' +
+    'padding-left: 10px; margin-top: 0px;' +
   '} ' +
   '#_ideogramLegend ul span {position: relative; left: -15px;} ';
 
 function getListItems(labels, svg, hasName, list) {
   var i, color, y, rectAttrs, row;
 
-  rectAttrs = 'height="10" width="10"  y="5" style="stroke: #888;"';
+  rectAttrs = 'height="10" width="10"  y="4" style="stroke: #888;"';
 
   for (i = 0; i < list.rows.length; i++) {
     row = list.rows[i];
