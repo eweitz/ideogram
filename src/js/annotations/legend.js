@@ -4,6 +4,14 @@ var d3 = Object.assign({}, d3selection);
 
 var lineHeight = 19;
 
+var legendStyle =
+  '#_ideogramLegend {font: 12px Arial, line-height: 19.6px;} ' +
+  '#_ideogramLegend svg {float: left;} ' +
+  '#_ideogramLegend ul {' +
+    'position: relative; left: -14px; list-style: none, float: left;' +
+  '} ' +
+  '#_ideogramLegend ul span {position: relative; left: -15px;} ';
+
 function getListItems(labels, svg, hasName, list) {
   var i, color, y, rectAttrs, row;
 
@@ -26,35 +34,30 @@ function getHeader(list) {
   labels = '';
   hasName = false;
   if ('name' in list) {
-    labels +=
-      '<span style="position: relative; left: -15px;">' +
-        list.name +
-      '</span>';
+    labels += '<span>' + list.name + '</span>';
     hasName = true;
   }
   return [labels, hasName];
 }
 
 function writeLegend(ideo) {
-  var i, legend, hasName, svg, labels, legendStyle, list, content;
+  var i, legend, hasName, svg, labels, list, content;
 
   legend = ideo.config.legend;
   content = '';
-  legendStyle = 'position: relative; top: -11px; left: -14px;';
 
   for (i = 0; i < legend.length; i++) {
     list = legend[i];
     [labels, hasName] = getHeader(list);
-    svg = '<svg width="' + lineHeight + '" style="float: left">';
+    svg = '<svg width="' + lineHeight + '">';
     [labels, svg] = getListItems(labels, svg, hasName, list);
     svg += '</svg>'
-    content += svg + '<ul style="' + legendStyle + '">' + labels + '</ul>';
+    content += svg + '<ul>' + labels + '</ul>';
   }
 
-  d3.select(ideo.config.container + ' #_ideogramOuterWrap')
-    .append('div')
-      .attr('id', '_ideogramLegend')
-      .html(content);
+  var target = d3.select(ideo.config.container + ' #_ideogramOuterWrap');
+  target.append('style').html(legendStyle)
+  target.append('div').attr('id', '_ideogramLegend').html(content);
 }
 
 export { writeLegend }
