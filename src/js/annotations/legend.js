@@ -13,7 +13,7 @@ var legendStyle =
   '} ' +
   '#_ideogramLegend ul span {position: relative; left: -15px;} ';
 
-function getListItems(labels, svg, hasName, list) {
+function getListItems(labels, svg, list) {
   var i, color, y, rectAttrs, row;
 
   rectAttrs = 'height="10" width="10"  y="4" style="stroke: #888;"';
@@ -22,7 +22,7 @@ function getListItems(labels, svg, hasName, list) {
     row = list.rows[i];
     labels += '<li>' + row.name + '</li>';
     y = lineHeight * i;
-    if (hasName) y += lineHeight;
+    if ('name' in list) y += lineHeight;
     color = '<rect ' + rectAttrs + ' fill="' + row.color + '"/>';
     svg += '<g transform="translate(0, ' + y + ')">' + color + '</g>';
   }
@@ -30,28 +30,17 @@ function getListItems(labels, svg, hasName, list) {
   return [labels, svg];
 }
 
-function getHeader(list) {
-  var labels, hasName;
-  labels = '';
-  hasName = false;
-  if ('name' in list) {
-    labels += '<span>' + list.name + '</span>';
-    hasName = true;
-  }
-  return [labels, hasName];
-}
-
 function writeLegend(ideo) {
-  var i, legend, hasName, svg, labels, list, content;
+  var i, legend, svg, labels, list, content;
 
   legend = ideo.config.legend;
   content = '';
 
   for (i = 0; i < legend.length; i++) {
     list = legend[i];
-    [labels, hasName] = getHeader(list);
+    if ('name' in list) labels = '<span>' + list.name + '</span>';
     svg = '<svg width="' + lineHeight + '">';
-    [labels, svg] = getListItems(labels, svg, hasName, list);
+    [labels, svg] = getListItems(labels, svg, list);
     svg += '</svg>'
     content += svg + '<ul>' + labels + '</ul>';
   }
