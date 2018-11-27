@@ -13,8 +13,7 @@
 <a href="annotations-external-data">Next</a>
 <p>
   1000 <a href="https://github.com/eweitz/ideogram/blob/ca64a3c51e1b5ecaae89d2422ffc408565743644/scripts/create_annots.py#L68">
-  randomly generated</a> SNVs across the human genome, artificially categorized
-  as "pathogenic" (red), "uncertain significance" (grey) or "benign" (green).
+  randomly generated</a> SNVs across the human genome. 
   See also <a href="annotations-track-filters">Annotations, track filters</a>.
   <br/>
   <br/>
@@ -56,13 +55,23 @@
       {id: 'benignTrack',  displayName: 'Benign', color: '#8D4', shape: shape}
     ];
 
+    var legend = [{
+      name: 'Clinical significance (simulated)',
+      rows: [
+        {name: 'Pathogenic', color: '#F00', shape: shape},
+        {name: 'Uncertain significance', color: '#CCC', shape: shape},
+        {name: 'Benign', color: '#8D4', shape: shape}
+      ]
+    }];
+
     var config = {
       organism: 'human',
       orientation: 'vertical',
       chrWidth: 8,
       annotationsPath: '../../data/annotations/1000_virtual_snvs.json',
       annotationTracks: annotationTracks,
-      annotationHeight: annotHeight
+      annotationHeight: annotHeight,
+      legend: legend
     };
 
     if (typeof ideogram !== 'undefined') {

@@ -43,6 +43,7 @@ var ideogram = new Ideogram({
 * [heatmaps](#heatmaps)
 * [filterable](#filterable)
 * [fullChromosomeLabels](#fullchromosomelabels)
+* [legend](#legend)
 * [onBrushMove](#onbrushmove)
 * [onDidRotate](#ondidrotate)
 * [onDrawAnnots](#ondrawannots)
@@ -143,6 +144,9 @@ Boolean.  Optional.  Whether annotations should be filterable.  Example in [Anno
 
 ## fullChromosomeLabels
 Boolean.  Optional.  Whether to include abbreviation species name in chromosome label.  Example in [Homology, interspecies](https://eweitz.github.io/ideogram/homology-interspecies).
+
+## legend
+Array.  Optional.  List of objects describing annotations.  Example in [Annotations, tracks](https://eweitz.github.io/ideogram/annotations-tracks).
 
 ## onBrushMove
 Function.  Optional.  Callback function to invoke when brush moves.  Example in [Brush](https://eweitz.github.io/ideogram/brush).

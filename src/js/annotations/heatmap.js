@@ -11,7 +11,7 @@ var d3 = Object.assign({}, d3selection);
 
 import {
   startHideTrackLabelTimeout, writeTrackLabelContainer, showTrackLabel
-} from './track-labels'
+} from './track-labels';
 
 /**
  * Add canvases that will contain annotations.  One canvas per track.

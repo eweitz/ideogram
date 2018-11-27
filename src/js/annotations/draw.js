@@ -1,5 +1,7 @@
 import * as d3selection from 'd3-selection';
+
 import {writeHistogramAnnots} from './histogram';
+import { writeLegend } from './legend'
 
 var d3 = Object.assign({}, d3selection);
 
@@ -213,6 +215,8 @@ function drawProcessedAnnots(annots) {
 
   layout = 'tracks';
   if (ideo.config.annotationsLayout) layout = ideo.config.annotationsLayout;
+
+  if ('legend' in ideo.config) writeLegend(ideo);
 
   if (layout === 'heatmap') {
     ideo.drawHeatmaps(annots);
