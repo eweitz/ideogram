@@ -13,18 +13,37 @@ var legendStyle =
   '} ' +
   '#_ideogramLegend ul span {position: relative; left: -15px;} ';
 
+function getIcon(row) {
+  var icon, triangleAttrs, circleAttrs, rectAttrs,
+    fill = 'fill="' + row.color + '" style="stroke: #AAA;"',
+    shape = row.shape;
+
+  triangleAttrs = 'd="m7,3 l -5 9 l 9 0 z"';
+  circleAttrs = 'd="m2,9a 4.5,4.5 0 1,0 9,0a 4.5,4.5 0 1,0 -9,0"';
+  rectAttrs = 'height="10" width="10"  y="3"';
+
+  if ('shape' in row && ['circle', 'triangle'].includes(shape)) {
+    if (shape === 'circle') {
+      icon = '<path ' + circleAttrs + ' ' + fill + '></path>';
+    } else if (shape === 'triangle') {
+      icon = '<path ' + triangleAttrs + ' ' + fill + '></path>';
+    }
+  } else {
+    icon = '<rect ' + rectAttrs + ' ' + fill + '/>';
+  }
+
+  return icon;
+}
+
 function getListItems(labels, svg, list) {
-  var i, color, y, rectAttrs, row;
-
-  rectAttrs = 'height="10" width="10"  y="4" style="stroke: #888;"';
-
+  var i, icon, y, row;
   for (i = 0; i < list.rows.length; i++) {
     row = list.rows[i];
     labels += '<li>' + row.name + '</li>';
     y = lineHeight * i;
     if ('name' in list) y += lineHeight;
-    color = '<rect ' + rectAttrs + ' fill="' + row.color + '"/>';
-    svg += '<g transform="translate(0, ' + y + ')">' + color + '</g>';
+    icon = getIcon(row);
+    svg += '<g transform="translate(0, ' + y + ')">' + icon + '</g>';
   }
 
   return [labels, svg];
