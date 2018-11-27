@@ -446,23 +446,32 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
-  it('should have 1000 annotations and 5 tracks in tracks annotations example', function(done) {
+  it('should have 1000 annotations and legend in annotations example', function(done) {
     // Tests use case from ../examples/vanilla/annotations-tracks.html
     // TODO: Add class to annots indicating track
 
     function callback() {
       var numAnnots = document.getElementsByClassName('annot').length;
       assert.equal(numAnnots, 1000);
+      var numLegendRows = document.querySelectorAll('#_ideogramLegend li').length;
+      assert.equal(numLegendRows, 3);
       done();
     }
 
     var annotationTracks = [
       {id: 'pathogenicTrack', displayName: 'Pathogenic', color: '#F00'},
-      {id: 'likelyPathogenicTrack', displayName: 'Likely pathogenic', color: '#DB9'},
       {id: 'uncertainSignificanceTrack', displayName: 'Uncertain significance', color: '#CCC'},
-      {id: 'likelyBenignTrack', displayName: 'Likely benign', color: '#BD9'},
       {id: 'benignTrack', displayName: 'Benign', color: '#8D4'}
     ];
+
+    var legend = [{
+      name: 'Clinical significance (simulated)',
+      rows: [
+        {name: 'Pathogenic', color: '#F00'},
+        {name: 'Uncertain significance', color: '#CCC'},
+        {name: 'Benign', color: '#8D4'}
+      ]
+    }];
 
     var config = {
       taxid: 9606,
@@ -472,6 +481,7 @@ describe('Ideogram', function() {
       showChromosomeLabels: true,
       annotationsPath: '../dist/data/annotations/1000_virtual_snvs.json',
       annotationTracks: annotationTracks,
+      legend: legend,
       annotationHeight: 2.5,
       orientation: 'vertical',
       dataDir: '/dist/data/bands/native/',
@@ -513,6 +523,15 @@ describe('Ideogram', function() {
       {id: 'benignTrack', displayName: 'Benign', color: '#8D4'}
     ];
 
+    var legend = [{
+      name: 'Clinical significance (simulated)',
+      rows: [
+        {name: 'Pathogenic', color: '#F00', shape: 'triangle'},
+        {name: 'Uncertain significance', color: '#CCC', shape: 'triangle'},
+        {name: 'Benign', color: '#8D4', shape: 'triangle'}
+      ]
+    }];
+
     var config = {
       organism: 'human',
       chrWidth: 8,
@@ -520,6 +539,7 @@ describe('Ideogram', function() {
       annotationsPath: '../dist/data/annotations/1000_virtual_snvs.json',
       annotationTracks: annotationTracks,
       annotHeight: 3.5,
+      legend: legend,
       dataDir: '/dist/data/bands/native/',
       onLoad: loadCallback,
       onDidRotate: callback
@@ -1442,13 +1462,20 @@ describe('Ideogram', function() {
       done();
     }
 
+    var shape = 'circle';
     var annotationTracks = [
-      {id: 'pathogenicTrack', displayName: 'Pathogenic', color: '#F00'},
-      {id: 'likelyPathogenicTrack', displayName: 'Likely pathogenic', color: '#DB9'},
-      {id: 'uncertainSignificanceTrack', displayName: 'Uncertain significance', color: '#CCC'},
-      {id: 'likelyBenignTrack', displayName: 'Likely benign', color: '#BD9'},
-      {id: 'benignTrack', displayName: 'Benign', color: '#8D4'}
+      {id: 'pathogenicTrack', displayName: 'Pathogenic', color: '#F00', shape: shape},
+      {id: 'uncertainSignificanceTrack', displayName: 'Uncertain significance', color: '#CCC', shape: shape},
+      {id: 'benignTrack', displayName: 'Benign', color: '#8D4', shape: shape}
     ];
+
+    var legend = [{
+      rows: [
+        {name: 'Pathogenic', color: '#F00', shape: shape},
+        {name: 'Uncertain significance', color: '#CCC', shape: shape},
+        {name: 'Benign', color: '#8D4', shape: shape}
+      ]
+    }];
 
     var config = {
       organism: 'human',
@@ -1457,6 +1484,7 @@ describe('Ideogram', function() {
       annotationsPath: '../dist/data/annotations/1000_virtual_snvs.json',
       annotationTracks: annotationTracks,
       annotationHeight: 2.5,
+      legend: legend,
       dataDir: '/dist/data/bands/native/'
     };
     config.onDrawAnnots = callback;
