@@ -21,16 +21,6 @@
 
 <div id="filters-container">
   <ul id="tracks-to-display">
-      Tracks to display
-      <li><label for="filter_1"><input type="checkbox" id="filter_1" checked/>A</label></li>
-      <li><label for="filter_2"><input type="checkbox" id="filter_2"/>B</label></li>
-      <li><label for="filter_3"><input type="checkbox" id="filter_3"/>C</label></li>
-      <li><label for="filter_4"><input type="checkbox" id="filter_4"/>D</label></li>
-      <li><label for="filter_5"><input type="checkbox" id="filter_5" checked/>E</label></li>
-      <li><label for="filter_6"><input type="checkbox" id="filter_6"/>F</label></li>
-      <li><label for="filter_7"><input type="checkbox" id="filter_7"/>G</label></li>
-      <li><label for="filter_8"><input type="checkbox" id="filter_8"/>H</label></li>
-      <li><label for="filter_9"><input type="checkbox" id="filter_9" checked/>I</label></li>
   </ul>
 
   <ul id="annotations-layout">
@@ -54,6 +44,7 @@
     rotatable: false,
     annotationsLayout: 'heatmap',
     annotationsPath: '../../data/annotations/9_tracks_virtual_snvs.json',
+    onLoadAnnots: createTrackFilters,
     annotationsNumTracks: 3,
     annotationsDisplayedTracks: [1, 5, 9],
     // annotationsPath: '../../data/annotations/all_human_genes.json',
@@ -63,12 +54,35 @@
 
   ideogram = new Ideogram(config);
 
-  checkboxes = document.querySelectorAll('input[type=checkbox]');
-  checkboxes.forEach(function(checkbox) {
-    checkbox.addEventListener('click', function() {
-      updateTracks();
+  function createTrackFilters() {
+    var i, listItems, trackLabels, content, checked;
+
+    // Only apply this function once
+    if (document.querySelector('#filter_1')) return;
+
+    listItems = '';
+    trackLabels = ideogram.rawAnnots.metadata.trackLabels;
+
+    for (i = 0; i < trackLabels.length; i++) {
+      checked = ([0, 4, 8].includes(i)) ? 'checked' : '';
+      listItems +=
+        '<li>' +
+          '<label for="filter_' + (i + 1) + '">' +
+            '<input type="checkbox" id="filter_'  + (i + 1) + '" ' + checked + '/>' +
+            trackLabels[i] +
+          '</label>' +
+        '</li>';
+    }
+    content = 'Tracks to display ' + listItems;
+    document.querySelector('#tracks-to-display').innerHTML = content;
+
+    checkboxes = document.querySelectorAll('input[type=checkbox]');
+    checkboxes.forEach(function(checkbox) {
+      checkbox.addEventListener('click', function() {
+        updateTracks();
+      });
     });
-  });
+  }
 
   radioButtons = document.querySelectorAll('input[type=radio]');
   radioButtons.forEach(function(radioButton) {
