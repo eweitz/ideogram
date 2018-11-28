@@ -768,7 +768,7 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
-  it('should filter heatmap tracks', function(done) {
+  it('should filter heatmap tracks and show track labels', function(done) {
     // Tests use case from ../examples/vanilla/annotations-track-filters.html
 
     var firstRun = true;
@@ -782,6 +782,10 @@ describe('Ideogram', function() {
       } else {
         return;
       }
+
+      d3.select('#chr1-9606-canvas-0').dispatch('mouseover');
+      var trackLabel = d3.select('#_ideogramTrackLabel').html();
+      assert.equal(trackLabel, 'Sample A<br>Sample E<br>Sample I');
 
       track1 = document.querySelector('#chr2-9606-canvas-0').getBoundingClientRect();
       track2 = document.querySelector('#chr2-9606-canvas-1').getBoundingClientRect();
