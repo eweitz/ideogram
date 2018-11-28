@@ -746,12 +746,12 @@ describe('Ideogram', function() {
       }
 
       var numAnnots = document.getElementsByClassName('annot').length;
-      assert.equal(numAnnots, 696);
+      assert.equal(numAnnots, 707);
 
       // Filters tracks to show only 4th and 5th track (of 9)
       ideogram.updateDisplayedTracks([4, 5]);
       numAnnots = document.getElementsByClassName('annot').length;
-      assert.equal(numAnnots, 620);
+      assert.equal(numAnnots, 635);
 
       done();
     }
@@ -783,9 +783,9 @@ describe('Ideogram', function() {
         return;
       }
 
-      // d3.select('#chr2-9606-canvas-0').dispatch('mouseover');
-      // var trackLabel = d3.select('#_ideogramTrackLabel').html();
-      // assert.equal(trackLabel, 'Sample A<br>Sample E<br>Sample I');
+      d3.select('#chr2-9606-canvas-0').dispatch('mouseover');
+      var trackLabel = d3.select('#_ideogramTrackLabel').html();
+      assert.equal(trackLabel, 'Sample A<br>Sample E<br>Sample I');
 
       track1 = document.querySelector('#chr2-9606-canvas-0').getBoundingClientRect();
       track2 = document.querySelector('#chr2-9606-canvas-1').getBoundingClientRect();
