@@ -25,7 +25,7 @@ function startHideTrackLabelTimeout(ideo) {
   if (ideo.config.showTrackLabel === false) return;
 
   ideo.hideTrackLabelTimeout = window.setTimeout(function () {
-    d3.select(ideo.config.container + '#_ideogramTrackLabel').transition()
+    d3.select(ideo.config.container + ' #_ideogramTrackLabel').transition()
       .duration(500)
       .style('opacity', 0)
   }, 250);
