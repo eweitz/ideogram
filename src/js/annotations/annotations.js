@@ -112,11 +112,12 @@ function afterRawAnnots(ideo) {
     return naturalSort(a.chr, b.chr);
   });
 
-  if (ideo.config.heatmaps) {
-    ideo.deserializeAnnotsForHeatmap(ideo.rawAnnots);
-  }
   if (ideo.onLoadAnnotsCallback) {
     ideo.onLoadAnnotsCallback();
+  }
+
+  if (ideo.config.heatmaps) {
+    ideo.deserializeAnnotsForHeatmap(ideo.rawAnnots);
   }
 }
 

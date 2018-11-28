@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Functions for drawing a legend for genome annotations.
+ * A legend consists of rows, each with a colored icon and a text label.
+ * Icons may have different shapes.  A legend may also have a name.
+ */
+
 import * as d3selection from 'd3-selection';
 
 var d3 = Object.assign({}, d3selection);
@@ -71,4 +77,4 @@ function writeLegend(ideo) {
   target.append('div').attr('id', '_ideogramLegend').html(content);
 }
 
-export { writeLegend }
+export {writeLegend}
