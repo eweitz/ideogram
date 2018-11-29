@@ -52,11 +52,6 @@ function getLabels(ideo) {
 
   if (ideo.rawAnnots.metadata) {
     labels = ideo.rawAnnots.metadata.trackLabels;
-    if (ideo.displayedTrackIndexes) {
-      labels = labels.filter(function(d, i) {
-        return ideo.displayedTrackIndexes.includes(i + 1);
-      });
-    }
   } else if (ideo.config.heatmaps) {
     labels = [];
     heatmaps = ideo.config.heatmaps;
@@ -67,6 +62,13 @@ function getLabels(ideo) {
     annotKeys = ideo.rawAnnots.keys.slice(0);
     labels = annotKeys.filter(d => !reservedTrackKeys.includes(d));
   }
+
+  if (ideo.displayedTrackIndexes) {
+    labels = labels.filter(function(d, i) {
+      return ideo.displayedTrackIndexes.includes(i + 1);
+    });
+  }
+
   labels = labels.join('<br>');
 
   return labels;
