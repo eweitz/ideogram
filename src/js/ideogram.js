@@ -201,7 +201,9 @@ export default class Ideogram {
       aIsCP = a.type === 'chloroplast',
       bIsCP = b.type === 'chloroplast',
       aIsMT = a.type === 'mitochondrion',
-      bIsMT = b.type === 'mitochondrion';
+      bIsMT = b.type === 'mitochondrion',
+      aIsAP = a.type === 'apicoplast',
+      bIsAP = b.type === 'apicoplast';
     // aIsPlastid = aIsMT && a.name !== 'MT', // e.g. B1 in rice genome GCF_001433935.1
     // bIsPlastid = bIsMT && b.name !== 'MT';
 
@@ -213,7 +215,7 @@ export default class Ideogram {
       return 1;
     } else if (aIsCP && bIsMT) {
       return -1;
-    } else if (!aIsMT && !aIsCP && (bIsMT || bIsCP)) {
+    } else if (!aIsAP && !aIsMT && !aIsCP && (bIsMT || bIsCP || bIsAP)) {
       return -1;
     }
   }
