@@ -47,6 +47,10 @@ function writeTrackLabelContainer(ideo) {
     .style('line-height', '10px')
 }
 
+/**
+ * Get label text for displayed tracks from annotation container metadata,
+ * heatmap keys, or annotation container keys
+ */
 function getLabels(ideo) {
   var annotKeys, labels, heatmaps, i;
 
@@ -74,6 +78,9 @@ function getLabels(ideo) {
   return labels;
 }
 
+/**
+ * Display track labels on the page
+ */
 function renderTrackLabels(top, left, ideo) {
   d3.select(ideo.config.container + ' #_ideogramTrackLabel')
     .style('opacity', 1) // Make label visible
@@ -90,6 +97,9 @@ function renderTrackLabels(top, left, ideo) {
     });
 }
 
+/**
+ * Get left and top (x and y) offset for track label text
+ */
 function getTrackLabelOffsets(labels, trackCanvas, ideo) {
   var labels, firstTrackId, firstTrack, trackBox, labelBox, ideoBox, left, top,
     marginHack = 7; // TODO: Make this dynamic
@@ -111,6 +121,9 @@ function getTrackLabelOffsets(labels, trackCanvas, ideo) {
   return [left, top];
 }
 
+/**
+ * Show the track label for this track
+ */
 function showTrackLabel(trackCanvas, ideo) {
     var labels, left, top;
 
