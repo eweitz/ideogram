@@ -15,7 +15,6 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'node_modules/d3/build/d3.min.js',
       'src/js/index.js',
       'test/web-test.js',
       {pattern: 'dist/data/**', watched: false, included: false, served: true, nocache: false}

@@ -57,13 +57,23 @@
       {id: 'benignTrack',  displayName: 'Benign', color: '#8D4', shape: shape}
     ];
 
+    var legend = [{
+      name: 'Clinical significance (simulated)',
+      rows: [
+        {name: 'Pathogenic', color: '#F00', shape: shape},
+        {name: 'Uncertain significance', color: '#CCC', shape: shape},
+        {name: 'Benign', color: '#8D4', shape: shape}
+      ]
+    }];
+
     var config = {
       organism: 'human',
       orientation: 'vertical',
       chrWidth: 8,
       annotationsPath: 'data/annotations/1000_virtual_snvs.json',
       annotationTracks: annotationTracks,
-      annotationHeight: annotHeight
+      annotationHeight: annotHeight,
+      legend: legend
     };
 
     if (typeof ideogram !== 'undefined') {

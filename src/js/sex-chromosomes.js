@@ -54,19 +54,16 @@ function drawSexChromosomes(container, chrIndex) {
  *  https://en.wikipedia.org/wiki/Category:Sex_chromosome_aneuploidies
  */
 function setSexChromosomes(chrs) {
-  if (this.config.ploidy !== 2 || !this.config.sex) {
-    return;
-  }
+  var chr, i,
+    ideo = this,
+    sexChrs = {X: 1, Y: 1};
 
-  var ideo = this,
-    sexChrs = {X: 1, Y: 1},
-    chr, i;
+  if (this.config.ploidy !== 2 || !this.config.sex) return;
 
   ideo.sexChromosomes.list = [];
 
   for (i = 0; i < chrs.length; i++) {
     chr = chrs[i];
-
     if (ideo.config.sex === 'male' && chr in sexChrs) {
       ideo.sexChromosomes.list.push(chr);
       if (!ideo.sexChromosomes.index) {

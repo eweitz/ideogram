@@ -9,6 +9,39 @@
  * pixels.
  */
 
+function throwBpToPxError(bp, chr, band) {
+  throw new Error(
+    'Base pair out of range.  ' +
+    'bp: ' + bp + '; length of chr' + chr.name + ': ' + band.bp.stop
+  );
+}
+
+function getPx(chr, bp) {
+  var i, px, band, bpToIscnScale, iscn, iscnStart, iscnStop, iscnLength,
+    bpStart, bpStop, bpLength, pxStart, pxLength;
+
+  for (i = 0; i < chr.bands.length; i++) {
+    band = chr.bands[i];
+    bpStart = band.bp.start;
+    bpStop = band.bp.stop;
+    bpLength = bpStop - bpStart;
+    iscnStart = band.iscn.start;
+    iscnStop = band.iscn.stop;
+    iscnLength = iscnStop - iscnStart;
+    pxStart = band.px.start;
+    pxLength = band.px.width;
+
+    if (bp >= bpStart && bp <= bpStop) {
+      bpToIscnScale = iscnLength / bpLength;
+      iscn = iscnStart + (bp - bpStart) * bpToIscnScale;
+      px = pxStart + (pxLength * (iscn - iscnStart) / (iscnLength));
+
+      return [px, band];
+    }
+  }
+  return [null, band];
+}
+
 /**
  * Converts base pair coordinates to pixel offsets.
  * Bp-to-pixel scales differ among cytogenetic bands.
@@ -18,43 +51,41 @@
  * from the start of the chromosome.
  */
 function convertBpToPx(chr, bp) {
-  var i, band, bpToIscnScale, iscn, px, pxStart, pxLength,
-    iscnStart, iscnStop, iscnLength, bpStart, bpStop, bpLength;
+  var band, px;
 
   if (chr.bands.length > 1) {
-    for (i = 0; i < chr.bands.length; i++) {
-      band = chr.bands[i];
-
-      bpStart = band.bp.start;
-      bpStop = band.bp.stop;
-      bpLength = bpStop - bpStart;
-      iscnStart = band.iscn.start;
-      iscnStop = band.iscn.stop;
-      iscnLength = iscnStop - iscnStart;
-      pxStart = band.px.start;
-      pxLength = band.px.width;
-
-      if (bp >= bpStart && bp <= bpStop) {
-        bpToIscnScale = iscnLength / bpLength;
-        iscn = iscnStart + (bp - bpStart) * bpToIscnScale;
-
-        px = pxStart + (pxLength * (iscn - iscnStart) / (iscnLength));
-
-        return px;
-      }
-    }
+    [px, band] = getPx(chr, bp);
+    if (px !== null) return px;
   } else {
-    pxLength = chr.width;
     if (bp >= 1 && bp <= chr.length) {
       px = chr.scale.bp * bp;
       return px;
     }
   }
 
+  throwBpToPxError(bp, chr, band);
+}
+
+function throwPxToBpError(px, chr, pxStop) {
   throw new Error(
-    'Base pair out of range.  ' +
-    'bp: ' + bp + '; length of chr' + chr.name + ': ' + band.bp.stop
+    'Pixel out of range.  ' +
+    'px: ' + px + '; length of chr' + chr.name + ': ' + pxStop
   );
+}
+
+function getBp(iscnStop, iscnStart, px, pxStop, pxStart, band, iscnLength) {
+  var iscnLength, pxLength, bpLength, pxToIscnScale, iscn, bp;
+
+  iscnLength = iscnStop - iscnStart;
+  pxLength = pxStop - pxStart;
+  bpLength = band.bp.stop - band.bp.start;
+
+  pxToIscnScale = iscnLength / pxLength;
+  iscn = iscnStart + (px - pxStart) * pxToIscnScale;
+
+  bp = band.bp.start + (bpLength * (iscn - iscnStart) / iscnLength);
+
+  return Math.round(bp);
 }
 
 /**
@@ -66,8 +97,7 @@ function convertBpToPx(chr, bp) {
  * convert pixels to base pairs.
  */
 function convertPxToBp(chr, px) {
-  var i, band, pxToIscnScale, iscn, bp, pxLength,
-    pxStart, pxStop, iscnStart, iscnStop, bpLength, iscnLength;
+  var i, band, bp, pxStart, pxStop, iscnStart, iscnStop, iscnLength;
 
   if (px === 0) {
     px = chr.bands[0].px.start;
@@ -82,23 +112,11 @@ function convertPxToBp(chr, px) {
     iscnStop = band.iscn.stop;
 
     if (px >= pxStart && px <= pxStop) {
-      iscnLength = iscnStop - iscnStart;
-      pxLength = pxStop - pxStart;
-      bpLength = band.bp.stop - band.bp.start;
-
-      pxToIscnScale = iscnLength / pxLength;
-      iscn = iscnStart + (px - pxStart) * pxToIscnScale;
-
-      bp = band.bp.start + (bpLength * (iscn - iscnStart) / iscnLength);
-
-      return Math.round(bp);
+      bp = getBp(iscnStop, iscnStart, px, pxStop, pxStart, band, iscnLength);
+      return bp;
     }
   }
-
-  throw new Error(
-    'Pixel out of range.  ' +
-    'px: ' + px + '; length of chr' + chr.name + ': ' + pxStop
-  );
+  throwPxToBpError(px, chr, pxStop)
 }
 
 export {convertBpToPx, convertPxToBp};

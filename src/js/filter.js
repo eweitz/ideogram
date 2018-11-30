@@ -59,22 +59,20 @@ function packAnnots(unpackedAnnots) {
   More: https://github.com/square/crossfilter/wiki/API-Reference
 */
 function initCrossFilter() {
-  var ideo = this,
-    keys = ideo.rawAnnots.keys,
-    i, facet;
+  var i, facet,
+    ideo = this,
+    keys = ideo.rawAnnots.keys;
 
   ideo.unpackedAnnots = ideo.unpackAnnots();
   ideo.crossfilter = crossfilter(ideo.unpackedAnnots);
 
   ideo.annotsByFacet = {};
-
   ideo.facets = keys.slice(3, keys.length);
 
   for (i = 0; i < ideo.facets.length; i++) {
     facet = ideo.facets[i];
     ideo.annotsByFacet[facet] =
-      ideo.crossfilter
-        .dimension(function(d) {
+      ideo.crossfilter.dimension(function(d) {
           return d[facet];
         });
   }
@@ -82,6 +80,31 @@ function initCrossFilter() {
   if ('filterSelections' in ideo) {
     ideo.filterAnnots(ideo.filterSelections);
   }
+}
+
+function getFilteredResults(selections, ideo) {
+  var fn, i, facet, results,
+    counts = {};
+
+  if (Object.keys(selections).length === 0) {
+    results = ideo.unpackedAnnots;
+  } else {
+    for (i = 0; i < ideo.facets.length; i++) {
+      facet = ideo.facets[i];
+      if (facet in selections) {
+        fn = function(d) {
+          return (d in selections[facet]);
+        };
+      } else {
+        fn = null;
+      }
+      ideo.annotsByFacet[facet].filter(fn);
+      counts[facet] = ideo.annotsByFacet[facet].group().top(Infinity);
+    }
+    results = ideo.annotsByFacet[facet].top(Infinity);
+  }
+
+  return [results, counts];
 }
 
 /*
@@ -108,36 +131,12 @@ function initCrossFilter() {
     * Integrate server-side filtering for very large datasets
 */
 function filterAnnots(selections) {
-  var t0 = Date.now();
-
-  var i, facet,
-    // prevFacet = null,
-    results, fn,
-    counts = {},
+  var i, facet, results, counts,
+    t0 = Date.now(),
     ideo = this;
 
   ideo.filterSelections = selections;
-
-  if (Object.keys(selections).length === 0) {
-    results = ideo.unpackedAnnots;
-  } else {
-    for (i = 0; i < ideo.facets.length; i++) {
-      facet = ideo.facets[i];
-      if (facet in selections) {
-        fn = function(d) {
-          if (d in selections[facet]) {
-            return true;
-          }
-        };
-      } else {
-        fn = null;
-      }
-      ideo.annotsByFacet[facet].filter(fn);
-      counts[facet] = ideo.annotsByFacet[facet].group().top(Infinity);
-    }
-
-    results = ideo.annotsByFacet[facet].top(Infinity);
-  }
+  [results, counts] = getFilteredResults(selections, ideo);
 
   for (i < 0; i < ideo.facets.length; i++) {
     ideo.annotsByFacet[facet].filterAll(); // clear filters

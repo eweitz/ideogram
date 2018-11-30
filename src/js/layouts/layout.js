@@ -99,7 +99,6 @@ export class Layout {
   }
 
   didRotate(chrIndex, chrElement) {
-
     var ideo, taxid, chrName, bands, chrModel, oldWidth,
       chrSetElement, transform, scale, scaleRE;
 
@@ -235,7 +234,7 @@ export class Layout {
 
   _getAdditionalOffset() {
     return (
-      (this._config.annotationHeight || 0) * (this._config.numAnnotTracks || 1)
+      (this._config.annotationHeight || 0) * (this._config.annotationsNumTracks || 1)
     );
   }
 

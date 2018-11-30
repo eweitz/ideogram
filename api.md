@@ -23,11 +23,13 @@ var ideogram = new Ideogram({
 ```
 
 # Options
+* [ancestors](#ancestors)
 * [annotations](#annotations)
 * [annotationHeight](#annotationheight)
 * [annotationsColor](#annotationscolor)
 * [annotationsLayout](#annotationslayout)
 * [annotationsPath](#annotationspath)
+* [annotationTracks](#annotationtracks)
 * [assembly](#assembly)
 * [barWidth](#barwidth)
 * [brush](#brush)
@@ -39,6 +41,9 @@ var ideogram = new Ideogram({
 * [dataDir](#datadir)
 * [histogramScaling](#histogramscaling)
 * [heatmaps](#heatmaps)
+* [filterable](#filterable)
+* [fullChromosomeLabels](#fullchromosomelabels)
+* [legend](#legend)
 * [onBrushMove](#onbrushmove)
 * [onDidRotate](#ondidrotate)
 * [onDrawAnnots](#ondrawannots)
@@ -47,15 +52,22 @@ var ideogram = new Ideogram({
 * [onWillShowAnnotTooltip](#onwillshowannottooltip)
 * [organism](#organism)
 * [orientation](#orientation)
+* [perspective](#perspective)
 * [ploidy](#ploidy)
+* [ploidyDesc](#ploidydesc)
+* [rangeSet](#rangeset)
 * [resolution](#resolution)
 * [rotatable](#rotatable)
 * [rows](#rows)
+* [sex](#sex)
 * [showBandLabels](#showbandlabels)
 * [showChromosomeLabels](#showchromosomelabels)
 * [showAnnotTooltip](#showannottooltip)
 * [showFullyBanded](#showfullybanded)
 * [showNonNuclearChromosomes](#shownonnuclearchromosomes)
+
+## ancestors
+Object.  Optional.  A map associating ancestor labels to colors.  Used to color chromosomes from different ancestors in polyploid genomes.  Example in [Ploidy, recombination](https://eweitz.github.io/ideogram/ploidy_recombination).
 
 ## annotations
 Array.  Optional.  A list of annotation objects.  Each annotation object has at least a chromosome name (chr), start coordinate (start), and stop coordinate (stop).  Annotation objects can also have a name, color, shape, and track index.  Example in [Annotations, basic](https://eweitz.github.io/ideogram/annotations_basic).
@@ -71,7 +83,7 @@ String.  Optional.  Default: "#F00" (i.e., red).  The color of each annotation. 
 ## annotationsLayout
 String.  Optional.  Default: "tracks".  
 
-The layout of this ideogram's annotations.  One of "tracks", "histogram", or "overlay".
+The layout of this ideogram's annotations.  One of "tracks", "heatmap", "histogram", or "overlay".
 
 ### annotationsLayout: 'tracks'
 Lay out annotations in tracks beside each chromosome.  There can be more than one track, which is useful for displaying annotations by category (e.g. pathogenic, unknown significance, benign).  Example in [Annotations, tracks](https://eweitz.github.io/ideogram/annotations-tracks).
@@ -89,6 +101,9 @@ Lay out annotations directly over chromosomes.  This is the most space-efficient
 String.  Optional.  An absolute or relative URL to a JSON file containing annotation objects.  Example in [Annotations, overlaid](https://eweitz.github.io/ideogram/annotations-overlaid).
 
 See also [annotations](#annotations).
+
+## annotationTracks
+Array.  Optional.  A list of objects with metadata for each track, e.g. DOM `id`, display name, color, shape.  Example in [Annotations, tracks](https://eweitz.github.io/ideogram/annotations-tracks).
 
 ## assembly
 String.  Optional.  Default: latest RefSeq assembly for specified organism.  The genome assembly to display.  Takes assembly name (e.g. "GRCh37"), RefSeq accession (e.g. "GCF_000306695.2"), or GenBank accession (e.g. "GCA_000005005.5").  Example in [Annotations, histogram](https://eweitz.github.io/ideogram/annotations-histogram).
@@ -117,13 +132,21 @@ String.  Optional.  Default: "body".  CSS selector of the HTML element that will
 ## dataDir
 String.  Optional.  Default: "../data/bands/native/".  Absolute or relative URL of the directory containing data needed to draw banded chromosomes.  Example in [GeneExpressionAging/ideogram](https://ncbi-hackathons.github.io/GeneExpressionAging/ideogram).
 
-
 ## histogramScaling
 String.  Optional.  Default: "absolute".  One of "absolute" or "relative".  The technique to use in scaling the height of histogram bars.  The "absolute" value sets bar height relative to tallest bar in _all_ chromosomes, while "relative" sets bar height relative to tallest bar in _each_ chromosome.
 
 ## heatmaps
 Array.  Optional.  Array of heatmap objects.  Each heatmap object has a `key` string and a `thresholds` array.  The `key` property specifies the annotations key value to depict in the heatmap.  The `thresholds` property specifies a list of two-element "threshold" lists, where the first element is the threshold value and the second is the threshold color.  The threshold values are a list of ranges to use in coloring
 the heatmap.  Threshold values are specified in ascending order.  Example in [Annotations, heatmap](https://eweitz.github.io/ideogram/annotations-heatmap).
+
+## filterable
+Boolean.  Optional.  Whether annotations should be filterable.  Example in [Annotations, histogram](https://eweitz.github.io/ideogram/annotations-histogram).
+
+## fullChromosomeLabels
+Boolean.  Optional.  Whether to include abbreviation species name in chromosome label.  Example in [Homology, interspecies](https://eweitz.github.io/ideogram/homology-interspecies).
+
+## legend
+Array.  Optional.  List of objects describing annotations.  Example in [Annotations, tracks](https://eweitz.github.io/ideogram/annotations-tracks).
 
 ## onBrushMove
 Function.  Optional.  Callback function to invoke when brush moves.  Example in [Brush](https://eweitz.github.io/ideogram/brush).
@@ -149,8 +172,17 @@ String or number or array.  Required.  Organism(s) to show chromosomes for.  Sup
 ## orientation
 String.  Optional.  Default: horizontal.  The orientation of chromosomes on the page.  Example in [Mouse]( https://eweitz.github.io/ideogram/mouse).
 
+## perspective
+String.  Optional.  Use `perspective: 'comparative'` to enable annotations between two chromosomes, either within the same organism or different organisms.  Examples in [Homology, basic](https://eweitz.github.io/ideogram/homology-basic) and [Homology, interspecies](https://eweitz.github.io/ideogram/homology-interspecies).
+
 ## ploidy
-Number.  Optional.  Default: 1.  The ploidy -- i.e., number of chromosomes -- to depict for each chromosome set.  Useful for biologically accurate depicting of genomes that are diploid, triploid, etc.  Example in [Ploidy, basic](https://eweitz.github.io/ideogram/ploidy-basic).
+Number.  Optional.  Default: 1.  The ploidy, i.e. number of chromosomes to depict for each chromosome set.  Useful for biologically accurate depicting of genomes that are diploid, triploid, etc.  Example in [Ploidy, basic](https://eweitz.github.io/ideogram/ploidy-basic).
+
+## ploidyDesc
+Array.  Optional.  Description of ploidy in each chromosome set in terms of ancestry composition.  Example in [Ploidy, recombination](https://eweitz.github.io/ideogram/ploidy-recombination).
+
+## rangeSet
+Array.  Optional.  List of objects describing segments of recombination among chromosomes in a chromosome set.  Example in Example in [Ploidy, recombination](https://eweitz.github.io/ideogram/ploidy-recombination).
 
 ## resolution
 Number.  Optional.  Default: highest resolution available for specified genome assembly.  The resolution of cytogenetic bands to show for each chromosome.  The quantity refers to approximate value in bands per haploid set (bphs).  One of 450, 550, or 850.  Example in [Layout, small](https://eweitz.github.io/ideogram/layout-small).
@@ -162,7 +194,7 @@ Boolean.  Optional.  Default: true.  Whether chromosomes are rotatable upon clic
 Number.  Optional.  Default: 1.  Number of rows to arrange chromosomes into.  Useful for putting ideogram into a small container, or when dealing with genomes that have many chromosomes.  Example in [Layout, small](https://eweitz.github.io/ideogram/layout-small).
 
 ## sex
-String.  Optional.  Default: male.  The biological sex of the organism.  Useful for omitting chromosome Y in female mammals.  Currently only supported for organisms that use XY sex-determination.  Examples in [Layout, small](https://eweitz.github.io/ideogram/layout-small).
+String.  Optional.  Default: male.  The biological sex of the organism.  Useful for omitting chromosome Y in female mammals.  Currently only supported for organisms that use XY sex-determination.  Examples in [Ploidy, basic](https://eweitz.github.io/ideogram/ploidy-basic).
 
 ## showBandLabels
 Boolean.  Optional.  Default: false.  Whether to show cytogenetic band labels, e.g. 1q21.  Example in [Annotations, basic](https://eweitz.github.io/ideogram/annotations-basic).
