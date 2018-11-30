@@ -122,7 +122,7 @@ function getTrackLabelOffsets(labels, trackCanvas, ideo) {
 }
 
 /**
- * Show the track label for this track
+ * Show the label for this track
  */
 function showTrackLabel(trackCanvas, ideo) {
     var labels, left, top;

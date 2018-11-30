@@ -55,6 +55,9 @@ function getListItems(labels, svg, list) {
   return [labels, svg];
 }
 
+/**
+ * Display a legend for genome annotations, using `legend` configuration option
+ */
 function writeLegend(ideo) {
   var i, legend, svg, labels, list, content;
 
