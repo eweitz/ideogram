@@ -149,6 +149,7 @@ function setOverflowScroll() {
   }
 
   ideoWidth = Math.round(ideoWidth * ploidy / config.rows);
+  if (ideo._layout._class === 'SmallLayout') ideoWidth += 40;
 
   // Ensures absolutely-positioned elements, e.g. heatmap overlaps, display
   // properly if ideogram container also has position: absolute
