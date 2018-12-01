@@ -1,11 +1,11 @@
 import * as d3selection from 'd3-selection';
 
-import Layout from './layout'
+import Layout from './layout';
 import {Object} from './../lib.js';
 
 var d3 = Object.assign({}, d3selection);
 
-export class SmallLayout extends Layout {
+class SmallLayout extends Layout {
 
   constructor(config, ideo) {
     super(config, ideo);
@@ -106,3 +106,5 @@ export class SmallLayout extends Layout {
   }
 
 }
+
+export default SmallLayout

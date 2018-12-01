@@ -2,7 +2,7 @@ import * as d3selection from 'd3-selection';
 
 import {Object} from '../lib';
 import {Ploidy} from '../ploidy';
-import {Layout} from '../layouts/layout';
+import {getLayout} from '../layouts/layout-adapter';
 
 var d3 = Object.assign({}, d3selection);
 
@@ -102,7 +102,8 @@ function writeContainer(bandsArray, taxid, t0) {
   }
 
   setPloidy(ideo);
-  ideo._layout = Layout.getInstance(ideo.config, ideo);
+
+  ideo._layout = getLayout(ideo);
 
   writeContainerDom(taxid, ideo);
 
