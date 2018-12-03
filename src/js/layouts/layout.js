@@ -54,7 +54,6 @@ class Layout {
   }
 
   getChromosomeBandLabelTranslate(band) {
-
     var x, y, translate,
       ideo = this._ideo,
       tickSize = this._tickSize,
@@ -129,9 +128,7 @@ class Layout {
   }
 
   rotate(chrSetIndex, chrIndex, chrElement) {
-
     var ideo, otherChrs, ideoBounds, labelSelectors;
-
     ideo = this._ideo;
 
     labelSelectors = (
@@ -227,84 +224,24 @@ class Layout {
     );
   }
 
-  //
-  // // Get SVG element height
-  // getHeight() {
-  //   throw new Error(this._class + '#getHeight not implemented');
-  // }
-  //
-  // getChromosomeBandTickY1() {
-  //   throw new Error(this._class + '#getChromosomeBandTickY1 not implemented');
-  // }
-  //
-  // getChromosomeBandTickY2() {
-  //   throw new Error(this._class + '#getChromosomeBandTickY2 not implemented');
-  // }
-  //
-  // // Get chromosome's band translate attribute
-  // getChromosomeBandLabelTranslate() {
-  //   throw new Error(
-  //     this._class + '#getChromosomeBandLabelTranslate not implemented'
-  //   );
-  // }
-
   // Get chromosome set label anchor property
   getChromosomeSetLabelAnchor() {
     return 'middle';
   }
-  //
-  // // Get chromosome's band label text-anchor value
-  // getChromosomeBandLabelAnchor() {
-  //   throw (
-  //     new Error(this._class + '#getChromosomeBandLabelAnchor not implemented')
-  //   );
-  // }
-  //
-  // getChromosomeLabelXPosition() {
-  //   throw new Error(
-  //     this._class + '#getChromosomeLabelXPosition not implemented'
-  //   );
-  // }
 
   // Get chromosome label y position.
   getChromosomeLabelYPosition() {
     return -5.5;
   }
 
-  // "i" is chromosome index
-  getChromosomeSetLabelYPosition(i) {
+  getChromosomeSetLabelYPosition(chrIndex) {
     if (this._config.ploidy === 1) {
-      return this.getChromosomeLabelYPosition(i);
+      return this.getChromosomeLabelYPosition(chrIndex);
     } else {
       return -2 * this._config.chrWidth;
     }
   }
 
-  // getChromosomeSetLabelXPosition() {
-  //   throw (
-  //     new Error(
-  //       this._class + '#getChromosomeSetLabelXPosition not implemented'
-  //     )
-  //   );
-  // }
-  //
-  // getChromosomeSetLabelTranslate() {
-  //   throw (
-  //     new Error(this._class + '#getChromosomeSetLabelTranslate not implemented')
-  //   );
-  // }
-  //
-  // // Get chromosome set translate attribute
-  // getChromosomeSetTranslate() {
-  //   throw new Error(this._class + '#getChromosomeSetTranslate not implemented');
-  // }
-  //
-  // // Get chromosome set translate's y offset
-  // getChromosomeSetYTranslate() {
-  //   throw new Error(
-  //     this._class + '#getChromosomeSetYTranslate not implemented'
-  //   );
-  // }
 }
 
 export default Layout
