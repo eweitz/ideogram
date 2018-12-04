@@ -1,9 +1,9 @@
-// /**
-// * Vertical layout class
-// * Ideogram instances with vertical layout are oriented with each chromosome
-// * starting at top and ending at bottom, and aligned as columns.
-// */
-//
+/**
+* @fileoverview Vertical layout class
+* Ideogram instances with vertical layout are oriented with each chromosome
+* starting at top and ending at bottom, and aligned as columns.
+*/
+
 
 import * as d3selection from 'd3-selection';
 

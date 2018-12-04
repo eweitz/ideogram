@@ -1,9 +1,9 @@
-// /*
-// * Paired layout class
-// * Ideograms with paired layout group each chromosome in a chromosome set.
-// * This enables ploidy support beyond the default haploid; e.g. diploid genomes.
-// */
-//
+/**
+* @fileoverview Paired layout class
+* Ideograms with paired layout group each chromosome in a chromosome set.
+* This enables ploidy support beyond the default haploid; e.g. diploid genomes.
+*/
+
 import * as d3selection from 'd3-selection';
 
 import Layout from './layout';

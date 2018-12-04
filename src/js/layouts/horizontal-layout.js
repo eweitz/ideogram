@@ -1,5 +1,5 @@
 /**
-* Horizontal layout class
+* @fileoverview Horizontal layout class
 * Ideogram instances with horizontal layout are oriented with each chromosome
 * starting at left and ending at right, and aligned as rows.
 */
