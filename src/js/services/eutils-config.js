@@ -1,9 +1,12 @@
 // The E-Utilies In Depth: Parameters, Syntax and More:
 // https://www.ncbi.nlm.nih.gov/books/NBK25499/
+
+var apiKey = '&api_key=7e33ac6a08a6955ec3b83d214d22b21a2808';
+
 var eutils = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/';
-var esearch = eutils + 'esearch.fcgi?retmode=json';
-var esummary = eutils + 'esummary.fcgi?retmode=json';
-var elink = eutils + 'elink.fcgi?retmode=json';
+var esearch = eutils + 'esearch.fcgi?retmode=json' + apiKey;
+var esummary = eutils + 'esummary.fcgi?retmode=json' + apiKey;
+var elink = eutils + 'elink.fcgi?retmode=json' + apiKey;
 
 function getAssemblySearchUrl(ideo) {
   var organism, termStem, asmSearchUrl;
