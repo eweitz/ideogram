@@ -45,6 +45,7 @@ function writeTrackLabelContainer(ideo) {
     .style('font', '11px sans-serif')
     .style('background', 'white')
     .style('line-height', '10px')
+    .style('z-index', '9000')
 }
 
 /**
