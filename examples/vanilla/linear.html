@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Human | Ideogram</title>
+  <style>body {font: 12px Arial; line-height: 19.6px;}</style>
+  <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
+        <style>
+          html, body {
+            height: 100%;
+            font: 12px Arial;
+            line-height: 19.6px;
+          }
+
+        </style>
+</head>
+<body>
+  <h1>Human | Ideogram</h1>
+  <a href="../">Back to overview</a> |
+  <a href="multiple-primates">Previous</a> |
+  <a href="mouse">Next</a>
+  <p>
+    A human genome is depicted below.  The grey and black bands in each chromosome
+    represent
+    <a href="https://en.wikipedia.org/wiki/Heterochromatin">heterochromatin</a>.
+    The pink region is the area around the
+    <a href="https://en.wikipedia.org/wiki/Centromere">centromere</a>, and the blue represents variable regions.
+  </p>
+  <p>
+    This ideogram shows most chromosomes in a
+    <a href="https://en.wikipedia.org/wiki/Ploidy">haploid</a> state for
+    simplicity.  For more accurate, diploid representation of human genomes,
+    see <a href="ploidy-basic">Ploidy, basic</a> and
+    <a href="multiple_trio">Multiple, trio</a>.
+  </p>
+  <script type="text/javascript">
+
+    d3 = Ideogram.d3;
+
+    function linearizeGenome() {
+      chrSets = document.querySelectorAll('.chromosome-set-container');
+      firstChrSetY = chrSets[0].transform.baseVal[0].matrix.f;
+
+      widthOffset = 0;
+      var translations = [];
+      for (i = 0; i < chrSets.length; i++) {
+        chrSet = chrSets[i];
+        index = (i === 0) ? i : i - 1;
+        prevChrSet = chrSets[index];
+        prevChrSetRect = prevChrSet.getBoundingClientRect();
+        prevChrSetMatrix = prevChrSet.transform.baseVal[0].matrix;
+        prevChrSetTransform = {x: prevChrSetMatrix.e, y: prevChrSetMatrix.f};
+        prevX = prevChrSetTransform.x;
+        prevY = prevChrSetTransform.y;
+        prevWidth = prevChrSetRect.width;
+        x = Math.round(prevX + widthOffset + 10);
+        y = firstChrSetY;
+        translations.push([x, y]);
+        widthOffset += prevWidth;
+      }
+      for (i = 0; i < chrSets.length; i++) {
+        chrSet = chrSets[i];
+        console.log('translations[i]')
+        console.log(translations[i])
+        x = translations[i][0];
+        y = translations[i][1];
+        console.log('x')
+        console.log(x)
+        console.log('y')
+        console.log(y)
+        chrSet.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+      }
+
+      document.querySelector('#_ideogram').setAttribute('width', widthOffset + 100);
+    }
+
+    ideogram = new Ideogram({
+      organism: 'human',
+      orientation: 'horizontal',
+      chrHeight: 50,
+      onLoad: linearizeGenome
+    });
+  </script>
+</body>
+</html>
