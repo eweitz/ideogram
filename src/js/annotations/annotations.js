@@ -11,7 +11,7 @@ import * as d3fetch from 'd3-fetch';
 import naturalSort from 'es6-natural-sort';
 
 import {BedParser} from '../parsers/bed-parser';
-import {Object} from '../lib.js';
+import {Object} from '../lib';
 import {
   drawHeatmaps, deserializeAnnotsForHeatmap
 } from './heatmap';

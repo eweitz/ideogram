@@ -136,7 +136,7 @@ export default class Ideogram {
     this.initCrossFilter = initCrossFilter;
     this.filterAnnots = filterAnnots;
 
-    // Functions from lib.js
+    // Functions from lib
     this.assemblyIsAccession = assemblyIsAccession;
     this.getDataDir = getDataDir;
     this.round = round;
