@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Human | Ideogram</title>
+  <title>Collinear | Ideogram</title>
   <style>body {font: 12px Arial; line-height: 19.6px;}</style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
         <style>
@@ -14,7 +14,7 @@
         </style>
 </head>
 <body>
-  <h1>Human | Ideogram</h1>
+  <h1>Collinear | Ideogram</h1>
   <a href="../">Back to overview</a> |
   <a href="multiple-primates">Previous</a> |
   <a href="mouse">Next</a>
@@ -36,7 +36,7 @@
 
     d3 = Ideogram.d3;
 
-    function linearizeGenome() {
+    function collinearizeGenome() {
       chrSets = document.querySelectorAll('.chromosome-set-container');
       firstChrSetY = chrSets[0].transform.baseVal[0].matrix.f;
 
@@ -80,7 +80,7 @@
       orientation: 'horizontal',
       showFullyBanded: false,
       chrHeight: 70,
-      onLoad: linearizeGenome
+      onLoad: collinearizeGenome
     });
   </script>
 </body>
