@@ -52,31 +52,34 @@
         prevX = prevChrSetTransform.x;
         prevY = prevChrSetTransform.y;
         prevWidth = prevChrSetRect.width;
-        x = Math.round(prevX + widthOffset + 10);
+        x = Math.round(prevX + widthOffset) - (9*i);
         y = firstChrSetY;
         translations.push([x, y]);
         widthOffset += prevWidth;
       }
       for (i = 0; i < chrSets.length; i++) {
         chrSet = chrSets[i];
-        console.log('translations[i]')
-        console.log(translations[i])
+        // console.log('translations[i]')
+        // console.log(translations[i])
         x = translations[i][0];
         y = translations[i][1];
-        console.log('x')
-        console.log(x)
-        console.log('y')
-        console.log(y)
+        // console.log('x')
+        // console.log(x)
+        // console.log('y')
+        // console.log(y)
+        chrSet.querySelector('.chrLabel').setAttribute('y', '5')
         chrSet.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        chrSet.querySelector('.chromosome').setAttribute('transform', 'translate(-13, 10)');
       }
 
       document.querySelector('#_ideogram').setAttribute('width', widthOffset + 100);
     }
 
     ideogram = new Ideogram({
-      organism: 'human',
+      organism: 'Homo sapiens',
       orientation: 'horizontal',
-      chrHeight: 50,
+      showFullyBanded: false,
+      chrHeight: 70,
       onLoad: linearizeGenome
     });
   </script>
