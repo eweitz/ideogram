@@ -40,12 +40,11 @@
         prevChrSetMatrix = prevChrSet.transform.baseVal[0].matrix;
         prevChrSetTransform = {x: prevChrSetMatrix.e, y: prevChrSetMatrix.f};
         prevX = prevChrSetTransform.x;
-        prevY = prevChrSetTransform.y;
-        prevWidth = prevChrSetRect.width;
+        prevWidth = (i === 0) ? 0 : prevChrSetRect.width;
+        widthOffset += prevWidth;
         x = Math.round(prevX + widthOffset) - (9*i);
         y = firstChrSetY;
         translations.push([x, y]);
-        widthOffset += prevWidth;
       }
       for (i = 0; i < chrSets.length; i++) {
         chrSet = chrSets[i];
@@ -66,7 +65,7 @@
     }
 
     ideogram = new Ideogram({
-      organism: 'Homo sapiens',
+      organism: 'human',
       orientation: 'horizontal',
       showFullyBanded: false,
       chrHeight: 70,
