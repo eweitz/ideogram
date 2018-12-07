@@ -80,7 +80,7 @@ function writeContainerDom(taxid, ideo) {
   d3.select(ideo.config.container + ' #_ideogramOuterWrap').append('div')
     .attr('id', '_ideogramMiddleWrap') // needed for overflow and scrolling
       .style('position', 'relative')
-      .style('overflow-x', 'scroll')
+      .style('overflow-x', 'auto')
     .append('div')
     .attr('id', '_ideogramInnerWrap') // needed for overflow and scrolling
     .append('svg')
