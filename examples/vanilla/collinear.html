@@ -31,6 +31,8 @@
       firstChrSetY = chrSets[0].transform.baseVal[0].matrix.f;
 
       widthOffset = 0;
+
+      // Get pixel coordinates to use for rearrangement
       var translations = [];
       for (i = 0; i < chrSets.length; i++) {
         chrSet = chrSets[i];
@@ -39,35 +41,40 @@
         prevChrSetRect = prevChrSet.getBoundingClientRect();
         prevChrSetMatrix = prevChrSet.transform.baseVal[0].matrix;
         prevChrSetTransform = {x: prevChrSetMatrix.e, y: prevChrSetMatrix.f};
-        prevX = prevChrSetTransform.x;
-        prevWidth = (i === 0) ? 0 : prevChrSetRect.width;
-        widthOffset += prevWidth;
-        x = Math.round(prevX + widthOffset) - (9*i);
+        if (i === 0) {
+          x = 20;
+        } else {
+          prevWidth = prevChrSetRect.width;
+          prevX = translations[index][0];
+          widthOffset += prevWidth;
+          x = Math.round(prevX + prevWidth) + 2;
+        }
         y = firstChrSetY;
         translations.push([x, y]);
       }
+
+      // Rearrange chromosomes from horizontal to collinear
       for (i = 0; i < chrSets.length; i++) {
         chrSet = chrSets[i];
-        // console.log('translations[i]')
-        // console.log(translations[i])
         x = translations[i][0];
         y = translations[i][1];
-        // console.log('x')
-        // console.log(x)
-        // console.log('y')
-        // console.log(y)
-        chrSet.querySelector('.chrLabel').setAttribute('y', '5')
+        if (ideogram.config.showChromosomeLabels) {
+          // Will need special handling for chromosome labels
+          chrSet.querySelector('.chrLabel').setAttribute('y', '5')
+          chrSet.querySelector('.chrLabel').setAttribute('text-anchor', 'middle')
+        }
         chrSet.setAttribute('transform', 'translate(' + x + ',' + y + ')');
         chrSet.querySelector('.chromosome').setAttribute('transform', 'translate(-13, 10)');
       }
 
-      document.querySelector('#_ideogram').setAttribute('width', widthOffset + 100);
+      document.querySelector('#_ideogram').setAttribute('width', widthOffset + 120);
     }
 
     ideogram = new Ideogram({
       organism: 'human',
       orientation: 'horizontal',
       showFullyBanded: false,
+      showChromosomeLabels: false,
       chrHeight: 70,
       onLoad: collinearizeGenome
     });
