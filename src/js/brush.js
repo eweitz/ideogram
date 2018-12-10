@@ -16,7 +16,7 @@ import * as d3brush from 'd3-brush';
 import {scaleLinear} from 'd3-scale';
 import {max} from 'd3-array';
 
-import {Object} from './lib.js';
+import {Object} from './lib';
 
 var d3 = Object.assign({}, d3brush, d3selection);
 d3.scaleLinear = scaleLinear;

@@ -17,6 +17,8 @@ function getSvgText(selector) {
 
 describe('Ideogram', function() {
 
+  this.timeout(20000); // Account for NCBI E-Utils API brownout
+
   var config = {};
 
   d3 = Ideogram.d3;
@@ -1313,7 +1315,10 @@ describe('Ideogram', function() {
       onLoad: callback
     };
 
-    var ideogram = new Ideogram(config);
+    setTimeout(function() {
+      var ideogram = new Ideogram(config);
+    }, 1500);
+
   });
 
   it('should support mitochondrial and chloroplast chromosomes', function(done) {
@@ -1334,7 +1339,9 @@ describe('Ideogram', function() {
       onLoad: callback
     };
 
-    var ideogram = new Ideogram(config);
+    setTimeout(function() {
+      var ideogram = new Ideogram(config);
+    }, 1500);
   });
 
   // eweitz, 2018-10-18: This test passes locally and the apicoplast displays

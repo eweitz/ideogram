@@ -2,7 +2,7 @@ import * as d3selection from 'd3-selection';
 
 import {Object} from '../lib';
 import {Ploidy} from '../ploidy';
-import {Layout} from '../layouts/layout';
+import {getLayout} from '../layouts/layout-adapter';
 
 var d3 = Object.assign({}, d3selection);
 
@@ -80,7 +80,7 @@ function writeContainerDom(taxid, ideo) {
   d3.select(ideo.config.container + ' #_ideogramOuterWrap').append('div')
     .attr('id', '_ideogramMiddleWrap') // needed for overflow and scrolling
       .style('position', 'relative')
-      .style('overflow-x', 'scroll')
+      .style('overflow-x', 'auto')
     .append('div')
     .attr('id', '_ideogramInnerWrap') // needed for overflow and scrolling
     .append('svg')
@@ -102,7 +102,8 @@ function writeContainer(bandsArray, taxid, t0) {
   }
 
   setPloidy(ideo);
-  ideo._layout = Layout.getInstance(ideo.config, ideo);
+
+  ideo._layout = getLayout(ideo);
 
   writeContainerDom(taxid, ideo);
 

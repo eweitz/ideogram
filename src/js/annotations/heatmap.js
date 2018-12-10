@@ -131,7 +131,7 @@ function shouldUseThresholdColor(m, numThresholds, value, prevThreshold,
  * Determine the color of the heatmap annotation.
  */
 function getHeatmapAnnotColor(thresholds, value) {
-  var m, numThresholds, thresholdList, threshold, tvInt, thresholdColor,
+  var m, numThresholds, thresholdList, threshold, tvNum, thresholdColor,
     prevThreshold, useThresholdColor, color;
 
   for (m = 0; m < thresholds.length; m++) {
@@ -142,9 +142,9 @@ function getHeatmapAnnotColor(thresholds, value) {
     // The threshold value is usually an integer,
     // but can also be a "+" character indicating that
     // this threshold is anything greater than the previous threshold.
-    tvInt = parseInt(threshold);
-    if (isNaN(tvInt) === false) threshold = tvInt;
-    if (m !== 0) prevThreshold = parseInt(thresholds[m - 1][0]);
+    tvNum = parseFloat(threshold);
+    if (isNaN(tvNum) === false) threshold = tvNum;
+    if (m !== 0) prevThreshold = parseFloat(thresholds[m - 1][0]);
     thresholdColor = thresholdList[1];
 
     useThresholdColor = shouldUseThresholdColor(m, numThresholds, value,
