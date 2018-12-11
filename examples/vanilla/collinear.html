@@ -26,13 +26,45 @@
 
     d3 = Ideogram.d3;
 
+    var heatmaps = [
+      {
+        key: 'expression-level',
+        thresholds: [
+          ['2', '#88F'],
+          ['4', '#CCC'],
+          ['+', '#F33']]
+      },
+      {
+        key: 'gene-type',
+        thresholds: [
+          ['0', '#00F'],
+          ['1', '#0AF'],
+          ['2', '#AAA'],
+          ['3', '#FA0'],
+          ['4', '#F00']
+        ]
+      }
+    ];
+
+    var annotationTracks = [
+      {id: 'expressionLevelTrack', displayName: 'Expression level'},
+      {id: 'geneTypeTrack', displayName: 'Gene type'},
+    ];
+
     ideogram = new Ideogram({
       organism: 'human',
+      assembly: 'GRCh37',
       orientation: 'horizontal',
       geometry: 'collinear',
+      chrHeight: 90,
       showFullyBanded: false,
       showChromosomeLabels: false,
-      chrHeight: 70
+      rotatable: false,
+      annotationHeight: 10,
+      annotationsLayout: 'heatmap',
+      annotationsPath: '../../data/annotations/SRR562646.json',
+      heatmaps: heatmaps,
+      annotationTracks: annotationTracks
     });
   </script>
 </body>
