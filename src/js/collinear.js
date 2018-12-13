@@ -27,7 +27,7 @@ function collinearizeChromosomes() {
       widthOffset += prevWidth;
       if (showChromosomeLabels) {
         prevChrLabel = prevChrSet.querySelector('.chrLabel tspan').innerHTML;
-        xBump = (prevChrLabel.length < 2) ? -12 : -16;
+        xBump = (prevChrLabel.length < 2) ? -12 : -17;
       } else {
         xBump = 2;
       }
