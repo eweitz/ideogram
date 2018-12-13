@@ -259,6 +259,8 @@ function deserializeAnnotsForHeatmap(rawAnnotsContainer) {
   ideo.rawAnnots.keys = keys;
   ideo.rawAnnots.annots = newRaContainers;
 
+  d3.select(ideo.selector).classed('labeledLeft', false);
+
   reportPerformance(t0, ideo);
 }
 
