@@ -1,10 +1,12 @@
 function collinearizeChromosomes() {
   var chrSets, firstChrSetY, widthOffset, translations, i, index, prevChrSet,
     prevChrSetRect, prevChrSetMatrix, prevChrSetTransform, prevWidth, prevX,
-    x, y, chrSet;
+    x, y, chrSet, xBump, showChromosomeLabels, prevChrLabel;
 
   chrSets = document.querySelectorAll('.chromosome-set-container');
   firstChrSetY = chrSets[0].transform.baseVal[0].matrix.f;
+
+  showChromosomeLabels = ideogram.config.showChromosomeLabels;
 
   widthOffset = 0;
 
@@ -23,7 +25,13 @@ function collinearizeChromosomes() {
       prevWidth = prevChrSetRect.width;
       prevX = translations[index][0];
       widthOffset += prevWidth;
-      x = Math.round(prevX + prevWidth) + 2;
+      if (showChromosomeLabels) {
+        prevChrLabel = prevChrSet.querySelector('.chrLabel tspan').innerHTML;
+        xBump = (prevChrLabel.length < 2) ? -12 : -16;
+      } else {
+        xBump = 2;
+      }
+      x = Math.round(prevX + prevWidth) + xBump;
     }
     y = firstChrSetY;
     translations.push([x, y]);
@@ -34,7 +42,7 @@ function collinearizeChromosomes() {
     chrSet = chrSets[i];
     x = translations[i][0];
     y = translations[i][1];
-    if (ideogram.config.showChromosomeLabels) {
+    if (showChromosomeLabels) {
       // Will need special handling for chromosome labels
       chrSet.querySelector('.chrLabel').setAttribute('y', '5')
       chrSet.querySelector('.chrLabel').setAttribute('text-anchor', 'middle')

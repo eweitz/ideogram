@@ -23,9 +23,6 @@ function writeCanvases(chr, chrLeft, ideoHeight, ideo) {
 
   var marginHack = 7; // TODO: Make this dynamic
 
-  console.log('chr')
-  console.log(chr)
-
   // Create a canvas for each annotation track on this chromosome
   for (j = 0; j < numAnnotTracks; j++) {
     // trackWidth = ideo.config.annotationHeight;
@@ -64,8 +61,7 @@ function writeCanvases(chr, chrLeft, ideoHeight, ideo) {
  */
 function fillCanvasAnnots(annots, contextArray, chrWidth, ideoMarginTop) {
   var j, annot, context, y;
-  console.log('chrWidth')
-  console.log(chrWidth)
+
   // Fill in the canvas(es) with annotation colors to draw a heatmap
   for (j = 0; j < annots.length; j++) {
     annot = annots[j];
@@ -109,11 +105,6 @@ function drawHeatmaps(annotContainers) {
       chrLeft = prevX + ideo.chromosomesArray[i - 1].width + 14;
       prevX += ideo.chromosomesArray[i - 1].width + 2;
     }
-    console.log('chr.width')
-    console.log(chr.width)
-    ;
-    console.log('chrLeft')
-    console.log(chrLeft)
 
     contextArray = writeCanvases(chr, chrLeft, ideoHeight, ideo);
     fillCanvasAnnots(annots, contextArray, chrHeight, ideoMarginTop);
