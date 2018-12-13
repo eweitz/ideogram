@@ -14,7 +14,7 @@ import {BedParser} from '../parsers/bed-parser';
 import {Object} from '../lib';
 import {
   drawHeatmaps, deserializeAnnotsForHeatmap
-} from './heatmap-collinear';
+} from './heatmap';
 import {
   onLoadAnnots, onDrawAnnots, startHideAnnotTooltipTimeout,
   onWillShowAnnotTooltip, showAnnotTooltip

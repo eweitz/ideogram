@@ -82,11 +82,13 @@ function fillCanvasAnnots(annots, contextArray, chrWidth, ideoMarginTop) {
  * - Support in 'horizontal' orientation
  * - Support after rotating chromosome on click
  */
-function drawHeatmaps(annotContainers) {
+function drawHeatmapsCollinear(annotContainers, ideo) {
   var annots, chrLeft, contextArray, chrHeight, i, chr,
-    ideo = this,
     ideoMarginTop = ideo._layout.margin.top,
     ideoHeight = ideo.config.chrHeight + ideoMarginTop;
+
+
+  d3.select(ideo.selector).classed('labeledLeft', false);
 
   d3.selectAll(ideo.config.container + ' canvas').remove();
 
@@ -202,66 +204,12 @@ function getNewRawAnnots(heatmapKeyIndexes, rawAnnots, ideo) {
   return newRas;
 }
 
-function getNewRawAnnotContainers(heatmapKeyIndexes, rawAnnotBoxes, ideo) {
-  var raContainer, chr, rawAnnots, newRas, i,
-    newRaContainers = [];
-
-  for (i = 0; i < rawAnnotBoxes.length; i++) {
-    raContainer = rawAnnotBoxes[i];
-    chr = raContainer.chr;
-
-    rawAnnots = raContainer.annots;
-    newRas = getNewRawAnnots(heatmapKeyIndexes, rawAnnots, ideo);
-
-    newRaContainers.push({chr: chr, annots: newRas});
-  }
-  return newRaContainers;
-}
-
 function reportPerformance(t0, ideo) {
   var t1 = new Date().getTime();
   if (ideo.config.debug) {
-    console.log('Time in deserializeAnnotsForHeatmap: ' + (t1 - t0) + ' ms');
+    console.log('Time in deserializeAnnotsForHeatmapCollinear: ' + (t1 - t0) + ' ms');
   }
 }
 
-/**
- * Deserialize compressed annotation data into a format suited for heatmaps.
- *
- * This enables the annotations to be downloaded from a server without the
- * requested annotations JSON needing to explicitly specify track index or
- * color.  The track index and color are inferred from the "heatmaps" Ideogram
- * configuration option defined before ideogram initialization.
- *
- * This saves time for the user.
- *
- * @param rawAnnotsContainer {Object} Raw annotations as passed from server
- */
-function deserializeAnnotsForHeatmap(rawAnnotsContainer) {
-  var newRaContainers, heatmapKey, heatmapKeyIndexes, i,
-    t0 = new Date().getTime(),
-    keys = rawAnnotsContainer.keys,
-    rawAnnotBoxes = rawAnnotsContainer.annots,
-    ideo = this;
 
-  heatmapKeyIndexes = [];
-  for (i = 0; i < ideo.config.heatmaps.length; i++) {
-    heatmapKey = ideo.config.heatmaps[i].key;
-    heatmapKeyIndexes.push(keys.indexOf(heatmapKey));
-  }
-
-  newRaContainers =
-    getNewRawAnnotContainers(heatmapKeyIndexes, rawAnnotBoxes, ideo);
-
-  keys.splice(3, 0, 'trackIndex');
-  keys.splice(4, 0, 'color');
-
-  ideo.rawAnnots.keys = keys;
-  ideo.rawAnnots.annots = newRaContainers;
-
-  d3.select(ideo.selector).classed('labeledLeft', false);
-
-  reportPerformance(t0, ideo);
-}
-
-export {drawHeatmaps, deserializeAnnotsForHeatmap}
+export {drawHeatmapsCollinear}

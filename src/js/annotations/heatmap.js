@@ -6,6 +6,7 @@
  */
 
 import * as d3selection from 'd3-selection';
+import {drawHeatmapsCollinear} from './heatmap-collinear'
 
 var d3 = Object.assign({}, d3selection);
 
@@ -72,6 +73,10 @@ function drawHeatmaps(annotContainers) {
     ideo = this,
     ideoMarginTop = ideo._layout.margin.top,
     ideoHeight = ideo.config.chrHeight + ideoMarginTop;
+
+  if (ideo.config.geometry === 'collinear') {
+    return drawHeatmapsCollinear(annotContainers, ideo);
+  }
 
   d3.selectAll(ideo.config.container + ' canvas').remove();
 
