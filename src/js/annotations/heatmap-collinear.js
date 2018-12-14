@@ -83,7 +83,7 @@ function fillCanvasAnnots(annots, contextArray, chrWidth, ideoMarginTop) {
  * - Support after rotating chromosome on click
  */
 function drawHeatmapsCollinear(annotContainers, ideo) {
-  var annots, chrLeft, contextArray, chrHeight, i, chr,
+  var annots, chrLeft, contextArray, chrHeight, i, chr, prevX, xBump,
     ideoMarginTop = ideo._layout.margin.top,
     ideoHeight = ideo.config.chrHeight + ideoMarginTop;
 
@@ -94,7 +94,9 @@ function drawHeatmapsCollinear(annotContainers, ideo) {
 
   writeTrackLabelContainer(ideo);
 
-  var prevX = 0
+  prevX = 0;
+  xBump = (ideo.config.showChromosomesLabels) ? 2 : 0.7;
+
   // Each "annotationContainer" represents annotations for a chromosome
   for (i = 0; i < annotContainers.length; i++) {
 
@@ -105,7 +107,7 @@ function drawHeatmapsCollinear(annotContainers, ideo) {
       chrLeft = 12;
     } else {
       chrLeft = prevX + ideo.chromosomesArray[i - 1].width + 14;
-      prevX += ideo.chromosomesArray[i - 1].width + 2;
+      prevX += ideo.chromosomesArray[i - 1].width + xBump;
     }
 
     contextArray = writeCanvases(chr, chrLeft, ideoHeight, ideo);
