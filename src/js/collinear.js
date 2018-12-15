@@ -1,12 +1,13 @@
-function collinearizeChromosomes() {
-  var chrSets, firstChrSetY, widthOffset, translations, i, index, prevChrSet,
+function collinearizeChromosomes(ideo) {
+  var chrSets, widthOffset, translations, i, index, prevChrSet,
     prevChrSetRect, prevChrSetMatrix, prevChrSetTransform, prevWidth, prevX,
-    x, y, chrSet, xBump, showChromosomeLabels, prevChrLabel;
+    x, y, chrSet, xBump, hasChrLabels, prevChrLabel,
+    config = ideo.config;
 
   chrSets = document.querySelectorAll('.chromosome-set-container');
-  firstChrSetY = chrSets[0].transform.baseVal[0].matrix.f;
+  hasChrLabels = config.showChromosomeLabels;
 
-  showChromosomeLabels = ideogram.config.showChromosomeLabels;
+  y = config.numAnnotTracks * config.annotationHeight - config.chrWidth + 2;
 
   widthOffset = 0;
 
@@ -25,7 +26,7 @@ function collinearizeChromosomes() {
       prevWidth = prevChrSetRect.width;
       prevX = translations[index][0];
       widthOffset += prevWidth;
-      if (showChromosomeLabels) {
+      if (hasChrLabels) {
         prevChrLabel = prevChrSet.querySelector('.chrLabel tspan').innerHTML;
         xBump = (prevChrLabel.length < 2) ? -12 : -17;
       } else {
@@ -33,7 +34,6 @@ function collinearizeChromosomes() {
       }
       x = Math.round(prevX + prevWidth) + xBump;
     }
-    y = firstChrSetY;
     translations.push([x, y]);
   }
 
@@ -42,16 +42,16 @@ function collinearizeChromosomes() {
     chrSet = chrSets[i];
     x = translations[i][0];
     y = translations[i][1];
-    if (showChromosomeLabels) {
-      // Will need special handling for chromosome labels
-      chrSet.querySelector('.chrLabel').setAttribute('y', '5')
+    if (hasChrLabels) {
+      chrSet.querySelector('.chrLabel').setAttribute('y', config.chrWidth*2 + 10)
       chrSet.querySelector('.chrLabel').setAttribute('text-anchor', 'middle')
     }
     chrSet.setAttribute('transform', 'translate(' + x + ',' + y + ')');
     chrSet.querySelector('.chromosome').setAttribute('transform', 'translate(-13, 10)');
   }
 
-  document.querySelector('#_ideogram').setAttribute('width', widthOffset + 120);
+  document.querySelector(ideo.selector)
+    .setAttribute('width', widthOffset + 120);
 }
 
 export default collinearizeChromosomes;

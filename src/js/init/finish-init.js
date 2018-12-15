@@ -100,11 +100,8 @@ function finishInit(bandsArray, t0) {
 
   ideo.setOverflowScroll();
 
-  if (
-    ideo.config.geometry === 'collinear' &&
-    ideo.config.orientation === 'horizontal'
-  ) {
-    collinearizeChromosomes();
+  if (config.geometry === 'collinear' && config.orientation === 'horizontal') {
+    collinearizeChromosomes(ideo);
   }
 
   if (ideo.onLoadCallback) ideo.onLoadCallback();

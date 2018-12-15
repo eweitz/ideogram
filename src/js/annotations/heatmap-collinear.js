@@ -48,7 +48,7 @@ function writeCanvases(chr, chrLeft, ideoHeight, ideo) {
       .attr('height', trackWidth)
       .style('position', 'absolute')
       .style('left', Math.round(trackLeft) + 'px')
-      .style('top', (60 + (trackWidth*j)) + 'px')
+      .style('top', (trackWidth*j) + 'px')
     context = canvas.nodes()[0].getContext('2d');
     contextArray.push(context);
   }
@@ -59,17 +59,15 @@ function writeCanvases(chr, chrLeft, ideoHeight, ideo) {
 /**
  * Render annotations on the canvas
  */
-function fillCanvasAnnots(annots, contextArray, chrWidth, ideoMarginTop) {
-  var j, annot, context, y;
+function fillCanvasAnnots(annots, contextArray, ideo) {
+  var j, annot, context;
 
   // Fill in the canvas(es) with annotation colors to draw a heatmap
   for (j = 0; j < annots.length; j++) {
     annot = annots[j];
     context = contextArray[annot.trackIndex];
     context.fillStyle = annot.color;
-    y = annot.trackIndex - 1;
-    // context.fillRect(1, 0.5, 6, 12);
-    context.fillRect(annot.startPx, 1, 0.5, 10);
+    context.fillRect(annot.startPx, 1, 0.5, ideo.config.annotationHeight);
   }
 }
 
@@ -111,7 +109,7 @@ function drawHeatmapsCollinear(annotContainers, ideo) {
     }
 
     contextArray = writeCanvases(chr, chrLeft, ideoHeight, ideo);
-    fillCanvasAnnots(annots, contextArray, chrHeight, ideoMarginTop);
+    fillCanvasAnnots(annots, contextArray, ideo);
   }
 
   d3.selectAll(ideo.config.container + ' canvas')
@@ -212,6 +210,5 @@ function reportPerformance(t0, ideo) {
     console.log('Time in deserializeAnnotsForHeatmapCollinear: ' + (t1 - t0) + ' ms');
   }
 }
-
 
 export {drawHeatmapsCollinear}
