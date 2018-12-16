@@ -1,13 +1,18 @@
 function collinearizeChromosomes(ideo) {
   var chrSets, widthOffset, translations, i, index, prevChrSet,
-    prevChrSetRect, prevChrSetMatrix, prevChrSetTransform, prevWidth, prevX,
+    prevChrSetRect, prevChrSetMatrix, annotLabelHeight, prevWidth, prevX,
     x, y, chrSet, xBump, hasChrLabels, prevChrLabel,
     config = ideo.config;
 
   chrSets = document.querySelectorAll('.chromosome-set-container');
   hasChrLabels = config.showChromosomeLabels;
 
-  y = config.numAnnotTracks * config.annotationHeight - config.chrWidth + 2;
+  annotLabelHeight = 12;
+
+  y = (
+    (config.numAnnotTracks * (config.annotationHeight + annotLabelHeight)) -
+    config.chrWidth + 2
+  );
 
   widthOffset = 0;
 
@@ -19,7 +24,6 @@ function collinearizeChromosomes(ideo) {
     prevChrSet = chrSets[index];
     prevChrSetRect = prevChrSet.getBoundingClientRect();
     prevChrSetMatrix = prevChrSet.transform.baseVal[0].matrix;
-    prevChrSetTransform = {x: prevChrSetMatrix.e, y: prevChrSetMatrix.f};
     if (i === 0) {
       x = prevChrSetMatrix.e;
     } else {
