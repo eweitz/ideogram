@@ -54,8 +54,9 @@ function collinearizeChromosomes(ideo) {
     chrSet.querySelector('.chromosome').setAttribute('transform', 'translate(-13, 10)');
   }
 
-  document.querySelector(ideo.selector)
-    .setAttribute('width', widthOffset + 120);
+  d3.select(ideo.selector)
+    .attr('width', widthOffset + 120)
+    .attr('height', y + config.chrWidth*2 + 20);
 }
 
 export default collinearizeChromosomes;

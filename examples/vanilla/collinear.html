@@ -47,6 +47,28 @@
       }
     ];
 
+
+  var legend = [
+    {
+      name: 'Expression level',
+      rows: [
+        {color: '#88F', name: 'Low'},
+        {color: '#CCC', name: 'Medium'},
+        {color: '#F33', name: 'High'}
+      ]
+    },
+    {
+      name: 'Gene type',
+      rows: [
+        {color: '#00F', name: 'mRNA'},
+        {color: '#0AF', name: 'misc_RNA'},
+        {color: '#AAA', name: 'miRNA'},
+        {color: '#FA0', name: 'tRNA'},
+        {color: '#F00', name: 'lncRNA'}
+      ]
+    }
+  ]
+
     var annotationTracks = [
       {id: 'expressionLevelTrack', displayName: 'Expression level'},
       {id: 'geneTypeTrack', displayName: 'Gene type'},
@@ -65,7 +87,8 @@
       annotationsLayout: 'heatmap',
       annotationsPath: '../../data/annotations/SRR562646.json',
       heatmaps: heatmaps,
-      annotationTracks: annotationTracks
+      annotationTracks: annotationTracks,
+      legend: legend
     });
   </script>
 </body>
