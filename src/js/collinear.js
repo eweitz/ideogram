@@ -55,7 +55,7 @@ function collinearizeChromosomes(ideo) {
   }
 
   d3.select(ideo.selector)
-    .attr('width', widthOffset + 120)
+    .attr('width', x + 20)
     .attr('height', y + config.chrWidth*2 + 20);
 }
 
