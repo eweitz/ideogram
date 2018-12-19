@@ -1,5 +1,5 @@
 function collinearizeChromosomes(ideo) {
-  var chrSets, widthOffset, translations, i, index, prevChrSet,
+  var chrSets, translations, i, index, prevChrSet,
     prevChrSetRect, prevChrSetMatrix, annotLabelHeight, prevWidth, prevX,
     x, y, chrSet, xBump, hasChrLabels, prevChrLabel,
     config = ideo.config;
@@ -14,25 +14,19 @@ function collinearizeChromosomes(ideo) {
     config.chrWidth + 2
   );
 
-  widthOffset = 0;
-
   // Get pixel coordinates to use for rearrangement
   var translations = [];
   for (i = 0; i < chrSets.length; i++) {
-    chrSet = chrSets[i];
     index = (i === 0) ? i : i - 1;
-    prevChrSet = chrSets[index];
-    prevChrSetRect = prevChrSet.getBoundingClientRect();
-    prevChrSetMatrix = prevChrSet.transform.baseVal[0].matrix;
+    prevChrSet = ideo.chromosomesArray[index];
     if (i === 0) {
-      x = prevChrSetMatrix.e;
+      x = 20;
     } else {
-      prevWidth = prevChrSetRect.width;
+      prevWidth = prevChrSet.width;
       prevX = translations[index][0];
-      widthOffset += prevWidth;
       if (hasChrLabels) {
-        prevChrLabel = prevChrSet.querySelector('.chrLabel tspan').innerHTML;
-        xBump = (prevChrLabel.length < 2) ? -12 : -17;
+        prevChrLabel = prevChrSet.name;
+        xBump = 0; // xBump likely unneeded
       } else {
         xBump = 2;
       }

@@ -42,14 +42,16 @@ function getLabels(ideo) {
 }
 
 function renderTrackLabels(labels, ideo) {
-  var labels, tracks, trackBox, i,
+  var labels, i, x, y, annotLabelHeight;
 
-  tracks = 
-    d3.selectAll(ideo.config.container + ' canvas').nodes()
-    .slice(0, labels.length);
+  x = 
+    d3.selectAll(ideo.config.container + ' .chromosome-set-container')
+      .nodes()[0].transform.baseVal[0].matrix.e - 8;
 
-  for (i = 0; i < tracks.length; i++) {
-    trackBox = tracks[i].getBoundingClientRect();
+  annotLabelHeight = 12;
+  y = ideo.config.annotationHeight + annotLabelHeight
+
+  for (i = 0; i < labels.length; i++) {
 
     d3.select(ideo.config.container + ' #_ideogramTrackLabelContainer')
       .style('position', 'relative')
@@ -63,8 +65,8 @@ function renderTrackLabels(labels, ideo) {
       .style('background', 'white')
       .style('line-height', '10px')
       .style('z-index', '9000')
-      .style('left', trackBox.x - 8 + 'px')
-      .style('top', (trackBox.height*i + 1) + 'px')
+      .style('left', x + 'px')
+      .style('top', (y*i + 1) + 'px')
       .style('width', 'max-content')
       .style('transform-origin', 'bottom left')
       .style('text-align', 'left')
