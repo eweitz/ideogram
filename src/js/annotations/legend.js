@@ -15,8 +15,13 @@ var legendStyle =
   '#_ideogramLegend svg {float: left;} ' +
   '#_ideogramLegend ul {' +
     'position: relative; left: -14px; list-style: none; float: left; ' +
-    'padding-left: 10px; margin-top: 0px;' +
+    'padding-left: 10px; margin-top: 0px; ' +
+    'width: auto; ' +
+    'border: none;' +
   '} ' +
+  '#_ideogramLegend li {' +
+    'float: none;' +
+  '}' +
   '#_ideogramLegend ul span {position: relative; left: -15px;} ';
 
 function getIcon(row) {
