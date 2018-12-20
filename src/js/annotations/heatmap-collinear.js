@@ -65,7 +65,7 @@ function fillCanvasAnnots(annots, contextArray, ideo) {
   // Fill in the canvas(es) with annotation colors to draw a heatmap
   for (j = 0; j < annots.length; j++) {
     annot = annots[j];
-    context = contextArray[annot.trackIndex];
+    context = contextArray[annot.trackIndex]; 
     context.fillStyle = annot.color;
     context.fillRect(
       annot.startPx, 1 + annotLabelHeight,
@@ -94,7 +94,7 @@ function drawHeatmapsCollinear(annotContainers, ideo) {
   d3.selectAll(ideo.config.container + ' canvas').remove();
 
   prevX = 0;
-  xBump = (ideo.config.showChromosomesLabels) ? 2 : 0.7;
+  xBump = (ideo.config.showChromosomesLabels) ? 2 : -0.1;
 
   // Each "annotationContainer" represents annotations for a chromosome
   for (i = 0; i < annotContainers.length; i++) {
