@@ -45,8 +45,12 @@ function renderTrackLabels(labels, ideo) {
   var labels, i, x, y, annotLabelHeight;
 
   x = 
-    d3.selectAll(ideo.config.container + ' .chromosome-set-container')
-      .nodes()[0].transform.baseVal[0].matrix.e - 8;
+    d3.selectAll(ideo.config.container + ' canvas')
+      .nodes()[0].getBoundingClientRect().x - 8;
+
+  if (x < 0) {
+    x = 12; // Same as chrLeft at 0 in heatmap-collinear.js.  For tabs.
+  }
 
   annotLabelHeight = 12;
   y = ideo.config.annotationHeight + annotLabelHeight
@@ -54,7 +58,7 @@ function renderTrackLabels(labels, ideo) {
   for (i = 0; i < labels.length; i++) {
 
     d3.select(ideo.config.container + ' #_ideogramTrackLabelContainer')
-      .style('position', 'relative')
+      .style('position', 'absolute')
       .append('div')
       .attr('class', '_ideogramTrackLabel')
       .style('opacity', 1)

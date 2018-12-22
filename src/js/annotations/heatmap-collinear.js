@@ -14,7 +14,7 @@ import {writeTrackLabels} from './track-labels-collinear';
 /**
  * Add canvases that will contain annotations.  One canvas per track.
  */
-function writeCanvases(chr, chrLeft, ideoHeight, ideo) {
+function writeCanvases(chr, chrLeft, ideo) {
   var j, trackLeft, trackWidth, canvas, context, id,
     contextArray = [],
     numAnnotTracks = ideo.config.numAnnotTracks;
@@ -23,21 +23,8 @@ function writeCanvases(chr, chrLeft, ideoHeight, ideo) {
 
   // Create a canvas for each annotation track on this chromosome
   for (j = 0; j < numAnnotTracks; j++) {
-    // trackWidth = ideo.config.annotationHeight;
-    // id = chr.id + '-canvas-' + j; // e.g. chr1-9606-canvas-0
-    // trackLeft = chrLeft - trackWidth * (numAnnotTracks - j) - marginHack;
-    // canvas = d3.select(ideo.config.container + ' #_ideogramInnerWrap')
-    //   .append('canvas')
-    //   .attr('id', id)
-    //   .attr('width', trackWidth)
-    //   .attr('height', ideoHeight)
-    //   .style('position', 'absolute')
-    //   .style('left', trackLeft + 'px');
-    // context = canvas.nodes()[0].getContext('2d');
-    // contextArray.push(context);
     trackWidth = ideo.config.annotationHeight + annotLabelHeight;
     id = chr.id + '-canvas-' + j; // e.g. chr1-9606-canvas-0
-    // trackLeft = chrLeft - trackWidth * (numAnnotTracks - j) - marginHack;
     trackLeft = chrLeft
     canvas = d3.select(ideo.config.container + ' #_ideogramInnerWrap')
       .append('canvas')
@@ -84,13 +71,9 @@ function fillCanvasAnnots(annots, contextArray, ideo) {
  * - Support after rotating chromosome on click
  */
 function drawHeatmapsCollinear(annotContainers, ideo) {
-  var annots, chrLeft, contextArray, chrHeight, i, chr, prevX, xBump,
-    ideoMarginTop = ideo._layout.margin.top,
-    ideoHeight = ideo.config.chrHeight + ideoMarginTop;
-
+  var annots, chrLeft, contextArray, i, chr, prevX, xBump;
 
   d3.select(ideo.selector).classed('labeledLeft', false);
-
   d3.selectAll(ideo.config.container + ' canvas').remove();
 
   prevX = 0;
@@ -101,7 +84,6 @@ function drawHeatmapsCollinear(annotContainers, ideo) {
 
     annots = annotContainers[i].annots;
     chr = ideo.chromosomesArray[i];
-    chrHeight = ideo.config.chrHeight;
     if (i === 0) {
       chrLeft = 12;
     } else {
@@ -109,7 +91,7 @@ function drawHeatmapsCollinear(annotContainers, ideo) {
       prevX += ideo.chromosomesArray[i - 1].width + xBump;
     }
 
-    contextArray = writeCanvases(chr, chrLeft, ideoHeight, ideo);
+    contextArray = writeCanvases(chr, chrLeft, ideo);
     fillCanvasAnnots(annots, contextArray, ideo);
   }
 

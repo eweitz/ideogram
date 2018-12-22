@@ -1,7 +1,6 @@
 function collinearizeChromosomes(ideo) {
-  var chrSets, translations, i, index, prevChrSet,
-    prevChrSetRect, prevChrSetMatrix, annotLabelHeight, prevWidth, prevX,
-    x, y, chrSet, xBump, hasChrLabels, prevChrLabel,
+  var chrSets, translations, i, index, prevChrSet, annotLabelHeight, ideoDom,
+    prevWidth, prevX, x, y, chrSet, xBump, hasChrLabels, translations,
     config = ideo.config;
 
   chrSets = document.querySelectorAll('.chromosome-set-container');
@@ -15,7 +14,7 @@ function collinearizeChromosomes(ideo) {
   );
 
   // Get pixel coordinates to use for rearrangement
-  var translations = [];
+  translations = [];
   for (i = 0; i < chrSets.length; i++) {
     index = (i === 0) ? i : i - 1;
     prevChrSet = ideo.chromosomesArray[index];
@@ -25,7 +24,6 @@ function collinearizeChromosomes(ideo) {
       prevWidth = prevChrSet.width;
       prevX = translations[index][0];
       if (hasChrLabels) {
-        prevChrLabel = prevChrSet.name;
         xBump = 0; // xBump likely unneeded
       } else {
         xBump = 2;
@@ -48,9 +46,9 @@ function collinearizeChromosomes(ideo) {
     chrSet.querySelector('.chromosome').setAttribute('transform', 'translate(-13, 10)');
   }
 
-  d3.select(ideo.selector)
-    .attr('width', x + 20)
-    .attr('height', y + config.chrWidth*2 + 20);
+  ideoDom = document.querySelector(ideo.selector)
+  ideoDom.setAttribute('width', x + 20)
+  ideoDom.setAttribute('height', y + config.chrWidth*2 + 20);
 }
 
 export default collinearizeChromosomes;

@@ -120,6 +120,14 @@
     var tracks = getSelectedTracks();
     var layout = document.querySelector('input[name=layout]:checked').id;
     var geometry = document.querySelector('input[name=geometry]:checked').id;
+
+    if (layout === 'tracks' && geometry === 'collinear') {
+      document.querySelector('#ideogram-container').innerHTML =
+        '<div style="position: relative; left: 20px; top: 13px">' +
+          'Shapes annotation layout is not supported in collinear geometry.' +
+        '</div>';
+      return;
+    }
     
     config.annotationsDisplayedTracks = tracks;
     config.annotationsLayout = layout;
@@ -132,7 +140,7 @@
     } else {
       config.orientation = 'vertical';
       config.chrHeight = 400;
-      config.annotationHeight = 10;
+      config.annotationHeight = (layout === 'heatmap' ? 10 : 4);
     }
 
     document.querySelector('#ideogram-container').innerHTML = '';
