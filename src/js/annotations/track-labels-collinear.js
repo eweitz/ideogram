@@ -45,8 +45,8 @@ function renderTrackLabels(labels, ideo) {
   var labels, i, x, y, annotLabelHeight;
 
   x = 
-    d3.selectAll(ideo.config.container + ' canvas')
-      .nodes()[0].getBoundingClientRect().x - 8;
+    d3.selectAll(ideo.config.container + ' .chromosome-set-container')
+      .nodes()[0].getBoundingClientRect().x - 10;
 
   if (x < 0) {
     x = 12; // Same as chrLeft at 0 in heatmap-collinear.js.  For tabs.
