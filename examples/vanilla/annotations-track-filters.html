@@ -25,7 +25,7 @@
 
   <ul>
     Annotations layout
-    <li><label for="tracks"><input type="radio" id="tracks" name="layout"/>Shapes</label></li>
+    <li><label for="tracks"><input type="radio" id="tracks" name="layout"/>Shape</label></li>
     <li><label for="heatmap"><input type="radio" id="heatmap" name="layout" checked/>Heatmap</label></li>
   </ul>
 
@@ -124,7 +124,7 @@
     if (layout === 'tracks' && geometry === 'collinear') {
       document.querySelector('#ideogram-container').innerHTML =
         '<div style="position: relative; left: 20px; top: 13px">' +
-          'Shapes annotation layout is not supported in collinear geometry.' +
+          'Shape annotation layout is not supported in collinear geometry.' +
         '</div>';
       return;
     }
