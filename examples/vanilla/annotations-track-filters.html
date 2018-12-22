@@ -23,10 +23,16 @@
   <ul id="tracks-to-display">
   </ul>
 
-  <ul id="annotations-layout">
+  <ul>
     Annotations layout
     <li><label for="tracks"><input type="radio" id="tracks" name="layout"/>Shapes</label></li>
     <li><label for="heatmap"><input type="radio" id="heatmap" name="layout" checked/>Heatmap</label></li>
+  </ul>
+
+  <ul>
+    Geometry
+    <li><label for="parallel"><input type="radio" id="parallel" name="geometry" checked/>Parallel</label></li>
+    <li><label for="collinear"><input type="radio" id="collinear" name="geometry"/>Collinear</label></li>
   </ul>
 </div>
 
@@ -113,10 +119,24 @@
     
     var tracks = getSelectedTracks();
     var layout = document.querySelector('input[name=layout]:checked').id;
+    var geometry = document.querySelector('input[name=geometry]:checked').id;
     
     config.annotationsDisplayedTracks = tracks;
     config.annotationsLayout = layout;
+    config.geometry = geometry;
 
+    if (geometry === 'collinear') {
+      config.orientation = 'horizontal';
+      config.chrHeight = 80;
+      config.annotationHeight = 30;
+    } else {
+      config.orientation = 'vertical';
+      config.chrHeight = 400;
+      config.annotationHeight = 10;
+    }
+
+    document.querySelector('#ideogram-container').innerHTML = '';
+    delete window.ideogram;
     ideogram = new Ideogram(config);
   }
 

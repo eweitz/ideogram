@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Collinear | Ideogram</title>
+  <title>Collinear, tabs and overflow | Ideogram</title>
   <style>
     body {
         font: 12px Arial;
@@ -73,14 +73,13 @@
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
 </head>
 <body>
-  <h1>Collinear | Ideogram</h1>
+  <h1>Collinear, tabs and overflow | Ideogram</h1>
   <a href="../">Back to overview</a> |
   <a href="multiple-primates">Previous</a> |
   <a href="mouse">Next</a>
   <p>
-    A human genome with annotations in heatmaps is depicted below.  Unlike the
-    <a href="annotations-heatmap.html">parallel arrangement</a>, this ideogram is
-    collinear -- the chromosomes form a line together.
+    Click the 'Ideogram' tab above to see chromosomes.  This demonstrates support for collinear ideogram layout
+    in containers that are initially hidden.
   </p>
   <div class="tab-panel">
     <ul class="nav">
@@ -163,7 +162,7 @@
       showFullyBanded: false,
       // showChromosomeLabels: false,
       rotatable: false,
-      annotationHeight: 20,
+      annotationHeight: 40,
       annotationsLayout: 'heatmap',
       annotationsPath: '../../data/annotations/SRR562646.json',
       heatmaps: heatmaps,
