@@ -8,7 +8,7 @@
         ul { float: left; padding-left: 5px}
         ul#dynamic-tracks { float: left; padding-left: 15px}
         li { list-style: none; }
-        #filters-container ul { clear: both; margin-right: 20px; }
+        #filters-container ul { clear: both; margin-right: 15px; }
     </style>
 </head>
 <body>
@@ -93,7 +93,6 @@
       });
     });
 
-
     topCheckbox = document.querySelector('#filter_all');
     topCheckbox.addEventListener('click', function() {
       var lowerCheckboxes = document.querySelectorAll('#dynamic-tracks input');
@@ -111,7 +110,7 @@
 
   function getSelectedTracks() {
     var selectedTracks = [];
-    
+
     checkboxes.forEach(function(checkbox) {
       var trackIndex = parseInt(checkbox.getAttribute('id').split('_')[1]);
       if (checkbox.checked) {
@@ -147,7 +146,7 @@
 
     if (geometry === 'collinear') {
       config.orientation = 'horizontal';
-      config.chrHeight = 80;
+      config.chrHeight = 105;
       config.annotationHeight = 30;
     } else {
       config.orientation = 'vertical';

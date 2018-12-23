@@ -23,17 +23,17 @@ function writeCanvases(chr, chrLeft, ideo) {
 
   // Create a canvas for each annotation track on this chromosome
   for (j = 0; j < numAnnotTracks; j++) {
-    trackWidth = ideo.config.annotationHeight + annotLabelHeight;
+    trackWidth = ideo.config.annotationHeight + annotLabelHeight + 4;
     id = chr.id + '-canvas-' + j; // e.g. chr1-9606-canvas-0
     trackLeft = chrLeft
     canvas = d3.select(ideo.config.container + ' #_ideogramInnerWrap')
       .append('canvas')
       .attr('id', id)
-      .attr('width', Math.round(chr.width) + 2)
+      .attr('width', Math.round(chr.width) + 1)
       .attr('height', trackWidth)
       .style('position', 'absolute')
       .style('left', Math.round(trackLeft) + 'px')
-      .style('top', (trackWidth*j) + 'px')
+      .style('top', (trackWidth*j + 1) + 'px')
     context = canvas.nodes()[0].getContext('2d');
     contextArray.push(context);
   }

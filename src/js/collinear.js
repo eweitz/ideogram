@@ -9,8 +9,8 @@ function collinearizeChromosomes(ideo) {
   annotLabelHeight = 12;
 
   y = (
-    (config.numAnnotTracks * (config.annotationHeight + annotLabelHeight)) -
-    config.chrWidth + 2
+    (config.numAnnotTracks * (config.annotationHeight + annotLabelHeight + 4)) -
+    config.chrWidth + 1
   );
 
   // Get pixel coordinates to use for rearrangement
@@ -24,7 +24,7 @@ function collinearizeChromosomes(ideo) {
       prevWidth = prevChrSet.width;
       prevX = translations[index][0];
       if (hasChrLabels) {
-        xBump = 0; // xBump likely unneeded
+        xBump = 0.08;
       } else {
         xBump = 2;
       }

@@ -57,10 +57,9 @@ function renderTrackLabels(labels, ideo) {
   labelContainer.html('');
 
   annotLabelHeight = 12;
-  y = ideo.config.annotationHeight + annotLabelHeight;
-  
-  for (i = 0; i < labels.length; i++) {
+  y = ideo.config.annotationHeight + annotLabelHeight + 4;
 
+  for (i = 0; i < labels.length; i++) {
     labelContainer
       .style('position', 'absolute')
       .append('div')
@@ -74,7 +73,7 @@ function renderTrackLabels(labels, ideo) {
       .style('line-height', '10px')
       .style('z-index', '9000')
       .style('left', x + 'px')
-      .style('top', (y*i + 1) + 'px')
+      .style('top', (y*i + 2) + 'px')
       .style('width', 'max-content')
       .style('transform-origin', 'bottom left')
       .style('text-align', 'left')
