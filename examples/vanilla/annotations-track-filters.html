@@ -6,6 +6,7 @@
     <style>
         html, body { height: 100%; font: 12px Arial; line-height: 19.6px; }
         ul { float: left; padding-left: 5px}
+        ul#dynamic-tracks { float: left; padding-left: 15px}
         li { list-style: none; }
         #filters-container ul { clear: both; margin-right: 20px; }
     </style>
@@ -21,6 +22,10 @@
 
 <div id="filters-container">
   <ul id="tracks-to-display">
+    Tracks to display
+    <li><label><input id="filter_all" type="checkbox" value="all"/> All</label></li>
+    <ul id="dynamic-tracks">
+    </ul>
   </ul>
 
   <ul>
@@ -79,14 +84,21 @@
           '</label>' +
         '</li>';
     }
-    content = 'Tracks to display ' + listItems;
-    document.querySelector('#tracks-to-display').innerHTML = content;
+    document.querySelector('#dynamic-tracks').innerHTML = listItems;
 
-    checkboxes = document.querySelectorAll('input[type=checkbox]');
+    checkboxes = document.querySelectorAll('#dynamic-tracks input');
     checkboxes.forEach(function(checkbox) {
       checkbox.addEventListener('click', function() {
         updateTracks();
       });
+    });
+
+
+    topCheckbox = document.querySelector('#filter_all');
+    topCheckbox.addEventListener('click', function() {
+      var lowerCheckboxes = document.querySelectorAll('#dynamic-tracks input');
+      lowerCheckboxes.forEach(checkbox => checkbox.checked = this.checked);
+      updateTracks();
     });
   }
 
