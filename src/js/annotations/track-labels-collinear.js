@@ -57,8 +57,8 @@ function renderTrackLabels(labels, ideo) {
   labelContainer.html('');
 
   annotLabelHeight = 12;
-  y = ideo.config.annotationHeight + annotLabelHeight
-  console.log(labels)
+  y = ideo.config.annotationHeight + annotLabelHeight;
+  
   for (i = 0; i < labels.length; i++) {
 
     labelContainer
