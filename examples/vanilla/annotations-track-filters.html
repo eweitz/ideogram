@@ -17,7 +17,8 @@
 <a href="homology-interspecies">Previous</a> |
 <a href="annotations-overlaid">Next</a>
 <p>
-    Select up to 3 of 9 tracks to display.  See also <a href="annotations-tracks">Annotations, tracks</a>.
+    Explore track filters and ideogram options with a simulated annotation dataset.
+    See also <a href="annotations-tracks">Annotations, tracks</a>.
 </p>
 
 <div id="filters-container">
@@ -121,8 +122,25 @@
     return selectedTracks;
   }
 
+  function checkTracks() {
+    var selectedTracks = getSelectedTracks();
+    var geometry = document.querySelector('input[name=geometry]:checked').id;
+    if (geometry !== 'collinear' && selectedTracks.length > 3) {
+      document.querySelector('#ideogram-container').innerHTML =
+        '<div style="position: relative; left: 20px; top: 13px">' +
+          'Rendering over 3 tracks displays poorly in parallel chromosomes.  ' +
+          'Try selecting "Collinear" geometry.' +
+        '</div>';
+      return false;
+    }
+  }
+
   function updateTracks() {
     var selectedTracks = getSelectedTracks();
+    if (checkTracks() === false) return;
+    if (document.querySelector('#_ideogramOuterWrap') === null) {
+      return updateIdeogram();
+    }
     ideogram.updateDisplayedTracks(selectedTracks);
   }
 
@@ -135,10 +153,12 @@
     if (layout === 'tracks' && geometry === 'collinear') {
       document.querySelector('#ideogram-container').innerHTML =
         '<div style="position: relative; left: 20px; top: 13px">' +
-          'Shape annotation layout is not supported in collinear geometry.' +
+          'Shape annotation layout is not supported in collinear geometry.  ' +
+          'Try selecting "Heatmap" annotation layout.' +
         '</div>';
       return;
     }
+    if (checkTracks() === false) return;
     
     config.annotationsDisplayedTracks = tracks;
     config.annotationsLayout = layout;
@@ -155,7 +175,7 @@
     }
 
     document.querySelector('#ideogram-container').innerHTML = '';
-    delete window.ideogram;
+
     ideogram = new Ideogram(config);
   }
 
