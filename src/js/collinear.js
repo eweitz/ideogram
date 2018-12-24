@@ -2,23 +2,31 @@ import * as d3selection from 'd3-selection';
 
 var d3 = Object.assign({}, d3selection);
 
-function collinearizeChromosomes(ideo) {
-  var chrSets, translations, i, index, prevChrSet, annotLabelHeight, ideoDom,
-    prevWidth, prevX, x, y, chrSet, xBump, hasChrLabels, translations,
-    config = ideo.config;
+/**
+* Rearrange chromosomes from horizontal to collinear
+*/
+function rearrangeChromosomes(chrSets, xOffsets, y, config) {
+  var i, chrSet, x;
 
-  chrSets = document.querySelectorAll('.chromosome-set-container');
-  hasChrLabels = config.showChromosomeLabels;
+  for (i = 0; i < chrSets.length; i++) {
+    chrSet = chrSets[i];
+    x = xOffsets[i];
+    if (config.showChromosomeLabels) {
+      chrSet.querySelector('.chrLabel').setAttribute('y', config.chrWidth*2 + 10)
+      chrSet.querySelector('.chrLabel').setAttribute('text-anchor', 'middle')
+    }
+    chrSet.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+    chrSet.querySelector('.chromosome').setAttribute('transform', 'translate(-13, 10)');
+  }
+}
 
-  annotLabelHeight = 12;
+/**
+* Get pixel coordinates to use for rearrangement 
+*/
+function getxOffsets(chrSets, ideo) {
+  var xOffsets, i, index, prevChrSet, x, prevWidth, prevX, xBump;
 
-  y = (
-    (config.numAnnotTracks * (config.annotationHeight + annotLabelHeight + 4)) -
-    config.chrWidth + 1
-  );
-
-  // Get pixel coordinates to use for rearrangement
-  translations = [];
+  xOffsets = [];
   for (i = 0; i < chrSets.length; i++) {
     index = (i === 0) ? i : i - 1;
     prevChrSet = ideo.chromosomesArray[index];
@@ -26,33 +34,38 @@ function collinearizeChromosomes(ideo) {
       x = 20;
     } else {
       prevWidth = prevChrSet.width;
-      prevX = translations[index][0];
-      if (hasChrLabels) {
+      prevX = xOffsets[index];
+      if (ideo.config.showChromosomeLabels) {
         xBump = 0.08;
       } else {
         xBump = 2;
       }
       x = Math.round(prevX + prevWidth) + xBump;
     }
-    translations.push([x, y]);
+    xOffsets.push(x);
   }
 
-  // Rearrange chromosomes from horizontal to collinear
-  for (i = 0; i < chrSets.length; i++) {
-    chrSet = chrSets[i];
-    x = translations[i][0];
-    y = translations[i][1];
-    if (hasChrLabels) {
-      chrSet.querySelector('.chrLabel').setAttribute('y', config.chrWidth*2 + 10)
-      chrSet.querySelector('.chrLabel').setAttribute('text-anchor', 'middle')
-    }
-    chrSet.setAttribute('transform', 'translate(' + x + ',' + y + ')');
-    chrSet.querySelector('.chromosome').setAttribute('transform', 'translate(-13, 10)');
-  }
+  return xOffsets;
+}
 
-  ideoDom = document.querySelector(ideo.selector)
-  ideoDom.setAttribute('width', x + 20)
-  ideoDom.setAttribute('height', y + config.chrWidth*2 + 20);
+function collinearizeChromosomes(ideo) {
+  var chrSets, xOffsets, annotLabelHeight, y, xOffsets,
+    config = ideo.config, annotHeight = config.annotationHeight;
+
+  chrSets = document.querySelectorAll('.chromosome-set-container');
+  annotLabelHeight = 12;
+
+  y = (
+    (config.numAnnotTracks * (annotHeight + annotLabelHeight + 4)) -
+    config.chrWidth + 1
+  );
+
+  xOffsets = getxOffsets(chrSets, ideo);
+  rearrangeChromosomes(chrSets, xOffsets, y, config);
+
+  d3.select(ideo.selector)
+    .attr('width', xOffsets.slice(-1)[0] + 20)
+    .attr('height', y + config.chrWidth*2 + 20);
 
   d3.select('#_ideogramTrackLabelContainer').remove();
   d3.select('#_ideogramInnerWrap')
