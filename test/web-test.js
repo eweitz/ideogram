@@ -2030,4 +2030,58 @@ describe('Ideogram', function() {
   //   var ideogram = new Ideogram(config);
   // });
 
+  it('should support collinear chromosome geometry', function(done) {
+
+    function callback() {
+      var chr2CanvasBox = d3.select('#chr2-9606-canvas-1').nodes()[0].getBoundingClientRect();
+      assert.equal(chr2CanvasBox.x, 112);
+      done();
+    }
+
+
+    var heatmaps = [
+      {
+        key: 'expression-level',
+        thresholds: [
+          ['2', '#88F'],
+          ['4', '#CCC'],
+          ['+', '#F33']]
+      },
+      {
+        key: 'gene-type',
+        thresholds: [
+          ['0', '#00F'],
+          ['1', '#0AF'],
+          ['2', '#AAA'],
+          ['3', '#FA0'],
+          ['4', '#F00']
+        ]
+      }
+    ];
+
+    var annotationTracks = [
+      {id: 'expressionLevelTrack', displayName: 'Expression level'},
+      {id: 'geneTypeTrack', displayName: 'Gene type'},
+    ];
+
+    config = {
+      organism: 'human',
+      assembly: 'GRCh37',
+      orientation: 'horizontal',
+      geometry: 'collinear',
+      chrHeight: 90,
+      showFullyBanded: false,
+      rotatable: false,
+      annotationHeight: 30,
+      annotationsLayout: 'heatmap',
+      dataDir: '/dist/data/bands/native/',
+      annotationsPath: '../dist/data/annotations/SRR562646.json',
+      heatmaps: heatmaps,
+      annotationTracks: annotationTracks
+    };
+
+    config.onDrawAnnots = callback;
+    var ideogram = new Ideogram(config);
+  });
+
 });
