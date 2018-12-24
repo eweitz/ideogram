@@ -44,13 +44,7 @@ function getLabels(ideo) {
 function renderTrackLabels(labels, ideo) {
   var labels, i, x, y, annotLabelHeight, labelContainer;
 
-  x = 
-    d3.selectAll(ideo.config.container + ' .chromosome-set-container')
-      .nodes()[0].getBoundingClientRect().x - 10;
-
-  if (x < 0) {
-    x = 12; // Same as chrLeft at 0 in heatmap-collinear.js.  For tabs.
-  }
+  x = 11; // Close to chrLeft in heatmap-collinear.js.  For tabs.
 
   labelContainer =
     d3.select(ideo.config.container + ' #_ideogramTrackLabelContainer');

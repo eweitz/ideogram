@@ -1,3 +1,7 @@
+import * as d3selection from 'd3-selection';
+
+var d3 = Object.assign({}, d3selection);
+
 function collinearizeChromosomes(ideo) {
   var chrSets, translations, i, index, prevChrSet, annotLabelHeight, ideoDom,
     prevWidth, prevX, x, y, chrSet, xBump, hasChrLabels, translations,
@@ -49,6 +53,12 @@ function collinearizeChromosomes(ideo) {
   ideoDom = document.querySelector(ideo.selector)
   ideoDom.setAttribute('width', x + 20)
   ideoDom.setAttribute('height', y + config.chrWidth*2 + 20);
+
+  d3.select('#_ideogramTrackLabelContainer').remove();
+  d3.select('#_ideogramInnerWrap')
+    .insert('div', ':first-child')
+    .attr('id', '_ideogramTrackLabelContainer')
+    .style('position', 'absolute');
 }
 
 export default collinearizeChromosomes;
