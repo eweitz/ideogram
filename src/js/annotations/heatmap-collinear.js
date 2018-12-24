@@ -1,8 +1,6 @@
 /**
- * @fileoverview Functions for heatmaps of genome annotations.
- * Heatmaps provide an easy way to visualize very dense annotation data.
- * Unlike the rest of Ideogram's graphics, which use SVG, heatmaps are
- * rendered using the Canvas element.
+ * @fileoverview Functions for collinear heatmaps of genome annotations.
+ * See heatmap.js for more.
  */
 
 import * as d3selection from 'd3-selection';
@@ -67,21 +65,19 @@ function fillCanvasAnnots(annots, contextArray, ideo) {
  * without subsampling.
  *
  * TODO:
- * - Support in 'horizontal' orientation
+ * - Support in 'vertical' orientation
  * - Support after rotating chromosome on click
  */
 function drawHeatmapsCollinear(annotContainers, ideo) {
-  var annots, chrLeft, contextArray, i, chr, prevX, xBump;
+  var annots, chrLeft, contextArray, i, chr,
+    prevX = 0,
+    xBump = (ideo.config.showChromosomesLabels) ? 2 : -0.1;
 
   d3.select(ideo.selector).classed('labeledLeft', false);
   d3.selectAll(ideo.config.container + ' canvas').remove();
 
-  prevX = 0;
-  xBump = (ideo.config.showChromosomesLabels) ? 2 : -0.1;
-
   // Each "annotationContainer" represents annotations for a chromosome
   for (i = 0; i < annotContainers.length; i++) {
-
     annots = annotContainers[i].annots;
     chr = ideo.chromosomesArray[i];
     if (i === 0) {
@@ -90,16 +86,13 @@ function drawHeatmapsCollinear(annotContainers, ideo) {
       chrLeft = prevX + ideo.chromosomesArray[i - 1].width + 14;
       prevX += ideo.chromosomesArray[i - 1].width + xBump;
     }
-
     contextArray = writeCanvases(chr, chrLeft, ideo);
     fillCanvasAnnots(annots, contextArray, ideo);
   }
 
   writeTrackLabels(ideo);
 
-  if (ideo.onDrawAnnotsCallback) {
-    ideo.onDrawAnnotsCallback();
-  }
+  if (ideo.onDrawAnnotsCallback) ideo.onDrawAnnotsCallback();
 }
 
 

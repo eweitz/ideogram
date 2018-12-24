@@ -1,7 +1,6 @@
 /**
- * @fileoverview Functions for labeling tracks of genome annotations.
- * Tracks are columns of annotations that run beside a chromosome.
- * Labeling tracks with descriptive names makes them easier to understand.
+ * @fileoverview Functions for labeling collinear tracks of genome annotations.
+ * See track-labels.js for more.
  */
 
 import * as d3selection from 'd3-selection';
