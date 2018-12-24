@@ -1,5 +1,6 @@
 import * as d3selection from 'd3-selection';
 import {Object} from '../lib';
+import collinearizeChromosomes from '../collinear'
 
 var d3 = Object.assign({}, d3selection);
 
@@ -98,6 +99,10 @@ function finishInit(bandsArray, t0) {
   reportDebugTimings(config, t0, t0A);
 
   ideo.setOverflowScroll();
+
+  if (config.geometry === 'collinear' && config.orientation === 'horizontal') {
+    collinearizeChromosomes(ideo);
+  }
 
   if (ideo.onLoadCallback) ideo.onLoadCallback();
 }
