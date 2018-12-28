@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Functions for collinear chromosomes.
+ * Collinear chromosomes form a line together, unlike the default parallel
+ * geometry.
+ */
+
 import * as d3selection from 'd3-selection';
 
 var d3 = Object.assign({}, d3selection);
