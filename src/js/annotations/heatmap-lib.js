@@ -1,3 +1,6 @@
+/**
+ * @fileoverview Functions used by parallel and collinear heatmaps.
+ */
 
 var reservedTrackKeys = [
   'name', 'start', 'length', 'trackIndex', 'trackIndexOriginal', 'color'
