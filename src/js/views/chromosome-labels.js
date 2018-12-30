@@ -49,7 +49,7 @@ function renderChromosomeSetLabel(d, i, textElement, ideo) {
 function appendChromosomeSetLabels(ideo) {
   var layout = ideo._layout;
 
-  d3.selectAll(ideo.selector + ' .chromosome-set-container')
+  d3.selectAll(ideo.selector + ' .chromosome-set')
     .insert('text', ':first-child')
     .data(ideo.chromosomesArray)
     .attr('class', layout.getChromosomeLabelClass())
@@ -67,7 +67,7 @@ function appendChromosomeSetLabels(ideo) {
 function appendChromosomeLabels(ideo) {
   var layout = ideo._layout;
 
-  d3.selectAll(ideo.selector + ' .chromosome-set-container')
+  d3.selectAll(ideo.selector + ' .chromosome-set')
     .each(function(a, chrSetIndex) {
       d3.select(this).selectAll('.chromosome')
         .append('text')

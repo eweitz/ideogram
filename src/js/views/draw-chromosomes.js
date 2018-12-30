@@ -74,7 +74,7 @@ function drawChromosome(chrModel) {
     // Append chromosome set container
     container = d3.select(this.selector)
       .append('g')
-      .attr('class', 'chromosome-set-container')
+      .attr('class', 'chromosome-set')
       .attr('data-set-number', chrIndex)
       .attr('transform', transform)
       .attr('id', chrModel.id + '-chromosome-set');
