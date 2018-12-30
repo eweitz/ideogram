@@ -75,7 +75,6 @@ function drawChromosome(chrModel) {
     container = d3.select(this.selector)
       .append('g')
       .attr('class', 'chromosome-set')
-      .attr('data-set-number', chrIndex)
       .attr('transform', transform)
       .attr('id', chrModel.id + '-chromosome-set');
   }
@@ -117,10 +116,7 @@ function rotateAndToggleDisplay(chrElement) {
   chrModel = this.chromosomes[this.config.taxid][chrName];
   chrIndex = chrModel.chrIndex;
 
-  chrSetIndex =
-    Number(d3.select(chrElement.parentNode).attr('data-set-number'));
-
-  this._layout.rotate(chrSetIndex, chrIndex, chrElement);
+  this._layout.rotate(chrIndex, chrIndex, chrElement);
 }
 
 function setOverflowScroll() {
