@@ -1,4 +1,3 @@
-import {Object} from '../lib';
 
 function getDelimiterTsvLinesAndInit(source, content) {
   var delimiter, tsvLines, init;

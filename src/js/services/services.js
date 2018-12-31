@@ -1,8 +1,7 @@
 import * as d3fetch from 'd3-fetch';
 import * as d3dispatch from 'd3-dispatch';
 
-import {Object, hasGenBankAssembly} from '../lib';
-
+import {hasGenBankAssembly} from '../lib';
 import {
   esearch, esummary, elink, getAssemblySearchUrl
 } from './eutils-config.js';

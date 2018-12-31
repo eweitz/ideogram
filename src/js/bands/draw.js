@@ -4,7 +4,6 @@
  */
 
 import * as d3selection from 'd3-selection';
-import {Object} from '../lib';
 import {hideUnshownBandLabels, setBandsToShow} from './show';
 import {staticColors, staticCss, staticGradients} from './styles';
 

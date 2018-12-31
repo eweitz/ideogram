@@ -7,7 +7,6 @@
 import * as d3selection from 'd3-selection';
 
 import Layout from './layout';
-import {Object} from './../lib';
 
 var d3 = Object.assign({}, d3selection);
 

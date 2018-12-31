@@ -1,8 +1,6 @@
 import * as d3selection from 'd3-selection';
 import collinearizeChromosomes from '../collinear';
 
-import {Object} from '../lib';
-
 var d3 = Object.assign({}, d3selection);
 
 /**

@@ -104,5 +104,5 @@ export {
   assemblyIsAccession, hasNonGenBankAssembly, hasGenBankAssembly, getDataDir,
   drawChromosomeLabels, rotateChromosomeLabels, round, appendHomolog,
   drawChromosome, rotateAndToggleDisplay, onDidRotate, getSvg,
-  setOverflowScroll, Object
+  setOverflowScroll
 };

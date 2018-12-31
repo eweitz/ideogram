@@ -1,6 +1,5 @@
 import * as d3selection from 'd3-selection';
 
-import {Object} from '../lib';
 import {Ploidy} from '../ploidy';
 import {getLayout} from '../layouts/layout-adapter';
 

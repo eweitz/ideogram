@@ -5,7 +5,7 @@
 import * as d3fetch from 'd3-fetch';
 import * as d3selection from 'd3-selection';
 
-import {Object, hasNonGenBankAssembly} from '../lib';
+import {hasNonGenBankAssembly} from '../lib';
 import {configure} from './configure';
 import {finishInit} from './finish-init';
 import {writeContainer} from './write-container';

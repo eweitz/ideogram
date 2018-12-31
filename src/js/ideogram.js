@@ -46,7 +46,7 @@ import {convertBpToPx, convertPxToBp} from './coordinate-converters';
 import {unpackAnnots, packAnnots, initCrossFilter, filterAnnots} from './filter';
 
 import {
-  assemblyIsAccession, getDataDir, round, onDidRotate, getSvg, Object
+  assemblyIsAccession, getDataDir, round, onDidRotate, getSvg
 } from './lib';
 
 import {
