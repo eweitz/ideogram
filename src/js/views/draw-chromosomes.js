@@ -1,9 +1,10 @@
 import * as d3selection from 'd3-selection';
+import * as d3multiselection from 'd3-selection-multi';
 
 import {ModelAdapter} from '../model-adapter';
 import {Chromosome} from './chromosome';
 
-var d3 = Object.assign({}, d3selection);
+var d3 = Object.assign({}, d3selection, d3multiselection);
 
 /**
  * Adds a copy of a chromosome (i.e. a homologous chromosome, homolog) to DOM
@@ -27,9 +28,11 @@ function appendHomolog(chrModel, chrIndex, homologIndex, container) {
   // Append chromosome's container
   chromosome = container
     .append('g')
-    .attr('id', chrModel.id)
-    .attr('class', 'chromosome ' + adapter.getCssClass())
-    .attr('transform', 'translate(0, ' + homologOffset + ')');
+    .attrs({
+      id: chrModel.id,
+      class: 'chromosome ' + adapter.getCssClass(),
+      transform: 'translate(0, ' + homologOffset + ')'
+    });
 
   // Render chromosome
   shape = Chromosome.getInstance(adapter, this.config, this)
@@ -43,11 +46,9 @@ function appendHomolog(chrModel, chrIndex, homologIndex, container) {
     .data(shape)
     .enter()
     .append('path')
-    .attr('d', function (d) {
-      return d.path;
-    })
-    .attr('class', function (d) {
-      return d.class;
+    .attrs({
+      d: function (d) { return d.path; },
+      class: function (d) { return d.class; }
     });
 }
 
@@ -56,7 +57,6 @@ function appendHomolog(chrModel, chrIndex, homologIndex, container) {
  * Renders all the bands and outlining boundaries of a chromosome.
  */
 function drawChromosome(chrModel) {
-
   var chrIndex, container, numChrsInSet, transform, homologIndex,
     chrSetSelector;
 
@@ -74,9 +74,11 @@ function drawChromosome(chrModel) {
     // Append chromosome set container
     container = d3.select(this.selector)
       .append('g')
-      .attr('class', 'chromosome-set')
-      .attr('transform', transform)
-      .attr('id', chrModel.id + '-chromosome-set');
+      .attrs({
+        class: 'chromosome-set',
+        transform: transform,
+        id: chrModel.id + '-chromosome-set'
+      });
   }
 
   if (
@@ -103,14 +105,11 @@ function drawChromosome(chrModel) {
  * Useful for focusing or defocusing a particular chromosome
  */
 function rotateAndToggleDisplay(chrElement) {
-
   var chrName, chrModel, chrIndex, chrSetIndex;
 
   // Do nothing if taxid not defined. But it should be defined.
   // To fix that bug we should have a way to find chromosome set number.
-  if (!this.config.taxid) {
-    return;
-  }
+  if (!this.config.taxid) return;
 
   chrName = chrElement.id.split('-')[0].replace('chr', '');
   chrModel = this.chromosomes[this.config.taxid][chrName];
@@ -149,13 +148,14 @@ function setOverflowScroll() {
 
   // Ensures absolutely-positioned elements, e.g. heatmap overlaps, display
   // properly if ideogram container also has position: absolute
-  ideoMiddleWrap
-    .style('height', ideo._layout.getHeight() + 'px')
+  ideoMiddleWrap.style('height', ideo._layout.getHeight() + 'px')
 
   ideoInnerWrap
-    .style('max-width', ideoWidth + 'px')
-    .style('overflow-x', 'scroll')
-    .style('position', 'absolute');
+    .styles({
+      overflowX: 'scroll', position: 'absolute',
+      maxWidth: ideoWidth + 'px'
+    });
+
   ideoSvg.style('min-width', (ideoWidth - 5) + 'px');
 }
 

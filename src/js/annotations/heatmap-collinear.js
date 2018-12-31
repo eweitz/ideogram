@@ -4,10 +4,11 @@
  */
 
 import * as d3selection from 'd3-selection';
-
-var d3 = Object.assign({}, d3selection);
+import * as d3multiselection from 'd3-selection-multi';
 
 import {writeTrackLabels} from './track-labels-collinear';
+
+var d3 = Object.assign({}, d3selection, d3multiselection);
 
 /**
  * Add canvases that will contain annotations.  One canvas per track.
@@ -26,12 +27,16 @@ function writeCanvases(chr, chrLeft, ideo) {
     trackLeft = chrLeft
     canvas = d3.select(ideo.config.container + ' #_ideogramInnerWrap')
       .append('canvas')
-      .attr('id', id)
-      .attr('width', Math.round(chr.width) + 1)
-      .attr('height', trackWidth)
-      .style('position', 'absolute')
-      .style('left', Math.round(trackLeft) + 'px')
-      .style('top', (trackWidth*j + 1) + 'px')
+      .attrs({
+        id: id,
+        width: Math.round(chr.width) + 1,
+        height: trackWidth
+      })
+      .styles({
+        position: 'absolute',
+        left: Math.round(trackLeft) + 'px',
+        top: (trackWidth*j + 1) + 'px'
+      });
     context = canvas.nodes()[0].getContext('2d');
     contextArray.push(context);
   }

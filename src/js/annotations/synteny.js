@@ -1,6 +1,7 @@
 import * as d3selection from 'd3-selection';
+import * as d3multiselection from 'd3-selection-multi';
 
-var d3 = Object.assign({}, d3selection);
+var d3 = Object.assign({}, d3selection, d3multiselection);
 
 function writeSyntenicRegion(syntenies, regionID, ideo) {
   return syntenies.append('g')
@@ -9,9 +10,7 @@ function writeSyntenicRegion(syntenies, regionID, ideo) {
     .on('click', function() {
       var activeRegion = this;
       var others = d3.selectAll(ideo.selector + ' .syntenicRegion')
-        .filter(function() {
-          return (this !== activeRegion);
-        });
+        .filter(function() { return (this !== activeRegion); });
 
       others.classed('hidden', !others.classed('hidden'));
     })
@@ -54,23 +53,21 @@ function writeSyntenicRegionPolygons(syntenicRegion, x1, x2, r1, r2, regions) {
       x2 + ', ' + r2.stopPx + ' ' +
       x2 + ', ' + r2.startPx
     )
-    .attr('style', 'fill: ' + color + '; fill-opacity: ' + opacity);
+    .styles({fill: color, fillOpacity: opacity});
 }
 
 function writeSyntenicRegionLines(syntenicRegion, x1, x2, r1, r2) {
   syntenicRegion.append('line')
-    .attr('class', 'syntenyBorder')
-    .attr('x1', x1)
-    .attr('x2', x2)
-    .attr('y1', r1.startPx)
-    .attr('y2', r2.startPx);
+    .attrs({
+      class: 'syntenyBorder',
+      x1: x1, x2: x2, y1: r1.startPx, y2: r2.startPx
+    });
 
   syntenicRegion.append('line')
-    .attr('class', 'syntenyBorder')
-    .attr('x1', x1)
-    .attr('x2', x2)
-    .attr('y1', r1.stopPx)
-    .attr('y2', r2.stopPx);
+    .attrs({
+      class: 'syntenyBorder',
+      x1: x1, x2: x2, y1: r1.stopPx, y2: r2.stopPx
+    });
 }
 
 function writeSyntenicRegions(syntenicRegions, syntenies, xOffset, ideo) {

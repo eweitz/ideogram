@@ -4,10 +4,11 @@
  */
 
 import * as d3selection from 'd3-selection';
+import * as d3multiselection from 'd3-selection-multi';
 
 import getLabels from './heatmap-lib';
 
-var d3 = Object.assign({}, d3selection);
+var d3 = Object.assign({}, d3selection, d3multiselection);
 
 function renderTrackLabels(labels, ideo) {
   var labels, i, x, y, annotLabelHeight, labelContainer;
@@ -26,19 +27,14 @@ function renderTrackLabels(labels, ideo) {
       .style('position', 'absolute')
       .append('div')
       .attr('class', '_ideogramTrackLabel')
-      .style('opacity', 1)
-      .style('position', 'absolute')
-      .style('text-align', 'center')
-      .style('padding', '1px')
-      .style('font', '11px sans-serif')
-      .style('background', 'white')
-      .style('line-height', '10px')
-      .style('z-index', '9000')
-      .style('left', x + 'px')
-      .style('top', (y*i + 2) + 'px')
-      .style('width', 'max-content')
-      .style('transform-origin', 'bottom left')
-      .style('text-align', 'left')
+      .styles({
+        opacity: 1, position: 'absolute', textAlign: 'center', padding: '1px',
+        font: '11px sans-serif', background: 'white', lineHeight: '10px',
+        zIndex: '9000', width: 'max-content', transformOrigin: 'bottom left',
+        textAlign: 'left',
+        left: x + 'px',
+        top: (y*i + 2) + 'px'
+      })
       .html(labels[i])
   }
 
