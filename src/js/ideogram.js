@@ -5,12 +5,6 @@
  *
  */
 
-import * as d3selection from 'd3-selection';
-import * as d3fetch from 'd3-fetch';
-import * as d3brush from 'd3-brush';
-import * as d3dispatch from 'd3-dispatch';
-import {scaleLinear} from 'd3-scale';
-import {max} from 'd3-array';
 import naturalSort from 'es6-natural-sort';
 
 import version from './version';
@@ -46,7 +40,7 @@ import {convertBpToPx, convertPxToBp} from './coordinate-converters';
 import {unpackAnnots, packAnnots, initCrossFilter, filterAnnots} from './filter';
 
 import {
-  assemblyIsAccession, getDataDir, round, onDidRotate, getSvg
+  assemblyIsAccession, getDataDir, round, onDidRotate, getSvg, d3
 } from './lib';
 
 import {
@@ -60,10 +54,6 @@ import {
 import {
   drawChromosomeLabels, rotateChromosomeLabels
 } from './views/chromosome-labels.js';
-
-var d3 = Object.assign({}, d3selection, d3fetch, d3brush, d3dispatch);
-d3.scaleLinear = scaleLinear;
-d3.max = max;
 
 export default class Ideogram {
   constructor(config) {

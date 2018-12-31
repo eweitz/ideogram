@@ -4,11 +4,8 @@
 * This enables ploidy support beyond the default haploid; e.g. diploid genomes.
 */
 
-import * as d3selection from 'd3-selection';
-
+import {d3} from '../lib';
 import Layout from './layout';
-
-var d3 = Object.assign({}, d3selection);
 
 class PairedLayout extends Layout {
 

@@ -1,10 +1,6 @@
-import * as d3selection from 'd3-selection';
-import * as d3multiselection from 'd3-selection-multi';
-
+import {d3} from '../lib';
 import {ModelAdapter} from '../model-adapter';
 import {Chromosome} from './chromosome';
-
-var d3 = Object.assign({}, d3selection, d3multiselection);
 
 /**
  * Adds a copy of a chromosome (i.e. a homologous chromosome, homolog) to DOM

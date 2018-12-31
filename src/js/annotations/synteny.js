@@ -1,7 +1,4 @@
-import * as d3selection from 'd3-selection';
-import * as d3multiselection from 'd3-selection-multi';
-
-var d3 = Object.assign({}, d3selection, d3multiselection);
+import {d3} from '../lib';
 
 function writeSyntenicRegion(syntenies, regionID, ideo) {
   return syntenies.append('g')

@@ -1,7 +1,5 @@
-import * as d3selection from 'd3-selection';
+import {d3} from '../lib';
 import collinearizeChromosomes from '../collinear';
-
-var d3 = Object.assign({}, d3selection);
 
 /**
  * Reset displayed tracks to those originally displayed

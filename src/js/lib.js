@@ -3,8 +3,19 @@
  */
 
 import * as d3selection from 'd3-selection';
+import * as d3multiselection from 'd3-selection-multi';
+import * as d3fetch from 'd3-fetch';
+import * as d3brush from 'd3-brush';
+import * as d3dispatch from 'd3-dispatch';
+import {scaleLinear} from 'd3-scale';
+import {max} from 'd3-array';
 
-var d3 = Object.assign({}, d3selection);
+var d3 = Object.assign(
+  {}, d3selection, d3multiselection, d3fetch, d3brush, d3dispatch
+);
+
+d3.scaleLinear = scaleLinear;
+d3.max = max;
 
 /**
  * Is the assembly in this.config an NCBI Assembly accession?
@@ -104,5 +115,5 @@ export {
   assemblyIsAccession, hasNonGenBankAssembly, hasGenBankAssembly, getDataDir,
   drawChromosomeLabels, rotateChromosomeLabels, round, appendHomolog,
   drawChromosome, rotateAndToggleDisplay, onDidRotate, getSvg,
-  setOverflowScroll
+  setOverflowScroll, d3
 };

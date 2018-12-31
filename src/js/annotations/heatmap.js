@@ -5,10 +5,8 @@
  * rendered using the Canvas element.
  */
 
-import * as d3selection from 'd3-selection';
+import {d3} from '../lib';
 import {drawHeatmapsCollinear} from './heatmap-collinear'
-
-var d3 = Object.assign({}, d3selection);
 
 import {
   startHideTrackLabelTimeout, writeTrackLabelContainer, showTrackLabel

@@ -2,16 +2,11 @@
  * @fileoveriew Methods for initialization
  */
 
-import * as d3fetch from 'd3-fetch';
-import * as d3selection from 'd3-selection';
-
-import {hasNonGenBankAssembly} from '../lib';
+import {d3, hasNonGenBankAssembly} from '../lib';
 import {configure} from './configure';
 import {finishInit} from './finish-init';
 import {writeContainer} from './write-container';
 import {fetchBands} from '../bands/fetch';
-
-var d3 = Object.assign({}, d3fetch, d3selection);
 
 function isHeterogameticChromosome(chrModel, chrIndex, ideo) {
   var ploidy = ideo.config.ploidy;

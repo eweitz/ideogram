@@ -6,10 +6,10 @@
  * chromosomes.
  */
 
-import * as d3selection from 'd3-selection';
-import * as d3fetch from 'd3-fetch';
+
 import naturalSort from 'es6-natural-sort';
 
+import {d3} from '../lib';
 import {BedParser} from '../parsers/bed-parser';
 import {
   drawHeatmaps, deserializeAnnotsForHeatmap
@@ -25,8 +25,6 @@ import {
   restoreDefaultTracks, setOriginalTrackIndexes, updateDisplayedTracks
 } from './filter';
 import {processAnnotData} from './process'
-
-var d3 = Object.assign({}, d3selection, d3fetch);
 
 function initNumTracksHeightAndBarWidth(ideo, config) {
   var annotHeight;

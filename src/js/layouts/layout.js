@@ -1,8 +1,5 @@
-import * as d3selection from 'd3-selection';
-
+import {d3} from '../lib';
 import {ChromosomeUtil} from './../views/chromosome-util';
-
-var d3 = Object.assign({}, d3selection);
 
 class Layout {
 

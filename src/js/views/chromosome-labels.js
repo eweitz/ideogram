@@ -1,6 +1,4 @@
-import * as d3selection from 'd3-selection';
-
-var d3 = Object.assign({}, d3selection);
+import {d3} from '../lib';
 
 function getChrSetLabelLines(d, i, ideo) {
   var lines;

@@ -3,12 +3,8 @@
  * See track-labels.js for more.
  */
 
-import * as d3selection from 'd3-selection';
-import * as d3multiselection from 'd3-selection-multi';
-
+import {d3} from '../lib';
 import getLabels from './heatmap-lib';
-
-var d3 = Object.assign({}, d3selection, d3multiselection);
 
 function renderTrackLabels(labels, ideo) {
   var labels, i, x, y, annotLabelHeight, labelContainer;

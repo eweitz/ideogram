@@ -3,12 +3,8 @@
  * See heatmap.js for more.
  */
 
-import * as d3selection from 'd3-selection';
-import * as d3multiselection from 'd3-selection-multi';
-
+import {d3} from '../lib';
 import {writeTrackLabels} from './track-labels-collinear';
-
-var d3 = Object.assign({}, d3selection, d3multiselection);
 
 /**
  * Add canvases that will contain annotations.  One canvas per track.

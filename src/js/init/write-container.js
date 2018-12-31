@@ -1,9 +1,6 @@
-import * as d3selection from 'd3-selection';
-
+import {d3} from '../lib';
 import {Ploidy} from '../ploidy';
 import {getLayout} from '../layouts/layout-adapter';
-
-var d3 = Object.assign({}, d3selection);
 
 /**
  * If ploidy description is a string, then convert it to the canonical

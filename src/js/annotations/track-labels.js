@@ -4,11 +4,8 @@
  * Labeling tracks with descriptive names makes them easier to understand.
  */
 
-import * as d3selection from 'd3-selection';
-
+import {d3} from '../lib';
 import getLabels from './heatmap-lib';
-
-var d3 = Object.assign({}, d3selection);
 
 /**
  * Start a timer that, upon expiring, hides the track label.

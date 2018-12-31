@@ -4,11 +4,8 @@
 * starting at left and ending at right, and aligned as rows.
 */
 
-import * as d3selection from 'd3-selection';
-
+import {d3} from '../lib';
 import Layout from './layout';
-
-var d3 = Object.assign({}, d3selection);
 
 class HorizontalLayout extends Layout {
 

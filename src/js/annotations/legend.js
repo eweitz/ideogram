@@ -4,9 +4,7 @@
  * Icons may have different shapes.  A legend may also have a name.
  */
 
-import * as d3selection from 'd3-selection';
-
-var d3 = Object.assign({}, d3selection);
+import {d3} from '../lib';
 
 var lineHeight = 19;
 

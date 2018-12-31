@@ -1,7 +1,4 @@
-import * as d3fetch from 'd3-fetch';
-import * as d3dispatch from 'd3-dispatch';
-
-import {hasGenBankAssembly} from '../lib';
+import {d3, hasGenBankAssembly} from '../lib';
 import {
   esearch, esummary, elink, getAssemblySearchUrl
 } from './eutils-config.js';
@@ -9,8 +6,6 @@ import {
   getTaxidFromEutils, getTaxids, setTaxidAndAssemblyAndChromosomes,
   setTaxidData, getOrganismFromEutils
 } from './organisms.js';
-
-var d3 = Object.assign({}, d3fetch, d3dispatch);
 
 function getNuccoreQueryString(gbUid, asmUid, recovering, ideo) {
   var qs;

@@ -4,9 +4,7 @@
  * geometry.
  */
 
-import * as d3selection from 'd3-selection';
-
-var d3 = Object.assign({}, d3selection);
+ import {d3} from './lib';
 
 /**
 * Rearrange chromosomes from horizontal to collinear
