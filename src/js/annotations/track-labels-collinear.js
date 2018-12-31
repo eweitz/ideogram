@@ -29,7 +29,7 @@ function renderTrackLabels(labels, ideo) {
         zIndex: '9000', width: 'max-content', transformOrigin: 'bottom left',
         textAlign: 'left',
         left: x + 'px',
-        top: (y*i + 2) + 'px'
+        top: (y*i) + 'px'
       })
       .html(labels[i])
   }
