@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Collinear | Ideogram</title>
+  <title>Geometry, collinear | Ideogram</title>
   <style>body {font: 12px Arial; line-height: 19.6px;}</style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
         <style>
@@ -14,13 +14,14 @@
         </style>
 </head>
 <body>
-  <h1>Collinear | Ideogram</h1>
+  <h1>Geometry, collinear | Ideogram</h1>
   <a href="../">Back to overview</a> |
-  <a href="multiple-primates">Previous</a> |
-  <a href="mouse">Next</a>
+  <a href="annotations-heatmap">Previous</a> |
+  <a href="layout-small">Next</a>
   <p>
-    Gene expression in four oligodendroglioma samples, showing 1p and 19q deletions.  
-    Data from <a href="https://github.com/broadinstitute/inferCNV/wiki">inferCNV</a>.  
+    Gene expression in four <a href="https://en.wikipedia.org/wiki/Oligodendroglioma">brain cancer</a>
+    samples, showing 1p and 19q deletions.  
+    Data from <a href="https://github.com/broadinstitute/inferCNV">inferCNV</a>.  
     Unlike the
     <a href="annotations-heatmap.html">parallel arrangement</a>, this ideogram is
     collinear -- the chromosomes form a line together.
@@ -30,8 +31,8 @@
     d3 = Ideogram.d3;
 
     var heatmapThresholds = [
-      [0.6, '#33F'],
-      [1.3, '#CCC'],
+      [0.7, '#33F'],
+      [1.2, '#CCC'],
       ['+', '#F33']
     ];
 
