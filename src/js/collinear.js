@@ -56,6 +56,10 @@ function collinearizeChromosomes(ideo) {
   var chrSets, xOffsets, annotLabelHeight, y, xOffsets,
     config = ideo.config, annotHeight = config.annotationHeight;
 
+  if ('demarcateCollinearChromosomes' in ideo.config === false) {
+    ideo.config.demarcateCollinearChromosomes = true;
+  }
+
   chrSets = document.querySelectorAll('.chromosome-set');
   annotLabelHeight = 12;
 

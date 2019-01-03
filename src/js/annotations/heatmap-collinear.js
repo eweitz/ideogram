@@ -11,6 +11,7 @@ import {writeTrackLabels} from './track-labels-collinear';
  */
 function writeCanvases(chr, chrLeft, ideo) {
   var j, trackLeft, trackWidth, canvas, context, id,
+    chrWidth = Math.round(chr.width),
     contextArray = [],
     numAnnotTracks = ideo.config.numAnnotTracks;
 
@@ -25,7 +26,7 @@ function writeCanvases(chr, chrLeft, ideo) {
       .append('canvas')
       .attrs({
         id: id,
-        width: Math.round(chr.width) + 1,
+        width: chrWidth + 1,
         height: trackWidth
       })
       .styles({
@@ -34,7 +35,7 @@ function writeCanvases(chr, chrLeft, ideo) {
         top: (trackWidth*j + 1) + 'px'
       });
     context = canvas.nodes()[0].getContext('2d');
-    contextArray.push(context);
+    contextArray.push([context, chr]);
   }
 
   return contextArray;
@@ -44,19 +45,42 @@ function writeCanvases(chr, chrLeft, ideo) {
  * Render annotations on the canvas
  */
 function fillCanvasAnnots(annots, contextArray, ideo) {
-  var j, annot, context;
+  var j, annot, context, chr, thisTopNotch,
+    demarcateChrs = ideogram.config.demarcateCollinearChromosomes,
+    topNotch = 20,
+    bottomNotch = topNotch * 2;
 
   var annotLabelHeight = 12;
 
   // Fill in the canvas(es) with annotation colors to draw a heatmap
   for (j = 0; j < annots.length; j++) {
     annot = annots[j];
-    context = contextArray[annot.trackIndex]; 
+    context = contextArray[annot.trackIndex][0];
+    chr = contextArray[annot.trackIndex][1];
     context.fillStyle = annot.color;
+    if (
+      demarcateChrs &&
+      (1 > annot.startPx || annot.startPx > chr.width - 1)
+    ) {
+      continue;
+    }
     context.fillRect(
       annot.startPx, 1 + annotLabelHeight,
       0.5, ideo.config.annotationHeight
     );
+  }
+
+  if (demarcateChrs) {
+    for (j = 0; j < contextArray.length; j++) {
+      context = contextArray[j][0];
+      chr = contextArray[j][1];
+      thisTopNotch = (j === 0 ? 0 : topNotch);
+      context.fillStyle = '#333';
+      context.fillRect(
+        chr.width - 1, 1 + annotLabelHeight - thisTopNotch,
+        1, ideo.config.annotationHeight + bottomNotch
+      );
+    }
   }
 }
 
