@@ -39,12 +39,8 @@ function getxOffsets(chrSets, ideo) {
     } else {
       prevWidth = prevChrSet.width;
       prevX = xOffsets[index];
-      if (ideo.config.showChromosomeLabels) {
-        xBump = 0.08;
-      } else {
-        xBump = 2;
-      }
-      x = Math.round(prevX + prevWidth) + xBump;
+      xBump = (ideo.config.showChromosomeLabels ? 0 : 2);
+      x = prevX + prevWidth + xBump;
     }
     xOffsets.push(x);
   }

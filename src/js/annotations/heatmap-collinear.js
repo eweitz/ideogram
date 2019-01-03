@@ -11,7 +11,7 @@ import {writeTrackLabels} from './track-labels-collinear';
  */
 function writeCanvases(chr, chrLeft, ideo) {
   var j, trackLeft, trackWidth, canvas, context, id,
-    chrWidth = Math.round(chr.width),
+    chrWidth = chr.width,
     contextArray = [],
     numAnnotTracks = ideo.config.numAnnotTracks;
 
@@ -31,7 +31,7 @@ function writeCanvases(chr, chrLeft, ideo) {
       })
       .styles({
         position: 'absolute',
-        left: Math.round(trackLeft) + 'px',
+        left: trackLeft + 'px',
         top: (trackWidth*j + 1) + 'px'
       });
     context = canvas.nodes()[0].getContext('2d');
