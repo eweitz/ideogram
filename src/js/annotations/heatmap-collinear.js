@@ -69,6 +69,7 @@ function fillCanvasAnnots(annots, contextArray, ideo) {
     bottomNotch = topNotch * 2;
 
   var annotLabelHeight = 12;
+  var trackWidth = ideo.config.annotationHeight + annotLabelHeight + 4;
 
   // Fill in the canvas(es) with annotation colors to draw a heatmap
   for (j = 0; j < annots.length; j++) {
@@ -76,16 +77,18 @@ function fillCanvasAnnots(annots, contextArray, ideo) {
     context = contextArray[annot.trackIndex][0];
     chr = contextArray[annot.trackIndex][1];
     context.fillStyle = annot.color;
-    if (
-      demarcateChrs &&
-      (1 > annot.startPx || annot.startPx > chr.width - 1)
-    ) {
-      continue;
+    if (demarcateChrs) {
+      if (1 > annot.startPx || annot.startPx > chr.width - 1) continue;
+      context.fillRect(
+        annot.startPx, 1,
+        0.5, trackWidth
+      );
+    } else {
+      context.fillRect(
+        annot.startPx, 1 + annotLabelHeight,
+        0.5, ideo.config.annotationHeight
+      );
     }
-    context.fillRect(
-      annot.startPx, 1 + annotLabelHeight,
-      0.5, ideo.config.annotationHeight
-    );
   }
 
   if (demarcateChrs) {
@@ -93,11 +96,12 @@ function fillCanvasAnnots(annots, contextArray, ideo) {
       context = contextArray[j][0];
       chr = contextArray[j][1];
       thisTopNotch = (j === 0 ? 0 : topNotch);
-      context.fillStyle = '#333';
+      context.fillStyle = '#555';
       context.fillRect(
-        chr.width - 1, 1 + annotLabelHeight - thisTopNotch,
+        chr.width - 1, 0,
         1, ideo.config.annotationHeight + bottomNotch
       );
+      context.fillRect(0, 0, chr.width - 1, 1);
     }
   }
 }
