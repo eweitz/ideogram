@@ -36,28 +36,6 @@
       ['+', '#F33']
     ];
 
-    function defineHeatmaps() {
-      var i, labels, heatmaps, annotationTracks, rawAnnots, numTracks, displayedTracks;
-
-      heatmaps = [];
-      rawAnnots = ideogram.rawAnnots;
-      labels = rawAnnots.keys.slice(3,);
-
-      annotationTracks = [];
-      displayedTracks = []
-
-      for (i = 0; i < labels.length; i++) {
-        heatmaps.push({key: labels[i], thresholds: heatmapThresholds});
-        annotationTracks.push({id: labels[i]});
-        displayedTracks.push(i + 1)
-      }
-
-      ideogram.config.annotationsNumTracks = labels.length;
-      ideogram.config.annotationsDisplayedTracks = displayedTracks;
-      ideogram.config.heatmaps = heatmaps;
-      ideogram.config.annotationTracks = annotationTracks;
-    }
-
     var legend = [{
       name: 'Expression level',
       rows: [
@@ -78,8 +56,8 @@
       legend: legend,
       annotationHeight: 30,
       annotationsLayout: 'heatmap',
-      annotationsPath: '../../data/annotations/oligodendroma_cnv_expression.json',
-      onLoadAnnots: defineHeatmaps
+      heatmapThresholds: heatmapThresholds,
+      annotationsPath: '../../data/annotations/oligodendroma_cnv_expression.json'
     });
   </script>
 </body>

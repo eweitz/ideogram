@@ -6,6 +6,28 @@
 import {d3} from '../lib';
 import {writeTrackLabels} from './track-labels-collinear';
 
+function inflateHeatmaps(ideo) {
+  var i, labels, heatmaps, annotationTracks, rawAnnots, displayedTracks;
+
+  heatmaps = [];
+  rawAnnots = ideo.rawAnnots;
+  labels = rawAnnots.keys.slice(3,);
+
+  annotationTracks = [];
+  displayedTracks = []
+
+  for (i = 0; i < labels.length; i++) {
+    heatmaps.push({key: labels[i], thresholds: ideo.config.heatmapThresholds});
+    annotationTracks.push({id: labels[i]});
+    displayedTracks.push(i + 1)
+  }
+
+  ideo.config.annotationsNumTracks = labels.length;
+  ideo.config.annotationsDisplayedTracks = displayedTracks;
+  ideo.config.heatmaps = heatmaps;
+  ideo.config.annotationTracks = annotationTracks;
+}
+
 /**
  * Add canvases that will contain annotations.  One canvas per track.
  */
@@ -121,4 +143,4 @@ function drawHeatmapsCollinear(annotContainers, ideo) {
 }
 
 
-export {drawHeatmapsCollinear}
+export {drawHeatmapsCollinear, inflateHeatmaps}

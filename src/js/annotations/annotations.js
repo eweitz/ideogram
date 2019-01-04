@@ -11,9 +11,8 @@ import naturalSort from 'es6-natural-sort';
 
 import {d3} from '../lib';
 import {BedParser} from '../parsers/bed-parser';
-import {
-  drawHeatmaps, deserializeAnnotsForHeatmap
-} from './heatmap';
+import {drawHeatmaps, deserializeAnnotsForHeatmap} from './heatmap';
+import {inflateHeatmaps} from './heatmap-collinear';
 import {
   onLoadAnnots, onDrawAnnots, startHideAnnotTooltipTimeout,
   onWillShowAnnotTooltip, showAnnotTooltip
@@ -104,6 +103,7 @@ function validateAnnotsUrl(annotsUrl) {
 }
 
 function afterRawAnnots(ideo) {
+  var config = ideo.config;
   // Ensure annots are ordered by chromosome
   ideo.rawAnnots.annots = ideo.rawAnnots.annots.sort(function(a, b) {
     return naturalSort(a.chr, b.chr);
@@ -113,7 +113,14 @@ function afterRawAnnots(ideo) {
     ideo.onLoadAnnotsCallback();
   }
 
-  if (ideo.config.heatmaps) {
+  if (
+    config.annotationsLayout === 'heatmap' &&
+    config.geometry === 'collinear' && 'heatmapThresholds' in config
+  ) {
+    inflateHeatmaps(ideo);
+  }
+
+  if (config.heatmaps) {
     ideo.deserializeAnnotsForHeatmap(ideo.rawAnnots);
   }
 }
