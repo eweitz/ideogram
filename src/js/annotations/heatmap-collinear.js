@@ -46,16 +46,12 @@ function writeCanvases(chr, chrLeft, ideo) {
     trackLeft = chrLeft
     canvas = d3.select(ideo.config.container + ' #_ideogramInnerWrap')
       .append('canvas')
-      .attrs({
-        id: id,
-        width: chrWidth + 1,
-        height: trackWidth
-      })
-      .styles({
-        position: 'absolute',
-        left: trackLeft + 'px',
-        top: (trackWidth*j + 1) + 'px'
-      });
+      .attr('id', id)
+      .attr('width', chrWidth + 1)
+      .attr('height', trackWidth)
+      .style('position', 'absolute')
+      .style('left', trackLeft + 'px')
+      .style('top', (trackWidth*j + 1) + 'px');
     context = canvas.nodes()[0].getContext('2d');
     contextArray.push([context, chr]);
   }

@@ -23,13 +23,19 @@ function renderTrackLabels(labels, ideo) {
       .style('position', 'absolute')
       .append('div')
       .attr('class', '_ideogramTrackLabel')
-      .styles({
-        opacity: 1, position: 'absolute', padding: '1px',
-        font: '11px sans-serif', background: 'white', 'line-height': '10px',
-        'z-index': '9000', width: 'max-content',
-        left: x + 'px',
-        top: (y*i + 2) + 'px'
-      })
+      .style('opacity', 1)
+      .style('position', 'absolute')
+      .style('text-align', 'center')
+      .style('padding', '1px')
+      .style('font', '11px sans-serif')
+      .style('background', 'white')
+      .style('line-height', '10px')
+      .style('z-index', '5')
+      .style('left', x + 'px')
+      .style('top', (y*i + 2) + 'px')
+      .style('width', 'max-content')
+      .style('transform-origin', 'bottom left')
+      .style('text-align', 'left')
       .html(labels[i])
   }
 

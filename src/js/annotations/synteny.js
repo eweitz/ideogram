@@ -50,21 +50,24 @@ function writeSyntenicRegionPolygons(syntenicRegion, x1, x2, r1, r2, regions) {
       x2 + ', ' + r2.stopPx + ' ' +
       x2 + ', ' + r2.startPx
     )
-    .styles({fill: color, fillOpacity: opacity});
+    .style('fill', color)
+    .style('fill-opacity', opacity);
 }
 
 function writeSyntenicRegionLines(syntenicRegion, x1, x2, r1, r2) {
   syntenicRegion.append('line')
-    .attrs({
-      class: 'syntenyBorder',
-      x1: x1, x2: x2, y1: r1.startPx, y2: r2.startPx
-    });
+    .attr('class', 'syntenyBorder')
+    .attr('x1', x1)
+    .attr('x2', x2)
+    .attr('y1', r1.startPx)
+    .attr('y2', r2.startPx);
 
   syntenicRegion.append('line')
-    .attrs({
-      class: 'syntenyBorder',
-      x1: x1, x2: x2, y1: r1.stopPx, y2: r2.stopPx
-    });
+    .attr('class', 'syntenyBorder')
+    .attr('x1', x1)
+    .attr('x2', x2)
+    .attr('y1', r1.stopPx)
+    .attr('y2', r2.stopPx);
 }
 
 function writeSyntenicRegions(syntenicRegions, syntenies, xOffset, ideo) {

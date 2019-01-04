@@ -24,11 +24,9 @@ function appendHomolog(chrModel, chrIndex, homologIndex, container) {
   // Append chromosome's container
   chromosome = container
     .append('g')
-    .attrs({
-      id: chrModel.id,
-      class: 'chromosome ' + adapter.getCssClass(),
-      transform: 'translate(0, ' + homologOffset + ')'
-    });
+    .attr('id', chrModel.id)
+    .attr('class', 'chromosome ' + adapter.getCssClass())
+    .attr('transform', 'translate(0, ' + homologOffset + ')');
 
   // Render chromosome
   shape = Chromosome.getInstance(adapter, this.config, this)
@@ -42,10 +40,8 @@ function appendHomolog(chrModel, chrIndex, homologIndex, container) {
     .data(shape)
     .enter()
     .append('path')
-    .attrs({
-      d: function (d) { return d.path; },
-      class: function (d) { return d.class; }
-    });
+    .attr('d', function (d) { return d.path; })
+    .attr('class', function (d) { return d.class; });
 }
 
 
@@ -70,11 +66,9 @@ function drawChromosome(chrModel) {
     // Append chromosome set container
     container = d3.select(this.selector)
       .append('g')
-      .attrs({
-        class: 'chromosome-set',
-        transform: transform,
-        id: chrModel.id + '-chromosome-set'
-      });
+      .attr('class', 'chromosome-set')
+      .attr('transform', transform)
+      .attr('id', chrModel.id + '-chromosome-set');
   }
 
   if (
@@ -147,10 +141,9 @@ function setOverflowScroll() {
   ideoMiddleWrap.style('height', ideo._layout.getHeight() + 'px')
 
   ideoInnerWrap
-    .styles({
-      overflowX: 'scroll', position: 'absolute',
-      maxWidth: ideoWidth + 'px'
-    });
+    .style('max-width', ideoWidth + 'px')
+    .style('overflow-x', 'scroll')
+    .style('position', 'absolute');
 
   ideoSvg.style('min-width', (ideoWidth - 5) + 'px');
 }

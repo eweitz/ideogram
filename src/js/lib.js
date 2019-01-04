@@ -3,7 +3,6 @@
  */
 
 import {select, selectAll} from 'd3-selection';
-import * as d3multiselection from 'd3-selection-multi';
 import * as d3fetch from 'd3-fetch';
 import * as d3brush from 'd3-brush';
 import * as d3dispatch from 'd3-dispatch';
@@ -11,7 +10,7 @@ import {scaleLinear} from 'd3-scale';
 import {max} from 'd3-array';
 
 var d3 = Object.assign(
-  {}, d3multiselection, d3fetch, d3brush, d3dispatch
+  {}, d3fetch, d3brush, d3dispatch
 );
 
 d3.select = select;
