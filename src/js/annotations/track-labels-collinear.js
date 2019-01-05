@@ -31,7 +31,7 @@ function renderTrackLabels(labels, ideo) {
       .style('background', 'white')
       .style('line-height', '10px')
       .style('z-index', '5')
-      .style('left', x + 'px')
+      .style('left', (x + 2) + 'px')
       .style('top', (y*i + 2) + 'px')
       .style('width', 'max-content')
       .style('transform-origin', 'bottom left')
