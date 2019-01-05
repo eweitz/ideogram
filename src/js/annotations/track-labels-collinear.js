@@ -7,7 +7,8 @@ import {d3} from '../lib';
 import getLabels from './heatmap-lib';
 
 function renderTrackLabels(labels, ideo) {
-  var labels, i, x, y, annotLabelHeight, labelContainer;
+  var labels, i, x, y, labelContainer,
+    annotLabelHeight = ideo.config.annotLabelHeight;
 
   x = 11; // Close to chrLeft in heatmap-collinear.js.  For tabs.
 
@@ -15,7 +16,6 @@ function renderTrackLabels(labels, ideo) {
     d3.select(ideo.config.container + ' #_ideogramTrackLabelContainer');
   labelContainer.html('');
 
-  annotLabelHeight = 12;
   y = ideo.config.annotationHeight + annotLabelHeight + 4;
 
   for (i = 0; i < labels.length; i++) {

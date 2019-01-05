@@ -35,9 +35,8 @@ function writeCanvases(chr, chrLeft, ideo) {
   var j, trackLeft, trackWidth, canvas, context, id,
     chrWidth = chr.width,
     contextArray = [],
+    annotLabelHeight = ideo.config.annotLabelHeight,
     numAnnotTracks = ideo.config.numAnnotTracks;
-
-  var annotLabelHeight = 12;
 
   // Create a canvas for each annotation track on this chromosome
   for (j = 0; j < numAnnotTracks; j++) {
@@ -64,10 +63,10 @@ function writeCanvases(chr, chrLeft, ideo) {
  */
 function fillCanvasAnnots(annots, contextArray, ideo) {
   var j, annot, context, chr,
+    annotLabelHeight = ideo.config.annotLabelHeight,
     annotHeight = ideo.config.annotationHeight,
     demarcateChrs = ideo.config.demarcateCollinearChromosomes;
 
-  var annotLabelHeight = 12;
   var trackWidth = annotHeight + annotLabelHeight + 4;
 
   // Fill in the canvas(es) with annotation colors to draw a heatmap
