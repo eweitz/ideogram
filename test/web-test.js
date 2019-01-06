@@ -2034,7 +2034,7 @@ describe('Ideogram', function() {
 
     function callback() {
       var chr2CanvasBox = d3.select('#chr2-9606-canvas-1').nodes()[0].getBoundingClientRect();
-      assert.equal(chr2CanvasBox.x, 112);
+      assert.equal(chr2CanvasBox.x, 111);
       done();
     }
 
