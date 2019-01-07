@@ -7,15 +7,17 @@ import {d3} from '../lib';
 import getLabels from './heatmap-lib';
 
 function renderTrackLabels(labels, ideo) {
-  var labels, i, x, y, annotLabelHeight, labelContainer;
+  var labels, i, x, y, labelContainer, markBump,
+    annotLabelHeight = ideo.config.annotLabelHeight,
+    demarcateChrs = ideo.config.demarcateCollinearChromosomes;
 
   x = 11; // Close to chrLeft in heatmap-collinear.js.  For tabs.
+  markBump = (demarcateChrs ? 2 : 0); // Make labels flush with demarcations
 
   labelContainer =
     d3.select(ideo.config.container + ' #_ideogramTrackLabelContainer');
   labelContainer.html('');
 
-  annotLabelHeight = 12;
   y = ideo.config.annotationHeight + annotLabelHeight + 4;
 
   for (i = 0; i < labels.length; i++) {
@@ -31,8 +33,8 @@ function renderTrackLabels(labels, ideo) {
       .style('background', 'white')
       .style('line-height', '10px')
       .style('z-index', '5')
-      .style('left', x + 'px')
-      .style('top', (y*i + 2) + 'px')
+      .style('left', (x + markBump) + 'px')
+      .style('top', (y*i + markBump) + 'px')
       .style('width', 'max-content')
       .style('transform-origin', 'bottom left')
       .style('text-align', 'left')

@@ -35,15 +35,15 @@ function writeCanvases(chr, chrLeft, ideo) {
   var j, trackLeft, trackWidth, canvas, context, id,
     chrWidth = chr.width,
     contextArray = [],
+    annotLabelHeight = ideo.config.annotLabelHeight,
     numAnnotTracks = ideo.config.numAnnotTracks;
-
-  var annotLabelHeight = 12;
 
   // Create a canvas for each annotation track on this chromosome
   for (j = 0; j < numAnnotTracks; j++) {
     trackWidth = ideo.config.annotationHeight + annotLabelHeight + 4;
     id = chr.id + '-canvas-' + j; // e.g. chr1-9606-canvas-0
-    trackLeft = chrLeft
+    trackLeft = chrLeft;
+    if (chr.chrIndex > 0) trackLeft -= 1;
     canvas = d3.select(ideo.config.container + ' #_ideogramInnerWrap')
       .append('canvas')
       .attr('id', id)
@@ -63,13 +63,12 @@ function writeCanvases(chr, chrLeft, ideo) {
  * Render annotations on the canvas
  */
 function fillCanvasAnnots(annots, contextArray, ideo) {
-  var j, annot, context, chr, thisTopNotch,
-    demarcateChrs = ideogram.config.demarcateCollinearChromosomes,
-    topNotch = 20,
-    bottomNotch = topNotch * 2;
+  var j, annot, context, chr,
+    annotLabelHeight = ideo.config.annotLabelHeight,
+    annotHeight = ideo.config.annotationHeight,
+    demarcateChrs = ideo.config.demarcateCollinearChromosomes;
 
-  var annotLabelHeight = 12;
-  var trackWidth = ideo.config.annotationHeight + annotLabelHeight + 4;
+  var trackWidth = annotHeight + annotLabelHeight + 4;
 
   // Fill in the canvas(es) with annotation colors to draw a heatmap
   for (j = 0; j < annots.length; j++) {
@@ -79,15 +78,9 @@ function fillCanvasAnnots(annots, contextArray, ideo) {
     context.fillStyle = annot.color;
     if (demarcateChrs) {
       if (1 > annot.startPx || annot.startPx > chr.width - 1) continue;
-      context.fillRect(
-        annot.startPx, 1,
-        0.5, trackWidth
-      );
+      context.fillRect(annot.startPx, 1, 0.5, trackWidth);
     } else {
-      context.fillRect(
-        annot.startPx, 1 + annotLabelHeight,
-        0.5, ideo.config.annotationHeight
-      );
+      context.fillRect(annot.startPx, annotLabelHeight + 1, 0.5, annotHeight);
     }
   }
 
@@ -95,13 +88,10 @@ function fillCanvasAnnots(annots, contextArray, ideo) {
     for (j = 0; j < contextArray.length; j++) {
       context = contextArray[j][0];
       chr = contextArray[j][1];
-      thisTopNotch = (j === 0 ? 0 : topNotch);
       context.fillStyle = '#555';
-      context.fillRect(
-        chr.width - 1, 0,
-        1, ideo.config.annotationHeight + bottomNotch
-      );
-      context.fillRect(0, 0, chr.width - 1, 1);
+      if (chr.chrIndex === 0) context.fillRect(0, 0, 1, trackWidth);
+      context.fillRect(chr.width - 1, 0, 1.1, trackWidth);
+      context.fillRect(0, 0, chr.width + 1, 1);
     }
   }
 }

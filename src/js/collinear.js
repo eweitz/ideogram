@@ -49,15 +49,18 @@ function getxOffsets(chrSets, ideo) {
 }
 
 function collinearizeChromosomes(ideo) {
-  var chrSets, xOffsets, annotLabelHeight, y, xOffsets,
-    config = ideo.config, annotHeight = config.annotationHeight;
+  var chrSets, xOffsets, y, xOffsets,
+    config = ideo.config,
+    annotHeight = config.annotationHeight;
+
+  ideo.config.annotLabelHeight = 12;
+  var annotLabelHeight = ideo.config.annotLabelHeight;
 
   if ('demarcateCollinearChromosomes' in ideo.config === false) {
     ideo.config.demarcateCollinearChromosomes = true;
   }
 
   chrSets = document.querySelectorAll('.chromosome-set');
-  annotLabelHeight = 12;
 
   y = (
     (config.numAnnotTracks * (annotHeight + annotLabelHeight + 4)) -
