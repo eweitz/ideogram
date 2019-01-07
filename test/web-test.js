@@ -2084,4 +2084,47 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
+  it('should support demarcating collinear chromosome heatmaps', function(done) {
+
+    function callback() {
+      var style = d3.select('#_ideogramTrackLabelContainer > div').node().style;
+      assert.equal(style.left, '13px');
+      assert.equal(style.top, '2px');
+      console.log('in demarcating test callback')
+      done();
+    }
+
+    var heatmapThresholds = [
+      [0.7, '#33F'],
+      [1.2, '#DDD'],
+      ['+', '#F33']
+    ];
+
+    var legend = [{
+      name: 'Expression level',
+      rows: [
+        {name: 'Low', color: '#33F'},
+        {name: 'Normal', color: '#CCC'},
+        {name: 'High', color: '#F33'}
+      ]
+    }];
+
+    ideogram = new Ideogram({
+      organism: 'human',
+      orientation: 'horizontal',
+      geometry: 'collinear',
+      chrHeight: 80,
+      showFullyBanded: false,
+      // showChromosomeLabels: false,
+      rotatable: false,
+      legend: legend,
+      annotationHeight: 30,
+      annotationsLayout: 'heatmap',
+      heatmapThresholds: heatmapThresholds,
+      dataDir: '/dist/data/bands/native/',
+      annotationsPath: '../dist/data/annotations/oligodendroglioma_cnv_expression.json',
+      onDrawAnnots: callback
+    });
+  });
+
 });
