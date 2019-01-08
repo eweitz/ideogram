@@ -30,12 +30,29 @@
 
     d3 = Ideogram.d3;
 
-    var heatmapThresholds = [
-      [0.7, '#33F'],
-      [1.2, '#DDD'],
-      ['+', '#F33']
-    ];
+    function calculatePercentiles() {
+      var annotContainers, annots, i, j, annot,
+        values = [];
 
+      annotContainers = ideogram.rawAnnots.annots;
+
+      for (i = 0; i < annotContainers.length; i++) {
+        annots = annotContainers[i].annots;
+        for (j = 0; j < annots.length; j++) {
+          values = values.concat(annots[j].slice(3,));
+        }
+      }
+      values = values.sort();
+      percentile_5 = values[Math.round(values.length * 0.05)];
+      percentile_50 = values[Math.round(values.length * 0.5)];
+      percentile_95 = values[Math.round(values.length * 0.95)];
+
+      ideogram.config.heatmapThresholds = [
+        [percentile_5, '#33F'],
+        [percentile_95, '#DDD'],
+        ['+', '#F33']
+      ]
+    }
     var legend = [{
       name: 'Expression level',
       rows: [
@@ -56,7 +73,7 @@
       legend: legend,
       annotationHeight: 30,
       annotationsLayout: 'heatmap',
-      heatmapThresholds: heatmapThresholds,
+      onLoadAnnots: calculatePercentiles,
       annotationsPath: '../../dist/data/annotations/oligodendroglioma_cnv_expression.json'
     });
   </script>
