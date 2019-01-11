@@ -115,7 +115,8 @@ function afterRawAnnots(ideo) {
 
   if (
     config.annotationsLayout === 'heatmap' &&
-    config.geometry === 'collinear' && 'heatmapThresholds' in config
+    config.geometry === 'collinear' && 
+    ('heatmapThresholds' in config || 'metadata' in ideo.rawAnnots)
   ) {
     inflateHeatmaps(ideo);
   }
