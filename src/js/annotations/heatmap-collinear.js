@@ -19,31 +19,27 @@ var defaultHeatmapColors = [
  * Apply heatmap thresholds that are passed in as annotation metadata
  */
 function inflateThresholds(ideo) {
-  var thresholds, colors, crudeThresholds, i;
+  var thresholds, colors, crudeThresholds;
 
   if (!ideo.rawAnnots.metadata.heatmapThresholds) return;
 
   thresholds = ideo.rawAnnots.metadata.heatmapThresholds;
-
-  if (Array.isArray(thresholds[0]) === false) {
-    colors = defaultHeatmapColors[thresholds.length - 1];
-    thresholds = thresholds.map((d, i) => {
-      return [d, '#' + colors[i]];
-    });
-  }
+  
+  colors = defaultHeatmapColors[thresholds.length - 1];
+  thresholds = thresholds.map((d, i) => {
+    return [d, '#' + colors[i]];
+  });
 
   // Coarsen thresholds, emphasize outliers, widen normal range.
   // TODO: Generalize this for arbitrary number of thresholds.
-  crudeThresholds = [];
-  if (thresholds.length === 16) {
-    crudeThresholds = [
-      [thresholds[4][0], thresholds[0][1]],
-      [thresholds[6][0], thresholds[3][1]],
-      [thresholds[9][0], thresholds[7][1]],
-      [thresholds[11][0], thresholds[10][1]],
-      [thresholds[14][0], thresholds[14][1]]
-    ]
-  }
+  crudeThresholds = [
+    [thresholds[4][0], thresholds[0][1]],
+    [thresholds[6][0], thresholds[3][1]],
+    [thresholds[9][0], thresholds[7][1]],
+    [thresholds[11][0], thresholds[10][1]],
+    [thresholds[14][0], thresholds[14][1]]
+  ]
+
   thresholds = crudeThresholds;
 
   thresholds[thresholds.length - 1][0] = '+';
