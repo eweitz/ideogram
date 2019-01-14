@@ -13,7 +13,7 @@ var reservedTrackKeys = [
 function getLabels(ideo) {
   var annotKeys, labels, heatmaps, i;
 
-  if (ideo.rawAnnots.metadata) {
+  if (ideo.rawAnnots.metadata && ideo.rawAnnots.metadata.trackLabels) {
     labels = ideo.rawAnnots.metadata.trackLabels;
   } else if (ideo.config.heatmaps) {
     labels = [];
