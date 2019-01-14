@@ -1,6 +1,4 @@
-import * as d3selection from 'd3-selection';
-
-var d3 = Object.assign({}, d3selection);
+import {d3} from '../lib';
 
 function writeSyntenicRegion(syntenies, regionID, ideo) {
   return syntenies.append('g')
@@ -9,9 +7,7 @@ function writeSyntenicRegion(syntenies, regionID, ideo) {
     .on('click', function() {
       var activeRegion = this;
       var others = d3.selectAll(ideo.selector + ' .syntenicRegion')
-        .filter(function() {
-          return (this !== activeRegion);
-        });
+        .filter(function() { return (this !== activeRegion); });
 
       others.classed('hidden', !others.classed('hidden'));
     })
@@ -54,7 +50,8 @@ function writeSyntenicRegionPolygons(syntenicRegion, x1, x2, r1, r2, regions) {
       x2 + ', ' + r2.stopPx + ' ' +
       x2 + ', ' + r2.startPx
     )
-    .attr('style', 'fill: ' + color + '; fill-opacity: ' + opacity);
+    .style('fill', color)
+    .style('fill-opacity', opacity);
 }
 
 function writeSyntenicRegionLines(syntenicRegion, x1, x2, r1, r2) {

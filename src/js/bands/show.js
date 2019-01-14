@@ -2,11 +2,7 @@
  * @fileoverview Methods to show (or hide) cytogenetic banding data
  */
 
-import * as d3selection from 'd3-selection';
-
-import {Object} from '../lib';
-
-var d3 = Object.assign({}, d3selection);
+import {d3} from '../lib';
 
 function hideUnshownBandLabels() {
   var ideo = this;

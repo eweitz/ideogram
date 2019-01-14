@@ -6,8 +6,9 @@
     <style>
         html, body { height: 100%; font: 12px Arial; line-height: 19.6px; }
         ul { float: left; padding-left: 5px}
+        ul#dynamic-tracks { float: left; padding-left: 15px}
         li { list-style: none; }
-        #filters-container ul { clear: both; margin-right: 20px; }
+        #filters-container ul { clear: both; margin-right: 15px; }
     </style>
 </head>
 <body>
@@ -16,17 +17,28 @@
 <a href="homology-interspecies">Previous</a> |
 <a href="annotations-overlaid">Next</a>
 <p>
-    Select up to 3 of 9 tracks to display.  See also <a href="annotations-tracks">Annotations, tracks</a>.
+    Explore track filters and ideogram options with a simulated annotation dataset.
+    See also <a href="annotations-tracks">Annotations, tracks</a>.
 </p>
 
 <div id="filters-container">
   <ul id="tracks-to-display">
+    Tracks to display
+    <li><label><input id="filter_all" type="checkbox" value="all"/> All</label></li>
+    <ul id="dynamic-tracks">
+    </ul>
   </ul>
 
-  <ul id="annotations-layout">
+  <ul>
     Annotations layout
-    <li><label for="tracks"><input type="radio" id="tracks" name="layout"/>Shapes</label></li>
+    <li><label for="tracks"><input type="radio" id="tracks" name="layout"/>Shape</label></li>
     <li><label for="heatmap"><input type="radio" id="heatmap" name="layout" checked/>Heatmap</label></li>
+  </ul>
+
+  <ul>
+    Geometry
+    <li><label for="parallel"><input type="radio" id="parallel" name="geometry" checked/>Parallel</label></li>
+    <li><label for="collinear"><input type="radio" id="collinear" name="geometry"/>Collinear</label></li>
   </ul>
 </div>
 
@@ -75,16 +87,21 @@
           '</label>' +
         '</li>';
     }
-    content = 'Tracks to display ' + listItems;
-    document.querySelector('#tracks-to-display').innerHTML = content;
+    document.querySelector('#dynamic-tracks').innerHTML = listItems;
 
-    checkboxes = document.querySelectorAll('input[type=checkbox]');
+    checkboxes = document.querySelectorAll('#dynamic-tracks input');
     checkboxes.forEach(function(checkbox) {
       checkbox.addEventListener('click', function() {
         updateTracks();
       });
     });
-    console.log('ok')
+
+    topCheckbox = document.querySelector('#filter_all');
+    topCheckbox.addEventListener('click', function() {
+      var lowerCheckboxes = document.querySelectorAll('#dynamic-tracks input');
+      lowerCheckboxes.forEach(checkbox => checkbox.checked = this.checked);
+      updateTracks();
+    });
   }
 
   radioButtons = document.querySelectorAll('input[type=radio]');
@@ -96,7 +113,7 @@
 
   function getSelectedTracks() {
     var selectedTracks = [];
-    
+
     checkboxes.forEach(function(checkbox) {
       var trackIndex = parseInt(checkbox.getAttribute('id').split('_')[1]);
       if (checkbox.checked) {
@@ -107,8 +124,25 @@
     return selectedTracks;
   }
 
+  function checkTracks() {
+    var selectedTracks = getSelectedTracks();
+    var geometry = document.querySelector('input[name=geometry]:checked').id;
+    if (geometry !== 'collinear' && selectedTracks.length > 3) {
+      document.querySelector('#ideogram-container').innerHTML =
+        '<div style="position: relative; left: 20px; top: 13px">' +
+          'Rendering over 3 tracks displays poorly in parallel chromosomes.  ' +
+          'Try selecting "Collinear" geometry.' +
+        '</div>';
+      return false;
+    }
+  }
+
   function updateTracks() {
     var selectedTracks = getSelectedTracks();
+    if (checkTracks() === false) return;
+    if (document.querySelector('#_ideogramOuterWrap') === null) {
+      return updateIdeogram();
+    }
     ideogram.updateDisplayedTracks(selectedTracks);
   }
 
@@ -116,9 +150,34 @@
     
     var tracks = getSelectedTracks();
     var layout = document.querySelector('input[name=layout]:checked').id;
+    var geometry = document.querySelector('input[name=geometry]:checked').id;
+
+    if (layout === 'tracks' && geometry === 'collinear') {
+      document.querySelector('#ideogram-container').innerHTML =
+        '<div style="position: relative; left: 20px; top: 13px">' +
+          'Shape annotation layout is not supported in collinear geometry.  ' +
+          'Try selecting "Heatmap" annotation layout.' +
+        '</div>';
+      return;
+    }
+    if (checkTracks() === false) return;
     
     config.annotationsDisplayedTracks = tracks;
     config.annotationsLayout = layout;
+    config.geometry = geometry;
+
+    if (geometry === 'collinear') {
+      config.orientation = 'horizontal';
+      config.chrHeight = 105;
+      config.annotationHeight = 30;
+      config.demarcateCollinearChromosomes = false;
+    } else {
+      config.orientation = 'vertical';
+      config.chrHeight = 400;
+      config.annotationHeight = (layout === 'heatmap' ? 9 : 4);
+    }
+
+    document.querySelector('#ideogram-container').innerHTML = '';
 
     ideogram = new Ideogram(config);
   }

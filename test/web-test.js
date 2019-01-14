@@ -2030,4 +2030,101 @@ describe('Ideogram', function() {
   //   var ideogram = new Ideogram(config);
   // });
 
+  it('should support collinear chromosome geometry', function(done) {
+
+    function callback() {
+      var chr2CanvasBox = d3.select('#chr2-9606-canvas-1').nodes()[0].getBoundingClientRect();
+      assert.equal(chr2CanvasBox.x, 111);
+      done();
+    }
+
+
+    var heatmaps = [
+      {
+        key: 'expression-level',
+        thresholds: [
+          ['2', '#88F'],
+          ['4', '#CCC'],
+          ['+', '#F33']]
+      },
+      {
+        key: 'gene-type',
+        thresholds: [
+          ['0', '#00F'],
+          ['1', '#0AF'],
+          ['2', '#AAA'],
+          ['3', '#FA0'],
+          ['4', '#F00']
+        ]
+      }
+    ];
+
+    var annotationTracks = [
+      {id: 'expressionLevelTrack', displayName: 'Expression level'},
+      {id: 'geneTypeTrack', displayName: 'Gene type'},
+    ];
+
+    config = {
+      organism: 'human',
+      assembly: 'GRCh37',
+      orientation: 'horizontal',
+      geometry: 'collinear',
+      chrHeight: 90,
+      showFullyBanded: false,
+      rotatable: false,
+      annotationHeight: 30,
+      annotationsLayout: 'heatmap',
+      dataDir: '/dist/data/bands/native/',
+      annotationsPath: '../dist/data/annotations/SRR562646.json',
+      heatmaps: heatmaps,
+      annotationTracks: annotationTracks
+    };
+
+    config.onDrawAnnots = callback;
+    var ideogram = new Ideogram(config);
+  });
+
+  it('should support demarcating collinear chromosome heatmaps', function(done) {
+
+    function callback() {
+      var style = d3.select('#_ideogramTrackLabelContainer > div').node().style;
+      assert.equal(style.left, '13px');
+      assert.equal(style.top, '2px');
+      console.log('in demarcating test callback')
+      done();
+    }
+
+    var heatmapThresholds = [
+      [0.7, '#33F'],
+      [1.2, '#DDD'],
+      ['+', '#F33']
+    ];
+
+    var legend = [{
+      name: 'Expression level',
+      rows: [
+        {name: 'Low', color: '#33F'},
+        {name: 'Normal', color: '#CCC'},
+        {name: 'High', color: '#F33'}
+      ]
+    }];
+
+    ideogram = new Ideogram({
+      organism: 'human',
+      orientation: 'horizontal',
+      geometry: 'collinear',
+      chrHeight: 80,
+      showFullyBanded: false,
+      // showChromosomeLabels: false,
+      rotatable: false,
+      legend: legend,
+      annotationHeight: 30,
+      annotationsLayout: 'heatmap',
+      heatmapThresholds: heatmapThresholds,
+      dataDir: '/dist/data/bands/native/',
+      annotationsPath: '../dist/data/annotations/oligodendroglioma_cnv_expression.json',
+      onDrawAnnots: callback
+    });
+  });
+
 });

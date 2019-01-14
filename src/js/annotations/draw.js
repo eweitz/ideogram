@@ -1,9 +1,6 @@
-import * as d3selection from 'd3-selection';
-
+import {d3} from '../lib';
 import {writeHistogramAnnots} from './histogram';
-import { writeLegend } from './legend'
-
-var d3 = Object.assign({}, d3selection);
+import {writeLegend} from './legend'
 
 function parseFriendlyAnnots(friendlyAnnots, rawAnnots) {
   var i, j, annot, rawAnnot;

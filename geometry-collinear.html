@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Geometry, collinear | Ideogram</title>
+  <style>body {font: 12px Arial; line-height: 19.6px;}</style>
+  <script type="text/javascript" src="dist/js/ideogram.min.js"></script>
+        <style>
+          html, body {
+            height: 100%;
+            font: 12px Arial;
+            line-height: 19.6px;
+          }
+
+        </style>
+</head>
+<body>
+  <h1>Geometry, collinear | Ideogram</h1>
+  <a href="../">Back to overview</a> |
+  <a href="annotations-heatmap">Previous</a> |
+  <a href="layout-small">Next</a>
+  <p>
+    Gene expression in four <a href="https://en.wikipedia.org/wiki/Oligodendroglioma">brain cancer</a>
+    samples, showing 1p and 19q deletions.  
+    Data from <a href="https://github.com/broadinstitute/inferCNV">inferCNV</a>.  
+    Unlike the
+    <a href="annotations-heatmap.html">parallel arrangement</a>, this ideogram is
+    collinear -- the chromosomes form a line together.
+  </p>
+  <script type="text/javascript">
+
+    d3 = Ideogram.d3;
+
+    var legend = [{
+      name: 'Expression level',
+      rows: [
+        {name: 'Low', color: '#33F'},
+        {name: 'Normal', color: '#CCC'},
+        {name: 'High', color: '#F33'}
+      ]
+    }];
+
+    ideogram = new Ideogram({
+      organism: 'human',
+      orientation: 'horizontal',
+      geometry: 'collinear',
+      chrHeight: 80,
+      showFullyBanded: false,
+      // showChromosomeLabels: false,
+      rotatable: false,
+      legend: legend,
+      annotationHeight: 30,
+      annotationsLayout: 'heatmap',
+      annotationsPath: 'data/annotations/oligodendroglioma_cnv_expression.json'
+    });
+  </script>
+
+</body>
+</html>

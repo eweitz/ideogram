@@ -6,15 +6,13 @@
  * chromosomes.
  */
 
-import * as d3selection from 'd3-selection';
-import * as d3fetch from 'd3-fetch';
+
 import naturalSort from 'es6-natural-sort';
 
+import {d3} from '../lib';
 import {BedParser} from '../parsers/bed-parser';
-import {Object} from '../lib';
-import {
-  drawHeatmaps, deserializeAnnotsForHeatmap
-} from './heatmap';
+import {drawHeatmaps, deserializeAnnotsForHeatmap} from './heatmap';
+import {inflateHeatmaps} from './heatmap-collinear';
 import {
   onLoadAnnots, onDrawAnnots, startHideAnnotTooltipTimeout,
   onWillShowAnnotTooltip, showAnnotTooltip
@@ -26,8 +24,6 @@ import {
   restoreDefaultTracks, setOriginalTrackIndexes, updateDisplayedTracks
 } from './filter';
 import {processAnnotData} from './process'
-
-var d3 = Object.assign({}, d3selection, d3fetch);
 
 function initNumTracksHeightAndBarWidth(ideo, config) {
   var annotHeight;
@@ -107,6 +103,7 @@ function validateAnnotsUrl(annotsUrl) {
 }
 
 function afterRawAnnots(ideo) {
+  var config = ideo.config;
   // Ensure annots are ordered by chromosome
   ideo.rawAnnots.annots = ideo.rawAnnots.annots.sort(function(a, b) {
     return naturalSort(a.chr, b.chr);
@@ -116,7 +113,18 @@ function afterRawAnnots(ideo) {
     ideo.onLoadAnnotsCallback();
   }
 
-  if (ideo.config.heatmaps) {
+  if (
+    config.annotationsLayout === 'heatmap' &&
+    config.geometry === 'collinear' && 
+    ('heatmapThresholds' in config ||
+      'metadata' in ideo.rawAnnots &&
+      'heatmapThresholds' in ideo.rawAnnots.metadata
+    )
+  ) {
+    inflateHeatmaps(ideo);
+  }
+
+  if (config.heatmaps) {
     ideo.deserializeAnnotsForHeatmap(ideo.rawAnnots);
   }
 }

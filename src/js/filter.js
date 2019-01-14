@@ -1,7 +1,5 @@
-import * as d3selection from 'd3-selection';
+import {d3} from './lib';
 import * as crossfilter from 'crossfilter';
-
-var d3 = Object.assign({}, d3selection);
 
 /* Decompresses ideogram's annotations for crossfilter initialization
 By default, annotations are clustered by chromosome, e.g.

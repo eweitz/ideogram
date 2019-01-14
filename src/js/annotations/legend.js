@@ -4,19 +4,18 @@
  * Icons may have different shapes.  A legend may also have a name.
  */
 
-import * as d3selection from 'd3-selection';
-
-var d3 = Object.assign({}, d3selection);
+import {d3} from '../lib';
 
 var lineHeight = 19;
 
 var legendStyle =
-  '#_ideogramLegend {font: 12px Arial; line-height: 19px;} ' +
+  '#_ideogramLegend {font: 12px Arial; line-height: 19px; overflow: auto;} ' +
   '#_ideogramLegend svg {float: left;} ' +
   '#_ideogramLegend ul {' +
     'position: relative; left: -14px; list-style: none; float: left; ' +
-    'padding-left: 10px; margin-top: 0px;' +
+    'padding-left: 10px; margin: 0 0 1em 0; width: auto; border: none;' +
   '} ' +
+  '#_ideogramLegend li {float: none; margin: 0;}' +
   '#_ideogramLegend ul span {position: relative; left: -15px;} ';
 
 function getIcon(row) {

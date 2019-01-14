@@ -1,8 +1,5 @@
-import * as d3selection from 'd3-selection';
-
-import {Object} from '../lib';
-
-var d3 = Object.assign({}, d3selection);
+import {d3} from '../lib';
+import collinearizeChromosomes from '../collinear';
 
 /**
  * Reset displayed tracks to those originally displayed
@@ -54,6 +51,10 @@ function updateDisplayedTracks(trackIndexes) {
   displayedRawAnnotsByChr =
     getDisplayedRawAnnotsByChr(annotsByChr, trackIndexes);
   rawAnnots = {keys: ideo.rawAnnots.keys, annots: displayedRawAnnotsByChr};
+
+  if (ideo.config.geometry === 'collinear') {
+    collinearizeChromosomes(ideo);
+  }
 
   displayedAnnots = ideo.processAnnotData(rawAnnots);
 

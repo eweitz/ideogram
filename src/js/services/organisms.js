@@ -1,6 +1,4 @@
-import * as d3fetch from 'd3-fetch';
-
-var d3 = Object.assign({}, d3fetch);
+import {d3} from '../lib';
 
 /**
  *  Returns an NCBI taxonomy identifier (taxid) for the configured organism

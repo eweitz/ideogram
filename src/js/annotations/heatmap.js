@@ -5,9 +5,8 @@
  * rendered using the Canvas element.
  */
 
-import * as d3selection from 'd3-selection';
-
-var d3 = Object.assign({}, d3selection);
+import {d3} from '../lib';
+import {drawHeatmapsCollinear} from './heatmap-collinear'
 
 import {
   startHideTrackLabelTimeout, writeTrackLabelContainer, showTrackLabel
@@ -72,6 +71,10 @@ function drawHeatmaps(annotContainers) {
     ideo = this,
     ideoMarginTop = ideo._layout.margin.top,
     ideoHeight = ideo.config.chrHeight + ideoMarginTop;
+
+  if (ideo.config.geometry === 'collinear') {
+    return drawHeatmapsCollinear(annotContainers, ideo);
+  }
 
   d3.selectAll(ideo.config.container + ' canvas').remove();
 

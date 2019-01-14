@@ -9,18 +9,9 @@
  * https://github.com/d3/d3-brush
  */
 
-import * as d3selection from 'd3-selection';
+import {d3} from './lib';
 // See https://github.com/d3/d3/issues/2733
 import {event as currentEvent} from 'd3-selection';
-import * as d3brush from 'd3-brush';
-import {scaleLinear} from 'd3-scale';
-import {max} from 'd3-array';
-
-import {Object} from './lib';
-
-var d3 = Object.assign({}, d3brush, d3selection);
-d3.scaleLinear = scaleLinear;
-d3.max = max;
 
 /**
  * Custom event handler, fired upon dragging sliding window on chromosome
