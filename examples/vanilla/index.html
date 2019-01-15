@@ -7,31 +7,6 @@
 	  	font: 12px Arial;
 	  	line-height: 19.6px;
 	  }
-	  div.gallery {
-	    margin: 5px;
-	    border: 1px solid #ccc;
-	    float: left;
-	    width: 180px;
-	  }
-
-	  div.gallery:hover {
-	   	border: 1px solid #777;
-	  }
-
-	  div.card img {
-	    width: 99%;
-		height: auto;
-	  }
-
-	  div.desc {
-		padding: 15px;
-		text-align: center;
-	  }
-
-	  .gallery img {
-		  height: 200px;
-		  width: 300px;
-	  }
 
     .cards {
       display: flex;
@@ -40,25 +15,39 @@
     }
 
     .card {
-        flex: 0 1 180px;
-        border: 1px solid #ccc;
-        margin: 0 5px 20px 5px;
+      flex: 0 1 180px;
+      border: 1px solid #ccc;
+      margin: 0 5px 10px 5px;
     }
+
+	  .card:hover {
+      border: 1px solid #777;
+	  }
+
+	  .card img {
+	    width: 99%;
+		  height: auto;
+	  }
+
+	  .desc {
+      padding: 15px;
+      text-align: center;
+	  }
   </style>
 </head>
 <body>
-  	<h1>Overview | Ideogram</h1>
-  	<p>
+  <h1>Overview | Ideogram</h1>
+  <p>
     <a href="https://github.com/eweitz/ideogram">Ideogram.js</a> is a
     JavaScript library for chromosome visualization. Ideogram supports drawing
     and animating genome-wide datasets.
-  	</p>
-  	<p>
-  	In the examples below, raw
-  	<a href="http://ghr.nlm.nih.gov/handbook/howgeneswork/genelocation">cytogenetic band</a>
-  	data is read in and rendered entirely on the client using
-  	<a href="http://d3js.org/" target="_blank">D3.js</a>.
     </p>
+    <p>
+    In the examples below, raw
+    <a href="http://ghr.nlm.nih.gov/handbook/howgeneswork/genelocation">cytogenetic band</a>
+    data is read in and rendered entirely on the client using
+    <a href="http://d3js.org/" target="_blank">D3.js</a>.
+  </p>
   <div class="cards">
 	<div class="card">
 		<a href="human"><img src="img/human_ideogram.png"/></a>
@@ -80,7 +69,6 @@
 		<a href="homology-advanced"><img src="img/homology_advanced_ideogram.png"/></a>
 		<div class="desc"><a href="homology-advanced">Homology, advanced</a>.  Relations between two chromosomes, using color and opacity.</div>
 	</div>
-	
 	<div class="card">
 		<a href="homology-interspecies"><img src="img/homology_interspecies_ideogram.png"/></a>
 		<div class="desc"><a href="homology-interspecies">Homology, interspecies</a>.  Relations between two chromosomes, each from a different taxon.</div>
@@ -101,7 +89,6 @@
 		<a href="annotations-external-data"><img src="img/annotations_external_data_ideogram.png"/></a>
 		<div class="desc"><a href="annotations-external-data">Annotations, external data</a>.  Data fetched from a third party API, annotated by shape and color.</div>
 	</div>
-	
 	<div class="card">
 		<a href="annotations-file-url"><img src="img/annotations_file_url_ideogram.png"/></a>
 		<div class="desc"><a href="annotations-file-url">Annotations, file URL</a>.  Features parsed from standard file formats, e.g. BED, loaded via URL.</div>
@@ -122,7 +109,6 @@
 		<a href="geometry-collinear"><img src="img/geometry_collinear_ideogram.png"/></a>
 		<div class="desc"><a href="geometry-collinear">Geometry, collinear</a>.<br/>  All chromosomes arranged in one line.</div>
   </div>
-  
 	<div class="card">
 		<a href="layout-small"><img src="img/layout_small_ideogram.png"/></a>
 		<div class="desc"><a href="layout-small">Layout, small</a>.  Chromosomes surrounded by other content.</div>
@@ -143,7 +129,6 @@
 		<a href="ploidy-rearrangements"><img src="img/ploidy_rearrangements_ideogram.png"/></a>
 		<div class="desc"><a href="ploidy-rearrangements">Ploidy, rearrangements</a>.  Loss and gain of cytogenetic arms and chromatids.</div>
   </div>
-  
 	<div class="card">
 		<a href="ploidy-recombination"><img src="img/ploidy_recombination_ideogram.png"/></a>
 		<div class="desc"><a href="ploidy-recombination">Ploidy, recombination</a>. Gene conversion and double chromosome crossover among chromatids.</div>
