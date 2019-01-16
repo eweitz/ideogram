@@ -1,23 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta name="viewport", content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
   <title>Overview | Ideogram</title>
   <style>
 	  body {
-	  	font: 12px Arial;
+      font: 14px Arial;
 	  	line-height: 19.6px;
+      padding: 0 10px 0 10px;
 	  }
 
     .cards {
       display: flex;
       flex-wrap: wrap;
-      justify-content: space-between;
     }
 
     .card {
-      flex: 0 1 180px;
+      box-sizing: border-box;
       border: 1px solid #ccc;
+      max-width: 180px;
       margin: 0 5px 10px 5px;
+    }
+
+    @media (max-width: 600px) {
+      .cards {
+        justify-content: space-around;
+      }
+      .card {
+        max-width: calc(50% - 10px);
+      }
     }
 
 	  .card:hover {
