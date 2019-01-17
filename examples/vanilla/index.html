@@ -7,7 +7,7 @@
 	  body {
       font: 14px Arial;
 	  	line-height: 19.6px;
-      padding: 0 10px 0 10px;
+      padding: 0 15px;
 	  }
 
     .cards {
@@ -23,12 +23,9 @@
     }
 
     @media (max-width: 600px) {
-      .cards {
-        justify-content: space-around;
-      }
-      .card {
-        max-width: calc(50% - 10px);
-      }
+      body { padding: 0 10px}
+      .cards { justify-content: space-around; }
+      .card { max-width: calc(50% - 10px); }
     }
 
 	  .card:hover {
@@ -41,7 +38,7 @@
 	  }
 
 	  .desc {
-      padding: 15px;
+      padding: 15px 5px;
       text-align: center;
 	  }
   </style>
@@ -54,63 +51,61 @@
     and animating genome-wide datasets.
     </p>
     <p>
-    In the examples below, raw
-    <a href="http://ghr.nlm.nih.gov/handbook/howgeneswork/genelocation">cytogenetic band</a>
-    data is read in and rendered entirely on the client using
+    In the examples below, genomic data is fetched from servers and rendered on the client using
     <a href="http://d3js.org/" target="_blank">D3.js</a>.
   </p>
   <div class="cards">
 	<div class="card">
 		<a href="human"><img src="img/human_ideogram.png"/></a>
-		<div class="desc"><a href="human">Human</a>.  Chromosomes 1-22, X and Y rendered vertically.</div>
+		<div class="desc"><a href="human">Human</a><br/> Chromosomes 1-22, X and Y rendered vertically.</div>
 	</div>
 	<div class="card">
 		<a href="mouse"><img src="img/mouse_ideogram.png"/></a>
-		<div class="desc"><a href="mouse">Mouse</a>.  Chromosomes 1-19, X and Y rendered horizontally, with labeled bands.</div>
+		<div class="desc"><a href="mouse">Mouse</a><br/> Chromosomes 1-19, X and Y rendered horizontally, with labeled bands.</div>
 	</div>
 	<div class="card">
 		<a href="eukaryotes"><img src="img/eukaryotes_ideogram.png"/></a>
-		<div class="desc"><a href="eukaryotes">Eukaryotes</a>.  Genomes for many organisms, using data fetched via API.</div>
+		<div class="desc"><a href="eukaryotes">Eukaryotes</a><br/> Genomes for many organisms, using data fetched via API.</div>
 	</div>
 	<div class="card">
 		<a href="homology-basic"><img src="img/homology_basic_ideogram.png"/></a>
-		<div class="desc"><a href="homology-basic">Homology, basic</a>.  Simple relations between two chromosomes.</div>
+		<div class="desc"><a href="homology-basic">Homology, basic</a><br/> Simple relations between two chromosomes.</div>
 	</div>
 	<div class="card">
 		<a href="homology-advanced"><img src="img/homology_advanced_ideogram.png"/></a>
-		<div class="desc"><a href="homology-advanced">Homology, advanced</a>.  Relations between two chromosomes, using color and opacity.</div>
+		<div class="desc"><a href="homology-advanced">Homology, advanced</a><br/> Relations between two chromosomes, using color and opacity.</div>
 	</div>
 	<div class="card">
 		<a href="homology-interspecies"><img src="img/homology_interspecies_ideogram.png"/></a>
-		<div class="desc"><a href="homology-interspecies">Homology, interspecies</a>.  Relations between two chromosomes, each from a different taxon.</div>
+		<div class="desc"><a href="homology-interspecies">Homology, interspecies</a><br/> Relations between two chromosomes, each from a different taxon.</div>
 	</div>
 	<div class="card">
 		<a href="annotations-basic"><img src="img/annotations_basic_ideogram.png"/></a>
-		<div class="desc"><a href="annotations-basic">Annotations, basic</a>.  Location of a gene on a chromosome.</div>
+		<div class="desc"><a href="annotations-basic">Annotations, basic</a><br/> Location of a gene on a chromosome.</div>
 	</div>
 	<div class="card">
 		<a href="annotations-overlaid"><img src="img/annotations_overlaid_ideogram.png"/></a>
-		<div class="desc"><a href="annotations-overlaid">Annotations, overlaid</a>.  Overlaid features on chromosomes.</div>
+		<div class="desc"><a href="annotations-overlaid">Annotations, overlaid</a><br/> Overlaid features on chromosomes.</div>
 	</div>
 	<div class="card">
 		<a href="annotations-tracks"><img src="img/annotations_tracks_ideogram.png"/></a>
-		<div class="desc"><a href="annotations-tracks">Annotations, tracks</a>.  Stacked features on chromosomes.</div>
+		<div class="desc"><a href="annotations-tracks">Annotations, tracks</a><br/> Stacked features on chromosomes.</div>
 	</div>
 	<div class="card">
 		<a href="annotations-external-data"><img src="img/annotations_external_data_ideogram.png"/></a>
-		<div class="desc"><a href="annotations-external-data">Annotations, external data</a>.  Data fetched from a third party API, annotated by shape and color.</div>
+		<div class="desc"><a href="annotations-external-data">Annotations, external data</a><br/> Data fetched from a third party API, annotated by shape and color.</div>
 	</div>
 	<div class="card">
 		<a href="annotations-file-url"><img src="img/annotations_file_url_ideogram.png"/></a>
-		<div class="desc"><a href="annotations-file-url">Annotations, file URL</a>.  Features parsed from standard file formats, e.g. BED, loaded via URL.</div>
+		<div class="desc"><a href="annotations-file-url">Annotations, file URL</a><br/> Features parsed from standard file formats, e.g. BED, loaded via URL.</div>
 	</div>
 	<div class="card">
 		<a href="annotations-histogram"><img src="img/annotations_histogram_ideogram.png"/></a>
-		<div class="desc"><a href="annotations-histogram">Annotations, histogram</a>.  Use shape to show feature distributions on chromosomes.</div>
+		<div class="desc"><a href="annotations-histogram">Annotations, histogram</a><br/> Use shape to show feature distributions on chromosomes.</div>
 	</div>
 	<div class="card">
 		<a href="annotations-animated"><img src="img/annotations_animated_ideogram.png"/></a>
-		<div class="desc"><a href="annotations-animated">Annotations, animated</a>.  Genome-wide transitions in expression over time.</div>
+		<div class="desc"><a href="annotations-animated">Annotations, animated</a><br/> Genome-wide transitions in expression over time.</div>
 	</div>
 	<div class="card">
 		<a href="annotations-heatmap"><img src="img/annotations_heatmap_ideogram.png"/></a>
@@ -118,39 +113,39 @@
   </div>
   <div class="card">
 		<a href="geometry-collinear"><img src="img/geometry_collinear_ideogram.png"/></a>
-		<div class="desc"><a href="geometry-collinear">Geometry, collinear</a>.<br/>  All chromosomes arranged in one line.</div>
+		<div class="desc"><a href="geometry-collinear">Geometry, collinear</a><br/>  All chromosomes arranged in one line.</div>
   </div>
 	<div class="card">
 		<a href="layout-small"><img src="img/layout_small_ideogram.png"/></a>
-		<div class="desc"><a href="layout-small">Layout, small</a>.  Chromosomes surrounded by other content.</div>
+		<div class="desc"><a href="layout-small">Layout, small</a><br/> Chromosomes surrounded by other content.</div>
 	</div>
   <div class="card">
 		<a href="layout-tabs"><img src="img/layout_tabs_ideogram.png"/></a>
-		<div class="desc"><a href="layout-small">Layout, tabs</a>.  Tab containers and scrolling for large ideograms.</div>
+		<div class="desc"><a href="layout-small">Layout, tabs</a><br/> Tab containers and scrolling for large ideograms.</div>
 	</div>
 	<div class="card">
 		<a href="brush"><img src="img/brush_ideogram.png"/></a>
-		<div class="desc"><a href="brush">Brush</a>.  Move and resize a slider-like widget to change genomic coordinates in focus.</div>
+		<div class="desc"><a href="brush">Brush</a><br/> Move and resize a slider-like widget to change genomic coordinates in focus.</div>
 	</div>
 	<div class="card">
 		<a href="ploidy-basic"><img src="img/ploidy_basic_ideogram.png"/></a>
-		<div class="desc"><a href="ploidy-basic">Ploidy, basic</a>.  Diploid genome of a human female.</div>
+		<div class="desc"><a href="ploidy-basic">Ploidy, basic</a><br/> Diploid genome of a human female.</div>
 	</div>
 	<div class="card">
 		<a href="ploidy-rearrangements"><img src="img/ploidy_rearrangements_ideogram.png"/></a>
-		<div class="desc"><a href="ploidy-rearrangements">Ploidy, rearrangements</a>.  Loss and gain of cytogenetic arms and chromatids.</div>
+		<div class="desc"><a href="ploidy-rearrangements">Ploidy, rearrangements</a><br/> Loss and gain of cytogenetic arms and chromatids.</div>
   </div>
 	<div class="card">
 		<a href="ploidy-recombination"><img src="img/ploidy_recombination_ideogram.png"/></a>
-		<div class="desc"><a href="ploidy-recombination">Ploidy, recombination</a>. Gene conversion and double chromosome crossover among chromatids.</div>
+		<div class="desc"><a href="ploidy-recombination">Ploidy, recombination</a><br/>Gene conversion and double chromosome crossover among chromatids.</div>
 	</div>
 	<div class="card">
 		<a href="multiple-trio"><img src="img/multiple_trio_ideogram.png"/></a>
-		<div class="desc"><a href="multiple-trio">Multiple, trio</a>. Three human genomes.</div>
+		<div class="desc"><a href="multiple-trio">Multiple, trio</a><br/>Three human genomes.</div>
 	</div>
 	<div class="card">
 		<a href="multiple-primates"><img src="img/multiple_primates_ideogram.png"/></a>
-		<div class="desc"><a href="multiple-primates">Multiple, primates</a>. Three primate genomes, with orthologs annotated for comparison.</div>
+		<div class="desc"><a href="multiple-primates">Multiple, primates</a><br/>Three primate genomes, with orthologs annotated for comparison.</div>
 	</div>
   
 </div>
