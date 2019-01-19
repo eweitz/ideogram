@@ -1,12 +1,15 @@
+<!DOCTYPE html>
 <html>
 <head>
     <title>Annotations, tabs and overflow | Ideogram</title>
     <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
     <style>
-        body {
-            font: 12px Arial;
-            line-height: 19.6px;
-        }
+    body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
+    a, a:visited {text-decoration: none;}
+    a:hover {text-decoration: underline;}
+    a, a:hover, a:visited, a:active {color: #0366d6;}
+  </style>
+    <style>
 
         ul {
             width: 600px;
@@ -58,6 +61,10 @@
             clear: both;
         }
 
+        .tab-content > div:first-child {
+            padding: 20px 10px 5px 10px;
+        }
+
         .tab-content > div.active {
             display: block;
             border: 1px solid #CCC;
@@ -73,9 +80,10 @@
 </head>
 <body>
 <h1>Layout, tabs and overflow | Ideogram</h1>
-<a href="../">Back to overview</a> |
+<a href="../">Overview</a> |
 <a href="layout-small">Previous</a> |
-<a href="brush">Next</a>
+<a href="brush">Next</a> |
+  <a href="https://github.com/eweitz/ideogram/blob/gh-pages/layout-tabs.html" target="_blank">Source</a>
 <br/><br/>
 <div class="tab-panel">
   <ul class="nav">

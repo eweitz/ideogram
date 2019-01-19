@@ -4,11 +4,12 @@
   <title>Eukaryotes | Ideogram</title>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
   <style>
-    body {
-      font: 12px Arial;
-      line-height: 19.6px;
-    }
-
+    body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
+    a, a:visited {text-decoration: none;}
+    a:hover {text-decoration: underline;}
+    a, a:hover, a:visited, a:active {color: #0366d6;}
+  </style>
+  <style>
     #container {
       float: left;
       height: 650px;
@@ -16,11 +17,12 @@
     }
 
     #organismList {
-      float:left;
+      float: left;
+      padding-inline-start: 20px;
     }
 
     li ul {
-      padding: 2px 0 10px 10px;
+      padding: 2px 10px 10px 10px;
     }
 
     li ul li {
@@ -30,9 +32,10 @@
 </head>
 <body>
   <h1>Eukaryotes | Ideogram</h1>
-  <a href="../">Back to overview</a> |
+  <a href="../">Overview</a> |
   <a href="mouse">Previous</a> |
-  <a href="homology-basic">Next</a>
+  <a href="homology-basic">Next</a> |
+  <a href="https://github.com/eweitz/ideogram/blob/gh-pages/eukaryotes.html" target="_blank">Source</a>
   <p>
     Ideogram.js can display the genome of any hundreds of organisms, using data from
     <a href="https://www.ncbi.nlm.nih.gov/assembly">NCBI Assembly</a>.
@@ -42,7 +45,7 @@
     <li>
       Model organisms
       <ul>
-        <li><label for="rattus-norvegicus"><input type="radio" name="org" value="rattus-norvegicus" id="rattus-norvegicus">Rat (Rattus novegicus)</label></li>
+        <li><label for="rattus-norvegicus"><input type="radio" name="org" value="rattus-norvegicus" id="rattus-norvegicus">Rat (Rattus norvegicus)</label></li>
         <li><label for="drosophila-melanogaster"><input type="radio" name="org" value="drosophila-melanogaster" id="drosophila-melanogaster">Fly (Drosophila melanogaster)</label>
         <li><label for="caenorhabditis-elegans"><input type="radio" name="org" value="caenorhabditis-elegans" id="caenorhabditis-elegans">Worm (Caenorhabditis elegans)</label></li>
         <li><label for="danio-rerio"><input type="radio" name="org" value="danio-rerio" id="danio-rerio">Zebrafish (Danio rerio)</label></li>
