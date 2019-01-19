@@ -3,31 +3,35 @@
 <html>
 <head>
   <title>Annotations, tracks | Ideogram</title>
-  <style>body {font: 12px Arial; line-height: 19.6px;}</style>
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter/1.3.12/crossfilter.min.js"></script>
+  <style>
+    body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
+    a, a:visited {text-decoration: none;}
+    a:hover {text-decoration: underline;}
+    a, a:hover, a:visited, a:active {color: #0366d6;}
+  </style>
   <script type="text/javascript" src="dist/js/ideogram.min.js"></script>
 </head>
 <body>
-  <h1>Annotations, tracks | Ideogram</h1>
-  <a href="/ideogram">Back to overview</a> |
-  <a href="annotations-overlaid">Previous</a> |
-  <a href="annotations-external-data">Next</a>
-  <p>
-    1000 <a href="https://github.com/eweitz/ideogram/blob/ca64a3c51e1b5ecaae89d2422ffc408565743644/scripts/create_annots.py#L68">
-    randomly generated</a> SNVs across the human genome, artificially categorized
-    as "pathogenic" (red), "uncertain significance" (grey) or "benign" (green).
-    See also <a href="annotations-track-filters">Annotations, track filters</a>.
-    <br/>
-    <br/>
-    Annotation shape:
-    <select id="shape-menu">
-      <option>Triangle</option>
-      <option>Circle</option>
-      <option>Rectangle</option>
-      <option>Narrow rectangle</option>
-    </select>
-  </p>
-  <script type="text/javascript">
+<h1>Annotations, tracks | Ideogram</h1>
+<a href="/ideogram">Overview</a> |
+<a href="annotations-overlaid">Previous</a> |
+<a href="annotations-external-data">Next</a> |
+  <a href="https://github.com/eweitz/ideogram/blob/gh-pages/annotations-tracks.html" target="_blank">Source</a>
+<p>
+  1000 <a href="https://github.com/eweitz/ideogram/blob/ca64a3c51e1b5ecaae89d2422ffc408565743644/scripts/create_annots.py#L68">
+  randomly generated</a> SNVs across the human genome. 
+  See also <a href="annotations-track-filters">Annotations, track filters</a>.
+  <br/>
+  <br/>
+  Annotation shape:
+  <select id="shape-menu">
+    <option>Triangle</option>
+    <option>Circle</option>
+    <option>Rectangle</option>
+    <option>Narrow rectangle</option>
+  </select>
+</p>
+<script type="text/javascript">
 
   var d3 = Ideogram.d3;
 
