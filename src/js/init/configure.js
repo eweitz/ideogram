@@ -53,6 +53,12 @@ function configureWidth(ideo) {
 }
 
 function configureMargin(ideo) {
+  if (ideo.config.geometry) {
+    if ('chrMargin' in ideo.config === false) {
+      ideo.config.chrMargin = 0;
+    }
+    return
+  };
   if (!ideo.config.chrMargin) {
     if (ideo.config.ploidy === 1) {
       ideo.config.chrMargin = 10;
@@ -182,11 +188,13 @@ function configure(config) {
   configureBump(this);
   configureSingleChromosome(config, this);
   this.initAnnotSettings();
-  this.config.chrMargin += this.config.chrWidth;
-  if (this.config.annotationsLayout === 'heatmap') {
-    this.config.chrMargin += this.config.annotTracksHeight;
-  } else {
-    this.config.chrMargin += this.config.annotTracksHeight * 2;
+  if ('geometry' in this.config === false) {
+    this.config.chrMargin += this.config.chrWidth;
+    if (this.config.annotationsLayout === 'heatmap') {
+      this.config.chrMargin += this.config.annotTracksHeight;
+    } else {
+      this.config.chrMargin += this.config.annotTracksHeight * 2;
+    }
   }
   this.init();
 }
