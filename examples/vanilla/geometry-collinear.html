@@ -8,6 +8,16 @@
     a:hover {text-decoration: underline;}
     a, a:hover, a:visited, a:active {color: #0366d6;}
   </style>
+  <style>
+    #chrMargin {
+      position: relative;
+      top: 5px;
+    }
+    #chrMarginContainer {
+      position: relative;
+      top: -6px;
+    }
+  </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
 </head>
 <body>
@@ -24,9 +34,39 @@
     <a href="annotations-heatmap.html">parallel arrangement</a>, this ideogram is
     collinear -- the chromosomes form a line together.
   </p>
+
   <script type="text/javascript">
 
     d3 = Ideogram.d3;
+
+    function addControls() {
+        chrMargin = (typeof chrMargin === 'undefined' ? 10 : chrMargin)
+        marginSlider =
+          `<label id="chrMarginContainer">
+            Chromosome margin:
+          <input type="range" id="chrMargin" list="chrMarginList" value="` + chrMargin + `">
+          </label>
+          <datalist id="chrMarginList">
+            <option value="0" label="0%">
+            <option value="10">
+            <option value="20">
+            <option value="30">
+            <option value="40">
+            <option value="50" label="50%">
+            <option value="60">
+            <option value="70">
+            <option value="80">
+            <option value="90">
+            <option value="100" label="100%">
+          </datalist>`;
+        d3.select('#_ideogramLegend').node().innerHTML += marginSlider;
+
+        d3.selectAll('input[type="range"]').on('change', function() {
+          window.chrMargin = parseInt(d3.select(this).node().value);
+          config.chrMargin = chrMargin;
+          ideogram = new Ideogram(config);
+        });
+    }
 
     var legend = [{
       name: 'Expression level',
@@ -37,7 +77,7 @@
       ]
     }];
 
-    ideogram = new Ideogram({
+    config = {
       organism: 'human',
       orientation: 'horizontal',
       geometry: 'collinear',
@@ -49,8 +89,11 @@
       legend: legend,
       annotationHeight: 30,
       annotationsLayout: 'heatmap',
-      annotationsPath: '../../data/annotations/oligodendroglioma_cnv_expression.json'
-    });
+      annotationsPath: '../../data/annotations/oligodendroglioma_cnv_expression.json',
+      onDrawAnnots: addControls
+    }
+
+    ideogram = new Ideogram(config);
   </script>
 
 </body>
