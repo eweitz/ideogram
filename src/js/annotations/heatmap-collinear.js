@@ -85,7 +85,7 @@ function writeCanvases(chr, chrLeft, ideo) {
     trackWidth = ideo.config.annotationHeight + annotLabelHeight + 4;
     id = chr.id + '-canvas-' + j; // e.g. chr1-9606-canvas-0
     trackLeft = chrLeft;
-    if (chr.chrIndex > 0) trackLeft -= 1;
+    if (chr.chrIndex > 0) trackLeft += (ideo.config.chrMargin * chr.chrIndex) - 1;
     canvas = d3.select(ideo.config.container + ' #_ideogramInnerWrap')
       .append('canvas')
       .attr('id', id)
@@ -134,6 +134,7 @@ function fillCanvasAnnots(annots, contextArray, ideo) {
       if (chr.chrIndex === 0) context.fillRect(0, 0, 1, trackWidth);
       context.fillRect(chr.width - 1, 0, 1.1, trackWidth);
       context.fillRect(0, 0, chr.width + 1, 1);
+      if (ideo.config.chrMargin) context.fillRect(0, 0, 1.1, trackWidth);
     }
   }
 }
