@@ -5,22 +5,21 @@
  */
 
 import {d3} from './lib';
-import collinearizeVerticalChromosomes from './collinear-vertical';
 
 /**
 * Rearrange chromosomes from horizontal to collinear
 */
-function rearrangeChromosomes(chrSets, xOffsets, y, config) {
-  var i, chrSet, x;
+function rearrangeChromosomes(chrSets, yOffsets, x, config) {
+  var i, chrSet, y;
 
   for (i = 0; i < chrSets.length; i++) {
     chrSet = chrSets[i];
-    x = xOffsets[i];
+    y = yOffsets[i];
     if (config.showChromosomeLabels) {
-      chrSet.querySelector('.chrLabel').setAttribute('y', config.chrWidth*2 + 10)
+      chrSet.querySelector('.chrLabel').setAttribute('x', config.chrWidth*2 + 10)
       chrSet.querySelector('.chrLabel').setAttribute('text-anchor', 'middle')
     }
-    chrSet.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+    chrSet.setAttribute('transform', 'rotate(90) translate(' + x + ',' + y + ')');
     chrSet.querySelector('.chromosome').setAttribute('transform', 'translate(-13, 10)');
   }
 }
@@ -28,36 +27,32 @@ function rearrangeChromosomes(chrSets, xOffsets, y, config) {
 /**
 * Get pixel coordinates to use for rearrangement 
 */
-function getxOffsets(chrSets, ideo) {
-  var xOffsets, i, index, prevChrSet, x, prevWidth, prevX, xBump;
+function getyOffsets(chrSets, ideo) {
+  var yOffsets, i, index, prevChrSet, y, prevWidth, prevY, yBump;
 
-  xOffsets = [];
+  yOffsets = [];
   for (i = 0; i < chrSets.length; i++) {
     index = (i === 0) ? i : i - 1;
     prevChrSet = ideo.chromosomesArray[index];
     if (i === 0) {
-      x = 20;
+      y = 20;
     } else {
       prevWidth = prevChrSet.width;
-      prevX = xOffsets[index];
-      xBump = (ideo.config.showChromosomeLabels ? 0 : 2);
-      x = prevX + prevWidth + xBump;
+      prevY = yOffsets[index];
+      yBump = (ideo.config.showChromosomeLabels ? 0 : 2);
+      y = prevY + prevWidth + yBump;
+      y += ideo.config.chrMargin;
     }
-    xOffsets.push(x);
+    yOffsets.push(y);
   }
 
-  return xOffsets;
+  return yOffsets;
 }
 
-function collinearizeChromosomes(ideo) {
-  var chrSets, xOffsets, y, xOffsets,
+function collinearizeVerticalChromosomes(ideo) {
+  var chrSets, yOffsets, x,
     config = ideo.config,
     annotHeight = config.annotationHeight;
-
-  if (config.orientation === 'vertical') {
-    collinearizeVerticalChromosomes(ideo);
-    return;
-  }
 
   ideo.config.annotLabelHeight = 12;
   var annotLabelHeight = ideo.config.annotLabelHeight;
@@ -68,17 +63,14 @@ function collinearizeChromosomes(ideo) {
 
   chrSets = document.querySelectorAll('.chromosome-set');
 
-  y = (
-    (config.numAnnotTracks * (annotHeight + annotLabelHeight + 4)) -
-    config.chrWidth + 1
-  );
+  x = 20;
 
-  xOffsets = getxOffsets(chrSets, ideo);
-  rearrangeChromosomes(chrSets, xOffsets, y, config);
+  yOffsets = getyOffsets(chrSets, ideo);
+  rearrangeChromosomes(chrSets, yOffsets, x, config);
 
   d3.select(ideo.selector)
-    .attr('width', xOffsets.slice(-1)[0] + 20)
-    .attr('height', y + config.chrWidth*2 + 20);
+    .attr('width', x + config.chrWidth*2 + 20)
+    .attr('height', yOffsets.slice(-1)[0] + 20);
 
   d3.select('#_ideogramTrackLabelContainer').remove();
   d3.select('#_ideogramInnerWrap')
@@ -87,4 +79,4 @@ function collinearizeChromosomes(ideo) {
     .style('position', 'absolute');
 }
 
-export default collinearizeChromosomes;
+export default collinearizeVerticalChromosomes;
