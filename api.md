@@ -39,6 +39,7 @@ var ideogram = new Ideogram({
 * [chromosomes](#chromosomes)
 * [container](#container)
 * [dataDir](#datadir)
+* [geometry](#geometry)
 * [histogramScaling](#histogramscaling)
 * [heatmaps](#heatmaps)
 * [filterable](#filterable)
@@ -131,6 +132,9 @@ String.  Optional.  Default: "body".  CSS selector of the HTML element that will
 
 ## dataDir
 String.  Optional.  Default: "../data/bands/native/".  Absolute or relative URL of the directory containing data needed to draw banded chromosomes.  Example in [GeneExpressionAging/ideogram](https://ncbi-hackathons.github.io/GeneExpressionAging/ideogram).
+
+## geometry
+String.  Optional.  Use "geometry: collinear" to arrange all chromosomes in one line, unlike the usual parallel view.  Example in [Geometry, collinear](https://eweitz.github.io/ideogram/geometry-collinear).
 
 ## histogramScaling
 String.  Optional.  Default: "absolute".  One of "absolute" or "relative".  The technique to use in scaling the height of histogram bars.  The "absolute" value sets bar height relative to tallest bar in _all_ chromosomes, while "relative" sets bar height relative to tallest bar in _each_ chromosome.
