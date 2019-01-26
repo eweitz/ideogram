@@ -138,7 +138,7 @@ function setOverflowScroll() {
 
   // Ensures absolutely-positioned elements, e.g. heatmap overlaps, display
   // properly if ideogram container also has position: absolute
-  ideoMiddleWrap.style('height', ideo._layout.getHeight() + 'px')
+  ideoMiddleWrap.style('height', ideo._layout.getHeight() + 'px');
 
   ideoInnerWrap
     .style('max-width', ideoWidth + 'px')

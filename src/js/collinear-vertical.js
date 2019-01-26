@@ -16,10 +16,10 @@ function rearrangeChromosomes(chrSets, yOffsets, x, config) {
     chrSet = chrSets[i];
     y = yOffsets[i];
     if (config.showChromosomeLabels) {
-      chrSet.querySelector('.chrLabel').setAttribute('x', config.chrWidth*2 + 10)
-      chrSet.querySelector('.chrLabel').setAttribute('text-anchor', 'middle')
+      chrSet.querySelector('.chrLabel > tspan').setAttribute('x', -config.chrWidth*2 - 13)
+      chrSet.querySelector('.chrLabel').setAttribute('text-anchor', 'start')
     }
-    chrSet.setAttribute('transform', 'rotate(90) translate(' + x + ',' + y + ')');
+    chrSet.setAttribute('transform', 'rotate(90) translate(' + y + ',' + x + ')');
     chrSet.querySelector('.chromosome').setAttribute('transform', 'translate(-13, 10)');
   }
 }
@@ -50,9 +50,8 @@ function getyOffsets(chrSets, ideo) {
 }
 
 function collinearizeVerticalChromosomes(ideo) {
-  var chrSets, yOffsets, x,
-    config = ideo.config,
-    annotHeight = config.annotationHeight;
+  var chrSets, yOffsets, x, height,
+    config = ideo.config;
 
   ideo.config.annotLabelHeight = 12;
   var annotLabelHeight = ideo.config.annotLabelHeight;
@@ -63,14 +62,17 @@ function collinearizeVerticalChromosomes(ideo) {
 
   chrSets = document.querySelectorAll('.chromosome-set');
 
-  x = 20;
+  x = -40;
 
   yOffsets = getyOffsets(chrSets, ideo);
   rearrangeChromosomes(chrSets, yOffsets, x, config);
 
-  d3.select(ideo.selector)
-    .attr('width', x + config.chrWidth*2 + 20)
-    .attr('height', yOffsets.slice(-1)[0] + 20);
+  height = Math.round(yOffsets.slice(-1)[0] + 20);
+
+  d3.select(config.container + ' #_ideogramMiddleWrap')
+    .style('height', height + 'px');
+
+  d3.select(ideo.selector).attr('height', height);
 
   d3.select('#_ideogramTrackLabelContainer').remove();
   d3.select('#_ideogramInnerWrap')
