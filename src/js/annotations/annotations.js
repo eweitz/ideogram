@@ -24,6 +24,7 @@ import {
   restoreDefaultTracks, setOriginalTrackIndexes, updateDisplayedTracks
 } from './filter';
 import {processAnnotData} from './process'
+import { ExpressionMatrixParser } from '../parsers/expression-matrix-parser';
 
 function initNumTracksHeightAndBarWidth(ideo, config) {
   var annotHeight;
@@ -136,7 +137,7 @@ function afterRawAnnots(ideo) {
  * @param annotsUrl Absolute or relative URL native or BED annotations file
  */
 function fetchAnnots(annotsUrl) {
-  var extension,
+  var extension, is2dHeatmap,
     ideo = this;
 
   if (annotsUrl.slice(0, 4) !== 'http') {
@@ -148,11 +149,15 @@ function fetchAnnots(annotsUrl) {
     return;
   }
 
-  extension = validateAnnotsUrl(annotsUrl);
+  is2dHeatmap = ideo.config.annotationsLayout === 'heatmap-2d';
+  console.log(is2dHeatmap)
+  extension = (is2dHeatmap ? '' : validateAnnotsUrl(annotsUrl));
 
   d3.text(annotsUrl).then(function(text) {
     if (extension === 'bed') {
       ideo.rawAnnots = new BedParser(text, ideo).rawAnnots;
+    } else if (is2dHeatmap) {
+      ideo.rawAnnots = new ExpressionMatrixParser(text, ideo).rawAnnots;
     } else {
       ideo.rawAnnots = JSON.parse(text);
     }
