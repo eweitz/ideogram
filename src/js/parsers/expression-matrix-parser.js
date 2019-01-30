@@ -13,8 +13,11 @@ export class ExpressionMatrixParser {
    * @param {Object} ideo Ideogram object
    */
   constructor(matrix, ideo) {
-    this.coordinates = this.fetchCoordinates(ideo);
-    this.rawAnnots = this.parseExpressionMatrix(matrix, ideo);
+    var parser = this;
+    this.rawAnnots = this.fetchCoordinates(ideo).then(function(coordinates) {
+      parser.coordinates = coordinates;
+      return parser.parseExpressionMatrix(matrix, ideo);
+    });
   }
 
   fetchCoordinates(ideo) {
@@ -30,8 +33,8 @@ export class ExpressionMatrixParser {
           var tsvLines, i, start, stop, gene, geneType, chr, length;
           
           tsvLines = data.split(/\r\n|\n/).slice(1,);
-          for (i  = 1; i < tsvLines.length; i++) {
-            [start, stop, gene, geneType, chr] = tsvLines[i];
+          for (i = 0; i < tsvLines.length; i++) {
+            [start, stop, gene, geneType, chr] = tsvLines[i].split(/\s/g);
             start = parseInt(start);
             stop = parseInt(stop);
             length = stop - start;
@@ -49,10 +52,12 @@ export class ExpressionMatrixParser {
    * Parses an annotation from a tab-separated line of a matrix file
    */
   parseAnnotFromTsvLine(tsvLine, chrs) {
-    var annot, chrIndex, chr, start, rgb, color, label,
+    var annot, chrIndex, chr, start, rgb, color, label, gene, expressions,
       columns = tsvLine.split(/\s/g);
 
     gene = columns[0];
+    if (gene in this.coordinates === false) return [null, null];
+
     expressions = columns.slice(1,);
     
     [chr, start, length] = this.coordinates[gene];
@@ -60,18 +65,7 @@ export class ExpressionMatrixParser {
     chrIndex = chrs.indexOf(chr);
     if (chrIndex === -1) return [null, null];
     
-    annot = ['', start, length, 0];
-
-    if (columns.length >= 4) {
-      label = columns[3];
-      annot[0] = label;
-    }
-
-    if (columns.length >= 8) {
-      rgb = columns[8].split(',');
-      color = BedParser.rgbToHex(rgb[0], rgb[1], rgb[2]);
-      annot.push(color);
-    }
+    annot = [gene, start, length] + expressions;
 
     return [chrIndex, annot];
   }
@@ -79,7 +73,7 @@ export class ExpressionMatrixParser {
   parseRawAnnots(annots, tsvLines, chrs) {
     var i, line, chrIndex, annot, keys, rawAnnots;
 
-    for (i = 0; i < tsvLines.length; i++) {
+    for (i = 1; i < tsvLines.length; i++) {
       line = tsvLines[i];
       [chrIndex, annot] = this.parseAnnotFromTsvLine(line, chrs);
       if (chrIndex !== null) annots[chrIndex].annots.push(annot);
