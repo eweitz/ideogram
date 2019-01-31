@@ -13,10 +13,25 @@ export class ExpressionMatrixParser {
    * @param {Object} ideo Ideogram object
    */
   constructor(matrix, ideo) {
-    var parser = this;
-    this.rawAnnots = this.fetchCoordinates(ideo).then(function(coordinates) {
-      parser.coordinates = coordinates;
-      return parser.parseExpressionMatrix(matrix, ideo);
+    this.matrix = matrix;
+    this.ideo = ideo;
+  }
+
+  /**
+   * Initialize rawAnnots by fetching genomic coordinates, then merging them
+   * with the gene expression matrix supplied in constructor.
+   */
+  setRawAnnots() {
+    var parser, ideo, matrix;
+    parser = this;
+    ideo = this.ideo;
+    matrix = this.matrix;
+
+    return new Promise(function(resolve) {
+      parser.rawAnnots = parser.fetchCoordinates(ideo).then(function(coordinates) {
+        parser.coordinates = coordinates;
+        resolve(parser.parseExpressionMatrix(matrix, ideo));
+      });
     });
   }
 
@@ -58,14 +73,15 @@ export class ExpressionMatrixParser {
     gene = columns[0];
     if (gene in this.coordinates === false) return [null, null];
 
-    expressions = columns.slice(1,);
-    
+    expressions = columns.slice(1,).map(d => parseFloat(d));
+    // console.log(expressions)
     [chr, start, length] = this.coordinates[gene];
 
     chrIndex = chrs.indexOf(chr);
     if (chrIndex === -1) return [null, null];
     
-    annot = [gene, start, length] + expressions;
+    annot = [gene, start, length];
+    annot = annot.concat(expressions)
 
     return [chrIndex, annot];
   }

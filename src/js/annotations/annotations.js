@@ -140,7 +140,9 @@ function fetchAnnots(annotsUrl) {
   var extension, is2dHeatmap,
     ideo = this;
 
-  if (annotsUrl.slice(0, 4) !== 'http') {
+  is2dHeatmap = ideo.config.annotationsLayout === 'heatmap-2d';
+
+  if (annotsUrl.slice(0, 4) !== 'http' && !is2dHeatmap) {
     d3.json(ideo.config.annotationsPath)
       .then(function(data) {
         ideo.rawAnnots = data;
@@ -149,19 +151,22 @@ function fetchAnnots(annotsUrl) {
     return;
   }
 
-  is2dHeatmap = ideo.config.annotationsLayout === 'heatmap-2d';
-  console.log(is2dHeatmap)
   extension = (is2dHeatmap ? '' : validateAnnotsUrl(annotsUrl));
 
   d3.text(annotsUrl).then(function(text) {
-    if (extension === 'bed') {
-      ideo.rawAnnots = new BedParser(text, ideo).rawAnnots;
-    } else if (is2dHeatmap) {
-      ideo.rawAnnots = new ExpressionMatrixParser(text, ideo).rawAnnots;
+    if (is2dHeatmap) {
+      var parser = new ExpressionMatrixParser(text, ideo);
+      ideo.rawAnnots = parser.setRawAnnots().then(function(d) {
+        ideo.rawAnnots = d.rawAnnots;
+      });
     } else {
-      ideo.rawAnnots = JSON.parse(text);
+      if (extension === 'bed') {
+        ideo.rawAnnots = new BedParser(text, ideo).rawAnnots;
+      } else {
+        ideo.rawAnnots = JSON.parse(text);
+      }
+      afterRawAnnots(ideo);
     }
-    afterRawAnnots(ideo);
   });
 }
 
