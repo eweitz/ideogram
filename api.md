@@ -39,6 +39,7 @@ var ideogram = new Ideogram({
 * [chromosomes](#chromosomes)
 * [container](#container)
 * [dataDir](#datadir)
+* [demarcateCollinearChromosomes](#demarcatecollinearchromosomes)
 * [geometry](#geometry)
 * [histogramScaling](#histogramscaling)
 * [heatmaps](#heatmaps)
@@ -132,6 +133,9 @@ String.  Optional.  Default: "body".  CSS selector of the HTML element that will
 
 ## dataDir
 String.  Optional.  Default: "../data/bands/native/".  Absolute or relative URL of the directory containing data needed to draw banded chromosomes.  Example in [GeneExpressionAging/ideogram](https://ncbi-hackathons.github.io/GeneExpressionAging/ideogram).
+
+## demarcateCollinearChromosomes
+Boolean.  Optional.  Default: true.  Whether to demarcate colllinear chromosomes.  Puts a dark border around the perimeter of each track-chromosomes block in track sets for chromosomes arranged in collinear geometry.  Example in [Geometry, collinear](https://eweitz.github.io/ideogram/geometry-collinear).
 
 ## geometry
 String.  Optional.  Use "geometry: collinear" to arrange all chromosomes in one line, unlike the usual parallel view.  Example in [Geometry, collinear](https://eweitz.github.io/ideogram/geometry-collinear).
