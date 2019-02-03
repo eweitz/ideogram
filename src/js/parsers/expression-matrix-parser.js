@@ -1,6 +1,7 @@
 /**
  * @fileoverview Parse raw Ideogram.js annotations from an expression matrix.
  * This module handles dense gene expression matrixes.
+ * In gene expression expressions, rows are genes and columns are cells.
  */
 import {d3} from '../lib';
 
@@ -35,6 +36,11 @@ export class ExpressionMatrixParser {
     });
   }
 
+  /**
+   * Get chromosome, start and stop coordinates from genome annotation file
+   * 
+   * TODO: Support non-human organisms
+   */
   fetchCoordinates(ideo) {
     var coordinates = {};
 
@@ -67,7 +73,7 @@ export class ExpressionMatrixParser {
    * Parses an annotation from a tab-separated line of a matrix file
    */
   parseAnnotFromTsvLine(tsvLine, chrs) {
-    var annot, chrIndex, chr, start, rgb, color, label, gene, expressions,
+    var annot, chrIndex, chr, start, gene, expressions,
       columns = tsvLine.split(/\s/g);
 
     gene = columns[0];
@@ -86,8 +92,19 @@ export class ExpressionMatrixParser {
     return [chrIndex, annot];
   }
 
-  parseRawAnnots(annots, tsvLines, chrs) {
-    var i, line, chrIndex, annot, keys, rawAnnots;
+  /**
+  * Parses a gene expression matrix file, returns raw annotations
+  */
+  parseExpressionMatrix(matrix, ideo) {
+    var i, chrs, chr, rawAnnots, cells, line, chrIndex, annot, keys,
+      annots = [],
+      tsvLines = matrix.split(/\r\n|\n/);
+
+    chrs = Object.keys(ideo.chromosomes[ideo.config.taxid]);
+    for (i = 0; i < chrs.length; i++) {
+      chr = chrs[i];
+      annots.push({chr: chrs[i], annots: []});
+    }
 
     for (i = 1; i < tsvLines.length; i++) {
       line = tsvLines[i];
@@ -95,30 +112,10 @@ export class ExpressionMatrixParser {
       if (chrIndex !== null) annots[chrIndex].annots.push(annot);
     }
 
-    keys = ['name', 'start', 'length', 'trackIndex'];
-    if (tsvLines[0].length >= 8) keys.push('color');
-    
+    cells = tsvLines[0].split(/\s/g);
+    keys = ['name', 'start', 'length'].concat(cells);
     rawAnnots = {keys: keys, annots: annots};
 
-    return rawAnnots;
-  }
-
-  /**
-  * Parses a gene expression matrix file, returns raw annotations
-  */
-  parseExpressionMatrix(matrix, ideo) {
-    var i, chrs, chr, rawAnnots,
-      annots = [],
-      tsvLines = matrix.split(/\r\n|\n/);
-
-    chrs = Object.keys(ideo.chromosomes[ideo.config.taxid]);
-
-    for (i = 0; i < chrs.length; i++) {
-      chr = chrs[i];
-      annots.push({chr: chr, annots: []});
-    }
-
-    rawAnnots = this.parseRawAnnots(annots, tsvLines, chrs);
     return rawAnnots;
   }
 

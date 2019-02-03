@@ -134,7 +134,7 @@ function afterRawAnnots(ideo) {
  * Requests annotations URL via HTTP, sets ideo.rawAnnots for downstream
  * processing.
  *
- * @param annotsUrl Absolute or relative URL native or BED annotations file
+ * @param annotsUrl Absolute or relative URL for native or BED annotations file
  */
 function fetchAnnots(annotsUrl) {
   var extension, is2dHeatmap,
@@ -156,8 +156,8 @@ function fetchAnnots(annotsUrl) {
   d3.text(annotsUrl).then(function(text) {
     if (is2dHeatmap) {
       var parser = new ExpressionMatrixParser(text, ideo);
-      ideo.rawAnnots = parser.setRawAnnots().then(function(d) {
-        ideo.rawAnnots = d.rawAnnots;
+      parser.setRawAnnots().then(function(d) {
+        ideo.rawAnnots = d;
       });
     } else {
       if (extension === 'bed') {
