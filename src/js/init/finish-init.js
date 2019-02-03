@@ -41,8 +41,7 @@ function processAnnots(ideo) {
 }
 
 /**
- * Waits for potentially large annotation dataset
- * to be received by the client, then triggers annotation processing.
+ * Load (potentially large) annotation dataset, then process it.
  */
 function waitForAndProcessAnnots(ideo) {
   if (ideo.rawAnnots) {
@@ -50,7 +49,11 @@ function waitForAndProcessAnnots(ideo) {
   } else {
     (function checkAnnotData() {
       ideo.timeout = setTimeout(function() {
-        if (!ideo.rawAnnots) {
+        if (
+          !ideo.rawAnnots ||
+          (ideo.rawAnnots && typeof ideo.rawAnnots.then !== 'undefined')
+          ) {
+          // Ensure rawAnnots is defined and not a Promise (not "then"-able)
           checkAnnotData();
         } else {
           processAnnots(ideo);

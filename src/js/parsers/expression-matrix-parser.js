@@ -107,7 +107,7 @@ export class ExpressionMatrixParser {
   * Parses a gene expression matrix file, returns raw annotations
   */
   parseExpressionMatrix(matrix, ideo) {
-    var i, chrs, chr, bedStartIndex, rawAnnots,
+    var i, chrs, chr, rawAnnots,
       annots = [],
       tsvLines = matrix.split(/\r\n|\n/);
 
