@@ -113,15 +113,15 @@ function afterRawAnnots(ideo) {
   if (ideo.onLoadAnnotsCallback) {
     ideo.onLoadAnnotsCallback();
   }
-
+  console.log('afterRawAnnots')
   if (
-    config.annotationsLayout === 'heatmap' &&
-    config.geometry === 'collinear' && 
+    /heatmap/.test(config.annotationsLayout) &&
     ('heatmapThresholds' in config ||
       'metadata' in ideo.rawAnnots &&
       'heatmapThresholds' in ideo.rawAnnots.metadata
     )
   ) {
+    console.log('inflating')
     inflateHeatmaps(ideo);
   }
 
@@ -158,6 +158,7 @@ function fetchAnnots(annotsUrl) {
       var parser = new ExpressionMatrixParser(text, ideo);
       parser.setRawAnnots().then(function(d) {
         ideo.rawAnnots = d;
+        afterRawAnnots(ideo);
       });
     } else {
       if (extension === 'bed') {

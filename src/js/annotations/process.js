@@ -192,9 +192,10 @@ function addAnnots(rawAnnots, keys, ideo) {
 
 function sendTrackAndAnnotWarnings(omittedAnnots, ideo) {
   var numOmittedTracks,
-    numTracks = ideo.config.numAnnotTracks;;
+    layout = ideo.config.annotationsLayout,
+    numTracks = ideo.config.numAnnotTracks;
 
-  if (numTracks > 10) {
+  if (!/heatmap/.test(layout) && numTracks > 10) {
     console.error(
       'Ideogram only displays up to 10 tracks at a time.  ' +
       'You specified ' + numTracks + ' tracks.  ' +

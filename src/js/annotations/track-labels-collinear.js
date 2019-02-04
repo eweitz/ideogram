@@ -4,7 +4,7 @@
  */
 
 import {d3} from '../lib';
-import getLabels from './heatmap-lib';
+import {getLabels} from './heatmap-lib';
 
 function renderTrackLabels(labels, ideo) {
   var labels, i, x, y, labelContainer, markBump,

@@ -163,7 +163,7 @@ function writeOverlayAnnots(chrAnnot, ideo) {
 function warnIfTooManyAnnots(layout, annots) {
   var i, numAnnots;
 
-  if (layout !== 'heatmap' && layout !== 'histogram') {
+  if (!/heatmap/.test(layout) && layout !== 'histogram') {
     numAnnots = 0;
     for (i = 0; i < annots.length; i++) {
       numAnnots += annots[i].annots.length;

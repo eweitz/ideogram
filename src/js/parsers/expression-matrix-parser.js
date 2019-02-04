@@ -80,7 +80,6 @@ export class ExpressionMatrixParser {
     if (gene in this.coordinates === false) return [null, null];
 
     expressions = columns.slice(1,).map(d => parseFloat(d));
-    // console.log(expressions)
     [chr, start, length] = this.coordinates[gene];
 
     chrIndex = chrs.indexOf(chr);
@@ -96,13 +95,12 @@ export class ExpressionMatrixParser {
   * Parses a gene expression matrix file, returns raw annotations
   */
   parseExpressionMatrix(matrix, ideo) {
-    var i, chrs, chr, rawAnnots, cells, line, chrIndex, annot, keys,
+    var i, chrs, rawAnnots, cells, line, chrIndex, annot, keys,
       annots = [],
       tsvLines = matrix.split(/\r\n|\n/);
 
     chrs = Object.keys(ideo.chromosomes[ideo.config.taxid]);
     for (i = 0; i < chrs.length; i++) {
-      chr = chrs[i];
       annots.push({chr: chrs[i], annots: []});
     }
 

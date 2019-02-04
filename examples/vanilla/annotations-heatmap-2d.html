@@ -46,6 +46,7 @@
     }];
 
     config = {
+      debug: true,
       organism: 'human',
       orientation: 'vertical',
       chromosome: '1',
@@ -54,10 +55,11 @@
       showFullyBanded: false,
       showBandLabels: false,
       legend: legend,
+      heatmapThresholds: [0, 0.13, 0.27, 0.4, 0.53, 0.67, 0.8, 0.93, 1.1, 1.2, 1.33, 1.47, 1.6, 1.73, 1.87, 2],
       annotationHeight: 30,
       annotationsLayout: 'heatmap-2d',
       // annotationsPath: 'https://raw.githubusercontent.com/broadinstitute/inferCNV/InferCNV-v0.8.2/example/oligodendroglioma_expression_downsampled.counts.matrix'
-      annotationsPath: 'http://localhost:8080/data/oligodendroglioma_expression_downsampled.counts.matrix'
+      annotationsPath: '/data/oligodendroglioma_expression_downsampled.counts.matrix'
     }
 
     ideogram = new Ideogram(config);
