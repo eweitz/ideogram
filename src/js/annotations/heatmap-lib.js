@@ -48,11 +48,21 @@ function getLabels(ideo) {
  * Apply heatmap thresholds that are passed in as annotation metadata
  */
 function inflateThresholds(ideo) {
-  var thresholds, colors, crudeThresholds;
+  var thresholds, colors, crudeThresholds,
+    rawAnnots = ideo.rawAnnots;
 
-  if (!ideo.rawAnnots.metadata.heatmapThresholds) return;
+  if (
+    rawAnnots.metadata && !rawAnnots.metadata.heatmapThresholds &&
+    !ideo.config.heatmapThresholds
+  ) {
+    return;
+  }
 
-  thresholds = ideo.rawAnnots.metadata.heatmapThresholds;
+  if (ideo.config.heatmapThresholds) {
+    thresholds = ideo.config.heatmapThresholds;
+  } else {
+    thresholds = ideo.rawAnnots.metadata.heatmapThresholds;
+  }
   
   colors = defaultHeatmapColors[thresholds.length - 1];
   thresholds = thresholds.map((d, i) => {
@@ -90,7 +100,7 @@ function inflateHeatmaps(ideo) {
 
   annotationTracks = [];
   displayedTracks = [];
-  if (rawAnnots.metadata) thresholds = inflateThresholds(ideo);
+  if (rawAnnots.metadata || !isNaN(thresholds[0])) thresholds = inflateThresholds(ideo);
 
   for (i = 0; i < labels.length; i++) {
     heatmaps.push({key: labels[i], thresholds: thresholds});

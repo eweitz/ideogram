@@ -57,7 +57,7 @@ function addClientAnnot(annots, annot, ra, m, ideo) {
 /**
  * Add sparse server annotations, as in annotations-track-filters.html
  */
-function addSparseServertAnnot(annot, ra, omittedAnnots, annots, m, ideo) {
+function addSparseServerAnnot(annot, ra, omittedAnnots, annots, m, ideo) {
   var colors = colorMap[ideo.numAvailTracks - 1];
 
   annot.trackIndex = ra[3];
@@ -117,7 +117,7 @@ function addAnnot(annot, keys, ra, omittedAnnots, annots, m, ideo) {
     annots = addClientAnnot(annots, annot, ra, m, ideo);
   } else if (keys[3] === 'trackIndex' && ideo.numAvailTracks !== 1) {
     [annots, omittedAnnots] = 
-      addSparseServertAnnot(annot, ra, omittedAnnots, annots, m, ideo);
+      addSparseServerAnnot(annot, ra, omittedAnnots, annots, m, ideo);
   // } else if (
   //   keys.length > 3 &&
   //   keys[3] in {trackIndex: 1, color: 1, shape: 1} === false &&
