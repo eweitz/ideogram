@@ -215,7 +215,7 @@ function drawProcessedAnnots(annots) {
 
   if ('legend' in ideo.config) writeLegend(ideo);
 
-  if (layout === 'heatmap') {
+  if (/heatmap/.test(layout)) {
     ideo.drawHeatmaps(annots);
     return;
   }

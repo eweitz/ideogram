@@ -115,13 +115,12 @@ function afterRawAnnots(ideo) {
   }
   console.log('afterRawAnnots')
   if (
-    /heatmap/.test(config.annotationsLayout) &&
+    config.annotationsLayout === 'heatmap' &&
     ('heatmapThresholds' in config ||
       'metadata' in ideo.rawAnnots &&
       'heatmapThresholds' in ideo.rawAnnots.metadata
     )
   ) {
-    console.log('inflating')
     inflateHeatmaps(ideo);
   }
 

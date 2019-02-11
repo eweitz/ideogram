@@ -1,12 +1,13 @@
 /**
- * @fileoverview Functions for heatmaps of genome annotations.
+ * @fileoverview Functions for 2D heatmaps of genome annotations.
  * Heatmaps provide an easy way to visualize very dense annotation data.
  * Unlike the rest of Ideogram's graphics, which use SVG, heatmaps are
  * rendered using the Canvas element.
  */
 
 import {d3} from '../lib';
-import {drawHeatmapsCollinear} from './heatmap-collinear'
+import {drawHeatmapsCollinear} from './heatmap-collinear';
+import {drawHeatmaps2d} from './heatmap-2d';
 
 import {
   startHideTrackLabelTimeout, writeTrackLabelContainer, showTrackLabel
@@ -69,11 +70,14 @@ function fillCanvasAnnots(annots, contextArray, chrWidth, ideoMarginTop) {
 function drawHeatmaps(annotContainers) {
   var annots, chrLeft, contextArray, chrWidth, i, chr,
     ideo = this,
+    config = ideo.config,
     ideoMarginTop = ideo._layout.margin.top,
-    ideoHeight = ideo.config.chrHeight + ideoMarginTop;
+    ideoHeight = config.chrHeight + ideoMarginTop;
 
-  if (ideo.config.geometry === 'collinear') {
+  if (config.geometry === 'collinear') {
     return drawHeatmapsCollinear(annotContainers, ideo);
+  } else if (config.annotationsLayout === 'heatmap-2d') {
+    return drawHeatmaps2d(annotContainers, ideo);
   }
 
   d3.selectAll(ideo.config.container + ' canvas').remove();
@@ -142,7 +146,7 @@ function getHeatmapAnnotColor(thresholds, value) {
     thresholdList = thresholds[m];
     threshold = thresholdList[0];
 
-    // The threshold value is usually an integer,
+    // The threshold value is usually a number,
     // but can also be a "+" character indicating that
     // this threshold is anything greater than the previous threshold.
     tvNum = parseFloat(threshold);

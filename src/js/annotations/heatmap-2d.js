@@ -6,7 +6,6 @@
  */
 
 import {d3} from '../lib';
-import {drawHeatmapsCollinear} from './heatmap-collinear'
 
 import {
   startHideTrackLabelTimeout, writeTrackLabelContainer, showTrackLabel
@@ -24,16 +23,16 @@ function writeCanvases(chr, chrTop, ideoHeight, ideo) {
 
   // Create a canvas for each annotation track on this chromosome
   for (j = 0; j < numAnnotTracks; j++) {
-    trackWidth = ideo.config.annotationHeight;
+    trackWidth = ideo.config.annotationHeight * ideogram.rawAnnots.keys.length - 3;
     id = chr.id + '-canvas-' + j; // e.g. chr1-9606-canvas-0
     trackTop = chrTop - trackWidth * (numAnnotTracks - j) - marginHack;
     canvas = d3.select(ideo.config.container + ' #_ideogramInnerWrap')
       .append('canvas')
       .attr('id', id)
-      .attr('width', ideoHeight)
-      .attr('height', trackWidth)
+      .attr('width', trackWidth)
+      .attr('height', ideoHeight)
       .style('position', 'absolute')
-      .style('top', trackTop + 'px');
+      .style('left', trackTop + 'px');
     context = canvas.nodes()[0].getContext('2d');
     contextArray.push(context);
   }
@@ -58,23 +57,16 @@ function fillCanvasAnnots(annots, contextArray, chrWidth, ideoMarginTop) {
 }
 
 /**
- * Draw a 1D heatmap of annotations along each chromosome.
- * Ideal for representing very dense annotation sets in a granular manner
- * without subsampling.
+ * Draw a 2D heatmap of annotations along one chromosome.
  *
  * TODO:
  * - Support in 'horizontal' orientation
  * - Support after rotating chromosome on click
  */
-function drawHeatmaps(annotContainers) {
-  var annots, chrLeft, contextArray, chrWidth, i, chr,
-    ideo = this,
+function drawHeatmaps2d(annotContainers, ideo) {
+  var annots, chrTop, contextArray, chrWidth, i, chr,
     ideoMarginTop = ideo._layout.margin.top,
     ideoHeight = ideo.config.chrHeight + ideoMarginTop;
-
-  if (ideo.config.geometry === 'collinear') {
-    return drawHeatmapsCollinear(annotContainers, ideo);
-  }
 
   d3.selectAll(ideo.config.container + ' canvas').remove();
 
@@ -101,4 +93,4 @@ function drawHeatmaps(annotContainers) {
   }
 }
 
-export {drawHeatmaps}
+export {drawHeatmaps2d}
