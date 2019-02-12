@@ -32,7 +32,8 @@ function writeCanvases(chr, chrTop, ideoHeight, ideo) {
       .attr('width', trackWidth)
       .attr('height', ideoHeight)
       .style('position', 'absolute')
-      .style('left', trackTop + 'px');
+      .style('left', '20px')
+      .style('top', '0px');
     context = canvas.nodes()[0].getContext('2d');
     contextArray.push(context);
   }
@@ -44,11 +45,11 @@ function writeCanvases(chr, chrTop, ideoHeight, ideo) {
  * Render annotations on the canvas
  */
 function fillCanvasAnnots(annots, contextArray, chrWidth, ideoMarginTop) {
-  var j, annot, context, x;
+  var i, annot, context, x;
 
   // Fill in the canvas(es) with annotation colors to draw a heatmap
-  for (j = 0; j < annots.length; j++) {
-    annot = annots[j];
+  for (i = 0; i < annots.length; i++) {
+    annot = annots[i];
     context = contextArray[annot.trackIndex];
     context.fillStyle = annot.color;
     x = annot.trackIndex - 1;
