@@ -91,6 +91,10 @@ Lay out annotations in tracks beside each chromosome.  There can be more than on
 ### annotationsLayout: 'heatmap'
 Lay out annotations in heatmap beside each chromosome.  Plot individual annotations like `annotationsLayout: 'tracks'`, with the scalability of `annotationsLayout: 'histogram'`.  Each chromosome can have one or more heatmap tracks.  Use with the [heatmaps](#heatmaps) configuration option.  Example in [Annotations, heatmap](https://eweitz.github.io/ideogram/annotations-heatmap).
 
+### annotationsLayout: 'heatmap-2d'
+Lay out annotations in a two-dimensional zheatmap beside a single chromosome.  Enables visualizing raw data summarized in
+`annotationsLayout: 'heatmap'`.  Example in [Annotations, 2D heatmap](https://eweitz.github.io/ideogram/annotations-heatmap-2d).
+
 ### annotationsLayout: 'histogram'
 Lay out annotations in a histogram.  This clusters annoatations by location, such that each cluster or bin is shown as a bar.  The height of the bar represent the number of annotations in that genomic range.  This option is useful for summarizing the distribution of many (1000+) features througout the genome.  Example in [Annotations, histogram](https://eweitz.github.io/ideogram/annotations-histogram).
 
