@@ -113,4 +113,4 @@ function inflateHeatmaps(ideo) {
   ideo.config.annotationTracks = annotationTracks;
 }
 
-export {getLabels, inflateHeatmaps};
+export {getLabels, inflateHeatmaps, defaultHeatmapColors};

@@ -1,3 +1,5 @@
+import {add2dAnnotsForChr} from './heatmap-2d';
+
 // Default colors for tracks of annotations
 var colorMap = [
   ['F00'], // If there is 1 track, then color it red.
@@ -77,22 +79,6 @@ function addSparseServerAnnot(annot, ra, omittedAnnots, annots, m, ideo) {
 
   return [annots, omittedAnnots];
 }
-
-// TODO: This needs a working test case.
-// function addDenseServerAnnot(keys, annots, annot, m) {
-//   var n, thisAnnot;
-
-//   // Dense server annotations
-//   for (n = 4; n < keys.length; n++) {
-//     thisAnnot = Object.assign({}, annot); // copy by value
-//     thisAnnot.trackIndex = n - 4;
-//     thisAnnot.trackIndexOriginal = n - 3;
-//     thisAnnot.color = '#' + colors[thisAnnot.trackIndexOriginal];
-//     annots[m].annots.push(thisAnnot);
-//   }
-
-//   return annots;
-// }
 
 /**
  * Basic client annotations, as in annotations-basic.html
@@ -183,9 +169,15 @@ function addAnnots(rawAnnots, keys, ideo) {
     m++;
     annots.push({chr: annotsByChr.chr, annots: []});
 
-    [annots, omittedAnnots] =
-      addAnnotsForChr(annots, omittedAnnots, annotsByChr, chrModel,
-        m, keys, ideo);
+    if (ideo.config.annotationsLayout !== 'heatmap-2d') {
+      [annots, omittedAnnots] =
+        addAnnotsForChr(annots, omittedAnnots, annotsByChr, chrModel, m,
+          keys, ideo);
+    } else {
+      [annots, omittedAnnots] =
+        add2dAnnotsForChr(annots, omittedAnnots, annotsByChr, chrModel, m,
+          keys, ideo);
+    }
   }
   return [annots, omittedAnnots];
 }

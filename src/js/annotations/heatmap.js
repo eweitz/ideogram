@@ -230,6 +230,8 @@ function deserializeAnnotsForHeatmap(rawAnnotsContainer) {
     rawAnnotBoxes = rawAnnotsContainer.annots,
     ideo = this;
 
+  console.log('deserializeAnnotsForHeatmap')
+
   heatmapKeyIndexes = [];
   for (i = 0; i < ideo.config.heatmaps.length; i++) {
     heatmapKey = ideo.config.heatmaps[i].key;

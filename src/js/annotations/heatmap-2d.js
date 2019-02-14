@@ -11,6 +11,8 @@ import {
   startHideTrackLabelTimeout, writeTrackLabelContainer, showTrackLabel
 } from './track-labels';
 
+import {defaultHeatmapColors} from './heatmap-lib';
+
 /**
  * Add canvases that will contain annotations.  One canvas per track.
  */
@@ -94,4 +96,39 @@ function drawHeatmaps2d(annotContainers, ideo) {
   }
 }
 
-export {drawHeatmaps2d}
+function add2dAnnotsForChr(annots, omittedAnnots, annotsByChr, chrModel,
+  m, keys, ideo) {
+  var j, k, annot, ra, stop, stopPx,
+    omittedAnnots = [];
+
+  for (j = 0; j < annotsByChr.annots.length; j++) {
+    ra = annotsByChr.annots[j];
+    annot = {};
+
+    annot.tracks = [];
+
+    for (k = 0; k < 3; k++) {
+      annot[keys[k]] = ra[k];
+    }
+
+    for (k = 3; k < keys.length; k++) {
+      annot.tracks.push(defaultHeatmapColors[ra[k]);
+    }
+
+    stop = annot.start + annot.length;
+
+    annot.chr = annotsByChr.chr;
+    annot.chrIndex = m;
+    annot.startPx = ideo.convertBpToPx(chrModel, annot.start);
+    stopPx = ideo.convertBpToPx(chrModel, stop);
+    annot.px = Math.round((annot.startPx + stopPx) / 2);
+
+    annots.push(annot);
+  }
+
+  annots.shift();
+
+  return [annots, omittedAnnots];
+}
+
+export {drawHeatmaps2d, add2dAnnotsForChr}
