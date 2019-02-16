@@ -114,7 +114,7 @@ function afterRawAnnots(ideo) {
   if (ideo.onLoadAnnotsCallback) {
     ideo.onLoadAnnotsCallback();
   }
-  console.log('afterRawAnnots')
+
   if (
     'heatmapThresholds' in config ||
     'metadata' in ideo.rawAnnots &&

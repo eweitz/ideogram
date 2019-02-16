@@ -13,48 +13,49 @@ import {
 } from './track-labels';
 
 /**
- * Add canvases that will contain annotations.  One canvas per track.
+ * Add one canvas that will contain all annotations.  One canvas per chromosome.
  */
-function writeCanvases(chr, chrTop, ideoHeight, ideo) {
-  var j, trackTop, trackWidth, canvas, context, id,
-    contextArray = [],
-    numAnnotTracks = ideo.config.numAnnotTracks;
+function writeCanvas(chr, chrTop, ideoHeight, ideo) {
+  var left, trackWidth, canvas, context, id;
 
   var marginHack = 7; // TODO: Make this dynamic
 
   // Create a canvas for each annotation track on this chromosome
-  for (j = 0; j < numAnnotTracks; j++) {
-    trackWidth = ideo.config.annotationHeight * ideogram.rawAnnots.keys.length - 3;
-    id = chr.id + '-canvas-' + j; // e.g. chr1-9606-canvas-0
-    trackTop = chrTop - trackWidth * (numAnnotTracks - j) - marginHack;
-    canvas = d3.select(ideo.config.container + ' #_ideogramInnerWrap')
-      .append('canvas')
-      .attr('id', id)
-      .attr('width', trackWidth)
-      .attr('height', ideoHeight)
-      .style('position', 'absolute')
-      .style('left', '20px')
-      .style('top', '0px');
-    context = canvas.nodes()[0].getContext('2d');
-    contextArray.push(context);
-  }
 
-  return contextArray;
+  trackWidth = ideo.config.annotationHeight * ideogram.rawAnnots.keys.length - 3;
+  id = chr.id + '-canvas'; // e.g. chr1-9606-canvas
+  // trackTop = chrTop - trackWidth - marginHack;
+  left = (ideo.config.chrWidth * 2) + ideo.config.annotationHeight - 0.5;
+  canvas = d3.select(ideo.config.container + ' #_ideogramInnerWrap')
+    .append('canvas')
+    .attr('id', id)
+    .attr('width', trackWidth)
+    .attr('height', ideoHeight)
+    .style('position', 'absolute')
+    .style('left', left + 'px')
+    .style('top', '0px');
+  context = canvas.nodes()[0].getContext('2d');
+
+  return context;
 }
 
 /**
- * Render annotations on the canvas
+ * Render annotations on the canvas.
+ *
+ * These annotations are 2D; each annotation has many values, each on a track.
  */
-function fillCanvasAnnots(annots, contextArray, chrWidth, ideoMarginTop) {
-  var i, annot, context, x;
+function fillCanvasAnnotValues(annot, context, chrWidth, ideo) {
+  var i, annot, context, x, values,
+    annotHeight = ideo.config.annotationHeight,
+    ideoMarginTop = ideo._layout.margin.top;
 
-  // Fill in the canvas(es) with annotation colors to draw a heatmap
-  for (i = 0; i < annots.length; i++) {
-    annot = annots[i];
-    context = contextArray[annot.trackIndex];
-    context.fillStyle = annot.color;
-    x = annot.trackIndex - 1;
-    context.fillRect(x, annot.startPx + ideoMarginTop, chrWidth, 0.5);
+  values = annot.values;
+
+  // Fill canvas with annotation colors to draw the heatmap
+  for (i = 0; i < values.length; i++) {
+    context.fillStyle = values[i];
+    x = (i - 1) * annotHeight;
+    context.fillRect(x, annot.startPx + ideoMarginTop, chrWidth, annotHeight);
   }
 }
 
@@ -66,29 +67,28 @@ function fillCanvasAnnots(annots, contextArray, chrWidth, ideoMarginTop) {
  * - Support after rotating chromosome on click
  */
 function drawHeatmaps2d(annotContainers, ideo) {
-  var annots, chrTop, contextArray, chrWidth, i, chr,
+  var annot, chrTop, context, chrWidth, i, chr,
+    container = ideo.config.container,
     ideoMarginTop = ideo._layout.margin.top,
-    ideoHeight = ideo.config.chrHeight + ideoMarginTop;
+    ideoHeight = ideo.config.chrHeight + ideoMarginTop,
+    width = ideo.config.annotationHeight * ideogram.rawAnnots.keys.length - 3;
 
-  d3.selectAll(ideo.config.container + ' canvas').remove();
+  d3.selectAll(container + ' canvas').remove();
 
-  // writeTrackLabelContainer(ideo);
+  d3.select(container + ' #_ideogramInnerWrap').style('max-width', width + 'px');
+  d3.select(container + ' #_ideogram').attr('width', width);
+
+  chr = ideo.chromosomesArray[0];
+  chrWidth = ideo.config.chrWidth;
+  chrTop = ideo._layout.getChromosomeSetYTranslate(i);
+
+  context = writeCanvas(chr, chrTop, ideoHeight, ideo);
 
   // Each "annotationContainer" represents annotations for a chromosome
   for (i = 0; i < annotContainers.length; i++) {
-
-    annots = annotContainers[i].annots;
-    chr = ideo.chromosomesArray[i];
-    chrWidth = ideo.config.chrWidth;
-    chrTop = ideo._layout.getChromosomeSetYTranslate(i);
-
-    contextArray = writeCanvases(chr, chrTop, ideoHeight, ideo);
-    fillCanvasAnnots(annots, contextArray, chrWidth, ideoMarginTop);
+    annot = annotContainers[i];
+    fillCanvasAnnotValues(annot, context, chrWidth, ideo);
   }
-
-  d3.selectAll(ideo.config.container + ' canvas')
-    .on('mouseover', function() { showTrackLabel(this, ideo); })
-    .on('mouseout', function() { startHideTrackLabelTimeout(ideo); });
 
   if (ideo.onDrawAnnotsCallback) {
     ideo.onDrawAnnotsCallback();
@@ -105,7 +105,7 @@ function add2dAnnotsForChr(annots, omittedAnnots, annotsByChr, chrModel,
     ra = annotsByChr.annots[j];
     annot = {};
 
-    annot.tracks = [];
+    annot.values = []; // one value per track
 
     for (k = 0; k < 3; k++) {
       annot[keys[k]] = ra[k];
@@ -113,7 +113,7 @@ function add2dAnnotsForChr(annots, omittedAnnots, annotsByChr, chrModel,
 
     for (k = 3; k < keys.length; k++) {
       color = getHeatmapAnnotColor(thresholds, ra[k]);
-      annot.tracks.push(color);
+      annot.values.push(color);
     }
 
     stop = annot.start + annot.length;
