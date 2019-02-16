@@ -113,4 +113,65 @@ function inflateHeatmaps(ideo) {
   ideo.config.annotationTracks = annotationTracks;
 }
 
-export {getLabels, inflateHeatmaps, defaultHeatmapColors};
+/**
+ * Given annotation value (m), should it use the color in this threshold?
+ */
+function shouldUseThresholdColor(m, numThresholds, value, prevThreshold,
+  threshold) {
+
+  return (
+    // If this is the last threshold, and
+    // its value is "+" and the value is above the previous threshold...
+    m === numThresholds && (
+      threshold === '+' && value > prevThreshold
+    ) ||
+
+    // ... or if the value matches the threshold...
+    value === threshold ||
+
+    // ... or if this isn't the first or last threshold, and
+    // the value is between this threshold and the previous one...
+    m !== 0 && m !== numThresholds && (
+      value <= threshold &&
+      value > prevThreshold
+    ) ||
+
+    // ... or if this is the first threshold and the value is
+    // at or below the threshold
+    m === 0 && value <= threshold
+  );
+}
+
+/**
+ * Determine the color of the heatmap annotation.
+ */
+function getHeatmapAnnotColor(thresholds, value) {
+  var m, numThresholds, thresholdList, threshold, tvNum, thresholdColor,
+    prevThreshold, useThresholdColor, color;
+
+  for (m = 0; m < thresholds.length; m++) {
+    numThresholds = thresholds.length - 1;
+    thresholdList = thresholds[m];
+    threshold = thresholdList[0];
+
+    // The threshold value is usually a number,
+    // but can also be a "+" character indicating that
+    // this threshold is anything greater than the previous threshold.
+    tvNum = parseFloat(threshold);
+    if (isNaN(tvNum) === false) threshold = tvNum;
+    if (m !== 0) prevThreshold = parseFloat(thresholds[m - 1][0]);
+    thresholdColor = thresholdList[1];
+
+    useThresholdColor = shouldUseThresholdColor(m, numThresholds, value,
+      prevThreshold, threshold);
+
+    if (useThresholdColor) color = thresholdColor;
+  }
+
+  return color;
+}
+
+export {
+  getLabels, inflateHeatmaps, inflateThresholds, defaultHeatmapColors,
+  getHeatmapAnnotColor
+};

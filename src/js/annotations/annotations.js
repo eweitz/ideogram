@@ -12,6 +12,7 @@ import naturalSort from 'es6-natural-sort';
 import {d3} from '../lib';
 import {BedParser} from '../parsers/bed-parser';
 import {drawHeatmaps, deserializeAnnotsForHeatmap} from './heatmap';
+import {inflateThresholds} from './heatmap-lib';
 import {inflateHeatmaps} from './heatmap-collinear';
 import {
   onLoadAnnots, onDrawAnnots, startHideAnnotTooltipTimeout,
@@ -115,13 +116,15 @@ function afterRawAnnots(ideo) {
   }
   console.log('afterRawAnnots')
   if (
-    config.annotationsLayout === 'heatmap' &&
-    ('heatmapThresholds' in config ||
-      'metadata' in ideo.rawAnnots &&
-      'heatmapThresholds' in ideo.rawAnnots.metadata
-    )
+    'heatmapThresholds' in config ||
+    'metadata' in ideo.rawAnnots &&
+    'heatmapThresholds' in ideo.rawAnnots.metadata
   ) {
-    inflateHeatmaps(ideo);
+    if (config.annotationsLayout === 'heatmap') {
+      inflateHeatmaps(ideo);
+    } else if (config.annotationsLayout === 'heatmap-2d') {
+      ideo.config.heatmapThresholds = inflateThresholds(ideo);
+    }
   }
 
   if (config.heatmaps) {
