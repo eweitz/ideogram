@@ -1,30 +1,21 @@
 /**
- * @fileoverview Functions for heatmaps of genome annotations.
- * Heatmaps provide an easy way to visualize very dense annotation data.
- * Unlike the rest of Ideogram's graphics, which use SVG, heatmaps are
- * rendered using the Canvas element.
+ * @fileoverview Functions for 2D heatmaps of genome annotations.
+ * 2D heatmaps enable showing many (100+) tracks of data in one dimension,
+ * for features (e.g. genes) along a dimension of genomic coordinates in
+ * chromosome context.
  */
 
 import {d3} from '../lib';
 import {getHeatmapAnnotColor} from './heatmap-lib';
 
-import {
-  startHideTrackLabelTimeout, writeTrackLabelContainer, showTrackLabel
-} from './track-labels';
-
 /**
  * Add one canvas that will contain all annotations.  One canvas per chromosome.
  */
-function writeCanvas(chr, chrTop, ideoHeight, ideo) {
+function writeCanvas(chr, ideoHeight, ideo) {
   var left, trackWidth, canvas, context, id;
 
-  var marginHack = 7; // TODO: Make this dynamic
-
-  // Create a canvas for each annotation track on this chromosome
-
-  trackWidth = ideo.config.annotationHeight * ideogram.rawAnnots.keys.length - 3;
+  trackWidth = ideo.config.annotationHeight * ideo.rawAnnots.keys.length - 3;
   id = chr.id + '-canvas'; // e.g. chr1-9606-canvas
-  // trackTop = chrTop - trackWidth - marginHack;
   left = (ideo.config.chrWidth * 2) + ideo.config.annotationHeight - 0.5;
   canvas = d3.select(ideo.config.container + ' #_ideogramInnerWrap')
     .append('canvas')
@@ -44,7 +35,7 @@ function writeCanvas(chr, chrTop, ideoHeight, ideo) {
  *
  * These annotations are 2D; each annotation has many values, each on a track.
  */
-function fillCanvasAnnotValues(annot, context, chrWidth, ideo) {
+function fillCanvasAnnotValues(annot, context, ideo) {
   var i, annot, context, x, values,
     annotHeight = ideo.config.annotationHeight,
     ideoMarginTop = ideo._layout.margin.top;
@@ -55,7 +46,7 @@ function fillCanvasAnnotValues(annot, context, chrWidth, ideo) {
   for (i = 0; i < values.length; i++) {
     context.fillStyle = values[i];
     x = (i - 1) * annotHeight;
-    context.fillRect(x, annot.startPx + ideoMarginTop, chrWidth, annotHeight);
+    context.fillRect(x, annot.startPx + ideoMarginTop, annotHeight, 2);
   }
 }
 
@@ -67,7 +58,7 @@ function fillCanvasAnnotValues(annot, context, chrWidth, ideo) {
  * - Support after rotating chromosome on click
  */
 function drawHeatmaps2d(annotContainers, ideo) {
-  var annot, chrTop, context, chrWidth, i, chr,
+  var annot, context, i, chr,
     container = ideo.config.container,
     ideoMarginTop = ideo._layout.margin.top,
     ideoHeight = ideo.config.chrHeight + ideoMarginTop,
@@ -79,15 +70,13 @@ function drawHeatmaps2d(annotContainers, ideo) {
   d3.select(container + ' #_ideogram').attr('width', width);
 
   chr = ideo.chromosomesArray[0];
-  chrWidth = ideo.config.chrWidth;
-  chrTop = ideo._layout.getChromosomeSetYTranslate(i);
 
-  context = writeCanvas(chr, chrTop, ideoHeight, ideo);
+  context = writeCanvas(chr, ideoHeight, ideo);
 
   // Each "annotationContainer" represents annotations for a chromosome
   for (i = 0; i < annotContainers.length; i++) {
     annot = annotContainers[i];
-    fillCanvasAnnotValues(annot, context, chrWidth, ideo);
+    fillCanvasAnnotValues(annot, context, ideo);
   }
 
   if (ideo.onDrawAnnotsCallback) {
