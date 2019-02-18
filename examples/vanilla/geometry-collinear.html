@@ -77,6 +77,34 @@
       ]
     }];
 
+    function setOnChromosomeClick() {
+      d3.selectAll(ideogram.selector + ' .chromosome').on('click', function () {
+        chr = this.id.split('-')[0].split('chr')[1];
+        if (ideogram.config.annotationsLayout === 'heatmap-2d') {
+          thisConfig = config;
+        } else {
+          thisConfig = {
+            debug: true,
+            organism: 'human',
+            orientation: 'vertical',
+            chromosome: chr,
+            chrHeight: 450,
+            chrMargin: 10,
+            showFullyBanded: false,
+            showBandLabels: false,
+            legend: legend,
+            onLoad: setOnChromosomeClick,
+            heatmapThresholds: [0, 0.13, 0.27, 0.4, 0.53, 0.67, 0.8, 0.93, 1.1, 1.2, 1.33, 1.47, 1.6, 1.73, 1.87, 2],
+            annotationHeight: 3,
+            annotationsLayout: 'heatmap-2d',
+            annotationsPath: 'https://www.googleapis.com/storage/v1/b/ideogram/o/oligodendroglioma%2finfercnv.observations.optimized.txt?alt=media'
+          }
+        }
+        delete ideogram;
+        ideogram = new Ideogram(thisConfig);
+      });
+    }
+
     config = {
       organism: 'human',
       orientation: 'horizontal',
@@ -84,6 +112,7 @@
       chrHeight: 80,
       // chrMargin: 10,
       showFullyBanded: false,
+      onLoad: setOnChromosomeClick,
       legend: legend,
       annotationHeight: 30,
       annotationsLayout: 'heatmap',
