@@ -19,7 +19,8 @@ import {
   updateDisplayedTracks, initAnnotSettings, fetchAnnots, drawAnnots,
   getHistogramBars, drawHeatmaps, deserializeAnnotsForHeatmap, fillAnnots,
   drawProcessedAnnots, drawSynteny, startHideAnnotTooltipTimeout,
-  showAnnotTooltip, onWillShowAnnotTooltip, setOriginalTrackIndexes
+  showAnnotTooltip, onWillShowAnnotTooltip, setOriginalTrackIndexes,
+  afterRawAnnots
 } from './annotations/annotations'
 
 import {
@@ -86,6 +87,7 @@ export default class Ideogram {
     this.showAnnotTooltip = showAnnotTooltip;
     this.onWillShowAnnotTooltip = onWillShowAnnotTooltip;
     this.setOriginalTrackIndexes = setOriginalTrackIndexes;
+    this.afterRawAnnots = afterRawAnnots;
 
     // Variables and functions from services.js
     this.esearch = esearch;

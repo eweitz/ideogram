@@ -77,6 +77,23 @@
       ]
     }];
 
+    function setMatrixRawAnnotsCache() {
+      if (typeof matrixRawAnnotsCache === 'undefined') {
+        matrixRawAnnotsCache = ideogram.rawAnnotsResponse;
+      }
+    }
+
+    // Monkey patch d3.text to intercept request and
+    // return cached response for raw matrix data
+    originalD3Text = d3.text;
+    d3.text = function(url) {
+      if (url === ideogram.config.annotationsPath && typeof matrixRawAnnotsCache !== 'undefined') {
+        return new Promise(function(resolve) { resolve(matrixRawAnnotsCache) });
+      } else {
+        return originalD3Text(url);
+      }
+    }
+
     function setOnChromosomeClick() {
       d3.selectAll(ideogram.selector + ' .chromosome').on('click', function () {
         chr = this.id.split('-')[0].split('chr')[1];
@@ -94,13 +111,14 @@
             showBandLabels: false,
             legend: legend,
             onLoad: setOnChromosomeClick,
+            onLoadAnnots: setMatrixRawAnnotsCache,
+            annotationsPath: 'https://www.googleapis.com/storage/v1/b/ideogram/o/oligodendroglioma%2finfercnv.observations.optimized.txt?alt=media',
             heatmapThresholds: [0, 0.13, 0.27, 0.4, 0.53, 0.67, 0.8, 0.93, 1.1, 1.2, 1.33, 1.47, 1.6, 1.73, 1.87, 2],
             annotationHeight: 3,
             annotationsLayout: 'heatmap-2d',
-            annotationsPath: 'https://www.googleapis.com/storage/v1/b/ideogram/o/oligodendroglioma%2finfercnv.observations.optimized.txt?alt=media'
           }
         }
-        delete ideogram;
+
         ideogram = new Ideogram(thisConfig);
       });
     }

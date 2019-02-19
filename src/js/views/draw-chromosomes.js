@@ -133,6 +133,10 @@ function setOverflowScroll() {
     // ideoWidth = config.chrHeight + chrOffset.x + 1;
   }
 
+  if (config.annotationsLayout === 'heatmap-2d') {
+    return;
+  }
+
   ideoWidth = Math.round(ideoWidth * ploidy / config.rows);
   if (ideo._layout._class === 'SmallLayout') ideoWidth += 40;
 

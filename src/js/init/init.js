@@ -20,7 +20,7 @@ function isHeterogameticChromosome(chrModel, chrIndex, ideo) {
 }
 
 function prepareChromosomes(bandsArray, chrs, taxid, chrIndex, ideo) {
-  var j, bands, chromosome, chrModel
+  var j, bands, chromosome, chrModel;
 
   for (j = 0; j < chrs.length; j++) {
     chromosome = chrs[j];

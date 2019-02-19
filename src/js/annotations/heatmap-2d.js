@@ -11,16 +11,15 @@ import {getHeatmapAnnotColor} from './heatmap-lib';
 /**
  * Add one canvas that will contain all annotations.  One canvas per chromosome.
  */
-function writeCanvas(chr, ideoHeight, ideo) {
-  var left, trackWidth, canvas, context, id;
+function writeCanvas(chr, ideoHeight, width, ideo) {
+  var left,  canvas, context, id;
 
-  trackWidth = ideo.config.annotationHeight * ideo.rawAnnots.keys.length - 3;
   id = chr.id + '-canvas'; // e.g. chr1-9606-canvas
   left = (ideo.config.chrWidth * 2) + ideo.config.annotationHeight - 0.5;
   canvas = d3.select(ideo.config.container + ' #_ideogramInnerWrap')
     .append('canvas')
     .attr('id', id)
-    .attr('width', trackWidth)
+    .attr('width', width)
     .attr('height', ideoHeight)
     .style('position', 'absolute')
     .style('left', left + 'px')
@@ -62,7 +61,7 @@ function drawHeatmaps2d(annotContainers, ideo) {
     container = ideo.config.container,
     ideoMarginTop = ideo._layout.margin.top,
     ideoHeight = ideo.config.chrHeight + ideoMarginTop,
-    width = ideo.config.annotationHeight * ideogram.rawAnnots.keys.length - 3;
+    width = ideo.config.annotationHeight * annotContainers[0].values.length;
 
   d3.selectAll(container + ' canvas').remove();
 
@@ -71,7 +70,7 @@ function drawHeatmaps2d(annotContainers, ideo) {
 
   chr = ideo.chromosomesArray[0];
 
-  context = writeCanvas(chr, ideoHeight, ideo);
+  context = writeCanvas(chr, ideoHeight, width, ideo);
 
   // Each "annotationContainer" represents annotations for a chromosome
   for (i = 0; i < annotContainers.length; i++) {

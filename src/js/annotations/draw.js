@@ -46,8 +46,10 @@ function drawAnnots(friendlyAnnots) {
     ideo = this,
     chrs = ideo.chromosomes[ideo.config.taxid]; // TODO: multiorganism
 
-  // Occurs when filtering
-  if ('annots' in friendlyAnnots[0]) {
+  if (
+    'annots' in friendlyAnnots[0] || // Occurs when filtering
+    'values' in friendlyAnnots[0] // Occurs when drawing cached expression matrices
+  ) {
     return ideo.drawProcessedAnnots(friendlyAnnots);
   }
 

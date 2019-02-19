@@ -104,8 +104,9 @@ function validateAnnotsUrl(annotsUrl) {
   return extension;
 }
 
-function afterRawAnnots(ideo) {
-  var config = ideo.config;
+function afterRawAnnots() {
+  var ideo = this,
+    config = ideo.config;
   // Ensure annots are ordered by chromosome
   ideo.rawAnnots.annots = ideo.rawAnnots.annots.sort(function(a, b) {
     return naturalSort(a.chr, b.chr);
@@ -147,8 +148,9 @@ function fetchAnnots(annotsUrl) {
   if (annotsUrl.slice(0, 4) !== 'http' && !is2dHeatmap) {
     d3.json(ideo.config.annotationsPath)
       .then(function(data) {
+        ideo.rawAnnotsResponse = data;
         ideo.rawAnnots = data;
-        afterRawAnnots(ideo);
+        ideo.afterRawAnnots();
       });
     return;
   }
@@ -156,11 +158,12 @@ function fetchAnnots(annotsUrl) {
   extension = (is2dHeatmap ? '' : validateAnnotsUrl(annotsUrl));
 
   d3.text(annotsUrl).then(function(text) {
+    ideo.rawAnnotsResponse = text;
     if (is2dHeatmap) {
       var parser = new ExpressionMatrixParser(text, ideo);
       parser.setRawAnnots().then(function(d) {
         ideo.rawAnnots = d;
-        afterRawAnnots(ideo);
+        ideo.afterRawAnnots();
       });
     } else {
       if (extension === 'bed') {
@@ -168,7 +171,7 @@ function fetchAnnots(annotsUrl) {
       } else {
         ideo.rawAnnots = JSON.parse(text);
       }
-      afterRawAnnots(ideo);
+      ideo.afterRawAnnots();
     }
   });
 }
@@ -207,5 +210,6 @@ export {
   updateDisplayedTracks, initAnnotSettings, fetchAnnots, drawAnnots,
   getHistogramBars, drawHeatmaps, deserializeAnnotsForHeatmap, fillAnnots,
   drawProcessedAnnots, drawSynteny, startHideAnnotTooltipTimeout,
-  showAnnotTooltip, onWillShowAnnotTooltip, setOriginalTrackIndexes
+  showAnnotTooltip, onWillShowAnnotTooltip, setOriginalTrackIndexes,
+  afterRawAnnots
 }
