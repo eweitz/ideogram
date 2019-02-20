@@ -148,8 +148,8 @@ function fetchAnnots(annotsUrl) {
   if (annotsUrl.slice(0, 4) !== 'http' && !is2dHeatmap) {
     d3.json(ideo.config.annotationsPath)
       .then(function(data) {
-        ideo.rawAnnotsResponse = data;
-        ideo.rawAnnots = data;
+        ideo.rawAnnotsResponse = data; // Preserve truly raw response content
+        ideo.rawAnnots = data; // Sometimes gets partially processed
         ideo.afterRawAnnots();
       });
     return;

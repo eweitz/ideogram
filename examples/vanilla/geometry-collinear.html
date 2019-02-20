@@ -81,10 +81,16 @@
       ]
     }];
 
+    // Cache raw matrix data and genome annotation data,
+    // to speed up load of 2D genomic heatmaps
     rawMatrixPath = 'https://www.googleapis.com/storage/v1/b/ideogram/o/oligodendroglioma%2finfercnv.observations.optimized.txt?alt=media';
     d3.text(rawMatrixPath).then(function(data) {
       matrixRawAnnotsCache = data;
-    })
+    });
+    genomeAnnotationPath = '../../../data/annotations/Homo_sapiens,_Ensembl_80.tsv';
+    d3.text(genomeAnnotationPath).then(function(data) {
+      genomeAnnotationCache = data;
+    });
 
     // Monkey patch d3.text to intercept request and
     // return cached response for raw matrix data
@@ -92,6 +98,8 @@
     d3.text = function(url) {
       if (url === rawMatrixPath && typeof matrixRawAnnotsCache !== 'undefined') {
         return new Promise(function(resolve) { resolve(matrixRawAnnotsCache) });
+      } else if (/Ensembl/.test(url) && typeof genomeAnnotationCache !== 'undefined') {
+        return new Promise(function(resolve) { resolve(genomeAnnotationCache) });
       } else {
         return originalD3Text(url);
       }
