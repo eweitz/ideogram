@@ -2090,7 +2090,6 @@ describe('Ideogram', function() {
       var style = d3.select('#_ideogramTrackLabelContainer > div').node().style;
       assert.equal(style.left, '13px');
       assert.equal(style.top, '2px');
-      console.log('in demarcating test callback')
       done();
     }
 
@@ -2126,5 +2125,42 @@ describe('Ideogram', function() {
       onDrawAnnots: callback
     });
   });
+
+  it('should support 2D heatmaps', function(done) {
+
+    function callback() {
+      var canvas = d3.select('#chr5-9606-canvas').node();
+      assert.equal(canvas.width, 429);
+      assert.equal(canvas.height, 480);
+      done();
+    }
+
+    var legend = [{
+      name: 'Expression level',
+      rows: [
+        {name: 'Low', color: '#33F'},
+        {name: 'Normal', color: '#CCC'},
+        {name: 'High', color: '#F33'}
+      ]
+    }];
+
+    ideogram = new Ideogram({
+      organism: 'human',
+      orientation: 'vertical',
+      chromosome: '5',
+      chrHeight: 450,
+      chrMargin: 10,
+      showFullyBanded: false,
+      showBandLabels: false,
+      legend: legend,
+      heatmapThresholds: [0, 0.13, 0.27, 0.4, 0.53, 0.67, 0.8, 0.93, 1.1, 1.2, 1.33, 1.47, 1.6, 1.73, 1.87, 2],
+      annotationHeight: 3,
+      annotationsLayout: 'heatmap-2d',
+      dataDir: '/dist/data/bands/native/',
+      annotationsPath: 'https://www.googleapis.com/storage/v1/b/ideogram/o/oligodendroglioma%2finfercnv.observations.optimized.txt?alt=media',
+      onDrawAnnots: callback
+    });
+  });
+
 
 });
