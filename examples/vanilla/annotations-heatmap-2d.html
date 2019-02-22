@@ -28,8 +28,9 @@
   <a href="https://github.com/eweitz/ideogram/blob/gh-pages/geometry-collinear.html" target="_blank">Source</a>
   <p>
     Gene expression in all cells of four <a href="https://en.wikipedia.org/wiki/Oligodendroglioma">brain cancer</a>
-    samples, showing 1p and 19q deletions.  
+    samples, showing deletion of 1p.
     Data from <a href="https://github.com/broadinstitute/inferCNV">inferCNV</a>.
+    See <a href="geometry-collinear">Geometry, collinear</a> for a more integrated example.
   </p>
 
   <script type="text/javascript">
@@ -46,13 +47,10 @@
     }];
 
     config = {
-      debug: true,
       organism: 'human',
       orientation: 'vertical',
-      chromosome: '5',
+      chromosome: '1',
       chrHeight: 450,
-      chrMargin: 10,
-      showFullyBanded: false,
       showBandLabels: false,
       legend: legend,
       heatmapThresholds: [0, 0.13, 0.27, 0.4, 0.53, 0.67, 0.8, 0.93, 1.1, 1.2, 1.33, 1.47, 1.6, 1.73, 1.87, 2],
