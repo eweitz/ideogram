@@ -5,7 +5,7 @@
  */
 
 import {d3} from '../lib';
-import getLabels from './heatmap-lib';
+import {getLabels} from './heatmap-lib';
 
 /**
  * Start a timer that, upon expiring, hides the track label.

@@ -5,7 +5,15 @@
 
 import {d3} from '../lib';
 import {writeTrackLabels} from './track-labels-collinear';
-import {inflateHeatmaps} from './heatmap-lib';
+
+var defaultHeatmapColors = [
+  ['00B', 'F00'],
+  ['00B', 'DDD', 'F00'],
+  ['00B', 'AAB', 'FAA', 'F00'],
+  ['00B', 'AAB', 'DDD', 'FAA', 'F00'],
+  [], [], [], [], [], [], [], [], [], [], [], // TODO: Use color palette module
+  ['00D', '22D', '44D', '66D', '88D', 'AAD', 'CCD', 'DDD', 'FCC', 'FAA', 'F88', 'F66', 'F44', 'F22', 'F00']
+]
 
 /**
  * Add canvases that will contain annotations.  One canvas per track.

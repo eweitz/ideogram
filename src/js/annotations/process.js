@@ -1,3 +1,5 @@
+import {add2dAnnotsForChr} from './heatmap-2d';
+
 // Default colors for tracks of annotations
 var colorMap = [
   ['F00'], // If there is 1 track, then color it red.
@@ -57,7 +59,7 @@ function addClientAnnot(annots, annot, ra, m, ideo) {
 /**
  * Add sparse server annotations, as in annotations-track-filters.html
  */
-function addSparseServertAnnot(annot, ra, omittedAnnots, annots, m, ideo) {
+function addSparseServerAnnot(annot, ra, omittedAnnots, annots, m, ideo) {
   var colors = colorMap[ideo.numAvailTracks - 1];
 
   annot.trackIndex = ra[3];
@@ -77,22 +79,6 @@ function addSparseServertAnnot(annot, ra, omittedAnnots, annots, m, ideo) {
 
   return [annots, omittedAnnots];
 }
-
-// TODO: This needs a working test case.
-// function addDenseServerAnnot(keys, annots, annot, m) {
-//   var n, thisAnnot;
-
-//   // Dense server annotations
-//   for (n = 4; n < keys.length; n++) {
-//     thisAnnot = Object.assign({}, annot); // copy by value
-//     thisAnnot.trackIndex = n - 4;
-//     thisAnnot.trackIndexOriginal = n - 3;
-//     thisAnnot.color = '#' + colors[thisAnnot.trackIndexOriginal];
-//     annots[m].annots.push(thisAnnot);
-//   }
-
-//   return annots;
-// }
 
 /**
  * Basic client annotations, as in annotations-basic.html
@@ -117,7 +103,7 @@ function addAnnot(annot, keys, ra, omittedAnnots, annots, m, ideo) {
     annots = addClientAnnot(annots, annot, ra, m, ideo);
   } else if (keys[3] === 'trackIndex' && ideo.numAvailTracks !== 1) {
     [annots, omittedAnnots] = 
-      addSparseServertAnnot(annot, ra, omittedAnnots, annots, m, ideo);
+      addSparseServerAnnot(annot, ra, omittedAnnots, annots, m, ideo);
   // } else if (
   //   keys.length > 3 &&
   //   keys[3] in {trackIndex: 1, color: 1, shape: 1} === false &&
@@ -183,18 +169,25 @@ function addAnnots(rawAnnots, keys, ideo) {
     m++;
     annots.push({chr: annotsByChr.chr, annots: []});
 
-    [annots, omittedAnnots] =
-      addAnnotsForChr(annots, omittedAnnots, annotsByChr, chrModel,
-        m, keys, ideo);
+    if (ideo.config.annotationsLayout !== 'heatmap-2d') {
+      [annots, omittedAnnots] =
+        addAnnotsForChr(annots, omittedAnnots, annotsByChr, chrModel, m,
+          keys, ideo);
+    } else {
+      [annots, omittedAnnots] =
+        add2dAnnotsForChr(annots, omittedAnnots, annotsByChr, chrModel, m,
+          keys, ideo);
+    }
   }
   return [annots, omittedAnnots];
 }
 
 function sendTrackAndAnnotWarnings(omittedAnnots, ideo) {
   var numOmittedTracks,
-    numTracks = ideo.config.numAnnotTracks;;
+    layout = ideo.config.annotationsLayout,
+    numTracks = ideo.config.numAnnotTracks;
 
-  if (numTracks > 10) {
+  if (!/heatmap/.test(layout) && numTracks > 10) {
     console.error(
       'Ideogram only displays up to 10 tracks at a time.  ' +
       'You specified ' + numTracks + ' tracks.  ' +

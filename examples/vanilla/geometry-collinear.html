@@ -34,6 +34,10 @@
     <a href="annotations-heatmap.html">parallel arrangement</a>, this ideogram is
     collinear -- the chromosomes form a line together.
   </p>
+  <p>
+    Click chromosomes to see gene expression in single-cell resolution.
+    The default view shows average expression among all cells in each sample.
+  </p>
 
   <script type="text/javascript">
 
@@ -77,15 +81,64 @@
       ]
     }];
 
+    // Cache raw matrix data and genome annotation data,
+    // to speed up load of 2D genomic heatmaps
+    rawMatrixPath = 'https://www.googleapis.com/storage/v1/b/ideogram/o/oligodendroglioma%2finfercnv.observations.optimized.txt?alt=media';
+    d3.text(rawMatrixPath).then(function(data) {
+      matrixRawAnnotsCache = data;
+    });
+    genomeAnnotationPath = '../../../data/annotations/Homo_sapiens,_Ensembl_80.tsv';
+    d3.text(genomeAnnotationPath).then(function(data) {
+      genomeAnnotationCache = data;
+    });
+
+    // Monkey patch d3.text to intercept request and
+    // return cached response for raw matrix data
+    originalD3Text = d3.text;
+    d3.text = function(url) {
+      if (url === rawMatrixPath && typeof matrixRawAnnotsCache !== 'undefined') {
+        return new Promise(function(resolve) { resolve(matrixRawAnnotsCache) });
+      } else if (/Ensembl/.test(url) && typeof genomeAnnotationCache !== 'undefined') {
+        return new Promise(function(resolve) { resolve(genomeAnnotationCache) });
+      } else {
+        return originalD3Text(url);
+      }
+    }
+
+    // Toggle between collinear multi-chromosome ideogram with
+    // average-expression heatmaps and single-chromosome ideogram
+    // with raw single-cell expression heatmaps.
+    function setOnChromosomeClick() {
+      d3.selectAll(ideogram.selector + ' .chromosome').on('click', function () {
+        chr = this.id.split('-')[0].split('chr')[1];
+        if (ideogram.config.annotationsLayout === 'heatmap-2d') {
+          thisConfig = config;
+        } else {
+          thisConfig = {
+            organism: 'human',
+            chromosome: chr,
+            chrHeight: 425,
+            showBandLabels: false,
+            legend: legend,
+            onLoad: setOnChromosomeClick,
+            annotationsPath: rawMatrixPath,
+            heatmapThresholds: [0, 0.13, 0.27, 0.4, 0.53, 0.67, 0.8, 0.93, 1.1, 1.2, 1.33, 1.47, 1.6, 1.73, 1.87, 2],
+            annotationHeight: 3,
+            annotationsLayout: 'heatmap-2d',
+          }
+        }
+
+        ideogram = new Ideogram(thisConfig);
+      });
+    }
+
     config = {
       organism: 'human',
       orientation: 'horizontal',
       geometry: 'collinear',
       chrHeight: 80,
       chrMargin: 10,
-      showFullyBanded: false,
-      // showChromosomeLabels: false,
-      rotatable: false,
+      onLoad: setOnChromosomeClick,
       legend: legend,
       annotationHeight: 30,
       annotationsLayout: 'heatmap',

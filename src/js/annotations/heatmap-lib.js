@@ -6,6 +6,15 @@ var reservedTrackKeys = [
   'name', 'start', 'length', 'trackIndex', 'trackIndexOriginal', 'color'
 ];
 
+var defaultHeatmapColors = [
+  ['00B', 'F00'],
+  ['00B', 'DDD', 'F00'],
+  ['00B', 'AAB', 'FAA', 'F00'],
+  ['00B', 'AAB', 'DDD', 'FAA', 'F00'],
+  [], [], [], [], [], [], [], [], [], [], [], // TODO: Use color palette module
+  ['00D', '22D', '44D', '66D', '88D', 'AAD', 'CCD', 'DDD', 'FCC', 'FAA', 'F88', 'F66', 'F44', 'F22', 'F00']
+]
+
 /**
  * Get label text for displayed tracks from annotation container metadata,
  * heatmap keys, or annotation container keys
@@ -35,4 +44,134 @@ function getLabels(ideo) {
   return labels;
 }
 
-export default getLabels;
+/**
+ * Apply heatmap thresholds that are passed in as annotation metadata
+ */
+function inflateThresholds(ideo) {
+  var thresholds, colors, crudeThresholds,
+    rawAnnots = ideo.rawAnnots;
+
+  if (
+    rawAnnots.metadata && !rawAnnots.metadata.heatmapThresholds &&
+    !ideo.config.heatmapThresholds
+  ) {
+    return;
+  }
+
+  if (ideo.config.heatmapThresholds) {
+    thresholds = ideo.config.heatmapThresholds;
+  } else {
+    thresholds = ideo.rawAnnots.metadata.heatmapThresholds;
+  }
+  
+  colors = defaultHeatmapColors[thresholds.length - 1];
+  thresholds = thresholds.map((d, i) => {
+    return [d, '#' + colors[i]];
+  });
+
+  // Coarsen thresholds, emphasize outliers, widen normal range.
+  // TODO: Generalize this for arbitrary number of thresholds.
+  crudeThresholds = [
+    [thresholds[4][0], thresholds[0][1]],
+    [thresholds[6][0], thresholds[3][1]],
+    [thresholds[9][0], thresholds[7][1]],
+    [thresholds[11][0], thresholds[10][1]],
+    [thresholds[14][0], thresholds[14][1]]
+  ]
+
+  thresholds = crudeThresholds;
+
+  thresholds[thresholds.length - 1][0] = '+';
+
+  return thresholds;
+}
+
+/**
+ * Set needed configuration options from raw annotation data.
+ * Simplifies heatmap API by inferring reasonable defaults.
+ */
+function inflateHeatmaps(ideo) {
+  var i, labels, heatmaps, annotationTracks, rawAnnots, displayedTracks,
+    thresholds = ideo.config.heatmapThresholds;
+
+  heatmaps = [];
+  rawAnnots = ideo.rawAnnots;
+  labels = rawAnnots.keys.slice(3,);
+
+  annotationTracks = [];
+  displayedTracks = [];
+  if (rawAnnots.metadata || !isNaN(thresholds[0])) thresholds = inflateThresholds(ideo);
+
+  for (i = 0; i < labels.length; i++) {
+    heatmaps.push({key: labels[i], thresholds: thresholds});
+    annotationTracks.push({id: labels[i]});
+    displayedTracks.push(i + 1)
+  }
+  ideo.config.annotationsNumTracks = labels.length;
+  ideo.config.annotationsDisplayedTracks = displayedTracks;
+  ideo.config.heatmaps = heatmaps;
+  ideo.config.annotationTracks = annotationTracks;
+}
+
+/**
+ * Given annotation value (m), should it use the color in this threshold?
+ */
+function shouldUseThresholdColor(m, numThresholds, value, prevThreshold,
+  threshold) {
+
+  return (
+    // If this is the last threshold, and
+    // its value is "+" and the value is above the previous threshold...
+    m === numThresholds && (
+      threshold === '+' && value > prevThreshold
+    ) ||
+
+    // ... or if the value matches the threshold...
+    value === threshold ||
+
+    // ... or if this isn't the first or last threshold, and
+    // the value is between this threshold and the previous one...
+    m !== 0 && m !== numThresholds && (
+      value <= threshold &&
+      value > prevThreshold
+    ) ||
+
+    // ... or if this is the first threshold and the value is
+    // at or below the threshold
+    m === 0 && value <= threshold
+  );
+}
+
+/**
+ * Determine the color of the heatmap annotation.
+ */
+function getHeatmapAnnotColor(thresholds, value) {
+  var m, numThresholds, thresholdList, threshold, tvNum, thresholdColor,
+    prevThreshold, useThresholdColor, color;
+
+  for (m = 0; m < thresholds.length; m++) {
+    numThresholds = thresholds.length - 1;
+    thresholdList = thresholds[m];
+    threshold = thresholdList[0];
+
+    // The threshold value is usually a number,
+    // but can also be a "+" character indicating that
+    // this threshold is anything greater than the previous threshold.
+    tvNum = parseFloat(threshold);
+    if (isNaN(tvNum) === false) threshold = tvNum;
+    if (m !== 0) prevThreshold = parseFloat(thresholds[m - 1][0]);
+    thresholdColor = thresholdList[1];
+
+    useThresholdColor = shouldUseThresholdColor(m, numThresholds, value,
+      prevThreshold, threshold);
+
+    if (useThresholdColor) color = thresholdColor;
+  }
+
+  return color;
+}
+
+export {
+  getLabels, inflateHeatmaps, inflateThresholds, defaultHeatmapColors,
+  getHeatmapAnnotColor
+};
