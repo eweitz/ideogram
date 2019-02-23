@@ -3,6 +3,11 @@
  * 2D heatmaps enable showing many (100+) tracks of data in one dimension,
  * for features (e.g. genes) along a dimension of genomic coordinates in
  * chromosome context.
+ * 
+ * TO DO:
+ * - Horizontal orientation
+ * - Multiple chromosomes
+ * - Non-human organisms
  */
 
 import {d3} from '../lib';
