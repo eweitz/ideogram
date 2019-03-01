@@ -85,7 +85,8 @@ function reportDebugTimings(config, t0, t0A) {
 function finishInit(bandsArray, t0) {
   var t0A = new Date().getTime(),
     ideo = this,
-    config = ideo.config;
+    config = ideo.config,
+    confAnnots = config.annotations;
 
   ideo.initDrawChromosomes(bandsArray);
 
@@ -94,7 +95,18 @@ function finishInit(bandsArray, t0) {
   processLabels(config, ideo);
 
   if (config.brush) ideo.createBrush(config.brush);
-  if (config.annotations) ideo.drawAnnots(config.annotations);
+
+  if (confAnnots) {
+    if (Array.isArray(confAnnots)) {
+      ideo.drawAnnots(confAnnots);
+    } else {
+      // Enable client-side-defined annotations to be formatted
+      // like the wider variety of server-side-defined annotations.
+      // Supports https://github.com/eweitz/ideogram/issues/137
+      ideo.rawAnnots = confAnnots;
+      processAnnots(ideo);
+    }
+  }
 
   reportDebugTimings(config, t0, t0A);
 

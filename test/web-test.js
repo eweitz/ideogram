@@ -493,6 +493,44 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
+  it('should support trackIndex in annotations option', function(done) {
+    // Tests use case from https://github.com/eweitz/ideogram/issues/137
+
+    function callback() {
+      annots = d3.selectAll('.annot').nodes();
+      transform1 = annots[0].getAttribute('transform');
+      transform2 = annots[1].getAttribute('transform');
+      assert.equal(transform1, 'translate(0,18)');
+      assert.equal(transform2, 'translate(17,28)');
+      done();
+    }
+
+    var annotationTracks = [
+      {id: 'pathogenicTrack', displayName: 'Pathogenic', color: '#F00'},
+      {id: 'uncertainSignificanceTrack', displayName: 'Uncertain significance', color: '#CCC'},
+      {id: 'benignTrack', displayName: 'Benign', color: '#8D4'}
+    ];
+
+    annots = {
+      "keys": ["name", "start", "length", "trackIndex"],
+      "annots": [{"chr": "2", "annots": [
+        ["rs1", 1, 0, 1], // track 1
+        ["rs25", 5974955, 0, 2] // track 2
+      ]}]}
+
+    var config = {
+      taxid: 9606,
+      chrWidth: 8,
+      chrHeight: 500,
+      annotations: annots,
+      annotationTracks: annotationTracks,
+      dataDir: '/dist/data/bands/native/',
+      onDrawAnnots: callback
+    };
+
+    ideogram = new Ideogram(config);
+  });
+
   it('should have properly scaled annotations after rotating', function(done) {
     // Tests use case from ../examples/vanilla/annotations-tracks.html
 
