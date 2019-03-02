@@ -205,9 +205,9 @@ class Layout {
   }
 
   _getAdditionalOffset() {
-    return (
-      (this._config.annotationHeight || 0) * (this._config.annotationsNumTracks || 1)
-    );
+    var config = this._config;
+    var numTracks = config.annotationsNumTracks || config.numAnnotTracks || 1;
+    return (config.annotationHeight || 0) * numTracks;
   }
 
   _getChromosomeSetSize(chrSetIndex) {

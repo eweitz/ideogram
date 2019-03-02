@@ -891,13 +891,17 @@ describe('Ideogram', function() {
     // Tests use case from ../examples/vanilla/annotations-tracks.html
 
     function callback() {
-      var annot, box;
+      var annot, annot2, box, transform;
 
       annot = document.querySelector('#chr6-9606 > g:nth-child(7)');
       box = annot.getBBox();
 
       assert.equal(box.height, 7);
       assert.equal(box.width, 1.75);
+
+      annot2 = document.querySelector('#chr1-9606-chromosome-set');
+      transform = annot2.getAttribute('transform');
+      assert.equal(transform, 'rotate(90) translate(30, -29)');
 
       done();
     }
