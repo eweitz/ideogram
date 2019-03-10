@@ -899,6 +899,7 @@ describe('Ideogram', function() {
       assert.equal(box.height, 7);
       assert.equal(box.width, 1.75);
 
+      // Ensure distal track of chromosome 1 is visible
       annot2 = document.querySelector('#chr1-9606-chromosome-set');
       transform = annot2.getAttribute('transform');
       assert.equal(transform, 'rotate(90) translate(30, -29)');
@@ -967,7 +968,7 @@ describe('Ideogram', function() {
       organism: 'human',
       chrHeight: 300,
       chrMargin: 2,
-      annotationsPath: 'https://unpkg.com/ideogram@0.15.0/dist/data/annotations/10_virtual_cnvs.json',
+      annotationsPath: 'https://unpkg.com/ideogram@1.5.0/dist/data/annotations/10_virtual_cnvs.json',
       annotationsLayout: 'overlay',
       orientation: 'horizontal',
       dataDir: '/dist/data/bands/native/',
