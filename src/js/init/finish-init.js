@@ -41,8 +41,7 @@ function processAnnots(ideo) {
 }
 
 /**
- * Waits for potentially large annotation dataset
- * to be received by the client, then triggers annotation processing.
+ * Load (potentially large) annotation dataset, then process it.
  */
 function waitForAndProcessAnnots(ideo) {
   if (ideo.rawAnnots) {
@@ -50,7 +49,11 @@ function waitForAndProcessAnnots(ideo) {
   } else {
     (function checkAnnotData() {
       ideo.timeout = setTimeout(function() {
-        if (!ideo.rawAnnots) {
+        if (
+          !ideo.rawAnnots ||
+          (ideo.rawAnnots && typeof ideo.rawAnnots.then !== 'undefined')
+          ) {
+          // Ensure rawAnnots is defined and not a Promise (not "then"-able)
           checkAnnotData();
         } else {
           processAnnots(ideo);
@@ -82,7 +85,8 @@ function reportDebugTimings(config, t0, t0A) {
 function finishInit(bandsArray, t0) {
   var t0A = new Date().getTime(),
     ideo = this,
-    config = ideo.config;
+    config = ideo.config,
+    confAnnots = config.annotations;
 
   ideo.initDrawChromosomes(bandsArray);
 
@@ -91,15 +95,24 @@ function finishInit(bandsArray, t0) {
   processLabels(config, ideo);
 
   if (config.brush) ideo.createBrush(config.brush);
-  if (config.annotations) ideo.drawAnnots(config.annotations);
+
+  if (confAnnots) {
+    if (Array.isArray(confAnnots)) {
+      ideo.drawAnnots(confAnnots);
+    } else {
+      // Enable client-side-defined annotations to be formatted
+      // like the wider variety of server-side-defined annotations.
+      // Supports https://github.com/eweitz/ideogram/issues/137
+      ideo.rawAnnots = confAnnots;
+      processAnnots(ideo);
+    }
+  }
 
   reportDebugTimings(config, t0, t0A);
 
   ideo.setOverflowScroll();
 
-  if (config.geometry === 'collinear' && config.orientation === 'horizontal') {
-    collinearizeChromosomes(ideo);
-  }
+  if (config.geometry === 'collinear') collinearizeChromosomes(ideo);
 
   if (ideo.onLoadCallback) ideo.onLoadCallback();
 }

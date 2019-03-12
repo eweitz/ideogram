@@ -4,7 +4,8 @@
  * geometry.
  */
 
- import {d3} from './lib';
+import {d3} from './lib';
+import collinearizeVerticalChromosomes from './collinear-vertical';
 
 /**
 * Rearrange chromosomes from horizontal to collinear
@@ -40,7 +41,7 @@ function getxOffsets(chrSets, ideo) {
       prevWidth = prevChrSet.width;
       prevX = xOffsets[index];
       xBump = (ideo.config.showChromosomeLabels ? 0 : 2);
-      x = prevX + prevWidth + xBump;
+      x = prevX + prevWidth + xBump + ideo.config.chrMargin;
     }
     xOffsets.push(x);
   }
@@ -52,6 +53,11 @@ function collinearizeChromosomes(ideo) {
   var chrSets, xOffsets, y, xOffsets,
     config = ideo.config,
     annotHeight = config.annotationHeight;
+
+  if (config.orientation === 'vertical') {
+    collinearizeVerticalChromosomes(ideo);
+    return;
+  }
 
   ideo.config.annotLabelHeight = 12;
   var annotLabelHeight = ideo.config.annotLabelHeight;

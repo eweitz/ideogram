@@ -8,15 +8,18 @@
     a:hover {text-decoration: underline;}
     a, a:hover, a:visited, a:active {color: #0366d6;}
   </style>
+  <style>
+    #chrMargin {
+      position: relative;
+      top: 5px;
+    }
+    #chrMarginContainer {
+      position: relative;
+      top: -6px;
+    }
+  </style>
   <script type="text/javascript" src="dist/js/ideogram.min.js"></script>
-        <style>
-          html, body {
-            height: 100%;
-            font: 14px Arial;
-            line-height: 19.6px;
-          }
-
-        </style>
+<link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
 </head>
 <body>
   <h1>Geometry, collinear | Ideogram</h1>
@@ -32,9 +35,43 @@
     <a href="annotations-heatmap.html">parallel arrangement</a>, this ideogram is
     collinear -- the chromosomes form a line together.
   </p>
+  <p>
+    Click chromosomes to see gene expression in single-cell resolution.
+    The default view shows average expression among all cells in each sample.
+  </p>
+
   <script type="text/javascript">
 
     d3 = Ideogram.d3;
+
+    function addControls() {
+        chrMargin = (typeof chrMargin === 'undefined' ? 10 : chrMargin)
+        marginSlider =
+          `<label id="chrMarginContainer">
+            Chromosome margin:
+          <input type="range" id="chrMargin" list="chrMarginList" value="` + chrMargin + `">
+          </label>
+          <datalist id="chrMarginList">
+            <option value="0" label="0%">
+            <option value="10">
+            <option value="20">
+            <option value="30">
+            <option value="40">
+            <option value="50" label="50%">
+            <option value="60">
+            <option value="70">
+            <option value="80">
+            <option value="90">
+            <option value="100" label="100%">
+          </datalist>`;
+        d3.select('#_ideogramLegend').node().innerHTML += marginSlider;
+
+        d3.selectAll('input[type="range"]').on('change', function() {
+          window.chrMargin = parseInt(d3.select(this).node().value);
+          config.chrMargin = chrMargin;
+          ideogram = new Ideogram(config);
+        });
+    }
 
     var legend = [{
       name: 'Expression level',
@@ -45,19 +82,72 @@
       ]
     }];
 
-    ideogram = new Ideogram({
+    // Cache raw matrix data and genome annotation data,
+    // to speed up load of 2D genomic heatmaps
+    rawMatrixPath = 'https://www.googleapis.com/storage/v1/b/ideogram/o/oligodendroglioma%2finfercnv.observations.optimized.txt?alt=media';
+    d3.text(rawMatrixPath).then(function(data) {
+      matrixRawAnnotsCache = data;
+    });
+    genomeAnnotationPath = '../../../data/annotations/Homo_sapiens,_Ensembl_80.tsv';
+    d3.text(genomeAnnotationPath).then(function(data) {
+      genomeAnnotationCache = data;
+    });
+
+    // Monkey patch d3.text to intercept request and
+    // return cached response for raw matrix data
+    originalD3Text = d3.text;
+    d3.text = function(url) {
+      if (url === rawMatrixPath && typeof matrixRawAnnotsCache !== 'undefined') {
+        return new Promise(function(resolve) { resolve(matrixRawAnnotsCache) });
+      } else if (/Ensembl/.test(url) && typeof genomeAnnotationCache !== 'undefined') {
+        return new Promise(function(resolve) { resolve(genomeAnnotationCache) });
+      } else {
+        return originalD3Text(url);
+      }
+    }
+
+    // Toggle between collinear multi-chromosome ideogram with
+    // average-expression heatmaps and single-chromosome ideogram
+    // with raw single-cell expression heatmaps.
+    function setOnChromosomeClick() {
+      d3.selectAll(ideogram.selector + ' .chromosome').on('click', function () {
+        chr = this.id.split('-')[0].split('chr')[1];
+        if (ideogram.config.annotationsLayout === 'heatmap-2d') {
+          thisConfig = config;
+        } else {
+          thisConfig = {
+            organism: 'human',
+            chromosome: chr,
+            chrHeight: 425,
+            showBandLabels: false,
+            legend: legend,
+            onLoad: setOnChromosomeClick,
+            annotationsPath: rawMatrixPath,
+            heatmapThresholds: [0, 0.13, 0.27, 0.4, 0.53, 0.67, 0.8, 0.93, 1.1, 1.2, 1.33, 1.47, 1.6, 1.73, 1.87, 2],
+            annotationHeight: 3,
+            annotationsLayout: 'heatmap-2d',
+          }
+        }
+
+        ideogram = new Ideogram(thisConfig);
+      });
+    }
+
+    config = {
       organism: 'human',
       orientation: 'horizontal',
       geometry: 'collinear',
       chrHeight: 80,
-      showFullyBanded: false,
-      // showChromosomeLabels: false,
-      rotatable: false,
+      chrMargin: 10,
+      onLoad: setOnChromosomeClick,
       legend: legend,
       annotationHeight: 30,
       annotationsLayout: 'heatmap',
-      annotationsPath: 'data/annotations/oligodendroglioma_cnv_expression.json'
-    });
+      annotationsPath: 'data/annotations/oligodendroglioma_cnv_expression.json',
+      onDrawAnnots: addControls
+    }
+
+    ideogram = new Ideogram(config);
   </script>
 
 </body>

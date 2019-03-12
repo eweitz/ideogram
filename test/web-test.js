@@ -493,6 +493,44 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
+  it('should support trackIndex in annotations option', function(done) {
+    // Tests use case from https://github.com/eweitz/ideogram/issues/137
+
+    function callback() {
+      annots = d3.selectAll('.annot').nodes();
+      transform1 = annots[0].getAttribute('transform');
+      transform2 = annots[1].getAttribute('transform');
+      assert.equal(transform1, 'translate(0,18)');
+      assert.equal(transform2, 'translate(17,28)');
+      done();
+    }
+
+    var annotationTracks = [
+      {id: 'pathogenicTrack', displayName: 'Pathogenic', color: '#F00'},
+      {id: 'uncertainSignificanceTrack', displayName: 'Uncertain significance', color: '#CCC'},
+      {id: 'benignTrack', displayName: 'Benign', color: '#8D4'}
+    ];
+
+    annots = {
+      "keys": ["name", "start", "length", "trackIndex"],
+      "annots": [{"chr": "2", "annots": [
+        ["rs1", 1, 0, 1], // track 1
+        ["rs25", 5974955, 0, 2] // track 2
+      ]}]}
+
+    var config = {
+      taxid: 9606,
+      chrWidth: 8,
+      chrHeight: 500,
+      annotations: annots,
+      annotationTracks: annotationTracks,
+      dataDir: '/dist/data/bands/native/',
+      onDrawAnnots: callback
+    };
+
+    ideogram = new Ideogram(config);
+  });
+
   it('should have properly scaled annotations after rotating', function(done) {
     // Tests use case from ../examples/vanilla/annotations-tracks.html
 
@@ -853,13 +891,18 @@ describe('Ideogram', function() {
     // Tests use case from ../examples/vanilla/annotations-tracks.html
 
     function callback() {
-      var annot, box;
+      var annot, annot2, box, transform;
 
       annot = document.querySelector('#chr6-9606 > g:nth-child(7)');
       box = annot.getBBox();
 
       assert.equal(box.height, 7);
       assert.equal(box.width, 1.75);
+
+      // Ensure distal track of chromosome 1 is visible
+      annot2 = document.querySelector('#chr1-9606-chromosome-set');
+      transform = annot2.getAttribute('transform');
+      assert.equal(transform, 'rotate(90) translate(30, -29)');
 
       done();
     }
@@ -925,7 +968,7 @@ describe('Ideogram', function() {
       organism: 'human',
       chrHeight: 300,
       chrMargin: 2,
-      annotationsPath: 'https://unpkg.com/ideogram@0.15.0/dist/data/annotations/10_virtual_cnvs.json',
+      annotationsPath: 'https://unpkg.com/ideogram@1.5.0/dist/data/annotations/10_virtual_cnvs.json',
       annotationsLayout: 'overlay',
       orientation: 'horizontal',
       dataDir: '/dist/data/bands/native/',
@@ -2090,7 +2133,6 @@ describe('Ideogram', function() {
       var style = d3.select('#_ideogramTrackLabelContainer > div').node().style;
       assert.equal(style.left, '13px');
       assert.equal(style.top, '2px');
-      console.log('in demarcating test callback')
       done();
     }
 
@@ -2126,5 +2168,42 @@ describe('Ideogram', function() {
       onDrawAnnots: callback
     });
   });
+
+  it('should support 2D heatmaps', function(done) {
+
+    function callback() {
+      var canvas = d3.select('#chr5-9606-canvas').node();
+      assert.equal(canvas.width, 429);
+      assert.equal(canvas.height, 480);
+      done();
+    }
+
+    var legend = [{
+      name: 'Expression level',
+      rows: [
+        {name: 'Low', color: '#33F'},
+        {name: 'Normal', color: '#CCC'},
+        {name: 'High', color: '#F33'}
+      ]
+    }];
+
+    ideogram = new Ideogram({
+      organism: 'human',
+      orientation: 'vertical',
+      chromosome: '5',
+      chrHeight: 450,
+      chrMargin: 10,
+      showFullyBanded: false,
+      showBandLabels: false,
+      legend: legend,
+      heatmapThresholds: [0, 0.13, 0.27, 0.4, 0.53, 0.67, 0.8, 0.93, 1.1, 1.2, 1.33, 1.47, 1.6, 1.73, 1.87, 2],
+      annotationHeight: 3,
+      annotationsLayout: 'heatmap-2d',
+      dataDir: '/dist/data/bands/native/',
+      annotationsPath: 'https://www.googleapis.com/storage/v1/b/ideogram/o/oligodendroglioma%2finfercnv.observations.optimized.txt?alt=media',
+      onDrawAnnots: callback
+    });
+  });
+
 
 });

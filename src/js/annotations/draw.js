@@ -46,8 +46,10 @@ function drawAnnots(friendlyAnnots) {
     ideo = this,
     chrs = ideo.chromosomes[ideo.config.taxid]; // TODO: multiorganism
 
-  // Occurs when filtering
-  if ('annots' in friendlyAnnots[0]) {
+  if (
+    'annots' in friendlyAnnots[0] || // Occurs when filtering
+    'values' in friendlyAnnots[0] // Occurs when drawing cached expression matrices
+  ) {
     return ideo.drawProcessedAnnots(friendlyAnnots);
   }
 
@@ -163,7 +165,7 @@ function writeOverlayAnnots(chrAnnot, ideo) {
 function warnIfTooManyAnnots(layout, annots) {
   var i, numAnnots;
 
-  if (layout !== 'heatmap' && layout !== 'histogram') {
+  if (!/heatmap/.test(layout) && layout !== 'histogram') {
     numAnnots = 0;
     for (i = 0; i < annots.length; i++) {
       numAnnots += annots[i].annots.length;
@@ -215,7 +217,7 @@ function drawProcessedAnnots(annots) {
 
   if ('legend' in ideo.config) writeLegend(ideo);
 
-  if (layout === 'heatmap') {
+  if (/heatmap/.test(layout)) {
     ideo.drawHeatmaps(annots);
     return;
   }

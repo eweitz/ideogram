@@ -12,6 +12,7 @@ import naturalSort from 'es6-natural-sort';
 import {d3} from '../lib';
 import {BedParser} from '../parsers/bed-parser';
 import {drawHeatmaps, deserializeAnnotsForHeatmap} from './heatmap';
+import {inflateThresholds} from './heatmap-lib';
 import {inflateHeatmaps} from './heatmap-collinear';
 import {
   onLoadAnnots, onDrawAnnots, startHideAnnotTooltipTimeout,
@@ -24,6 +25,7 @@ import {
   restoreDefaultTracks, setOriginalTrackIndexes, updateDisplayedTracks
 } from './filter';
 import {processAnnotData} from './process'
+import { ExpressionMatrixParser } from '../parsers/expression-matrix-parser';
 
 function initNumTracksHeightAndBarWidth(ideo, config) {
   var annotHeight;
@@ -102,8 +104,9 @@ function validateAnnotsUrl(annotsUrl) {
   return extension;
 }
 
-function afterRawAnnots(ideo) {
-  var config = ideo.config;
+function afterRawAnnots() {
+  var ideo = this,
+    config = ideo.config;
   // Ensure annots are ordered by chromosome
   ideo.rawAnnots.annots = ideo.rawAnnots.annots.sort(function(a, b) {
     return naturalSort(a.chr, b.chr);
@@ -114,14 +117,15 @@ function afterRawAnnots(ideo) {
   }
 
   if (
-    config.annotationsLayout === 'heatmap' &&
-    config.geometry === 'collinear' && 
-    ('heatmapThresholds' in config ||
-      'metadata' in ideo.rawAnnots &&
-      'heatmapThresholds' in ideo.rawAnnots.metadata
-    )
+    'heatmapThresholds' in config ||
+    'metadata' in ideo.rawAnnots &&
+    'heatmapThresholds' in ideo.rawAnnots.metadata
   ) {
-    inflateHeatmaps(ideo);
+    if (config.annotationsLayout === 'heatmap') {
+      inflateHeatmaps(ideo);
+    } else if (config.annotationsLayout === 'heatmap-2d') {
+      ideo.config.heatmapThresholds = inflateThresholds(ideo);
+    }
   }
 
   if (config.heatmaps) {
@@ -133,30 +137,42 @@ function afterRawAnnots(ideo) {
  * Requests annotations URL via HTTP, sets ideo.rawAnnots for downstream
  * processing.
  *
- * @param annotsUrl Absolute or relative URL native or BED annotations file
+ * @param annotsUrl Absolute or relative URL for native or BED annotations file
  */
 function fetchAnnots(annotsUrl) {
-  var extension,
+  var extension, is2dHeatmap,
     ideo = this;
 
-  if (annotsUrl.slice(0, 4) !== 'http') {
+  is2dHeatmap = ideo.config.annotationsLayout === 'heatmap-2d';
+
+  if (annotsUrl.slice(0, 4) !== 'http' && !is2dHeatmap) {
     d3.json(ideo.config.annotationsPath)
       .then(function(data) {
-        ideo.rawAnnots = data;
-        afterRawAnnots(ideo);
+        ideo.rawAnnotsResponse = data; // Preserve truly raw response content
+        ideo.rawAnnots = data; // Sometimes gets partially processed
+        ideo.afterRawAnnots();
       });
     return;
   }
 
-  extension = validateAnnotsUrl(annotsUrl);
+  extension = (is2dHeatmap ? '' : validateAnnotsUrl(annotsUrl));
 
   d3.text(annotsUrl).then(function(text) {
-    if (extension === 'bed') {
-      ideo.rawAnnots = new BedParser(text, ideo).rawAnnots;
+    ideo.rawAnnotsResponse = text;
+    if (is2dHeatmap) {
+      var parser = new ExpressionMatrixParser(text, ideo);
+      parser.setRawAnnots().then(function(d) {
+        ideo.rawAnnots = d;
+        ideo.afterRawAnnots();
+      });
     } else {
-      ideo.rawAnnots = JSON.parse(text);
+      if (extension === 'bed') {
+        ideo.rawAnnots = new BedParser(text, ideo).rawAnnots;
+      } else {
+        ideo.rawAnnots = JSON.parse(text);
+      }
+      ideo.afterRawAnnots();
     }
-    afterRawAnnots(ideo);
   });
 }
 
@@ -194,5 +210,6 @@ export {
   updateDisplayedTracks, initAnnotSettings, fetchAnnots, drawAnnots,
   getHistogramBars, drawHeatmaps, deserializeAnnotsForHeatmap, fillAnnots,
   drawProcessedAnnots, drawSynteny, startHideAnnotTooltipTimeout,
-  showAnnotTooltip, onWillShowAnnotTooltip, setOriginalTrackIndexes
+  showAnnotTooltip, onWillShowAnnotTooltip, setOriginalTrackIndexes,
+  afterRawAnnots
 }
