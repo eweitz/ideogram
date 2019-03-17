@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Auth | Ideogram</title>
+  <style>
+    body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
+    a, a:visited {text-decoration: none;}
+    a:hover {text-decoration: underline;}
+    a, a:hover, a:visited, a:active {color: #0366d6;}
+  </style>
+  <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
+  <script async defer src="https://apis.google.com/js/api.js" 
+        onload="this.onload=function(){};handleClientLoad()" 
+        onreadystatechange="if (this.readyState === 'complete') this.onload()">
+  </script>
+<link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
+</head>
+<body>
+  <h1>Auth | Ideogram</h1>
+  <a href="../">Overview</a> |
+  <a href="homology-interspecies">Previous</a> |
+  <a href="annotations-overlaid">Next</a> |
+  <a href="https://github.com/eweitz/ideogram/blob/gh-pages/annotations-basic.html" target="_blank">Source</a>
+  <p>
+  Authentication and authorization via Google APIs.
+  </p>
+
+  <script>
+    var GoogleAuth;
+    var SCOPE = 'https://www.googleapis.com/auth/drive.metadata.readonly';
+    function handleClientLoad() {
+      // Load the API's client and auth2 modules.
+      // Call the initClient function after the modules load.
+      gapi.load('client:auth2', initClient);
+    }
+  
+    function initClient() {
+      // Retrieve the discovery document for version 3 of Google Drive API.
+      // In practice, your app can retrieve one or more discovery documents.
+      var discoveryUrl = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
+  
+      // Initialize the gapi.client object, which app uses to make API requests.
+      // Get API key and client ID from API Console.
+      // 'scope' field specifies space-delimited list of access scopes.
+      gapi.client.init({
+          'apiKey': 'YOUR_API_KEY',
+          'discoveryDocs': [discoveryUrl],
+          'clientId': 'YOUR_CLIENT_ID',
+          'scope': SCOPE
+      }).then(function () {
+        GoogleAuth = gapi.auth2.getAuthInstance();
+  
+        // Listen for sign-in state changes.
+        GoogleAuth.isSignedIn.listen(updateSigninStatus);
+  
+        // Handle initial sign-in state. (Determine if user is already signed in.)
+        var user = GoogleAuth.currentUser.get();
+        setSigninStatus();
+  
+        // Call handleAuthClick function when user clicks on
+        //      "Sign In/Authorize" button.
+        $('#sign-in-or-out-button').click(function() {
+          handleAuthClick();
+        }); 
+        $('#revoke-access-button').click(function() {
+          revokeAccess();
+        }); 
+      });
+    }
+  
+    function handleAuthClick() {
+      if (GoogleAuth.isSignedIn.get()) {
+        // User is authorized and has clicked 'Sign out' button.
+        GoogleAuth.signOut();
+      } else {
+        // User is not signed in. Start Google auth flow.
+        GoogleAuth.signIn();
+      }
+    }
+  
+    function revokeAccess() {
+      GoogleAuth.disconnect();
+    }
+  
+    function setSigninStatus(isSignedIn) {
+      var user = GoogleAuth.currentUser.get();
+      var isAuthorized = user.hasGrantedScopes(SCOPE);
+      if (isAuthorized) {
+        $('#sign-in-or-out-button').html('Sign out');
+        $('#revoke-access-button').css('display', 'inline-block');
+        $('#auth-status').html('You are currently signed in and have granted ' +
+            'access to this app.');
+      } else {
+        $('#sign-in-or-out-button').html('Sign In/Authorize');
+        $('#revoke-access-button').css('display', 'none');
+        $('#auth-status').html('You have not authorized this app or you are ' +
+            'signed out.');
+      }
+    }
+  
+    function updateSigninStatus(isSignedIn) {
+      setSigninStatus();
+    }
+  </script>
+
+<script type="text/javascript">
+
+  var config = {
+    organism: 'human',
+    chromosome: '17',
+    chrHeight: 600,
+    orientation: 'horizontal',
+    annotations: [{
+      name: 'BRCA1',
+      chr: '17',
+      start: 43044294,
+      stop: 43125482
+    }]
+  };
+
+  var ideogram = new Ideogram(config);
+
+</script>
+
+</body>
+</html>
