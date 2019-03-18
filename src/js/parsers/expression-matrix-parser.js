@@ -50,7 +50,7 @@ export class ExpressionMatrixParser {
         '../../annotations/Homo_sapiens,_Ensembl_80.tsv';
 
       return new Promise(function(resolve) {
-        d3.text(ensemblData).then(function(data) {
+        ideo.fetch(ensemblData, 'text').then(function(data) {
           var tsvLines, i, start, stop, gene, geneType, chr, length;
           
           tsvLines = data.split(/\r\n|\n/).slice(1,);

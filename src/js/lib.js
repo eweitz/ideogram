@@ -112,9 +112,25 @@ function getSvg() {
   return d3.select(this.selector).node();
 }
 
+function fetch(url, contentType) {
+  var ideo = this,
+    config = ideo.config,
+    headers = new Headers();
+
+  if (config.accessToken) {
+    headers = new Headers({'Authorization': 'Bearer ' + accessToken});
+  }
+
+  if (contentType === 'text') {
+    return d3.text(url, {headers: headers});
+  } else {
+    return d3.json(url, {headers: headers});
+  }
+}
+
 export {
   assemblyIsAccession, hasNonGenBankAssembly, hasGenBankAssembly, getDataDir,
   drawChromosomeLabels, rotateChromosomeLabels, round, appendHomolog,
-  drawChromosome, rotateAndToggleDisplay, onDidRotate, getSvg,
+  drawChromosome, rotateAndToggleDisplay, onDidRotate, getSvg, fetch,
   setOverflowScroll, d3
 };

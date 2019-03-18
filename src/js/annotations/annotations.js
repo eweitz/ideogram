@@ -141,12 +141,13 @@ function afterRawAnnots() {
  */
 function fetchAnnots(annotsUrl) {
   var extension, is2dHeatmap,
-    ideo = this;
+    ideo = this,
+    config = ideo.config;
 
-  is2dHeatmap = ideo.config.annotationsLayout === 'heatmap-2d';
+  is2dHeatmap = config.annotationsLayout === 'heatmap-2d';
 
   if (annotsUrl.slice(0, 4) !== 'http' && !is2dHeatmap) {
-    d3.json(ideo.config.annotationsPath)
+    ideo.fetch(annotsUrl)
       .then(function(data) {
         ideo.rawAnnotsResponse = data; // Preserve truly raw response content
         ideo.rawAnnots = data; // Sometimes gets partially processed
@@ -157,23 +158,23 @@ function fetchAnnots(annotsUrl) {
 
   extension = (is2dHeatmap ? '' : validateAnnotsUrl(annotsUrl));
 
-  d3.text(annotsUrl).then(function(text) {
-    ideo.rawAnnotsResponse = text;
-    if (is2dHeatmap) {
-      var parser = new ExpressionMatrixParser(text, ideo);
-      parser.setRawAnnots().then(function(d) {
-        ideo.rawAnnots = d;
-        ideo.afterRawAnnots();
-      });
-    } else {
-      if (extension === 'bed') {
-        ideo.rawAnnots = new BedParser(text, ideo).rawAnnots;
+  ideo.fetch(annotsUrl, 'text').then(function(text) {
+      ideo.rawAnnotsResponse = text;
+      if (is2dHeatmap) {
+        var parser = new ExpressionMatrixParser(text, ideo);
+        parser.setRawAnnots().then(function(d) {
+          ideo.rawAnnots = d;
+          ideo.afterRawAnnots();
+        });
       } else {
-        ideo.rawAnnots = JSON.parse(text);
+        if (extension === 'bed') {
+          ideo.rawAnnots = new BedParser(text, ideo).rawAnnots;
+        } else {
+          ideo.rawAnnots = JSON.parse(text);
+        }
+        ideo.afterRawAnnots();
       }
-      ideo.afterRawAnnots();
-    }
-  });
+    });
 }
 
 /**

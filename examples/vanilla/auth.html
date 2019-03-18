@@ -9,6 +9,7 @@
     a, a:hover, a:visited, a:active {color: #0366d6;}
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
   <script async defer src="https://apis.google.com/js/api.js" 
         onload="this.onload=function(){};handleClientLoad()" 
         onreadystatechange="if (this.readyState === 'complete') this.onload()">
@@ -24,10 +25,12 @@
   <p>
   Authentication and authorization via Google APIs.
   </p>
+  <button id="sign-in-or-out-button" style="margin-left: 25px">Sign In/Authorize</button>
+  <button id="revoke-access-button" style="display: none; margin-left: 25px">Revoke access</button>
 
   <script>
     var GoogleAuth;
-    var SCOPE = 'https://www.googleapis.com/auth/drive.metadata.readonly';
+    var SCOPE = 'https://www.googleapis.com/auth/devstorage.read_only';
     function handleClientLoad() {
       // Load the API's client and auth2 modules.
       // Call the initClient function after the modules load.
@@ -35,17 +38,12 @@
     }
   
     function initClient() {
-      // Retrieve the discovery document for version 3 of Google Drive API.
-      // In practice, your app can retrieve one or more discovery documents.
-      var discoveryUrl = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
   
       // Initialize the gapi.client object, which app uses to make API requests.
       // Get API key and client ID from API Console.
       // 'scope' field specifies space-delimited list of access scopes.
       gapi.client.init({
-          'apiKey': 'YOUR_API_KEY',
-          'discoveryDocs': [discoveryUrl],
-          'clientId': 'YOUR_CLIENT_ID',
+          'clientId': '829416742843-558e4gu9cfvdamcb727gh9au8lh7b7tk.apps.googleusercontent.com',
           'scope': SCOPE
       }).then(function () {
         GoogleAuth = gapi.auth2.getAuthInstance();
@@ -86,6 +84,25 @@
       var user = GoogleAuth.currentUser.get();
       var isAuthorized = user.hasGrantedScopes(SCOPE);
       if (isAuthorized) {
+        accessToken = user.getAuthResponse().access_token;
+
+        config = {
+          organism: 'human',
+          orientation: 'vertical',
+          chromosome: '1',
+          chrHeight: 450,
+          showBandLabels: false,
+          legend: legend,
+          heatmapThresholds: [0, 0.13, 0.27, 0.4, 0.53, 0.67, 0.8, 0.93, 1.1, 1.2, 1.33, 1.47, 1.6, 1.73, 1.87, 2],
+          annotationHeight: 3,
+          accessToken: accessToken,
+          annotationsLayout: 'heatmap-2d',
+          annotationsPath: 'https://www.googleapis.com/storage/v1/b/ideogram-dev/o/oligodendroglioma%2finfercnv.observations.optimized.txt?alt=media'
+        }
+
+        ideogram = new Ideogram(config);
+
+
         $('#sign-in-or-out-button').html('Sign out');
         $('#revoke-access-button').css('display', 'inline-block');
         $('#auth-status').html('You are currently signed in and have granted ' +
@@ -105,20 +122,26 @@
 
 <script type="text/javascript">
 
-  var config = {
-    organism: 'human',
-    chromosome: '17',
-    chrHeight: 600,
-    orientation: 'horizontal',
-    annotations: [{
-      name: 'BRCA1',
-      chr: '17',
-      start: 43044294,
-      stop: 43125482
-    }]
-  };
+  d3 = Ideogram.d3;
 
-  var ideogram = new Ideogram(config);
+  var legend = [{
+    name: 'Expression level',
+    rows: [
+      {name: 'Low', color: '#33F'},
+      {name: 'Normal', color: '#CCC'},
+      {name: 'High', color: '#F33'}
+    ]
+  }];
+
+  config = {
+    organism: 'human',
+    orientation: 'vertical',
+    chromosome: '1',
+    chrHeight: 450,
+    showBandLabels: false
+  }
+
+  ideogram = new Ideogram(config);
 
 </script>
 
