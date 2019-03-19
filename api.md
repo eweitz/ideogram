@@ -179,7 +179,7 @@ Function.  Optional.  Callback function to invoke when annotations are downloade
 Function.  Optional.  Callback function to invoke immediately before annotation tooltip is shown.  The tooltip shows the genomic range and, if available, name of the annotation.  This option can be useful to e.g. enhance the displayed annotation name, say by transforming a gene name into a hyperlink to a gene record web page.  Example in [Annotations, external data](https://eweitz.github.io/ideogram/annotations-external-data).
 
 ## organism
-String or number or array.  Required.  Organism(s) to show chromosomes for.  Supply organism's name as a string (e.g. `"human"`) or organism's NCBI Taxonomy ID (taxid, e.g. `9606`) to display chromosomes from a single organism, or an array of organisms' names or taxids to display chromosomes from multiple species.  Example in [Human]( https://eweitz.github.io/ideogram/human).
+String or number or array.  Required.  Organism(s) to show chromosomes for.  Supply organism's name as a string (e.g. `"human"`) or organism's NCBI Taxonomy ID (taxid, e.g. `9606`) to display chromosomes from a single organism, or an array of organisms' names or taxids to display chromosomes from multiple species or other taxa.  Example in [Human]( https://eweitz.github.io/ideogram/human).
 
 ## orientation
 String.  Optional.  Default: horizontal.  The orientation of chromosomes on the page.  Example in [Mouse]( https://eweitz.github.io/ideogram/mouse).
