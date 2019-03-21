@@ -118,7 +118,7 @@ function fetch(url, contentType) {
     headers = new Headers();
 
   if (config.accessToken) {
-    headers = new Headers({'Authorization': 'Bearer ' + accessToken});
+    headers = new Headers({'Authorization': 'Bearer ' + config.accessToken});
   }
 
   if (contentType === 'text') {

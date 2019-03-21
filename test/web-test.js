@@ -2205,5 +2205,38 @@ describe('Ideogram', function() {
     });
   });
 
+  it('should add "Authentication: Bearer" when access token is provided', function(done) {
+    // Tests use case from ../examples/vanilla/auth.html
 
+    // Monkey patch the fetch method to intercept request and inspect HTTP
+    // "Authorization" header for test access token.
+    var originalFetch = window.fetch;
+    window.fetch = function() {
+      if (arguments.length > 1 && /googleapis/.test(arguments[0])) {
+        var bearer = arguments[1].headers.get("authorization");
+        assert.equal(bearer, 'Bearer mockAccessToken');
+        done();
+        return; // Don't send request for remote resource, as test passed
+      }
+      return originalFetch.apply(this, arguments);
+    }
+
+    var accessToken = 'mockAccessToken';
+
+    config = {
+      organism: 'human',
+      orientation: 'vertical',
+      chromosome: '1',
+      chrHeight: 450,
+      showBandLabels: false,
+      heatmapThresholds: [0, 0.13, 0.27, 0.4, 0.53, 0.67, 0.8, 0.93, 1.1, 1.2, 1.33, 1.47, 1.6, 1.73, 1.87, 2],
+      annotationHeight: 3,
+      accessToken: accessToken,
+      annotationsLayout: 'heatmap-2d',
+      annotationsPath: 'https://www.googleapis.com/storage/v1/b/ideogram-dev/o/oligodendroglioma%2finfercnv.observations.optimized.txt?alt=media',
+      dataDir: '/dist/data/bands/native/'
+    }
+
+    ideogram = new Ideogram(config);
+  });
 });
