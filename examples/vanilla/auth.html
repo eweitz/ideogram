@@ -23,7 +23,7 @@
   <a href="annotations-overlaid">Next</a> |
   <a href="https://github.com/eweitz/ideogram/blob/gh-pages/annotations-basic.html" target="_blank">Source</a>
   <p>
-  Authentication and authorization via Google APIs.
+  Authentication and authorization via Google APIs.  Signing in grants access to protected Ideogram data by including your "Authentication: Bearer" token in the request.
   </p>
   <button id="sign-in-or-out-button" style="margin-left: 25px">Sign In/Authorize</button>
   <button id="revoke-access-button" style="display: none; margin-left: 25px">Revoke access</button>
@@ -43,6 +43,7 @@
       // Get API key and client ID from API Console.
       // 'scope' field specifies space-delimited list of access scopes.
       gapi.client.init({
+          // This clientId is for  the Ideogram project in Google Cloud Platform.
           'clientId': '829416742843-558e4gu9cfvdamcb727gh9au8lh7b7tk.apps.googleusercontent.com',
           'scope': SCOPE
       }).then(function () {
@@ -79,7 +80,7 @@
     function revokeAccess() {
       GoogleAuth.disconnect();
     }
-  
+
     function setSigninStatus(isSignedIn) {
       var user = GoogleAuth.currentUser.get();
       var isAuthorized = user.hasGrantedScopes(SCOPE);
@@ -97,7 +98,7 @@
           annotationHeight: 3,
           accessToken: accessToken,
           annotationsLayout: 'heatmap-2d',
-          annotationsPath: 'https://www.googleapis.com/storage/v1/b/ideogram-dev/o/oligodendroglioma%2finfercnv.observations.optimized.txt?alt=media'
+          annotationsPath: 'https://www.googleapis.com/storage/v1/b/ideogram-auth/o/oligodendroglioma%2finfercnv.observations.optimized.txt?alt=media'
         }
 
         ideogram = new Ideogram(config);
