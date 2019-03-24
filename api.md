@@ -23,6 +23,7 @@ var ideogram = new Ideogram({
 ```
 
 # Options
+* [accessToken](#accessToken)
 * [ancestors](#ancestors)
 * [annotations](#annotations)
 * [annotationHeight](#annotationheight)
@@ -67,6 +68,9 @@ var ideogram = new Ideogram({
 * [showAnnotTooltip](#showannottooltip)
 * [showFullyBanded](#showfullybanded)
 * [showNonNuclearChromosomes](#shownonnuclearchromosomes)
+
+## accessToken
+String.  Optional.  OAuth 2.0 access token.  Enables authentication and authorization. This can be useful for controlling access to private annotation data.
 
 ## ancestors
 Object.  Optional.  A map associating ancestor labels to colors.  Used to color chromosomes from different ancestors in polyploid genomes.  Example in [Ploidy, recombination](https://eweitz.github.io/ideogram/ploidy_recombination).
