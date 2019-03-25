@@ -8,6 +8,7 @@ import * as d3brush from 'd3-brush';
 import * as d3dispatch from 'd3-dispatch';
 import {scaleLinear} from 'd3-scale';
 import {max} from 'd3-array';
+import {BamFile} from '@gmod/bam';
 
 var d3 = Object.assign(
   {}, d3fetch, d3brush, d3dispatch
@@ -128,9 +129,18 @@ function fetch(url, contentType) {
   }
 }
 
+async function getBamFile(url) {
+  var bamFile = new BamFile({'bamPath': url});
+  console.log('bamFile')
+  console.log(bamFile)
+  var header = await bamFile.getHeader();
+  console.log('header');
+  console.log(header);
+}
+
 export {
   assemblyIsAccession, hasNonGenBankAssembly, hasGenBankAssembly, getDataDir,
   drawChromosomeLabels, rotateChromosomeLabels, round, appendHomolog,
   drawChromosome, rotateAndToggleDisplay, onDidRotate, getSvg, fetch,
-  setOverflowScroll, d3
+  setOverflowScroll, d3, getBamFile
 };
