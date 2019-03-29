@@ -20,8 +20,13 @@
   <p>
     This ideogram shows genome-wide coverage of sequence read alignments in a BAM file.
   <script type="text/javascript">
+    function getBam() {
+      this.getBamFile('/data/annotations/Test1.bam');
+    }
+
     var ideogram = new Ideogram({
-      organism: 'human'
+      organism: 'human',
+      onLoad: getBam
     });
   </script>
 </body>
