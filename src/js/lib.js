@@ -130,7 +130,7 @@ function fetch(url, contentType) {
 }
 
 async function getBamFile(url) {
-  var bamFile = new BamFile({'bamPath': url});
+  var bamFile = new BamFile({bamFileHandle: fetch(url)});
   console.log('bamFile')
   console.log(bamFile)
   var header = await bamFile.getHeader();
