@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Annotations, unbanded | Ideogram</title>
+  <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
+<link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
+  <style>
+    body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
+    a, a:visited {text-decoration: none;}
+    a:hover {text-decoration: underline;}
+    a, a:hover, a:visited, a:active {color: #0366d6;}
+  </style>
+  <style>
+    ul {
+      list-style: none;
+      padding-left: 10px;
+      float: left;
+    }
+
+    li {padding: 2px 0;}
+    input {margin-right: 5px;}
+
+    #gene-type {padding-left: 30px;}
+
+    .note {
+      font-style: italic;
+      padding-left: 10px;
+      clear: left;
+    }
+  </style>
+</head>
+<body>
+  <h1>Annotations, unbanded | Ideogram</h1>
+  <a href="../">Overview</a> |
+  <a href="annotations-file-url">Previous</a> |
+  <a href="annotations-animated">Next</a> |
+  <a href="https://github.com/eweitz/ideogram/blob/gh-pages/annotations-histogram.html" target="_blank">Source</a>
+  <br/><br/>
+  <div>
+    This ideogram shows the an annotation on unbanded <i>Arabidopsis thaliana</i> chromosomes.
+  </div>
+  <div id="container"></div>
+  
+  <script>
+  var config = {
+    container: '#container',
+    orientation: 'vertical',
+    organism: 'arabidopsis thaliana',
+    showNonNuclearChromosomes: true,
+    chrHeight: 275,
+    annotations: [{chr: 1, start: 10000000, stop: 10000001}]
+  };
+
+  var ideogram = new Ideogram(config);
+  </script>
+</body>
+</html>
