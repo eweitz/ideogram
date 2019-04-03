@@ -154,7 +154,10 @@ class VerticalLayout extends Layout {
       // when histogram used
 
       if (this._config.annotationsLayout === 'histogram') {
-        return margin / 2 + setIndex * (margin + width + 2) + pad * 2 + 1;
+        var barWidth = this._ideo.config.barWidth;
+        console.log('barWidth')
+        console.log(barWidth)
+        return margin / 2 + setIndex * (margin + width + 2) + pad * 2 + 1 + barWidth * 2;
       } else {
         translate = width + setIndex * (margin + width) + pad * 2;
         if (pad > 0) {
