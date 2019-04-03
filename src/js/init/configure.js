@@ -109,6 +109,14 @@ function configureOrganisms(ideo) {
         default: 'GCF_000001635.20'
       }
     },
+    3702: {
+      commonName: 'Arabidopsis thaliana',
+      scientificName: 'Arabidopsis thaliana',
+      scientificNameAbbr: 'A. thaliana',
+      assemblies: {
+        default: 'TAIR10'
+      }
+    },
     4641: {
       commonName: 'banana',
       scientificName: 'Musa acuminata',
