@@ -20,7 +20,8 @@ class VerticalLayout extends Layout {
     };
   }
 
-  rotateForward(chrElement, callback) {
+  rotateForward(chrSetIndex, chrIndex, chrElement, callback) {
+    // TODO: Integrate chrSetIndex and chrIndex to support polyploid rotation.
 
     var self = this;
 

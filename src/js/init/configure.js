@@ -126,6 +126,8 @@ function configureOrganisms(ideo) {
       }
     }
   }
+
+  ideo.organismsWithBands = Object.assign({}, ideo.organisms);
 }
 
 function configureCallbacks(config, ideo) {

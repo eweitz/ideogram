@@ -147,7 +147,7 @@ function getBandFileNames(taxid, bandFileNames, ideo) {
 
   bandFileName = getBandFileName(taxid, accession, ideo);
 
-  if (taxid in ideo.organisms) {
+  if (taxid in ideo.organismsWithBands) {
     bandFileNames[taxid] = bandFileName;
   }
   return bandFileNames;
