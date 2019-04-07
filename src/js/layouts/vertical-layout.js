@@ -20,7 +20,7 @@ class VerticalLayout extends Layout {
     };
   }
 
-  rotateForward(setIndex, chrIndex, chrElement, callback) {
+  rotateForward(chrElement, callback) {
 
     var self = this;
 
