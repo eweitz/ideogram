@@ -44,8 +44,8 @@
 
     d3 = Ideogram.d3;
 
-    function addControls() {
-        chrMargin = (typeof chrMargin === 'undefined' ? 10 : chrMargin)
+    function addMarginControl() {
+      chrMargin = (typeof chrMargin === 'undefined' ? 10 : chrMargin)
         marginSlider =
           `<label id="chrMarginContainer">
             Chromosome margin:
@@ -66,11 +66,53 @@
           </datalist>`;
         d3.select('#_ideogramLegend').node().innerHTML += marginSlider;
 
-        d3.selectAll('input[type="range"]').on('change', function() {
+        d3.selectAll('#chrMargin').on('change', function() {
           window.chrMargin = parseInt(d3.select(this).node().value);
           config.chrMargin = chrMargin;
           ideogram = new Ideogram(config);
         });
+    }
+
+    function addThresholdControl() {
+      if (typeof(sensitivity) === 'undefined') {
+        sensitivity = 1;
+        window.originalHeatmapThresholds = ideogram.config.heatmapThresholds;
+      }
+
+      sensitivitySlider =
+        `<div>
+          <label id="sensitivityContainer">
+            Heatmap threshold:
+          <input type="range" id="sensitivity" min="0.5" max="1.5" step="0.1" value="` + sensitivity + `">
+        </div>`;
+      d3.select('#_ideogramLegend').node().innerHTML += sensitivitySlider;
+
+      d3.selectAll('#sensitivity').on('change', function() {
+        var thresholds, newThreshold, numThresholds, i;
+
+        window.sensitivity = parseFloat(d3.select(this).node().value);
+        thresholds = window.originalHeatmapThresholds;
+        numThresholds = thresholds.length;
+
+        // If sensitivity > 1, increase thresholds above middle, decrease below
+        // If sensitivity < 1, decrease thresholds above middle, increase below
+        for (i = 0; i < numThresholds; i++) {
+          if (i + 1 > numThresholds/2) {
+            newThreshold = thresholds[i] * sensitivity;
+          } else {
+            newThreshold = thresholds[i] * 1/sensitivity;
+          }
+          config.heatmapThresholds[i] = newThreshold;
+        }
+
+        ideogram = new Ideogram(config);
+      });
+
+    }
+
+    function addControls() {
+        addMarginControl();
+        addThresholdControl();
     }
 
     var legend = [{
@@ -123,7 +165,7 @@
             legend: legend,
             onLoad: setOnChromosomeClick,
             annotationsPath: rawMatrixPath,
-            heatmapThresholds: [0, 0.13, 0.27, 0.4, 0.53, 0.67, 0.8, 0.93, 1.1, 1.2, 1.33, 1.47, 1.6, 1.73, 1.87, 2],
+            heatmapThresholds: [0.533, 0.8, 1.2, 1.433],
             annotationHeight: 3,
             annotationsLayout: 'heatmap-2d',
           }
@@ -143,6 +185,7 @@
       legend: legend,
       annotationHeight: 30,
       annotationsLayout: 'heatmap',
+      heatmapThresholds: [0.533, 0.8, 1.2, 1.433],
       annotationsPath: '../../data/annotations/oligodendroglioma_cnv_expression.json',
       onDrawAnnots: addControls
     }
