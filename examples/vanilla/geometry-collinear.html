@@ -9,13 +9,18 @@
     a, a:hover, a:visited, a:active {color: #0366d6;}
   </style>
   <style>
-    #chrMargin {
+    #chrMargin, #expressionThreshold {
       position: relative;
       top: 5px;
     }
-    #chrMarginContainer {
+    #expressionThresholdContainer {
       position: relative;
       top: -6px;
+    }
+
+    #chrMarginContainer {
+      position: relative;
+      top: -18px;
     }
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
@@ -48,7 +53,7 @@
       chrMargin = (typeof chrMargin === 'undefined' ? 10 : chrMargin)
         marginSlider =
           `<label id="chrMarginContainer">
-            Chromosome margin:
+            Chromosome margin
           <input type="range" id="chrMargin" list="chrMarginList" value="` + chrMargin + `">
           </label>
           <datalist id="chrMarginList">
@@ -65,42 +70,58 @@
             <option value="100" label="100%">
           </datalist>`;
         d3.select('#_ideogramLegend').node().innerHTML += marginSlider;
-
-        d3.selectAll('#chrMargin').on('change', function() {
-          window.chrMargin = parseInt(d3.select(this).node().value);
+        document.addEventListener('change', function(event) {
+          if (event.target.id !== 'chrMargin') return;
+          window.chrMargin = parseInt(event.target.value);
           config.chrMargin = chrMargin;
           ideogram = new Ideogram(config);
         });
     }
 
     function addThresholdControl() {
-      if (typeof(sensitivity) === 'undefined') {
-        sensitivity = 1;
+      if (typeof(expressionThreshold) === 'undefined') {
+        expressionThreshold = 50;
         window.originalHeatmapThresholds = ideogram.config.heatmapThresholds;
       }
 
-      sensitivitySlider =
-        `<div>
-          <label id="sensitivityContainer">
-            Heatmap threshold:
-          <input type="range" id="sensitivity" min="0.5" max="1.5" step="0.1" value="` + sensitivity + `">
-        </div>`;
-      d3.select('#_ideogramLegend').node().innerHTML += sensitivitySlider;
+      expressionThresholdSlider =
+        `<label id="expressionThresholdContainer">
+            Expression threshold
+          <input type="range" id="expressionThreshold" list="expressionThresholdList" value="` + expressionThreshold + `">
+          <datalist id="expressionThresholdList">
+            <option value="0" label="0.5">
+            <option value="10">
+            <option value="20">
+            <option value="30">
+            <option value="40">
+            <option value="50" label="1">
+            <option value="60">
+            <option value="70">
+            <option value="80">
+            <option value="90">
+            <option value="100" label="1.5">
+          </datalist>
+          <br/><br/>`;
+      d3.select('#_ideogramLegend').node().innerHTML += expressionThresholdSlider;
 
-      d3.selectAll('#sensitivity').on('change', function() {
+      document.addEventListener('change', function(event) {
         var thresholds, newThreshold, numThresholds, i;
 
-        window.sensitivity = parseFloat(d3.select(this).node().value);
+        if (event.target.id !== 'expressionThreshold') return;
+
+        window.expressionThreshold = parseFloat(event.target.value);
+
+        window.adjustedexpressionThreshold = expressionThreshold/100 + 0.5
         thresholds = window.originalHeatmapThresholds;
         numThresholds = thresholds.length;
 
-        // If sensitivity > 1, increase thresholds above middle, decrease below
-        // If sensitivity < 1, decrease thresholds above middle, increase below
+        // If expressionThreshold > 1, increase thresholds above middle, decrease below
+        // If expressionThreshold < 1, decrease thresholds above middle, increase below
         for (i = 0; i < numThresholds; i++) {
           if (i + 1 > numThresholds/2) {
-            newThreshold = thresholds[i] * sensitivity;
+            newThreshold = thresholds[i] * adjustedexpressionThreshold;
           } else {
-            newThreshold = thresholds[i] * 1/sensitivity;
+            newThreshold = thresholds[i] * 1/adjustedexpressionThreshold;
           }
           config.heatmapThresholds[i] = newThreshold;
         }
@@ -111,8 +132,8 @@
     }
 
     function addControls() {
-        addMarginControl();
-        addThresholdControl();
+      addThresholdControl();
+      addMarginControl();
     }
 
     var legend = [{
