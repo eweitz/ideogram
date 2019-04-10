@@ -49,6 +49,12 @@
 
     d3 = Ideogram.d3;
 
+    function updateMargin(event) {
+      window.chrMargin = parseInt(event.target.value);
+      config.chrMargin = chrMargin;
+      ideogram = new Ideogram(config);
+    }
+
     function addMarginControl() {
       chrMargin = (typeof chrMargin === 'undefined' ? 10 : chrMargin)
         marginSlider =
@@ -70,12 +76,29 @@
             <option value="100" label="100%">
           </datalist>`;
         d3.select('#_ideogramLegend').node().innerHTML += marginSlider;
-        document.addEventListener('change', function(event) {
-          if (event.target.id !== 'chrMargin') return;
-          window.chrMargin = parseInt(event.target.value);
-          config.chrMargin = chrMargin;
-          ideogram = new Ideogram(config);
-        });
+    }
+
+    function updateThreshold(event) {
+      var thresholds, newThreshold, numThresholds, i;
+
+      window.expressionThreshold = parseFloat(event.target.value);
+
+      window.adjustedExpressionThreshold = expressionThreshold/10 - 4;
+      thresholds = window.originalHeatmapThresholds;
+      numThresholds = thresholds.length;
+      config.heatmapThresholds = []
+
+      // If expressionThreshold > 1, increase thresholds above middle, decrease below
+      // If expressionThreshold < 1, decrease thresholds above middle, increase below
+      for (i = 0; i < numThresholds; i++) {
+        if (i + 1 > numThresholds/2) {
+          newThreshold = thresholds[i + adjustedExpressionThreshold];
+        } else {
+          newThreshold = thresholds[i - adjustedExpressionThreshold];
+        }
+        config.heatmapThresholds.push(newThreshold);
+      }
+      ideogram = new Ideogram(config);
     }
 
     function addThresholdControl() {
@@ -103,38 +126,20 @@
           </datalist>
           <br/><br/>`;
       d3.select('#_ideogramLegend').node().innerHTML += expressionThresholdSlider;
+    }
 
-      document.addEventListener('change', function(event) {
-        var thresholds, newThreshold, numThresholds, i;
-
-        if (event.target.id !== 'expressionThreshold') return;
-
-        window.expressionThreshold = parseFloat(event.target.value);
-
-        window.adjustedExpressionThreshold = expressionThreshold/10 - 4;
-        thresholds = window.originalHeatmapThresholds;
-        numThresholds = thresholds.length;
-        config.heatmapThresholds = []
-
-        // If expressionThreshold > 1, increase thresholds above middle, decrease below
-        // If expressionThreshold < 1, decrease thresholds above middle, increase below
-        for (i = 0; i < numThresholds; i++) {
-          if (i + 1 > numThresholds/2) {
-            newThreshold = thresholds[i + adjustedExpressionThreshold];
-          } else {
-            newThreshold = thresholds[i - adjustedExpressionThreshold];
-          }
-          config.heatmapThresholds.push(newThreshold);
-        }
-
-        ideogram = new Ideogram(config);
-      });
-
+    function changeEventHandler(event) {
+      var id = event.target.id;
+      if (id === 'expressionThreshold') updateThreshold(event);
+      if (id === 'chrMargin') updateMargin(event);
     }
 
     function addControls() {
       addThresholdControl();
       addMarginControl();
+
+      document.removeEventListener('change', changeEventHandler);
+      document.addEventListener('change', changeEventHandler);
     }
 
     var legend = [{
