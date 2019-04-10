@@ -6,14 +6,11 @@ var reservedTrackKeys = [
   'name', 'start', 'length', 'trackIndex', 'trackIndexOriginal', 'color'
 ];
 
-var defaultHeatmapColors = [
-  ['00B', 'F00'],
-  ['00B', 'DDD', 'F00'],
-  ['00B', 'AAB', 'FAA', 'F00'],
-  ['00B', 'AAB', 'DDD', 'FAA', 'F00'],
-  [], [], [], [], [], [], [], [], [], [], [], // TODO: Use color palette module
-  ['00D', '22D', '44D', '66D', '88D', 'AAD', 'CCD', 'DDD', 'FCC', 'FAA', 'F88', 'F66', 'F44', 'F22', 'F00']
-]
+var defaultHeatmapColors = {
+  3: ['00B', 'DDD', 'F00'],
+  5: ['00D', '66D', 'DDD', 'F88', 'F00'],
+  17: ['00D', '00D', '00D', '00D', '44D', '44D', 'DDD', 'DDD', 'DDD', 'DDD', 'F88', 'F66', 'F22', 'F22', 'F00']
+}
 
 /**
  * Get label text for displayed tracks from annotation container metadata,
@@ -48,7 +45,7 @@ function getLabels(ideo) {
  * Apply heatmap thresholds that are passed in as annotation metadata
  */
 function inflateThresholds(ideo) {
-  var thresholds, colors, crudeThresholds,
+  var thresholds, colors,
     rawAnnots = ideo.rawAnnots;
 
   if (
@@ -63,25 +60,13 @@ function inflateThresholds(ideo) {
   } else {
     thresholds = ideo.rawAnnots.metadata.heatmapThresholds;
   }
-  
-  colors = defaultHeatmapColors[thresholds.length - 1];
+
+  colors = defaultHeatmapColors[thresholds.length + 1];
   thresholds = thresholds.map((d, i) => {
     return [d, '#' + colors[i]];
   });
 
-  // Coarsen thresholds, emphasize outliers, widen normal range.
-  // TODO: Generalize this for arbitrary number of thresholds.
-  crudeThresholds = [
-    [thresholds[4][0], thresholds[0][1]],
-    [thresholds[6][0], thresholds[3][1]],
-    [thresholds[9][0], thresholds[7][1]],
-    [thresholds[11][0], thresholds[10][1]],
-    [thresholds[14][0], thresholds[14][1]]
-  ]
-
-  thresholds = crudeThresholds;
-
-  thresholds[thresholds.length - 1][0] = '+';
+  thresholds.push(['+', '#' + colors.slice(-1)[0]]);
 
   return thresholds;
 }
