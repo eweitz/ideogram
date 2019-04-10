@@ -81,7 +81,7 @@
     function addThresholdControl() {
       if (typeof(expressionThreshold) === 'undefined') {
         expressionThreshold = 50;
-        window.originalHeatmapThresholds = ideogram.config.heatmapThresholds;
+        window.originalHeatmapThresholds = ideogram.rawAnnots.metadata.heatmapThresholds;
       }
 
       expressionThresholdSlider =
@@ -89,7 +89,7 @@
             Expression threshold
           <input type="range" id="expressionThreshold" list="expressionThresholdList" value="` + expressionThreshold + `">
           <datalist id="expressionThresholdList">
-            <option value="0" label="0.5">
+            <option value="0" label="0.">
             <option value="10">
             <option value="20">
             <option value="30">
@@ -111,19 +111,20 @@
 
         window.expressionThreshold = parseFloat(event.target.value);
 
-        window.adjustedexpressionThreshold = expressionThreshold/100 + 0.5
+        window.adjustedExpressionThreshold = expressionThreshold/10 - 4;
         thresholds = window.originalHeatmapThresholds;
         numThresholds = thresholds.length;
+        config.heatmapThresholds = []
 
         // If expressionThreshold > 1, increase thresholds above middle, decrease below
         // If expressionThreshold < 1, decrease thresholds above middle, increase below
         for (i = 0; i < numThresholds; i++) {
           if (i + 1 > numThresholds/2) {
-            newThreshold = thresholds[i] * adjustedexpressionThreshold;
+            newThreshold = thresholds[i + adjustedExpressionThreshold];
           } else {
-            newThreshold = thresholds[i] * 1/adjustedexpressionThreshold;
+            newThreshold = thresholds[i - adjustedExpressionThreshold];
           }
-          config.heatmapThresholds[i] = newThreshold;
+          config.heatmapThresholds.push(newThreshold);
         }
 
         ideogram = new Ideogram(config);
@@ -206,7 +207,7 @@
       legend: legend,
       annotationHeight: 30,
       annotationsLayout: 'heatmap',
-      heatmapThresholds: [0.533, 0.8, 1.2, 1.433],
+      // heatmapThresholds: [0.533, 0.8, 1.2, 1.433],
       annotationsPath: '../../data/annotations/oligodendroglioma_cnv_expression.json',
       onDrawAnnots: addControls
     }
