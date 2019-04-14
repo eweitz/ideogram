@@ -78,12 +78,17 @@
         d3.select('#_ideogramLegend').node().innerHTML += marginSlider;
     }
 
+    /**
+     * Adjust "Expression threshold" by increasing or decreasing sensitivity
+     * for what expression values are considered "high" or "low".  Increasing
+     * this threshold widens the range of values considered normal.
+     */
     function updateThreshold(event) {
       var thresholds, newThreshold, numThresholds, i;
 
-      window.expressionThreshold = parseFloat(event.target.value);
+      window.expressionThreshold = parseInt(event.target.value);
 
-      window.adjustedExpressionThreshold = expressionThreshold/10 - 4;
+      window.adjustedExpressionThreshold = Math.round(expressionThreshold/10 - 4);
       thresholds = window.originalHeatmapThresholds;
       numThresholds = thresholds.length;
       config.heatmapThresholds = []
