@@ -14,7 +14,9 @@ var organismMetadata = {
     scientificName: 'Mus musculus',
     scientificNameAbbr: 'M. musculus',
     assemblies: {
-      default: 'GCF_000001635.20'
+      default: 'GCF_000001635.20', // GRCm38
+      GRCm38: 'GCF_000001635.20',
+      MGSCv37: 'GCF_000001635.18'
     }
   },
   3702: {
@@ -22,7 +24,8 @@ var organismMetadata = {
     scientificName: 'Arabidopsis thaliana',
     scientificNameAbbr: 'A. thaliana',
     assemblies: {
-      default: 'TAIR10'
+      default: 'GCF_000001735.3', // TAIR10
+      TAIR10: 'GCF_000001735.3'
     }
   },
   4641: {

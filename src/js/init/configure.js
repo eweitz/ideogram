@@ -1,4 +1,4 @@
-import {organismMetadata} from './organism-metadata.js';
+import {organismMetadata} from './organism-metadata';
 
 function configurePloidy(ideo) {
   if (!ideo.config.ploidy) ideo.config.ploidy = 1;
