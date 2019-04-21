@@ -92,7 +92,7 @@ function configureSingleChromosome(config, ideo) {
 }
 
 function configureOrganisms(ideo) {
-  ideo.organisms = organismMetadata;
+  ideo.organisms = Object.assign({}, organismMetadata);
   ideo.organismsWithBands = Object.assign({}, ideo.organisms);
 }
 
