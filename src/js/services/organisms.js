@@ -130,7 +130,7 @@ function prepareTmpChrsAndTaxids(ideo) {
     // Gets a list of taxids from common organism names
     org = orgs[i];
     for (taxid in ideo.organisms) {
-      if (ideo.organisms[taxid].commonName.toLowerCase() === org) {
+      if (ideo.organisms[taxid].commonName.toLowerCase() === org.toLowerCase()) {
         taxids.push(taxid);
         if (config.multiorganism) {
           // Adjusts 'chromosomes' configuration parameter to make object

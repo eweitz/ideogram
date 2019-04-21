@@ -194,7 +194,8 @@ function getBandsAndPrepareContainer(taxids, t0, ideo) {
 
   bandFileNames = {
     9606: '',
-    10090: ''
+    10090: '',
+    3702: ''
   };
 
   for (i = 0; i < taxids.length; i++) {
