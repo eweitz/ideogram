@@ -128,9 +128,53 @@ function fetch(url, contentType) {
   }
 }
 
+/**
+ * Get organism's taxid (NCBI Taxonomy ID) given its common or scientific name
+ */
+function getTaxid(name) {
+  var organism, taxid, commonName, scientificName,
+    ideo = this,
+    organisms = ideo.organisms;
+
+  name = name.toLowerCase();
+
+  for (taxid in organisms) {
+    organism = organisms[taxid];
+    commonName = organism.commonName.toLowerCase();
+    scientificName = organism.scientificName.toLowerCase();
+    if (commonName === name || scientificName === name) {
+      return taxid;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Get organism's common name given its taxid
+ */
+function getCommonName(taxid) {
+  var ideo = this;
+  if (taxid in ideo.organisms) {
+    return ideo.organisms[taxid].commonName;
+  }
+  return null;
+}
+
+/**
+ * Get organism's scientific name given its taxid
+ */
+function getScientificName(taxid) {
+  var ideo = this;
+  if (taxid in ideo.organisms) {
+    return ideo.organisms[taxid].scientificName;
+  }
+  return null;
+}
+
 export {
   assemblyIsAccession, hasNonGenBankAssembly, hasGenBankAssembly, getDataDir,
   drawChromosomeLabels, rotateChromosomeLabels, round, appendHomolog,
   drawChromosome, rotateAndToggleDisplay, onDidRotate, getSvg, fetch,
-  setOverflowScroll, d3
+  setOverflowScroll, d3, getTaxid, getCommonName, getScientificName
 };

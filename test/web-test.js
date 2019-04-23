@@ -322,8 +322,10 @@ describe('Ideogram', function() {
       // Mouse: http://www.ncbi.nlm.nih.gov/gene/56717#genomic-context
 
       var chrs = ideogram.chromosomes,
-        chr1 = chrs['9606']['1'],
-        chr4 = chrs['10090']['4'],
+        humanTaxid = ideogram.getTaxid('human'),
+        mouseTaxid = ideogram.getTaxid('mouse'),
+        chr1 = chrs[humanTaxid]['1'],
+        chr4 = chrs[mouseTaxid]['4'],
         syntenicRegions = [],
         range1, range2;
 
