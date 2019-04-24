@@ -359,6 +359,16 @@ describe('Ideogram', function() {
 
       assert.equal(numSyntenicRegions, 1, 'numSyntenicRegions');
 
+      // Test related convenience methods
+      humanCommonName = ideogram.getCommonName('9606');
+      mouseCommonName = ideogram.getCommonName('10090');
+      humanScientificName = ideogram.getScientificName('9606');
+      mouseScientificName = ideogram.getScientificName('10090');
+      assert.equal(humanCommonName, 'Human');
+      assert.equal(mouseCommonName, 'Mouse');
+      assert.equal(humanScientificName, 'Homo sapiens');
+      assert.equal(mouseScientificName, 'Mus musculus');
+
       done();
     }
 
