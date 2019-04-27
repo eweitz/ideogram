@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Homology | Ideogram</title>
+  <style>
+    body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
+    a, a:visited {text-decoration: none;}
+    a:hover {text-decoration: underline;}
+    a, a:hover, a:visited, a:active {color: #0366d6;}
+    label {margin-right: 15px;}
+  </style>
+  <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
+<link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
+</head>
+<body>
+  <h1>Homology | Ideogram</h1>
+  <a href="../">Overview</a> |
+  <a href="homology-advanced">Previous</a> |
+  <a href="annotations-basic">Next</a> |
+  <a href="https://github.com/eweitz/ideogram/blob/gh-pages/homology-interspecies.html" target="_blank">Source</a>
+  <p>
+    Compare genomic feature locations across organisms.
+  </p>
+  <label for="org1">
+    Organism 1:
+    <select id="org1">
+      <option>Human (Homo sapiens)</option>
+      <option>Mouse (Mus musculus)</option>
+      <option>Rat (Rattus norvegicus)</option>
+      <option>Thale cress (Arabidopsis thaliana)</option>
+      <option>Corn (Zea mays)</option>
+      <option>Rice (Oryza sativa)</option>
+    </select>
+  </label>
+  <label for="org2">
+    Organism 2:
+    <select id="org2">
+        <option>Human (Homo sapiens)</option>
+        <option selected>Mouse (Mus musculus)</option>
+        <option>Rat (Rattus norvegicus)</option>
+        <option>Thale cress (Arabidopsis thaliana)</option>
+        <option>Corn (Zea mays)</option>
+        <option>Rice (Oryza sativa)</option>
+      </select>
+  </label>
+  <label for="gene">Gene: <input id="gene"/></label>
+  <br/>
+  <br/>
+  <script type="text/javascript">
+
+    // Parse URL parameters
+    var rawParams = document.location.search;
+    var urlParams = {};
+    var param, key, value;
+    if (rawParams !== '') {
+      rawParams = rawParams.split('?')[1].split('&');
+      rawParams.forEach(rawParam => {
+        param = rawParams.split('=');
+        key = param[0];
+        value = param[1];
+        urlParams[key] = value;
+      });
+    }
+
+    // Set default parameters if none are provided.
+    if ('org' in urlParams === false) {
+      urlParams['org'] = 'homo-sapiens';
+      urlParams['org2'] = 'mus-musculus';
+      urlParams['loci'] = '1:11106531-11262557,4:148448582-148557685';
+    }
+
+    if ('org2' in urlParams === false) {
+      org2 = urlParams['org'];
+      urlParams['org2'] = org2;
+    }
+
+    org1 = urlParams['org'].replace('-', ' ');
+    org2 = urlParams['org2'].replace('-', ' ');
+    [loci1, loci2] = urlParams['loci'].split(',');
+    [loci1Chr, loci1Range] = loci1.split(':');
+    [loci2Chr, loci2Range] = loci2.split(':');
+    [loci1Start, loci1Stop] = loci1Range.split('-');
+    [loci2Start, loci2Stop] = loci2Range.split('-');
+
+    showBandLabels = 'band-labels' in urlParams;
+
+    /**
+     * Gets genomic coordinate data from NCBI EUtils
+     * EUtils docs: https://www.ncbi.nlm.nih.gov/books/NBK25500/
+     */
+    async function getGeneLocation(geneNames, organism) {
+      var geneClause, geneID, geneIDs, locations, orgName, response, data,
+        result, gene, chr, loc, start, stop,
+        eutils, esearch, esummary, url, defaultParams;
+
+      locations = [];
+
+      geneNames.map(d => d.toLowerCase());
+
+      // EUtils is a web API to access NCBI data
+      eutils = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/';
+      defaultParams = '?db=gene&retmode=json&retmax=100';
+
+      // Use ESearch to get NCBI Gene ID for gene name, e.g. BRCA1 -> 672
+      esearch = eutils + 'esearch.fcgi' + defaultParams;
+
+      // Use ESummary to get genomic coordinates for given gene IDs
+      esummary = eutils + 'esummary.fcgi' + defaultParams;
+
+      geneClause = '(' + geneNames.join('[symbol] OR ') + '[symbol])';
+      orgName = organism.replace(' ', '-');
+
+      url = esearch + '&term=' + orgName + '[Organism] AND ' + geneClause;
+      response = await fetch(url);
+      data = await response.json();
+      geneIDs = data.esearchresult.idlist;
+
+      // Batch request genomic coordinates for all ACMG genes
+      url = esummary + '&id=' + geneIDs.join(',');
+      response = await fetch(url);
+      data = await response.json();
+
+      geneIDs.forEach(geneID => {
+        result = data.result[geneID];
+        if (result.currentid !== '' || geneNames.indexOf(result.name.toLowerCase()) === -1 ) {
+          // currentid case occurs when one gene symbol in a taxon maps to
+          // multiple genes.  It seems to be annotation-run noise.
+          // result.name case occurs when gene has a non-canonical alias
+          // matching the gene symbol.
+          // Ignore both.
+          return;
+        }
+        gene = result.name;
+        chr = result.chromosome;
+        loc = result.locationhist[0]; // better than 'genomicinfo'
+        start = loc.chrstart;
+        stop = loc.chrstop;
+
+        locations.push(chr + ':' + start + '-' + stop);
+      });
+
+      return locations;
+  }
+    
+  function onIdeogramLoad() {
+    var chrs, syntheticRegions, humanTaxid, mouseTaxid;
+
+    org1Taxid = ideogram.getTaxid(org1);
+    org2Taxid = ideogram.getTaxid(org2);
+
+    var chrs = ideogram.chromosomes,
+      org1ChrObj = chrs[org1Taxid][loci1Chr],
+      org2ChrObj = chrs[org2Taxid][loci2Chr],
+      syntenicRegions = [];
+
+    range1 = {
+      chr: org1ChrObj,
+      start: loci1Start,
+      stop: loci1Stop
+    };
+
+    range2 = {
+      chr: org2ChrObj,
+      start: loci2Start,
+      stop: loci2Stop
+    };
+
+    syntenicRegions.push({'r1': range1, 'r2': range2});
+
+    ideogram.drawSynteny(syntenicRegions);
+  }
+
+  if (org1 !== org2) {
+    // Orthology
+    organism = [org1, org2];
+    chromosomesConfig = {}
+    chromosomesConfig[org1] = [loci1Chr];
+    chromosomesConfig[org2] = [loci2Chr];
+  } else {
+    // Paralogy
+    organism = org1;
+    chromosomesConfig = [loci1Chr, loci2Chr];
+  }
+
+  var config = {
+    organism: organism,
+    chromosomes: chromosomesConfig,
+    chrHeight: 400,
+    chrMargin: 50,
+    fullChromosomeLabels: true,
+    perspective: 'comparative',
+    showBandLabels: showBandLabels,
+    rotatable: false,
+    onLoad: onIdeogramLoad
+  };
+
+  var ideogram = new Ideogram(config);
+
+  </script>
+</body>
+</html>
