@@ -19,13 +19,14 @@
   <a href="annotations-basic">Next</a> |
   <a href="https://github.com/eweitz/ideogram/blob/gh-pages/homology-interspecies.html" target="_blank">Source</a>
   <p>
-    Compare genomic features across organisms.
+    Compare gene locations across organisms.
   </p>
   <div style="float: left;">
   <label for="org">
     Organism 1:
     <select id="org">
       <option>Human (Homo sapiens)</option>
+      <option>Chimpanzee (Pan troglodytes)</option>
       <option>Mouse (Mus musculus)</option>
       <option>Rat (Rattus norvegicus)</option>
       <option>Thale cress (Arabidopsis thaliana)</option>
@@ -37,6 +38,7 @@
     Organism 2:
     <select id="org2">
         <option>Human (Homo sapiens)</option>
+        <option>Chimpanzee (Pan troglodytes)</option>
         <option selected>Mouse (Mus musculus)</option>
         <option>Rat (Rattus norvegicus)</option>
         <option>Thale cress (Arabidopsis thaliana)</option>
@@ -49,6 +51,8 @@
   <div id="ideogram-container">
   </div>
   <script type="text/javascript">
+
+    var prevState;
 
     // Process text input for the "Gene" field.
     async function handleGene(event) {
@@ -85,9 +89,21 @@
       history.pushState(null, null, '?' + params);
     }
 
-    function processUrl() {
+    // Set the 'Organism 1' or 'Organism 2' menu using a scientific organism name
+    function updateOrganismMenu(orgParam, orgValue) {
+      var selectedOrg = document.querySelector('#' + orgParam + ' option:checked').text;
+      selectedOrg = selectedOrg.split('(')[1].split(')')[0].toLowerCase();
 
-      // Parse URL parameters
+      if (orgValue !== selectedOrg) {
+        document.querySelectorAll('#' + orgParam + ' option').forEach(option => {
+          if (option.text.toLowerCase().includes(orgValue)) {
+            document.querySelector('#' + orgParam).value = option.text;
+          }
+        });
+      }
+    }
+
+    function parseUrlParams() {
       var rawParams = document.location.search;
       urlParams = {};
       var param, key, value;
@@ -100,6 +116,11 @@
           urlParams[key] = value;
         });
       }
+    }
+
+    function processUrl() {
+
+      parseUrlParams();
 
       // Set default parameters if none are provided.
       if ('org' in urlParams === false) {
@@ -114,6 +135,8 @@
         urlParams['org2'] = org2;
       }
 
+      prevState = urlParams;
+
       org1 = urlParams['org'].replace('-', ' ');
       org2 = urlParams['org2'].replace('-', ' ');
       [loci1, loci2] = urlParams['loci'].split(',');
@@ -123,6 +146,10 @@
       [loci2Start, loci2Stop] = loci2Range.split('-');
 
       showBandLabels = 'band-labels' in urlParams;
+
+      updateOrganismMenu('org', org1);
+      updateOrganismMenu('org2', org2);
+      
     }
 
     /**
@@ -175,7 +202,12 @@
         }
         gene = result.name;
         chr = result.chromosome;
-        loc = result.locationhist[0]; // better than 'genomicinfo'
+        if (result.locationhist.length > 0) {
+          loc = result.locationhist[0]; // better than 'genomicinfo', when available
+        } else {
+          // Needed for e.g. Arabidopsis thaliana
+          loc = result.genomicinfo[0];
+        }
         start = loc.chrstart;
         stop = loc.chrstop;
         locations.push(chr + ':' + start + '-' + stop);
