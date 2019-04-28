@@ -29,6 +29,7 @@
       <option>Chimpanzee (Pan troglodytes)</option>
       <option>Mouse (Mus musculus)</option>
       <option>Rat (Rattus norvegicus)</option>
+      <option>Fly (Drosophila melanogaster)</option>
       <option>Thale cress (Arabidopsis thaliana)</option>
       <option>Corn (Zea mays)</option>
       <option>Rice (Oryza sativa)</option>
@@ -41,6 +42,7 @@
         <option>Chimpanzee (Pan troglodytes)</option>
         <option selected>Mouse (Mus musculus)</option>
         <option>Rat (Rattus norvegicus)</option>
+        <option>Fly (Drosophila melanogaster)</option>
         <option>Thale cress (Arabidopsis thaliana)</option>
         <option>Corn (Zea mays)</option>
         <option>Rice (Oryza sativa)</option>
@@ -190,12 +192,20 @@
       response = await fetch(url);
       data = await response.json();
 
-      geneIDs.forEach(geneID => {
+      geneIDs.forEach((geneID, i) => {
+        var geneName, resultName, resultOtherAliases;
         result = data.result[geneID];
-        if (result.currentid !== '' || geneNames.indexOf(result.name.toLowerCase()) === -1 ) {
+        geneName = geneNames[i];
+        resultName = result.name.toLowerCase();
+        resultOtherAliases = result.otheraliases.toLowerCase()
+        if (
+          result.currentid !== '' ||
+          (resultName.includes(geneName) === false &&
+          resultOtherAliases.includes(geneName) === false)
+        ) {
           // currentid case occurs when one gene symbol in a taxon maps to
           // multiple genes.  It seems to be annotation-run noise.
-          // result.name case occurs when gene has a non-canonical alias
+          // resultName case occurs when gene has a non-canonical alias
           // matching the gene symbol.
           // Ignore both.
           return;
@@ -212,6 +222,7 @@
         stop = loc.chrstop;
         locations.push(chr + ':' + start + '-' + stop);
       });
+
       return locations;
   }
     

@@ -64,6 +64,19 @@ var organismMetadata = {
       default: 'mock'
     }
   },
+  7227: {
+    commonName: 'Fly',
+    scientificName: 'Drosophila melanogaster',
+    assemblies: {
+      default: 'GCA_000001215.4',
+      'Release 6 plus ISO1 MT': 'GCA_000001215.4'
+    }
+  }
+  // 6239: {
+  //   commonName: 'Worm',
+  //   scientificName: 'Caenorhabditis elegans',
+  //   assemblies: 
+  // }
 }
 
 export {organismMetadata};
