@@ -155,12 +155,52 @@
     }
 
     /**
-     * Gets genomic coordinate data from NCBI EUtils
+     * Extract genomic location of a gene of interest from NCBI ESummary data.
+     * Helper function for fetchGeneLocation.
+     */
+    function parseESummary(esummary, geneIDs, geneNames, locations) {
+      var geneName, result, resultName, resultOtherAliases, gene, chr, loc,
+        start, stop;
+
+      geneIDs.forEach((geneID, i) => {
+        result = esummary.result[geneID];
+        geneName = geneNames[i];
+        resultName = result.name.toLowerCase();
+        resultOtherAliases = result.otheraliases.toLowerCase()
+        if (
+          result.currentid !== '' ||
+          (resultName.includes(geneName) === false &&
+          resultOtherAliases.includes(geneName) === false) // Needed for Drosophila
+        ) {
+          // currentid case occurs when one gene symbol in a taxon maps to
+          // multiple genes.  It seems to be annotation-run noise.
+          // resultName case occurs when gene has a non-canonical alias
+          // matching the gene symbol.
+          // Ignore both.
+          return;
+        }
+        gene = result.name;
+        chr = result.chromosome;
+        if (result.locationhist.length > 0) {
+          loc = result.locationhist[0]; // better than 'genomicinfo', when available
+        } else {
+          // Needed for e.g. Arabidopsis thaliana
+          loc = result.genomicinfo[0];
+        }
+        start = loc.chrstart;
+        stop = loc.chrstop;
+        locations.push(chr + ':' + start + '-' + stop);
+      });
+
+      return locations;
+    }
+
+    /**
+     * Get genomic coordinate data from NCBI EUtils
      * EUtils docs: https://www.ncbi.nlm.nih.gov/books/NBK25500/
      */
     async function fetchGeneLocation(geneNames, organism) {
       var geneClause, geneID, geneIDs, locations, orgName, response, data,
-        result, gene, chr, loc, start, stop,
         eutils, esearch, esummary, url, defaultParams;
 
       locations = [];
@@ -192,36 +232,7 @@
       response = await fetch(url);
       data = await response.json();
 
-      geneIDs.forEach((geneID, i) => {
-        var geneName, resultName, resultOtherAliases;
-        result = data.result[geneID];
-        geneName = geneNames[i];
-        resultName = result.name.toLowerCase();
-        resultOtherAliases = result.otheraliases.toLowerCase()
-        if (
-          result.currentid !== '' ||
-          (resultName.includes(geneName) === false &&
-          resultOtherAliases.includes(geneName) === false)
-        ) {
-          // currentid case occurs when one gene symbol in a taxon maps to
-          // multiple genes.  It seems to be annotation-run noise.
-          // resultName case occurs when gene has a non-canonical alias
-          // matching the gene symbol.
-          // Ignore both.
-          return;
-        }
-        gene = result.name;
-        chr = result.chromosome;
-        if (result.locationhist.length > 0) {
-          loc = result.locationhist[0]; // better than 'genomicinfo', when available
-        } else {
-          // Needed for e.g. Arabidopsis thaliana
-          loc = result.genomicinfo[0];
-        }
-        start = loc.chrstart;
-        stop = loc.chrstop;
-        locations.push(chr + ':' + start + '-' + stop);
-      });
+      locations = parseESummary(data, geneIDs, geneNames, locations);
 
       return locations;
   }
