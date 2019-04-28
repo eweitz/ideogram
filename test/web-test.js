@@ -1610,6 +1610,10 @@ describe('Ideogram', function() {
         numChromosomes = document.querySelectorAll('.chromosome').length;
         assert.equal(numChromosomes, 24 + 25 + 21);
       }
+
+      // Test that default chimpanzee assembly has centromeres
+      var chimpanzeeQArmBand = document.querySelectorAll('#chr2A-9598-q1').length;
+      assert.equal(chimpanzeeQArmBand, 1)
     }
 
     function onDrawAnnotsCallback() {
