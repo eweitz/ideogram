@@ -54,7 +54,24 @@
   </div>
   <script type="text/javascript">
 
-    var prevState;
+    var prevState = {};
+
+    async function updateGeneParams(geneName) {
+      if (typeof geneName === 'undefined') {
+        geneName = gene;
+      }
+
+      urlParams['gene'] = geneName;
+
+      document.querySelector('#gene').value = geneName;
+
+      // Get location of gene in both organisms.
+      loci1 = await fetchGeneLocation([geneName], org1);
+      loci2 = await fetchGeneLocation([geneName], org2);
+
+      urlParams['loci'] = loci1 + ',' + loci2;
+      updateUrl();
+    }
 
     // Process text input for the "Gene" field.
     async function handleGene(event) {
@@ -64,22 +81,21 @@
       if (event.type === 'keyup' && event.keyCode !== 13) return;
 
       geneName = event.target.value;
-      urlParams[event.target.id] = geneName;
 
-      // Get location of gene in both organisms.
-      loci1 = await fetchGeneLocation([geneName], org1);
-      loci2 = await fetchGeneLocation([geneName], org2);
-
-      urlParams['loci'] = loci1 + ',' + loci2;
+      await updateGeneParams(geneName);
+      await processUrl();
       createIdeogram();
     }
 
     // Process selections in "Organism" drop-down menus
-    function handleOrganism(event) {
+    async function handleOrganism(event) {
       var organism =
           event.target.value.split('(')[1].split(')')[0]
           .replace(' ', '-').toLowerCase();
       urlParams[event.target.id] = organism;
+
+      await updateGeneParams();
+      await processUrl();
       createIdeogram();
     }
 
@@ -120,7 +136,7 @@
       }
     }
 
-    function processUrl() {
+    async function processUrl() {
 
       parseUrlParams();
 
@@ -137,21 +153,31 @@
         urlParams['org2'] = org2;
       }
 
-      prevState = urlParams;
-
       org1 = urlParams['org'].replace('-', ' ');
       org2 = urlParams['org2'].replace('-', ' ');
+
+      showBandLabels = 'band-labels' in urlParams;
+
+      updateOrganismMenu('org', org1);
+      updateOrganismMenu('org2', org2);
+
+      if ('gene' in urlParams) {
+        gene = urlParams['gene'];
+        document.querySelector('#gene').value = gene;
+
+        if (JSON.stringify(urlParams) !== JSON.stringify(prevState)) {
+          prevState = Object.assign({}, urlParams);
+          await updateGeneParams(gene);
+        }
+      }
+
       [loci1, loci2] = urlParams['loci'].split(',');
       [loci1Chr, loci1Range] = loci1.split(':');
       [loci2Chr, loci2Range] = loci2.split(':');
       [loci1Start, loci1Stop] = loci1Range.split('-');
       [loci2Start, loci2Stop] = loci2Range.split('-');
 
-      showBandLabels = 'band-labels' in urlParams;
-
-      updateOrganismMenu('org', org1);
-      updateOrganismMenu('org2', org2);
-      
+      prevState = Object.assign({}, urlParams);
     }
 
     /**
@@ -265,10 +291,10 @@
     ideogram.drawSynteny(syntenicRegions);
   }
 
-  function createIdeogram() {
+  async function createIdeogram() {
 
     updateUrl();
-    processUrl();
+    await processUrl();
 
     if (org1 !== org2) {
       // Orthology
