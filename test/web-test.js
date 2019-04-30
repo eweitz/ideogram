@@ -322,8 +322,10 @@ describe('Ideogram', function() {
       // Mouse: http://www.ncbi.nlm.nih.gov/gene/56717#genomic-context
 
       var chrs = ideogram.chromosomes,
-        chr1 = chrs['9606']['1'],
-        chr4 = chrs['10090']['4'],
+        humanTaxid = ideogram.getTaxid('human'),
+        mouseTaxid = ideogram.getTaxid('mouse'),
+        chr1 = chrs[humanTaxid]['1'],
+        chr4 = chrs[mouseTaxid]['4'],
         syntenicRegions = [],
         range1, range2;
 
@@ -356,6 +358,16 @@ describe('Ideogram', function() {
       console.log(document.getElementsByClassName('syntenicRegion')[0][0]);
 
       assert.equal(numSyntenicRegions, 1, 'numSyntenicRegions');
+
+      // Test related convenience methods
+      humanCommonName = ideogram.getCommonName('9606');
+      mouseCommonName = ideogram.getCommonName('10090');
+      humanScientificName = ideogram.getScientificName('9606');
+      mouseScientificName = ideogram.getScientificName('10090');
+      assert.equal(humanCommonName, 'Human');
+      assert.equal(mouseCommonName, 'Mouse');
+      assert.equal(humanScientificName, 'Homo sapiens');
+      assert.equal(mouseScientificName, 'Mus musculus');
 
       done();
     }
@@ -1598,6 +1610,10 @@ describe('Ideogram', function() {
         numChromosomes = document.querySelectorAll('.chromosome').length;
         assert.equal(numChromosomes, 24 + 25 + 21);
       }
+
+      // Test that default chimpanzee assembly has centromeres
+      var chimpanzeeQArmBand = document.querySelectorAll('#chr2A-9598-q1').length;
+      assert.equal(chimpanzeeQArmBand, 1)
     }
 
     function onDrawAnnotsCallback() {

@@ -7,6 +7,7 @@ import {configure} from './configure';
 import {finishInit} from './finish-init';
 import {writeContainer} from './write-container';
 import {fetchBands} from '../bands/fetch';
+import {organismMetadata} from './organism-metadata';
 
 function isHeterogameticChromosome(chrModel, chrIndex, ideo) {
   var ploidy = ideo.config.ploidy;
@@ -192,9 +193,9 @@ function getBandsAndPrepareContainer(taxids, t0, ideo) {
   ideo.config.taxid = taxid;
   ideo.config.taxids = taxids;
 
-  bandFileNames = {
-    9606: '',
-    10090: ''
+  bandFileNames = {};
+  for (taxid in organismMetadata) {
+    bandFileNames[taxid] = '';
   };
 
   for (i = 0; i < taxids.length; i++) {
