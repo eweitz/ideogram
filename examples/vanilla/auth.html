@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Auth | Ideogram</title>
+  <style>
+    body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
+    a, a:visited {text-decoration: none;}
+    a:hover {text-decoration: underline;}
+    a, a:hover, a:visited, a:active {color: #0366d6;}
+  </style>
+  <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script async defer src="https://apis.google.com/js/api.js" 
+        onload="this.onload=function(){};handleClientLoad()" 
+        onreadystatechange="if (this.readyState === 'complete') this.onload()">
+  </script>
+<link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
+</head>
+<body>
+  <h1>Auth | Ideogram</h1>
+  <a href="../">Overview</a> |
+  <a href="homology-interspecies">Previous</a> |
+  <a href="annotations-overlaid">Next</a> |
+  <a href="https://github.com/eweitz/ideogram/blob/gh-pages/annotations-basic.html" target="_blank">Source</a>
+  <p>
+  Authentication and authorization via Google APIs.  Signing in grants access to protected Ideogram data by including your "Authentication: Bearer" token in the request.
+  </p>
+  <button id="sign-in-or-out-button" style="margin-left: 25px">Sign In/Authorize</button>
+  <button id="revoke-access-button" style="display: none; margin-left: 25px">Revoke access</button>
+
+  <script>
+    var GoogleAuth;
+    var SCOPE = 'https://www.googleapis.com/auth/devstorage.read_only';
+    function handleClientLoad() {
+      // Load the API's client and auth2 modules.
+      // Call the initClient function after the modules load.
+      gapi.load('client:auth2', initClient);
+    }
+  
+    function initClient() {
+  
+      // Initialize the gapi.client object, which app uses to make API requests.
+      // Get API key and client ID from API Console.
+      // 'scope' field specifies space-delimited list of access scopes.
+      gapi.client.init({
+          // This clientId is for  the Ideogram project in Google Cloud Platform.
+          'clientId': '829416742843-558e4gu9cfvdamcb727gh9au8lh7b7tk.apps.googleusercontent.com',
+          'scope': SCOPE
+      }).then(function () {
+        GoogleAuth = gapi.auth2.getAuthInstance();
+  
+        // Listen for sign-in state changes.
+        GoogleAuth.isSignedIn.listen(updateSigninStatus);
+  
+        // Handle initial sign-in state. (Determine if user is already signed in.)
+        var user = GoogleAuth.currentUser.get();
+        setSigninStatus();
+  
+        // Call handleAuthClick function when user clicks on
+        //      "Sign In/Authorize" button.
+        $('#sign-in-or-out-button').click(function() {
+          handleAuthClick();
+        }); 
+        $('#revoke-access-button').click(function() {
+          revokeAccess();
+        }); 
+      });
+    }
+  
+    function handleAuthClick() {
+      if (GoogleAuth.isSignedIn.get()) {
+        // User is authorized and has clicked 'Sign out' button.
+        GoogleAuth.signOut();
+      } else {
+        // User is not signed in. Start Google auth flow.
+        GoogleAuth.signIn();
+      }
+    }
+  
+    function revokeAccess() {
+      GoogleAuth.disconnect();
+    }
+
+    function setSigninStatus(isSignedIn) {
+      var user = GoogleAuth.currentUser.get();
+      var isAuthorized = user.hasGrantedScopes(SCOPE);
+      if (isAuthorized) {
+        accessToken = user.getAuthResponse().access_token;
+
+        config = {
+          organism: 'human',
+          orientation: 'vertical',
+          chromosome: '1',
+          chrHeight: 450,
+          showBandLabels: false,
+          legend: legend,
+          heatmapThresholds: [0, 0.13, 0.27, 0.4, 0.53, 0.67, 0.8, 0.93, 1.1, 1.2, 1.33, 1.47, 1.6, 1.73, 1.87, 2],
+          annotationHeight: 3,
+          accessToken: accessToken,
+          annotationsLayout: 'heatmap-2d',
+          annotationsPath: 'https://www.googleapis.com/storage/v1/b/ideogram-auth/o/oligodendroglioma%2finfercnv.observations.optimized.txt?alt=media'
+        }
+
+        ideogram = new Ideogram(config);
+
+
+        $('#sign-in-or-out-button').html('Sign out');
+        $('#revoke-access-button').css('display', 'inline-block');
+        $('#auth-status').html('You are currently signed in and have granted ' +
+            'access to this app.');
+      } else {
+        $('#sign-in-or-out-button').html('Sign In/Authorize');
+        $('#revoke-access-button').css('display', 'none');
+        $('#auth-status').html('You have not authorized this app or you are ' +
+            'signed out.');
+      }
+    }
+  
+    function updateSigninStatus(isSignedIn) {
+      setSigninStatus();
+    }
+  </script>
+
+<script type="text/javascript">
+
+  d3 = Ideogram.d3;
+
+  var legend = [{
+    name: 'Expression level',
+    rows: [
+      {name: 'Low', color: '#33F'},
+      {name: 'Normal', color: '#CCC'},
+      {name: 'High', color: '#F33'}
+    ]
+  }];
+
+  config = {
+    organism: 'human',
+    orientation: 'vertical',
+    chromosome: '1',
+    chrHeight: 450,
+    showBandLabels: false
+  }
+
+  ideogram = new Ideogram(config);
+
+</script>
+
+</body>
+</html>

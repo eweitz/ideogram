@@ -103,6 +103,9 @@ function setProportionalBarHeight(annots, bars, ideo) {
       } else {
         height = barCountRatio * ideo.config.chrHeightOriginal * 3;
       }
+      if (isNaN(height)) {
+        height = 0;
+      }
       bars[i].annots[j].height = height;
     }
   }

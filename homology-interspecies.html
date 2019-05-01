@@ -34,9 +34,14 @@
       // Human: http://www.ncbi.nlm.nih.gov/gene/2475#genomic-context
       // Mouse: http://www.ncbi.nlm.nih.gov/gene/56717#genomic-context
 
+      var chrs, chr1, chr4, syntheticRegions, humanTaxid, mouseTaxid;
+
+      humanTaxid = ideogram.getTaxid('human');
+      mouseTaxid = ideogram.getTaxid('mouse');
+
       var chrs = ideogram.chromosomes,
-        chr1 = chrs['9606']['1'],
-        chr4 = chrs['10090']['4'],
+        chr1 = chrs[humanTaxid]['1'],
+        chr4 = chrs[mouseTaxid]['4'],
         syntenicRegions = [];
 
       range1 = {
@@ -61,8 +66,8 @@
   var config = {
     organism: ['human', 'mouse'],
     chromosomes: {
-      'human': ['1'],
-      'mouse': ['4']
+      human: ['1'],
+      mouse: ['4']
     },
     chrHeight: 400,
     chrMargin: 50,

@@ -322,8 +322,10 @@ describe('Ideogram', function() {
       // Mouse: http://www.ncbi.nlm.nih.gov/gene/56717#genomic-context
 
       var chrs = ideogram.chromosomes,
-        chr1 = chrs['9606']['1'],
-        chr4 = chrs['10090']['4'],
+        humanTaxid = ideogram.getTaxid('human'),
+        mouseTaxid = ideogram.getTaxid('mouse'),
+        chr1 = chrs[humanTaxid]['1'],
+        chr4 = chrs[mouseTaxid]['4'],
         syntenicRegions = [],
         range1, range2;
 
@@ -356,6 +358,16 @@ describe('Ideogram', function() {
       console.log(document.getElementsByClassName('syntenicRegion')[0][0]);
 
       assert.equal(numSyntenicRegions, 1, 'numSyntenicRegions');
+
+      // Test related convenience methods
+      humanCommonName = ideogram.getCommonName('9606');
+      mouseCommonName = ideogram.getCommonName('10090');
+      humanScientificName = ideogram.getScientificName('9606');
+      mouseScientificName = ideogram.getScientificName('10090');
+      assert.equal(humanCommonName, 'Human');
+      assert.equal(mouseCommonName, 'Mouse');
+      assert.equal(humanScientificName, 'Homo sapiens');
+      assert.equal(mouseScientificName, 'Mus musculus');
 
       done();
     }
@@ -1598,6 +1610,10 @@ describe('Ideogram', function() {
         numChromosomes = document.querySelectorAll('.chromosome').length;
         assert.equal(numChromosomes, 24 + 25 + 21);
       }
+
+      // Test that default chimpanzee assembly has centromeres
+      var chimpanzeeQArmBand = document.querySelectorAll('#chr2A-9598-q1').length;
+      assert.equal(chimpanzeeQArmBand, 1)
     }
 
     function onDrawAnnotsCallback() {
@@ -2205,5 +2221,38 @@ describe('Ideogram', function() {
     });
   });
 
+  it('should add "Authentication: Bearer" when access token is provided', function(done) {
+    // Tests use case from ../examples/vanilla/auth.html
 
+    // Monkey patch the fetch method to intercept request and inspect HTTP
+    // "Authorization" header for test access token.
+    var originalFetch = window.fetch;
+    window.fetch = function() {
+      if (arguments.length > 1 && /googleapis/.test(arguments[0])) {
+        var bearer = arguments[1].headers.get("authorization");
+        assert.equal(bearer, 'Bearer mockAccessToken');
+        done();
+        return; // Don't send request for remote resource, as test passed
+      }
+      return originalFetch.apply(this, arguments);
+    }
+
+    var accessToken = 'mockAccessToken';
+
+    config = {
+      organism: 'human',
+      orientation: 'vertical',
+      chromosome: '1',
+      chrHeight: 450,
+      showBandLabels: false,
+      heatmapThresholds: [0, 0.13, 0.27, 0.4, 0.53, 0.67, 0.8, 0.93, 1.1, 1.2, 1.33, 1.47, 1.6, 1.73, 1.87, 2],
+      annotationHeight: 3,
+      accessToken: accessToken,
+      annotationsLayout: 'heatmap-2d',
+      annotationsPath: 'https://www.googleapis.com/storage/v1/b/ideogram-dev/o/oligodendroglioma%2finfercnv.observations.optimized.txt?alt=media',
+      dataDir: '/dist/data/bands/native/'
+    }
+
+    ideogram = new Ideogram(config);
+  });
 });

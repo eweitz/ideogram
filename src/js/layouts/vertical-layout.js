@@ -20,7 +20,8 @@ class VerticalLayout extends Layout {
     };
   }
 
-  rotateForward(setIndex, chrIndex, chrElement, callback) {
+  rotateForward(chrSetIndex, chrIndex, chrElement, callback) {
+    // TODO: Integrate chrSetIndex and chrIndex to support polyploid rotation.
 
     var self = this;
 
@@ -154,7 +155,8 @@ class VerticalLayout extends Layout {
       // when histogram used
 
       if (this._config.annotationsLayout === 'histogram') {
-        return margin / 2 + setIndex * (margin + width + 2) + pad * 2 + 1;
+        var barWidth = this._ideo.config.barWidth;
+        return margin + setIndex * (margin + width + 3) + barWidth * 2;
       } else {
         translate = width + setIndex * (margin + width) + pad * 2;
         if (pad > 0) {
