@@ -9,7 +9,7 @@ var reservedTrackKeys = [
 var defaultHeatmapColors = {
   3: ['00B', 'DDD', 'F00'],
   5: ['00D', '66D', 'DDD', 'F88', 'F00'],
-  17: ['00D', '00D', '00D', '00D', '44D', '44D', 'DDD', 'DDD', 'DDD', 'DDD', 'F88', 'F66', 'F22', 'F22', 'F00']
+  17: ['00D', '00D', '00D', '00D', '00D', '44D', '44D', 'DDD', 'DDD', 'DDD', 'DDD', 'F88', 'F66', 'F22', 'F22', 'F00', 'F00', 'F00']
 }
 
 /**
