@@ -22,6 +22,11 @@
       position: relative;
       top: -18px;
     }
+
+    .glossary {
+      border-bottom: 1px #555 dashed;
+      cursor: help;
+    }
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
 <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
@@ -114,7 +119,9 @@
 
       expressionThresholdSlider =
         `<label id="expressionThresholdContainer">
+            <span class="glossary" title="Denoiser.  Adjusts mapping between inferCNV's output heatmap threshold values and normal vs. loss/gain signal.  Analogous to inferCNV denoise parameters, e.g. --noise_filter.">
             Expression threshold
+            </span>
           <input type="range" id="expressionThreshold" list="expressionThresholdList" value="` + expressionThreshold + `">
           <datalist id="expressionThresholdList">
             <option value="0" label="0.">
