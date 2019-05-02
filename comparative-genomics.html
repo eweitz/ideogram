@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Comparative genomics | Ideogram</title>
+  <style>
+    body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
+    a, a:visited {text-decoration: none;}
+    a:hover {text-decoration: underline;}
+    a, a:hover, a:visited, a:active {color: #0366d6;}
+    label {display: block; margin-bottom: 10px;}
+  </style>
+  <script type="text/javascript" src="dist/js/ideogram.min.js"></script>
+<link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
+</head>
+<body>
+  <h1>Comparative genomics | Ideogram</h1>
+  <a href="../">Overview</a> |
+  <a href="homology-advanced">Previous</a> |
+  <a href="annotations-basic">Next</a> |
+  <a href="https://github.com/eweitz/ideogram/blob/gh-pages/comparative-genomics.html" target="_blank">Source</a>
+  <p>
+    Compare gene locations across organisms.
+  </p>
+  <div style="float: left;">
+  <label for="org">
+    Organism 1:
+    <select id="org">
+      <option>Human (Homo sapiens)</option>
+      <option>Chimpanzee (Pan troglodytes)</option>
+      <option>Mouse (Mus musculus)</option>
+      <option>Rat (Rattus norvegicus)</option>
+      <option>Fly (Drosophila melanogaster)</option>
+      <option>Thale cress (Arabidopsis thaliana)</option>
+      <option>Corn (Zea mays)</option>
+      <option>Rice (Oryza sativa)</option>
+    </select>
+  </label>
+  <label for="org2">
+    Organism 2:
+    <select id="org2">
+        <option>Human (Homo sapiens)</option>
+        <option>Chimpanzee (Pan troglodytes)</option>
+        <option selected>Mouse (Mus musculus)</option>
+        <option>Rat (Rattus norvegicus)</option>
+        <option>Fly (Drosophila melanogaster)</option>
+        <option>Thale cress (Arabidopsis thaliana)</option>
+        <option>Corn (Zea mays)</option>
+        <option>Rice (Oryza sativa)</option>
+      </select>
+  </label>
+  <label for="gene">Gene: <input id="gene"/></label>
+  </div>
+  <div id="ideogram-container">
+  </div>
+  <script type="text/javascript">
+
+    var prevState = {};
+
+    async function updateGeneParams(geneName) {
+      if (typeof geneName === 'undefined') {
+        geneName = gene;
+      }
+
+      urlParams['gene'] = geneName;
+
+      document.querySelector('#gene').value = geneName;
+
+      // Get location of gene in both organisms.
+      loci1 = await fetchGeneLocation([geneName], org1);
+      loci2 = await fetchGeneLocation([geneName], org2);
+
+      urlParams['loci'] = loci1 + ',' + loci2;
+      updateUrl();
+    }
+
+    // Process text input for the "Gene" field.
+    async function handleGene(event) {
+      var geneName, loci1, loci2;
+
+      // Ignore non-"Enter" keyups
+      if (event.type === 'keyup' && event.keyCode !== 13) return;
+
+      geneName = event.target.value;
+
+      await updateGeneParams(geneName);
+      await processUrl();
+      createIdeogram();
+    }
+
+    // Process selections in "Organism" drop-down menus
+    async function handleOrganism(event) {
+      var organism =
+          event.target.value.split('(')[1].split(')')[0]
+          .replace(' ', '-').toLowerCase();
+      urlParams[event.target.id] = organism;
+
+      await updateGeneParams();
+      await processUrl();
+      createIdeogram();
+    }
+
+    // Record app state in URL
+    function updateUrl() {
+      var params = Object.keys(urlParams).map(key => {
+        return key + '=' + urlParams[key];
+      }).join('&');
+      history.pushState(null, null, '?' + params);
+    }
+
+    // Set the 'Organism 1' or 'Organism 2' menu using a scientific organism name
+    function updateOrganismMenu(orgParam, orgValue) {
+      var selectedOrg = document.querySelector('#' + orgParam + ' option:checked').text;
+      selectedOrg = selectedOrg.split('(')[1].split(')')[0].toLowerCase();
+
+      if (orgValue !== selectedOrg) {
+        document.querySelectorAll('#' + orgParam + ' option').forEach(option => {
+          if (option.text.toLowerCase().includes(orgValue)) {
+            document.querySelector('#' + orgParam).value = option.text;
+          }
+        });
+      }
+    }
+
+    function parseUrlParams() {
+      var rawParams = document.location.search;
+      urlParams = {};
+      var param, key, value;
+      if (rawParams !== '') {
+        rawParams = rawParams.split('?')[1].split('&');
+        rawParams.forEach(rawParam => {
+          param = rawParam.split('=');
+          key = param[0];
+          value = param[1];
+          urlParams[key] = value;
+        });
+      }
+    }
+
+    async function processUrl() {
+
+      parseUrlParams();
+
+      // Set default parameters if none are provided.
+      if ('org' in urlParams === false) {
+        urlParams['org'] = 'homo-sapiens';
+        urlParams['org2'] = 'mus-musculus';
+        urlParams['loci'] = '1:11106531-11262557,4:148448582-148557685';
+      }
+
+      // If "org2" is omitted, set it to the value of "org"
+      if ('org2' in urlParams === false) {
+        org2 = urlParams['org'];
+        urlParams['org2'] = org2;
+      }
+
+      org1 = urlParams['org'].replace('-', ' ');
+      org2 = urlParams['org2'].replace('-', ' ');
+
+      showBandLabels = 'band-labels' in urlParams;
+
+      updateOrganismMenu('org', org1);
+      updateOrganismMenu('org2', org2);
+
+      if ('gene' in urlParams) {
+        gene = urlParams['gene'];
+        document.querySelector('#gene').value = gene;
+
+        if (JSON.stringify(urlParams) !== JSON.stringify(prevState)) {
+          prevState = Object.assign({}, urlParams);
+          await updateGeneParams(gene);
+        }
+      }
+
+      [loci1, loci2] = urlParams['loci'].split(',');
+      [loci1Chr, loci1Range] = loci1.split(':');
+      [loci2Chr, loci2Range] = loci2.split(':');
+      [loci1Start, loci1Stop] = loci1Range.split('-');
+      [loci2Start, loci2Stop] = loci2Range.split('-');
+
+      prevState = Object.assign({}, urlParams);
+    }
+
+    /**
+     * Extract genomic location of a gene of interest from NCBI ESummary data.
+     * Helper function for fetchGeneLocation.
+     */
+    function parseESummary(esummary, geneIDs, geneNames, locations) {
+      var geneName, result, resultName, resultOtherAliases, gene, chr, loc,
+        start, stop;
+
+      geneIDs.forEach((geneID, i) => {
+        result = esummary.result[geneID];
+        geneName = geneNames[i];
+        resultName = result.name.toLowerCase();
+        resultOtherAliases = result.otheraliases.toLowerCase()
+        if (
+          result.currentid !== '' ||
+          (resultName.includes(geneName) === false &&
+          resultOtherAliases.includes(geneName) === false) // Needed for Drosophila
+        ) {
+          // currentid case occurs when one gene symbol in a taxon maps to
+          // multiple genes.  It seems to be annotation-run noise.
+          // resultName case occurs when gene has a non-canonical alias
+          // matching the gene symbol.
+          // Ignore both.
+          return;
+        }
+        gene = result.name;
+        chr = result.chromosome;
+        if (result.locationhist.length > 0) {
+          loc = result.locationhist[0]; // better than 'genomicinfo', when available
+        } else {
+          // Needed for e.g. Arabidopsis thaliana
+          loc = result.genomicinfo[0];
+        }
+        start = loc.chrstart;
+        stop = loc.chrstop;
+        locations.push(chr + ':' + start + '-' + stop);
+      });
+
+      return locations;
+    }
+
+    /**
+     * Get genomic coordinate data from NCBI EUtils
+     * EUtils docs: https://www.ncbi.nlm.nih.gov/books/NBK25500/
+     */
+    async function fetchGeneLocation(geneNames, organism) {
+      var geneClause, geneID, geneIDs, locations, orgName, response, data,
+        eutils, esearch, esummary, url, defaultParams;
+
+      locations = [];
+
+      geneNames = geneNames.map(d => d.toLowerCase());
+
+      // EUtils is a web API to access NCBI data
+      eutils = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/';
+      defaultParams =
+        '?db=gene&retmode=json&retmax=100' +
+        '&api_key=7e33ac6a08a6955ec3b83d214d22b21a2808';
+
+      // Use ESearch to get NCBI Gene ID for gene name, e.g. BRCA1 -> 672
+      esearch = eutils + 'esearch.fcgi' + defaultParams;
+
+      // Use ESummary to get genomic coordinates for given gene IDs
+      esummary = eutils + 'esummary.fcgi' + defaultParams;
+
+      geneClause = '(' + geneNames.join('[symbol] OR ') + '[symbol])';
+      orgName = organism.replace(' ', '-');
+
+      url = esearch + '&term=' + orgName + '[Organism] AND ' + geneClause;
+      response = await fetch(url);
+      data = await response.json();
+      geneIDs = data.esearchresult.idlist;
+
+      // Batch request genomic coordinates for all ACMG genes
+      url = esummary + '&id=' + geneIDs.join(',');
+      response = await fetch(url);
+      data = await response.json();
+
+      locations = parseESummary(data, geneIDs, geneNames, locations);
+
+      return locations;
+  }
+    
+  function onIdeogramLoad() {
+    var chrs, syntheticRegions, humanTaxid, mouseTaxid;
+
+    org1Taxid = ideogram.getTaxid(org1);
+    org2Taxid = ideogram.getTaxid(org2);
+
+    var chrs = ideogram.chromosomes,
+      org1ChrObj = chrs[org1Taxid][loci1Chr],
+      org2ChrObj = chrs[org2Taxid][loci2Chr],
+      syntenicRegions = [];
+
+    range1 = {
+      chr: org1ChrObj,
+      start: loci1Start,
+      stop: loci1Stop
+    };
+
+    range2 = {
+      chr: org2ChrObj,
+      start: loci2Start,
+      stop: loci2Stop
+    };
+
+    syntenicRegions.push({'r1': range1, 'r2': range2});
+
+    ideogram.drawSynteny(syntenicRegions);
+  }
+
+  async function createIdeogram() {
+
+    updateUrl();
+    await processUrl();
+
+    if (org1 !== org2) {
+      // Orthology
+      organism = [org1, org2];
+      chromosomesConfig = {};
+      chromosomesConfig[org1] = [loci1Chr];
+      chromosomesConfig[org2] = [loci2Chr];
+    } else {
+      // Paralogy
+      organism = org1;
+      chromosomesConfig = [loci1Chr, loci2Chr];
+    }
+
+    var config = {
+      container: '#ideogram-container',
+      organism: organism,
+      chromosomes: chromosomesConfig,
+      chrHeight: 400,
+      chrMargin: 50,
+      fullChromosomeLabels: true,
+      perspective: 'comparative',
+      showBandLabels: showBandLabels,
+      rotatable: false,
+      onLoad: onIdeogramLoad
+    };
+
+    delete chrBands;
+
+    ideogram = new Ideogram(config);
+  }
+
+  document.querySelector('#gene').addEventListener('blur', handleGene);
+  document.querySelector('#gene').addEventListener('keyup', handleGene);
+  document.querySelectorAll('select').forEach(select => {
+    select.addEventListener('change', handleOrganism);
+  });
+
+  processUrl();
+
+  createIdeogram();
+
+  </script>
+</body>
+</html>
