@@ -54,11 +54,7 @@ def get_centromere_parts(centromere, chr, new_bands, bands, band, i, j, pcen_ind
             if chr == '1':
                 logger.info('Omit band:')
                 logger.info(band)
-            print('j before')
-            print(j)
             j += 1
-            print('j after')
-            print(j)
             return [j, arm]
 
         if pcen_index is None:
@@ -66,9 +62,6 @@ def get_centromere_parts(centromere, chr, new_bands, bands, band, i, j, pcen_ind
             bands, new_bands = update_bands(centromere, bands, new_bands, chr,
                 i, j)
             pcen, qcen = get_pcen_and_qcen(centromere, chr)
-
-    print('[arm, pcen, qcen, j, pcen_index]')
-    print([arm, pcen, qcen, j, pcen_index])
     return [arm, pcen, qcen, new_bands, bands, j, pcen_index]
 
 

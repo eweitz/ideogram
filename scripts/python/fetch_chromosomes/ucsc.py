@@ -188,7 +188,6 @@ def fetch_from_ucsc(logger, times, unfound_dbs):
     To connect via Terminal (e.g. to debug), run:
     mysql --user=genome --host=genome-mysql.soe.ucsc.edu -A
     """
-    print('Entering fetch_from_ucsc, ucsc')
     t0 = time_ms()
     cursor = get_ucsc_cursor(logger)
     

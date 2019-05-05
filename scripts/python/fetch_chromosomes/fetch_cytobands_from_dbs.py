@@ -118,7 +118,6 @@ def pool_processing(party):
     """
     global unfound_dbs
     global times
-    print('in fetch_cytobands_from_dbs, pool_processing')
     logger.info('Entering pool processing, party: ' + party)
     if party == 'ensembl':
         org_map, times = fetch_from_ensembl_genomes(times, logger)
@@ -191,8 +190,6 @@ def write_chr_bands(org, nr_org_map, maize_centromeres):
     for chr in chrs:
         bands = bands_by_chr[chr]
         for band in bands:
-            print('band')
-            print(band)
             if band is None:
                 continue
             band_list.append(chr + ' ' + ' '.join(band))
@@ -240,7 +237,6 @@ def main():
         entry = write_chr_bands(org, nr_org_map, maize_centromeres)
         manifest[org] = entry
 
-    print('exiting main, fetch_cytobands_from_dbs')
     return manifest
 
 if __name__ == '__main__':
