@@ -346,6 +346,7 @@ def pool_processing(uid_list):
     # Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?retmode=json&db=assembly&id=733711
     with request.urlopen(asm_summary) as response:
         data = json.loads(response.read().decode('utf-8'))
+    time.sleep(3) # Delay for 3 seconds
 
     ftp = ftplib.FTP(ftp_domain)
     ftp.login()
@@ -355,11 +356,12 @@ def pool_processing(uid_list):
 
     ftp.quit()
 
+api_key = '&api_key=7e33ac6a08a6955ec3b83d214d22b21a2808'
 
 eutils = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
-esearch = eutils + 'esearch.fcgi?retmode=json'
-esummary = eutils + 'esummary.fcgi?retmode=json'
-elink = eutils + 'elink.fcgi?retmode=json'
+esearch = eutils + 'esearch.fcgi?retmode=json' + api_key
+esummary = eutils + 'esummary.fcgi?retmode=json' + api_key
+elink = eutils + 'elink.fcgi?retmode=json' + api_key
 
 asms = []
 
@@ -385,7 +387,7 @@ non_ncbi_manifest = fetch_cytobands_from_dbs.main()
 print('after non_ncbi_manifest, get_chromosomes')
 
 # TODO: Make this configurable
-num_threads = 24
+num_threads = 1
 
 uid_lists = chunkify(top_uid_list, num_threads)
 

@@ -24,6 +24,7 @@ def query_accession_from_eutils(assembly_uid):
 
     # Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?retmode=json&db=assembly&id=255628
     data = json.loads(request(asm_summary))
+    time.sleep(3)
     result = data['result'][assembly_uid]
     acc = result['assemblyaccession'] # Accession.version
 
@@ -46,6 +47,7 @@ def get_genbank_accession_from_ucsc_name(db, times, unfound_dbs, logger):
 
     # Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=assembly&retmode=json&term=panTro4
     data = json.loads(request(asm_search))
+    time.sleep(3)
     id_list = data['esearchresult']['idlist']
     if len(id_list) > 0:
         assembly_uid = id_list[0]
@@ -161,7 +163,7 @@ def pool_fetch_org_map(db_tuples, times, unfound_dbs, logger):
     # Take the list of DBs we want to query for cytoBandIdeo data, split it
     # into 30 smaller lists, then launch a new thread for each of those small
     # new DB lists to divide up the work of querying remote DBs.
-    num_threads = 30
+    num_threads = 1
     db_tuples_lists = chunkify(db_tuples, num_threads)
     with ThreadPoolExecutor(max_workers=num_threads) as pool:
         results = pool.map(
