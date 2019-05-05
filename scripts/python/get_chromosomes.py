@@ -10,10 +10,11 @@ import io
 from concurrent.futures import ThreadPoolExecutor
 import time
 import pprint
-import settings
 
-import convert_band_data
-import get_cytobands_from_remote_dbs
+import fetch_chromosomes.settings as settings
+import fetch_chromosomes.convert_band_data as convert_band_data
+import fetch_chromosomes.fetch_cytobands_from_dbs as fetch_cytobands_from_dbs
+import fetch_chromosomes.utils as utils
 
 output_dir = '../../data/bands/native/'
 
@@ -25,7 +26,6 @@ if os.path.exists(output_dir) == False:
 orgs_with_centromere_data = {}
 
 ftp_domain = 'ftp.ncbi.nlm.nih.gov'
-
 
 manifest = {}
 
@@ -270,7 +270,6 @@ def download_genome_agp(ftp, asm):
 
 
 def find_genomes_with_centromeres(ftp, asm_summary_response):
-
     data = asm_summary_response
 
     logger.info('numbers of keys in asm_summary_response:')
@@ -344,6 +343,7 @@ def pool_processing(uid_list):
     # Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?retmode=json&db=assembly&id=733711
     with request.urlopen(asm_summary) as response:
         data = json.loads(response.read().decode('utf-8'))
+    time.sleep(3) # Delay for 3 seconds
 
     ftp = ftplib.FTP(ftp_domain)
     ftp.login()
@@ -352,11 +352,12 @@ def pool_processing(uid_list):
 
     ftp.quit()
 
+api_key = '&api_key=7e33ac6a08a6955ec3b83d214d22b21a2808'
 
 eutils = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
-esearch = eutils + 'esearch.fcgi?retmode=json'
-esummary = eutils + 'esummary.fcgi?retmode=json'
-elink = eutils + 'elink.fcgi?retmode=json'
+esearch = eutils + 'esearch.fcgi?retmode=json' + api_key
+esummary = eutils + 'esummary.fcgi?retmode=json' + api_key
+elink = eutils + 'elink.fcgi?retmode=json' + api_key
 
 asms = []
 
@@ -377,17 +378,24 @@ top_uid_list = data['esearchresult']['idlist']
 
 logger.info('Assembly UIDs returned in search results: ' + str(len(top_uid_list)))
 
-old_manifest = get_cytobands_from_remote_dbs.main()
+non_ncbi_manifest = fetch_cytobands_from_dbs.main()
 
 # TODO: Make this configurable
-num_threads = 24
+num_threads = 1
 
 uid_lists = chunkify(top_uid_list, num_threads)
 
 with ThreadPoolExecutor(max_workers=num_threads) as pool:
     pool.map(pool_processing, uid_lists)
 
-manifest.update(old_manifest)
+logger.info('manifest')
+logger.info(manifest)
+# logger.info('non_ncbi_manifest')
+# logger.info(non_ncbi_manifest)
+
+#non_ncbi_manifest.update(manifest)
+
+#manifest = non_ncbi_manifest
 
 # Write a manifest of organisms for which we have cytobands.
 # This enables Ideogram.js to more quickly load those organisms.
