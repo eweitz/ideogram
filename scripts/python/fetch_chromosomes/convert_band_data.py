@@ -136,8 +136,8 @@ def main():
                 columns = row.replace('\n', '').replace('\t', ' ')
                 output.append(columns)
 
+        output = {'chrBands': output}
         output = json.dumps(output)
-        output = 'window.chrBands = ' + output + ';'
         open(output_file, 'w').write(output)
 
         # Write assembly-specific name, if default omits assembly
