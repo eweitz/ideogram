@@ -21,7 +21,7 @@ from os import walk
 # * ideogram_$taxonomyID_$primaryAssemblyUnitAccession_$bandResolution_$version
 #
 # Transformed data files have been renamed to use the following pattern:
-# * $scientificName-$assemblyAccession-$bandResolution.js
+# * $scientificName-$assemblyAccession-$bandResolution.json
 #
 # The renaming improves human intelligibility, and allows Ideogram.js to
 # bypass API calls to look up Taxonomy IDs and primary assembly unit
@@ -98,7 +98,7 @@ def main():
         else:
             # e.g. "banana.tsv" -- for pre-accessioned assemblies
             fn = [fn]
-        output_file = out_dir + fn[0] + '.js'
+        output_file = out_dir + fn[0] + '.json'
 
         rows = open(in_dir + input_file, 'r').readlines()
 
@@ -142,7 +142,7 @@ def main():
 
         # Write assembly-specific name, if default omits assembly
         if len(fn) > 1:
-            output_file_2 = out_dir + fn[1] + '.js'
+            output_file_2 = out_dir + fn[1] + '.json'
             open(output_file_2, 'w').write(output)
 
 

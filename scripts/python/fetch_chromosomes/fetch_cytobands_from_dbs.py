@@ -195,8 +195,8 @@ def write_chr_bands(org, nr_org_map, maize_centromeres):
             band_list.append(chr + ' ' + ' '.join(band))
 
     # Write actual cytoband data to file,
-    # e.g. ../data/bands/native/anopheles-gambiae.js
-    with open(output_dir + org + '.js', 'w') as f:
+    # e.g. ../data/bands/native/anopheles-gambiae.json
+    with open(output_dir + org + '.json', 'w') as f:
         output = {'chrBands': band_list}
         output = json.dumps(output)
         f.write(output)

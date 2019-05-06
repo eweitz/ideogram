@@ -49,8 +49,8 @@ function setTaxidData(taxid) {
       if (response.ok === false) {
         reject(Error('Fetch failed for ' + chromosomesUrl));
       } else {
-        return response.text().then(function(text) {
-          resolve(text);
+        return response.json().then(function(json) {
+          resolve(json);
         });
       }
     });
@@ -67,7 +67,7 @@ function setTaxidData(taxid) {
         seenChrs = {},
         chr;
 
-    eval(data);
+    window.chrBands = data.chrBands;
 
     for (var i = 0; i < chrBands.length; i++) {
       chr = chrBands[i].split(' ')[0];
