@@ -146,8 +146,8 @@ def write_centromere_data(organism, asm_name, asm_acc, output_dir, chrs):
     ):
         logger.info('Got no-bands assembly: ' + asm_name)
         leaf = '-no-bands'
-    output_path = output_dir + organism + leaf + '.js'
-    long_output_path = output_dir + organism + '-' + asm_acc + '.js'
+    output_path = output_dir + organism + leaf + '.json'
+    long_output_path = output_dir + organism + '-' + asm_acc + '.json'
 
     adapted_chromosomes = []
 
@@ -182,7 +182,8 @@ def write_centromere_data(organism, asm_name, asm_acc, output_dir, chrs):
             adapted_chromosomes.append(
                 name + ' n 1 0 ' + iscn_stop_q + ' 0 ' + length
             )
-    js_chrs = 'window.chrBands = ' + json.dumps(adapted_chromosomes)
+    adapted_chromosomes = {'chrBands': adapted_chromosomes}
+    js_chrs = json.dumps(adapted_chromosomes)
 
     with open(output_path, 'w') as f:
         f.write(js_chrs)

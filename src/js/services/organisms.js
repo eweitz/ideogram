@@ -42,15 +42,15 @@ function setTaxidData(taxid) {
   if (fullyBandedTaxids.includes(taxid) && !ideo.config.showFullyBanded) {
     urlOrg += '-no-bands';
   }
-  var chromosomesUrl = dataDir + urlOrg + '.js';
+  var chromosomesUrl = dataDir + urlOrg + '.json';
 
   var promise2 = new Promise(function(resolve, reject) {
     fetch(chromosomesUrl).then(function(response) {
       if (response.ok === false) {
         reject(Error('Fetch failed for ' + chromosomesUrl));
       } else {
-        return response.text().then(function(text) {
-          resolve(text);
+        return response.json().then(function(json) {
+          resolve(json);
         });
       }
     });
@@ -67,7 +67,7 @@ function setTaxidData(taxid) {
         seenChrs = {},
         chr;
 
-    eval(data);
+    window.chrBands = data.chrBands;
 
     for (var i = 0; i < chrBands.length; i++) {
       chr = chrBands[i].split(' ')[0];
