@@ -42,7 +42,7 @@ function setTaxidData(taxid) {
   if (fullyBandedTaxids.includes(taxid) && !ideo.config.showFullyBanded) {
     urlOrg += '-no-bands';
   }
-  var chromosomesUrl = dataDir + urlOrg + '.js';
+  var chromosomesUrl = dataDir + urlOrg + '.json';
 
   var promise2 = new Promise(function(resolve, reject) {
     fetch(chromosomesUrl).then(function(response) {
