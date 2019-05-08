@@ -87,6 +87,18 @@
       createIdeogram();
     }
 
+    async function getOrthologyPair(geneName, org1, org2) {
+      var uniprotBase, query, response, data, lines;
+
+      uniprotBase = 'https://www.uniprot.org/uniprot/?format=tab&query=reviewed:yes+AND+';
+      query = 'gene:' + geneName + '+AND+organism:' + org1;
+      response = await fetch(uniprotBase + query);
+      data = await response.text();
+      lines = data.split('\n');
+      // Headers: Entry, Entry name, Status, Protein names, Gene names, Organism, Length
+
+    }
+
     // Process selections in "Organism" drop-down menus
     async function handleOrganism(event) {
       var organism =
