@@ -87,16 +87,48 @@
       createIdeogram();
     }
 
-    async function getOrthologyPair(geneName, org1, org2) {
-      var uniprotBase, query, response, data, lines;
+    /**
+     * Query Uniprot API for protein entry name (e.g. P53_RAT) given gene and
+     * organism.  This output is needed as input for the OMA API.
+     */
+    async function fetchUniprotEntryName(gene, org) {
+      var uniprotBase, columns, query, query, response, data, lines, columns,
+        i, genes, unitprotEntryName;
 
-      uniprotBase = 'https://www.uniprot.org/uniprot/?format=tab&query=reviewed:yes+AND+';
-      query = 'gene:' + geneName + '+AND+organism:' + org1;
+      // Selected headers:
+      //   - Entry, Entry name, Gene names
+      // Default headers (omit `columns` parameter):
+      //   - Entry, Entry name, Status, Protein names, Gene names, Organism, Length
+      columns = 'columns=id,entry name,genes&';
+
+      // API docs: https://www.uniprot.org/help/api_queries
+      uniprotBase = 'https://www.uniprot.org/uniprot/?format=tab&' + columns;
+      query = 'query=reviewed:yes+AND+gene:' + gene + '+AND+organism:' + org;
       response = await fetch(uniprotBase + query);
       data = await response.text();
-      lines = data.split('\n');
-      // Headers: Entry, Entry name, Status, Protein names, Gene names, Organism, Length
+      lines = data.split('\n').slice(1, -1); // Omit headers, empty last line
 
+      for (i = 0; i < lines.length; i++) {
+        columns = lines[i].split('\t');
+        genes = columns[2].split(' ').map(d => d.toLowerCase()); // e.g. tp53
+        uniprotEntryName = columns[1]; // e.g. P53_RAT
+
+        if (genes.includes(gene)) return uniprotEntryName;
+      }
+
+      throw Error(
+        'No Uniprot entry found for gene name "' + gene + '" ' +
+        'in organism "' + org + '"'
+      );
+    }
+
+    async function fetchOrthologyPair(gene, org1, org2) {
+      var uniprotBase, query, response, data, lines, protein1, protein2;
+
+      gene = gene.toLowerCase();
+      protein1 = await fetchUniprotEntryName(gene, org1);
+      
+      return protein1;
     }
 
     // Process selections in "Organism" drop-down menus
