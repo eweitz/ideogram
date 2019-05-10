@@ -55,6 +55,7 @@
   <script type="text/javascript">
 
     var prevState = {};
+    var omaBase = 'https://omabrowser.org/api';
 
     async function updateGeneParams(geneName) {
       if (typeof geneName === 'undefined') {
@@ -91,9 +92,9 @@
      * Query Uniprot API for protein entry name (e.g. P53_RAT) given gene and
      * organism.  This output is needed as input for the OMA API.
      */
-    async function fetchUniprotEntryName(gene, org) {
+    async function fetchUniprotName(gene, org) {
       var uniprotBase, columns, query, query, response, data, lines, columns,
-        i, genes, unitprotEntryName;
+        i, genes, unitprotName;
 
       // Selected headers:
       //   - Entry, Entry name, Gene names
@@ -111,9 +112,9 @@
       for (i = 0; i < lines.length; i++) {
         columns = lines[i].split('\t');
         genes = columns[2].split(' ').map(d => d.toLowerCase()); // e.g. tp53
-        uniprotEntryName = columns[1]; // e.g. P53_RAT
+        uniprotName = columns[1]; // e.g. P53_RAT
 
-        if (genes.includes(gene)) return uniprotEntryName;
+        if (genes.includes(gene)) return uniprotName;
       }
 
       throw Error(
@@ -122,13 +123,72 @@
       );
     }
 
-    async function fetchOrthologyPair(gene, org1, org2) {
-      var uniprotBase, query, response, data, lines, protein1, protein2;
+    /**
+     * Query OMA API for orthology information on a protein 
+     */
+    async function fetchOmaOrthologs(uniprotName) {
+      var omaUrl, response, data;
+      omaUrl = omaBase + '/protein/' + uniprotName + '/orthologs/';
+      response = await fetch(omaUrl);
+      data = await response.json();
+      return data;
+    }
+
+    async function fetchOmaProtein(uniprotName) {
+      var omaUrl, response, data;
+      omaUrl = omaBase + '/protein/' + uniprotName + '/';
+      response = await fetch(omaUrl);
+      data = await response.json();
+      return data;
+    }
+
+    /**
+     * Convert organism scientific name to OMA ID prefix.
+     * Example: "rattus-norvegicus -> "RATNO" 
+     */
+    function getOmaIdPrefix(org) {
+      // If this functions proves inadequate, then refactor to use
+      // https://omabrowser.org/api/taxonomy/.  Fetch on page load, collapse
+      // tree, return leaf nodes as object with `name` as keys and `code` as
+      // values.
+      //
+      // As is, the implementation below seems adequate, simpler, and faster.
+      var prefix, genus, species;
+      if (org === 'homo-sapiens') {
+        return 'HUMAN';
+      } else if (org === 'mus-musculus') {
+        return 'MOUSE';
+      } else {
+        [genus, species] = org.split('-');
+        prefix = genus.slice(0, 3) + species.slice(0, 2);
+        prefix = prefix.toUpperCase();
+        return prefix;
+      }
+    }
+
+    async function fetchOrthologs(gene, sourceOrg, targetOrgs) {
+      var uniprotBase, query, response, data, lines, proteinName,
+        sourceProtein, targetProteins, rawOrthologs, omaId, omaIdPrefix,
+        orthologs;
 
       gene = gene.toLowerCase();
-      protein1 = await fetchUniprotEntryName(gene, org1);
-      
-      return protein1;
+      proteinName = await fetchUniprotName(gene, org1);
+      sourceProtein = await fetchOmaProtein(proteinName)
+
+      rawOrthologs = await fetchOmaOrthologs(proteinName);
+
+      // Get OMA ID prefixes for each target organism
+      targetOrgPrefixes = targetOrgs.map(org => getOmaIdPrefix(org));
+
+      orthologs = rawOrthologs.filter(rawOrtholog => {
+        omaId = rawOrtholog.omaid; // e.g. RATNO03710
+        omaIdPrefix = omaId.slice(0, 5); // e.g. RATNO
+        return targetOrgPrefixes.includes(omaIdPrefix);
+      });
+
+      orthologs.unshift(sourceProtein); // prepend to array
+
+      return orthologs;
     }
 
     // Process selections in "Organism" drop-down menus
