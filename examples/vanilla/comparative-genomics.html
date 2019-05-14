@@ -66,7 +66,8 @@
 
       document.querySelector('#gene').value = geneName;
 
-      [loci1, loci2] = await fetchOrthologs(geneName, org1, [org2])
+      [loci1, loci2] = await fetchOrthologs(geneName, org1, [org2]);
+
       // Get location of gene in both organisms.
       // loci1 = await fetchGeneLocation([geneName], org1);
       // loci2 = await fetchGeneLocation([geneName], org2);
@@ -158,9 +159,9 @@
       //
       // As is, the implementation below seems adequate, simpler, and faster.
       var prefix, genus, species;
-      if (org === 'homo-sapiens') {
+      if (org === 'homo sapiens') {
         return 'HUMAN';
-      } else if (org === 'mus-musculus') {
+      } else if (org === 'mus musculus') {
         return 'MOUSE';
       } else {
         [genus, species] = org.split(' ');
