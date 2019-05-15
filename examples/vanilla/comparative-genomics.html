@@ -56,6 +56,7 @@
 
     var prevState = {};
     var omaBase = 'https://omabrowser.org/api';
+    var loci1, loci2;
 
     async function updateGeneParams(geneName) {
       if (typeof geneName === 'undefined') {
@@ -72,7 +73,7 @@
       // loci1 = await fetchGeneLocation([geneName], org1);
       // loci2 = await fetchGeneLocation([geneName], org2);
 
-      urlParams['loci'] = loci1 + ',' + loci2;
+      // urlParams['loci'] = loci1 + ',' + loci2;
       updateUrl();
     }
 
@@ -262,7 +263,8 @@
       if ('org' in urlParams === false) {
         urlParams['org'] = 'homo-sapiens';
         urlParams['org2'] = 'mus-musculus';
-        urlParams['loci'] = '1:11106531-11262557,4:148448582-148557685';
+        urlParams['gene'] = 'MTOR'
+        // urlParams['loci'] = '1:11106531-11262557,4:148448582-148557685';
       }
 
       // If "org2" is omitted, set it to the value of "org"
@@ -279,17 +281,15 @@
       updateOrganismMenu('org', org1);
       updateOrganismMenu('org2', org2);
 
-      if ('gene' in urlParams) {
-        gene = urlParams['gene'];
-        document.querySelector('#gene').value = gene;
+      gene = urlParams['gene'];
+      document.querySelector('#gene').value = gene;
 
-        if (JSON.stringify(urlParams) !== JSON.stringify(prevState)) {
-          prevState = Object.assign({}, urlParams);
-          await updateGeneParams(gene);
-        }
-      }
+      // if (JSON.stringify(urlParams) !== JSON.stringify(prevState)) {
+        prevState = Object.assign({}, urlParams);
+        await updateGeneParams(gene);
+      // }
 
-      [loci1, loci2] = urlParams['loci'].split(',');
+      // [loci1, loci2] = urlParams['loci'].split(',');
       [loci1Chr, loci1Range] = loci1.split(':');
       [loci2Chr, loci2Range] = loci2.split(':');
       [loci1Start, loci1Stop] = loci1Range.split('-');
@@ -411,8 +411,11 @@
 
   async function createIdeogram() {
 
+    if (typeof loci1Chr === 'undefined') {
+      await processUrl();
+    }
+
     updateUrl();
-    await processUrl();
 
     if (org1 !== org2) {
       // Orthology
@@ -449,8 +452,6 @@
   document.querySelectorAll('select').forEach(select => {
     select.addEventListener('change', handleOrganism);
   });
-
-  processUrl();
 
   createIdeogram();
 
