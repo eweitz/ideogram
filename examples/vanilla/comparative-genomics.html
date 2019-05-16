@@ -58,12 +58,18 @@
     var omaBase = 'https://omabrowser.org/api';
     var loci1, loci2;
 
+    function shouldUpdateState() {
+      return JSON.stringify(urlParams) !== JSON.stringify(prevState);
+    }
+
     async function updateGeneParams(geneName) {
       if (typeof geneName === 'undefined') {
         geneName = gene;
       }
 
       urlParams['gene'] = geneName;
+
+      if (shouldUpdateState() === false) return;
 
       document.querySelector('#gene').value = geneName;
 
@@ -284,10 +290,10 @@
       gene = urlParams['gene'];
       document.querySelector('#gene').value = gene;
 
-      // if (JSON.stringify(urlParams) !== JSON.stringify(prevState)) {
+      if (shouldUpdateState()) {
         prevState = Object.assign({}, urlParams);
         await updateGeneParams(gene);
-      // }
+      }
 
       // [loci1, loci2] = urlParams['loci'].split(',');
       [loci1Chr, loci1Range] = loci1.split(':');
