@@ -8,6 +8,8 @@
     a:hover {text-decoration: underline;}
     a, a:hover, a:visited, a:active {color: #0366d6;}
     label {display: block; margin-bottom: 10px;}
+
+    #error-container {color: red; display: inline-block; margin-left: 50px;}
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
 <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
@@ -50,26 +52,23 @@
   </label>
   <label for="gene">Gene: <input id="gene"/></label>
   </div>
-  <div id="ideogram-container">
-  </div>
+  <div id="ideogram-container"></div>
+  <div id="error-container"></div>
   <script type="text/javascript">
 
     var prevState = {};
+    var omaBase = 'https://omabrowser.org/api';
+    var loci1, loci2;
 
-    async function updateGeneParams(geneName) {
+    function shouldUpdateState() {
+      return JSON.stringify(urlParams) !== JSON.stringify(prevState);
+    }
+
+    function updateGeneParams(geneName) {
       if (typeof geneName === 'undefined') {
         geneName = gene;
       }
-
       urlParams['gene'] = geneName;
-
-      document.querySelector('#gene').value = geneName;
-
-      // Get location of gene in both organisms.
-      loci1 = await fetchGeneLocation([geneName], org1);
-      loci2 = await fetchGeneLocation([geneName], org2);
-
-      urlParams['loci'] = loci1 + ',' + loci2;
       updateUrl();
     }
 
@@ -81,10 +80,162 @@
       if (event.type === 'keyup' && event.keyCode !== 13) return;
 
       geneName = event.target.value;
+      updateGeneParams(geneName);
 
-      await updateGeneParams(geneName);
-      await processUrl();
       createIdeogram();
+    }
+
+    /**
+     * Query Uniprot API for protein entry ID (e.g. P53_RAT) given gene and
+     * organism.  This output is needed as input for the OMA API.
+     */
+    async function fetchUniprotId(gene, org) {
+      var uniprotBase, columns, query, query, response, data, lines, columns,
+        i, genes, unitprotName;
+
+      // Selected headers:
+      //   - Entry, Entry name, Gene names
+      // Default headers (omit `columns` parameter):
+      //   - Entry, Entry name, Status, Protein names, Gene names, Organism, Length
+      columns = 'columns=id,entry name,genes';
+
+      // API docs: https://www.uniprot.org/help/api_queries
+      uniprotBase = (
+        'https://www.uniprot.org/uniprot/?format=tab&' + columns +
+        '&sort=score'
+      );
+
+      query = '&query=gene:' + gene + '+AND+organism:' + org;
+      response = await fetch(uniprotBase + query);
+      data = await response.text();
+      lines = data.split('\n').slice(1, -1); // Omit headers, empty last line
+
+      for (i = 0; i < lines.length; i++) {
+        columns = lines[i].split('\t');
+        genes = columns[2].split(' ').map(d => d.toLowerCase()); // e.g. tp53
+        uniprotId = columns[0]; // e.g. P53_RAT
+        uniprotName = columns[1]; // e.g. P53_RAT
+
+        if (genes.includes(gene)) return uniprotId;
+      }
+
+      throw Error(
+        'No Uniprot entry found for gene name "' + gene + '" ' +
+        'in organism "' + org + '"'
+      );
+    }
+
+    /**
+     * Query OMA API for orthology information on a protein 
+     */
+    async function fetchOmaOrthologs(uniprotId) {
+      var omaUrl, response, data;
+      omaUrl = omaBase + '/protein/' + uniprotId + '/orthologs/';
+      response = await fetch(omaUrl);
+      data = await response.json();
+      if (response.status === 404) {
+        throw Error(
+          'OMA orthologs not found for Uniprot protein "' + uniprotId + '".'
+        );
+      }
+      return data;
+    }
+
+    /**
+     * Query OMA API for information on a protein 
+     */
+    async function fetchOmaProtein(uniprotId) {
+      var omaUrl, response, data;
+      omaUrl = omaBase + '/protein/' + uniprotId + '/';
+      response = await fetch(omaUrl);
+      data = await response.json();
+      if (response.status === 404) {
+        throw Error(
+          'OMA protein not found for Uniprot protein "' + uniprotId + '".'
+        );
+      }
+      return data;
+    }
+
+    /**
+     * Convert organism scientific name to OMA ID prefix.
+     * Example: "rattus-norvegicus -> "RATNO" 
+     */
+    function getOmaIdPrefix(org) {
+      // If this functions proves inadequate, then refactor to use
+      // https://omabrowser.org/api/taxonomy/.  Fetch on page load, collapse
+      // tree, return leaf nodes as object with `name` as keys and `code` as
+      // values.
+      //
+      // As is, the implementation below seems adequate, simpler, and faster.
+      var prefix, genus, species;
+      if (org === 'homo sapiens') {
+        return 'HUMAN';
+      } else if (org === 'mus musculus') {
+        return 'MOUSE';
+      } else {
+        [genus, species] = org.split(' ');
+        prefix = genus.slice(0, 3) + species.slice(0, 2);
+        prefix = prefix.toUpperCase();
+        return prefix;
+      }
+    }
+
+    function handleError(error, errorName) {
+      var errorContainer, summaries, htmlSummary, textSummary, org1;
+      errorContainer = document.querySelector('#error-container');
+      org1 = document.querySelector('#org').value;
+      summaries = {
+          'geneNotFound': 'Gene "' + gene + '" not found in ' + org1,
+          'orthologsNotFound': 'Orthologs not found for gene "' + gene + '"'
+      }
+      htmlSummary = (
+        '<b>Error</b>: ' + summaries[errorName] + '.<br/><small>' + error.message + '</small>'
+      );
+      errorContainer.innerHTML = htmlSummary;
+      textSummary = errorContainer.innerText.replace('Error: ', '');
+      throw Error(textSummary);
+    }
+
+    /**
+     * Given a gene in a source organism, retrieve its orthologs in
+     * a list of other organisms.  Returns OMA protein records for
+     * source and target organisms.
+     */
+    async function fetchOrthologs(gene, sourceOrg, targetOrgs) {
+      var uniprotBase, query, response, data, lines, proteinId,
+        sourceProtein, targetProteins, rawOrthologs, omaId, omaIdPrefix,
+        orthologs;
+
+      gene = gene.toLowerCase();
+      try {
+        proteinId = await fetchUniprotId(gene, org1);
+        sourceProtein = await fetchOmaProtein(proteinId);
+      } catch(error) {
+        handleError(error, 'geneNotFound');
+      }
+      try {
+        rawOrthologs = await fetchOmaOrthologs(proteinId);
+      } catch(error) {
+        handleError(error, 'orthologsNotFound');
+      }
+
+      // Get OMA ID prefixes for each target organism
+      targetOrgPrefixes = targetOrgs.map(org => getOmaIdPrefix(org));
+
+      orthologs = rawOrthologs.filter(rawOrtholog => {
+        omaId = rawOrtholog.omaid; // e.g. RATNO03710
+        omaIdPrefix = omaId.slice(0, 5); // e.g. RATNO
+        return targetOrgPrefixes.includes(omaIdPrefix);
+      });
+
+      orthologs.unshift(sourceProtein); // prepend to array
+
+      orthologs = orthologs.map(d => {
+        return d.chromosome + ':' + d.locus.start + '-' + d.locus.end
+      });
+
+      return orthologs;
     }
 
     // Process selections in "Organism" drop-down menus
@@ -94,8 +245,8 @@
           .replace(' ', '-').toLowerCase();
       urlParams[event.target.id] = organism;
 
-      await updateGeneParams();
-      await processUrl();
+      updateGeneParams();
+
       createIdeogram();
     }
 
@@ -137,14 +288,16 @@
     }
 
     async function processUrl() {
-
+      document.querySelector('#ideogram-container').innerHTML = '';
+      document.querySelector('#error-container').innerHTML = '';
       parseUrlParams();
 
       // Set default parameters if none are provided.
       if ('org' in urlParams === false) {
         urlParams['org'] = 'homo-sapiens';
         urlParams['org2'] = 'mus-musculus';
-        urlParams['loci'] = '1:11106531-11262557,4:148448582-148557685';
+        urlParams['gene'] = 'MTOR'
+        // urlParams['loci'] = '1:11106531-11262557,4:148448582-148557685';
       }
 
       // If "org2" is omitted, set it to the value of "org"
@@ -161,23 +314,21 @@
       updateOrganismMenu('org', org1);
       updateOrganismMenu('org2', org2);
 
-      if ('gene' in urlParams) {
-        gene = urlParams['gene'];
-        document.querySelector('#gene').value = gene;
+      gene = urlParams['gene'];
+      document.querySelector('#gene').value = gene;
 
-        if (JSON.stringify(urlParams) !== JSON.stringify(prevState)) {
-          prevState = Object.assign({}, urlParams);
-          await updateGeneParams(gene);
-        }
-      }
+      updateGeneParams(gene);
 
-      [loci1, loci2] = urlParams['loci'].split(',');
+      if (shouldUpdateState()) {
+        [loci1, loci2] = await fetchOrthologs(gene, org1, [org2]);
+      };
+      prevState = Object.assign({}, urlParams);
+
+      // [loci1, loci2] = urlParams['loci'].split(',');
       [loci1Chr, loci1Range] = loci1.split(':');
       [loci2Chr, loci2Range] = loci2.split(':');
       [loci1Start, loci1Stop] = loci1Range.split('-');
       [loci2Start, loci2Stop] = loci2Range.split('-');
-
-      prevState = Object.assign({}, urlParams);
     }
 
     /**
@@ -293,7 +444,6 @@
 
   async function createIdeogram() {
 
-    updateUrl();
     await processUrl();
 
     if (org1 !== org2) {
@@ -331,8 +481,6 @@
   document.querySelectorAll('select').forEach(select => {
     select.addEventListener('change', handleOrganism);
   });
-
-  processUrl();
 
   createIdeogram();
 
