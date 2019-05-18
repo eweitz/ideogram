@@ -8,6 +8,8 @@
     a:hover {text-decoration: underline;}
     a, a:hover, a:visited, a:active {color: #0366d6;}
     label {display: block; margin-bottom: 10px;}
+
+    #error-container {color: red; display: inline-block; margin-left: 50px;}
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
 <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
@@ -50,8 +52,8 @@
   </label>
   <label for="gene">Gene: <input id="gene"/></label>
   </div>
-  <div id="ideogram-container">
-  </div>
+  <div id="ideogram-container"></div>
+  <div id="error-container"></div>
   <script type="text/javascript">
 
     var prevState = {};
@@ -95,11 +97,15 @@
       //   - Entry, Entry name, Gene names
       // Default headers (omit `columns` parameter):
       //   - Entry, Entry name, Status, Protein names, Gene names, Organism, Length
-      columns = 'columns=id,entry name,genes&';
+      columns = 'columns=id,entry name,genes';
 
       // API docs: https://www.uniprot.org/help/api_queries
-      uniprotBase = 'https://www.uniprot.org/uniprot/?format=tab&' + columns;
-      query = 'query=reviewed:yes+AND+gene:' + gene + '+AND+organism:' + org;
+      uniprotBase = (
+        'https://www.uniprot.org/uniprot/?format=tab&' + columns +
+        '&sort=score'
+      );
+
+      query = '&query=gene:' + gene + '+AND+organism:' + org;
       response = await fetch(uniprotBase + query);
       data = await response.text();
       lines = data.split('\n').slice(1, -1); // Omit headers, empty last line
@@ -126,6 +132,11 @@
       omaUrl = omaBase + '/protein/' + uniprotName + '/orthologs/';
       response = await fetch(omaUrl);
       data = await response.json();
+      if (response.status === 404) {
+        throw Error(
+          'OMA orthologs not found for Uniprot protein "' + uniprotName + '".'
+        );
+      }
       return data;
     }
 
@@ -137,6 +148,11 @@
       omaUrl = omaBase + '/protein/' + uniprotName + '/';
       response = await fetch(omaUrl);
       data = await response.json();
+      if (response.status === 404) {
+        throw Error(
+          'OMA protein not found for Uniprot protein "' + uniprotName + '".'
+        );
+      }
       return data;
     }
 
@@ -164,6 +180,22 @@
       }
     }
 
+    function handleError(error, errorName) {
+      var errorContainer, summaries, htmlSummary, textSummary, org1;
+      errorContainer = document.querySelector('#error-container');
+      org1 = document.querySelector('#org').value;
+      summaries = {
+          'geneNotFound': 'Gene "' + gene + '" not found in ' + org1,
+          'orthologsNotFound': 'Orthologs not found for gene "' + gene + '"'
+      }
+      htmlSummary = (
+        '<b>Error</b>: ' + summaries[errorName] + '.<br/><small>' + error.message + '</small>'
+      );
+      errorContainer.innerHTML = htmlSummary;
+      textSummary = errorContainer.innerText.replace('Error: ', '');
+      throw Error(textSummary);
+    }
+
     /**
      * Given a gene in a source organism, retrieve its orthologs in
      * a list of other organisms.  Returns OMA protein records for
@@ -172,13 +204,22 @@
     async function fetchOrthologs(gene, sourceOrg, targetOrgs) {
       var uniprotBase, query, response, data, lines, proteinName,
         sourceProtein, targetProteins, rawOrthologs, omaId, omaIdPrefix,
-        orthologs;
+        orthologs, errorContainer;
+
+      errorContainer = document.querySelector('#error-container');
 
       gene = gene.toLowerCase();
-      proteinName = await fetchUniprotName(gene, org1);
-      sourceProtein = await fetchOmaProtein(proteinName)
-
-      rawOrthologs = await fetchOmaOrthologs(proteinName);
+      try {
+        proteinName = await fetchUniprotName(gene, org1);
+        sourceProtein = await fetchOmaProtein(proteinName);
+      } catch(error) {
+        handleError(error, 'geneNotFound');
+      }
+      try {
+        rawOrthologs = await fetchOmaOrthologs(proteinName);
+      } catch(error) {
+        handleError(error, 'orthologsNotFound');
+      }
 
       // Get OMA ID prefixes for each target organism
       targetOrgPrefixes = targetOrgs.map(org => getOmaIdPrefix(org));
@@ -248,7 +289,8 @@
     }
 
     async function processUrl() {
-
+      document.querySelector('#ideogram-container').innerHTML = '';
+      document.querySelector('#error-container').innerHTML = '';
       parseUrlParams();
 
       // Set default parameters if none are provided.
