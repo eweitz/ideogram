@@ -62,24 +62,11 @@
       return JSON.stringify(urlParams) !== JSON.stringify(prevState);
     }
 
-    async function updateGeneParams(geneName) {
+    function updateGeneParams(geneName) {
       if (typeof geneName === 'undefined') {
         geneName = gene;
       }
-
       urlParams['gene'] = geneName;
-
-      if (shouldUpdateState() === false) return;
-
-      document.querySelector('#gene').value = geneName;
-
-      [loci1, loci2] = await fetchOrthologs(geneName, org1, [org2]);
-
-      // Get location of gene in both organisms.
-      // loci1 = await fetchGeneLocation([geneName], org1);
-      // loci2 = await fetchGeneLocation([geneName], org2);
-
-      // urlParams['loci'] = loci1 + ',' + loci2;
       updateUrl();
     }
 
@@ -91,9 +78,8 @@
       if (event.type === 'keyup' && event.keyCode !== 13) return;
 
       geneName = event.target.value;
+      updateGeneParams(geneName);
 
-      await updateGeneParams(geneName);
-      await processUrl();
       createIdeogram();
     }
 
@@ -219,8 +205,8 @@
           .replace(' ', '-').toLowerCase();
       urlParams[event.target.id] = organism;
 
-      await updateGeneParams();
-      await processUrl();
+      updateGeneParams();
+
       createIdeogram();
     }
 
@@ -290,18 +276,18 @@
       gene = urlParams['gene'];
       document.querySelector('#gene').value = gene;
 
+      updateGeneParams(gene);
+
       if (shouldUpdateState()) {
-        prevState = Object.assign({}, urlParams);
-        await updateGeneParams(gene);
-      }
+        [loci1, loci2] = await fetchOrthologs(gene, org1, [org2]);
+      };
+      prevState = Object.assign({}, urlParams);
 
       // [loci1, loci2] = urlParams['loci'].split(',');
       [loci1Chr, loci1Range] = loci1.split(':');
       [loci2Chr, loci2Range] = loci2.split(':');
       [loci1Start, loci1Stop] = loci1Range.split('-');
       [loci2Start, loci2Stop] = loci2Range.split('-');
-
-      prevState = Object.assign({}, urlParams);
     }
 
     /**
@@ -417,11 +403,7 @@
 
   async function createIdeogram() {
 
-    if (typeof loci1Chr === 'undefined') {
-      await processUrl();
-    }
-
-    updateUrl();
+    await processUrl();
 
     if (org1 !== org2) {
       // Orthology
