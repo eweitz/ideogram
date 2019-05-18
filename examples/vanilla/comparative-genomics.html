@@ -86,10 +86,10 @@
     }
 
     /**
-     * Query Uniprot API for protein entry name (e.g. P53_RAT) given gene and
+     * Query Uniprot API for protein entry ID (e.g. P53_RAT) given gene and
      * organism.  This output is needed as input for the OMA API.
      */
-    async function fetchUniprotName(gene, org) {
+    async function fetchUniprotId(gene, org) {
       var uniprotBase, columns, query, query, response, data, lines, columns,
         i, genes, unitprotName;
 
@@ -113,9 +113,10 @@
       for (i = 0; i < lines.length; i++) {
         columns = lines[i].split('\t');
         genes = columns[2].split(' ').map(d => d.toLowerCase()); // e.g. tp53
+        uniprotId = columns[0]; // e.g. P53_RAT
         uniprotName = columns[1]; // e.g. P53_RAT
 
-        if (genes.includes(gene)) return uniprotName;
+        if (genes.includes(gene)) return uniprotId;
       }
 
       throw Error(
@@ -127,14 +128,14 @@
     /**
      * Query OMA API for orthology information on a protein 
      */
-    async function fetchOmaOrthologs(uniprotName) {
+    async function fetchOmaOrthologs(uniprotId) {
       var omaUrl, response, data;
-      omaUrl = omaBase + '/protein/' + uniprotName + '/orthologs/';
+      omaUrl = omaBase + '/protein/' + uniprotId + '/orthologs/';
       response = await fetch(omaUrl);
       data = await response.json();
       if (response.status === 404) {
         throw Error(
-          'OMA orthologs not found for Uniprot protein "' + uniprotName + '".'
+          'OMA orthologs not found for Uniprot protein "' + uniprotId + '".'
         );
       }
       return data;
@@ -143,14 +144,14 @@
     /**
      * Query OMA API for information on a protein 
      */
-    async function fetchOmaProtein(uniprotName) {
+    async function fetchOmaProtein(uniprotId) {
       var omaUrl, response, data;
-      omaUrl = omaBase + '/protein/' + uniprotName + '/';
+      omaUrl = omaBase + '/protein/' + uniprotId + '/';
       response = await fetch(omaUrl);
       data = await response.json();
       if (response.status === 404) {
         throw Error(
-          'OMA protein not found for Uniprot protein "' + uniprotName + '".'
+          'OMA protein not found for Uniprot protein "' + uniprotId + '".'
         );
       }
       return data;
@@ -202,21 +203,19 @@
      * source and target organisms.
      */
     async function fetchOrthologs(gene, sourceOrg, targetOrgs) {
-      var uniprotBase, query, response, data, lines, proteinName,
+      var uniprotBase, query, response, data, lines, proteinId,
         sourceProtein, targetProteins, rawOrthologs, omaId, omaIdPrefix,
-        orthologs, errorContainer;
-
-      errorContainer = document.querySelector('#error-container');
+        orthologs;
 
       gene = gene.toLowerCase();
       try {
-        proteinName = await fetchUniprotName(gene, org1);
-        sourceProtein = await fetchOmaProtein(proteinName);
+        proteinId = await fetchUniprotId(gene, org1);
+        sourceProtein = await fetchOmaProtein(proteinId);
       } catch(error) {
         handleError(error, 'geneNotFound');
       }
       try {
-        rawOrthologs = await fetchOmaOrthologs(proteinName);
+        rawOrthologs = await fetchOmaOrthologs(proteinId);
       } catch(error) {
         handleError(error, 'orthologsNotFound');
       }
