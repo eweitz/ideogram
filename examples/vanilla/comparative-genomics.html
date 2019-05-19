@@ -9,7 +9,7 @@
     a, a:hover, a:visited, a:active {color: #0366d6;}
     label {display: block; margin-bottom: 10px;}
 
-    #error-container {color: red; display: inline-block; margin-left: 50px;}
+    #status-container {display: inline-block; margin-left: 50px;}
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
 <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
@@ -53,7 +53,7 @@
   <label for="gene">Gene: <input id="gene"/></label>
   </div>
   <div id="ideogram-container"></div>
-  <div id="error-container"></div>
+  <div id="status-container"></div>
   <script type="text/javascript">
 
     var prevState = {};
@@ -183,14 +183,16 @@
 
     function handleError(error, errorName) {
       var errorContainer, summaries, htmlSummary, textSummary, org1;
-      errorContainer = document.querySelector('#error-container');
+      errorContainer = document.querySelector('#status-container');
       org1 = document.querySelector('#org').value;
       summaries = {
           'geneNotFound': 'Gene "' + gene + '" not found in ' + org1,
           'orthologsNotFound': 'Orthologs not found for gene "' + gene + '"'
       }
       htmlSummary = (
-        '<b>Error</b>: ' + summaries[errorName] + '.<br/><small>' + error.message + '</small>'
+        '<span style="color: red">' +
+        '<b>Error</b>: ' + summaries[errorName] + '.<br/><small>' + error.message + '</small>' +
+        '</span>'
       );
       errorContainer.innerHTML = htmlSummary;
       textSummary = errorContainer.innerText.replace('Error: ', '');
@@ -289,7 +291,7 @@
 
     async function processUrl() {
       document.querySelector('#ideogram-container').innerHTML = '';
-      document.querySelector('#error-container').innerHTML = '';
+      document.querySelector('#status-container').innerHTML = 'Loading...';
       parseUrlParams();
 
       // Set default parameters if none are provided.
@@ -329,6 +331,8 @@
       [loci2Chr, loci2Range] = loci2.split(':');
       [loci1Start, loci1Stop] = loci1Range.split('-');
       [loci2Start, loci2Stop] = loci2Range.split('-');
+
+      document.querySelector('#status-container').innerHTML = '';
     }
 
     /**
