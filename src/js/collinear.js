@@ -52,7 +52,7 @@ function getxOffsets(chrSets, ideo) {
 function collinearizeChromosomes(ideo) {
   var chrSets, xOffsets, y, xOffsets,
     config = ideo.config,
-    annotHeight = config.annotationHeight;
+    annotHeight = config.annotationHeight || 0;
 
   if (config.orientation === 'vertical') {
     collinearizeVerticalChromosomes(ideo);
