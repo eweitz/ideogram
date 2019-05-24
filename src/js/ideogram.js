@@ -30,7 +30,7 @@ import {
 } from './services/services';
 
 import {
-  parseBands, drawBandLabels, getBandColorGradients, processBandData,
+  drawBandLabels, getBandColorGradients, processBandData,
   setBandsToShow, hideUnshownBandLabels, drawBandLabelText, drawBandLabelStalk
 } from './bands/bands';
 
@@ -98,7 +98,6 @@ export default class Ideogram {
     this.getAssemblyAndChromosomesFromEutils = getAssemblyAndChromosomesFromEutils;
 
     // Functions from bands.js
-    this.parseBands = parseBands;
     this.drawBandLabels = drawBandLabels;
     this.getBandColorGradients = getBandColorGradients;
     this.processBandData = processBandData;

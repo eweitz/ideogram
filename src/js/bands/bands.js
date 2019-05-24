@@ -76,12 +76,13 @@ function setChrsByTaxidsWithBands(taxid, chrs, bandsArray, ideo) {
 
   bandData = ideo.bandData[taxid];
 
-  bandsByChr = ideo.parseBands(bandData, taxid, chrs);
+  bandsByChr = parseBands(bandData, taxid, chrs);
 
   chrs = Object.keys(bandsByChr).sort(function(a, b) {
     return naturalSort(a, b);
   });
 
+  if (ideo.config.chromosomes === null) ideo.config.chromosomes = {};
   ideo.config.chromosomes[taxid] = chrs.slice();
   ideo.numChromosomes += ideo.config.chromosomes[taxid].length;
 
@@ -119,6 +120,19 @@ function reportPerformance(t0, ideo) {
   }
 }
 
+
+/**
+ * Encountered when comparing multiple chromosmes (e.g. whole genomes)
+ * of two different organisms.
+ */
+function initializeMultiOrganismMultiChromosome(ideo) {
+  var bandData = ideo.bandData;
+  ideo.config.chromosomes = {}
+  for (var taxid in bandData) {
+    ideo.config.chromosomes[taxid] = bandData[taxid];
+  }
+}
+
 /**
  * Completes default ideogram initialization by calling downstream functions
  * to process raw band data into full JSON objects, render chromosome and
@@ -127,28 +141,25 @@ function reportPerformance(t0, ideo) {
  */
 function processBandData() {
   var bandsArray, j, taxid, taxids, chrs, chrsByTaxid,
-    t0 = new Date().getTime(),
-    ideo = this;
+    ideo = this,
+    config = ideo.config,
+    t0 = new Date().getTime();
 
   bandsArray = [];
 
   [taxid, taxids] = setTaxids(ideo);
 
   if ('chromosomes' in ideo.config) chrs = ideo.config.chromosomes;
-  if (ideo.config.multiorganism) chrsByTaxid = chrs;
-  ideo.config.chromosomes = {};
-
+  
   for (j = 0; j < taxids.length; j++) {
     taxid = taxids[j];
-    if (ideo.config.multiorganism) chrs = chrsByTaxid[taxid];
     bandsArray = setChromosomesByTaxid(taxid, chrs, bandsArray, ideo);
   }
-
   reportPerformance(t0, ideo);
   return bandsArray;
 }
 
 export {
-  parseBands, drawBandLabels, getBandColorGradients, processBandData,
+  drawBandLabels, getBandColorGradients, processBandData,
   setBandsToShow, hideUnshownBandLabels, drawBandLabelText, drawBandLabelStalk
 }

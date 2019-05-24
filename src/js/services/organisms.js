@@ -98,8 +98,7 @@ function setTaxidAndAssemblyAndChromosomes(callback, ideo) {
   });
 
   taxidPromise
-    .then(function(data) {
-      taxid = data;
+    .then(function(taxid) {
       return setTaxidData(taxid, ideo);
     })
     .then(function(asmChrTaxidsArray) {
@@ -162,11 +161,9 @@ function getTaxidsForOrganismInConfig(taxids, callback, ideo) {
   var tmpChrs;
 
   [tmpChrs, taxids] = prepareTmpChrsAndTaxids(ideo);
-
   if (
     taxids.length === 0 ||
-    ideo.assemblyIsAccession() && /GCA_/.test(ideo.config.assembly) ||
-    tmpChrs === null
+    ideo.assemblyIsAccession() && /GCA_/.test(ideo.config.assembly)
   ) {
     setTaxidAndAssemblyAndChromosomes(callback, ideo);
   } else {
