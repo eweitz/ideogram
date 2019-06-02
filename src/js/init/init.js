@@ -125,7 +125,7 @@ function getBandFileName(taxid, accession, ideo) {
   ) {
     bandFileName.push(resolution);
   }
-  bandFileName = bandFileName.join('-') + '.js';
+  bandFileName = bandFileName.join('-') + '.json';
 
   return bandFileName;
 }

@@ -1610,10 +1610,6 @@ describe('Ideogram', function() {
         numChromosomes = document.querySelectorAll('.chromosome').length;
         assert.equal(numChromosomes, 24 + 25 + 21);
       }
-
-      // Test that default chimpanzee assembly has centromeres
-      var chimpanzeeQArmBand = document.querySelectorAll('#chr2A-9598-q1').length;
-      assert.equal(chimpanzeeQArmBand, 1)
     }
 
     function onDrawAnnotsCallback() {
@@ -1623,6 +1619,11 @@ describe('Ideogram', function() {
       if (annotSetsDrawn === 3) {
         numAnnots = document.querySelectorAll('.annot').length;
         assert.equal(numAnnots, 6);
+
+        // Test that default chimpanzee assembly has centromeres
+        var chimpanzeeQArmBand = document.querySelectorAll('#chr2A-9598-q1').length;
+        assert.equal(chimpanzeeQArmBand, 1);
+
         done();
       }
     }
@@ -1938,54 +1939,32 @@ describe('Ideogram', function() {
       done();
     }
 
-    function initIdeo() {
-      if (typeof bandTimeout !== 'undefined') {
-        window.clearTimeout(bandTimeout);
-      }
+    var config = {
+      organism: 'banana',
+      orientation: 'horizontal',
+      ploidy: 3,
+      ancestors: {
+        A: '#dea673',
+        B: '#7396be'
+      },
+      ploidyDesc: [
+        {AABB: ['11', '11', '11', '02']},
+        {AAB: ['01', '11', '11']},
+        'BAB',
+        {AABB: ['11', '11', '11', '20']},
+        'AAB',
+        'BBB',
+        {AAB: ['01', '11', '11']},
+        'AAB',
+        'AAB',
+        'AAB',
+        'AAB'
+      ],
+      dataDir: '/dist/data/bands/native/',
+      onLoad: callback
+    };
 
-      var config = {
-        organism: 'banana',
-        orientation: 'horizontal',
-        ploidy: 3,
-        ancestors: {
-          A: '#dea673',
-          B: '#7396be'
-        },
-        ploidyDesc: [
-          {AABB: ['11', '11', '11', '02']},
-          {AAB: ['01', '11', '11']},
-          'BAB',
-          {AABB: ['11', '11', '11', '20']},
-          'AAB',
-          'BBB',
-          {AAB: ['01', '11', '11']},
-          'AAB',
-          'AAB',
-          'AAB',
-          'AAB'
-        ]
-      };
-
-      config.onLoad = callback;
-      var ideogram = new Ideogram(config);
-    }
-
-    d3.select('body')
-      .append('script')
-      .attr('src', '/dist/data/bands/native/banana.js');
-
-    // Check for banana.js content every 50 ms.
-    // If/when that content exists, initialize ideogram.
-    (function checkBandData() {
-      window.bandTimeout = setTimeout(function() {
-        if (typeof (window.chrBands) === 'undefined') {
-          checkBandData();
-        } else {
-          initIdeo();
-        }
-      }, 50);
-    })();
-
+    var ideogram = new Ideogram(config);
   });
 
   it('should depict chromosomal rangesets', function(done) {
@@ -1998,66 +1977,46 @@ describe('Ideogram', function() {
       done();
     }
 
-    function initIdeo() {
+    var config = {
+      organism: 'banana',
+      orientation: 'horizontal',
+      ploidy: 3,
+      chrMargin: 10,
+      ancestors: {
+        A: '#dea673',
+        B: '#7396be'
+      },
+      ploidyDesc: [
+        'AAB',
+        'AAB',
+        'BAB',
+        'AAB',
+        'AAB',
+        'BBB',
+        'AAB',
+        'AAB',
+        'AAB',
+        'AAB',
+        'AAB'
+      ],
+      rangeSet: [{
+        chr: 1,
+        ploidy: [0, 1, 0],
+        start: 17120000,
+        stop: 25120000,
+        color: [0, '#7396be', 0]
+      }, {
+        chr: 2,
+        ploidy: [0, 1, 1],
+        start: 12120000,
+        stop: 15120000,
+        color: [0, '#7396be', '#dea673']
+      }],
+      dataDir: '/dist/data/bands/native/',
+      onLoad: callback
+    };
 
-      var config = {
-        organism: 'banana',
-        orientation: 'horizontal',
-        ploidy: 3,
-        chrMargin: 10,
-        ancestors: {
-          A: '#dea673',
-          B: '#7396be'
-        },
-        ploidyDesc: [
-          'AAB',
-          'AAB',
-          'BAB',
-          'AAB',
-          'AAB',
-          'BBB',
-          'AAB',
-          'AAB',
-          'AAB',
-          'AAB',
-          'AAB'
-        ],
-        rangeSet: [{
-          chr: 1,
-          ploidy: [0, 1, 0],
-          start: 17120000,
-          stop: 25120000,
-          color: [0, '#7396be', 0]
-        }, {
-          chr: 2,
-          ploidy: [0, 1, 1],
-          start: 12120000,
-          stop: 15120000,
-          color: [0, '#7396be', '#dea673']
-        }]
-      };
-
-      config.onLoad = callback;
-      config.debug = true;
-      var ideogram = new Ideogram(config);
-    }
-
-    d3.select('body')
-      .append('script')
-      .attr('src', '/dist/data/bands/native/banana.js');
-
-    // Check for banana.js content every 50 ms.
-    // If/when that content exists, initialize ideogram.
-    (function checkBandData() {
-      window.bandTimeout = setTimeout(function() {
-        if (typeof (window.chrBands) === 'undefined') {
-          checkBandData();
-        } else {
-          initIdeo();
-        }
-      }, 50);
-    })();
-
+    var ideogram = new Ideogram(config);
   });
 
   // it('should align chr. label with band-labeled vertical chromosome', function(done) {

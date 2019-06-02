@@ -23,7 +23,7 @@ var ideogram = new Ideogram({
 ```
 
 # Options
-* [accessToken](#accessToken)
+* [accessToken](#accesstoken)
 * [ancestors](#ancestors)
 * [annotations](#annotations)
 * [annotationHeight](#annotationheight)
