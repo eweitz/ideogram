@@ -50,7 +50,7 @@ function getxOffsets(chrSets, ideo) {
 }
 
 function collinearizeChromosomes(ideo) {
-  var chrSets, xOffsets, y, xOffsets,
+  var chrSets, xOffsets, y, xOffsets, height,
     config = ideo.config,
     annotHeight = config.annotationHeight || 0;
 
@@ -76,9 +76,12 @@ function collinearizeChromosomes(ideo) {
   xOffsets = getxOffsets(chrSets, ideo);
   rearrangeChromosomes(chrSets, xOffsets, y, config);
 
+  height = y + config.chrWidth*2 + 20;
+  if (config.multiorganism) height *= 4;
+
   d3.select(ideo.selector)
     .attr('width', xOffsets.slice(-1)[0] + 20)
-    .attr('height', y + config.chrWidth*2 + 20);
+    .attr('height', height);
 
   d3.select('#_ideogramTrackLabelContainer').remove();
   d3.select('#_ideogramInnerWrap')
