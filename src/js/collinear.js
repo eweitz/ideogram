@@ -10,17 +10,22 @@ import collinearizeVerticalChromosomes from './collinear-vertical';
 /**
 * Rearrange chromosomes from horizontal to collinear
 */
-function rearrangeChromosomes(chrSets, xOffsets, y, config) {
-  var i, chrSet, x;
+function rearrangeChromosomes(chrSets, xOffsets, y, ideo) {
+  var i, chr, chrSet, taxid, x, adjustedY;
 
   for (i = 0; i < chrSets.length; i++) {
     chrSet = chrSets[i];
     x = xOffsets[i];
-    if (config.showChromosomeLabels) {
-      chrSet.querySelector('.chrLabel').setAttribute('y', config.chrWidth*2 + 10)
+
+    chr = ideo.chromosomesArray[i];
+    taxid = chr.id.split('-')[1];
+    adjustedY = y + ideo.config.taxids.indexOf(taxid)*50;
+
+    if (ideo.config.showChromosomeLabels) {
+      chrSet.querySelector('.chrLabel').setAttribute('y', ideo.config.chrWidth*2 + 10)
       chrSet.querySelector('.chrLabel').setAttribute('text-anchor', 'middle')
     }
-    chrSet.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+    chrSet.setAttribute('transform', 'translate(' + x + ',' + adjustedY + ')');
     chrSet.querySelector('.chromosome').setAttribute('transform', 'translate(-13, 10)');
   }
 }
@@ -29,16 +34,20 @@ function rearrangeChromosomes(chrSets, xOffsets, y, config) {
 * Get pixel coordinates to use for rearrangement 
 */
 function getxOffsets(chrSets, ideo) {
-  var xOffsets, i, index, prevChrSet, x, prevWidth, prevX, xBump;
+  var xOffsets, i, index, chr, prevChr, x, prevWidth, prevX, xBump, taxid,
+    seenTaxids = {};
 
   xOffsets = [];
   for (i = 0; i < chrSets.length; i++) {
+    chr = ideo.chromosomesArray[i];
+    taxid = chr.id.split('-')[1];
     index = (i === 0) ? i : i - 1;
-    prevChrSet = ideo.chromosomesArray[index];
-    if (i === 0) {
+    prevChr = ideo.chromosomesArray[index];
+    if (i === 0 || taxid in seenTaxids === false) {
       x = 20;
+      seenTaxids[taxid] = 1;
     } else {
-      prevWidth = prevChrSet.width;
+      prevWidth = prevChr.width;
       prevX = xOffsets[index];
       xBump = (ideo.config.showChromosomeLabels ? 0 : 2);
       x = prevX + prevWidth + xBump + ideo.config.chrMargin;
@@ -49,8 +58,45 @@ function getxOffsets(chrSets, ideo) {
   return xOffsets;
 }
 
+// /**
+//  * Track number of chromosomes in preceding organisms.
+//  * Adds an instance variable to the ideogram object to offset
+//  * chromosome indices.  Needed for multiorganism collinear ideograms. 
+//  */
+// function setTaxidChrOffsets(ideo) {
+//   var taxidChrOffsets, taxidChrOffset;
+
+//   taxidChrOffsets = {};
+  
+//   taxidChrOffset = 0;
+//   ideo.config.organism.forEach((org) => {
+//     var taxid, numChrs;
+//     taxid = ideo.getTaxid(org);
+//     taxidChrOffsets[taxid] = taxidChrOffset;
+//     numChrs = Object.keys(ideo.chromosomes[taxid]).length;
+//     taxidChrOffset += numChrs;
+//   });
+
+//   ideo.taxidChrOffsets = taxidChrOffsets;
+// }
+
+// /**
+//  * Change chromosome indices for multiorganism collinear ideograms
+//  * This is needed to account for x-offsets.
+//  */
+// function adjustChrIndex(ideo) {
+//   setTaxidChrOffsets(ideo);
+
+//   ideo.chromosomesArray.map((chr) => {
+//     var taxid = chr.id.split('-')[1];
+//     var taxidChrOffset = ideo.taxidChrOffsets[taxid];
+//     chr.chrIndex -= taxidChrOffset;
+//     ideo.chromosomes[taxid][chr.name].chrIndex = chr.chrIndex;
+//   });
+// }
+
 function collinearizeChromosomes(ideo) {
-  var chrSets, xOffsets, y, xOffsets, height,
+  var chrSets, xOffsets, y, xOffsets, height, width,
     config = ideo.config,
     annotHeight = config.annotationHeight || 0;
 
@@ -58,6 +104,8 @@ function collinearizeChromosomes(ideo) {
     collinearizeVerticalChromosomes(ideo);
     return;
   }
+
+  // if (config.multiorganism) adjustChrIndex(ideo);
 
   ideo.config.annotLabelHeight = 12;
   var annotLabelHeight = ideo.config.annotLabelHeight;
@@ -74,13 +122,23 @@ function collinearizeChromosomes(ideo) {
   );
 
   xOffsets = getxOffsets(chrSets, ideo);
-  rearrangeChromosomes(chrSets, xOffsets, y, config);
+  rearrangeChromosomes(chrSets, xOffsets, y, ideo);
 
   height = y + config.chrWidth*2 + 20;
-  if (config.multiorganism) height *= 4;
+  
+  if (config.multiorganism) {
+    height *= 4;
+    var maxWidth = 0;
+    xOffsets.forEach(d => { if (d > maxWidth) maxWidth = d});
+    width = maxWidth;
+  } else {
+    width = xOffsets.slice(-1)[0] + 20;
+  }
+
+  console.log(xOffsets);
 
   d3.select(ideo.selector)
-    .attr('width', xOffsets.slice(-1)[0] + 20)
+    .attr('width', width)
     .attr('height', height);
 
   d3.select('#_ideogramTrackLabelContainer').remove();
