@@ -11,7 +11,7 @@ import collinearizeVerticalChromosomes from './collinear-vertical';
 * Rearrange chromosomes from horizontal to collinear
 */
 function rearrangeChromosomes(chrSets, xOffsets, y, ideo) {
-  var i, chr, chrSet, taxid, x, adjustedY;
+  var i, chr, chrSet, taxid, x, adjustedY, orgIndex, chrLabelY;
 
   for (i = 0; i < chrSets.length; i++) {
     chrSet = chrSets[i];
@@ -19,10 +19,17 @@ function rearrangeChromosomes(chrSets, xOffsets, y, ideo) {
 
     chr = ideo.chromosomesArray[i];
     taxid = chr.id.split('-')[1];
-    adjustedY = y + ideo.config.taxids.indexOf(taxid)*50;
+    orgIndex = ideo.config.taxids.indexOf(taxid)
+    adjustedY = y + orgIndex*200;
+    if (orgIndex === 0) {
+      chrLabelY = 8;
+      adjustedY += ideo.config.chrWidth*2;
+    } else {
+      chrLabelY = ideo.config.chrWidth*2 + 10
+    }
 
     if (ideo.config.showChromosomeLabels) {
-      chrSet.querySelector('.chrLabel').setAttribute('y', ideo.config.chrWidth*2 + 10)
+      chrSet.querySelector('.chrLabel').setAttribute('y', chrLabelY)
       chrSet.querySelector('.chrLabel').setAttribute('text-anchor', 'middle')
     }
     chrSet.setAttribute('transform', 'translate(' + x + ',' + adjustedY + ')');
@@ -127,10 +134,10 @@ function collinearizeChromosomes(ideo) {
   height = y + config.chrWidth*2 + 20;
   
   if (config.multiorganism) {
-    height *= 4;
+    height *= 8;
     var maxWidth = 0;
     xOffsets.forEach(d => { if (d > maxWidth) maxWidth = d});
-    width = maxWidth;
+    width = maxWidth + 20;
   } else {
     width = xOffsets.slice(-1)[0] + 20;
   }
