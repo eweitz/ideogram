@@ -82,7 +82,12 @@ function setChrsByTaxidsWithBands(taxid, chrs, bandsArray, ideo) {
     return naturalSort(a, b);
   });
 
-  if (ideo.config.chromosomes === null) ideo.config.chromosomes = {};
+  if (
+    'chromosomes' in ideo.config === false ||
+    ideo.config.chromosomes === null
+  ) {
+    ideo.config.chromosomes = {};
+  }
   ideo.config.chromosomes[taxid] = chrs.slice();
   ideo.numChromosomes += ideo.config.chromosomes[taxid].length;
 
@@ -117,19 +122,6 @@ function reportPerformance(t0, ideo) {
   var t1 = new Date().getTime();
   if (ideo.config.debug) {
     console.log('Time in processBandData: ' + (t1 - t0) + ' ms');
-  }
-}
-
-
-/**
- * Encountered when comparing multiple chromosmes (e.g. whole genomes)
- * of two different organisms.
- */
-function initializeMultiOrganismMultiChromosome(ideo) {
-  var bandData = ideo.bandData;
-  ideo.config.chromosomes = {}
-  for (var taxid in bandData) {
-    ideo.config.chromosomes[taxid] = bandData[taxid];
   }
 }
 

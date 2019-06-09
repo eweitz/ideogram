@@ -19,18 +19,18 @@ function rearrangeChromosomes(chrSets, xOffsets, y, ideo) {
 
     chr = ideo.chromosomesArray[i];
     taxid = chr.id.split('-')[1];
-    orgIndex = ideo.config.taxids.indexOf(taxid)
+    orgIndex = ideo.config.taxids.indexOf(taxid);
     adjustedY = y + orgIndex*200;
     if (orgIndex === 0) {
-      chrLabelY = 8;
+      chrLabelY = 6;
       adjustedY += ideo.config.chrWidth*2;
     } else {
-      chrLabelY = ideo.config.chrWidth*2 + 10
+      chrLabelY = ideo.config.chrWidth*2 + 10;
     }
 
     if (ideo.config.showChromosomeLabels) {
-      chrSet.querySelector('.chrLabel').setAttribute('y', chrLabelY)
-      chrSet.querySelector('.chrLabel').setAttribute('text-anchor', 'middle')
+      chrSet.querySelector('.chrLabel').setAttribute('y', chrLabelY);
+      chrSet.querySelector('.chrLabel').setAttribute('text-anchor', 'middle');
     }
     chrSet.setAttribute('transform', 'translate(' + x + ',' + adjustedY + ')');
     chrSet.querySelector('.chromosome').setAttribute('transform', 'translate(-13, 10)');
@@ -136,13 +136,11 @@ function collinearizeChromosomes(ideo) {
   if (config.multiorganism) {
     height *= 8;
     var maxWidth = 0;
-    xOffsets.forEach(d => { if (d > maxWidth) maxWidth = d});
+    xOffsets.forEach(d => {if (d > maxWidth) maxWidth = d});
     width = maxWidth + 20;
   } else {
     width = xOffsets.slice(-1)[0] + 20;
   }
-
-  console.log(xOffsets);
 
   d3.select(ideo.selector)
     .attr('width', width)

@@ -98,7 +98,8 @@ function setTaxidAndAssemblyAndChromosomes(callback, ideo) {
   });
 
   taxidPromise
-    .then(function(taxid) {
+    .then(function(data) {
+      taxid = data;
       return setTaxidData(taxid, ideo);
     })
     .then(function(asmChrTaxidsArray) {

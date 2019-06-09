@@ -98,12 +98,12 @@ function parseBands(content, taxid, chromosomes) {
 
     chr = columns[0];
     if (
-      (typeof (chromosomes) !== 'undefined' &
-      chromosomes !== null) &&
-      chromosomes.indexOf(chr) === -1
+      (typeof (chromosomes) !== 'undefined' && chromosomes !== null) &&
+      ((Array.isArray(chromosomes) && chromosomes.indexOf(chr) === -1) ||
+      (typeof(chromosomes) === 'object' && taxid in chromosomes && chromosomes[taxid].includes(chr) === false))
     ) {
-      // If a specific set of chromosomes has been requested, and
-      // the current chromosome
+      // If specific chromosomes are configured, then skip processing all
+      // other fetched chromosomes.
       continue;
     }
 
