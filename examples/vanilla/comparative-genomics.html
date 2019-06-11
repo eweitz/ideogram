@@ -8,8 +8,10 @@
     a:hover {text-decoration: underline;}
     a, a:hover, a:visited, a:active {color: #0366d6;}
     label {display: block; margin-bottom: 10px;}
-    #status-container {display: inline-block; margin-left: 50px;}
+    .org-select {position: absolute; left: 136px;}
+    #status-container {display: inline-block; margin-left: 186px;}
     #error-container {color: red;}
+    #ideogram-container {margin-left: 325px;}
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
 <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
@@ -23,10 +25,11 @@
   <p>
     Compare gene locations across organisms.
   </p>
-  <div style="float: left;">
+  <div style="float: left; width: 200px;">
+  <label for="gene">Gene: <input id="gene"/></label>
   <label for="org">
-    Organism 1:
-    <select id="org">
+    Source organism:
+    <select class="org-select" id="org">
       <option>Human (Homo sapiens)</option>
       <option>Chimpanzee (Pan troglodytes)</option>
       <option>Mouse (Mus musculus)</option>
@@ -38,8 +41,8 @@
     </select>
   </label>
   <label for="org2">
-    Organism 2:
-    <select id="org2">
+    Target organism:
+    <select class="org-select" id="org2">
         <option>Human (Homo sapiens)</option>
         <option>Chimpanzee (Pan troglodytes)</option>
         <option selected>Mouse (Mus musculus)</option>
@@ -50,7 +53,6 @@
         <option>Rice (Oryza sativa)</option>
       </select>
   </label>
-  <label for="gene">Gene: <input id="gene"/></label>
   </div>
   <div id="ideogram-container"></div>
   <div id="status-container"></div>
@@ -305,9 +307,9 @@
 
       // Set default parameters if none are provided.
       if ('org' in urlParams === false) {
+        urlParams['gene'] = 'MTOR'
         urlParams['org'] = 'homo-sapiens';
         urlParams['org2'] = 'mus-musculus';
-        urlParams['gene'] = 'MTOR'
         // urlParams['loci'] = '1:11106531-11262557,4:148448582-148557685';
       }
 
