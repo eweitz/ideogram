@@ -8,8 +8,10 @@
     a:hover {text-decoration: underline;}
     a, a:hover, a:visited, a:active {color: #0366d6;}
     label {display: block; margin-bottom: 10px;}
-
-    #error-container {color: red; display: inline-block; margin-left: 50px;}
+    .org-select {position: absolute; left: 136px;}
+    #status-container {display: inline-block; margin-left: 186px;}
+    #error-container {color: red;}
+    #ideogram-container {margin-left: 325px;}
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
 <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
@@ -23,10 +25,11 @@
   <p>
     Compare gene locations across organisms.
   </p>
-  <div style="float: left;">
+  <div style="float: left; width: 200px;">
+  <label for="gene">Gene: <input id="gene"/></label>
   <label for="org">
-    Organism 1:
-    <select id="org">
+    Source organism:
+    <select class="org-select" id="org">
       <option>Human (Homo sapiens)</option>
       <option>Chimpanzee (Pan troglodytes)</option>
       <option>Mouse (Mus musculus)</option>
@@ -38,8 +41,8 @@
     </select>
   </label>
   <label for="org2">
-    Organism 2:
-    <select id="org2">
+    Target organism:
+    <select class="org-select" id="org2">
         <option>Human (Homo sapiens)</option>
         <option>Chimpanzee (Pan troglodytes)</option>
         <option selected>Mouse (Mus musculus)</option>
@@ -50,10 +53,9 @@
         <option>Rice (Oryza sativa)</option>
       </select>
   </label>
-  <label for="gene">Gene: <input id="gene"/></label>
   </div>
   <div id="ideogram-container"></div>
-  <div id="error-container"></div>
+  <div id="status-container"></div>
   <script type="text/javascript">
 
     var prevState = {};
@@ -181,19 +183,26 @@
       }
     }
 
-    function handleError(error, errorName) {
-      var errorContainer, summaries, htmlSummary, textSummary, org1;
-      errorContainer = document.querySelector('#error-container');
+    function reportError(error, errorObj=null) {
+      var statusContainer, summaries, htmlSummary, textSummary, org1, org2,
+        errorMessage;
+      statusContainer = document.querySelector('#status-container');
       org1 = document.querySelector('#org').value;
+      org2 = document.querySelector('#org2').value;
       summaries = {
           'geneNotFound': 'Gene "' + gene + '" not found in ' + org1,
-          'orthologsNotFound': 'Orthologs not found for gene "' + gene + '"'
+          'orthologsNotFound': 'Orthologs not found for gene "' + gene + '"',
+          'orthologsNotFoundInTarget':
+            'Orthologs not found for gene "' + gene + '" in target organism ' + org2
       }
-      htmlSummary = (
-        '<b>Error</b>: ' + summaries[errorName] + '.<br/><small>' + error.message + '</small>'
-      );
-      errorContainer.innerHTML = htmlSummary;
-      textSummary = errorContainer.innerText.replace('Error: ', '');
+      errorDetail = errorObj ? `<small>${errorObj.message}</small>` : '';
+      htmlSummary =
+        `<span id="error-container">
+        <b>Error</b>: ${summaries[error]}.<br/>
+        ${errorDetail}
+        </span>`;
+      statusContainer.innerHTML = htmlSummary;
+      textSummary = statusContainer.innerText.replace('Error: ', '');
       throw Error(textSummary);
     }
 
@@ -205,19 +214,19 @@
     async function fetchOrthologs(gene, sourceOrg, targetOrgs) {
       var uniprotBase, query, response, data, lines, proteinId,
         sourceProtein, targetProteins, rawOrthologs, omaId, omaIdPrefix,
-        orthologs;
+        orthologs, error;
 
       gene = gene.toLowerCase();
       try {
         proteinId = await fetchUniprotId(gene, org1);
         sourceProtein = await fetchOmaProtein(proteinId);
       } catch(error) {
-        handleError(error, 'geneNotFound');
+        reportError('geneNotFound', error);
       }
       try {
         rawOrthologs = await fetchOmaOrthologs(proteinId);
       } catch(error) {
-        handleError(error, 'orthologsNotFound');
+        reportError('orthologsNotFound', error);
       }
 
       // Get OMA ID prefixes for each target organism
@@ -228,6 +237,10 @@
         omaIdPrefix = omaId.slice(0, 5); // e.g. RATNO
         return targetOrgPrefixes.includes(omaIdPrefix);
       });
+
+      if (orthologs.length === 0) {
+        reportError('orthologsNotFoundInTarget', error);
+      }
 
       orthologs.unshift(sourceProtein); // prepend to array
 
@@ -289,14 +302,14 @@
 
     async function processUrl() {
       document.querySelector('#ideogram-container').innerHTML = '';
-      document.querySelector('#error-container').innerHTML = '';
+      document.querySelector('#status-container').innerHTML = 'Loading...';
       parseUrlParams();
 
       // Set default parameters if none are provided.
       if ('org' in urlParams === false) {
+        urlParams['gene'] = 'MTOR'
         urlParams['org'] = 'homo-sapiens';
         urlParams['org2'] = 'mus-musculus';
-        urlParams['gene'] = 'MTOR'
         // urlParams['loci'] = '1:11106531-11262557,4:148448582-148557685';
       }
 
@@ -416,6 +429,8 @@
     
   function onIdeogramLoad() {
     var chrs, syntheticRegions, humanTaxid, mouseTaxid;
+
+    document.querySelector('#status-container').innerHTML = '';
 
     org1Taxid = ideogram.getTaxid(org1);
     org2Taxid = ideogram.getTaxid(org2);
