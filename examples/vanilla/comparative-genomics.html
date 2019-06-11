@@ -181,18 +181,23 @@
       }
     }
 
-    function reportError(error, errorName) {
-      var statusContainer, summaries, htmlSummary, textSummary, org1;
+    function reportError(error, errorObj=null) {
+      var statusContainer, summaries, htmlSummary, textSummary, org1, org2,
+        errorMessage;
       statusContainer = document.querySelector('#status-container');
       org1 = document.querySelector('#org').value;
+      org2 = document.querySelector('#org2').value;
       summaries = {
           'geneNotFound': 'Gene "' + gene + '" not found in ' + org1,
-          'orthologsNotFound': 'Orthologs not found for gene "' + gene + '"'
+          'orthologsNotFound': 'Orthologs not found for gene "' + gene + '"',
+          'orthologsNotFoundInTarget':
+            'Orthologs not found for gene "' + gene + '" in target organism ' + org2
       }
+      errorDetail = errorObj ? `<small>${errorObj.message}</small>` : '';
       htmlSummary =
         `<span id="error-container">
-        <b>Error</b>: ${summaries[errorName]}.<br/>
-        <small>${error.message}</small>
+        <b>Error</b>: ${summaries[error]}.<br/>
+        ${errorDetail}
         </span>`;
       statusContainer.innerHTML = htmlSummary;
       textSummary = statusContainer.innerText.replace('Error: ', '');
@@ -207,19 +212,19 @@
     async function fetchOrthologs(gene, sourceOrg, targetOrgs) {
       var uniprotBase, query, response, data, lines, proteinId,
         sourceProtein, targetProteins, rawOrthologs, omaId, omaIdPrefix,
-        orthologs;
+        orthologs, error;
 
       gene = gene.toLowerCase();
       try {
         proteinId = await fetchUniprotId(gene, org1);
         sourceProtein = await fetchOmaProtein(proteinId);
       } catch(error) {
-        reportError(error, 'geneNotFound');
+        reportError('geneNotFound', error);
       }
       try {
         rawOrthologs = await fetchOmaOrthologs(proteinId);
       } catch(error) {
-        reportError(error, 'orthologsNotFound');
+        reportError('orthologsNotFound', error);
       }
 
       // Get OMA ID prefixes for each target organism
@@ -230,6 +235,10 @@
         omaIdPrefix = omaId.slice(0, 5); // e.g. RATNO
         return targetOrgPrefixes.includes(omaIdPrefix);
       });
+
+      if (orthologs.length === 0) {
+        reportError('orthologsNotFoundInTarget', error);
+      }
 
       orthologs.unshift(sourceProtein); // prepend to array
 
