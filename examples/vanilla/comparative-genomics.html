@@ -8,8 +8,8 @@
     a:hover {text-decoration: underline;}
     a, a:hover, a:visited, a:active {color: #0366d6;}
     label {display: block; margin-bottom: 10px;}
-
-    #error-container {color: red; display: inline-block; margin-left: 50px;}
+    #status-container {display: inline-block; margin-left: 50px;}
+    #error-container {color: red;}
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
 <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
@@ -53,7 +53,7 @@
   <label for="gene">Gene: <input id="gene"/></label>
   </div>
   <div id="ideogram-container"></div>
-  <div id="error-container"></div>
+  <div id="status-container"></div>
   <script type="text/javascript">
 
     var prevState = {};
@@ -181,19 +181,21 @@
       }
     }
 
-    function handleError(error, errorName) {
-      var errorContainer, summaries, htmlSummary, textSummary, org1;
-      errorContainer = document.querySelector('#error-container');
+    function reportError(error, errorName) {
+      var statusContainer, summaries, htmlSummary, textSummary, org1;
+      statusContainer = document.querySelector('#status-container');
       org1 = document.querySelector('#org').value;
       summaries = {
           'geneNotFound': 'Gene "' + gene + '" not found in ' + org1,
           'orthologsNotFound': 'Orthologs not found for gene "' + gene + '"'
       }
-      htmlSummary = (
-        '<b>Error</b>: ' + summaries[errorName] + '.<br/><small>' + error.message + '</small>'
-      );
-      errorContainer.innerHTML = htmlSummary;
-      textSummary = errorContainer.innerText.replace('Error: ', '');
+      htmlSummary =
+        `<span id="error-container">
+        <b>Error</b>: ${summaries[errorName]}.<br/>
+        <small>${error.message}</small>
+        </span>`;
+      statusContainer.innerHTML = htmlSummary;
+      textSummary = statusContainer.innerText.replace('Error: ', '');
       throw Error(textSummary);
     }
 
@@ -212,12 +214,12 @@
         proteinId = await fetchUniprotId(gene, org1);
         sourceProtein = await fetchOmaProtein(proteinId);
       } catch(error) {
-        handleError(error, 'geneNotFound');
+        reportError(error, 'geneNotFound');
       }
       try {
         rawOrthologs = await fetchOmaOrthologs(proteinId);
       } catch(error) {
-        handleError(error, 'orthologsNotFound');
+        reportError(error, 'orthologsNotFound');
       }
 
       // Get OMA ID prefixes for each target organism
@@ -289,7 +291,7 @@
 
     async function processUrl() {
       document.querySelector('#ideogram-container').innerHTML = '';
-      document.querySelector('#error-container').innerHTML = '';
+      document.querySelector('#status-container').innerHTML = 'Loading...';
       parseUrlParams();
 
       // Set default parameters if none are provided.
@@ -416,6 +418,8 @@
     
   function onIdeogramLoad() {
     var chrs, syntheticRegions, humanTaxid, mouseTaxid;
+
+    document.querySelector('#status-container').innerHTML = '';
 
     org1Taxid = ideogram.getTaxid(org1);
     org2Taxid = ideogram.getTaxid(org2);
