@@ -8,7 +8,6 @@ import * as d3brush from 'd3-brush';
 import * as d3dispatch from 'd3-dispatch';
 import {scaleLinear} from 'd3-scale';
 import {max} from 'd3-array';
-import {BamFile} from '@gmod/bam';
 
 var d3 = Object.assign(
   {}, d3fetch, d3brush, d3dispatch
@@ -129,18 +128,52 @@ function fetch(url, contentType) {
   }
 }
 
-async function getBamFile(url) {
-  var bamFile = new BamFile({bamFileHandle: fetch(url)});
-  console.log('bamFile')
-  console.log(bamFile)
-  var header = await bamFile.getHeader();
-  console.log('header');
-  console.log(header);
+/**
+ * Get organism's taxid (NCBI Taxonomy ID) given its common or scientific name
+ */
+function getTaxid(name) {
+  var organism, taxid, commonName, scientificName,
+    ideo = this,
+    organisms = ideo.organisms;
+
+  name = name.toLowerCase();
+
+  for (taxid in organisms) {
+    organism = organisms[taxid];
+    commonName = organism.commonName.toLowerCase();
+    scientificName = organism.scientificName.toLowerCase();
+    if (commonName === name || scientificName === name) {
+      return taxid;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Get organism's common name given its taxid
+ */
+function getCommonName(taxid) {
+  var ideo = this;
+  if (taxid in ideo.organisms) {
+    return ideo.organisms[taxid].commonName;
+  }
+  return null;
+}
+
+/**
+ * Get organism's scientific name given its taxid
+ */
+function getScientificName(taxid) {
+  var ideo = this;
+  if (taxid in ideo.organisms) {
+    return ideo.organisms[taxid].scientificName;
+  }
+  return null;
 }
 
 export {
   assemblyIsAccession, hasNonGenBankAssembly, hasGenBankAssembly, getDataDir,
-  drawChromosomeLabels, rotateChromosomeLabels, round, appendHomolog,
-  drawChromosome, rotateAndToggleDisplay, onDidRotate, getSvg, fetch,
-  setOverflowScroll, d3, getBamFile
+  round, onDidRotate, getSvg, fetch, d3, getTaxid, getCommonName,
+  getScientificName
 };

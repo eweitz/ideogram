@@ -7,6 +7,7 @@ import {configure} from './configure';
 import {finishInit} from './finish-init';
 import {writeContainer} from './write-container';
 import {fetchBands} from '../bands/fetch';
+import {organismMetadata} from './organism-metadata';
 
 function isHeterogameticChromosome(chrModel, chrIndex, ideo) {
   var ploidy = ideo.config.ploidy;
@@ -124,7 +125,7 @@ function getBandFileName(taxid, accession, ideo) {
   ) {
     bandFileName.push(resolution);
   }
-  bandFileName = bandFileName.join('-') + '.js';
+  bandFileName = bandFileName.join('-') + '.json';
 
   return bandFileName;
 }
@@ -147,7 +148,7 @@ function getBandFileNames(taxid, bandFileNames, ideo) {
 
   bandFileName = getBandFileName(taxid, accession, ideo);
 
-  if (taxid === '9606' || taxid === '10090') {
+  if (taxid in ideo.organismsWithBands) {
     bandFileNames[taxid] = bandFileName;
   }
   return bandFileNames;
@@ -192,9 +193,9 @@ function getBandsAndPrepareContainer(taxids, t0, ideo) {
   ideo.config.taxid = taxid;
   ideo.config.taxids = taxids;
 
-  bandFileNames = {
-    9606: '',
-    10090: ''
+  bandFileNames = {};
+  for (taxid in organismMetadata) {
+    bandFileNames[taxid] = '';
   };
 
   for (i = 0; i < taxids.length; i++) {
@@ -220,6 +221,6 @@ function init() {
 }
 
 export {
-  configure, initDrawChromosomes, handleRotateOnClick, setOverflowScroll,
+  configure, initDrawChromosomes, handleRotateOnClick,
   onLoad, init, finishInit, writeContainer
 }

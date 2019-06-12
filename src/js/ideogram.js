@@ -41,7 +41,8 @@ import {convertBpToPx, convertPxToBp} from './coordinate-converters';
 import {unpackAnnots, packAnnots, initCrossFilter, filterAnnots} from './filter';
 
 import {
-  assemblyIsAccession, getDataDir, round, onDidRotate, getSvg, fetch, d3, getBamFile
+  assemblyIsAccession, getDataDir, round, onDidRotate, getSvg, fetch, d3,
+  getTaxid, getCommonName, getScientificName
 } from './lib';
 
 import {
@@ -135,7 +136,9 @@ export default class Ideogram {
     this.onDidRotate = onDidRotate;
     this.getSvg = getSvg;
     this.fetch = fetch;
-    this.getBamFile = getBamFile;
+    this.getTaxid = getTaxid;
+    this.getCommonName = getCommonName;
+    this.getScientificName = getScientificName;
 
     // Functions from views/chromosome-model.js
     this.getChromosomeModel = getChromosomeModel;

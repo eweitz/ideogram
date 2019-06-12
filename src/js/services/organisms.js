@@ -42,15 +42,15 @@ function setTaxidData(taxid) {
   if (fullyBandedTaxids.includes(taxid) && !ideo.config.showFullyBanded) {
     urlOrg += '-no-bands';
   }
-  var chromosomesUrl = dataDir + urlOrg + '.js';
+  var chromosomesUrl = dataDir + urlOrg + '.json';
 
   var promise2 = new Promise(function(resolve, reject) {
     fetch(chromosomesUrl).then(function(response) {
       if (response.ok === false) {
         reject(Error('Fetch failed for ' + chromosomesUrl));
       } else {
-        return response.text().then(function(text) {
-          resolve(text);
+        return response.json().then(function(json) {
+          resolve(json);
         });
       }
     });
@@ -67,7 +67,7 @@ function setTaxidData(taxid) {
         seenChrs = {},
         chr;
 
-    eval(data);
+    window.chrBands = data.chrBands;
 
     for (var i = 0; i < chrBands.length; i++) {
       chr = chrBands[i].split(' ')[0];
@@ -118,6 +118,18 @@ function setTaxidAndAssemblyAndChromosomes(callback) {
   });
 }
 
+function isOrganismSupported(sourceOrg, targetTaxid, ideo) {
+  var org = sourceOrg,
+    taxid = targetTaxid,
+    ideoOrg = ideo.organisms[taxid];
+
+  return (
+    taxid === org ||
+    ideoOrg.commonName.toLowerCase() === org.toLowerCase() ||
+    ideoOrg.scientificName.toLowerCase() === org.toLowerCase()
+  );
+}
+
 function prepareTmpChrsAndTaxids(ideo) {
   var orgs, taxids, tmpChrs, i, org, taxid,
     config = ideo.config;
@@ -130,7 +142,7 @@ function prepareTmpChrsAndTaxids(ideo) {
     // Gets a list of taxids from common organism names
     org = orgs[i];
     for (taxid in ideo.organisms) {
-      if (ideo.organisms[taxid].commonName.toLowerCase() === org) {
+      if (isOrganismSupported(org, taxid, ideo)) {
         taxids.push(taxid);
         if (config.multiorganism) {
           // Adjusts 'chromosomes' configuration parameter to make object
