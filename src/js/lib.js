@@ -174,7 +174,5 @@ function getScientificName(taxid) {
 
 export {
   assemblyIsAccession, hasNonGenBankAssembly, hasGenBankAssembly, getDataDir,
-  drawChromosomeLabels, rotateChromosomeLabels, round, appendHomolog,
-  drawChromosome, rotateAndToggleDisplay, onDidRotate, getSvg, fetch,
-  setOverflowScroll, d3, getTaxid, getCommonName, getScientificName
+  round, onDidRotate, getSvg, fetch, d3, getTaxid, getCommonName, getScientificName
 };

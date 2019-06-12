@@ -221,6 +221,6 @@ function init() {
 }
 
 export {
-  configure, initDrawChromosomes, handleRotateOnClick, setOverflowScroll,
+  configure, initDrawChromosomes, handleRotateOnClick,
   onLoad, init, finishInit, writeContainer
 }
