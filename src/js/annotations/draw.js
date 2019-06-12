@@ -1,4 +1,5 @@
 import {d3} from '../lib';
+import {batchSelections} from '../batch-selections';
 import {writeHistogramAnnots} from './histogram';
 import {writeLegend} from './legend'
 
@@ -190,14 +191,21 @@ function drawAnnotsByLayoutType(layout, annots, ideo) {
   filledAnnots = ideo.fillAnnots(annots);
 
   chrAnnot = getChrAnnotNodes(filledAnnots, ideo);
-
-  if (layout === 'tracks') {
-    writeTrackAnnots(chrAnnot, ideo);
-  } else if (layout === 'overlay') {
-    writeOverlayAnnots(chrAnnot, ideo);
-  } else if (layout === 'histogram') {
-    writeHistogramAnnots(chrAnnot, ideo);
-  }
+  batchSelections(
+    chrAnnot,
+    function(chrAnnotBatch) {
+      if (layout === 'tracks') {
+        writeTrackAnnots(chrAnnotBatch, ideo);
+      } else if (layout === 'overlay') {
+        writeOverlayAnnots(chrAnnotBatch, ideo);
+      } else if (layout === 'histogram') {
+        writeHistogramAnnots(chrAnnotBatch, ideo);
+      }
+    },
+    function() {
+      if (ideo.onDrawAnnotsCallback) ideo.onDrawAnnotsCallback()
+    }
+  );
 }
 
 /**
@@ -223,7 +231,6 @@ function drawProcessedAnnots(annots) {
   }
 
   drawAnnotsByLayoutType(layout, annots, ideo);
-  if (ideo.onDrawAnnotsCallback) ideo.onDrawAnnotsCallback();
 }
 
 export {drawAnnots, drawProcessedAnnots}
