@@ -1,5 +1,6 @@
 import {d3} from '../lib';
 import {ChromosomeUtil} from './../views/chromosome-util';
+import {getChromosomeModel} from './../views/chromosome-model';
 
 class Layout {
 
@@ -91,7 +92,7 @@ class Layout {
 
     oldWidth = chrModel.width;
 
-    chrModel = ideo.getChromosomeModel(bands, chrName, taxid, chrIndex);
+    chrModel = getChromosomeModel(bands, chrName, taxid, chrIndex, ideo);
 
     chrModel.oldWidth = oldWidth;
 

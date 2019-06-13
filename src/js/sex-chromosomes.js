@@ -5,19 +5,22 @@
  * male and female mammalian genomes.
  */
 
+import {getChromosomeModel} from './views/chromosome-model';
+
 /**
  * Appends SVG elements depicting sex chromosomes to the document.
  */
 function drawSexChromosomes(container, chrIndex) {
   var bandsArray, taxid, chrs,
     sexChromosomeIndexes, sciLength,
-    chromosome, bands, chrModel, sci, homologIndex;
+    chromosome, bands, chrModel, sci, homologIndex,
+    ideo = this;
 
-  bandsArray = this.bandsArray;
-  taxid = this.config.taxid;
-  chrs = this.config.chromosomes[taxid];
+  bandsArray = ideo.bandsArray;
+  taxid = ideo.config.taxid;
+  chrs = ideo.config.chromosomes[taxid];
 
-  if (this.config.sex === 'male') {
+  if (ideo.config.sex === 'male') {
     sexChromosomeIndexes = [1, 0];
   } else {
     sexChromosomeIndexes = [0, 0];
@@ -29,8 +32,8 @@ function drawSexChromosomes(container, chrIndex) {
     sci = sexChromosomeIndexes[homologIndex] + chrIndex;
     chromosome = chrs[sci];
     bands = bandsArray[taxid][sci];
-    chrModel = this.getChromosomeModel(bands, chromosome, taxid, sci);
-    this.appendHomolog(chrModel, chrIndex, homologIndex, container);
+    chrModel = getChromosomeModel(bands, chromosome, taxid, sci, ideo);
+    ideo.appendHomolog(chrModel, chrIndex, homologIndex, container);
   }
 }
 

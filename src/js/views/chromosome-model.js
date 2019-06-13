@@ -124,10 +124,9 @@ function getCentromerePosition(hasBands, bands) {
  * its name, DOM ID, length in base pairs or ISCN coordinates, cytogenetic
  * bands, centromere position, etc.
  */
-function getChromosomeModel(bands, chrName, taxid, chrIndex) {
+function getChromosomeModel(bands, chrName, taxid, chrIndex, ideo) {
   var hasBands,
-    chr = {},
-    ideo = this;
+    chr = {};
 
   hasBands = (typeof bands !== 'undefined');
 

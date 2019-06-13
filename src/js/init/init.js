@@ -8,6 +8,7 @@ import {finishInit} from './finish-init';
 import {writeContainer} from './write-container';
 import {fetchBands} from '../bands/fetch';
 import {organismMetadata} from './organism-metadata';
+import {getChromosomeModel} from '../views/chromosome-model';
 
 function isHeterogameticChromosome(chrModel, chrIndex, ideo) {
   var ploidy = ideo.config.ploidy;
@@ -27,7 +28,7 @@ function prepareChromosomes(bandsArray, chrs, taxid, chrIndex, ideo) {
     chromosome = chrs[j];
     if ('bandsArray' in ideo) bands = bandsArray[chrIndex];
 
-    chrModel = ideo.getChromosomeModel(bands, chromosome, taxid, chrIndex);
+    chrModel = getChromosomeModel(bands, chromosome, taxid, chrIndex, ideo);
 
     chrIndex += 1;
 

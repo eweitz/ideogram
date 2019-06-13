@@ -46,7 +46,7 @@ import {
 } from './lib';
 
 import {
-  getChromosomeModel, getChromosomePixels
+  getChromosomePixels
 } from './views/chromosome-model';
 
 import {
@@ -141,7 +141,6 @@ export default class Ideogram {
     this.getScientificName = getScientificName;
 
     // Functions from views/chromosome-model.js
-    this.getChromosomeModel = getChromosomeModel;
     this.getChromosomePixels = getChromosomePixels;
 
     // Functions from views/chromosome-labels.js
