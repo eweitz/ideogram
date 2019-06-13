@@ -95,7 +95,8 @@ function parseMitochondrion(result, ideo) {
       chrName = result.subname.split('|')[cnIndex];
     }
   } else {
-    return [null, null];
+    // Encountered in e.g. Caenorhabditis elegans genome WBcel235 (GCF_000002985.6)
+    return ['MT', 'mitochondrion'];
   }
 
   return [chrName, type];
