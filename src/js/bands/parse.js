@@ -1,24 +1,3 @@
-
-function getDelimiterTsvLinesAndInit(source, content) {
-  var delimiter, tsvLines, init;
-
-  if (typeof chrBands === 'undefined' && source !== 'native') {
-    delimiter = /\t/;
-    tsvLines = content.split(/\r\n|\n/);
-    init = 1;
-  } else {
-    delimiter = / /;
-    if (source === 'native') {
-      tsvLines = eval(content);
-    } else {
-      tsvLines = content;
-    }
-    init = 0;
-  }
-
-  return [delimiter, tsvLines, init];
-}
-
 function updateChromosomes(chromosomes) {
   var tmp, i;
 
@@ -77,25 +56,16 @@ function updateLines(lines, columns, taxid) {
 }
 
 /**
- * Parses cytogenetic band data from a TSV file, or, if band data is
- * prefetched, from an array
- *
- * NCBI:
- * #chromosome arm band iscn_start iscn_stop bp_start bp_stop stain density
- * ftp://ftp.ncbi.nlm.nih.gov/pub/gdp/ideogram_9606_GCF_000001305.14_550_V1
+ * Parses prefetched cytogenetic band data from an array
  */
 function parseBands(content, taxid, chromosomes) {
-  var delimiter, tsvLines, columns, chr, i, init, source,
+  var columns, chr, i,
     lines = {};
 
-  if (content.slice(0, 15) === 'window.chrBands') source = 'native';
-  
   chromosomes = updateChromosomes(chromosomes);
 
-  [delimiter, tsvLines, init] = getDelimiterTsvLinesAndInit(source, content);
-
-  for (i = init; i < tsvLines.length; i++) {
-    columns = tsvLines[i].split(delimiter);
+  for (i = 0; i < content.length; i++) {
+    columns = content[i].split(' ');
 
     chr = columns[0];
 
