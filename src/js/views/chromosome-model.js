@@ -136,7 +136,7 @@ function getChromosomeModel(bands, chrName, taxid, chrIndex, ideo) {
   chr.id = 'chr' + chr.name + '-' + taxid;
 
   if (ideo.config.fullChromosomeLabels === true) {
-    var name = this.organisms[taxid].scientificName.split(' ');
+    var name = ideo.organisms[taxid].scientificName.split(' ');
     var scientificNameAbbr = name[0][0] + '. ' + name[1];
     chr.name = scientificNameAbbr + ' chr' + chr.name;
   }

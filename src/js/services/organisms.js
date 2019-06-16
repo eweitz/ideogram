@@ -130,6 +130,9 @@ function isOrganismSupported(sourceOrg, targetTaxid, ideo) {
   );
 }
 
+/**
+ * Returns chromosomes and taxid for organisms with cytoband data
+ */
 function prepareTmpChrsAndTaxids(ideo) {
   var orgs, taxids, tmpChrs, i, org, taxid,
     config = ideo.config;
