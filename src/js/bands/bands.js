@@ -18,30 +18,7 @@ import {
   drawBandLabelText, drawBandLabelStalk
 } from './draw';
 import {parseBands} from './parse';
-
-/**
- * TODO: Should this be in services/organism.js?
- */
-function setTaxids(ideo) {
-  var i, taxid, taxids;
-
-  if (ideo.config.multiorganism === true) {
-    ideo.coordinateSystem = 'bp';
-    taxids = ideo.config.taxids;
-    for (i = 0; i < taxids.length; i++) {
-      taxid = taxids[i];
-    }
-  } else {
-    if (typeof ideo.config.taxid === 'undefined') {
-      ideo.config.taxid = ideo.config.taxids[0];
-    }
-    taxid = ideo.config.taxid;
-    taxids = [taxid];
-    ideo.config.taxids = taxids;
-  }
-
-  return [taxid, taxids];
-}
+import {setTaxids} from '../services/organisms';
 
 /**
  * Updates bands array, sets ideo.maxLength

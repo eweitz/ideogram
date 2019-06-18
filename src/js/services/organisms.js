@@ -159,9 +159,9 @@ function prepareTmpChrsAndTaxids(ideo) {
   return [tmpChrs, taxids];
 }
 
-function getTaxidsForOrganismInConfig(taxids, callback, ideo) {
+function getTaxidsForOrganismInConfig(callback, ideo) {
 
-  var tmpChrs;
+  var tmpChrs, taxids;
 
   [tmpChrs, taxids] = prepareTmpChrsAndTaxids(ideo);
 
@@ -186,28 +186,27 @@ function getIsMultiorganism(taxidInit, ideo) {
   );
 }
 
-function getTaxidsForOrganismNotInConfig(taxids, taxidInit, callback, ideo) {
+function getTaxidsForOrganismNotInConfig(taxidInit, callback, ideo) {
+  var taxids;
+
   if (ideo.config.multiorganism) {
     ideo.coordinateSystem = 'bp';
-    if (taxidInit) {
-      taxids = ideo.config.taxid;
-    }
+    if (taxidInit) taxids = ideo.config.taxid;
   } else {
-    if (taxidInit) {
-      taxids = [ideo.config.taxid];
-    }
+    if (taxidInit) taxids = [ideo.config.taxid];
     ideo.config.taxids = taxids;
   }
   callback(taxids);
 }
 
 /**
- * Returns an array of taxids for the current ideogram
+ * Returns taxids via callback
+ * 
  * Also sets configuration parameters related to taxid(s), whether ideogram is
  * multiorganism, and adjusts chromosomes parameters as needed
  **/
 function getTaxids(callback) {
-  var taxids, taxidInit,
+  var taxidInit,
     ideo = this;
 
   taxidInit = 'taxid' in ideo.config;
@@ -215,10 +214,31 @@ function getTaxids(callback) {
   ideo.config.multiorganism = getIsMultiorganism(taxidInit, ideo);
 
   if ('organism' in ideo.config) {
-    getTaxidsForOrganismInConfig(taxids, callback, ideo)
+    getTaxidsForOrganismInConfig(callback, ideo)
   } else {
-    getTaxidsForOrganismNotInConfig(taxids, taxidInit, callback, ideo);
+    getTaxidsForOrganismNotInConfig(taxidInit, callback, ideo);
   }
+}
+
+/**
+ * TODO: Reconcile this with getTaxids
+ */
+function setTaxids(ideo) {
+  var taxid, taxids;
+
+  if (ideo.config.multiorganism) {
+    ideo.coordinateSystem = 'bp';
+    taxids = ideo.config.taxids;
+  } else {
+    if ('taxid' in ideo.config === false) {
+      ideo.config.taxid = ideo.config.taxids[0];
+    }
+    taxid = ideo.config.taxid;
+    taxids = [taxid];
+    ideo.config.taxids = taxids;
+  }
+
+  return [taxid, taxids];
 }
 
 /**
@@ -244,5 +264,5 @@ function getOrganismFromEutils(callback) {
 
 export {
   getTaxidFromEutils, setTaxidAndAssemblyAndChromosomes, getTaxids,
-  setTaxidData, getOrganismFromEutils
+  setTaxidData, getOrganismFromEutils, setTaxids
 }
