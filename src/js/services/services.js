@@ -3,7 +3,7 @@ import {
   esearch, esummary, elink, getAssemblySearchUrl
 } from './eutils-config.js';
 import {
-  getTaxidFromEutils, getTaxids, setTaxidAndAssemblyAndChromosomes,
+  getTaxidFromEutils, getTaxids,
   setTaxidData, getOrganismFromEutils
 } from './organisms.js';
 
@@ -226,6 +226,6 @@ function getAssemblyAndChromosomesFromEutils(callback, recovering) {
 
 export {
   esearch, esummary, elink, getTaxidFromEutils, getOrganismFromEutils,
-  getTaxids, setTaxidAndAssemblyAndChromosomes, setTaxidData,
+  getTaxids, setTaxidData,
   getAssemblyAndChromosomesFromEutils
 }

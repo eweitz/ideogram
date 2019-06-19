@@ -9,6 +9,7 @@ import {writeContainer} from './write-container';
 import {fetchBands} from '../bands/fetch';
 import {organismMetadata} from './organism-metadata';
 import {getChromosomeModel} from '../views/chromosome-model';
+import {getOrganismFromEutils, getTaxids} from '../services/organisms.js'
 
 function isHeterogameticChromosome(chrModel, chrIndex, ideo) {
   var ploidy = ideo.config.ploidy;
@@ -178,13 +179,13 @@ function initializeTaxids(ideo) {
   return new Promise(function(resolve) {
     if (typeof ideo.config.organism === 'number') {
       // 'organism' is a taxid, e.g. 9606
-      ideo.getOrganismFromEutils(function() {
-        ideo.getTaxids(resolve);
-      });
+      getOrganismFromEutils(function() {
+        getTaxids(resolve, ideo);
+      }, ideo);
     } else {
-      ideo.getTaxids(resolve);
+      getTaxids(resolve, ideo);
     }
-  });
+  },);
 }
 
 function getBandsAndPrepareContainer(taxids, t0, ideo) {

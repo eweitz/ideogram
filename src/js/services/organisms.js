@@ -3,9 +3,8 @@ import {d3} from '../lib';
 /**
  *  Returns an NCBI taxonomy identifier (taxid) for the configured organism
  */
-function getTaxidFromEutils(callback) {
-  var organism, taxonomySearch, taxid,
-    ideo = this;
+function getTaxidFromEutils(callback, ideo) {
+  var organism, taxonomySearch, taxid;
 
   organism = ideo.config.organism;
 
@@ -22,9 +21,8 @@ function getTaxidFromEutils(callback) {
   });
 }
 
-function setTaxidData(taxid) {
-  var organism, dataDir, urlOrg, taxids,
-    ideo = this;
+function setTaxidData(taxid, ideo) {
+  var organism, dataDir, urlOrg, taxids;
 
   organism = ideo.config.organism;
   dataDir = ideo.config.dataDir;
@@ -92,18 +90,17 @@ function setTaxidData(taxid) {
   });
 }
 
-function setTaxidAndAssemblyAndChromosomes(callback) {
-  var assembly, chromosomes, getTaxidsFromEutils, taxid, taxids,
-    ideo = this;
+function setTaxidAndAssemblyAndChromosomes(callback, ideo) {
+  var assembly, chromosomes, getTaxidsFromEutils, taxid, taxids;
 
   getTaxidsFromEutils = new Promise(function(resolve) {
-    ideo.getTaxidFromEutils(resolve);
+    getTaxidFromEutils(resolve, ideo);
   });
 
   getTaxidsFromEutils
   .then(function(data) {
     taxid = data;
-    return ideo.setTaxidData(taxid);
+    return setTaxidData(taxid, ideo);
   })
   .then(function(asmChrTaxidsArray) {
     assembly = asmChrTaxidsArray[0];
@@ -160,7 +157,6 @@ function prepareTmpChrsAndTaxids(ideo) {
 }
 
 function getTaxidsForOrganismInConfig(callback, ideo) {
-
   var tmpChrs, taxids;
 
   [tmpChrs, taxids] = prepareTmpChrsAndTaxids(ideo);
@@ -169,7 +165,7 @@ function getTaxidsForOrganismInConfig(callback, ideo) {
     taxids.length === 0 ||
     ideo.assemblyIsAccession() && /GCA_/.test(ideo.config.assembly)
   ) {
-    ideo.setTaxidAndAssemblyAndChromosomes(callback);
+    setTaxidAndAssemblyAndChromosomes(callback, ideo);
   } else {
     ideo.config.taxids = taxids;
     if (ideo.config.multiorganism) {
@@ -205,9 +201,8 @@ function getTaxidsForOrganismNotInConfig(taxidInit, callback, ideo) {
  * Also sets configuration parameters related to taxid(s), whether ideogram is
  * multiorganism, and adjusts chromosomes parameters as needed
  **/
-function getTaxids(callback) {
-  var taxidInit,
-    ideo = this;
+function getTaxids(callback, ideo) {
+  var taxidInit;
 
   taxidInit = 'taxid' in ideo.config;
 
@@ -247,9 +242,8 @@ function setTaxids(ideo) {
  *
  * @param callback Function to call upon completing ESearch request
  */
-function getOrganismFromEutils(callback) {
-  var organism, taxonomySearch, taxid,
-    ideo = this;
+function getOrganismFromEutils(callback, ideo) {
+  var organism, taxonomySearch, taxid;
 
   taxid = ideo.config.organism;
 
@@ -262,7 +256,4 @@ function getOrganismFromEutils(callback) {
   });
 }
 
-export {
-  getTaxidFromEutils, setTaxidAndAssemblyAndChromosomes, getTaxids,
-  setTaxidData, getOrganismFromEutils, setTaxids
-}
+export {getTaxids, getOrganismFromEutils, setTaxids}

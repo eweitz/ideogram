@@ -25,8 +25,7 @@ import {
 
 import {
   esearch, esummary, elink,
-  getTaxidFromEutils, getOrganismFromEutils, getTaxids,
-  setTaxidAndAssemblyAndChromosomes, setTaxidData,
+  getOrganismFromEutils, getTaxids,
   getAssemblyAndChromosomesFromEutils
 } from './services/services';
 
@@ -94,9 +93,6 @@ export default class Ideogram {
     this.esearch = esearch;
     this.esummary = esummary;
     this.elink = elink;
-    this.getTaxidFromEutils = getTaxidFromEutils;
-    this.setTaxidData = setTaxidData;
-    this.setTaxidAndAssemblyAndChromosomes = setTaxidAndAssemblyAndChromosomes;
     this.getOrganismFromEutils = getOrganismFromEutils;
     this.getTaxids = getTaxids;
     this.getAssemblyAndChromosomesFromEutils = getAssemblyAndChromosomesFromEutils;

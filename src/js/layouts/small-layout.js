@@ -55,13 +55,10 @@ class SmallLayout extends Layout {
   }
 
   getChromosomeSetTranslate(setIndex) {
-    // Get organisms id list
-    var organisms = [];
-    this._ideo.getTaxids(function(taxidList) {
-      organisms = taxidList;
-    });
+    // Get taxonomy ID of first organism
+    var taxid = this._ideo.config.taxids[0];
     // Get first organism chromosomes amount
-    var size = this._ideo.config.chromosomes[organisms[0]].length;
+    var size = this._ideo.config.chromosomes[taxid].length;
     // Amount of chromosomes per number
     var rowSize = size / this._config.rows;
 
