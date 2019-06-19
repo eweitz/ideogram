@@ -35,22 +35,24 @@
       <option>Mouse (Mus musculus)</option>
       <option>Rat (Rattus norvegicus)</option>
       <option>Fly (Drosophila melanogaster)</option>
-      <option>Thale cress (Arabidopsis thaliana)</option>
-      <option>Corn (Zea mays)</option>
+      <option>Worm (Caenorhabditis elegans)</option>
       <option>Rice (Oryza sativa)</option>
+      <option>Corn (Zea mays)</option>
+      <option>Thale cress (Arabidopsis thaliana)</option>
     </select>
   </label>
   <label for="org2">
     Target organism:
     <select class="org-select" id="org2">
-        <option>Human (Homo sapiens)</option>
-        <option>Chimpanzee (Pan troglodytes)</option>
-        <option selected>Mouse (Mus musculus)</option>
-        <option>Rat (Rattus norvegicus)</option>
-        <option>Fly (Drosophila melanogaster)</option>
-        <option>Thale cress (Arabidopsis thaliana)</option>
-        <option>Corn (Zea mays)</option>
-        <option>Rice (Oryza sativa)</option>
+      <option>Human (Homo sapiens)</option>
+      <option>Chimpanzee (Pan troglodytes)</option>
+      <option selected>Mouse (Mus musculus)</option>
+      <option>Rat (Rattus norvegicus)</option>
+      <option>Fly (Drosophila melanogaster)</option>
+      <option>Worm (Caenorhabditis elegans)</option>
+      <option>Rice (Oryza sativa)</option>
+      <option>Corn (Zea mays)</option>
+      <option>Thale cress (Arabidopsis thaliana)</option>
       </select>
   </label>
   </div>
@@ -428,33 +430,34 @@
   }
     
   function onIdeogramLoad() {
-    var chrs, syntheticRegions, humanTaxid, mouseTaxid;
+    var chrs, syntheticRegions;
 
     document.querySelector('#status-container').innerHTML = '';
 
-    org1Taxid = ideogram.getTaxid(org1);
-    org2Taxid = ideogram.getTaxid(org2);
+    ideogram.getTaxids(function(taxids) {
+      [org1Taxid, org2Taxid] = taxids;
+      var chrs = ideogram.chromosomes,
+        org1ChrObj = chrs[org1Taxid][loci1Chr],
+        org2ChrObj = chrs[org2Taxid][loci2Chr],
+        syntenicRegions = [];
 
-    var chrs = ideogram.chromosomes,
-      org1ChrObj = chrs[org1Taxid][loci1Chr],
-      org2ChrObj = chrs[org2Taxid][loci2Chr],
-      syntenicRegions = [];
+      range1 = {
+        chr: org1ChrObj,
+        start: loci1Start,
+        stop: loci1Stop
+      };
 
-    range1 = {
-      chr: org1ChrObj,
-      start: loci1Start,
-      stop: loci1Stop
-    };
+      range2 = {
+        chr: org2ChrObj,
+        start: loci2Start,
+        stop: loci2Stop
+      };
 
-    range2 = {
-      chr: org2ChrObj,
-      start: loci2Start,
-      stop: loci2Stop
-    };
+      syntenicRegions.push({'r1': range1, 'r2': range2});
 
-    syntenicRegions.push({'r1': range1, 'r2': range2});
-
-    ideogram.drawSynteny(syntenicRegions);
+      ideogram.drawSynteny(syntenicRegions);
+    });
+  
   }
 
   async function createIdeogram() {
