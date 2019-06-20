@@ -1,26 +1,5 @@
 import {d3} from '../lib';
 
-/**
- *  Returns an NCBI taxonomy identifier (taxid) for the configured organism
- */
-function getTaxidFromEutils(callback, ideo) {
-  var organism, taxonomySearch, taxid;
-
-  organism = ideo.config.organism;
-
-  taxonomySearch = ideo.esearch + '&db=taxonomy&term=' + organism;
-
-  d3.json(taxonomySearch).then(function(data) {
-    taxid = data.esearchresult.idlist[0];
-    if (typeof ideo.config.taxids === 'undefined') {
-      ideo.config.taxids = [taxid];
-    } else {
-      ideo.config.taxids.push(taxid);
-    }
-    return callback(taxid);
-  });
-}
-
 function setTaxidData(taxid, ideo) {
   var organism, dataDir, urlOrg, taxids;
 
@@ -245,14 +224,39 @@ function setTaxids(ideo) {
 function getOrganismFromEutils(callback, ideo) {
   var organism, taxonomySearch, taxid;
 
-  taxid = ideo.config.organism;
+  // "organism" can be common name, taxid, or a list of either.
+  // In this case it is a taxid, e.g. 9606.
+  taxid = String(ideo.config.organism);
 
   taxonomySearch = ideo.esummary + '&db=taxonomy&id=' + taxid;
 
   d3.json(taxonomySearch).then(function(data) {
-    organism = data.result[String(taxid)].commonname;
+    organism = data.result[taxid].commonname;
     ideo.config.organism = organism;
     return callback(organism);
+  });
+}
+
+/**
+ * Returns an NCBI taxonomy identifier (taxid) for the configured organism
+ */
+function getTaxidFromEutils(callback, ideo) {
+  var organism, taxonomySearch, taxid;
+
+  // "organism" can be a name, taxid, or a list of either.
+  // In this case it is a name, e.g. "homo-sapiens".
+  organism = ideo.config.organism;
+
+  taxonomySearch = ideo.esearch + '&db=taxonomy&term=' + organism;
+
+  d3.json(taxonomySearch).then(function(data) {
+    taxid = data.esearchresult.idlist[0];
+    if ('taxids' in ideo.config) {
+      ideo.config.taxids = [taxid];
+    } else {
+      ideo.config.taxids.push(taxid);
+    }
+    return callback(taxid);
   });
 }
 
