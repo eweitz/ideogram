@@ -1,3 +1,21 @@
+import {hasNonGenBankAssembly} from '../lib';
+
+var lastBandDataUrl = '';
+
+function getBandUrl(bandDataFileNames, taxid, ideo) {
+  return ideo.config.dataDir + bandDataFileNames[taxid];
+}
+
+function shouldFetchBands(bandDataFileNames, taxid, ideo) {
+  var bandDataUrl = getBandUrl(bandDataFileNames, taxid, ideo);
+  return (
+    !(typeof window.chrBands !== 'undefined' && lastBandDataUrl === '')
+      || lastBandDataUrl !== bandDataUrl
+  )
+    && hasNonGenBankAssembly(ideo)
+    && taxid in bandDataFileNames;
+}
+
 function setBandData(url, fileNames, chrBands, ideo) {
   var taxid, fetchedTaxid, fileName;
 
@@ -15,13 +33,14 @@ function setBandData(url, fileNames, chrBands, ideo) {
 }
 
 function fetchBands(bandDataFileNames, taxid, t0, ideo) {
-  var bandDataUrl = ideo.config.dataDir + bandDataFileNames[taxid];
+  var bandDataUrl = getBandUrl(bandDataFileNames, taxid, ideo);
 
   if (!ideo.numBandDataResponses) ideo.numBandDataResponses = 0;
 
   fetch(bandDataUrl)
     .then(function(response) {
       return response.json().then(function(rawBands) {
+        lastBandDataUrl = bandDataUrl;
 
         delete window.chrBands; // Remove any previous chrBands variable
         window.chrBands = rawBands.chrBands;
@@ -39,4 +58,4 @@ function fetchBands(bandDataFileNames, taxid, t0, ideo) {
     });
 }
 
-export {fetchBands}
+export {shouldFetchBands, fetchBands}
