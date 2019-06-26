@@ -209,27 +209,28 @@ function getBandsAndPrepareContainer(taxids, t0, ideo) {
  * writes an SVG element to the document to contain the ideogram
  */
 var ideoNext = {};
-var ideoQueued = false;
-var ideoWait = false;
+var ideoQueued = {};
+var ideoWait = {};
 
 function init(ideo) {
   ideo = ideo || this;
+  var containerId = ideo.config.container;
 
-  if(ideoWait) {
-    ideoQueued = true;
-    ideoNext = ideo;
+  if(ideoWait[containerId]) {
+    ideoQueued[containerId] = true;
+    ideoNext[containerId] = ideo;
   }
   else {
-    ideoWait = true;
+    ideoWait[containerId] = true;
     initializeTaxids(ideo)
       .then(function(taxids) {
         var t0 = new Date().getTime();
         getBandsAndPrepareContainer(taxids, t0, ideo);
 
-        ideoWait = false;
-        if(ideoQueued) {
-          ideoQueued = false;
-          init(ideoNext);
+        ideoWait[containerId] = false;
+        if(ideoQueued[containerId]) {
+          ideoQueued[containerId] = false;
+          init(ideoNext[containerId]);
         }
       });
   }
