@@ -60,7 +60,6 @@
   <script type="text/javascript">
 
     var prevState = {};
-    var omaBase = 'https://omabrowser.org/api';
     var loci1, loci2;
 
     function shouldUpdateState() {
@@ -170,7 +169,11 @@
       updateGeneParams(gene);
 
       if (shouldUpdateState()) {
-        [loci1, loci2] = await fetchOrthologs(gene, org1, [org2]);
+        try {
+          [loci1, loci2] = await fetchOrthologs(gene, org1, [org2]);
+        } catch (error) {
+          document.querySelector('#status-container').innerHTML = error.message;
+        }
       };
       prevState = Object.assign({}, urlParams);
 
