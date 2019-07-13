@@ -8,13 +8,14 @@
     a:hover {text-decoration: underline;}
     a, a:hover, a:visited, a:active {color: #0366d6;}
     label {display: block; margin-bottom: 10px;}
-    .org-select {position: absolute; left: 136px;}
+    .left-select {position: absolute; left: 136px;}
     #status-container {display: inline-block; margin-left: 186px;}
     #error-container {color: red;}
     #ideogram-container {margin-left: 325px;}
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/homology@0.0.1/dist/homology.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/homology@0.1.0/dist/homology.min.js"></script>
+  <!-- <script type="text/javascript" src="http://localhost/homology/dist/homology.min.js"></script> -->
 <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
 </head>
 <body>
@@ -30,7 +31,7 @@
   <label for="gene">Gene: <input id="gene"/></label>
   <label for="org">
     Source organism:
-    <select class="org-select" id="org">
+    <select class="left-select org-select" id="org">
       <option>Human (Homo sapiens)</option>
       <option>Chimpanzee (Pan troglodytes)</option>
       <option>Mouse (Mus musculus)</option>
@@ -43,7 +44,7 @@
   </label>
   <label for="org2">
     Target organism:
-    <select class="org-select" id="org2">
+    <select class="left-select org-select" id="org2">
         <option>Human (Homo sapiens)</option>
         <option>Chimpanzee (Pan troglodytes)</option>
         <option selected>Mouse (Mus musculus)</option>
@@ -53,6 +54,13 @@
         <option>Corn (Zea mays)</option>
         <option>Rice (Oryza sativa)</option>
       </select>
+  </label>
+  <label for="source">
+    Orthology source:
+    <select class="left-select source-select" id="source">
+      <option id="oma" selected>OMA Browser</option>
+      <option id="orthodb">OrthoDB</option>
+    </select>
   </label>
   </div>
   <div id="ideogram-container"></div>
@@ -96,6 +104,16 @@
 
       updateGeneParams();
 
+      createIdeogram();
+    }
+
+    // Process selections in "Orthology source" drop-down menu
+    async function handleOrthologySource(event) {
+      var menu = document.querySelector('#source');
+
+      urlParams['source'] = menu.options[menu.selectedIndex].id;
+
+      updateGeneParams();
       createIdeogram();
     }
 
@@ -146,6 +164,7 @@
         urlParams['gene'] = 'MTOR'
         urlParams['org'] = 'homo-sapiens';
         urlParams['org2'] = 'mus-musculus';
+        urlParams['source'] = 'oma';
         // urlParams['loci'] = '1:11106531-11262557,4:148448582-148557685';
       }
 
@@ -166,11 +185,14 @@
       gene = urlParams['gene'];
       document.querySelector('#gene').value = gene;
 
+      orthologySource = urlParams['source'];
+      document.querySelector('#source #' + orthologySource).selected = true;
+
       updateGeneParams(gene);
 
       if (shouldUpdateState()) {
         try {
-          [loci1, loci2] = await fetchOrthologs(gene, org1, [org2]);
+          [loci1, loci2] = await fetchOrthologs(gene, org1, [org2], orthologySource);
         } catch (error) {
           document.querySelector('#status-container').innerHTML = error.message;
         }
@@ -184,89 +206,6 @@
       [loci2Start, loci2Stop] = loci2Range.split('-');
     }
 
-    /**
-     * Extract genomic location of a gene of interest from NCBI ESummary data.
-     * Helper function for fetchGeneLocation.
-     */
-    function parseESummary(esummary, geneIDs, geneNames, locations) {
-      var geneName, result, resultName, resultOtherAliases, gene, chr, loc,
-        start, stop;
-
-      geneIDs.forEach((geneID, i) => {
-        result = esummary.result[geneID];
-        geneName = geneNames[i];
-        resultName = result.name.toLowerCase();
-        resultOtherAliases = result.otheraliases.toLowerCase()
-        if (
-          result.currentid !== '' ||
-          (resultName.includes(geneName) === false &&
-          resultOtherAliases.includes(geneName) === false) // Needed for Drosophila
-        ) {
-          // currentid case occurs when one gene symbol in a taxon maps to
-          // multiple genes.  It seems to be annotation-run noise.
-          // resultName case occurs when gene has a non-canonical alias
-          // matching the gene symbol.
-          // Ignore both.
-          return;
-        }
-        gene = result.name;
-        chr = result.chromosome;
-        if (result.locationhist.length > 0) {
-          loc = result.locationhist[0]; // better than 'genomicinfo', when available
-        } else {
-          // Needed for e.g. Arabidopsis thaliana
-          loc = result.genomicinfo[0];
-        }
-        start = loc.chrstart;
-        stop = loc.chrstop;
-        locations.push(chr + ':' + start + '-' + stop);
-      });
-
-      return locations;
-    }
-
-    /**
-     * Get genomic coordinate data from NCBI EUtils
-     * EUtils docs: https://www.ncbi.nlm.nih.gov/books/NBK25500/
-     */
-    async function fetchGeneLocation(geneNames, organism) {
-      var geneClause, geneID, geneIDs, locations, orgName, response, data,
-        eutils, esearch, esummary, url, defaultParams;
-
-      locations = [];
-
-      geneNames = geneNames.map(d => d.toLowerCase());
-
-      // EUtils is a web API to access NCBI data
-      eutils = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/';
-      defaultParams =
-        '?db=gene&retmode=json&retmax=100' +
-        '&api_key=7e33ac6a08a6955ec3b83d214d22b21a2808';
-
-      // Use ESearch to get NCBI Gene ID for gene name, e.g. BRCA1 -> 672
-      esearch = eutils + 'esearch.fcgi' + defaultParams;
-
-      // Use ESummary to get genomic coordinates for given gene IDs
-      esummary = eutils + 'esummary.fcgi' + defaultParams;
-
-      geneClause = '(' + geneNames.join('[symbol] OR ') + '[symbol])';
-      orgName = organism.replace(' ', '-');
-
-      url = esearch + '&term=' + orgName + '[Organism] AND ' + geneClause;
-      response = await fetch(url);
-      data = await response.json();
-      geneIDs = data.esearchresult.idlist;
-
-      // Batch request genomic coordinates for all ACMG genes
-      url = esummary + '&id=' + geneIDs.join(',');
-      response = await fetch(url);
-      data = await response.json();
-
-      locations = parseESummary(data, geneIDs, geneNames, locations);
-
-      return locations;
-  }
-    
   function onIdeogramLoad() {
     var chrs, syntheticRegions, humanTaxid, mouseTaxid;
 
@@ -333,8 +272,11 @@
 
   document.querySelector('#gene').addEventListener('blur', handleGene);
   document.querySelector('#gene').addEventListener('keyup', handleGene);
-  document.querySelectorAll('select').forEach(select => {
+  document.querySelectorAll('.org-select').forEach(select => {
     select.addEventListener('change', handleOrganism);
+  });
+  document.querySelectorAll('.source-select').forEach(select => {
+    select.addEventListener('change', handleOrthologySource);
   });
 
   createIdeogram();
