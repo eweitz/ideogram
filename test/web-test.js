@@ -1624,6 +1624,12 @@ describe('Ideogram', function() {
         var chimpanzeeQArmBand = document.querySelectorAll('#chr2A-9598-q1').length;
         assert.equal(chimpanzeeQArmBand, 1);
 
+        // Test that selected human assembly has no cytobands
+        var human1Bands = document.querySelectorAll('#chr1-9606 .band').length;
+
+        // 2 bands = p, q.  Fully banded has 63.
+        assert.equal(human1Bands, 2);
+
         done();
       }
     }
