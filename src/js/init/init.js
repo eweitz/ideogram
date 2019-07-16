@@ -125,7 +125,15 @@ function getBandFileName(taxid, accession, ideo) {
   ) {
     bandFileName.push(resolution);
   }
-  bandFileName = bandFileName.join('-') + '.json';
+
+  bandFileName = bandFileName.join('-');
+
+  var fullyBandedTaxids = ['9606', '10090', '10116'];
+  if (fullyBandedTaxids.includes(taxid) && !ideo.config.showFullyBanded) {
+    bandFileName += '-no-bands';
+  }
+
+  bandFileName += '.json';
 
   return bandFileName;
 }
