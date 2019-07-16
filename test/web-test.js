@@ -1624,6 +1624,12 @@ describe('Ideogram', function() {
         var chimpanzeeQArmBand = document.querySelectorAll('#chr2A-9598-q1').length;
         assert.equal(chimpanzeeQArmBand, 1);
 
+        // Test that selected human assembly has no cytobands
+        var human1Bands = document.querySelectorAll('#chr1-9606 .band').length;
+
+        // 2 bands = p, q.  Fully banded has 63.
+        assert.equal(human1Bands, 2);
+
         done();
       }
     }
@@ -2084,16 +2090,13 @@ describe('Ideogram', function() {
 
     config = {
       organism: 'human',
-      assembly: 'GRCh37',
       orientation: 'horizontal',
       geometry: 'collinear',
       chrHeight: 90,
-      showFullyBanded: false,
-      rotatable: false,
       annotationHeight: 30,
       annotationsLayout: 'heatmap',
       dataDir: '/dist/data/bands/native/',
-      annotationsPath: '../dist/data/annotations/SRR562646.json',
+      annotationsPath: '/dist/data/annotations/oligodendroglioma_cnv_expression.json',
       heatmaps: heatmaps,
       annotationTracks: annotationTracks
     };

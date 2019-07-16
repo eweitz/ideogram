@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/eweitz/ideogram.svg?branch=master)](https://travis-ci.org/eweitz/ideogram)
 [![Coverage Status](https://coveralls.io/repos/github/eweitz/ideogram/badge.svg)](https://coveralls.io/github/eweitz/ideogram)
 
-[Ideogram.js](https://eweitz.github.io/ideogram/) is a JavaScript library for chromosome visualization. 
+[Ideogram.js](https://eweitz.github.io/ideogram/) is a JavaScript library for [chromosome visualization](https://speakerdeck.com/eweitz/ideogramjs-chromosome-visualization-with-javascript). 
 
 Ideogram supports drawing and animating genome-wide datasets for [human](https://eweitz.github.io/ideogram/human), [mouse](https://eweitz.github.io/ideogram/mouse), and [many other eukaryotes](https://eweitz.github.io/ideogram/eukaryotes).  The [Ideogram API](https://github.com/eweitz/ideogram/blob/master/api.md) for annotations supports [histograms](https://eweitz.github.io/ideogram/annotations-histogram), [heatmaps](https://eweitz.github.io/ideogram/annotations-heatmap), [overlays](https://eweitz.github.io/ideogram/annotations-overlaid), and points of arbitrary shape and color layered in [tracks](https://eweitz.github.io/ideogram/annotations-tracks). Ideogram can depict haploid, [diploid](https://eweitz.github.io/ideogram/ploidy-basic) or higher ploidy genomes (e.g. plants), as well as aneuploidy, [genetic recombination](https://eweitz.github.io/ideogram/ploidy-recombination), and [homologous features](https://eweitz.github.io/ideogram/homology-basic) between chromosomes. 
 
@@ -11,13 +11,15 @@ Ideogram can be embedded as a [reusable component](https://github.com/eweitz/ide
 
 [![All human genes](https://raw.githubusercontent.com/eweitz/ideogram/master/examples/vanilla/ideogram_histogram_all_human_genes.png)](https://eweitz.github.io/ideogram/annotations_histogram.html)
 
-Check out [live examples](https://eweitz.github.io/ideogram/), get [up and running](#installation) with your own deployment, skim [basic usage](#usage), or dive into the [full API](api.md)!  
+Check out [live examples](https://eweitz.github.io/ideogram/), get [up and running](#installation) with your own deployment, skim [basic usage](#usage), or dive into the [full API](api.md)!
+
+A [broader overview](https://speakerdeck.com/eweitz/ideogramjs-chromosome-visualization-with-javascript) is also available.  It discusses Ideogram's chromosome biology, technical architecture, and more.
 
 # Installation
 
 To link directly to the latest release, copy this snippet:
 ```
-<script src="https://unpkg.com/ideogram@1.9.0/dist/js/ideogram.min.js"></script>
+<script src="https://unpkg.com/ideogram@1.10.0/dist/js/ideogram.min.js"></script>
 ```
 
 You can also easily use the library locally:
@@ -42,7 +44,7 @@ import Ideogram from 'ideogram';
 # Usage
 ```html
 <head>
-  <script src="https://unpkg.com/ideogram@1.9.0/dist/js/ideogram.min.js"></script>
+  <script src="https://unpkg.com/ideogram@1.10.0/dist/js/ideogram.min.js"></script>
 </head>
 <body>
 <script>

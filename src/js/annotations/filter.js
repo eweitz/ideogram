@@ -59,7 +59,7 @@ function updateDisplayedTracks(trackIndexes) {
   displayedAnnots = ideo.processAnnotData(rawAnnots);
 
   d3.selectAll(ideo.selector + ' .annot').remove();
-  ideogram.displayedTrackIndexes = trackIndexes;
+  ideo.displayedTrackIndexes = trackIndexes;
   ideo.drawAnnots(displayedAnnots);
 
   return displayedAnnots;

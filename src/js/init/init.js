@@ -2,11 +2,11 @@
  * @fileoveriew Methods for initialization
  */
 
-import {d3, hasNonGenBankAssembly} from '../lib';
+import {d3} from '../lib';
 import {configure} from './configure';
 import {finishInit} from './finish-init';
 import {writeContainer} from './write-container';
-import {fetchBands} from '../bands/fetch';
+import {shouldFetchBands, fetchBands} from '../bands/fetch';
 import {organismMetadata} from './organism-metadata';
 
 function isHeterogameticChromosome(chrModel, chrIndex, ideo) {
@@ -125,7 +125,15 @@ function getBandFileName(taxid, accession, ideo) {
   ) {
     bandFileName.push(resolution);
   }
-  bandFileName = bandFileName.join('-') + '.json';
+
+  bandFileName = bandFileName.join('-');
+
+  var fullyBandedTaxids = ['9606', '10090', '10116'];
+  if (fullyBandedTaxids.includes(taxid) && !ideo.config.showFullyBanded) {
+    bandFileName += '-no-bands';
+  }
+
+  bandFileName += '.json';
 
   return bandFileName;
 }
@@ -157,10 +165,7 @@ function getBandFileNames(taxid, bandFileNames, ideo) {
 function prepareContainer(taxid, bandFileNames, t0, ideo) {
   var bandsArray;
 
-  if (
-    hasNonGenBankAssembly(ideo) &&
-    typeof chrBands === 'undefined' && taxid in bandFileNames
-  ) {
+  if (shouldFetchBands(bandFileNames, taxid, ideo)) {
     fetchBands(bandFileNames, taxid, t0, ideo);
   } else {
     if (typeof chrBands !== 'undefined') {
@@ -221,6 +226,6 @@ function init() {
 }
 
 export {
-  configure, initDrawChromosomes, handleRotateOnClick, setOverflowScroll,
+  configure, initDrawChromosomes, handleRotateOnClick,
   onLoad, init, finishInit, writeContainer
 }
