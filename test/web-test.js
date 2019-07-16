@@ -2090,16 +2090,13 @@ describe('Ideogram', function() {
 
     config = {
       organism: 'human',
-      assembly: 'GRCh37',
       orientation: 'horizontal',
       geometry: 'collinear',
       chrHeight: 90,
-      showFullyBanded: false,
-      rotatable: false,
       annotationHeight: 30,
       annotationsLayout: 'heatmap',
       dataDir: '/dist/data/bands/native/',
-      annotationsPath: '../dist/data/annotations/SRR562646.json',
+      annotationsPath: '/dist/data/annotations/oligodendroglioma_cnv_expression.json',
       heatmaps: heatmaps,
       annotationTracks: annotationTracks
     };
