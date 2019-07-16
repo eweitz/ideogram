@@ -168,6 +168,10 @@
         // urlParams['loci'] = '1:11106531-11262557,4:148448582-148557685';
       }
 
+      if ('source' in urlParams === false) {
+        urlParams['source'] = 'oma';
+      }
+
       // If "org2" is omitted, set it to the value of "org"
       if ('org2' in urlParams === false) {
         org2 = urlParams['org'];
