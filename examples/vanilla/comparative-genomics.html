@@ -255,6 +255,10 @@
 
     await processUrl();
 
+    if (document.querySelector('#error-container') !== null) {
+      return;
+    }
+
     if (org1 !== org2) {
       // Orthology
       organism = [org1, org2];
