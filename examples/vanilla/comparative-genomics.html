@@ -14,8 +14,9 @@
     #ideogram-container {margin-left: 325px;}
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/homology@0.2.0/dist/homology.min.js"></script>
-  <!-- <script type="text/javascript" src="http://localhost/homology/dist/homology.min.js"></script> -->
+  <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/homology@0.2.0/dist/homology.min.js"></script> -->
+  <!-- <script type="text/javascript" src="https://eweitz.github.io/homology/dist/homology.min.js"></script> -->
+  <script type="text/javascript" src="http://localhost/homology/dist/homology.min.js"></script>
 <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
 </head>
 <body>
@@ -172,6 +173,10 @@
       if ('org2' in urlParams === false) {
         org2 = urlParams['org'];
         urlParams['org2'] = org2;
+      }
+
+      if ('source' in urlParams === false) {
+        urlParams['source'] = 'oma';
       }
 
       org1 = urlParams['org'].replace('-', ' ');
