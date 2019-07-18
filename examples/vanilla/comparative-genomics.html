@@ -199,7 +199,9 @@
         try {
           [loci1, loci2] = await fetchOrthologs(gene, org1, [org2], orthologySource);
         } catch (error) {
-          document.querySelector('#status-container').innerHTML = error.message;
+          document.querySelector('#status-container').innerHTML =
+            `<span id="error-container">${error}</span>`;
+          throw error;
         }
       };
       prevState = Object.assign({}, urlParams);
