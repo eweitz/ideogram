@@ -8,7 +8,7 @@
     a:hover {text-decoration: underline;}
     a, a:hover, a:visited, a:active {color: #0366d6;}
     label {display: block; margin-bottom: 10px;}
-    .left-select {position: absolute; left: 136px;}
+    .left-select {position: absolute; left: 150px;}
     #status-container {display: inline-block; margin-left: 186px;}
     #error-container {color: red;}
     #ideogram-container {margin-left: 325px;}
@@ -56,9 +56,9 @@
         <option>Rice (Oryza sativa)</option>
       </select>
   </label>
-  <label for="source">
-    Orthology source:
-    <select class="left-select source-select" id="source">
+  <label for="backend">
+    Orthology backend:
+    <select class="left-select backend-select" id="backend">
       <option id="oma" selected>OMA Browser</option>
       <option id="orthodb">OrthoDB</option>
     </select>
@@ -109,10 +109,10 @@
     }
 
     // Process selections in "Orthology source" drop-down menu
-    async function handleOrthologySource(event) {
-      var menu = document.querySelector('#source');
+    async function handleBackend(event) {
+      var menu = document.querySelector('#backend');
 
-      urlParams['source'] = menu.options[menu.selectedIndex].id;
+      urlParams['backend'] = menu.options[menu.selectedIndex].id;
 
       updateGeneParams();
       createIdeogram();
@@ -165,7 +165,7 @@
         urlParams['gene'] = 'MTOR'
         urlParams['org'] = 'homo-sapiens';
         urlParams['org2'] = 'mus-musculus';
-        urlParams['source'] = 'oma';
+        urlParams['backend'] = 'oma';
         // urlParams['loci'] = '1:11106531-11262557,4:148448582-148557685';
       }
 
@@ -175,8 +175,8 @@
         urlParams['org2'] = org2;
       }
 
-      if ('source' in urlParams === false) {
-        urlParams['source'] = 'oma';
+      if ('backend' in urlParams === false) {
+        urlParams['backend'] = 'oma';
       }
 
       org1 = urlParams['org'].replace('-', ' ');
@@ -190,14 +190,14 @@
       gene = urlParams['gene'];
       document.querySelector('#gene').value = gene;
 
-      orthologySource = urlParams['source'];
-      document.querySelector('#source #' + orthologySource).selected = true;
+      backend = urlParams['backend'];
+      document.querySelector('#backend #' + backend).selected = true;
 
       updateGeneParams(gene);
 
       if (shouldUpdateState()) {
         try {
-          [loci1, loci2] = await fetchOrthologs(gene, org1, [org2], orthologySource);
+          [loci1, loci2] = await fetchOrthologs(gene, org1, [org2], backend);
         } catch (error) {
           document.querySelector('#status-container').innerHTML =
             `<span id="error-container">${error}</span>`;
@@ -296,8 +296,8 @@
   document.querySelectorAll('.org-select').forEach(select => {
     select.addEventListener('change', handleOrganism);
   });
-  document.querySelectorAll('.source-select').forEach(select => {
-    select.addEventListener('change', handleOrthologySource);
+  document.querySelectorAll('.backend-select').forEach(select => {
+    select.addEventListener('change', handleBackend);
   });
 
   createIdeogram();
