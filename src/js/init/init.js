@@ -2,11 +2,11 @@
  * @fileoveriew Methods for initialization
  */
 
-import {d3, hasNonGenBankAssembly} from '../lib';
+import {d3} from '../lib';
 import {configure} from './configure';
 import {finishInit} from './finish-init';
 import {writeContainer} from './write-container';
-import {fetchBands} from '../bands/fetch';
+import {shouldFetchBands, fetchBands} from '../bands/fetch';
 import {organismMetadata} from './organism-metadata';
 import {getChromosomeModel} from '../views/chromosome-model';
 import {getOrganismFromEutils, getTaxids} from '../services/organisms.js'
@@ -127,7 +127,15 @@ function getBandFileName(taxid, accession, ideo) {
   ) {
     bandFileName.push(resolution);
   }
-  bandFileName = bandFileName.join('-') + '.json';
+
+  bandFileName = bandFileName.join('-');
+
+  var fullyBandedTaxids = ['9606', '10090', '10116'];
+  if (fullyBandedTaxids.includes(taxid) && !ideo.config.showFullyBanded) {
+    bandFileName += '-no-bands';
+  }
+
+  bandFileName += '.json';
 
   return bandFileName;
 }
@@ -159,10 +167,7 @@ function getBandFileNames(taxid, bandFileNames, ideo) {
 function prepareContainer(taxid, bandFileNames, t0, ideo) {
   var bandsArray;
 
-  if (
-    hasNonGenBankAssembly(ideo) &&
-    typeof chrBands === 'undefined' && taxid in bandFileNames
-  ) {
+  if (shouldFetchBands(bandFileNames, taxid, ideo)) {
     fetchBands(bandFileNames, taxid, t0, ideo);
   } else {
     if (typeof chrBands !== 'undefined') {
@@ -213,13 +218,34 @@ function getBandsAndPrepareContainer(taxids, t0, ideo) {
  * fetches band and annotation data if needed, and
  * writes an SVG element to the document to contain the ideogram
  */
-function init() {
-  var t0 = new Date().getTime(),
-    ideo = this;
+// Prevents race condition when init is called multiple times in quick succession.  
+// See https://github.com/eweitz/ideogram/pull/154.
+var ideoNext = {};
+var ideoQueued = {};
+var ideoWait = {};
 
-  initializeTaxids(ideo).then(function(taxids) {
-    getBandsAndPrepareContainer(taxids, t0, ideo);
-  });
+function init(ideo) {
+  ideo = ideo || this;
+  var containerId = ideo.config.container;
+
+  if(ideoWait[containerId]) {
+    ideoQueued[containerId] = true;
+    ideoNext[containerId] = ideo;
+  }
+  else {
+    ideoWait[containerId] = true;
+    initializeTaxids(ideo)
+      .then(function(taxids) {
+        var t0 = new Date().getTime();
+        getBandsAndPrepareContainer(taxids, t0, ideo);
+
+        ideoWait[containerId] = false;
+        if(ideoQueued[containerId]) {
+          ideoQueued[containerId] = false;
+          init(ideoNext[containerId]);
+        }
+      });
+  }
 }
 
 export {

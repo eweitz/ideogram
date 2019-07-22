@@ -1,6 +1,6 @@
 {
   "name": "ideogram",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "description": "Chromosome visualization with D3.js",
   "main": "src/js/index.js",
   "directories": {
@@ -38,13 +38,11 @@
   },
   "homepage": "https://eweitz.github.io/ideogram",
   "dependencies": {
-    "commander": "^2.19.0",
     "crossfilter": "1.3.12",
     "d3-array": "^1.2.4",
     "d3-brush": "^1.0.6",
     "d3-dispatch": "^1.0.5",
     "d3-fetch": "^1.1.2",
-    "d3-selection-multi": "1.0.1",
     "d3-scale": "^1.0.6",
     "d3-selection": "^1.3.2",
     "es6-natural-sort": "1.0.0",

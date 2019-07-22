@@ -54,6 +54,54 @@ describe('Ideogram', function() {
     }
   });
 
+  it('should not have race condition when init is quickly called multiple times', function(done) {
+    // Verifies handling for a Plotly use case.
+    // See https://github.com/eweitz/ideogram/pull/154
+
+    /**
+    * Differences in remotely cached (static) vs. uncached (queried via EUtils)
+    * response times is the likely cause of the race condition that's tested
+    * against here.
+    **/
+
+    var numTimesOnLoadHasBeenCalled = 0;
+
+    function testRaceCondition() {
+      var ideo = this;
+      numTimesOnLoadHasBeenCalled++;
+      var numChimpChromosomes = 25; // See e.g. https://eweitz.github.io/ideogram/eukaryotes?org=pan-troglodytes
+      var numHumanChromosomes = 24; // (22,X,Y)
+      var numChromosomes = ideo.chromosomesArray.length;
+
+      if(numTimesOnLoadHasBeenCalled === 1) {
+        assert.equal(numChromosomes, numChimpChromosomes);
+      }
+      else if(numTimesOnLoadHasBeenCalled === 2) {
+        assert.equal(numChromosomes, numHumanChromosomes);
+        done();
+      }
+    }
+
+    function startRaceCondition() {
+      new Ideogram({
+        organism: 'pan-troglodytes',
+        dataDir: '/dist/data/bands/native/',
+        onLoad: testRaceCondition
+      });
+      new Ideogram({
+        organism: 'human',
+        dataDir: '/dist/data/bands/native/',
+        onLoad: testRaceCondition
+      });
+    }
+
+    var ideogram = new Ideogram({
+      organism: 'human',
+      dataDir: '/dist/data/bands/native/',
+      onLoad: startRaceCondition
+    });
+  });
+
   it('should have a non-body container when specified', function() {
     config.container = '.small-ideogram';
     var ideogram = new Ideogram(config);
@@ -1624,6 +1672,12 @@ describe('Ideogram', function() {
         var chimpanzeeQArmBand = document.querySelectorAll('#chr2A-9598-q1').length;
         assert.equal(chimpanzeeQArmBand, 1);
 
+        // Test that selected human assembly has no cytobands
+        var human1Bands = document.querySelectorAll('#chr1-9606 .band').length;
+
+        // 2 bands = p, q.  Fully banded has 63.
+        assert.equal(human1Bands, 2);
+
         done();
       }
     }
@@ -2084,16 +2138,13 @@ describe('Ideogram', function() {
 
     config = {
       organism: 'human',
-      assembly: 'GRCh37',
       orientation: 'horizontal',
       geometry: 'collinear',
       chrHeight: 90,
-      showFullyBanded: false,
-      rotatable: false,
       annotationHeight: 30,
       annotationsLayout: 'heatmap',
       dataDir: '/dist/data/bands/native/',
-      annotationsPath: '../dist/data/annotations/SRR562646.json',
+      annotationsPath: '/dist/data/annotations/oligodendroglioma_cnv_expression.json',
       heatmaps: heatmaps,
       annotationTracks: annotationTracks
     };

@@ -186,13 +186,13 @@ Function.  Optional.  Callback function to invoke immediately before annotation 
 String or number or array.  Required.  Organism(s) to show chromosomes for.  Supply organism's name as a string (e.g. `"human"`) or organism's NCBI Taxonomy ID (taxid, e.g. `9606`) to display chromosomes from a single organism, or an array of organisms' names or taxids to display chromosomes from multiple species or other taxa.  Example in [Human]( https://eweitz.github.io/ideogram/human).
 
 ## orientation
-String.  Optional.  Default: horizontal.  The orientation of chromosomes on the page.  Example in [Mouse]( https://eweitz.github.io/ideogram/mouse).
+String.  Optional.  Default: vertical.  The orientation of chromosomes on the page.  Example in [Mouse]( https://eweitz.github.io/ideogram/mouse).
 
 ## perspective
 String.  Optional.  Use `perspective: 'comparative'` to enable annotations between two chromosomes, either within the same organism or different organisms.  Examples in [Homology, basic](https://eweitz.github.io/ideogram/homology-basic) and [Homology, interspecies](https://eweitz.github.io/ideogram/homology-interspecies).
 
 ## ploidy
-Number.  Optional.  Default: 1.  The ploidy, i.e. number of chromosomes to depict for each chromosome set.  Useful for biologically accurate depicting of genomes that are diploid, triploid, etc.  Example in [Ploidy, basic](https://eweitz.github.io/ideogram/ploidy-basic).
+Number.  Optional.  Default: 1.  The ploidy, i.e. number of chromosomes to depict for each chromosome set.  Useful for more biologically accurate rendering of genomes that are diploid, triploid, etc.  Example in [Ploidy, basic](https://eweitz.github.io/ideogram/ploidy-basic).
 
 ## ploidyDesc
 Array.  Optional.  Description of ploidy in each chromosome set in terms of ancestry composition.  Example in [Ploidy, recombination](https://eweitz.github.io/ideogram/ploidy-recombination).
