@@ -181,41 +181,41 @@ export default class Ideogram {
   }
 
 
-  /**
-   * Sorts two chromosome objects by type and name
-   * - Nuclear chromosomes come before non-nuclear chromosomes.
-   * - Among nuclear chromosomes, use "natural sorting", e.g.
-   *   numbers come before letters
-   * - Among non-nuclear chromosomes, i.e. "MT" (mitochondrial DNA) and
-   *   "CP" (chromoplast DNA), MT comes first
-   *
-   *
-   * @param a Chromosome object "A"
-   * @param b Chromosome object "B"
-   * @returns {Number} JavaScript sort order indicator
-   */
-  static sortChromosomes(a, b) {
-    var aIsNuclear = a.type === 'nuclear',
-      bIsNuclear = b.type === 'nuclear',
-      aIsCP = a.type === 'chloroplast',
-      bIsCP = b.type === 'chloroplast',
-      aIsMT = a.type === 'mitochondrion',
-      bIsMT = b.type === 'mitochondrion',
-      aIsAP = a.type === 'apicoplast',
-      bIsAP = b.type === 'apicoplast';
-    // aIsPlastid = aIsMT && a.name !== 'MT', // e.g. B1 in rice genome GCF_001433935.1
-    // bIsPlastid = bIsMT && b.name !== 'MT';
+  // /**
+  //  * Sorts two chromosome objects by type and name
+  //  * - Nuclear chromosomes come before non-nuclear chromosomes.
+  //  * - Among nuclear chromosomes, use "natural sorting", e.g.
+  //  *   numbers come before letters
+  //  * - Among non-nuclear chromosomes, i.e. "MT" (mitochondrial DNA) and
+  //  *   "CP" (chromoplast DNA), MT comes first
+  //  *
+  //  *
+  //  * @param a Chromosome object "A"
+  //  * @param b Chromosome object "B"
+  //  * @returns {Number} JavaScript sort order indicator
+  //  */
+  // static sortChromosomes(a, b) {
+  //   var aIsNuclear = a.type === 'nuclear',
+  //     bIsNuclear = b.type === 'nuclear',
+  //     aIsCP = a.type === 'chloroplast',
+  //     bIsCP = b.type === 'chloroplast',
+  //     aIsMT = a.type === 'mitochondrion',
+  //     bIsMT = b.type === 'mitochondrion',
+  //     aIsAP = a.type === 'apicoplast',
+  //     bIsAP = b.type === 'apicoplast';
+  //   // aIsPlastid = aIsMT && a.name !== 'MT', // e.g. B1 in rice genome GCF_001433935.1
+  //   // bIsPlastid = bIsMT && b.name !== 'MT';
 
-    if (aIsNuclear && bIsNuclear) {
-      return naturalSort(a.name, b.name);
-    } else if (!aIsNuclear && bIsNuclear) {
-      return 1;
-    } else if (aIsMT && bIsCP) {
-      return 1;
-    } else if (aIsCP && bIsMT) {
-      return -1;
-    } else if (!aIsAP && !aIsMT && !aIsCP && (bIsMT || bIsCP || bIsAP)) {
-      return -1;
-    }
-  }
+  //   if (aIsNuclear && bIsNuclear) {
+  //     return naturalSort(a.name, b.name);
+  //   } else if (!aIsNuclear && bIsNuclear) {
+  //     return 1;
+  //   } else if (aIsMT && bIsCP) {
+  //     return 1;
+  //   } else if (aIsCP && bIsMT) {
+  //     return -1;
+  //   } else if (!aIsAP && !aIsMT && !aIsCP && (bIsMT || bIsCP || bIsAP)) {
+  //     return -1;
+  //   }
+  // }
 }
