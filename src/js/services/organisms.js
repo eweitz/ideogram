@@ -162,18 +162,18 @@ function getTaxidsForOrganismInConfig(taxids, callback, ideo) {
 
   [tmpChrs, taxids] = prepareTmpChrsAndTaxids(ideo);
 
-  if (
-    taxids.length === 0 ||
-    ideo.assemblyIsAccession() && /GCA_/.test(ideo.config.assembly)
-  ) {
-    // ideo.setTaxidAndAssemblyAndChromosomes(callback);
-  } else {
+  // if (
+  //   taxids.length === 0 ||
+  //   ideo.assemblyIsAccession() && /GCA_/.test(ideo.config.assembly)
+  // ) {
+  //   ideo.setTaxidAndAssemblyAndChromosomes(callback);
+  // } else {
     ideo.config.taxids = taxids;
     if (ideo.config.multiorganism) {
       ideo.config.chromosomes = tmpChrs;
     }
     callback(taxids);
-  }
+  // }
 }
 
 function getIsMultiorganism(taxidInit, ideo) {
@@ -211,11 +211,11 @@ function getTaxids(callback) {
 
   ideo.config.multiorganism = getIsMultiorganism(taxidInit, ideo);
 
-  if ('organism' in ideo.config) {
+  // if ('organism' in ideo.config) {
     getTaxidsForOrganismInConfig(taxids, callback, ideo)
-  } else {
-    getTaxidsForOrganismNotInConfig(taxids, taxidInit, callback, ideo);
-  }
+  // } else {
+  //  getTaxidsForOrganismNotInConfig(taxids, taxidInit, callback, ideo);
+  // }
 }
 
 // /**
