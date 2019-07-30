@@ -24,10 +24,11 @@ import {
 } from './annotations/annotations'
 
 import {
-  esearch, esummary, elink,
-  getTaxidFromEutils, getOrganismFromEutils, getTaxids,
-  setTaxidAndAssemblyAndChromosomes, setTaxidData,
-  getAssemblyAndChromosomesFromEutils
+  getTaxids,
+  // esearch, esummary, elink,
+  // getTaxidFromEutils, getOrganismFromEutils,
+  // setTaxidData,
+  // getAssemblyAndChromosomesFromEutils
 } from './services/services';
 
 import {
@@ -91,15 +92,16 @@ export default class Ideogram {
     this.afterRawAnnots = afterRawAnnots;
 
     // Variables and functions from services.js
-    this.esearch = esearch;
-    this.esummary = esummary;
-    this.elink = elink;
-    this.getTaxidFromEutils = getTaxidFromEutils;
-    this.setTaxidData = setTaxidData;
-    this.setTaxidAndAssemblyAndChromosomes = setTaxidAndAssemblyAndChromosomes;
-    this.getOrganismFromEutils = getOrganismFromEutils;
+
     this.getTaxids = getTaxids;
-    this.getAssemblyAndChromosomesFromEutils = getAssemblyAndChromosomesFromEutils;
+    // this.esearch = esearch;
+    // this.esummary = esummary;
+    // this.elink = elink;
+    // this.getTaxidFromEutils = getTaxidFromEutils;
+    // this.setTaxidData = setTaxidData;
+    // this.setTaxidAndAssemblyAndChromosomes = setTaxidAndAssemblyAndChromosomes;
+    // this.getOrganismFromEutils = getOrganismFromEutils;
+    // this.getAssemblyAndChromosomesFromEutils = getAssemblyAndChromosomesFromEutils;
 
     // Functions from bands.js
     this.parseBands = parseBands;
