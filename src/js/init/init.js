@@ -180,14 +180,14 @@ function prepareContainer(taxid, bandFileNames, t0, ideo) {
 
 function initializeTaxids(ideo) {
   return new Promise(function(resolve) {
-    // if (typeof ideo.config.organism === 'number') {
-    //   // 'organism' is a taxid, e.g. 9606
-    //   ideo.getOrganismFromEutils(function() {
-    //     ideo.getTaxids(resolve);
-    //   });
-    // } else {
+    if (typeof ideo.config.organism === 'number') {
+      // 'organism' is a taxid, e.g. 9606
+      ideo.getOrganismFromEutils(function() {
+        ideo.getTaxids(resolve);
+      });
+    } else {
       ideo.getTaxids(resolve);
-    // }
+    }
   });
 }
 
