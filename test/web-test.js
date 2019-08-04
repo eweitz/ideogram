@@ -89,14 +89,12 @@ describe('Ideogram', function() {
 
   it('should have 21 chromosomes for a mouse ideogram instance', function(done) {
     // Tests use case from ../examples/vanilla/mouse.html
-    console.log('hi!')
     function callback() {
       var numChromosomes = Object.keys(ideogram.chromosomes["10090"]).length;
       assert.equal(numChromosomes, 21);
       done();
     }
 
-    console.log('test')
     // Clears default setting from beforeEach (test artifact)
     delete config.organism;
 
