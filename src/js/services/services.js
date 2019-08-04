@@ -18,7 +18,7 @@ function getNuccoreQueryString(gbUid, asmUid, recovering, ideo) {
   // GenColl (Genomic Collections) DB.
   if (hasGenBankAssembly(ideo) || typeof recovering !== 'undefined') {
     // TODO: account for GenBank-only
-    qs = '&db=nuccore&linkname=gencoll_nuccore_chr&from_uid=' + gbUid;
+    qs = '&db=nuccore&linkname=assembly_nuccore_insdc&from_uid=' + asmUid;
   } else {
     qs = '&db=nuccore&linkname=assembly_nuccore_refseq&from_uid=' + asmUid;
   }
@@ -50,8 +50,9 @@ function getAssemblyAndNuccoreLink(data, asmAndChrArray, recovering, ideo) {
  */
 function handleScaffoldData(data, asmAndChrArray, context) {
   var assemblyAccession = asmAndChrArray[0],
+    linksets = data.linksets[0],
     ideo = context.ideo;
-  if (data.linksets[0].linksetdbs[0].links.length > 100) {
+  if ('linksetdbs' in linksets && linksets.linksetdbs[0].links.length > 100) {
     if (typeof context.recovering === 'undefined') {
       ideo.getAssemblyAndChromosomesFromEutils(context.callback, true);
       return Promise.reject(
