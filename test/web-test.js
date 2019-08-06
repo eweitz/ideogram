@@ -89,7 +89,6 @@ describe('Ideogram', function() {
 
   it('should have 21 chromosomes for a mouse ideogram instance', function(done) {
     // Tests use case from ../examples/vanilla/mouse.html
-
     function callback() {
       var numChromosomes = Object.keys(ideogram.chromosomes["10090"]).length;
       assert.equal(numChromosomes, 21);
@@ -99,7 +98,8 @@ describe('Ideogram', function() {
     // Clears default setting from beforeEach (test artifact)
     delete config.organism;
 
-    config.taxid = 10090;
+    // config.taxid = 10090;
+    config.organism = 'mouse';
     config.orientation = 'horizontal';
 
     config.onLoad = callback;
@@ -294,7 +294,8 @@ describe('Ideogram', function() {
     }
 
     config = {
-      taxid: 10090,
+      // taxid: 10090,
+      organism: 'mouse',
       chromosomes: ['1', '2'],
       chrWidth: 10,
       chrHeight: 500,
@@ -488,7 +489,8 @@ describe('Ideogram', function() {
     }];
 
     var config = {
-      taxid: 9606,
+      // taxid: 9606,
+      organism: 'human',
       chrWidth: 8,
       chrHeight: 500,
       chrMargin: 10,
@@ -531,7 +533,8 @@ describe('Ideogram', function() {
       ]}]}
 
     var config = {
-      taxid: 9606,
+      // taxid: 9606,
+      organism: 'human',
       chrWidth: 8,
       chrHeight: 500,
       annotations: annots,
@@ -1290,16 +1293,44 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
+  ////
+  // BEGIN NCBI INTEGRATION TESTS
+  //
+  // These tests require an Internet connection, as they make
+  // HTTP requests to NCBI E-Utilities (EUtils).
+  //
+  ////
+  it('should support mitochondrial and chloroplast chromosomes', function(done) {
+    // Tests use case from ../examples/vanilla/eukaryotes.html
+
+    function callback() {
+      var chromosomes = Array.from(document.querySelectorAll('.chromosome'));
+      var nonNuclearChrs = chromosomes.slice(-2);
+      assert.equal(chromosomes.length, 21);
+      assert.equal(nonNuclearChrs[0].id, 'chrCP-29760'); // chloroplast (CP)
+      assert.equal(nonNuclearChrs[1].id, 'chrMT-29760'); // mitochrondrion (MT)
+      done();
+    }
+
+    var config = {
+      organism: 'vitis-vinifera', // grape
+      showNonNuclearChromosomes: true,
+      onLoad: callback
+    };
+
+    setTimeout(function() {
+      var ideogram = new Ideogram(config);
+    }, 1500);
+  });
+
   it('should use GRCh37 when specified in "assembly" parameter', function(done) {
     // Tests use case from ../examples/vanilla/human.html
-
     function callback() {
       var bands = ideogram.chromosomes['9606']['1'].bands;
       var chr1Length = bands[bands.length - 1].bp.stop;
       assert.equal(chr1Length, 249250621);
       done();
     }
-
     config.assembly = 'GRCh37';
     config.onLoad = callback;
     var ideogram = new Ideogram(config);
@@ -1338,66 +1369,198 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  it('should support GenBank accessions in "assembly" parameter', function(done) {
-    // Tests use case for non-default assemblies.
-    // GCA_000002125.2 is commonly called HuRef
-    // https://www.ncbi.nlm.nih.gov/assembly/GCA_000002125.2
+  it('should support using NCBI Taxonomy ID in "organism" option', function(done) {
 
     function callback() {
-      var chr1Length = ideogram.chromosomes['9606']['1'].length;
-      // For reference, see length section of LOCUS field in GenBank record at
-      // https://www.ncbi.nlm.nih.gov/nuccore/CM001609.2
-      assert.equal(chr1Length, 219475005);
+      var numChromosomes = Object.keys(ideogram.chromosomes[9606]).length;
+      assert.equal(numChromosomes, 24);
       done();
     }
 
-    config.assembly = 'GCA_000002125.2';
+    var config = {
+      organism: 9606,
+      dataDir: '/dist/data/bands/native/'
+    };
     config.onLoad = callback;
     var ideogram = new Ideogram(config);
   });
 
-  it('should recover chromosomes when given scaffolds', function(done) {
-    // Tests use case from ../examples/vanilla/human.html
+   it('should show three unbanded, annotated primate genomes in one page', function(done) {
+    // Tests use case from ../examples/vanilla/multiple-primates.html
+
+    var config, containerIDs, id, i, container,
+      ideogramsLoaded = 0,
+      annotSetsDrawn = 0;
 
     function callback() {
-      var numChromosomes = document.querySelectorAll('.chromosome').length;
-      assert.equal(numChromosomes, 20);
-      done();
+      var numChromosomes;
+
+      ideogramsLoaded += 1;
+      if (ideogramsLoaded === 3) {
+        numChromosomes = document.querySelectorAll('.chromosome').length;
+        assert.equal(numChromosomes, 24 + 25 + 21);
+      }
     }
 
-    var config = {
-      organism: 'Sus scrofa', // pig
-      onLoad: callback
-    };
+    function onDrawAnnotsCallback() {
+      var numAnnots;
 
-    setTimeout(function() {
-      var ideogram = new Ideogram(config);
-    }, 1500);
+      annotSetsDrawn += 1;
+      if (annotSetsDrawn === 3) {
+        numAnnots = document.querySelectorAll('.annot').length;
+        assert.equal(numAnnots, 6);
 
-  });
+        // Test that default chimpanzee assembly has centromeres
+        var chimpanzeeQArmBand = document.querySelectorAll('#chr2A-9598-q1').length;
+        assert.equal(chimpanzeeQArmBand, 1);
 
-  it('should support mitochondrial and chloroplast chromosomes', function(done) {
-    // Tests use case from ../examples/vanilla/eukaryotes.html
+        // Test that selected human assembly has no cytobands
+        var human1Bands = document.querySelectorAll('#chr1-9606 .band').length;
 
-    function callback() {
-      var chromosomes = Array.from(document.querySelectorAll('.chromosome'));
-      var nonNuclearChrs = chromosomes.slice(-2);
-      assert.equal(chromosomes.length, 21);
-      assert.equal(nonNuclearChrs[0].id, 'chrCP-29760'); // chloroplast (CP)
-      assert.equal(nonNuclearChrs[1].id, 'chrMT-29760'); // mitochrondrion (MT)
-      done();
+        // 2 bands = p, q.  Fully banded has 63.
+        assert.equal(human1Bands, 2);
+
+        done();
+      }
     }
 
-    var config = {
-      organism: 'vitis-vinifera', // grape
-      showNonNuclearChromosomes: true,
-      onLoad: callback
+    var orgConfigs = [
+      {
+        organism: 'homo-sapiens',
+        annotations: [
+          {name: 'APOB', chr: '2', start: 21001429, stop: 21044073, color: '#F00'},
+          {name: 'CTLA4', chr: '2', start: 203867788, stop: 203873960, color: '#77F', shape: 'circle'}
+        ]
+      },
+      {
+        organism: 'pan-troglodytes',
+        annotations: [
+          {name: 'APOB', chr: '2A', start: 21371172, stop: 21413720, color: '#F00'},
+          {name: 'CTLA4', chr: '2B', start: 94542849, stop: 94550230, color: '#77F', shape: 'circle'}
+        ]
+      },
+      {
+        organism: 'macaca-fascicularis',
+        annotations: [
+          {name: 'APOB', chr: '13', start: 89924186, stop: 89966894, color: '#F00'},
+          {name: 'CTLA4', chr: '12', start: 93412707, stop: 93419132, color: '#77F', shape: 'circle'}
+        ]
+      }
+    ];
+
+    config = {
+      chrHeight: 250,
+      chrMargin: 2,
+      orientation: 'horizontal',
+      showFullyBanded: false,
+      dataDir: '/dist/data/bands/native/',
+      onLoad: callback,
+      onDrawAnnots: onDrawAnnotsCallback
     };
 
-    setTimeout(function() {
-      var ideogram = new Ideogram(config);
-    }, 1500);
+    containerIDs = ['homo-sapiens', 'pan-troglodytes', 'macaca-fascicularis'];
+    for (i = 0; i < containerIDs.length; i++) {
+      id = containerIDs[i];
+      container = '<div id="' + id + '"></div>';
+      document.querySelector('body').innerHTML += container;
+      config.container = '#' + id;
+      config.organism = id;
+      config.annotations = orgConfigs[i].annotations;
+      new Ideogram(config);
+    }
   });
+
+  // BEGIN REGRESSED INTEGRATION TESTS
+  //
+  // 2019-07-29:
+  // These tests fail due to an upstream breaking change in NCBI E-Utils.
+  // Specifically, the Entrez GenColl database was retired without notice.
+  //
+  // it('should support GenBank accessions in "assembly" parameter', function(done) {
+  //   // Tests use case for non-default assemblies.
+  //   // GCA_000002125.2 is commonly called HuRef
+  //   // https://www.ncbi.nlm.nih.gov/assembly/GCA_000002125.2
+
+  //   function callback() {
+  //     var chr1Length = ideogram.chromosomes['9606']['1'].length;
+  //     // For reference, see length section of LOCUS field in GenBank record at
+  //     // https://www.ncbi.nlm.nih.gov/nuccore/CM001609.2
+  //     assert.equal(chr1Length, 219475005);
+  //     done();
+  //   }
+
+  //   config.assembly = 'GCA_000002125.2';
+  //   config.onLoad = callback;
+  //   var ideogram = new Ideogram(config);
+  // });
+
+  // it('should recover chromosomes when given scaffolds', function(done) {
+  //   // Tests use case from ../examples/vanilla/human.html
+
+  //   function callback() {
+  //     var numChromosomes = document.querySelectorAll('.chromosome').length;
+  //     assert.equal(numChromosomes, 20);
+  //     done();
+  //   }
+
+  //   var config = {
+  //     organism: 'Sus scrofa', // pig
+  //     onLoad: callback
+  //   };
+
+  //   setTimeout(function() {
+  //     var ideogram = new Ideogram(config);
+  //   }, 1500);
+
+  // });
+
+   // it('should not have race condition when init is quickly called multiple times', function(done) {
+  //   // Verifies handling for a Plotly use case.
+  //   // See https://github.com/eweitz/ideogram/pull/154
+
+  //   /**
+  //   * Differences in remotely cached (static) vs. uncached (queried via EUtils)
+  //   * response times is the likely cause of the race condition that's tested
+  //   * against here.
+  //   **/
+
+  //   var numTimesOnLoadHasBeenCalled = 0;
+
+  //   function testRaceCondition() {
+  //     var ideo = this;
+  //     numTimesOnLoadHasBeenCalled++;
+  //     var numChimpChromosomes = 25; // See e.g. https://eweitz.github.io/ideogram/eukaryotes?org=pan-troglodytes
+  //     var numHumanChromosomes = 24; // (22,X,Y)
+  //     var numChromosomes = ideo.chromosomesArray.length;
+
+  //     if(numTimesOnLoadHasBeenCalled === 1) {
+  //       assert.equal(numChromosomes, numChimpChromosomes);
+  //     }
+  //     else if(numTimesOnLoadHasBeenCalled === 2) {
+  //       assert.equal(numChromosomes, numHumanChromosomes);
+  //       done();
+  //     }
+  //   }
+
+  //   function startRaceCondition() {
+  //     new Ideogram({
+  //       organism: 'pan-troglodytes',
+  //       dataDir: '/dist/data/bands/native/',
+  //       onLoad: testRaceCondition
+  //     });
+  //     new Ideogram({
+  //       organism: 'human',
+  //       dataDir: '/dist/data/bands/native/',
+  //       onLoad: testRaceCondition
+  //     });
+  //   }
+
+  //   var ideogram = new Ideogram({
+  //     organism: 'human',
+  //     dataDir: '/dist/data/bands/native/',
+  //     onLoad: startRaceCondition
+  //   });
+  // });
 
   // eweitz, 2018-10-18: This test passes locally and the apicoplast displays
   // as expected in https://eweitz.github.io/ideogram/eukaryotes?org=plasmodium-falciparum,
@@ -1422,6 +1585,13 @@ describe('Ideogram', function() {
 
   //   var ideogram = new Ideogram(config);
   // });
+  //
+  ////
+  // END REGRESSED NCBI INTEGRATION TESTS
+  ////
+  ////
+  // END NCBI INTEGRATION TESTS
+  ////
 
   it('should handle arrayed objects in "annotations" parameter', function(done) {
     // Tests use case from ../examples/vanilla/human.html
@@ -1595,86 +1765,6 @@ describe('Ideogram', function() {
 
   });
 
-  it('should show three unbanded, annotated primate genomes in one page', function(done) {
-    // Tests use case from ../examples/vanilla/multiple-primates.html
-
-    var config, containerIDs, id, i, container,
-      ideogramsLoaded = 0,
-      annotSetsDrawn = 0;
-
-    function callback() {
-      var numChromosomes;
-
-      ideogramsLoaded += 1;
-      if (ideogramsLoaded === 3) {
-        numChromosomes = document.querySelectorAll('.chromosome').length;
-        assert.equal(numChromosomes, 24 + 25 + 21);
-      }
-    }
-
-    function onDrawAnnotsCallback() {
-      var numAnnots;
-
-      annotSetsDrawn += 1;
-      if (annotSetsDrawn === 3) {
-        numAnnots = document.querySelectorAll('.annot').length;
-        assert.equal(numAnnots, 6);
-
-        // Test that default chimpanzee assembly has centromeres
-        var chimpanzeeQArmBand = document.querySelectorAll('#chr2A-9598-q1').length;
-        assert.equal(chimpanzeeQArmBand, 1);
-
-        done();
-      }
-    }
-
-    var orgConfigs = [
-      {
-        organism: 'homo-sapiens',
-        annotations: [
-          {name: 'APOB', chr: '2', start: 21001429, stop: 21044073, color: '#F00'},
-          {name: 'CTLA4', chr: '2', start: 203867788, stop: 203873960, color: '#77F', shape: 'circle'}
-        ]
-      },
-      {
-        organism: 'pan-troglodytes',
-        annotations: [
-          {name: 'APOB', chr: '2A', start: 21371172, stop: 21413720, color: '#F00'},
-          {name: 'CTLA4', chr: '2B', start: 94542849, stop: 94550230, color: '#77F', shape: 'circle'}
-        ]
-      },
-      {
-        organism: 'macaca-fascicularis',
-        annotations: [
-          {name: 'APOB', chr: '13', start: 89924186, stop: 89966894, color: '#F00'},
-          {name: 'CTLA4', chr: '12', start: 93412707, stop: 93419132, color: '#77F', shape: 'circle'}
-        ]
-      }
-    ];
-
-    config = {
-      chrHeight: 250,
-      chrMargin: 2,
-      orientation: 'horizontal',
-      showFullyBanded: false,
-      dataDir: '/dist/data/bands/native/',
-      onLoad: callback,
-      onDrawAnnots: onDrawAnnotsCallback
-    };
-
-    containerIDs = ['homo-sapiens', 'pan-troglodytes', 'macaca-fascicularis'];
-    for (i = 0; i < containerIDs.length; i++) {
-      id = containerIDs[i];
-      container = '<div id="' + id + '"></div>';
-      document.querySelector('body').innerHTML += container;
-      config.container = '#' + id;
-      config.organism = id;
-      config.annotations = orgConfigs[i].annotations;
-      new Ideogram(config);
-    }
-
-  });
-
   // This test is flaky in Travis CI.
   // Disabled until a way to detect Travis environment is found.
   // it('should show border of band-labeled chromosome when multiple ideograms exist', function(done) {
@@ -1807,22 +1897,6 @@ describe('Ideogram', function() {
     var config = {
       organism: 'human',
       sex: 'female',
-      dataDir: '/dist/data/bands/native/'
-    };
-    config.onLoad = callback;
-    var ideogram = new Ideogram(config);
-  });
-
-  it('should support using NCBI Taxonomy ID in "organism" option', function(done) {
-
-    function callback() {
-      var numChromosomes = Object.keys(ideogram.chromosomes[9606]).length;
-      assert.equal(numChromosomes, 24);
-      done();
-    }
-
-    var config = {
-      organism: 9606,
       dataDir: '/dist/data/bands/native/'
     };
     config.onLoad = callback;
@@ -2084,16 +2158,13 @@ describe('Ideogram', function() {
 
     config = {
       organism: 'human',
-      assembly: 'GRCh37',
       orientation: 'horizontal',
       geometry: 'collinear',
       chrHeight: 90,
-      showFullyBanded: false,
-      rotatable: false,
       annotationHeight: 30,
       annotationsLayout: 'heatmap',
       dataDir: '/dist/data/bands/native/',
-      annotationsPath: '../dist/data/annotations/SRR562646.json',
+      annotationsPath: '/dist/data/annotations/oligodendroglioma_cnv_expression.json',
       heatmaps: heatmaps,
       annotationTracks: annotationTracks
     };
