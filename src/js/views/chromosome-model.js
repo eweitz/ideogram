@@ -1,6 +1,7 @@
 function getPixelAndOtherData(bands, chr, hasBands, ideo) {
-  var i, band, csLength, width, cs,
+  var i, band, csLength, width, cs, maxLength,
     pxStop = 0,
+    taxid = chr.id.split('-')[1],
     cs = ideo.coordinateSystem,
     chrHeight = ideo.config.chrHeight;
 
@@ -14,7 +15,12 @@ function getPixelAndOtherData(bands, chr, hasBands, ideo) {
     if (ideo._layout._isRotated) {
       width = chrHeight * csLength / chr.length;
     } else {
-      width = chrHeight * chr.length / ideo.maxLength[cs] * csLength / chr.length;
+      if (ideo.config.chromosomeScale === 'relative') {
+        maxLength = ideo.maxLength[taxid][cs];
+      } else {
+        maxLength = ideo.maxLength[cs];
+      }
+      width = chrHeight * chr.length / maxLength * csLength / chr.length;
     }
     bands[i].px = {start: pxStop, stop: pxStop + width, width: width};
 
@@ -65,7 +71,8 @@ function getChrScale(chr, hasBands, ideo) {
 }
 
 function getChromosomePixels(chr) {
-  var bands, chrHeight, pxStop, hasBands,
+  var bands, chrHeight, pxStop, hasBands, maxLength,
+    taxid = chr.id.split('-')[1],
     ideo = this;
 
   bands = chr.bands;
@@ -76,7 +83,12 @@ function getChromosomePixels(chr) {
   if (hasBands) {
     [bands, chr, pxStop] = getPixelAndOtherData(bands, chr, hasBands, ideo);
   } else {
-    pxStop = chrHeight * chr.length / ideo.maxLength[ideo.coordinateSystem];
+    if (ideo.config.chromosomeScale === 'relative') {
+      maxLength = ideo.maxLength[taxid][ideo.coordinateSystem];
+    } else {
+      maxLength = ideo.maxLength[ideo.coordinateSystem];
+    }
+    pxStop = chrHeight * chr.length / maxLength;
   }
 
   chr.width = pxStop;
