@@ -9,23 +9,24 @@
     a, a:hover, a:visited, a:active {color: #0366d6;}
   </style>
   <style>
-    #chrMargin, #expressionThreshold {
-      position: relative;
-      top: 5px;
-    }
-    #expressionThresholdContainer {
-      position: relative;
-      top: -6px;
+    #ideogram-container {
+      float: left;
+      margin-left: 100px;
+      height: 650px;
+      width: 70%;
     }
 
-    #chrMarginContainer {
-      position: relative;
-      top: -18px;
+    #options {
+      float: left;
     }
 
-    .glossary {
-      border-bottom: 1px #555 dashed;
-      cursor: help;
+    ul {
+      padding: 2px 10px 10px 10px;
+    }
+
+    ul li {
+      list-style-type: none;
+      padding-inline-start: 20px;
     }
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
@@ -37,19 +38,48 @@
   <a href="annotations-heatmap">Previous</a> |
   <a href="layout-small">Next</a> |
   <a href="https://github.com/eweitz/ideogram/blob/gh-pages/synteny.html" target="_blank">Source</a>
-  
+  <div>
+    <ul id="options">
+      Chromosome scale
+      <li>
+        <input type="radio" name="chromosome-scale" id="relative" value="relative" checked>
+        <label for="relative">Relative</label>
+      </li>
+      <li>
+        <input type="radio" name="chromosome-scale" id="absolute" value="absolute">
+        <label for="absolute">Absolute</label>
+      </li>
+    </div>
+    <div id="ideogram-container"></div>
+  </div>
   <script type="text/javascript">
 
-    config = {
-      organism: ['human', 'thale cress'],
-      orientation: 'horizontal',
-      geometry: 'collinear',
-      chromosomeScale: 'relative',
-      chrHeight: 80,
-      chrMargin: 10
+    function updateIdeogram() {
+
+      var chromosomeScale = document.querySelector('input[name=chromosome-scale]:checked').id;
+
+      config = {
+        organism: ['human', 'rice'],
+        orientation: 'horizontal',
+        geometry: 'collinear',
+        chromosomeScale: chromosomeScale,
+        chrHeight: 60,
+        chrMargin: 10,
+        container: '#ideogram-container'
+      }
+
+      ideogram = new Ideogram(config);
     }
 
-    ideogram = new Ideogram(config);
+    radioButtons = document.querySelectorAll('input[type=radio]');
+    radioButtons.forEach(function(radioButton) {
+      radioButton.addEventListener('click', function() {
+        updateIdeogram();
+      });
+    });
+
+    updateIdeogram();
+
   </script>
 
 </body>
