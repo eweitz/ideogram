@@ -44,10 +44,11 @@ function setTaxids(ideo) {
 }
 
 /**
- * Updates bands array, sets ideo.maxLength
+ * Gets bands array for given chromosomes, sets ideo.maxLength
  */
-function updateBandsArray(chromosome, bandsByChr, bandsArray, ideo) {
-  var bands, chrLength;
+function getBandsArray(chromosome, bandsByChr, taxid, ideo) {
+  var bands, chrLength,
+    bandsArray = [];
 
   bands = bandsByChr[chromosome];
   bandsArray.push(bands);
@@ -57,12 +58,22 @@ function updateBandsArray(chromosome, bandsByChr, bandsArray, ideo) {
     bp: bands[bands.length - 1].bp.stop
   };
 
-  if (chrLength.iscn > ideo.maxLength.iscn) {
-    ideo.maxLength.iscn = chrLength.iscn;
+  if (taxid in ideo.maxLength === false) {
+    ideo.maxLength[taxid] = {bp: 0, iscn: 0};
   }
 
-  if (chrLength.bp > ideo.maxLength.bp) {
-    ideo.maxLength.bp = chrLength.bp;
+  if (chrLength.iscn > ideo.maxLength[taxid].iscn) {
+    ideo.maxLength[taxid].iscn = chrLength.iscn;
+    if (chrLength.iscn > ideo.maxLength.iscn) {
+      ideo.maxLength.iscn = chrLength.iscn;
+    }
+  }
+
+  if (chrLength.bp > ideo.maxLength[taxid].bp) {
+    ideo.maxLength[taxid].bp = chrLength.bp;
+    if (chrLength.bp > ideo.maxLength.bp) {
+      ideo.maxLength.bp = chrLength.bp;
+    }
   }
 
   return bandsArray;
@@ -72,7 +83,7 @@ function updateBandsArray(chromosome, bandsByChr, bandsArray, ideo) {
  * Updates bandsArray, sets ideo.config.chromosomes and ideo.numChromosomes
  */
 function setChrsByTaxidsWithBands(taxid, chrs, bandsArray, ideo) {
-  var bandData, bandsByChr, chromosome, k;
+  var bandData, bandsByChr, chromosome, k, chrBandsArray;
 
   bandData = ideo.bandData[taxid];
 
@@ -93,7 +104,8 @@ function setChrsByTaxidsWithBands(taxid, chrs, bandsArray, ideo) {
 
   for (k = 0; k < chrs.length; k++) {
     chromosome = chrs[k];
-    bandsArray = updateBandsArray(chromosome, bandsByChr, bandsArray, ideo);
+    chrBandsArray = getBandsArray(chromosome, bandsByChr, taxid, ideo);
+    bandsArray = bandsArray.concat(chrBandsArray);
   }
 
   return bandsArray;

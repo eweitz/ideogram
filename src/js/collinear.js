@@ -138,6 +138,7 @@ function collinearizeChromosomes(ideo) {
     var maxWidth = 0;
     xOffsets.forEach(d => {if (d > maxWidth) maxWidth = d});
     width = maxWidth + 20;
+    console.log(ideo.chromosomes)
   } else {
     width = xOffsets.slice(-1)[0] + 20;
   }

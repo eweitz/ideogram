@@ -127,6 +127,9 @@ function configureMiscellaneous(ideo) {
   if (!ideo.config.showNonNuclearChromosomes) {
     ideo.config.showNonNuclearChromosomes = false;
   }
+  if (!ideo.config.chromosomeScale) {
+    ideo.config.chromosomeScale = 'absolute';
+  }
 }
 
 function configureBands(ideo) {
