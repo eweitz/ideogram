@@ -153,7 +153,7 @@ function processBandData() {
 
   [taxid, taxids] = setTaxids(ideo);
 
-  if ('chromosomes' in ideo.config) chrs = ideo.config.chromosomes;
+  if ('chromosomes' in ideo.config) chrs = ideo.config.chromosomes.slice();
   
   for (j = 0; j < taxids.length; j++) {
     taxid = taxids[j];
