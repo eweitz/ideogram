@@ -8,11 +8,7 @@ function getDelimiterTsvLinesAndInit(source, content) {
     init = 1;
   } else {
     delimiter = / /;
-    if (source === 'native') {
-      tsvLines = eval(content);
-    } else {
-      tsvLines = content;
-    }
+    tsvLines = content;
     init = 0;
   }
 
@@ -29,7 +25,6 @@ function updateChromosomes(chromosomes) {
     }
     chromosomes = tmp;
   }
-
   return chromosomes;
 }
 
@@ -88,23 +83,27 @@ function parseBands(content, taxid, chromosomes) {
   var delimiter, tsvLines, columns, chr, i, init, source,
     lines = {};
 
-  if (content.slice(0, 15) === 'window.chrBands') source = 'native';
+  if (Array.isArray(content)) source = 'native';
   
   chromosomes = updateChromosomes(chromosomes);
-
-  [delimiter, tsvLines, init] = getDelimiterTsvLinesAndInit(source, content);
+  
+  // Destructure assignment fails oddly when transpiled.  2019-05-23
+  var result = getDelimiterTsvLinesAndInit(source, content);
+  delimiter = result[0]; 
+  tsvLines = result[1];
+  init = result[2];
 
   for (i = init; i < tsvLines.length; i++) {
     columns = tsvLines[i].split(delimiter);
 
     chr = columns[0];
-
     if (
-      typeof (chromosomes) !== 'undefined' &&
-      chromosomes.indexOf(chr) === -1
+      (typeof (chromosomes) !== 'undefined' && chromosomes !== null) &&
+      ((Array.isArray(chromosomes) && chromosomes.indexOf(chr) === -1) ||
+      (typeof(chromosomes) === 'object' && taxid in chromosomes && chromosomes[taxid].includes(chr) === false))
     ) {
-      // If a specific set of chromosomes has been requested, and
-      // the current chromosome
+      // If specific chromosomes are configured, then skip processing all
+      // other fetched chromosomes.
       continue;
     }
 

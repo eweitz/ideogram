@@ -78,6 +78,7 @@ function initAnnotSettings() {
     initNumTracksHeightAndBarWidth(ideo, config);
   } else {
     ideo.config.annotTracksHeight = 0;
+    ideo.config.numAnnotTracks = 0;
   }
 
   if (typeof config.annotationsColor === 'undefined') {

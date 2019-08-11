@@ -3,8 +3,7 @@ import {
   esearch, esummary, elink, getAssemblySearchUrl
 } from './eutils-config.js';
 import {
-  getTaxidFromEutils, getTaxids, setTaxidAndAssemblyAndChromosomes,
-  setTaxidData, getOrganismFromEutils
+  getTaxids, getOrganismFromEutils
 } from './organisms.js';
 
 function getNuccoreQueryString(gbUid, asmUid, recovering, ideo) {
@@ -225,7 +224,6 @@ function getAssemblyAndChromosomesFromEutils(callback, recovering) {
 }
 
 export {
-  esearch, esummary, elink, getTaxidFromEutils, getOrganismFromEutils,
-  getTaxids, setTaxidAndAssemblyAndChromosomes, setTaxidData,
-  getAssemblyAndChromosomesFromEutils
+  esearch, esummary, elink, getOrganismFromEutils,
+  getTaxids, getAssemblyAndChromosomesFromEutils
 }
