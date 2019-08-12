@@ -49,6 +49,16 @@
         <input type="radio" name="chromosome-scale" id="absolute" value="absolute">
         <label for="absolute">Absolute</label>
       </li>
+      <br/>
+      Orientation
+      <li>
+        <input type="radio" name="orientation" id="horizontal" value="horizontal" checked>
+        <label for="horizontal">Horizontal</label>
+      </li>
+      <li>
+        <input type="radio" name="orientation" id="vertical" value="vertical">
+        <label for="vertical">Vertical</label>
+      </li>
     </div>
     <div id="ideogram-container"></div>
   </div>
@@ -57,10 +67,11 @@
     function updateIdeogram() {
 
       var chromosomeScale = document.querySelector('input[name=chromosome-scale]:checked').id;
+      var orientation = document.querySelector('input[name=orientation]:checked').id;
 
       config = {
         organism: ['human', 'rice'],
-        orientation: 'horizontal',
+        orientation: orientation,
         geometry: 'collinear',
         chromosomeScale: chromosomeScale,
         chrHeight: 60,

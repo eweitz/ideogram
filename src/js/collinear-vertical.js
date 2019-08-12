@@ -1,86 +1,109 @@
-// Commenting out until work is more complete.
-//
-// /**
-//  * @fileoverview Functions for collinear chromosomes.
-//  * Collinear chromosomes form a line together, unlike the default parallel
-//  * geometry.
-//  */
+/**
+ * @fileoverview Functions for collinear chromosomes.
+ * Collinear chromosomes form a line together, unlike the default parallel
+ * geometry.
+ */
 
-// import {d3} from './lib';
+import {d3} from './lib';
 
-// /**
-// * Rearrange chromosomes from horizontal to collinear
-// */
-// function rearrangeChromosomes(chrSets, yOffsets, x, config) {
-//   var i, chrSet, y;
+/**
+* Rearrange chromosomes from horizontal to collinear
+*/
+function rearrangeChromosomes(chrSets, yOffsets, x, ideo) {
+  var i, chrSet, y, chrLabelX, adjustedX, chr, taxid, orgIndex,
+    config = ideo.config;
 
-//   for (i = 0; i < chrSets.length; i++) {
-//     chrSet = chrSets[i];
-//     y = yOffsets[i];
-//     if (config.showChromosomeLabels) {
-//       chrSet.querySelector('.chrLabel > tspan').setAttribute('x', -config.chrWidth*2 - 13)
-//       chrSet.querySelector('.chrLabel').setAttribute('text-anchor', 'start')
-//     }
-//     chrSet.setAttribute('transform', 'rotate(90) translate(' + y + ',' + x + ')');
-//     chrSet.querySelector('.chromosome').setAttribute('transform', 'translate(-13, 10)');
-//   }
-// }
+  for (i = 0; i < chrSets.length; i++) {
+    chrSet = chrSets[i];
+    y = yOffsets[i];
 
-// /**
-// * Get pixel coordinates to use for rearrangement 
-// */
-// function getyOffsets(chrSets, ideo) {
-//   var yOffsets, i, index, prevChrSet, y, prevWidth, prevY, yBump;
+    chr = ideo.chromosomesArray[i];
+    taxid = chr.id.split('-')[1];
+    orgIndex = ideo.config.taxids.indexOf(taxid);
+    adjustedX = x - orgIndex*200;
+    if (orgIndex === 0) {
+      chrLabelX = -34;
+      adjustedX += ideo.config.chrWidth*2 - 16;
+    } else {
+      chrLabelX = ideo.config.chrWidth*2 - 24;
+    }
 
-//   yOffsets = [];
-//   for (i = 0; i < chrSets.length; i++) {
-//     index = (i === 0) ? i : i - 1;
-//     prevChrSet = ideo.chromosomesArray[index];
-//     if (i === 0) {
-//       y = 20;
-//     } else {
-//       prevWidth = prevChrSet.width;
-//       prevY = yOffsets[index];
-//       yBump = (ideo.config.showChromosomeLabels ? 0 : 2);
-//       y = prevY + prevWidth + yBump;
-//       y += ideo.config.chrMargin;
-//     }
-//     yOffsets.push(y);
-//   }
+    if (config.showChromosomeLabels) {
+      chrSet.querySelector('.chrLabel > tspan').setAttribute('x', chrLabelX)
+      chrSet.querySelector('.chrLabel').setAttribute('text-anchor', 'start')
+    }
+    chrSet.setAttribute('transform', 'rotate(90) translate(' + y + ',' + adjustedX + ')');
+    chrSet.querySelector('.chromosome').setAttribute('transform', 'translate(-13, 10)');
+  }
+}
 
-//   return yOffsets;
-// }
+/**
+* Get pixel coordinates to use for rearrangement 
+*/
+function getyOffsets(chrSets, ideo) {
+  var yOffsets, i, index, chr, prevChr, y, prevWidth, prevY, yBump, taxid,
+    seenTaxids = {};
 
-// function collinearizeVerticalChromosomes(ideo) {
-//   var chrSets, yOffsets, x, height,
-//     config = ideo.config;
+  yOffsets = [];
+  for (i = 0; i < chrSets.length; i++) {
+    chr = ideo.chromosomesArray[i];
+    taxid = chr.id.split('-')[1];
+    index = (i === 0) ? i : i - 1;
+    prevChr = ideo.chromosomesArray[index];
+    if (i === 0 || taxid in seenTaxids === false) {
+      y = 20;
+      seenTaxids[taxid] = 1;
+    } else {
+      prevWidth = prevChr.width;
+      prevY = yOffsets[index];
+      yBump = (ideo.config.showChromosomeLabels ? 0 : 2);
+      y = prevY + prevWidth + yBump + ideo.config.chrMargin;
+    }
+    yOffsets.push(y);
+  }
 
-//   ideo.config.annotLabelHeight = 12;
-//   var annotLabelHeight = ideo.config.annotLabelHeight;
+  return yOffsets;
+}
 
-//   if ('demarcateCollinearChromosomes' in ideo.config === false) {
-//     ideo.config.demarcateCollinearChromosomes = true;
-//   }
+function collinearizeVerticalChromosomes(ideo) {
+  var chrSets, yOffsets, x, height, width,
+    config = ideo.config;
 
-//   chrSets = document.querySelectorAll('.chromosome-set');
+  ideo.config.annotLabelHeight = 12;
+  var annotLabelHeight = ideo.config.annotLabelHeight;
 
-//   x = -40;
+  if ('demarcateCollinearChromosomes' in ideo.config === false) {
+    ideo.config.demarcateCollinearChromosomes = true;
+  }
 
-//   yOffsets = getyOffsets(chrSets, ideo);
-//   rearrangeChromosomes(chrSets, yOffsets, x, config);
+  chrSets = document.querySelectorAll('.chromosome-set');
 
-//   height = Math.round(yOffsets.slice(-1)[0] + 20);
+  x = -40;
 
-//   d3.select(config.container + ' #_ideogramMiddleWrap')
-//     .style('height', height + 'px');
+  yOffsets = getyOffsets(chrSets, ideo);
+  rearrangeChromosomes(chrSets, yOffsets, x, ideo);
 
-//   d3.select(ideo.selector).attr('height', height);
+  width = Math.round(yOffsets.slice(-1)[0] + 20);
 
-//   d3.select('#_ideogramTrackLabelContainer').remove();
-//   d3.select('#_ideogramInnerWrap')
-//     .insert('div', ':first-child')
-//     .attr('id', '_ideogramTrackLabelContainer')
-//     .style('position', 'absolute');
-// }
+  if (config.multiorganism) {
+    height *= 8;
+    var maxHeight = 0;
+    yOffsets.forEach(d => {if (d > maxHeight) maxHeight = d});
+    height = maxHeight + 20;
+    console.log(ideo.chromosomes)
+  } else {
+    height = xOffsets.slice(-1)[0] + 20;
+  }
 
-// export default collinearizeVerticalChromosomes;
+  d3.select(ideo.selector)
+    .attr('height', height)
+    .attr('width', width);
+
+  d3.select('#_ideogramTrackLabelContainer').remove();
+  d3.select('#_ideogramInnerWrap')
+    .insert('div', ':first-child')
+    .attr('id', '_ideogramTrackLabelContainer')
+    .style('position', 'absolute');
+}
+
+export default collinearizeVerticalChromosomes;
