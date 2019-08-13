@@ -64,19 +64,57 @@
   </div>
   <script type="text/javascript">
 
+function onIdeogramLoad() {
+      // See HomoloGene entry for MTOR at
+      // http://www.ncbi.nlm.nih.gov/homologene/3637
+      // Placements for H. sapiens and M. musculus used below.
+      // Placements from latest annotation release in
+      // Human: http://www.ncbi.nlm.nih.gov/gene/2475#genomic-context
+      // Mouse: http://www.ncbi.nlm.nih.gov/gene/56717#genomic-context
+
+      var chrs, chr1, chr4, syntheticRegions, humanTaxid, mouseTaxid;
+
+      humanTaxid = ideogram.getTaxid('human');
+      mouseTaxid = ideogram.getTaxid('mouse');
+
+      var chrs = ideogram.chromosomes,
+        chr1 = chrs[humanTaxid]['1'],
+        chr4 = chrs[mouseTaxid]['4'],
+        syntenicRegions = [];
+
+      range1 = {
+        chr: chr1,
+        start: 11106531,
+        stop: 11262557,
+        orientation: 'reverse'
+      };
+
+      range2 = {
+        chr: chr4,
+        start: 148448582,
+        stop: 148557685
+      };
+
+      syntenicRegions.push({'r1': range1, 'r2': range2});
+
+      ideogram.drawSynteny(syntenicRegions);
+
+    }
+
     function updateIdeogram() {
 
       var chromosomeScale = document.querySelector('input[name=chromosome-scale]:checked').id;
       var orientation = document.querySelector('input[name=orientation]:checked').id;
 
       config = {
-        organism: ['human', 'rice'],
+        organism: ['human', 'mouse'],
         orientation: orientation,
         geometry: 'collinear',
         chromosomeScale: chromosomeScale,
         chrHeight: 60,
         chrMargin: 10,
-        container: '#ideogram-container'
+        container: '#ideogram-container',
+        onLoad: onIdeogramLoad
       }
 
       ideogram = new Ideogram(config);
