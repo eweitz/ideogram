@@ -6,6 +6,7 @@ module.exports = {
     "valid-jsdoc": "off",
     "one-var": "off",
     "guard-for-in": "off",
+    "no-alert": "off",
     "no-loop-func": "off",
     "no-negated-condition": "off",
     "no-inner-declaration": "off",
