@@ -185,4 +185,4 @@ class HorizontalLayout extends Layout {
 
 }
 
-export default HorizontalLayout
+export default HorizontalLayout;

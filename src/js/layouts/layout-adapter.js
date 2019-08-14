@@ -19,4 +19,4 @@ function getLayout(ideo) {
   }
 }
 
-export {getLayout}
+export {getLayout};

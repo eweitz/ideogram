@@ -171,4 +171,4 @@ class PairedLayout extends Layout {
 
 }
 
-export default PairedLayout
+export default PairedLayout;
