@@ -9,11 +9,11 @@ function getBandUrl(bandDataFileNames, taxid, ideo) {
 function shouldFetchBands(bandDataFileNames, taxid, ideo) {
   var bandDataUrl = getBandUrl(bandDataFileNames, taxid, ideo);
   return (
-    !(typeof window.chrBands !== 'undefined' && lastBandDataUrl === '')
-      || lastBandDataUrl !== bandDataUrl
-  )
-    && hasNonGenBankAssembly(ideo)
-    && taxid in bandDataFileNames;
+    !(typeof window.chrBands !== 'undefined' && lastBandDataUrl === '') ||
+    lastBandDataUrl !== bandDataUrl
+  ) &&
+  hasNonGenBankAssembly(ideo) &&
+  taxid in bandDataFileNames;
 }
 
 function setBandData(url, fileNames, chrBands, ideo) {
@@ -58,4 +58,4 @@ function fetchBands(bandDataFileNames, taxid, t0, ideo) {
     });
 }
 
-export {shouldFetchBands, fetchBands}
+export {shouldFetchBands, fetchBands};
