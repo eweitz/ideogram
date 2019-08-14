@@ -1,6 +1,8 @@
 module.exports = {
   "extends": "google",
   "rules": {
+    "brace-style": ["error", "1tbs", { "allowSingleLine": true }],
+    "curly": ["error", "multi-line"],
     "no-undef": "off",
     "require-jsdoc": "off",
     "valid-jsdoc": "off",
