@@ -55,39 +55,39 @@ function setTaxidData(taxid, ideo) {
   });
 
   return promise2
-  .then(function(data) {
-    // Check if chromosome data exists locally.
-    // This is used for pre-processed centromere data,
-    // which is not accessible via EUtils.  See get_chromosomes.py.
+    .then(function(data) {
+      // Check if chromosome data exists locally.
+      // This is used for pre-processed centromere data,
+      // which is not accessible via EUtils.  See get_chromosomes.py.
 
-    var asmAndChrTaxidsArray = [''],
+      var asmAndChrTaxidsArray = [''],
         chromosomes = [],
         seenChrs = {},
         chr;
 
-    window.chrBands = data.chrBands;
+      window.chrBands = data.chrBands;
 
-    for (var i = 0; i < chrBands.length; i++) {
-      chr = chrBands[i].split(' ')[0];
-      if (chr in seenChrs) {
-        continue;
-      } else {
-        chromosomes.push({name: chr, type: 'nuclear'});
-        seenChrs[chr] = 1;
+      for (var i = 0; i < chrBands.length; i++) {
+        chr = chrBands[i].split(' ')[0];
+        if (chr in seenChrs) {
+          continue;
+        } else {
+          chromosomes.push({name: chr, type: 'nuclear'});
+          seenChrs[chr] = 1;
+        }
       }
-    }
-    chromosomes = chromosomes.sort(Ideogram.sortChromosomes);
-    asmAndChrTaxidsArray.push(chromosomes);
-    asmAndChrTaxidsArray.push(taxids);
-    ideo.coordinateSystem = 'iscn';
-    return asmAndChrTaxidsArray;
-  },
-  function() {
-    return new Promise(function(resolve) {
-      ideo.coordinateSystem = 'bp';
-      ideo.getAssemblyAndChromosomesFromEutils(resolve);
+      chromosomes = chromosomes.sort(Ideogram.sortChromosomes);
+      asmAndChrTaxidsArray.push(chromosomes);
+      asmAndChrTaxidsArray.push(taxids);
+      ideo.coordinateSystem = 'iscn';
+      return asmAndChrTaxidsArray;
+    },
+    function() {
+      return new Promise(function(resolve) {
+        ideo.coordinateSystem = 'bp';
+        ideo.getAssemblyAndChromosomesFromEutils(resolve);
+      });
     });
-  });
 }
 
 function setTaxidAndAssemblyAndChromosomes(callback, ideo) {
