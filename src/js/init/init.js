@@ -90,7 +90,7 @@ function handleRotateOnClick() {
   var ideo = this;
 
   if (!('rotatable' in ideo.config && ideo.config.rotatable === false)) {
-    d3.selectAll(ideo.selector + ' .chromosome').on('click', function () {
+    d3.selectAll(ideo.selector + ' .chromosome').on('click', function() {
       ideo.rotateAndToggleDisplay(this);
     });
   } else {
@@ -226,11 +226,10 @@ function init(ideo) {
   ideo = ideo || this;
   var containerId = ideo.config.container;
 
-  if(ideoWait[containerId]) {
+  if (ideoWait[containerId]) {
     ideoQueued[containerId] = true;
     ideoNext[containerId] = ideo;
-  }
-  else {
+  } else {
     ideoWait[containerId] = true;
     initializeTaxids(ideo)
       .then(function(taxids) {
@@ -238,7 +237,7 @@ function init(ideo) {
         getBandsAndPrepareContainer(taxids, t0, ideo);
 
         ideoWait[containerId] = false;
-        if(ideoQueued[containerId]) {
+        if (ideoQueued[containerId]) {
           ideoQueued[containerId] = false;
           init(ideoNext[containerId]);
         }
@@ -249,4 +248,4 @@ function init(ideo) {
 export {
   configure, initDrawChromosomes, handleRotateOnClick,
   onLoad, init, finishInit, writeContainer
-}
+};

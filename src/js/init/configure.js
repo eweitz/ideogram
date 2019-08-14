@@ -59,8 +59,8 @@ function configureMargin(ideo) {
     if ('chrMargin' in ideo.config === false) {
       ideo.config.chrMargin = 0;
     }
-    return
-  };
+    return;
+  }
   if (!ideo.config.chrMargin) {
     if (ideo.config.ploidy === 1) {
       ideo.config.chrMargin = 10;
@@ -151,7 +151,7 @@ function configureBands(ideo) {
  * @param config Configuration object.  Enables setting Ideogram properties.
  */
 function configure(config) {
-  
+
   // Clone the config object, to allow multiple instantiations
   // without picking up prior ideogram's settings
   this.config = JSON.parse(JSON.stringify(config));
@@ -178,4 +178,4 @@ function configure(config) {
   this.init();
 }
 
-export {configure}
+export {configure};

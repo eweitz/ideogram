@@ -21,7 +21,7 @@ var organismMetadata = {
     commonName: 'Chimpanzee',
     scientificName: 'Pan troglodytes',
     assemblies: {
-      default: 'GCF_000001515.7',
+      'default': 'GCF_000001515.7',
       'Pan_tro 3.0': 'GCF_000001515.7'
     }
   },
@@ -29,7 +29,7 @@ var organismMetadata = {
     commonName: 'Rat',
     scientificName: 'Rattus norvegicus',
     assemblies: {
-      default: 'GCF_000001895.5',
+      'default': 'GCF_000001895.5',
       'Rnor_6.0': 'GCF_000001895.5'
     }
   },
@@ -45,7 +45,7 @@ var organismMetadata = {
     commonName: 'Rice',
     scientificName: 'Oryza sativa',
     assemblies: {
-      default: 'GCA_001433935.1',
+      'default': 'GCA_001433935.1',
       'IRGSP-1.0': 'GCA_001433935.1'
     }
   },
@@ -53,7 +53,7 @@ var organismMetadata = {
     commonName: 'Maize',
     scientificName: 'Zea mays',
     assemblies: {
-      default: 'GCA_000005005.5',
+      'default': 'GCA_000005005.5',
       'IRGSP-1.0': 'GCA_001433935.1'
     }
   },
@@ -68,15 +68,15 @@ var organismMetadata = {
     commonName: 'Fly',
     scientificName: 'Drosophila melanogaster',
     assemblies: {
-      default: 'GCA_000001215.4',
+      'default': 'GCA_000001215.4',
       'Release 6 plus ISO1 MT': 'GCA_000001215.4'
     }
   }
   // 6239: {
   //   commonName: 'Worm',
   //   scientificName: 'Caenorhabditis elegans',
-  //   assemblies: 
+  //   assemblies: 'todo'
   // }
-}
+};
 
 export {organismMetadata};
