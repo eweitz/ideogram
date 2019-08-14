@@ -17,6 +17,7 @@ module.exports = {
     "no-inner-declarations": "off",
     "no-else-return": "off",
     "no-var": "off",
-    "padded-blocks": "off"
+    "padded-blocks": "off",
+    "radix": "off"
   }
 }

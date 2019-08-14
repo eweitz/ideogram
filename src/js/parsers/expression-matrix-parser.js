@@ -3,12 +3,10 @@
  * This module handles dense gene expression matrixes.
  * In gene expression expressions, rows are genes and columns are cells.
  */
-import {d3} from '../lib';
 
 export class ExpressionMatrixParser {
 
   /**
-   * 
    * @param {String} matrix Tab-delimited gene expression matrix
    * @param {Object} coordinates Coordinates [chr, start, length] by gene name
    * @param {Object} ideo Ideogram object
@@ -29,31 +27,32 @@ export class ExpressionMatrixParser {
     matrix = this.matrix;
 
     return new Promise(function(resolve) {
-      parser.rawAnnots = parser.fetchCoordinates(ideo).then(function(coordinates) {
-        parser.coordinates = coordinates;
-        resolve(parser.parseExpressionMatrix(matrix, ideo));
-      });
+      parser.rawAnnots = parser.fetchCoordinates(ideo)
+        .then(function(coordinates) {
+          parser.coordinates = coordinates;
+          resolve(parser.parseExpressionMatrix(matrix, ideo));
+        });
     });
   }
 
   /**
    * Get chromosome, start and stop coordinates from genome annotation file
-   * 
+   *
    * TODO: Support non-human organisms
    */
   fetchCoordinates(ideo) {
     var coordinates = {};
 
     if (ideo.config.organism === 'human') {
-      var ensemblData = 
-        ideo.config.dataDir + 
+      var ensemblData =
+        ideo.config.dataDir +
         '../../annotations/Homo_sapiens,_Ensembl_80.tsv';
 
       return new Promise(function(resolve) {
         ideo.fetch(ensemblData, 'text').then(function(data) {
-          var tsvLines, i, start, stop, gene, geneType, chr, length;
-          
-          tsvLines = data.split(/\r\n|\n/).slice(1,);
+          var tsvLines, i, start, stop, gene, chr, length;
+
+          tsvLines = data.split(/\r\n|\n/).slice(1);
           for (i = 0; i < tsvLines.length; i++) {
             [start, stop, gene, geneType, chr] = tsvLines[i].split(/\s/g);
             start = parseInt(start);
@@ -79,14 +78,14 @@ export class ExpressionMatrixParser {
     gene = columns[0];
     if (gene in this.coordinates === false) return [null, null];
 
-    expressions = columns.slice(1,).map(d => parseFloat(d));
+    expressions = columns.slice(1).map(d => parseFloat(d));
     [chr, start, length] = this.coordinates[gene];
 
     chrIndex = chrs.indexOf(chr);
     if (chrIndex === -1) return [null, null];
-    
+
     annot = [gene, start, length];
-    annot = annot.concat(expressions)
+    annot = annot.concat(expressions);
 
     return [chrIndex, annot];
   }

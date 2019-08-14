@@ -45,7 +45,7 @@ export class BedParser {
    * Parses an annotation from a tab-separated line of a BED file
    */
   parseAnnotFromTsvLine(tsvLine, chrs, ucscStyle) {
-    var annot, chrIndex, chr, start, stop, rgb, color, label,
+    var annot, chrIndex, chr, start, rgb, color, label,
       columns = tsvLine.split(/\s/g);
 
     [chr, start, stop, length] =
@@ -53,7 +53,7 @@ export class BedParser {
 
     chrIndex = chrs.indexOf(chr);
     if (chrIndex === -1) return [null, null];
-    
+
     annot = ['', start, length, 0];
 
     if (columns.length >= 4) {
@@ -86,7 +86,7 @@ export class BedParser {
 
     keys = ['name', 'start', 'length', 'trackIndex'];
     if (tsvLines[bedStartIndex].length >= 8) keys.push('color');
-    
+
     rawAnnots = {keys: keys, annots: annots};
 
     return rawAnnots;
@@ -111,7 +111,7 @@ export class BedParser {
     if (tsvLines[0].slice(0, 3) === 'chr' || isNaN(parseInt(tsvLines[0], 10))) {
       bedStartIndex = 1;
     }
-    
+
     rawAnnots = this.parseRawAnnots(annots, bedStartIndex, tsvLines, chrs);
     return rawAnnots;
   }
