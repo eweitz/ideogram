@@ -81,7 +81,7 @@ function inflateHeatmaps(ideo) {
 
   heatmaps = [];
   rawAnnots = ideo.rawAnnots;
-  labels = rawAnnots.keys.slice(3,);
+  labels = rawAnnots.keys.slice(3);
 
   annotationTracks = [];
   displayedTracks = [];
@@ -90,7 +90,7 @@ function inflateHeatmaps(ideo) {
   for (i = 0; i < labels.length; i++) {
     heatmaps.push({key: labels[i], thresholds: thresholds});
     annotationTracks.push({id: labels[i]});
-    displayedTracks.push(i + 1)
+    displayedTracks.push(i + 1);
   }
   ideo.config.annotationsNumTracks = labels.length;
   ideo.config.annotationsDisplayedTracks = displayedTracks;

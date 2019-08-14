@@ -7,7 +7,7 @@ import {d3} from '../lib';
 import {getLabels} from './heatmap-lib';
 
 function renderTrackLabels(labels, ideo) {
-  var labels, i, x, y, labelContainer, markBump,
+  var i, x, y, labelContainer, markBump,
     annotLabelHeight = ideo.config.annotLabelHeight,
     demarcateChrs = ideo.config.demarcateCollinearChromosomes;
 
@@ -34,11 +34,11 @@ function renderTrackLabels(labels, ideo) {
       .style('line-height', '10px')
       .style('z-index', '5')
       .style('left', (x + markBump) + 'px')
-      .style('top', (y*i + markBump) + 'px')
+      .style('top', (y * i + markBump) + 'px')
       .style('width', 'max-content')
       .style('transform-origin', 'bottom left')
       .style('text-align', 'left')
-      .html(labels[i])
+      .html(labels[i]);
   }
 
 }
@@ -47,8 +47,8 @@ function renderTrackLabels(labels, ideo) {
  * Show the label for this track
  */
 function writeTrackLabels(ideo) {
-    var labels = getLabels(ideo);
-    renderTrackLabels(labels, ideo);
+  var labels = getLabels(ideo);
+  renderTrackLabels(labels, ideo);
 }
 
-export {writeTrackLabels}
+export {writeTrackLabels};
