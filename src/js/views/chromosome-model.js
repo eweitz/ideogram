@@ -1,11 +1,11 @@
 function getPixelAndOtherData(bands, chr, hasBands, ideo) {
-  var i, band, csLength, width, cs, maxLength,
+  var i, band, csLength, width, maxLength,
     pxStop = 0,
     taxid = chr.id.split('-')[1],
     cs = ideo.coordinateSystem,
     chrHeight = ideo.config.chrHeight;
 
-  for (var i = 0; i < bands.length; i++) {
+  for (i = 0; i < bands.length; i++) {
     band = bands[i];
     csLength = band[cs].stop - band[cs].start;
 
@@ -50,7 +50,7 @@ function getChrScale(chr, hasBands, ideo) {
     chrLength = chr.length,
     maxLength = ideo.maxLength,
     taxid = chr.id.split('-')[1],
-    scale = {}
+    scale = {};
 
   if (ideo.config.multiorganism === true) {
     scale.bp = 1;
@@ -148,7 +148,7 @@ function getChromosomeModel(bands, chrName, taxid, chrIndex) {
 
   hasBands = (typeof bands !== 'undefined');
 
-  chr = getChrModelScaffold(chr, bands, chrName, ideo)
+  chr = getChrModelScaffold(chr, bands, chrName, ideo);
 
   chr.chrIndex = chrIndex;
   chr.id = 'chr' + chr.name + '-' + taxid;
