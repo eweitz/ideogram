@@ -3,7 +3,7 @@ import {Ploidy} from './ploidy';
 export class Color {
 
   constructor(config) {
-      // Ideogram config
+    // Ideogram config
     this._config = config;
     this._ploidy = new Ploidy(this._config);
   }

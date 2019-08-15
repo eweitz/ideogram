@@ -212,7 +212,7 @@ function getTaxids(callback) {
   ideo.config.multiorganism = getIsMultiorganism(taxidInit, ideo);
 
   if ('organism' in ideo.config) {
-    getTaxidsForOrganismInConfig(taxids, callback, ideo)
+    getTaxidsForOrganismInConfig(taxids, callback, ideo);
   } else {
     getTaxidsForOrganismNotInConfig(taxids, taxidInit, callback, ideo);
   }
@@ -241,4 +241,4 @@ function getOrganismFromEutils(callback) {
 
 export {
   getTaxids, getOrganismFromEutils
-}
+};

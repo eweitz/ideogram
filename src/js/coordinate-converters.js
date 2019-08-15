@@ -56,11 +56,9 @@ function convertBpToPx(chr, bp) {
   if (chr.bands.length > 1) {
     [px, band] = getPx(chr, bp);
     if (px !== null) return px;
-  } else {
-    if (bp >= 1 && bp <= chr.length) {
-      px = chr.scale.bp * bp;
-      return px;
-    }
+  } else if (bp >= 1 && bp <= chr.length) {
+    px = chr.scale.bp * bp;
+    return px;
   }
 
   throwBpToPxError(bp, chr, band);
@@ -74,7 +72,7 @@ function throwPxToBpError(px, chr, pxStop) {
 }
 
 function getBp(iscnStop, iscnStart, px, pxStop, pxStart, band, iscnLength) {
-  var iscnLength, pxLength, bpLength, pxToIscnScale, iscn, bp;
+  var pxLength, bpLength, pxToIscnScale, iscn, bp;
 
   iscnLength = iscnStop - iscnStart;
   pxLength = pxStop - pxStart;
@@ -116,7 +114,7 @@ function convertPxToBp(chr, px) {
       return bp;
     }
   }
-  throwPxToBpError(px, chr, pxStop)
+  throwPxToBpError(px, chr, pxStop);
 }
 
 export {convertBpToPx, convertPxToBp};

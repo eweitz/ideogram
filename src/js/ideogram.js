@@ -21,7 +21,7 @@ import {
   drawProcessedAnnots, drawSynteny, startHideAnnotTooltipTimeout,
   showAnnotTooltip, onWillShowAnnotTooltip, setOriginalTrackIndexes,
   afterRawAnnots
-} from './annotations/annotations'
+} from './annotations/annotations';
 
 import {
   esearch, esummary, elink,
@@ -149,7 +149,7 @@ export default class Ideogram {
     this.rotateAndToggleDisplay = rotateAndToggleDisplay;
     this.setOverflowScroll = setOverflowScroll;
 
-    this.configure(config)
+    this.configure(config);
   }
 
   /**
@@ -172,7 +172,6 @@ export default class Ideogram {
   static slugify(value) {
     return value.toLowerCase().replace(' ', '-');
   }
-
 
   /**
    * Sorts two chromosome objects by type and name

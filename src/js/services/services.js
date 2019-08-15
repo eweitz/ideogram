@@ -112,7 +112,7 @@ function parseChloroplastOrPlastid(ideo) {
 function parseApicoplast(ideo) {
   if (ideo.config.showNonNuclearChromosomes) {
     return ['AP', 'apicoplast'];
-  } 
+  }
   return [null, null];
 }
 
