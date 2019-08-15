@@ -201,7 +201,7 @@ function getBandsAndPrepareContainer(taxids, t0, ideo) {
   bandFileNames = {};
   for (taxid in organismMetadata) {
     bandFileNames[taxid] = '';
-  };
+  }
 
   for (i = 0; i < taxids.length; i++) {
     taxid = String(taxids[i]);
@@ -216,7 +216,7 @@ function getBandsAndPrepareContainer(taxids, t0, ideo) {
  * fetches band and annotation data if needed, and
  * writes an SVG element to the document to contain the ideogram
  */
-// Prevents race condition when init is called multiple times in quick succession.  
+// Prevents race condition when init is called multiple times in quick succession.
 // See https://github.com/eweitz/ideogram/pull/154.
 var ideoNext = {};
 var ideoQueued = {};

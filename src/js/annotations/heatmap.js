@@ -191,4 +191,4 @@ function deserializeAnnotsForHeatmap(rawAnnotsContainer) {
   reportPerformance(t0, ideo);
 }
 
-export {drawHeatmaps, deserializeAnnotsForHeatmap}
+export {drawHeatmaps, deserializeAnnotsForHeatmap};

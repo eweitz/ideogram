@@ -222,7 +222,7 @@ function processAnnotData(rawAnnots) {
   [annots, omittedAnnots] = addAnnots(rawAnnots, keys, ideo);
   annots = orderAnnotContainers(annots, ideo);
 
-  sendTrackAndAnnotWarnings(omittedAnnots, ideo)
+  sendTrackAndAnnotWarnings(omittedAnnots, ideo);
 
   return annots;
 }

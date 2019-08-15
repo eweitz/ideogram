@@ -40,7 +40,7 @@ function getContainerSvgClass(ideo) {
     svgClass += 'faint';
   }
 
-  return svgClass
+  return svgClass;
 }
 
 /**

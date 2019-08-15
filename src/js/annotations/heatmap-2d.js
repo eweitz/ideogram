@@ -3,7 +3,7 @@
  * 2D heatmaps enable showing many (100+) tracks of data in one dimension,
  * for features (e.g. genes) along a dimension of genomic coordinates in
  * chromosome context.
- * 
+ *
  * TO DO:
  * - Horizontal orientation
  * - Multiple chromosomes
@@ -91,8 +91,7 @@ function drawHeatmaps2d(annotContainers, ideo) {
 function add2dAnnotsForChr(annots, omittedAnnots, annotsByChr, chrModel,
   m, keys, ideo) {
   var j, k, annot, ra, stop, stopPx, color,
-    thresholds = ideo.config.heatmapThresholds,
-    omittedAnnots = [];
+    thresholds = ideo.config.heatmapThresholds;
 
   for (j = 0; j < annotsByChr.annots.length; j++) {
     ra = annotsByChr.annots[j];
