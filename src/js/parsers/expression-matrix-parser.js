@@ -50,7 +50,8 @@ export class ExpressionMatrixParser {
 
       return new Promise(function(resolve) {
         ideo.fetch(ensemblData, 'text').then(function(data) {
-          var tsvLines, i, start, stop, gene, chr, length;
+          // eslint-disable-next-line no-unused-vars
+          var tsvLines, i, start, stop, gene, chr, length, geneType;
 
           tsvLines = data.split(/\r\n|\n/).slice(1);
           for (i = 0; i < tsvLines.length; i++) {
