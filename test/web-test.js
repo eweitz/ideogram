@@ -2233,8 +2233,6 @@ describe('Ideogram', function() {
       ]
     }];
 
-    console.log('in "should support 2D heatmaps"');
-
     ideogram = new Ideogram({
       organism: 'human',
       orientation: 'vertical',
