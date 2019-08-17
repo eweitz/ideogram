@@ -102,4 +102,4 @@ class SmallLayout extends Layout {
 
 }
 
-export default SmallLayout
+export default SmallLayout;

@@ -20,12 +20,12 @@ function rearrangeChromosomes(chrSets, xOffsets, y, ideo) {
     chr = ideo.chromosomesArray[i];
     taxid = chr.id.split('-')[1];
     orgIndex = ideo.config.taxids.indexOf(taxid);
-    adjustedY = y + orgIndex*200;
+    adjustedY = y + orgIndex * 200;
     if (orgIndex === 0) {
       chrLabelY = 6;
-      adjustedY += ideo.config.chrWidth*2;
+      adjustedY += ideo.config.chrWidth * 2;
     } else {
-      chrLabelY = ideo.config.chrWidth*2 + 10;
+      chrLabelY = ideo.config.chrWidth * 2 + 10;
     }
 
     if (ideo.config.showChromosomeLabels) {
@@ -38,7 +38,7 @@ function rearrangeChromosomes(chrSets, xOffsets, y, ideo) {
 }
 
 /**
-* Get pixel coordinates to use for rearrangement 
+* Get pixel coordinates to use for rearrangement
 */
 function getxOffsets(chrSets, ideo) {
   var xOffsets, i, index, chr, prevChr, x, prevWidth, prevX, xBump, taxid,
@@ -68,13 +68,13 @@ function getxOffsets(chrSets, ideo) {
 // /**
 //  * Track number of chromosomes in preceding organisms.
 //  * Adds an instance variable to the ideogram object to offset
-//  * chromosome indices.  Needed for multiorganism collinear ideograms. 
+//  * chromosome indices.  Needed for multiorganism collinear ideograms.
 //  */
 // function setTaxidChrOffsets(ideo) {
 //   var taxidChrOffsets, taxidChrOffset;
 
 //   taxidChrOffsets = {};
-  
+
 //   taxidChrOffset = 0;
 //   ideo.config.organism.forEach((org) => {
 //     var taxid, numChrs;
@@ -103,7 +103,7 @@ function getxOffsets(chrSets, ideo) {
 // }
 
 function collinearizeChromosomes(ideo) {
-  var chrSets, xOffsets, y, xOffsets, height, width,
+  var chrSets, xOffsets, y, height, width,
     config = ideo.config,
     annotHeight = config.annotationHeight || 0;
 
@@ -131,14 +131,15 @@ function collinearizeChromosomes(ideo) {
   xOffsets = getxOffsets(chrSets, ideo);
   rearrangeChromosomes(chrSets, xOffsets, y, ideo);
 
-  height = y + config.chrWidth*2 + 20;
-  
+  height = y + config.chrWidth * 2 + 20;
+
   if (config.multiorganism) {
     height *= 8;
     var maxWidth = 0;
-    xOffsets.forEach(d => {if (d > maxWidth) maxWidth = d});
+    xOffsets.forEach(d => {
+      if (d > maxWidth) maxWidth = d;
+    });
     width = maxWidth + 20;
-    console.log(ideo.chromosomes)
   } else {
     width = xOffsets.slice(-1)[0] + 20;
   }

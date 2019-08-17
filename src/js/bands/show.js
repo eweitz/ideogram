@@ -49,7 +49,7 @@ function updateShown(indexesToShow, overlapRight, left, pad, prevRight, i,
   if (left < pad + thisRight) {
     overlapRight = prevRight;
     hiddenIndex = i;
-    doSkip = isBefore ? true : false;
+    doSkip = isBefore;
   } else {
     indexesToShow.push(i);
   }
@@ -85,7 +85,7 @@ function getIndexesToShow(offsets, chrModel) {
  * Sets band labels to display on each chromosome, avoiding label overlap
  */
 function setBandsToShow(chrs, textOffsets) {
-  var index, i, j, indexesToShow, chrModel, selectorsToShow, ithLength, j,
+  var index, i, j, indexesToShow, chrModel, selectorsToShow, ithLength,
     ideo = this;
 
   ideo.bandsToShow = [];
@@ -107,5 +107,5 @@ function setBandsToShow(chrs, textOffsets) {
     ideo.bandsToShow = ideo.bandsToShow.concat(selectorsToShow);
   }
 }
-  
+
 export {hideUnshownBandLabels, setBandsToShow};

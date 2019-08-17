@@ -1,4 +1,4 @@
-import {Chromosome} from './chromosome';
+// import {Chromosome} from './chromosome';
 //
 // export class TelocentricChromosome extends Chromosome {
 //

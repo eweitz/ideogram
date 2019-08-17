@@ -10,7 +10,7 @@ var defaultHeatmapColors = {
   3: ['00B', 'DDD', 'F00'],
   5: ['00D', '66D', 'DDD', 'F88', 'F00'],
   17: ['00D', '00D', '00D', '00D', '00D', '44D', '44D', 'DDD', 'DDD', 'DDD', 'DDD', 'F88', 'F66', 'F22', 'F22', 'F00', 'F00', 'F00']
-}
+};
 
 /**
  * Get label text for displayed tracks from annotation container metadata,
@@ -81,7 +81,7 @@ function inflateHeatmaps(ideo) {
 
   heatmaps = [];
   rawAnnots = ideo.rawAnnots;
-  labels = rawAnnots.keys.slice(3,);
+  labels = rawAnnots.keys.slice(3);
 
   annotationTracks = [];
   displayedTracks = [];
@@ -90,7 +90,7 @@ function inflateHeatmaps(ideo) {
   for (i = 0; i < labels.length; i++) {
     heatmaps.push({key: labels[i], thresholds: thresholds});
     annotationTracks.push({id: labels[i]});
-    displayedTracks.push(i + 1)
+    displayedTracks.push(i + 1);
   }
   ideo.config.annotationsNumTracks = labels.length;
   ideo.config.annotationsDisplayedTracks = displayedTracks;

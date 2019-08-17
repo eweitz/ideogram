@@ -19,10 +19,10 @@ function drawBandLabelText(chr, bandsToLabel, chrModel, textOffsets) {
     .data(bandsToLabel)
     .enter()
     .append('g')
-    .attr('class', function (d, i) {
+    .attr('class', function(d, i) {
       return 'bandLabel bsbsl-' + i;
     })
-    .attr('transform', function (d) {
+    .attr('transform', function(d) {
       var transform = layout.getChromosomeBandLabelTranslate(d, chrIndex);
 
       if (ideo.config.orientation === 'horizontal') {
@@ -35,9 +35,7 @@ function drawBandLabelText(chr, bandsToLabel, chrModel, textOffsets) {
     })
     .append('text')
     .attr('text-anchor', layout.getChromosomeBandLabelAnchor(chrIndex))
-    .text(function (d) {
-      return d.name;
-    });
+    .text(function(d) { return d.name; });
 
   return textOffsets;
 }
@@ -52,10 +50,10 @@ function drawBandLabelStalk(chr, bandsToLabel, chrModel, textOffsets) {
     .data(bandsToLabel)
     .enter()
     .append('g')
-    .attr('class', function (d, i) {
+    .attr('class', function(d, i) {
       return 'bandLabelStalk bsbsl-' + i;
     })
-    .attr('transform', function (d) {
+    .attr('transform', function(d) {
       var x, y;
 
       x = ideo.round(d.px.start + d.px.width / 2);
@@ -92,7 +90,7 @@ function getChrModels(chromosomes) {
  * Stalks are small lines that visually connect labels to their bands.
  */
 function drawBandLabels(chromosomes) {
-  var i, chr, chrModel, chrModels, textOffsets, bandsToLabel,
+  var i, chr, chrModel, chrModels, bandsToLabel,
     ideo = this,
     textOffsets = {};
 
@@ -173,4 +171,4 @@ function getBandColorGradients() {
 export {
   drawBandLabels, getBandColorGradients, hideUnshownBandLabels, setBandsToShow,
   drawBandLabelText, drawBandLabelStalk
-}
+};

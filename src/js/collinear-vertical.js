@@ -27,7 +27,7 @@
 // }
 
 // /**
-// * Get pixel coordinates to use for rearrangement 
+// * Get pixel coordinates to use for rearrangement
 // */
 // function getyOffsets(chrSets, ideo) {
 //   var yOffsets, i, index, prevChrSet, y, prevWidth, prevY, yBump;

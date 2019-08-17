@@ -15,7 +15,7 @@ export class Range {
     this._data = data;
     this.start = data.start;
     this.stop = data.stop;
-    this.length = this.stop - this.start
+    this.length = this.stop - this.start;
   }
 
   getColor(chrIndex) {

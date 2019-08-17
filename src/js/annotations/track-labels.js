@@ -19,10 +19,10 @@ import {getLabels} from './heatmap-lib';
 function startHideTrackLabelTimeout(ideo) {
   if (ideo.config.showTrackLabel === false) return;
 
-  ideo.hideTrackLabelTimeout = window.setTimeout(function () {
+  ideo.hideTrackLabelTimeout = window.setTimeout(function() {
     d3.select(ideo.config.container + ' #_ideogramTrackLabel').transition()
       .duration(500)
-      .style('opacity', 0)
+      .style('opacity', 0);
   }, 250);
 }
 
@@ -40,7 +40,7 @@ function writeTrackLabelContainer(ideo) {
     .style('font', '11px sans-serif')
     .style('background', 'white')
     .style('line-height', '10px')
-    .style('z-index', '9000')
+    .style('z-index', '9000');
 }
 
 /**
@@ -54,10 +54,10 @@ function renderTrackLabels(top, left, ideo) {
     .style('width', 'max-content')
     .style('transform-origin', 'bottom left')
     .style('text-align', 'left')
-    .on('mouseover', function () {
+    .on('mouseover', function() {
       clearTimeout(ideo.hideTrackLabelTimeout);
     })
-    .on('mouseout', function () {
+    .on('mouseout', function() {
       startHideTrackLabelTimeout(ideo);
     });
 }
@@ -66,7 +66,7 @@ function renderTrackLabels(top, left, ideo) {
  * Get left and top (x and y) offset for track label text
  */
 function getTrackLabelOffsets(labels, trackCanvas, ideo) {
-  var labels, firstTrackId, firstTrack, trackBox, labelBox, ideoBox, left, top,
+  var firstTrackId, firstTrack, trackBox, labelBox, ideoBox, left, top,
     marginHack = 7; // TODO: Make this dynamic
 
   firstTrackId = trackCanvas.id.split('-').slice(0, -1).join('-') + '-0';
@@ -90,27 +90,27 @@ function getTrackLabelOffsets(labels, trackCanvas, ideo) {
  * Show the label for this track
  */
 function showTrackLabel(trackCanvas, ideo) {
-    var labels, left, top;
+  var labels, left, top;
 
-    clearTimeout(ideo.hideTrackLabelTimeout);
+  clearTimeout(ideo.hideTrackLabelTimeout);
 
-    labels = getLabels(ideo);
-    labels = labels.join('<br>');
+  labels = getLabels(ideo);
+  labels = labels.join('<br>');
 
-    // Clear any previous positioning, write track label text to DOM
-    d3.select(ideo.config.container + ' #_ideogramTrackLabel')
-      .interrupt() // Stop any in-progress disapperance
-      .style('top', '')
-      .style('left', '')
-      .style('transform', null)
-      .style('transform', 'rotate(-90deg)')
-      .html(labels);
+  // Clear any previous positioning, write track label text to DOM
+  d3.select(ideo.config.container + ' #_ideogramTrackLabel')
+    .interrupt() // Stop any in-progress disapperance
+    .style('top', '')
+    .style('left', '')
+    .style('transform', null)
+    .style('transform', 'rotate(-90deg)')
+    .html(labels);
 
-    [left, top] = getTrackLabelOffsets(labels, trackCanvas, ideo);
+  [left, top] = getTrackLabelOffsets(labels, trackCanvas, ideo);
 
-    renderTrackLabels(top, left, ideo);
+  renderTrackLabels(top, left, ideo);
 }
 
 export {
   startHideTrackLabelTimeout, writeTrackLabelContainer, showTrackLabel
-}
+};

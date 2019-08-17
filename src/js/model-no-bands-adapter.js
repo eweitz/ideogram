@@ -1,4 +1,4 @@
-import {ModelAdapter} from './model-adapter';
+// import {ModelAdapter} from './model-adapter';
 
 // export class ModelNoBandsAdapter extends ModelAdapter {
 //

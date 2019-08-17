@@ -1,6 +1,6 @@
 import {d3} from '../lib';
 import {writeHistogramAnnots} from './histogram';
-import {writeLegend} from './legend'
+import {writeLegend} from './legend';
 
 function parseFriendlyAnnots(friendlyAnnots, rawAnnots) {
   var i, j, annot, rawAnnot;
@@ -56,7 +56,7 @@ function drawAnnots(friendlyAnnots) {
   for (chr in chrs) {
     rawAnnots.push({chr: chr, annots: []});
   }
-  rawAnnots = parseFriendlyAnnots(friendlyAnnots, rawAnnots)
+  rawAnnots = parseFriendlyAnnots(friendlyAnnots, rawAnnots);
 
   keys = parseFriendlyKeys(friendlyAnnots);
 
@@ -226,4 +226,4 @@ function drawProcessedAnnots(annots) {
   if (ideo.onDrawAnnotsCallback) ideo.onDrawAnnotsCallback();
 }
 
-export {drawAnnots, drawProcessedAnnots}
+export {drawAnnots, drawProcessedAnnots};

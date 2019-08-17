@@ -40,10 +40,9 @@ function appendHomolog(chrModel, chrIndex, homologIndex, container) {
     .data(shape)
     .enter()
     .append('path')
-    .attr('d', function (d) { return d.path; })
-    .attr('class', function (d) { return d.class; });
+    .attr('d', function(d) { return d.path; })
+    .attr('class', function(d) { return d.class; });
 }
-
 
 /**
  * Renders all the bands and outlining boundaries of a chromosome.
@@ -95,7 +94,7 @@ function drawChromosome(chrModel) {
  * Useful for focusing or defocusing a particular chromosome
  */
 function rotateAndToggleDisplay(chrElement) {
-  var chrName, chrModel, chrIndex, chrSetIndex;
+  var chrName, chrModel, chrIndex;
 
   // Do nothing if taxid not defined. But it should be defined.
   // To fix that bug we should have a way to find chromosome set number.
@@ -154,4 +153,4 @@ function setOverflowScroll() {
 
 export {
   appendHomolog, drawChromosome, rotateAndToggleDisplay, setOverflowScroll
-}
+};

@@ -84,7 +84,7 @@ function setIdeoMaxAnnotsPerBar(bars, isFirstGet, ideo) {
  * Set each bar's height to be proportional to the height of the bar with the
  * most annotations
  */
-function setProportionalBarHeight(annots, bars, ideo) {
+function setProportionalBarHeight(bars, ideo) {
   var i, annots, chr, j, barCount, barCountRatio, height,
     ideoIsRotated = ideo._layout._isRotated;
 
@@ -146,9 +146,9 @@ function getHistogramBars(annots) {
   bars = getRawBars(chrModels, ideo);
   bars = assignAnnotsToBars(annots, bars, chrModels, ideo);
   setIdeoMaxAnnotsPerBar(bars, isFirstGet, ideo);
-  bars = setProportionalBarHeight(annots, bars, ideo);
+  bars = setProportionalBarHeight(bars, ideo);
 
-  reportGetHistogramBarPerformance(t0, ideo)
+  reportGetHistogramBarPerformance(t0, ideo);
   ideo.bars = bars;
   return bars;
 }
@@ -194,4 +194,4 @@ function writeHistogramAnnots(chrAnnot, ideo) {
     .attr('fill', function(d) { return d.color; });
 }
 
-export {getHistogramBars, writeHistogramAnnots}
+export {getHistogramBars, writeHistogramAnnots};
