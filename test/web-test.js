@@ -1,3 +1,6 @@
+/* eslint-disable spaced-comment */
+/* eslint-disable no-use-before-define */
+/* eslint-disable no-unused-vars */
 // Most of these tests use Mocha's async support.
 // Helpful:
 //  - http://martinfowler.com/articles/asyncJS.html
@@ -218,7 +221,7 @@ describe('Ideogram', function() {
         chr2 = chrs['10090']['2'],
         r1Band = chr1.bands[8],
         r2Band = chr2.bands[18],
-        range1, range2, range3, range4, range5, range6,
+        range1, range2, range3, range4, range5, range6, i,
         syntenicRegions = [];
 
       range1 = {
@@ -227,7 +230,7 @@ describe('Ideogram', function() {
         stop: r1Band.bp.stop
       };
 
-      for (var i = 1; i < 20; i++) {
+      for (i = 1; i < 20; i++) {
         range2 = {
           chr: chr2,
           start: 6000000 * i,
@@ -236,7 +239,7 @@ describe('Ideogram', function() {
         syntenicRegions.push({r1: range1, r2: range2, color: '#F55'});
       }
 
-      var range3 = {
+      range3 = {
         chr: chr1,
         start: 125000000,
         stop: 126000000
@@ -244,18 +247,18 @@ describe('Ideogram', function() {
 
       range4 = {
         chr: chr2,
-        start: 1500000 * i,
-        stop: 3600000 * i
+        start: 1500000 * 19,
+        stop: 3600000 * 19
       };
       syntenicRegions.push({r1: range3, r2: range4, opacity: 0.7});
 
-      var range5 = {
+      range5 = {
         chr: chr2,
         start: r2Band.bp.start,
         stop: r2Band.bp.stop
       };
 
-      for (var i = 1; i < 6; i++) {
+      for (i = 1; i < 6; i++) {
         range6 = {
           chr: chr1,
           start: 120000000 + (12000000 * i),
@@ -526,11 +529,11 @@ describe('Ideogram', function() {
     ];
 
     annots = {
-      "keys": ["name", "start", "length", "trackIndex"],
-      "annots": [{"chr": "2", "annots": [
+      keys: ["name", "start", "length", "trackIndex"],
+      annots: [{chr: "2", annots: [
         ["rs1", 1, 0, 1], // track 1
         ["rs25", 5974955, 0, 2] // track 2
-      ]}]}
+      ]}]};
 
     var config = {
       // taxid: 9606,
@@ -624,13 +627,13 @@ describe('Ideogram', function() {
         document.querySelector('#filter_expression-level_extremely-high').click();
         return;
       }
-      
+
       assert.equal(numAnnotsInFirstBar, 2);
       document.querySelector('body').innerHTML = priorBody;
       done();
     }
 
-  var htmlScaffolding = '<div id="container"></div>' +
+    var htmlScaffolding = '<div id="container"></div>' +
       '<ul id="expression-level">' +
       'Expression level' +
     '<li>' +
@@ -739,7 +742,7 @@ describe('Ideogram', function() {
     };
 
     d3.selectAll('input').on('click', function() {
-      var tmp, checkedFilter, checkedFilters,  i, facet, counts, count,
+      var tmp, checkedFilter, checkedFilters, i, facet, counts, count,
         filterID, key,
         selections = {};
 
@@ -926,13 +929,13 @@ describe('Ideogram', function() {
 
     var shape =
       'm0,0 l 0 ' + (2 * annotHeight) +
-      'l ' + annotHeight/2 + ' 0' +
+      'l ' + annotHeight / 2 + ' 0' +
       'l 0 -' + (2 * annotHeight) + 'z';
 
     var annotationTracks = [
       {id: 'pathogenicTrack', displayName: 'Pathogenic', color: '#F00', shape: shape},
       {id: 'uncertainSignificanceTrack', displayName: 'Uncertain significance', color: '#CCC', shape: shape},
-      {id: 'benignTrack',  displayName: 'Benign', color: '#8D4', shape: shape},
+      {id: 'benignTrack', displayName: 'Benign', color: '#8D4', shape: shape}
     ];
 
     var config = {
@@ -948,7 +951,6 @@ describe('Ideogram', function() {
 
     ideogram = new Ideogram(config);
   });
-
 
   it('should have 114 annotations for BED file at remote URL', function(done) {
     // Tests use case from ../examples/vanilla/annotations-file-url.html
@@ -1009,7 +1011,7 @@ describe('Ideogram', function() {
 
     var annotationTracks = [
       {id: 'expressionLevelTrack', displayName: 'Expression level'},
-      {id: 'geneTypeTrack', displayName: 'Gene type'},
+      {id: 'geneTypeTrack', displayName: 'Gene type'}
     ];
 
     var config = {
@@ -1081,7 +1083,7 @@ describe('Ideogram', function() {
 
     var annotationTracks = [
       {id: 'expressionLevelTrack', displayName: 'Expression level'},
-      {id: 'geneTypeTrack', displayName: 'Gene type'},
+      {id: 'geneTypeTrack', displayName: 'Gene type'}
     ];
 
     var config = {
@@ -1140,8 +1142,8 @@ describe('Ideogram', function() {
       var pterEnd = getTerEnd("p"),
         firstAnnotEnd = d3.selectAll("#chr1-9606 .annot").nodes()[0].getBBox().x,
         qterEnd = getTerEnd("q"),
-        tmp = d3.selectAll("#chr1-9606 .annot").nodes(),
-        tmp = tmp[tmp.length - 1].getBBox(),
+        pretmp = d3.selectAll("#chr1-9606 .annot").nodes(),
+        tmp = pretmp[pretmp.length - 1].getBBox(),
         lastAnnotEnd = tmp.x + tmp.width;
 
       // console.log("pterEnd - firstAnnotEnd: " + (pterEnd - firstAnnotEnd));
@@ -1385,7 +1387,7 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-   it('should show three unbanded, annotated primate genomes in one page', function(done) {
+  it('should show three unbanded, annotated primate genomes in one page', function(done) {
     // Tests use case from ../examples/vanilla/multiple-primates.html
 
     var config, containerIDs, id, i, container,
@@ -1466,7 +1468,7 @@ describe('Ideogram', function() {
       config.container = '#' + id;
       config.organism = id;
       config.annotations = orgConfigs[i].annotations;
-      new Ideogram(config);
+      var ideogram = new Ideogram(config);
     }
   });
 
@@ -1514,7 +1516,7 @@ describe('Ideogram', function() {
 
   // });
 
-   // it('should not have race condition when init is quickly called multiple times', function(done) {
+  // it('should not have race condition when init is quickly called multiple times', function(done) {
   //   // Verifies handling for a Plotly use case.
   //   // See https://github.com/eweitz/ideogram/pull/154
 
@@ -1760,7 +1762,7 @@ describe('Ideogram', function() {
       container = '<div id="' + id + '"></div>';
       document.querySelector('body').innerHTML += container;
       config.container = '#' + id;
-      new Ideogram(config);
+      var ideogram = new Ideogram(config);
     }
 
   });
@@ -1840,7 +1842,6 @@ describe('Ideogram', function() {
   //   ideogram2 = new Ideogram(config2);
   //
   // });
-
 
   it('should show XX chromosomes for a diploid human female', function(done) {
     // Tests use case from ../examples/vanilla/ploidy-basic.html
@@ -2130,7 +2131,6 @@ describe('Ideogram', function() {
       done();
     }
 
-
     var heatmaps = [
       {
         key: 'expression-level',
@@ -2153,7 +2153,7 @@ describe('Ideogram', function() {
 
     var annotationTracks = [
       {id: 'expressionLevelTrack', displayName: 'Expression level'},
-      {id: 'geneTypeTrack', displayName: 'Gene type'},
+      {id: 'geneTypeTrack', displayName: 'Gene type'}
     ];
 
     config = {
@@ -2233,6 +2233,8 @@ describe('Ideogram', function() {
       ]
     }];
 
+    console.log('in "should support 2D heatmaps"');
+
     ideogram = new Ideogram({
       organism: 'human',
       orientation: 'vertical',
@@ -2265,7 +2267,7 @@ describe('Ideogram', function() {
         return; // Don't send request for remote resource, as test passed
       }
       return originalFetch.apply(this, arguments);
-    }
+    };
 
     var accessToken = 'mockAccessToken';
 
@@ -2281,7 +2283,7 @@ describe('Ideogram', function() {
       annotationsLayout: 'heatmap-2d',
       annotationsPath: 'https://www.googleapis.com/storage/v1/b/ideogram-dev/o/oligodendroglioma%2finfercnv.observations.optimized.txt?alt=media',
       dataDir: '/dist/data/bands/native/'
-    }
+    };
 
     ideogram = new Ideogram(config);
   });
