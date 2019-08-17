@@ -76,7 +76,7 @@ function writeSyntenicRegions(syntenicRegions, syntenies, xOffset, ideo) {
   for (i = 0; i < syntenicRegions.length; i++) {
     regions = syntenicRegions[i];
 
-    [r1, r2] = getRegionsR1AndR2(regions, xOffset, ideo)
+    [r1, r2] = getRegionsR1AndR2(regions, xOffset, ideo);
 
     regionID = (
       r1.chr.id + '_' + r1.start + '_' + r1.stop + '_' +
@@ -108,7 +108,7 @@ function reportPerformance(t0, ideo) {
  * a syntenic region.
  */
 function drawSynteny(syntenicRegions) {
-  var syntenies, xOffset, 
+  var syntenies, xOffset,
     t0 = new Date().getTime(),
     ideo = this;
 
@@ -123,4 +123,4 @@ function drawSynteny(syntenicRegions) {
   reportPerformance(t0, ideo);
 }
 
-export {drawSynteny}
+export {drawSynteny};

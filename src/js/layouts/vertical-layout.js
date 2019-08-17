@@ -4,7 +4,6 @@
 * starting at top and ending at bottom, and aligned as columns.
 */
 
-
 import {d3} from '../lib';
 import Layout from './layout';
 
@@ -121,8 +120,8 @@ class VerticalLayout extends Layout {
 
     chrName = chrElement.id.split('-')[0].replace('chr', '');
     chrModel = this._ideo.chromosomes[taxid][chrName];
-    scaleX = (chrModel.oldWidth/(config.chrHeight*3)) * 0.97;
-    scaleY = 1/this._getYScale();
+    scaleX = (chrModel.oldWidth / (config.chrHeight * 3)) * 0.97;
+    scaleY = 1 / this._getYScale();
     scale = 'scale(' + scaleX + ', ' + scaleY + ')';
     return scale;
   }
@@ -192,4 +191,4 @@ class VerticalLayout extends Layout {
   }
 }
 
-export default VerticalLayout
+export default VerticalLayout;

@@ -20,17 +20,17 @@ function rearrangeChromosomes(chrSets, yOffsets, x, ideo) {
     chr = ideo.chromosomesArray[i];
     taxid = chr.id.split('-')[1];
     orgIndex = ideo.config.taxids.indexOf(taxid);
-    adjustedX = x - orgIndex*200;
+    adjustedX = x - orgIndex * 200;
     if (orgIndex === 0) {
       chrLabelX = -34;
-      adjustedX += ideo.config.chrWidth*2 - 16;
+      adjustedX += ideo.config.chrWidth * 2 - 16;
     } else {
-      chrLabelX = ideo.config.chrWidth*2 - 24;
+      chrLabelX = ideo.config.chrWidth * 2 - 24;
     }
 
     if (config.showChromosomeLabels) {
-      chrSet.querySelector('.chrLabel > tspan').setAttribute('x', chrLabelX)
-      chrSet.querySelector('.chrLabel').setAttribute('text-anchor', 'start')
+      chrSet.querySelector('.chrLabel > tspan').setAttribute('x', chrLabelX);
+      chrSet.querySelector('.chrLabel').setAttribute('text-anchor', 'start');
     }
     chrSet.setAttribute('transform', 'rotate(90) translate(' + y + ',' + adjustedX + ')');
     chrSet.querySelector('.chromosome').setAttribute('transform', 'translate(-13, 10)');
@@ -38,7 +38,7 @@ function rearrangeChromosomes(chrSets, yOffsets, x, ideo) {
 }
 
 /**
-* Get pixel coordinates to use for rearrangement 
+* Get pixel coordinates to use for rearrangement
 */
 function getyOffsets(chrSets, ideo) {
   var yOffsets, i, index, chr, prevChr, y, prevWidth, prevY, yBump, taxid,
@@ -70,7 +70,7 @@ function collinearizeVerticalChromosomes(ideo) {
     config = ideo.config;
 
   ideo.config.annotLabelHeight = 12;
-  var annotLabelHeight = ideo.config.annotLabelHeight;
+  // var annotLabelHeight = ideo.config.annotLabelHeight;
 
   if ('demarcateCollinearChromosomes' in ideo.config === false) {
     ideo.config.demarcateCollinearChromosomes = true;
@@ -88,9 +88,11 @@ function collinearizeVerticalChromosomes(ideo) {
   if (config.multiorganism) {
     height *= 8;
     var maxHeight = 0;
-    yOffsets.forEach(d => {if (d > maxHeight) maxHeight = d});
+    yOffsets.forEach(d => {
+      if (d > maxHeight) maxHeight = d;
+    });
     height = maxHeight + 20;
-    console.log(ideo.chromosomes)
+    console.log(ideo.chromosomes);
   } else {
     height = xOffsets.slice(-1)[0] + 20;
   }

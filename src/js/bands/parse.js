@@ -62,8 +62,8 @@ function updateLines(lines, columns, taxid) {
 
   chr = columns[0];
   if (chr in lines === false) lines[chr] = [];
-  
-  stain = getStain(columns)
+
+  stain = getStain(columns);
 
   line = getLineObject(chr, columns, stain, taxid);
   lines[chr].push(line);
@@ -84,12 +84,12 @@ function parseBands(content, taxid, chromosomes) {
     lines = {};
 
   if (Array.isArray(content)) source = 'native';
-  
+
   chromosomes = updateChromosomes(chromosomes);
-  
+
   // Destructure assignment fails oddly when transpiled.  2019-05-23
   var result = getDelimiterTsvLinesAndInit(source, content);
-  delimiter = result[0]; 
+  delimiter = result[0];
   tsvLines = result[1];
   init = result[2];
 
@@ -98,9 +98,10 @@ function parseBands(content, taxid, chromosomes) {
 
     chr = columns[0];
     if (
-      (typeof (chromosomes) !== 'undefined' && chromosomes !== null) &&
+      (typeof chromosomes !== 'undefined' && chromosomes !== null) &&
       ((Array.isArray(chromosomes) && chromosomes.indexOf(chr) === -1) ||
-      (typeof(chromosomes) === 'object' && taxid in chromosomes && chromosomes[taxid].includes(chr) === false))
+      (typeof chromosomes === 'object' && taxid in chromosomes &&
+        chromosomes[taxid].includes(chr) === false))
     ) {
       // If specific chromosomes are configured, then skip processing all
       // other fetched chromosomes.
@@ -113,4 +114,4 @@ function parseBands(content, taxid, chromosomes) {
   return lines;
 }
 
-export {parseBands}
+export {parseBands};

@@ -144,7 +144,7 @@ function reportPerformance(t0, ideo) {
  * hide overlapping band labels, and execute callbacks defined by client code
  */
 function processBandData() {
-  var bandsArray, j, taxid, taxids, chrs, chrsByTaxid,
+  var bandsArray, j, taxid, taxids, chrs,
     ideo = this,
     config = ideo.config,
     t0 = new Date().getTime();
@@ -153,16 +153,16 @@ function processBandData() {
 
   [taxid, taxids] = setTaxids(ideo);
 
-  if ('chromosomes' in ideo.config) {
-    if (ideo.config.multiorganism) {
+  if ('chromosomes' in config) {
+    if (config.multiorganism) {
       // Copy object
-      chrs = ideo.config.chromosomes;
+      chrs = config.chromosomes;
     } else {
       // Copy array by value
-      chrs = ideo.config.chromosomes.slice();
+      chrs = config.chromosomes.slice();
     }
   }
-  
+
   for (j = 0; j < taxids.length; j++) {
     taxid = taxids[j];
     bandsArray = setChromosomesByTaxid(taxid, chrs, bandsArray, ideo);
@@ -174,4 +174,4 @@ function processBandData() {
 export {
   drawBandLabels, getBandColorGradients, processBandData,
   setBandsToShow, hideUnshownBandLabels, drawBandLabelText, drawBandLabelStalk
-}
+};

@@ -1,3 +1,4 @@
+/* eslint-disable no-use-before-define */
 import {Color} from './../color';
 import {Range} from './../range';
 
@@ -21,7 +22,7 @@ export class Chromosome {
     } else {
       return new MetacentricChromosome(adapter, config, ideo);
     }
-  };
+  }
 
   _addPArmShape(clipPath, isPArmRendered) {
     if (isPArmRendered) {
@@ -29,7 +30,7 @@ export class Chromosome {
     } else {
       return clipPath;
     }
-  };
+  }
 
   _addQArmShape(clipPath, isQArmRendered) {
     if (isQArmRendered) {
@@ -37,7 +38,7 @@ export class Chromosome {
     } else {
       return clipPath;
     }
-  };
+  }
 
   /**
    * Append bands container and apply clip-path to it
@@ -105,7 +106,7 @@ export class Chromosome {
       });
 
     return clipPath;
-  };
+  }
 
   _renderRangeSet(container, chrSetIndex, chrIndex) {
 
@@ -140,7 +141,7 @@ export class Chromosome {
       .style('fill', function(range) {
         return range.getColor(chrIndex);
       });
-  };
+  }
 
   /**
    * Get chromosome's shape main values
@@ -161,12 +162,12 @@ export class Chromosome {
     lastBand = this._model.bands.length - 1;
     rightTerminalPosition = this._model.bands[lastBand].px.stop;
 
-      // Properties description:
-      // x1 - left terminal start position
-      // x2 - centromere position
-      // x3 - right terminal end position
-      // w - chromosome width
-      // b - bump size
+    // Properties description:
+    // x1 - left terminal start position
+    // x2 - centromere position
+    // x3 - right terminal end position
+    // w - chromosome width
+    // b - bump size
     return {
       x1: 0,
       x2: firstQBand ? firstQBand.px.start : rightTerminalPosition,
@@ -174,7 +175,7 @@ export class Chromosome {
       w: this._config.chrWidth,
       b: this._config.chrWidth / this._bumpCoefficient
     };
-  };
+  }
 
   _getPArmShape() {
     var d = this._getShapeData(),
@@ -214,7 +215,7 @@ export class Chromosome {
           'L' + (x - 2) + ',0'
       }];
     }
-  };
+  }
 
   _getQArmShape() {
     var d = this._getShapeData(),
@@ -250,14 +251,14 @@ export class Chromosome {
           'L' + (x2b + 2) + ',0'
       }];
     }
-  };
+  }
 
   isFullyBanded() {
     return (
       this._model.bands &&
       (this._model.bands.length !== 2 || this._model.bands[0].name[0] === 'q')
     );
-  };
+  }
 
   /**
    * Render arm bands
@@ -285,7 +286,7 @@ export class Chromosome {
         return 'band ' + arm + '-band ' + d.stain;
       })
       .attr('d', function(d) {
-        var start, length, x;
+        var start, length;
 
         start = self._ideo.round(d.px.start);
         length = self._ideo.round(d.px.width);
@@ -296,7 +297,7 @@ export class Chromosome {
               'l -' + length + ' 0 z';
       })
       .style('fill', fill);
-  };
+  }
 
   /**
    * Render a chromosome arm.
@@ -313,8 +314,6 @@ export class Chromosome {
   }
 }
 
-
-
 export class MetacentricChromosome extends Chromosome {
 
   constructor(model, config, ideo) {
@@ -322,8 +321,6 @@ export class MetacentricChromosome extends Chromosome {
     this._class = 'MetacentricChromosome';
   }
 }
-
-
 
 export class TelocentricChromosome extends Chromosome {
 
@@ -335,7 +332,7 @@ export class TelocentricChromosome extends Chromosome {
 
   _addPArmShape(clipPath) {
     return clipPath.concat(this._getPArmShape());
-  };
+  }
 
   _getPArmShape() {
     var d = this._getShapeData();
@@ -355,7 +352,7 @@ export class TelocentricChromosome extends Chromosome {
       'L' + (d.x2 - d.o + 5) + ',' + d.w,
       strokeWidth: 0.5
     }];
-  };
+  }
 
   _getQArmShape() {
     var d = this._getShapeData(),
@@ -370,5 +367,5 @@ export class TelocentricChromosome extends Chromosome {
       'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + x + ',' + d.w + ' ' +
       'L' + (d.x2 + o) + ',' + d.w
     };
-  };
+  }
 }

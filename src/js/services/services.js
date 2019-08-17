@@ -105,14 +105,14 @@ function parseChloroplastOrPlastid(ideo) {
   // Plastid encountered with rice genome IRGSP-1.0 (GCF_001433935.1)
   if (ideo.config.showNonNuclearChromosomes) {
     return ['CP', 'chloroplast'];
-  } 
+  }
   return [null, null];
 }
 
 function parseApicoplast(ideo) {
   if (ideo.config.showNonNuclearChromosomes) {
     return ['AP', 'apicoplast'];
-  } 
+  }
   return [null, null];
 }
 
@@ -145,7 +145,7 @@ function getChrNameAndType(result, ideo) {
 }
 
 function parseChromosome(result, ideo) {
-  var chrName, type, chromosome, result,
+  var chrName, type, chromosome;
 
   [chrName, type] = getChrNameAndType(result, ideo);
 
@@ -226,4 +226,4 @@ function getAssemblyAndChromosomesFromEutils(callback, recovering) {
 export {
   esearch, esummary, elink, getOrganismFromEutils,
   getTaxids, getAssemblyAndChromosomesFromEutils
-}
+};

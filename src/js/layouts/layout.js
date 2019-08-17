@@ -57,7 +57,7 @@ class Layout {
 
     if (orientation === 'vertical') {
       x = tickSize;
-      y = ideo.round(2 + band.px.start + band.px.width/2);
+      y = ideo.round(2 + band.px.start + band.px.width / 2);
       translate = "rotate(-90)translate(" + x + "," + y + ")";
     } else if (orientation === 'horizontal') {
       x = ideo.round(-tickSize + band.px.start + band.px.width / 2);
@@ -181,7 +181,11 @@ class Layout {
         // Set chromosome height to window length or ideogram element length,
         // whichever is smaller.  This keeps whole chromosome viewable, while
         // also ensuring the height doesn't exceed what the user specified.
-        chrHeight = (windowLength < elementLength ? windowLength : elementLength);
+        if (windowLength < elementLength) {
+          chrHeight = windowLength;
+        } else {
+          chrHeight = elementLength;
+        }
         chrHeight -= ideo.config.chrMargin * 2;
         ideo.config.chrHeight = chrHeight;
 
@@ -240,4 +244,4 @@ class Layout {
 
 }
 
-export default Layout
+export default Layout;

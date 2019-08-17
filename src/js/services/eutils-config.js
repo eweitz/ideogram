@@ -32,4 +32,4 @@ function getAssemblySearchUrl(ideo) {
   return asmSearchUrl;
 }
 
-export {esearch, esummary, elink, getAssemblySearchUrl}
+export {esearch, esummary, elink, getAssemblySearchUrl};
