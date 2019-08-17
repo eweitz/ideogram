@@ -64,6 +64,8 @@
   </div>
   <script type="text/javascript">
 
+  var initialized = false;
+
 function onIdeogramLoad() {
       // See HomoloGene entry for MTOR at
       // http://www.ncbi.nlm.nih.gov/homologene/3637
@@ -101,10 +103,53 @@ function onIdeogramLoad() {
 
     }
 
+    // Record app state in URL
+    function updateUrl(params) {
+      var urlParams = Object.keys(params).map(key => {
+        return key + '=' + params[key];
+      }).join('&');
+      history.pushState(null, null, '?' + urlParams);
+    }
+
+    function parseUrlParams() {
+      var rawParams = document.location.search;
+      var urlParams = {};
+      var param, key, value;
+      if (rawParams !== '') {
+        rawParams = rawParams.split('?')[1].split('&');
+        rawParams.forEach(rawParam => {
+          param = rawParam.split('=');
+          key = param[0];
+          value = param[1];
+          urlParams[key] = value;
+        });
+      }
+      return urlParams;
+    }
+
+    function checkButtons() {
+      var urlParams = parseUrlParams();
+        for (var param in urlParams) {
+          var value = urlParams[param];
+          document.querySelectorAll('input[name=' + param + ']').forEach(option => {
+            if (option.id.includes(value)) {
+              var button = 'input[name=' + param + ']#' + value;
+              document.querySelector(button).checked = true;
+            }
+          });
+        }
+    }
+
     function updateIdeogram() {
+
+      if (initialized === false) {
+        checkButtons();
+      }
 
       var chromosomeScale = document.querySelector('input[name=chromosome-scale]:checked').id;
       var orientation = document.querySelector('input[name=orientation]:checked').id;
+
+      updateUrl({'chromosome-scale': chromosomeScale, orientation: orientation});
 
       config = {
         organism: ['human', 'mouse'],
@@ -118,6 +163,8 @@ function onIdeogramLoad() {
       }
 
       ideogram = new Ideogram(config);
+
+      initialized = true;
     }
 
     radioButtons = document.querySelectorAll('input[type=radio]');
