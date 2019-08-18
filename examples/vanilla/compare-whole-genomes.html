@@ -82,6 +82,7 @@ function onIdeogramLoad() {
       var chrs = ideogram.chromosomes,
         chr1 = chrs[humanTaxid]['1'],
         chr4 = chrs[mouseTaxid]['4'],
+        chr19 = chrs[mouseTaxid]['19'],
         syntenicRegions = [];
 
       range1 = {
@@ -96,11 +97,40 @@ function onIdeogramLoad() {
         start: 148448582,
         stop: 148557685
       };
+      // range2 = {
+      //   chr: chr19,
+      //   start: 61431564,
+      //   stop: 61431565 // end of mouse chr19
+      // };
 
       syntenicRegions.push({'r1': range1, 'r2': range2});
 
-      ideogram.drawSynteny(syntenicRegions);
+      var chr10 = chrs[humanTaxid]['10'];
+      var range3 = {
+        chr: chr10,
+        start: 87864470,
+        stop: 87965472
+      };
+      var range4 = {
+        chr: chr19,
+        start: 32758445,
+        stop: 32820028
+      };
+      syntenicRegions.push({'r1': range3, 'r2': range4});
 
+      var range5 = {
+        chr: chr10,
+        start: 26216810,
+        stop: 26300961
+      }
+      var range6 = {
+        chr: chrs[mouseTaxid]['2'],
+        start: 22622663,
+        stop: 22690346
+      };
+      syntenicRegions.push({'r1': range5, 'r2': range6});
+
+      ideogram.drawSynteny(syntenicRegions);
     }
 
     // Record app state in URL
@@ -156,8 +186,8 @@ function onIdeogramLoad() {
         orientation: orientation,
         geometry: 'collinear',
         chromosomeScale: chromosomeScale,
-        chrHeight: 60,
-        chrMargin: 10,
+        chrHeight: 40,
+        chrMargin: 3,
         container: '#ideogram-container',
         onLoad: onIdeogramLoad
       }
