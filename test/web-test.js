@@ -20,7 +20,7 @@ function getSvgText(selector) {
 
 describe('Ideogram', function() {
 
-  this.timeout(20000); // Account for NCBI E-Utils API brownout
+  // this.timeout(20000); // Account for NCBI E-Utils API brownout
 
   var config = {};
 
