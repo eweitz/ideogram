@@ -42,33 +42,167 @@
     <ul id="options">
       Chromosome scale
       <li>
-        <input type="radio" name="chromosome-scale" id="relative" value="relative" checked>
-        <label for="relative">Relative</label>
+        <input type="radio" name="chromosome-scale" id="absolute" value="absolute" checked>
+        <label for="absolute">Absolute</label>
       </li>
       <li>
-        <input type="radio" name="chromosome-scale" id="absolute" value="absolute">
-        <label for="absolute">Absolute</label>
+        <input type="radio" name="chromosome-scale" id="relative" value="relative">
+        <label for="relative">Relative</label>
+      </li>
+      <br/>
+      Orientation
+      <li>
+        <input type="radio" name="orientation" id="vertical" value="vertical" checked>
+        <label for="vertical">Vertical</label>
+      </li>
+      <li>
+        <input type="radio" name="orientation" id="horizontal" value="horizontal">
+        <label for="horizontal">Horizontal</label>
       </li>
     </div>
     <div id="ideogram-container"></div>
   </div>
   <script type="text/javascript">
 
+  var initialized = false;
+
+  function onIdeogramLoad() {
+      // See HomoloGene entry for MTOR at
+      // http://www.ncbi.nlm.nih.gov/homologene/3637
+      // Placements for H. sapiens and M. musculus used below.
+      // Placements from latest annotation release in
+      // Human: http://www.ncbi.nlm.nih.gov/gene/2475#genomic-context
+      // Mouse: http://www.ncbi.nlm.nih.gov/gene/56717#genomic-context
+
+      var chrs, chr1, chr4, syntheticRegions, humanTaxid, mouseTaxid;
+
+      humanTaxid = ideogram.getTaxid('human');
+      mouseTaxid = ideogram.getTaxid('mouse');
+
+      var chrs = ideogram.chromosomes,
+        chr1 = chrs[humanTaxid]['1'],
+        chr4 = chrs[mouseTaxid]['4'],
+        chr19 = chrs[mouseTaxid]['19'],
+        syntenicRegions = [];
+
+      range1 = {
+        chr: chr1,
+        start: 11106531,
+        stop: 11262557,
+        orientation: 'reverse'
+      };
+
+      range2 = {
+        chr: chr4,
+        start: 148448582,
+        stop: 148557685
+      };
+      // range2 = {
+      //   chr: chr19,
+      //   start: 61431564,
+      //   stop: 61431565 // end of mouse chr19
+      // };
+
+      syntenicRegions.push({'r1': range1, 'r2': range2});
+
+      var chr10 = chrs[humanTaxid]['10'];
+      var range3 = {
+        chr: chr10,
+        start: 87864470,
+        stop: 87965472
+      };
+      var range4 = {
+        chr: chr19,
+        start: 32758445,
+        stop: 32820028
+      };
+      syntenicRegions.push({'r1': range3, 'r2': range4});
+
+      var range5 = {
+        chr: chr10,
+        start: 26216810,
+        stop: 26300961
+      }
+      var range6 = {
+        chr: chrs[mouseTaxid]['2'],
+        start: 22622663,
+        stop: 22690346
+      };
+      syntenicRegions.push({'r1': range5, 'r2': range6});
+
+      ideogram.drawSynteny(syntenicRegions);
+    }
+
+    // Record app state in URL
+    function updateUrl(params) {
+      var urlParams = Object.keys(params).map(key => {
+        return key + '=' + params[key];
+      }).join('&');
+      history.pushState(null, null, '?' + urlParams);
+    }
+
+    function parseUrlParams() {
+      var rawParams = document.location.search;
+      var urlParams = {};
+      var param, key, value;
+      if (rawParams !== '') {
+        rawParams = rawParams.split('?')[1].split('&');
+        rawParams.forEach(rawParam => {
+          param = rawParam.split('=');
+          key = param[0];
+          value = param[1];
+          urlParams[key] = value;
+        });
+      }
+      return urlParams;
+    }
+
+    function checkButtons() {
+      var urlParams = parseUrlParams();
+        for (var param in urlParams) {
+          var value = urlParams[param];
+          document.querySelectorAll('input[name=' + param + ']').forEach(option => {
+            if (option.id.includes(value)) {
+              var button = 'input[name=' + param + ']#' + value;
+              document.querySelector(button).checked = true;
+            }
+          });
+        }
+    }
+
     function updateIdeogram() {
 
+      if (initialized === false) {
+        checkButtons();
+      }
+
       var chromosomeScale = document.querySelector('input[name=chromosome-scale]:checked').id;
+      var orientation = document.querySelector('input[name=orientation]:checked').id;
+
+      updateUrl({'chromosome-scale': chromosomeScale, orientation: orientation});
+
+      if (chromosomeScale === 'absolute') {
+        chrHeight = 44;
+        chrMargin = 3;
+      } else {
+        chrHeight = 40;
+        chrMargin = 3;
+      }
 
       config = {
-        organism: ['human', 'rice'],
-        orientation: 'horizontal',
+        organism: ['human', 'mouse'],
+        orientation: orientation,
         geometry: 'collinear',
         chromosomeScale: chromosomeScale,
-        chrHeight: 60,
-        chrMargin: 10,
-        container: '#ideogram-container'
+        chrHeight: chrHeight,
+        chrMargin: chrMargin,
+        container: '#ideogram-container',
+        onLoad: onIdeogramLoad
       }
 
       ideogram = new Ideogram(config);
+
+      initialized = true;
     }
 
     radioButtons = document.querySelectorAll('input[type=radio]');

@@ -123,7 +123,8 @@ function setOverflowScroll() {
 
   if (
     config.orientation === 'vertical' &&
-    config.perspective !== 'comparative'
+    config.perspective !== 'comparative' &&
+    config.geometry !== 'collinear'
   ) {
     ideoWidth = (ideo.numChromosomes + 2) * (config.chrWidth + config.chrMargin + ploidyPad);
   } else {
