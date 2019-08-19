@@ -181,13 +181,21 @@
 
       updateUrl({'chromosome-scale': chromosomeScale, orientation: orientation});
 
+      if (chromosomeScale === 'absolute') {
+        chrHeight = 44;
+        chrMargin = 3;
+      } else {
+        chrHeight = 40;
+        chrMargin = 3;
+      }
+
       config = {
         organism: ['human', 'mouse'],
         orientation: orientation,
         geometry: 'collinear',
         chromosomeScale: chromosomeScale,
-        chrHeight: 40,
-        chrMargin: 3,
+        chrHeight: chrHeight,
+        chrMargin: chrMargin,
         container: '#ideogram-container',
         onLoad: onIdeogramLoad
       }
