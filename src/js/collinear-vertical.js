@@ -92,7 +92,6 @@ function collinearizeVerticalChromosomes(ideo) {
       if (d > maxHeight) maxHeight = d;
     });
     height = maxHeight + 20;
-    console.log(ideo.chromosomes);
   } else {
     height = xOffsets.slice(-1)[0] + 20;
   }
