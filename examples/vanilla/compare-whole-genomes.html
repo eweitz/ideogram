@@ -42,22 +42,22 @@
     <ul id="options">
       Chromosome scale
       <li>
-        <input type="radio" name="chromosome-scale" id="relative" value="relative" checked>
-        <label for="relative">Relative</label>
+        <input type="radio" name="chromosome-scale" id="absolute" value="absolute" checked>
+        <label for="absolute">Absolute</label>
       </li>
       <li>
-        <input type="radio" name="chromosome-scale" id="absolute" value="absolute">
-        <label for="absolute">Absolute</label>
+        <input type="radio" name="chromosome-scale" id="relative" value="relative">
+        <label for="relative">Relative</label>
       </li>
       <br/>
       Orientation
       <li>
-        <input type="radio" name="orientation" id="horizontal" value="horizontal" checked>
-        <label for="horizontal">Horizontal</label>
+        <input type="radio" name="orientation" id="vertical" value="vertical" checked>
+        <label for="vertical">Vertical</label>
       </li>
       <li>
-        <input type="radio" name="orientation" id="vertical" value="vertical">
-        <label for="vertical">Vertical</label>
+        <input type="radio" name="orientation" id="horizontal" value="horizontal">
+        <label for="horizontal">Horizontal</label>
       </li>
     </div>
     <div id="ideogram-container"></div>
@@ -66,7 +66,7 @@
 
   var initialized = false;
 
-function onIdeogramLoad() {
+  function onIdeogramLoad() {
       // See HomoloGene entry for MTOR at
       // http://www.ncbi.nlm.nih.gov/homologene/3637
       // Placements for H. sapiens and M. musculus used below.
