@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Comparative genomics | Ideogram</title>
+  <title>Orthologs | Ideogram</title>
   <style>
     body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
     a, a:visited {text-decoration: none;}
@@ -20,7 +20,7 @@
 <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
 </head>
 <body>
-  <h1>Comparative genomics | Ideogram</h1>
+  <h1>Orthologs | Ideogram</h1>
   <a href="../">Overview</a> |
   <a href="eukaryotes">Previous</a> |
   <a href="homology-basic">Next</a> |
@@ -29,7 +29,7 @@
     Compare gene locations across organisms.
   </p>
   <div style="float: left; width: 200px;">
-  <label for="gene">Gene: <input id="gene"/></label>
+  <label for="genes">Genes: <input id="genes"/></label>
   <label for="org">
     Source organism:
     <select class="left-select org-select" id="org">
@@ -75,23 +75,23 @@
       return JSON.stringify(urlParams) !== JSON.stringify(prevState);
     }
 
-    function updateGeneParams(geneName) {
-      if (typeof geneName === 'undefined') {
-        geneName = gene;
+    function updateGenesParams(geneNames) {
+      if (typeof geneNames === 'undefined') {
+        geneNames = genes;
       }
-      urlParams['gene'] = geneName;
+      urlParams['genes'] = geneNames;
       updateUrl();
     }
 
     // Process text input for the "Gene" field.
     async function handleGene(event) {
-      var geneName, loci1, loci2;
+      var geneNames, loci1, loci2;
 
       // Ignore non-"Enter" keyups
       if (event.type === 'keyup' && event.keyCode !== 13) return;
 
-      geneName = event.target.value;
-      updateGeneParams(geneName);
+      geneNames = event.target.value;
+      updateGeneParams(geneNames);
 
       createIdeogram();
     }
@@ -160,9 +160,15 @@
       document.querySelector('#status-container').innerHTML = 'Loading...';
       parseUrlParams();
 
+      // Replace 'gene' with 'genes'
+      if ('gene' in urlParams) {
+        urlParams['genes'] = urlParams['gene'];
+        delete urlParams['gene'];
+      }
+
       // Set default parameters if none are provided.
       if ('org' in urlParams === false) {
-        urlParams['gene'] = 'MTOR'
+        urlParams['genes'] = 'MTOR'
         urlParams['org'] = 'homo-sapiens';
         urlParams['org2'] = 'mus-musculus';
         urlParams['backend'] = 'oma';
@@ -187,17 +193,17 @@
       updateOrganismMenu('org', org1);
       updateOrganismMenu('org2', org2);
 
-      gene = urlParams['gene'];
-      document.querySelector('#gene').value = gene;
+      genes = urlParams['genes'];
+      document.querySelector('#genes').value = genes;
 
       backend = urlParams['backend'];
       document.querySelector('#backend #' + backend).selected = true;
 
-      updateGeneParams(gene);
+      updateGenesParams(genes);
 
       if (shouldUpdateState()) {
         try {
-          [loci1, loci2] = await fetchOrthologs(gene, org1, [org2], backend);
+          [loci1, loci2] = await fetchOrthologs(genes, org1, [org2], backend);
         } catch (error) {
           document.querySelector('#status-container').innerHTML =
             `<span id="error-container">${error}</span>`;
@@ -291,8 +297,8 @@
     ideogram = new Ideogram(config);
   }
 
-  document.querySelector('#gene').addEventListener('blur', handleGene);
-  document.querySelector('#gene').addEventListener('keyup', handleGene);
+  document.querySelector('#genes').addEventListener('blur', handleGene);
+  document.querySelector('#genes').addEventListener('keyup', handleGene);
   document.querySelectorAll('.org-select').forEach(select => {
     select.addEventListener('change', handleOrganism);
   });
