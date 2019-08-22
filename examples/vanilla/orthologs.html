@@ -64,7 +64,7 @@
     </select>
   </label>
   </div>
-  <div id="ideogram-container" style="position: relative; top: -70px; left: 200px;"></div>
+  <div id="ideogram-container" style="position: relative; top: -100px; left: 200px;"></div>
   <div id="status-container"></div>
   <script type="text/javascript">
 
@@ -208,6 +208,7 @@
 
       if (shouldUpdateState()) {
         try {
+          orthologs = [];
           var geneList = splitList(genes);
           for (i = 0; i < geneList.length; i++) {
             gene = geneList[i];
