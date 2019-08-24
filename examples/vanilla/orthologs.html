@@ -64,7 +64,7 @@
     </select>
   </label>
   </div>
-  <div id="ideogram-container" style="position: relative; top: -100px; left: 200px;"></div>
+  <div id="ideogram-container"></div>
   <div id="status-container"></div>
   <script type="text/javascript">
 
@@ -110,7 +110,10 @@
     }
 
     function splitList(csvList) {
-      return csvList.replace(/^\s+|\s+$/g, '').split(',')
+      return csvList
+        .replace('%20', '')
+        .replace(/^\s+|\s+$/g, '')
+        .split(',');
     }
 
     // Process selections in "Orthology source" drop-down menu
@@ -199,7 +202,7 @@
       updateOrganismMenu('org2', org2);
 
       genes = urlParams['genes'];
-      document.querySelector('#genes').value = genes;
+      document.querySelector('#genes').value = genes.replace('%20', ' ');
 
       backend = urlParams['backend'];
       document.querySelector('#backend #' + backend).selected = true;
@@ -213,7 +216,7 @@
           for (i = 0; i < geneList.length; i++) {
             gene = geneList[i];
             [loci1, loci2] = await fetchOrthologs(gene, org1, [org2], backend);
-            orthologs.push([loci1, loci2])
+            orthologs.push([loci1, loci2]);
           }
         } catch (error) {
           document.querySelector('#status-container').innerHTML =
@@ -226,111 +229,155 @@
       
     }
 
-  function drawSynteny() {
-    var chrs, humanTaxid, mouseTaxid;
-
-    var syntenicRegions = []
-
-    for (var i = 0; i < orthologs.length; i++) {
-      region = orthologs[i];
-      loci1 = region[0];
-      loci2 = region[1];
+    function parseGenomicRawRanges(ortholog) {
+      loci1 = ortholog[0];
+      loci2 = ortholog[1];
 
       [loci1Chr, loci1Range] = loci1.split(':');
       [loci2Chr, loci2Range] = loci2.split(':');
       [loci1Start, loci1Stop] = loci1Range.split('-');
       [loci2Start, loci2Stop] = loci2Range.split('-');
 
-      document.querySelector('#status-container').innerHTML = '';
-
-      org1Taxid = ideogram.getTaxid(org1);
-      org2Taxid = ideogram.getTaxid(org2);
-
-      var chrs = ideogram.chromosomes;
-
-      if (!chrs.hasOwnProperty(org1Taxid) || !chrs.hasOwnProperty(org2Taxid)) {
-        document.querySelector('#ideogram-container').innerHTML = '';
-        document.querySelector('#status-container').innerHTML =
-          `Orthologous pair found, but cannot be drawn.<br/>
-          Ortholog in source organism at: ${loci1}<br/>
-          Ortholog in target organism at: ${loci2}<br/>`;
-        return;
-      }
-
-      var org1ChrObj = chrs[org1Taxid][loci1Chr],
-        org2ChrObj = chrs[org2Taxid][loci2Chr];
-
       range1 = {
-        chr: org1ChrObj,
+        chr: loci1Chr,
         start: loci1Start,
         stop: loci1Stop
       };
 
       range2 = {
-        chr: org2ChrObj,
+        chr: loci2Chr,
         start: loci2Start,
         stop: loci2Stop
       };
 
-      syntenicRegions.push({'r1': range1, 'r2': range2});
+      return [range1, range2];
     }
 
-    ideogram.drawSynteny(syntenicRegions);
-    
-    document.querySelector('#_ideogram').setAttribute('width', 250);
-  }
+    function drawSynteny() {
+      var chrs, humanTaxid, mouseTaxid;
 
-  function onIdeogramLoad() {
-    drawSynteny();
-  }
+      var syntenicRegions = []
 
-  async function createIdeogram() {
+      for (var i = 0; i < orthologs.length; i++) {
 
-    await processUrl();
+        document.querySelector('#status-container').innerHTML = '';
 
-    if (document.querySelector('#error-container') !== null) {
-      return;
+        rawRanges = parseGenomicRawRanges(orthologs[i]);
+
+        org1Taxid = ideogram.getTaxid(org1);
+        org2Taxid = ideogram.getTaxid(org2);
+
+        var chrs = ideogram.chromosomes;
+
+        if (!chrs.hasOwnProperty(org1Taxid) || !chrs.hasOwnProperty(org2Taxid)) {
+          document.querySelector('#ideogram-container').innerHTML = '';
+          document.querySelector('#status-container').innerHTML =
+            `Orthologous pair found, but cannot be drawn.<br/>
+            Ortholog in source organism at: ${loci1}<br/>
+            Ortholog in target organism at: ${loci2}<br/>`;
+          return;
+        }
+
+        var org1ChrObj = chrs[org1Taxid][rawRanges[0].chr],
+          org2ChrObj = chrs[org2Taxid][rawRanges[1].chr];
+
+        range1 = {
+          chr: org1ChrObj,
+          start: rawRanges[0].start,
+          stop: rawRanges[0].stop
+        };
+
+        range2 = {
+          chr: org2ChrObj,
+          start: rawRanges[1].start,
+          stop: rawRanges[1].stop
+        };
+
+        syntenicRegions.push({'r1': range1, 'r2': range2});
+      }
+
+      ideogram.drawSynteny(syntenicRegions);
+
+      var ideoContainer = document.querySelector('#ideogram-container');
+      if (orthologs.length > 1) {
+        document.querySelector('#_ideogram').setAttribute('width', 250);
+        ideoContainer.setAttribute('style', 'position: relative; top: -100px; left: 200px;');
+      } else {
+        ideoContainer.setAttribute('style', '');
+      }
     }
 
-    if (org1 !== org2) {
-      // Orthology
-      organism = [org1, org2];
-    } else {
-      // Paralogy
-      organism = org1;
-      chromosomesConfig = [loci1Chr, loci2Chr];
+    function onIdeogramLoad() {
+      drawSynteny();
     }
 
-    var config = {
-      container: '#ideogram-container',
-      organism: organism,
-      geometry: 'collinear',
-      chrHeight: 45,
-      chrMargin: 3,
-      chromosomeScale: 'relative',
-      // chrHeight: 400,
-      // chrMargin: 50,
-      // fullChromosomeLabels: true,
-      showBandLabels: showBandLabels,
-      rotatable: false,
-      onLoad: onIdeogramLoad
-    };
+    async function createIdeogram() {
 
-    delete chrBands;
+      await processUrl();
 
-    ideogram = new Ideogram(config);
-  }
+      if (document.querySelector('#error-container') !== null) {
+        return;
+      }
 
-  document.querySelector('#genes').addEventListener('blur', handleGene);
-  document.querySelector('#genes').addEventListener('keyup', handleGene);
-  document.querySelectorAll('.org-select').forEach(select => {
-    select.addEventListener('change', handleOrganism);
-  });
-  document.querySelectorAll('.backend-select').forEach(select => {
-    select.addEventListener('change', handleBackend);
-  });
+      var config = {
+        container: '#ideogram-container',
+        showBandLabels: showBandLabels,
+        rotatable: false,
+        onLoad: onIdeogramLoad
+      };
 
-  createIdeogram();
+      if (org1 !== org2) {
+        // Orthology
+        config.organism = [org1, org2];
+      } else {
+        // Paralogy
+        config.organism = org1;
+        config.chromosomesConfig = [loci1Chr, loci2Chr];
+      }
+
+      console.log('orthologs')
+      console.log(orthologs)
+
+      if (orthologs.length > 1) {
+        // Multiple genomes
+        Object.assign(config, {
+          chrHeight: 45,
+          chrMargin: 3,
+          chromosomeScale: 'relative',
+          geometry: 'collinear'
+        });
+      } else {
+        // Multiple chromosomes
+        ranges = parseGenomicRawRanges(orthologs[0]);
+        chromosomesConfig = {}
+        chromosomesConfig[org1] = [ranges[0].chr];
+        chromosomesConfig[org2] = [ranges[1].chr];
+        console.log('chromosomesConfig')
+        console.log(chromosomesConfig)
+        Object.assign(config, {
+          chromosomes: chromosomesConfig,
+          chrHeight: 400,
+          chrMargin: 50,
+          fullChromosomeLabels: true,
+          perspective: 'comparative'
+        });
+      }
+
+      delete chrBands;
+
+      ideogram = new Ideogram(config);
+    }
+
+    document.querySelector('#genes').addEventListener('blur', handleGene);
+    document.querySelector('#genes').addEventListener('keyup', handleGene);
+    document.querySelectorAll('.org-select').forEach(select => {
+      select.addEventListener('change', handleOrganism);
+    });
+    document.querySelectorAll('.backend-select').forEach(select => {
+      select.addEventListener('change', handleBackend);
+    });
+
+    createIdeogram();
 
   </script>
 </body>
