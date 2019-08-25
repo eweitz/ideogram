@@ -9,9 +9,10 @@
     a, a:hover, a:visited, a:active {color: #0366d6;}
     label {display: block; margin-bottom: 10px;}
     .left-select {position: absolute; left: 150px;}
-    #status-container {display: inline-block; margin-left: 186px;}
+    #status-container {display: inline-block; margin-left: 86px;}
     #error-container {color: red;}
-    #ideogram-container {margin-left: 325px;}
+    #ideogram-container {margin-left: 125px;}
+    #genes {width: 280px;}
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
   <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/homology@0.2.0/dist/homology.min.js"></script> -->
@@ -28,7 +29,7 @@
   <p>
     Compare gene locations across organisms.
   </p>
-  <div style="float: left; width: 200px;">
+  <div style="float: left; width: 350px;">
   <label for="genes">Genes: <input id="genes"/></label>
   <label for="org">
     Source organism:
@@ -92,6 +93,10 @@
       if (event.type === 'keyup' && event.keyCode !== 13) return;
 
       geneNames = event.target.value;
+
+      // Ignore when input value is unchanged
+      if (urlParams['genes'] === geneNames) return;
+
       updateGenesParams(geneNames);
 
       createIdeogram();
@@ -102,6 +107,7 @@
       var organism =
           event.target.value.split('(')[1].split(')')[0]
           .replace(' ', '-').toLowerCase();
+
       urlParams[event.target.id] = organism;
 
       updateGenesParams();
@@ -335,9 +341,6 @@
         config.chromosomesConfig = [loci1Chr, loci2Chr];
       }
 
-      console.log('orthologs')
-      console.log(orthologs)
-
       if (orthologs.length > 1) {
         // Multiple genomes
         Object.assign(config, {
@@ -352,8 +355,6 @@
         chromosomesConfig = {}
         chromosomesConfig[org1] = [ranges[0].chr];
         chromosomesConfig[org2] = [ranges[1].chr];
-        console.log('chromosomesConfig')
-        console.log(chromosomesConfig)
         Object.assign(config, {
           chromosomes: chromosomesConfig,
           chrHeight: 400,
