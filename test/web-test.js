@@ -2218,8 +2218,19 @@ describe('Ideogram', function() {
   it('should support collinear chromosome geometry', function(done) {
 
     function callback() {
-      var chr2CanvasBox = d3.select('#chr2-9606-canvas-1').nodes()[0].getBoundingClientRect();
+      var chr2CanvasBox, chrLabel, labelX, labelY;
+
+      chr2CanvasBox = d3.select('#chr2-9606-canvas-1').nodes()[0].getBoundingClientRect();
+
+      chrLabel = document.querySelector('#chr6-9606-chromosome-set text');
+      labelX = chrLabel.getAttribute('x');
+      labelY = chrLabel.getAttribute('y');
+
       assert.equal(chr2CanvasBox.x, 111);
+
+      assert.equal(labelX, '-8');
+      assert.equal(labelY, '30');
+
       done();
     }
 

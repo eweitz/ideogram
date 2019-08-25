@@ -21,7 +21,7 @@ function rearrangeChromosomes(chrSets, xOffsets, y, ideo) {
     taxid = chr.id.split('-')[1];
     orgIndex = ideo.config.taxids.indexOf(taxid);
     adjustedY = y + orgIndex * 200;
-    if (orgIndex === 0) {
+    if (orgIndex === 0 && ideo.config.multiorganism) {
       chrLabelY = 6;
       adjustedY += ideo.config.chrWidth * 2;
     } else {
