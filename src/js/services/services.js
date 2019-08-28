@@ -6,74 +6,46 @@ import {
   getTaxids, getOrganismFromEutils
 } from './organisms.js';
 
-function getNuccoreQueryString(gbUid, asmUid, recovering, ideo) {
+function getNuccoreLink(asmUid, ideo) {
   var qs;
 
   // Get a list of IDs for the chromosomes in this genome.
   //
-  // If this is our first pass, or if assembly is GenBank-only, or if
-  // a GenBank assembly was explicitly requested (GCA_), then query RefSeq
-  // sequences in Nucleotide DB.  Otherwise, query the lesser-known
-  // GenColl (Genomic Collections) DB.
-  if (hasGenBankAssembly(ideo) || typeof recovering !== 'undefined') {
+  // If assembly is GenBank-only or if a GenBank assembly was explicitly
+  // requested (GCA_), then query chromosomes sequences in Nucleotide DB via
+  // INSDC link.  (GenBank is the American INSDC repository.)
+  // Otherwise, query RefSeq chromosomes in Nucleotide DB.
+  if (hasGenBankAssembly(ideo)) {
     // TODO: account for GenBank-only
     qs = '&db=nuccore&linkname=assembly_nuccore_insdc&from_uid=' + asmUid;
+    return ideo.elink + qs;
   } else {
-    qs = '&db=nuccore&linkname=assembly_nuccore_refseq&from_uid=' + asmUid;
-  }
-
-  return qs;
-}
-
-function getAssemblyAndNuccoreLink(data, asmAndChrArray, recovering, ideo) {
-  var assembly, qs, gbUid, nuccoreLink, asmUid;
-
-  asmUid = data.result.uids[0];
-  assembly = data.result[asmUid];
-  // rsUid = assembly.rsuid; // RefSeq UID for this assembly
-  gbUid = assembly.gbuid; // GenBank UID
-
-  asmAndChrArray.push(assembly.assemblyaccession);
-
-  qs = getNuccoreQueryString(gbUid, asmUid, recovering, ideo);
-  nuccoreLink = ideo.elink + qs;
-
-  return [asmAndChrArray, nuccoreLink];
-}
-
-/**
- *  If the list of presumed chromosomes is longer than 100 elements, then
- * we've likely fetched scaffolds instead of chromosomes.  This
- * happens with e.g. Sus scrofa (pig).  Try recovering once via a
- * different query, and throw an error upon any subsequent failure.
- */
-function handleScaffoldData(data, asmAndChrArray, context) {
-  var assemblyAccession = asmAndChrArray[0],
-    linksets = data.linksets[0],
-    ideo = context.ideo;
-  if ('linksetdbs' in linksets && linksets.linksetdbs[0].links.length > 100) {
-    if (typeof context.recovering === 'undefined') {
-      ideo.getAssemblyAndChromosomesFromEutils(context.callback, true);
-      return Promise.reject(
-        'Unexpectedly found genomic scaffolds instead of chromosomes ' +
-        'while querying RefSeq.  Recovering.'
-      );
-    } else {
-      // Avoid flooding NCBI with EUtils requests.
-      throw Error(
-        'Failed to find chromosomes for genome ' + assemblyAccession
-      );
-    }
+    qs = ('&db=nuccore&dbfrom=assembly&linkname=assembly_nuccore_refseq&' +
+      'cmd=neighbor_history&from_uid=' + asmUid);
+    return d3.json(ideo.elink + qs)
+      .then(function(data) {
+        var webenv = data.linksets[0].webenv;
+        qs =
+          '&db=nuccore' +
+          '&term=%231+AND+%28' +
+            'sequence_from_chromosome[Properties]+OR+' +
+            'sequence_from_plastid[Properties]+OR+' +
+            'sequence_from_mitochondrion[Properties]%29' +
+          '&WebEnv=' + webenv + '&usehistory=y&retmax=1000';
+        return ideo.esearch + qs;
+      });
   }
 }
 
-function fetchNucleotideSummary(data, assemblyAccession, context) {
+function fetchNucleotideSummary(data, ideo) {
   var links, ntSummary;
 
-  handleScaffoldData(data, assemblyAccession, context);
-
-  links = data.linksets[0].linksetdbs[0].links.join(',');
-  ntSummary = context.ideo.esummary + '&db=nucleotide&id=' + links;
+  if ('esearchresult' in data) {
+    links = data.esearchresult.idlist.join(',');
+  } else {
+    links = data.linksets[0].linksetdbs[0].links.join(',');
+  }
+  ntSummary = ideo.esummary + '&db=nucleotide&id=' + links;
 
   return d3.json(ntSummary);
 }
@@ -195,26 +167,24 @@ function fetchAssemblySummary(data, ideo) {
  * EUtils web API.
  *
  * @param callback Function to call upon completion of this async method
- * @param recovering Boolean indicating attempt at failure recovery
  */
-function getAssemblyAndChromosomesFromEutils(callback, recovering) {
-  var asmSearchUrl, nuccoreLink,
+function getAssemblyAndChromosomesFromEutils(callback) {
+  var asmSearchUrl,
     asmAndChrArray = [],
-    ideo = this,
-    context = {callback: callback, recovering: recovering, ideo: ideo};
+    ideo = this;
 
   asmSearchUrl = getAssemblySearchUrl(ideo);
 
   d3.json(asmSearchUrl)
     .then(function(data) { return fetchAssemblySummary(data, ideo); })
     .then(function(data) {
-      [asmAndChrArray, nuccoreLink] =
-        getAssemblyAndNuccoreLink(data, asmAndChrArray, recovering, ideo);
-      return d3.json(nuccoreLink);
-    })
-    .then(function(data) {
-      return fetchNucleotideSummary(data, asmAndChrArray, context);
-    })
+      var asmUid, assembly;
+      asmUid = data.result.uids[0];
+      assembly = data.result[asmUid];
+      asmAndChrArray.push(assembly.assemblyaccession);
+      return getNuccoreLink(asmUid, ideo);
+    }).then(function(nuccoreLink) { return d3.json(nuccoreLink); })
+    .then(function(data) { return fetchNucleotideSummary(data, ideo); })
     .then(function(data) {
       asmAndChrArray = parseChromosomes(data.result, asmAndChrArray, ideo);
       return callback(asmAndChrArray);
