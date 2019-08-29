@@ -1590,7 +1590,7 @@ describe('Ideogram', function() {
   });
 
   it('should recover chromosomes when given scaffolds', function(done) {
-    // Tests use case from ../examples/vanilla/human.html
+    // Tests use case from ../examples/vanilla/eukaryotes?org=sus-scrofa
 
     function callback() {
       var numChromosomes = document.querySelectorAll('.chromosome').length;
@@ -1603,7 +1603,10 @@ describe('Ideogram', function() {
       onLoad: callback
     };
 
-    var ideogram = new Ideogram(config);
+    setTimeout(function() {
+      var ideogram = new Ideogram(config);
+    }, 2000);
+
   });
 
   // it('should not have race condition when init is quickly called multiple times', function(done) {
