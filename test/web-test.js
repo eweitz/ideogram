@@ -1,3 +1,4 @@
+/* eslint-disable no-new */
 /* eslint-disable spaced-comment */
 /* eslint-disable no-use-before-define */
 /* eslint-disable no-unused-vars */
@@ -1570,23 +1571,23 @@ describe('Ideogram', function() {
   // These tests fail due to an upstream breaking change in NCBI E-Utils.
   // Specifically, the Entrez GenColl database was retired without notice.
   //
-  // it('should support GenBank accessions in "assembly" parameter', function(done) {
-  //   // Tests use case for non-default assemblies.
-  //   // GCA_000002125.2 is commonly called HuRef
-  //   // https://www.ncbi.nlm.nih.gov/assembly/GCA_000002125.2
+  it('should support GenBank accessions in "assembly" parameter', function(done) {
+    // Tests use case for non-default assemblies.
+    // GCA_000002125.2 is commonly called HuRef
+    // https://www.ncbi.nlm.nih.gov/assembly/GCA_000002125.2
 
-  //   function callback() {
-  //     var chr1Length = ideogram.chromosomes['9606']['1'].length;
-  //     // For reference, see length section of LOCUS field in GenBank record at
-  //     // https://www.ncbi.nlm.nih.gov/nuccore/CM001609.2
-  //     assert.equal(chr1Length, 219475005);
-  //     done();
-  //   }
+    function callback() {
+      var chr1Length = ideogram.chromosomes['9606']['1'].length;
+      // For reference, see length section of LOCUS field in GenBank record at
+      // https://www.ncbi.nlm.nih.gov/nuccore/CM001609.2
+      assert.equal(chr1Length, 219475005);
+      done();
+    }
 
-  //   config.assembly = 'GCA_000002125.2';
-  //   config.onLoad = callback;
-  //   var ideogram = new Ideogram(config);
-  // });
+    config.assembly = 'GCA_000002125.2';
+    config.onLoad = callback;
+    var ideogram = new Ideogram(config);
+  });
 
   // it('should recover chromosomes when given scaffolds', function(done) {
   //   // Tests use case from ../examples/vanilla/human.html
@@ -1627,10 +1628,9 @@ describe('Ideogram', function() {
   //     var numHumanChromosomes = 24; // (22,X,Y)
   //     var numChromosomes = ideo.chromosomesArray.length;
 
-  //     if(numTimesOnLoadHasBeenCalled === 1) {
+  //     if (numTimesOnLoadHasBeenCalled === 1) {
   //       assert.equal(numChromosomes, numChimpChromosomes);
-  //     }
-  //     else if(numTimesOnLoadHasBeenCalled === 2) {
+  //     } else if (numTimesOnLoadHasBeenCalled === 2) {
   //       assert.equal(numChromosomes, numHumanChromosomes);
   //       done();
   //     }

@@ -1,4 +1,4 @@
-import {d3, hasGenBankAssembly} from '../lib';
+import {d3} from '../lib';
 import {
   esearch, esummary, elink, getAssemblySearchUrl
 } from './eutils-config.js';
@@ -11,41 +11,31 @@ function getNuccoreLink(asmUid, ideo) {
 
   // Get a list of IDs for the chromosomes in this genome.
   //
-  // If assembly is GenBank-only or if a GenBank assembly was explicitly
-  // requested (GCA_), then query chromosomes sequences in Nucleotide DB via
-  // INSDC link.  (GenBank is the American INSDC repository.)
-  // Otherwise, query RefSeq chromosomes in Nucleotide DB.
-  if (hasGenBankAssembly(ideo)) {
-    // TODO: account for GenBank-only
-    qs = '&db=nuccore&linkname=assembly_nuccore_insdc&from_uid=' + asmUid;
-    return ideo.elink + qs;
-  } else {
-    qs = ('&db=nuccore&dbfrom=assembly&linkname=assembly_nuccore_refseq&' +
-      'cmd=neighbor_history&from_uid=' + asmUid);
-    return d3.json(ideo.elink + qs)
-      .then(function(data) {
-        var webenv = data.linksets[0].webenv;
-        qs =
-          '&db=nuccore' +
-          '&term=%231+AND+%28' +
-            'sequence_from_chromosome[Properties]+OR+' +
-            'sequence_from_plastid[Properties]+OR+' +
-            'sequence_from_mitochondrion[Properties]%29' +
-          '&WebEnv=' + webenv + '&usehistory=y&retmax=1000';
-        return ideo.esearch + qs;
-      });
-  }
+  // Query chromosomes sequences in Nucleotide DB (nuccore) via
+  // Assembly DB E-Utils link.
+  qs = ('&db=nuccore&dbfrom=assembly&linkname=assembly_nuccore&' +
+    'cmd=neighbor_history&from_uid=' + asmUid);
+
+  return d3.json(ideo.elink + qs)
+    .then(function(data) {
+      var webenv = data.linksets[0].webenv;
+      qs =
+        '&db=nuccore' +
+        '&term=%231+AND+%28' +
+          'sequence_from_chromosome[Properties]+OR+' +
+          'sequence_from_plastid[Properties]+OR+' +
+          'sequence_from_mitochondrion[Properties]%29' +
+        '&WebEnv=' + webenv + '&usehistory=y&retmax=1000';
+      return ideo.esearch + qs;
+    });
 }
 
 function fetchNucleotideSummary(data, ideo) {
-  var links, ntSummary;
+  var ids, ntSummary;
 
-  if ('esearchresult' in data) {
-    links = data.esearchresult.idlist.join(',');
-  } else {
-    links = data.linksets[0].linksetdbs[0].links.join(',');
-  }
-  ntSummary = ideo.esummary + '&db=nucleotide&id=' + links;
+  ids = data.esearchresult.idlist.join(',');
+
+  ntSummary = ideo.esummary + '&db=nucleotide&id=' + ids;
 
   return d3.json(ntSummary);
 }
