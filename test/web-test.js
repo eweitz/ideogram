@@ -1589,25 +1589,22 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  // it('should recover chromosomes when given scaffolds', function(done) {
-  //   // Tests use case from ../examples/vanilla/human.html
+  it('should recover chromosomes when given scaffolds', function(done) {
+    // Tests use case from ../examples/vanilla/human.html
 
-  //   function callback() {
-  //     var numChromosomes = document.querySelectorAll('.chromosome').length;
-  //     assert.equal(numChromosomes, 20);
-  //     done();
-  //   }
+    function callback() {
+      var numChromosomes = document.querySelectorAll('.chromosome').length;
+      assert.equal(numChromosomes, 20);
+      done();
+    }
 
-  //   var config = {
-  //     organism: 'Sus scrofa', // pig
-  //     onLoad: callback
-  //   };
+    var config = {
+      organism: 'Sus scrofa', // pig
+      onLoad: callback
+    };
 
-  //   setTimeout(function() {
-  //     var ideogram = new Ideogram(config);
-  //   }, 1500);
-
-  // });
+    var ideogram = new Ideogram(config);
+  });
 
   // it('should not have race condition when init is quickly called multiple times', function(done) {
   //   // Verifies handling for a Plotly use case.
