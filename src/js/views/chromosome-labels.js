@@ -2,7 +2,6 @@ import {d3} from '../lib';
 
 function getChrSetLabelLines(d, i, ideo) {
   var lines;
-
   if (d.name.indexOf(' ') === -1) {
     lines = [d.name];
   } else {

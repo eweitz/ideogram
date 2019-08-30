@@ -1,3 +1,4 @@
+/* eslint-disable no-new */
 /* eslint-disable spaced-comment */
 /* eslint-disable no-use-before-define */
 /* eslint-disable no-unused-vars */
@@ -1570,91 +1571,90 @@ describe('Ideogram', function() {
   // These tests fail due to an upstream breaking change in NCBI E-Utils.
   // Specifically, the Entrez GenColl database was retired without notice.
   //
-  // it('should support GenBank accessions in "assembly" parameter', function(done) {
-  //   // Tests use case for non-default assemblies.
-  //   // GCA_000002125.2 is commonly called HuRef
-  //   // https://www.ncbi.nlm.nih.gov/assembly/GCA_000002125.2
+  it('should support GenBank accessions in "assembly" parameter', function(done) {
+    // Tests use case for non-default assemblies.
+    // GCA_000002125.2 is commonly called HuRef
+    // https://www.ncbi.nlm.nih.gov/assembly/GCA_000002125.2
 
-  //   function callback() {
-  //     var chr1Length = ideogram.chromosomes['9606']['1'].length;
-  //     // For reference, see length section of LOCUS field in GenBank record at
-  //     // https://www.ncbi.nlm.nih.gov/nuccore/CM001609.2
-  //     assert.equal(chr1Length, 219475005);
-  //     done();
-  //   }
+    function callback() {
+      var chr1Length = ideogram.chromosomes['9606']['1'].length;
+      // For reference, see length section of LOCUS field in GenBank record at
+      // https://www.ncbi.nlm.nih.gov/nuccore/CM001609.2
+      assert.equal(chr1Length, 219475005);
+      done();
+    }
 
-  //   config.assembly = 'GCA_000002125.2';
-  //   config.onLoad = callback;
-  //   var ideogram = new Ideogram(config);
-  // });
+    config.assembly = 'GCA_000002125.2';
+    config.onLoad = callback;
+    var ideogram = new Ideogram(config);
+  });
 
-  // it('should recover chromosomes when given scaffolds', function(done) {
-  //   // Tests use case from ../examples/vanilla/human.html
+  it('should recover chromosomes when given scaffolds', function(done) {
+    // Tests use case from ../examples/vanilla/eukaryotes?org=sus-scrofa
 
-  //   function callback() {
-  //     var numChromosomes = document.querySelectorAll('.chromosome').length;
-  //     assert.equal(numChromosomes, 20);
-  //     done();
-  //   }
+    function callback() {
+      var numChromosomes = document.querySelectorAll('.chromosome').length;
+      assert.equal(numChromosomes, 20);
+      done();
+    }
 
-  //   var config = {
-  //     organism: 'Sus scrofa', // pig
-  //     onLoad: callback
-  //   };
+    var config = {
+      organism: 'Sus scrofa', // pig
+      onLoad: callback
+    };
 
-  //   setTimeout(function() {
-  //     var ideogram = new Ideogram(config);
-  //   }, 1500);
+    setTimeout(function() {
+      var ideogram = new Ideogram(config);
+    }, 2000);
 
-  // });
+  });
 
-  // it('should not have race condition when init is quickly called multiple times', function(done) {
-  //   // Verifies handling for a Plotly use case.
-  //   // See https://github.com/eweitz/ideogram/pull/154
+  it('should not have race condition when init is quickly called multiple times', function(done) {
+    // Verifies handling for a Plotly use case.
+    // See https://github.com/eweitz/ideogram/pull/154
 
-  //   /**
-  //   * Differences in remotely cached (static) vs. uncached (queried via EUtils)
-  //   * response times is the likely cause of the race condition that's tested
-  //   * against here.
-  //   **/
+    /**
+    * Differences in remotely cached (static) vs. uncached (queried via EUtils)
+    * response times is the likely cause of the race condition that's tested
+    * against here.
+    **/
 
-  //   var numTimesOnLoadHasBeenCalled = 0;
+    var numTimesOnLoadHasBeenCalled = 0;
 
-  //   function testRaceCondition() {
-  //     var ideo = this;
-  //     numTimesOnLoadHasBeenCalled++;
-  //     var numChimpChromosomes = 25; // See e.g. https://eweitz.github.io/ideogram/eukaryotes?org=pan-troglodytes
-  //     var numHumanChromosomes = 24; // (22,X,Y)
-  //     var numChromosomes = ideo.chromosomesArray.length;
+    function testRaceCondition() {
+      var ideo = this;
+      numTimesOnLoadHasBeenCalled++;
+      var numChimpChromosomes = 25; // See e.g. https://eweitz.github.io/ideogram/eukaryotes?org=pan-troglodytes
+      var numHumanChromosomes = 24; // (22,X,Y)
+      var numChromosomes = ideo.chromosomesArray.length;
 
-  //     if(numTimesOnLoadHasBeenCalled === 1) {
-  //       assert.equal(numChromosomes, numChimpChromosomes);
-  //     }
-  //     else if(numTimesOnLoadHasBeenCalled === 2) {
-  //       assert.equal(numChromosomes, numHumanChromosomes);
-  //       done();
-  //     }
-  //   }
+      if (numTimesOnLoadHasBeenCalled === 1) {
+        assert.equal(numChromosomes, numChimpChromosomes);
+      } else if (numTimesOnLoadHasBeenCalled === 2) {
+        assert.equal(numChromosomes, numHumanChromosomes);
+        done();
+      }
+    }
 
-  //   function startRaceCondition() {
-  //     new Ideogram({
-  //       organism: 'pan-troglodytes',
-  //       dataDir: '/dist/data/bands/native/',
-  //       onLoad: testRaceCondition
-  //     });
-  //     new Ideogram({
-  //       organism: 'human',
-  //       dataDir: '/dist/data/bands/native/',
-  //       onLoad: testRaceCondition
-  //     });
-  //   }
+    function startRaceCondition() {
+      new Ideogram({
+        organism: 'pan-troglodytes',
+        dataDir: '/dist/data/bands/native/',
+        onLoad: testRaceCondition
+      });
+      new Ideogram({
+        organism: 'human',
+        dataDir: '/dist/data/bands/native/',
+        onLoad: testRaceCondition
+      });
+    }
 
-  //   var ideogram = new Ideogram({
-  //     organism: 'human',
-  //     dataDir: '/dist/data/bands/native/',
-  //     onLoad: startRaceCondition
-  //   });
-  // });
+    var ideogram = new Ideogram({
+      organism: 'human',
+      dataDir: '/dist/data/bands/native/',
+      onLoad: startRaceCondition
+    });
+  });
 
   // eweitz, 2018-10-18: This test passes locally and the apicoplast displays
   // as expected in https://eweitz.github.io/ideogram/eukaryotes?org=plasmodium-falciparum,
