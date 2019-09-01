@@ -3,21 +3,14 @@ import {d3} from '../lib';
 /**
  *  Returns an NCBI taxonomy identifier (taxid) for the configured organism
  */
-function getTaxidFromEutils(callback, ideo) {
-  var organism, taxonomySearch, taxid;
+function getTaxidFromEutils(orgName, ideo) {
+  var taxonomySearch, taxid;
 
-  organism = ideo.config.organism;
-
-  taxonomySearch = ideo.esearch + '&db=taxonomy&term=' + organism;
+  taxonomySearch = ideo.esearch + '&db=taxonomy&term=' + orgName;
 
   d3.json(taxonomySearch).then(function(data) {
     taxid = data.esearchresult.idlist[0];
-    if (typeof ideo.config.taxids === 'undefined') {
-      ideo.config.taxids = [taxid];
-    } else {
-      ideo.config.taxids.push(taxid);
-    }
-    return callback(taxid);
+    return taxid;
   });
 }
 
@@ -90,18 +83,12 @@ function setTaxidData(taxid, ideo) {
     });
 }
 
-function setTaxidAndAssemblyAndChromosomes(callback, ideo) {
-  var assembly, chromosomes, taxidPromise, taxid, taxids;
+function setTaxidAndAssemblyAndChromosomes(orgName, callback, ideo) {
+  console.log('setTaxidAndAssemblyAndChromosomes')
+  var assembly, chromosomes, taxid, taxids;
 
-  taxidPromise = new Promise(function(resolve) {
-    getTaxidFromEutils(resolve, ideo);
-  });
-
-  taxidPromise
-    .then(function(data) {
-      taxid = data;
-      return setTaxidData(taxid, ideo);
-    })
+  getTaxidFromEutils(orgName, ideo)
+    .then(function(taxid) { return setTaxidData(taxid, ideo); })
     .then(function(asmChrTaxidsArray) {
       assembly = asmChrTaxidsArray[0];
       chromosomes = asmChrTaxidsArray[1];
@@ -115,9 +102,8 @@ function setTaxidAndAssemblyAndChromosomes(callback, ideo) {
     });
 }
 
-function isOrganismSupported(sourceOrg, targetTaxid, ideo) {
-  var org = sourceOrg,
-    taxid = targetTaxid,
+function isOrganismSupported(sourceOrg, ideo) {
+  var org = sourceOrg
     ideoOrg = ideo.organisms[taxid];
 
   return (
@@ -125,6 +111,32 @@ function isOrganismSupported(sourceOrg, targetTaxid, ideo) {
     ideoOrg.commonName.toLowerCase() === org.toLowerCase() ||
     ideoOrg.scientificName.toLowerCase() === org.toLowerCase()
   );
+}
+
+// Augment "organisms" metadata with for any requested organism that is
+// not natively supported (i.e., not in organism-metadata.js).
+function populateNonNativeOrg(orgs, ideo) {
+  var org,
+    augmentedOrganismMetadata = {};
+
+  return new Promise(function(resolve) {
+    for (i = 0; i < orgs.length; i++) {
+      org = orgs[i];
+      if (isOrganismSupported(org, ideo) === false) {
+        getTaxidFromEutils(org, ideo).then(function(taxid) {
+          augmentedOrganismMetadata[taxid] = {
+            scientificName: org,
+            commonName: org
+          };
+          console.log(augmentedOrganismMetadata);
+          if (org === orgs[org.length - 1]) {
+            Object.assign(ideo.organisms, augmentedOrganismMetadata);
+            resolve();
+          }
+        });
+      }
+    }
+  });
 }
 
 function prepareTmpChrsAndTaxids(ideo) {
@@ -135,20 +147,18 @@ function prepareTmpChrsAndTaxids(ideo) {
   tmpChrs = {};
   orgs = (config.multiorganism) ? config.organism : [config.organism];
 
+  populateNonNativeOrg(orgs, ideo);
+
   for (i = 0; i < orgs.length; i++) {
-    // Gets a list of taxids from common organism names
-    org = orgs[i];
     for (taxid in ideo.organisms) {
-      if (isOrganismSupported(org, taxid, ideo)) {
-        taxids.push(taxid);
-        if (config.multiorganism) {
-          if (typeof config.chromosomes !== 'undefined') {
-            // Adjusts 'chromosomes' configuration parameter to make object
-            // keys use taxid instead of common organism name
-            tmpChrs[taxid] = config.chromosomes[org];
-          } else {
-            tmpChrs = null;
-          }
+      taxids.push(taxid);
+      if (config.multiorganism) {
+        if (typeof config.chromosomes !== 'undefined') {
+          // Adjusts 'chromosomes' configuration parameter to make object
+          // keys use taxid instead of common organism name
+          tmpChrs[taxid] = config.chromosomes[org];
+        } else {
+          tmpChrs = null;
         }
       }
     }
@@ -157,9 +167,9 @@ function prepareTmpChrsAndTaxids(ideo) {
   return [tmpChrs, taxids];
 }
 
-function getTaxidsForOrganismInConfig(taxids, callback, ideo) {
-
-  var tmpChrs;
+function getTaxidsForOrganismsInConfig(callback, ideo) {
+  console.log('getTaxidsForOrganismInConfig')
+  var tmpChrs, taxids;
 
   [tmpChrs, taxids] = prepareTmpChrsAndTaxids(ideo);
   if (
@@ -168,6 +178,7 @@ function getTaxidsForOrganismInConfig(taxids, callback, ideo) {
   ) {
     setTaxidAndAssemblyAndChromosomes(callback, ideo);
   } else {
+    console.log('taxids')
     ideo.config.taxids = taxids;
     if (ideo.config.multiorganism) {
       ideo.config.chromosomes = tmpChrs;
@@ -183,7 +194,12 @@ function getIsMultiorganism(taxidInit, ideo) {
   );
 }
 
-function getTaxidsForOrganismNotInConfig(taxids, taxidInit, callback, ideo) {
+/**
+ * Configure Ideogram taxids when 'organism' is not in ideo.config
+ */
+function getTaxidsForOrganismsNotInConfig(taxidInit, callback, ideo) {
+  var taxids;
+
   if (ideo.config.multiorganism) {
     ideo.coordinateSystem = 'bp';
     if (taxidInit) {
@@ -204,7 +220,8 @@ function getTaxidsForOrganismNotInConfig(taxids, taxidInit, callback, ideo) {
  * multiorganism, and adjusts chromosomes parameters as needed
  **/
 function getTaxids(callback) {
-  var taxids, taxidInit,
+  console.log('getTaxids')
+  var taxidInit,
     ideo = this;
 
   taxidInit = 'taxid' in ideo.config;
@@ -212,9 +229,9 @@ function getTaxids(callback) {
   ideo.config.multiorganism = getIsMultiorganism(taxidInit, ideo);
 
   if ('organism' in ideo.config) {
-    getTaxidsForOrganismInConfig(taxids, callback, ideo);
+    getTaxidsForOrganismsInConfig(callback, ideo);
   } else {
-    getTaxidsForOrganismNotInConfig(taxids, taxidInit, callback, ideo);
+    getTaxidsForOrganismsNotInConfig(taxidInit, callback, ideo);
   }
 }
 
