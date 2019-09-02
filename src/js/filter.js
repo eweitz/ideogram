@@ -71,8 +71,8 @@ function initCrossFilter() {
     facet = ideo.facets[i];
     ideo.annotsByFacet[facet] =
       ideo.crossfilter.dimension(function(d) {
-          return d[facet];
-        });
+        return d[facet];
+      });
   }
 
   if ('filterSelections' in ideo) {
@@ -153,4 +153,4 @@ function filterAnnots(selections) {
   return counts;
 }
 
-export {unpackAnnots, packAnnots, initCrossFilter, filterAnnots}
+export {unpackAnnots, packAnnots, initCrossFilter, filterAnnots};

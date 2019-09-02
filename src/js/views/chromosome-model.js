@@ -1,10 +1,11 @@
 function getPixelAndOtherData(bands, chr, hasBands, ideo) {
-  var i, band, csLength, width, cs,
+  var i, band, csLength, width, maxLength,
     pxStop = 0,
+    taxid = chr.id.split('-')[1],
     cs = ideo.coordinateSystem,
     chrHeight = ideo.config.chrHeight;
 
-  for (var i = 0; i < bands.length; i++) {
+  for (i = 0; i < bands.length; i++) {
     band = bands[i];
     csLength = band[cs].stop - band[cs].start;
 
@@ -14,7 +15,12 @@ function getPixelAndOtherData(bands, chr, hasBands, ideo) {
     if (ideo._layout._isRotated) {
       width = chrHeight * csLength / chr.length;
     } else {
-      width = chrHeight * chr.length / ideo.maxLength[cs] * csLength / chr.length;
+      if (ideo.config.chromosomeScale === 'relative') {
+        maxLength = ideo.maxLength[taxid][cs];
+      } else {
+        maxLength = ideo.maxLength[cs];
+      }
+      width = chrHeight * chr.length / maxLength * csLength / chr.length;
     }
     bands[i].px = {start: pxStop, stop: pxStop + width, width: width};
 
@@ -43,12 +49,17 @@ function getChrScale(chr, hasBands, ideo) {
   var chrHeight = ideo.config.chrHeight,
     chrLength = chr.length,
     maxLength = ideo.maxLength,
-    scale = {}
+    taxid = chr.id.split('-')[1],
+    scale = {};
 
   if (ideo.config.multiorganism === true) {
     scale.bp = 1;
     // chr.scale.bp = band.iscn.stop / band.bp.stop;
-    scale.iscn = chrHeight * chrLength / maxLength.bp;
+    if (ideo.config.chromosomeScale === 'relative') {
+      scale.iscn = chrHeight * chrLength / maxLength[taxid].bp;
+    } else {
+      scale.iscn = chrHeight * chrLength / maxLength.bp;
+    }
   } else {
     scale.bp = chrHeight / maxLength.bp;
     if (hasBands) {
@@ -60,7 +71,8 @@ function getChrScale(chr, hasBands, ideo) {
 }
 
 function getChromosomePixels(chr) {
-  var bands, chrHeight, pxStop, hasBands,
+  var bands, chrHeight, pxStop, hasBands, maxLength,
+    taxid = chr.id.split('-')[1],
     ideo = this;
 
   bands = chr.bands;
@@ -71,7 +83,12 @@ function getChromosomePixels(chr) {
   if (hasBands) {
     [bands, chr, pxStop] = getPixelAndOtherData(bands, chr, hasBands, ideo);
   } else {
-    pxStop = chrHeight * chr.length / ideo.maxLength[ideo.coordinateSystem];
+    if (ideo.config.chromosomeScale === 'relative') {
+      maxLength = ideo.maxLength[taxid][ideo.coordinateSystem];
+    } else {
+      maxLength = ideo.maxLength[ideo.coordinateSystem];
+    }
+    pxStop = chrHeight * chr.length / maxLength;
   }
 
   chr.width = pxStop;
@@ -131,7 +148,7 @@ function getChromosomeModel(bands, chrName, taxid, chrIndex) {
 
   hasBands = (typeof bands !== 'undefined');
 
-  chr = getChrModelScaffold(chr, bands, chrName, ideo)
+  chr = getChrModelScaffold(chr, bands, chrName, ideo);
 
   chr.chrIndex = chrIndex;
   chr.id = 'chr' + chr.name + '-' + taxid;

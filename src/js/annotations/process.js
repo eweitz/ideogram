@@ -102,7 +102,7 @@ function addAnnot(annot, keys, ra, omittedAnnots, annots, m, ideo) {
   if (ideo.config.annotationTracks) {
     annots = addClientAnnot(annots, annot, ra, m, ideo);
   } else if (keys[3] === 'trackIndex' && ideo.numAvailTracks !== 1) {
-    [annots, omittedAnnots] = 
+    [annots, omittedAnnots] =
       addSparseServerAnnot(annot, ra, omittedAnnots, annots, m, ideo);
   // } else if (
   //   keys.length > 3 &&
@@ -137,7 +137,7 @@ function addAnnotsForChr(annots, omittedAnnots, annotsByChr, chrModel,
     annot.stopPx = ideo.convertBpToPx(chrModel, annot.stop);
     annot.px = Math.round((annot.startPx + annot.stopPx) / 2);
 
-    [annots, omittedAnnots] = 
+    [annots, omittedAnnots] =
       addAnnot(annot, keys, ra, omittedAnnots, annots, m, ideo);
   }
 
@@ -222,9 +222,9 @@ function processAnnotData(rawAnnots) {
   [annots, omittedAnnots] = addAnnots(rawAnnots, keys, ideo);
   annots = orderAnnotContainers(annots, ideo);
 
-  sendTrackAndAnnotWarnings(omittedAnnots, ideo)
+  sendTrackAndAnnotWarnings(omittedAnnots, ideo);
 
   return annots;
 }
 
-export {processAnnotData}
+export {processAnnotData};

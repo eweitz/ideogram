@@ -44,10 +44,11 @@ function setTaxids(ideo) {
 }
 
 /**
- * Updates bands array, sets ideo.maxLength
+ * Gets bands array for given chromosomes, sets ideo.maxLength
  */
-function updateBandsArray(chromosome, bandsByChr, bandsArray, ideo) {
-  var bands, chrLength;
+function getBandsArray(chromosome, bandsByChr, taxid, ideo) {
+  var bands, chrLength,
+    bandsArray = [];
 
   bands = bandsByChr[chromosome];
   bandsArray.push(bands);
@@ -57,12 +58,22 @@ function updateBandsArray(chromosome, bandsByChr, bandsArray, ideo) {
     bp: bands[bands.length - 1].bp.stop
   };
 
-  if (chrLength.iscn > ideo.maxLength.iscn) {
-    ideo.maxLength.iscn = chrLength.iscn;
+  if (taxid in ideo.maxLength === false) {
+    ideo.maxLength[taxid] = {bp: 0, iscn: 0};
   }
 
-  if (chrLength.bp > ideo.maxLength.bp) {
-    ideo.maxLength.bp = chrLength.bp;
+  if (chrLength.iscn > ideo.maxLength[taxid].iscn) {
+    ideo.maxLength[taxid].iscn = chrLength.iscn;
+    if (chrLength.iscn > ideo.maxLength.iscn) {
+      ideo.maxLength.iscn = chrLength.iscn;
+    }
+  }
+
+  if (chrLength.bp > ideo.maxLength[taxid].bp) {
+    ideo.maxLength[taxid].bp = chrLength.bp;
+    if (chrLength.bp > ideo.maxLength.bp) {
+      ideo.maxLength.bp = chrLength.bp;
+    }
   }
 
   return bandsArray;
@@ -72,22 +83,29 @@ function updateBandsArray(chromosome, bandsByChr, bandsArray, ideo) {
  * Updates bandsArray, sets ideo.config.chromosomes and ideo.numChromosomes
  */
 function setChrsByTaxidsWithBands(taxid, chrs, bandsArray, ideo) {
-  var bandData, bandsByChr, chromosome, k;
+  var bandData, bandsByChr, chromosome, k, chrBandsArray;
 
   bandData = ideo.bandData[taxid];
 
-  bandsByChr = ideo.parseBands(bandData, taxid, chrs);
+  bandsByChr = parseBands(bandData, taxid, chrs);
 
   chrs = Object.keys(bandsByChr).sort(function(a, b) {
     return naturalSort(a, b);
   });
 
+  if (
+    'chromosomes' in ideo.config === false ||
+    ideo.config.chromosomes === null
+  ) {
+    ideo.config.chromosomes = {};
+  }
   ideo.config.chromosomes[taxid] = chrs.slice();
   ideo.numChromosomes += ideo.config.chromosomes[taxid].length;
 
   for (k = 0; k < chrs.length; k++) {
     chromosome = chrs[k];
-    bandsArray = updateBandsArray(chromosome, bandsByChr, bandsArray, ideo);
+    chrBandsArray = getBandsArray(chromosome, bandsByChr, taxid, ideo);
+    bandsArray = bandsArray.concat(chrBandsArray);
   }
 
   return bandsArray;
@@ -126,29 +144,34 @@ function reportPerformance(t0, ideo) {
  * hide overlapping band labels, and execute callbacks defined by client code
  */
 function processBandData() {
-  var bandsArray, j, taxid, taxids, chrs, chrsByTaxid,
-    t0 = new Date().getTime(),
-    ideo = this;
+  var bandsArray, j, taxid, taxids, chrs,
+    ideo = this,
+    config = ideo.config,
+    t0 = new Date().getTime();
 
   bandsArray = [];
 
   [taxid, taxids] = setTaxids(ideo);
 
-  if ('chromosomes' in ideo.config) chrs = ideo.config.chromosomes;
-  if (ideo.config.multiorganism) chrsByTaxid = chrs;
-  ideo.config.chromosomes = {};
+  if ('chromosomes' in config) {
+    if (config.multiorganism) {
+      // Copy object
+      chrs = config.chromosomes;
+    } else {
+      // Copy array by value
+      chrs = config.chromosomes.slice();
+    }
+  }
 
   for (j = 0; j < taxids.length; j++) {
     taxid = taxids[j];
-    if (ideo.config.multiorganism) chrs = chrsByTaxid[taxid];
     bandsArray = setChromosomesByTaxid(taxid, chrs, bandsArray, ideo);
   }
-
   reportPerformance(t0, ideo);
   return bandsArray;
 }
 
 export {
-  parseBands, drawBandLabels, getBandColorGradients, processBandData,
+  drawBandLabels, getBandColorGradients, processBandData,
   setBandsToShow, hideUnshownBandLabels, drawBandLabelText, drawBandLabelStalk
-}
+};

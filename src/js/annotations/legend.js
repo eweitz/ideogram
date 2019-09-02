@@ -70,13 +70,13 @@ function writeLegend(ideo) {
     if ('name' in list) labels = '<span>' + list.name + '</span>';
     svg = '<svg width="' + lineHeight + '">';
     [labels, svg] = getListItems(labels, svg, list);
-    svg += '</svg>'
+    svg += '</svg>';
     content += svg + '<ul>' + labels + '</ul>';
   }
 
   var target = d3.select(ideo.config.container + ' #_ideogramOuterWrap');
-  target.append('style').html(legendStyle)
+  target.append('style').html(legendStyle);
   target.append('div').attr('id', '_ideogramLegend').html(content);
 }
 
-export {writeLegend}
+export {writeLegend};

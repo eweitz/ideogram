@@ -1,6 +1,6 @@
 {
   "name": "ideogram",
-  "version": "1.11.0",
+  "version": "1.12.0",
   "description": "Chromosome visualization with D3.js",
   "main": "src/js/index.js",
   "directories": {
@@ -18,6 +18,12 @@
     "build": "node scripts/js/prepublish.js; webpack -p --mode production && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
     "watch": "webpack --watch && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
     "start": "webpack-dev-server --mode development"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "./node_modules/.bin/eslint src/ test/ --quiet",
+      "pre-push": "npm test"
+    }
   },
   "repository": {
     "type": "git",
@@ -58,6 +64,7 @@
     "eslint-config-google": "^0.5.0",
     "eslint-config-standard": "^5.3.1",
     "eslint-plugin-promise": "^3.3.0",
+    "husky": "^3.0.3",
     "istanbul-instrumenter-loader": "^3.0.1",
     "karma": "^4.0.1",
     "karma-chai": "^0.1.0",

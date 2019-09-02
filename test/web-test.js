@@ -1,3 +1,7 @@
+/* eslint-disable no-new */
+/* eslint-disable spaced-comment */
+/* eslint-disable no-use-before-define */
+/* eslint-disable no-unused-vars */
 // Most of these tests use Mocha's async support.
 // Helpful:
 //  - http://martinfowler.com/articles/asyncJS.html
@@ -17,7 +21,7 @@ function getSvgText(selector) {
 
 describe('Ideogram', function() {
 
-  this.timeout(20000); // Account for NCBI E-Utils API brownout
+  this.timeout(10000); // Account for NCBI E-Utils API brownout
 
   var config = {};
 
@@ -218,7 +222,7 @@ describe('Ideogram', function() {
         chr2 = chrs['10090']['2'],
         r1Band = chr1.bands[8],
         r2Band = chr2.bands[18],
-        range1, range2, range3, range4, range5, range6,
+        range1, range2, range3, range4, range5, range6, i,
         syntenicRegions = [];
 
       range1 = {
@@ -227,7 +231,7 @@ describe('Ideogram', function() {
         stop: r1Band.bp.stop
       };
 
-      for (var i = 1; i < 20; i++) {
+      for (i = 1; i < 20; i++) {
         range2 = {
           chr: chr2,
           start: 6000000 * i,
@@ -236,7 +240,7 @@ describe('Ideogram', function() {
         syntenicRegions.push({r1: range1, r2: range2, color: '#F55'});
       }
 
-      var range3 = {
+      range3 = {
         chr: chr1,
         start: 125000000,
         stop: 126000000
@@ -244,18 +248,18 @@ describe('Ideogram', function() {
 
       range4 = {
         chr: chr2,
-        start: 1500000 * i,
-        stop: 3600000 * i
+        start: 1500000 * 19,
+        stop: 3600000 * 19
       };
       syntenicRegions.push({r1: range3, r2: range4, opacity: 0.7});
 
-      var range5 = {
+      range5 = {
         chr: chr2,
         start: r2Band.bp.start,
         stop: r2Band.bp.stop
       };
 
-      for (var i = 1; i < 6; i++) {
+      for (i = 1; i < 6; i++) {
         range6 = {
           chr: chr1,
           start: 120000000 + (12000000 * i),
@@ -356,8 +360,6 @@ describe('Ideogram', function() {
       var numSyntenicRegions = document.getElementsByClassName('syntenicRegion').length;
       // console.log(d3.selectAll('.syntenicRegion'));
 
-      console.log(document.getElementsByClassName('syntenicRegion')[0][0]);
-
       assert.equal(numSyntenicRegions, 1, 'numSyntenicRegions');
 
       // Test related convenience methods
@@ -383,6 +385,100 @@ describe('Ideogram', function() {
 
     config.onLoad = callback;
     var ideogram = new Ideogram(config);
+  });
+
+  it('should show 3 syntenic regions in collinear vertical genomes', function(done) {
+    // Tests use case from ../examples/vanilla/compare-whole-genomes
+    // Used for comparing multiple whole genomes
+
+    function onIdeogramLoad() {
+      var chrs, chr1, chr4, humanTaxid, mouseTaxid;
+
+      humanTaxid = ideogram.getTaxid('human');
+      mouseTaxid = ideogram.getTaxid('mouse');
+
+      chrs = ideogram.chromosomes;
+      chr1 = chrs[humanTaxid]['1'];
+      chr4 = chrs[mouseTaxid]['4'];
+      chr19 = chrs[mouseTaxid]['19'];
+      syntenicRegions = [];
+
+      range1 = {
+        chr: chr1,
+        start: 11106531,
+        stop: 11262557,
+        orientation: 'reverse'
+      };
+
+      range2 = {
+        chr: chr4,
+        start: 148448582,
+        stop: 148557685
+      };
+      // range2 = {
+      //   chr: chr19,
+      //   start: 61431564,
+      //   stop: 61431565 // end of mouse chr19
+      // };
+
+      syntenicRegions.push({r1: range1, r2: range2});
+
+      var chr10 = chrs[humanTaxid]['10'];
+      var range3 = {
+        chr: chr10,
+        start: 87864470,
+        stop: 87965472
+      };
+      var range4 = {
+        chr: chr19,
+        start: 32758445,
+        stop: 32820028
+      };
+      syntenicRegions.push({r1: range3, r2: range4});
+
+      var range5 = {
+        chr: chr10,
+        start: 26216810,
+        stop: 26300961
+      };
+      var range6 = {
+        chr: chrs[mouseTaxid]['2'],
+        start: 22622663,
+        stop: 22690346
+      };
+      syntenicRegions.push({r1: range5, r2: range6});
+
+      ideogram.drawSynteny(syntenicRegions);
+
+      var selector1, selector3, line1, line3;
+
+      selector1 = '#chr1-9606_11106531_11262557___chr4-10090_148448582_148557685';
+      selector3 = '#chr10-9606_26216810_26300961___chr2-10090_22622663_22690346';
+
+      line1 = document.querySelector(selector1 + ' .syntenyBorder');
+      line3 = document.querySelector(selector3 + ' .syntenyBorder');
+
+      assert.equal(Math.round(line1.getAttribute('x1')), 23);
+      assert.equal(Math.round(line1.getAttribute('x2')), 220);
+      assert.equal(Math.round(line1.getAttribute('y1')), 14);
+
+      assert.equal(Math.round(line3.getAttribute('y1')), 315);
+      assert.equal(Math.round(line3.getAttribute('y2')), 52);
+      done();
+    }
+
+    config = {
+      organism: ['human', 'mouse'],
+      orientation: 'vertical',
+      geometry: 'collinear',
+      chromosomeScale: 'absolute',
+      chrHeight: 40,
+      chrMargin: 3,
+      dataDir: '/dist/data/bands/native/',
+      onLoad: onIdeogramLoad
+    };
+
+    ideogram = new Ideogram(config);
   });
 
   it('should have 1000 annotations in basic annotations example', function(done) {
@@ -526,11 +622,11 @@ describe('Ideogram', function() {
     ];
 
     annots = {
-      "keys": ["name", "start", "length", "trackIndex"],
-      "annots": [{"chr": "2", "annots": [
+      keys: ["name", "start", "length", "trackIndex"],
+      annots: [{chr: "2", annots: [
         ["rs1", 1, 0, 1], // track 1
         ["rs25", 5974955, 0, 2] // track 2
-      ]}]}
+      ]}]};
 
     var config = {
       // taxid: 9606,
@@ -624,13 +720,13 @@ describe('Ideogram', function() {
         document.querySelector('#filter_expression-level_extremely-high').click();
         return;
       }
-      
+
       assert.equal(numAnnotsInFirstBar, 2);
       document.querySelector('body').innerHTML = priorBody;
       done();
     }
 
-  var htmlScaffolding = '<div id="container"></div>' +
+    var htmlScaffolding = '<div id="container"></div>' +
       '<ul id="expression-level">' +
       'Expression level' +
     '<li>' +
@@ -739,7 +835,7 @@ describe('Ideogram', function() {
     };
 
     d3.selectAll('input').on('click', function() {
-      var tmp, checkedFilter, checkedFilters,  i, facet, counts, count,
+      var tmp, checkedFilter, checkedFilters, i, facet, counts, count,
         filterID, key,
         selections = {};
 
@@ -926,13 +1022,13 @@ describe('Ideogram', function() {
 
     var shape =
       'm0,0 l 0 ' + (2 * annotHeight) +
-      'l ' + annotHeight/2 + ' 0' +
+      'l ' + annotHeight / 2 + ' 0' +
       'l 0 -' + (2 * annotHeight) + 'z';
 
     var annotationTracks = [
       {id: 'pathogenicTrack', displayName: 'Pathogenic', color: '#F00', shape: shape},
       {id: 'uncertainSignificanceTrack', displayName: 'Uncertain significance', color: '#CCC', shape: shape},
-      {id: 'benignTrack',  displayName: 'Benign', color: '#8D4', shape: shape},
+      {id: 'benignTrack', displayName: 'Benign', color: '#8D4', shape: shape}
     ];
 
     var config = {
@@ -948,7 +1044,6 @@ describe('Ideogram', function() {
 
     ideogram = new Ideogram(config);
   });
-
 
   it('should have 114 annotations for BED file at remote URL', function(done) {
     // Tests use case from ../examples/vanilla/annotations-file-url.html
@@ -1009,7 +1104,7 @@ describe('Ideogram', function() {
 
     var annotationTracks = [
       {id: 'expressionLevelTrack', displayName: 'Expression level'},
-      {id: 'geneTypeTrack', displayName: 'Gene type'},
+      {id: 'geneTypeTrack', displayName: 'Gene type'}
     ];
 
     var config = {
@@ -1081,7 +1176,7 @@ describe('Ideogram', function() {
 
     var annotationTracks = [
       {id: 'expressionLevelTrack', displayName: 'Expression level'},
-      {id: 'geneTypeTrack', displayName: 'Gene type'},
+      {id: 'geneTypeTrack', displayName: 'Gene type'}
     ];
 
     var config = {
@@ -1140,8 +1235,8 @@ describe('Ideogram', function() {
       var pterEnd = getTerEnd("p"),
         firstAnnotEnd = d3.selectAll("#chr1-9606 .annot").nodes()[0].getBBox().x,
         qterEnd = getTerEnd("q"),
-        tmp = d3.selectAll("#chr1-9606 .annot").nodes(),
-        tmp = tmp[tmp.length - 1].getBBox(),
+        pretmp = d3.selectAll("#chr1-9606 .annot").nodes(),
+        tmp = pretmp[pretmp.length - 1].getBBox(),
         lastAnnotEnd = tmp.x + tmp.width;
 
       // console.log("pterEnd - firstAnnotEnd: " + (pterEnd - firstAnnotEnd));
@@ -1385,7 +1480,7 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-   it('should show three unbanded, annotated primate genomes in one page', function(done) {
+  it('should show three unbanded, annotated primate genomes in one page', function(done) {
     // Tests use case from ../examples/vanilla/multiple-primates.html
 
     var config, containerIDs, id, i, container,
@@ -1466,7 +1561,7 @@ describe('Ideogram', function() {
       config.container = '#' + id;
       config.organism = id;
       config.annotations = orgConfigs[i].annotations;
-      new Ideogram(config);
+      var ideogram = new Ideogram(config);
     }
   });
 
@@ -1476,91 +1571,90 @@ describe('Ideogram', function() {
   // These tests fail due to an upstream breaking change in NCBI E-Utils.
   // Specifically, the Entrez GenColl database was retired without notice.
   //
-  // it('should support GenBank accessions in "assembly" parameter', function(done) {
-  //   // Tests use case for non-default assemblies.
-  //   // GCA_000002125.2 is commonly called HuRef
-  //   // https://www.ncbi.nlm.nih.gov/assembly/GCA_000002125.2
+  it('should support GenBank accessions in "assembly" parameter', function(done) {
+    // Tests use case for non-default assemblies.
+    // GCA_000002125.2 is commonly called HuRef
+    // https://www.ncbi.nlm.nih.gov/assembly/GCA_000002125.2
 
-  //   function callback() {
-  //     var chr1Length = ideogram.chromosomes['9606']['1'].length;
-  //     // For reference, see length section of LOCUS field in GenBank record at
-  //     // https://www.ncbi.nlm.nih.gov/nuccore/CM001609.2
-  //     assert.equal(chr1Length, 219475005);
-  //     done();
-  //   }
+    function callback() {
+      var chr1Length = ideogram.chromosomes['9606']['1'].length;
+      // For reference, see length section of LOCUS field in GenBank record at
+      // https://www.ncbi.nlm.nih.gov/nuccore/CM001609.2
+      assert.equal(chr1Length, 219475005);
+      done();
+    }
 
-  //   config.assembly = 'GCA_000002125.2';
-  //   config.onLoad = callback;
-  //   var ideogram = new Ideogram(config);
-  // });
+    config.assembly = 'GCA_000002125.2';
+    config.onLoad = callback;
+    var ideogram = new Ideogram(config);
+  });
 
-  // it('should recover chromosomes when given scaffolds', function(done) {
-  //   // Tests use case from ../examples/vanilla/human.html
+  it('should recover chromosomes when given scaffolds', function(done) {
+    // Tests use case from ../examples/vanilla/eukaryotes?org=sus-scrofa
 
-  //   function callback() {
-  //     var numChromosomes = document.querySelectorAll('.chromosome').length;
-  //     assert.equal(numChromosomes, 20);
-  //     done();
-  //   }
+    function callback() {
+      var numChromosomes = document.querySelectorAll('.chromosome').length;
+      assert.equal(numChromosomes, 20);
+      done();
+    }
 
-  //   var config = {
-  //     organism: 'Sus scrofa', // pig
-  //     onLoad: callback
-  //   };
+    var config = {
+      organism: 'Sus scrofa', // pig
+      onLoad: callback
+    };
 
-  //   setTimeout(function() {
-  //     var ideogram = new Ideogram(config);
-  //   }, 1500);
+    setTimeout(function() {
+      var ideogram = new Ideogram(config);
+    }, 2000);
 
-  // });
+  });
 
-   // it('should not have race condition when init is quickly called multiple times', function(done) {
-  //   // Verifies handling for a Plotly use case.
-  //   // See https://github.com/eweitz/ideogram/pull/154
+  it('should not have race condition when init is quickly called multiple times', function(done) {
+    // Verifies handling for a Plotly use case.
+    // See https://github.com/eweitz/ideogram/pull/154
 
-  //   /**
-  //   * Differences in remotely cached (static) vs. uncached (queried via EUtils)
-  //   * response times is the likely cause of the race condition that's tested
-  //   * against here.
-  //   **/
+    /**
+    * Differences in remotely cached (static) vs. uncached (queried via EUtils)
+    * response times is the likely cause of the race condition that's tested
+    * against here.
+    **/
 
-  //   var numTimesOnLoadHasBeenCalled = 0;
+    var numTimesOnLoadHasBeenCalled = 0;
 
-  //   function testRaceCondition() {
-  //     var ideo = this;
-  //     numTimesOnLoadHasBeenCalled++;
-  //     var numChimpChromosomes = 25; // See e.g. https://eweitz.github.io/ideogram/eukaryotes?org=pan-troglodytes
-  //     var numHumanChromosomes = 24; // (22,X,Y)
-  //     var numChromosomes = ideo.chromosomesArray.length;
+    function testRaceCondition() {
+      var ideo = this;
+      numTimesOnLoadHasBeenCalled++;
+      var numChimpChromosomes = 25; // See e.g. https://eweitz.github.io/ideogram/eukaryotes?org=pan-troglodytes
+      var numHumanChromosomes = 24; // (22,X,Y)
+      var numChromosomes = ideo.chromosomesArray.length;
 
-  //     if(numTimesOnLoadHasBeenCalled === 1) {
-  //       assert.equal(numChromosomes, numChimpChromosomes);
-  //     }
-  //     else if(numTimesOnLoadHasBeenCalled === 2) {
-  //       assert.equal(numChromosomes, numHumanChromosomes);
-  //       done();
-  //     }
-  //   }
+      if (numTimesOnLoadHasBeenCalled === 1) {
+        assert.equal(numChromosomes, numChimpChromosomes);
+      } else if (numTimesOnLoadHasBeenCalled === 2) {
+        assert.equal(numChromosomes, numHumanChromosomes);
+        done();
+      }
+    }
 
-  //   function startRaceCondition() {
-  //     new Ideogram({
-  //       organism: 'pan-troglodytes',
-  //       dataDir: '/dist/data/bands/native/',
-  //       onLoad: testRaceCondition
-  //     });
-  //     new Ideogram({
-  //       organism: 'human',
-  //       dataDir: '/dist/data/bands/native/',
-  //       onLoad: testRaceCondition
-  //     });
-  //   }
+    function startRaceCondition() {
+      new Ideogram({
+        organism: 'pan-troglodytes',
+        dataDir: '/dist/data/bands/native/',
+        onLoad: testRaceCondition
+      });
+      new Ideogram({
+        organism: 'human',
+        dataDir: '/dist/data/bands/native/',
+        onLoad: testRaceCondition
+      });
+    }
 
-  //   var ideogram = new Ideogram({
-  //     organism: 'human',
-  //     dataDir: '/dist/data/bands/native/',
-  //     onLoad: startRaceCondition
-  //   });
-  // });
+    var ideogram = new Ideogram({
+      organism: 'human',
+      dataDir: '/dist/data/bands/native/',
+      onLoad: startRaceCondition
+    });
+  });
 
   // eweitz, 2018-10-18: This test passes locally and the apicoplast displays
   // as expected in https://eweitz.github.io/ideogram/eukaryotes?org=plasmodium-falciparum,
@@ -1760,7 +1854,7 @@ describe('Ideogram', function() {
       container = '<div id="' + id + '"></div>';
       document.querySelector('body').innerHTML += container;
       config.container = '#' + id;
-      new Ideogram(config);
+      var ideogram = new Ideogram(config);
     }
 
   });
@@ -1840,7 +1934,6 @@ describe('Ideogram', function() {
   //   ideogram2 = new Ideogram(config2);
   //
   // });
-
 
   it('should show XX chromosomes for a diploid human female', function(done) {
     // Tests use case from ../examples/vanilla/ploidy-basic.html
@@ -2125,11 +2218,21 @@ describe('Ideogram', function() {
   it('should support collinear chromosome geometry', function(done) {
 
     function callback() {
-      var chr2CanvasBox = d3.select('#chr2-9606-canvas-1').nodes()[0].getBoundingClientRect();
+      var chr2CanvasBox, chrLabel, labelX, labelY;
+
+      chr2CanvasBox = d3.select('#chr2-9606-canvas-1').nodes()[0].getBoundingClientRect();
+
+      chrLabel = document.querySelector('#chr6-9606-chromosome-set text');
+      labelX = chrLabel.getAttribute('x');
+      labelY = chrLabel.getAttribute('y');
+
       assert.equal(chr2CanvasBox.x, 111);
+
+      assert.equal(labelX, '-8');
+      assert.equal(labelY, '30');
+
       done();
     }
-
 
     var heatmaps = [
       {
@@ -2153,7 +2256,7 @@ describe('Ideogram', function() {
 
     var annotationTracks = [
       {id: 'expressionLevelTrack', displayName: 'Expression level'},
-      {id: 'geneTypeTrack', displayName: 'Gene type'},
+      {id: 'geneTypeTrack', displayName: 'Gene type'}
     ];
 
     config = {
@@ -2265,7 +2368,7 @@ describe('Ideogram', function() {
         return; // Don't send request for remote resource, as test passed
       }
       return originalFetch.apply(this, arguments);
-    }
+    };
 
     var accessToken = 'mockAccessToken';
 
@@ -2281,7 +2384,7 @@ describe('Ideogram', function() {
       annotationsLayout: 'heatmap-2d',
       annotationsPath: 'https://www.googleapis.com/storage/v1/b/ideogram-dev/o/oligodendroglioma%2finfercnv.observations.optimized.txt?alt=media',
       dataDir: '/dist/data/bands/native/'
-    }
+    };
 
     ideogram = new Ideogram(config);
   });

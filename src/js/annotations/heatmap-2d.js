@@ -3,7 +3,7 @@
  * 2D heatmaps enable showing many (100+) tracks of data in one dimension,
  * for features (e.g. genes) along a dimension of genomic coordinates in
  * chromosome context.
- * 
+ *
  * TO DO:
  * - Horizontal orientation
  * - Multiple chromosomes
@@ -17,7 +17,7 @@ import {getHeatmapAnnotColor} from './heatmap-lib';
  * Add one canvas that will contain all annotations.  One canvas per chromosome.
  */
 function writeCanvas(chr, ideoHeight, width, ideo) {
-  var left,  canvas, context, id;
+  var left, canvas, context, id;
 
   id = chr.id + '-canvas'; // e.g. chr1-9606-canvas
   left = (ideo.config.chrWidth * 2) + ideo.config.annotationHeight - 0.5;
@@ -40,7 +40,7 @@ function writeCanvas(chr, ideoHeight, width, ideo) {
  * These annotations are 2D; each annotation has many values, each on a track.
  */
 function fillCanvasAnnotValues(annot, context, ideo) {
-  var i, annot, context, x, values,
+  var i, x, values,
     annotHeight = ideo.config.annotationHeight,
     ideoMarginTop = ideo._layout.margin.top;
 
@@ -91,8 +91,7 @@ function drawHeatmaps2d(annotContainers, ideo) {
 function add2dAnnotsForChr(annots, omittedAnnots, annotsByChr, chrModel,
   m, keys, ideo) {
   var j, k, annot, ra, stop, stopPx, color,
-    thresholds = ideo.config.heatmapThresholds,
-    omittedAnnots = [];
+    thresholds = ideo.config.heatmapThresholds;
 
   for (j = 0; j < annotsByChr.annots.length; j++) {
     ra = annotsByChr.annots[j];
@@ -125,4 +124,4 @@ function add2dAnnotsForChr(annots, omittedAnnots, annotsByChr, chrModel,
   return [annots, omittedAnnots];
 }
 
-export {drawHeatmaps2d, add2dAnnotsForChr}
+export {drawHeatmaps2d, add2dAnnotsForChr};

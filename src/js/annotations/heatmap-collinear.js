@@ -22,7 +22,9 @@ function writeCanvases(chr, chrLeft, ideo) {
     trackWidth = ideo.config.annotationHeight + annotLabelHeight + 4;
     id = chr.id + '-canvas-' + j; // e.g. chr1-9606-canvas-0
     trackLeft = chrLeft;
-    if (chr.chrIndex > 0) trackLeft += (ideo.config.chrMargin * chr.chrIndex) - 1;
+    if (chr.chrIndex > 0) {
+      trackLeft += (ideo.config.chrMargin * chr.chrIndex) - 1;
+    }
     canvas = d3.select(ideo.config.container + ' #_ideogramInnerWrap')
       .append('canvas')
       .attr('id', id)
@@ -30,7 +32,7 @@ function writeCanvases(chr, chrLeft, ideo) {
       .attr('height', trackWidth)
       .style('position', 'absolute')
       .style('left', trackLeft + 'px')
-      .style('top', (trackWidth*j + 1) + 'px');
+      .style('top', (trackWidth * j + 1) + 'px');
     context = canvas.nodes()[0].getContext('2d');
     contextArray.push([context, chr]);
   }
@@ -56,7 +58,7 @@ function fillCanvasAnnots(annots, contextArray, ideo) {
     chr = contextArray[annot.trackIndex][1];
     context.fillStyle = annot.color;
     if (demarcateChrs) {
-      if (1 > annot.startPx || annot.startPx > chr.width - 1) continue;
+      if (annot.startPx < 1 || annot.startPx > chr.width - 1) continue;
       context.fillRect(annot.startPx, 1, 0.5, trackWidth);
     } else {
       context.fillRect(annot.startPx, annotLabelHeight + 1, 0.5, annotHeight);
@@ -112,5 +114,4 @@ function drawHeatmapsCollinear(annotContainers, ideo) {
   if (ideo.onDrawAnnotsCallback) ideo.onDrawAnnotsCallback();
 }
 
-
-export {drawHeatmapsCollinear, inflateHeatmaps}
+export {drawHeatmapsCollinear, inflateHeatmaps};

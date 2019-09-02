@@ -6,10 +6,7 @@
  * chromosomes.
  */
 
-
 import naturalSort from 'es6-natural-sort';
-
-import {d3} from '../lib';
 import {BedParser} from '../parsers/bed-parser';
 import {drawHeatmaps, deserializeAnnotsForHeatmap} from './heatmap';
 import {inflateThresholds} from './heatmap-lib';
@@ -24,8 +21,8 @@ import {drawSynteny} from './synteny';
 import {
   restoreDefaultTracks, setOriginalTrackIndexes, updateDisplayedTracks
 } from './filter';
-import {processAnnotData} from './process'
-import { ExpressionMatrixParser } from '../parsers/expression-matrix-parser';
+import {processAnnotData} from './process';
+import {ExpressionMatrixParser} from '../parsers/expression-matrix-parser';
 
 function initNumTracksHeightAndBarWidth(ideo, config) {
   var annotHeight;
@@ -78,6 +75,7 @@ function initAnnotSettings() {
     initNumTracksHeightAndBarWidth(ideo, config);
   } else {
     ideo.config.annotTracksHeight = 0;
+    ideo.config.numAnnotTracks = 0;
   }
 
   if (typeof config.annotationsColor === 'undefined') {
@@ -158,7 +156,8 @@ function fetchAnnots(annotsUrl) {
 
   extension = (is2dHeatmap ? '' : validateAnnotsUrl(annotsUrl));
 
-  ideo.fetch(annotsUrl, 'text').then(function(text) {
+  ideo.fetch(annotsUrl, 'text')
+    .then(function(text) {
       ideo.rawAnnotsResponse = text;
       if (is2dHeatmap) {
         var parser = new ExpressionMatrixParser(text, ideo);
@@ -213,4 +212,4 @@ export {
   drawProcessedAnnots, drawSynteny, startHideAnnotTooltipTimeout,
   showAnnotTooltip, onWillShowAnnotTooltip, setOriginalTrackIndexes,
   afterRawAnnots
-}
+};

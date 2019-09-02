@@ -82,7 +82,7 @@ function getDataDir() {
     if ('src' in script && ideogramInLeaf) {
       tmp = script.src.split('//');
       protocol = tmp[0];
-      tmp = '/' + tmp[1].split('/').slice(0,-2).join('/');
+      tmp = '/' + tmp[1].split('/').slice(0, -2).join('/');
       dataDir = protocol + '//' + tmp + '/data/bands/native/';
       return dataDir;
     }
@@ -118,7 +118,7 @@ function fetch(url, contentType) {
     headers = new Headers();
 
   if (config.accessToken) {
-    headers = new Headers({'Authorization': 'Bearer ' + config.accessToken});
+    headers = new Headers({Authorization: 'Bearer ' + config.accessToken});
   }
 
   if (contentType === 'text') {

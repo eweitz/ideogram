@@ -1,84 +1,54 @@
-import {d3, hasGenBankAssembly} from '../lib';
+import {d3} from '../lib';
 import {
   esearch, esummary, elink, getAssemblySearchUrl
 } from './eutils-config.js';
 import {
-  getTaxidFromEutils, getTaxids, setTaxidAndAssemblyAndChromosomes,
-  setTaxidData, getOrganismFromEutils
+  getTaxids, getOrganismFromEutils
 } from './organisms.js';
 
-function getNuccoreQueryString(gbUid, asmUid, recovering, ideo) {
+/**
+ * Get a URL to ESearch the NCBI Nucleotide DB for an Assembly UID
+ */
+function getESearchUrlForChromosomes(asmUid, ideo) {
   var qs;
 
   // Get a list of IDs for the chromosomes in this genome.
   //
-  // If this is our first pass, or if assembly is GenBank-only, or if
-  // a GenBank assembly was explicitly requested (GCA_), then query RefSeq
-  // sequences in Nucleotide DB.  Otherwise, query the lesser-known
-  // GenColl (Genomic Collections) DB.
-  if (hasGenBankAssembly(ideo) || typeof recovering !== 'undefined') {
-    // TODO: account for GenBank-only
-    qs = '&db=nuccore&linkname=assembly_nuccore_insdc&from_uid=' + asmUid;
-  } else {
-    qs = '&db=nuccore&linkname=assembly_nuccore_refseq&from_uid=' + asmUid;
-  }
+  // Query chromosomes sequences in Nucleotide DB (nuccore) via
+  // Assembly DB E-Utils link.
+  qs = ('&db=nuccore&dbfrom=assembly&linkname=assembly_nuccore&' +
+    'cmd=neighbor_history&from_uid=' + asmUid);
 
-  return qs;
-}
-
-function getAssemblyAndNuccoreLink(data, asmAndChrArray, recovering, ideo) {
-  var assembly, qs, gbUid, nuccoreLink, asmUid;
-
-  asmUid = data.result.uids[0];
-  assembly = data.result[asmUid];
-  // rsUid = assembly.rsuid; // RefSeq UID for this assembly
-  gbUid = assembly.gbuid; // GenBank UID
-
-  asmAndChrArray.push(assembly.assemblyaccession);
-
-  qs = getNuccoreQueryString(gbUid, asmUid, recovering, ideo);
-  nuccoreLink = ideo.elink + qs;
-
-  return [asmAndChrArray, nuccoreLink];
+  return d3.json(ideo.elink + qs)
+    .then(function(data) {
+      var webenv = data.linksets[0].webenv;
+      qs =
+        '&db=nuccore' +
+        '&term=%231+AND+%28' +
+          'sequence_from_chromosome[Properties]+OR+' +
+          'sequence_from_plastid[Properties]+OR+' +
+          'sequence_from_mitochondrion[Properties]%29' +
+        '&WebEnv=' + webenv + '&usehistory=y&retmax=1000';
+      return ideo.esearch + qs;
+    });
 }
 
 /**
- *  If the list of presumed chromosomes is longer than 100 elements, then
- * we've likely fetched scaffolds instead of chromosomes.  This
- * happens with e.g. Sus scrofa (pig).  Try recovering once via a
- * different query, and throw an error upon any subsequent failure.
+ * Request basic data on a list of chromosome IDs from ESearch
  */
-function handleScaffoldData(data, asmAndChrArray, context) {
-  var assemblyAccession = asmAndChrArray[0],
-    linksets = data.linksets[0],
-    ideo = context.ideo;
-  if ('linksetdbs' in linksets && linksets.linksetdbs[0].links.length > 100) {
-    if (typeof context.recovering === 'undefined') {
-      ideo.getAssemblyAndChromosomesFromEutils(context.callback, true);
-      return Promise.reject(
-        'Unexpectedly found genomic scaffolds instead of chromosomes ' +
-        'while querying RefSeq.  Recovering.'
-      );
-    } else {
-      // Avoid flooding NCBI with EUtils requests.
-      throw Error(
-        'Failed to find chromosomes for genome ' + assemblyAccession
-      );
-    }
-  }
-}
-
-function fetchNucleotideSummary(data, assemblyAccession, context) {
-  var links, ntSummary;
-
-  handleScaffoldData(data, assemblyAccession, context);
-
-  links = data.linksets[0].linksetdbs[0].links.join(',');
-  ntSummary = context.ideo.esummary + '&db=nucleotide&id=' + links;
-
+function fetchNucleotideSummary(data, ideo) {
+  var ids, ntSummary;
+  ids = data.esearchresult.idlist.join(',');
+  ntSummary = ideo.esummary + '&db=nucleotide&id=' + ids;
   return d3.json(ntSummary);
 }
 
+/**
+ * Get name and type for mitochondrial chromosome
+ *
+ * See example of "MT" in yeast:
+ * https://eweitz.github.io/ideogram/eukaryotes?org=saccharomyces-cerevisiae
+ */
 function parseMitochondrion(result, ideo) {
   var type, cnIndex, chrName;
 
@@ -102,21 +72,38 @@ function parseMitochondrion(result, ideo) {
   return [chrName, type];
 }
 
+/**
+ * Get name and type for chloroplastic chromosome.
+ *
+ * Plants have chloroplasts.  See e.g. green algae:
+ * https://eweitz.github.io/ideogram/eukaryotes?org=micromonas-commoda
+ */
 function parseChloroplastOrPlastid(ideo) {
   // Plastid encountered with rice genome IRGSP-1.0 (GCF_001433935.1)
   if (ideo.config.showNonNuclearChromosomes) {
     return ['CP', 'chloroplast'];
-  } 
+  }
   return [null, null];
 }
 
+/**
+ * Get name and type for apicoplast chromosome
+ *
+ * Plasmodium falciparum (malaria parasite) has such a chromosome, see e.g.:
+ * https://eweitz.github.io/ideogram/eukaryotes?org=plasmodium-falciparum
+ */
 function parseApicoplast(ideo) {
   if (ideo.config.showNonNuclearChromosomes) {
     return ['AP', 'apicoplast'];
-  } 
+  }
   return [null, null];
 }
 
+/**
+ * Get name and type for nuclear chromosome
+ *
+ * These are typical chromosomes, like chromosome 1.
+ */
 function parseNuclear(result) {
   var type, cnIndex, chrName;
 
@@ -132,6 +119,9 @@ function parseNuclear(result) {
   return [chrName, type];
 }
 
+/**
+ * Get name and type of any chromosome object from NCBI Nucleotide ESummary
+ */
 function getChrNameAndType(result, ideo) {
   var genome = result.genome;
   if (genome === 'mitochondrion') {
@@ -146,7 +136,7 @@ function getChrNameAndType(result, ideo) {
 }
 
 function parseChromosome(result, ideo) {
-  var chrName, type, chromosome, result,
+  var chrName, type, chromosome;
 
   [chrName, type] = getChrNameAndType(result, ideo);
 
@@ -159,8 +149,9 @@ function parseChromosome(result, ideo) {
   return chromosome;
 }
 
-function parseChromosomes(results, asmAndChrArray, ideo) {
-  var x, chromosome,
+function parseChromosomes(results, ideo) {
+  var x, chromosome, seenChrId,
+    seenChrs = {},
     chromosomes = [];
 
   for (x in results) {
@@ -168,18 +159,26 @@ function parseChromosomes(results, asmAndChrArray, ideo) {
     if (x === 'uids') continue;
 
     chromosome = parseChromosome(results[x], ideo);
-    chromosomes.push(chromosome);
+    seenChrId = chromosome.name + '_' + chromosome.length;
+    if (chromosome.type !== null && seenChrId in seenChrs === false) {
+      // seenChrs accounts for duplicate chromosomes seen with
+      // pig (Sus scrofa), likely GenBank and RefSeq copies.
+      chromosomes.push(chromosome);
+    }
+
+    seenChrs[seenChrId] = 1;
   }
 
   chromosomes = chromosomes.sort(Ideogram.sortChromosomes);
 
   ideo.coordinateSystem = 'bp';
 
-  asmAndChrArray.push(chromosomes);
-
-  return asmAndChrArray;
+  return chromosomes;
 }
 
+/**
+ * Request ESummary data from an ESearch on a genome assembly
+ */
 function fetchAssemblySummary(data, ideo) {
   var asmUid, asmSummaryUrl;
 
@@ -191,41 +190,41 @@ function fetchAssemblySummary(data, ideo) {
 }
 
 /**
- * Returns names and lengths of chromosomes for an organism's best-known
- * genome assembly, or for a specified assembly.  Gets data from NCBI
- * EUtils web API.
+ * Returns assembly accession, as well as names and lengths of chromosomes for
+ * an organism's best-known genome assembly, or for a specified assembly.
+ *
+ * Gets data from NCBI EUtils web API.
  *
  * @param callback Function to call upon completion of this async method
- * @param recovering Boolean indicating attempt at failure recovery
  */
-function getAssemblyAndChromosomesFromEutils(callback, recovering) {
-  var asmSearchUrl, nuccoreLink,
-    asmAndChrArray = [],
-    ideo = this,
-    context = {callback: callback, recovering: recovering, ideo: ideo};
+function getAssemblyAndChromosomesFromEutils(callback) {
+  var assemblyAccession,
+    ideo = this;
 
-  asmSearchUrl = getAssemblySearchUrl(ideo);
-
+  // Search for assembly, then
+  // get summary of that assembly, then
+  // get search URL for chromosomes in that assembly, then
+  // get search results containing chromosome IDs, then
+  // get summaries of each of those chromosome IDs, then
+  // format the chromosome summaries and pass them into callback function.
+  var asmSearchUrl = getAssemblySearchUrl(ideo);
   d3.json(asmSearchUrl)
     .then(function(data) { return fetchAssemblySummary(data, ideo); })
     .then(function(data) {
-      [asmAndChrArray, nuccoreLink] =
-        getAssemblyAndNuccoreLink(data, asmAndChrArray, recovering, ideo);
-      return d3.json(nuccoreLink);
-    })
+      var asmUid = data.result.uids[0];
+      assemblyAccession = data.result[asmUid];
+      return getESearchUrlForChromosomes(asmUid, ideo);
+    }).then(function(esearchUrl) { return d3.json(esearchUrl); })
+    .then(function(data) { return fetchNucleotideSummary(data, ideo); })
     .then(function(data) {
-      return fetchNucleotideSummary(data, asmAndChrArray, context);
-    })
-    .then(function(data) {
-      asmAndChrArray = parseChromosomes(data.result, asmAndChrArray, ideo);
-      return callback(asmAndChrArray);
+      var chromosomes = parseChromosomes(data.result, ideo);
+      return callback([assemblyAccession, chromosomes]);
     }, function(rejectedReason) {
       console.warn(rejectedReason);
     });
 }
 
 export {
-  esearch, esummary, elink, getTaxidFromEutils, getOrganismFromEutils,
-  getTaxids, setTaxidAndAssemblyAndChromosomes, setTaxidData,
-  getAssemblyAndChromosomesFromEutils
-}
+  esearch, esummary, elink, getOrganismFromEutils,
+  getTaxids, getAssemblyAndChromosomesFromEutils
+};

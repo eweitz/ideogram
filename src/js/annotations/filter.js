@@ -116,4 +116,4 @@ function setOriginalTrackIndexes(rawAnnots) {
   return rawAnnots;
 }
 
-export {restoreDefaultTracks, setOriginalTrackIndexes, updateDisplayedTracks}
+export {restoreDefaultTracks, setOriginalTrackIndexes, updateDisplayedTracks};

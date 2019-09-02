@@ -21,17 +21,16 @@ import {
   drawProcessedAnnots, drawSynteny, startHideAnnotTooltipTimeout,
   showAnnotTooltip, onWillShowAnnotTooltip, setOriginalTrackIndexes,
   afterRawAnnots
-} from './annotations/annotations'
+} from './annotations/annotations';
 
 import {
   esearch, esummary, elink,
-  getTaxidFromEutils, getOrganismFromEutils, getTaxids,
-  setTaxidAndAssemblyAndChromosomes, setTaxidData,
+  getOrganismFromEutils, getTaxids,
   getAssemblyAndChromosomesFromEutils
 } from './services/services';
 
 import {
-  parseBands, drawBandLabels, getBandColorGradients, processBandData,
+  drawBandLabels, getBandColorGradients, processBandData,
   setBandsToShow, hideUnshownBandLabels, drawBandLabelText, drawBandLabelStalk
 } from './bands/bands';
 
@@ -94,15 +93,11 @@ export default class Ideogram {
     this.esearch = esearch;
     this.esummary = esummary;
     this.elink = elink;
-    this.getTaxidFromEutils = getTaxidFromEutils;
-    this.setTaxidData = setTaxidData;
-    this.setTaxidAndAssemblyAndChromosomes = setTaxidAndAssemblyAndChromosomes;
     this.getOrganismFromEutils = getOrganismFromEutils;
     this.getTaxids = getTaxids;
     this.getAssemblyAndChromosomesFromEutils = getAssemblyAndChromosomesFromEutils;
 
     // Functions from bands.js
-    this.parseBands = parseBands;
     this.drawBandLabels = drawBandLabels;
     this.getBandColorGradients = getBandColorGradients;
     this.processBandData = processBandData;
@@ -154,7 +149,7 @@ export default class Ideogram {
     this.rotateAndToggleDisplay = rotateAndToggleDisplay;
     this.setOverflowScroll = setOverflowScroll;
 
-    this.configure(config)
+    this.configure(config);
   }
 
   /**
@@ -177,7 +172,6 @@ export default class Ideogram {
   static slugify(value) {
     return value.toLowerCase().replace(' ', '-');
   }
-
 
   /**
    * Sorts two chromosome objects by type and name

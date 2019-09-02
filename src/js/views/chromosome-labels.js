@@ -2,7 +2,6 @@ import {d3} from '../lib';
 
 function getChrSetLabelLines(d, i, ideo) {
   var lines;
-
   if (d.name.indexOf(' ') === -1) {
     lines = [d.name];
   } else {
@@ -21,7 +20,7 @@ function getChrSetLabelLines(d, i, ideo) {
     }
   }
 
-  return lines
+  return lines;
 }
 
 function renderChromosomeSetLabel(d, i, textElement, ideo) {
@@ -97,7 +96,7 @@ function drawChromosomeLabels() {
 }
 
 function getLabelPositionAttrs(scale) {
-  var x, y, scaleSvg, scale;
+  var x, y, scaleSvg;
 
   if (
     typeof (scale) !== 'undefined' &&
@@ -119,7 +118,7 @@ function getLabelPositionAttrs(scale) {
 
 function updateChrIndex(chrIndex, config) {
   if (config.numAnnotTracks > 1 || config.orientation === '') chrIndex -= 1;
-  return chrIndex
+  return chrIndex;
 }
 
 function rotateVerticalChromosomeLabels(chr, chrIndex, labelPosAttrs, ideo) {
@@ -184,4 +183,4 @@ function rotateChromosomeLabels(chr, chrIndex, orientation, scale) {
   }
 }
 
-export {drawChromosomeLabels, rotateChromosomeLabels}
+export {drawChromosomeLabels, rotateChromosomeLabels};

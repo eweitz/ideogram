@@ -1,5 +1,5 @@
 import {d3} from '../lib';
-import collinearizeChromosomes from '../collinear'
+import collinearizeChromosomes from '../collinear';
 
 function processLabels(config, ideo) {
   var i, chrID, t0C, t1C;
@@ -52,7 +52,7 @@ function waitForAndProcessAnnots(ideo) {
         if (
           !ideo.rawAnnots ||
           (ideo.rawAnnots && typeof ideo.rawAnnots.then !== 'undefined')
-          ) {
+        ) {
           // Ensure rawAnnots is defined and not a Promise (not "then"-able)
           checkAnnotData();
         } else {
@@ -117,4 +117,4 @@ function finishInit(bandsArray, t0) {
   if (ideo.onLoadCallback) ideo.onLoadCallback();
 }
 
-export {finishInit}
+export {finishInit};

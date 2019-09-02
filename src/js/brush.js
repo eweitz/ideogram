@@ -49,7 +49,6 @@ function getBasePairDomainAndPixelRange(chrModel, xOffset) {
     pxRange = [1],
     lastBand = chrModel.bands.slice(-1)[0];
 
-
   for (i = 0; i < chrModel.bands.length; i++) {
     band = chrModel.bands[i];
     bpDomain.push(band.bp.start);
@@ -110,7 +109,7 @@ function writeBrush(chrModel, from, to, xOffset, width, ideo) {
 }
 
 function setSelectedRegion(from, to, ideo) {
-   // Genomics web UIs are 1-based, fully closed.
+  // Genomics web UIs are 1-based, fully closed.
   // I.e. If start = 20 bp and stop = 10 bp, then extent = 11 bp.
   // Details:
   // http://genome.ucsc.edu/blog/the-ucsc-genome-browser-coordinate-counting-systems/

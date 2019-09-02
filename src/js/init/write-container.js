@@ -40,7 +40,7 @@ function getContainerSvgClass(ideo) {
     svgClass += 'faint';
   }
 
-  return svgClass
+  return svgClass;
 }
 
 /**
@@ -75,9 +75,9 @@ function writeContainerDom(taxid, ideo) {
 
   d3.select(ideo.config.container + ' #_ideogramOuterWrap').append('div')
     .attr('id', '_ideogramMiddleWrap') // needed for overflow and scrolling
-      .style('position', 'relative')
-      .style('overflow-x', 'auto')
-      .style('transform', 'translateZ(0)') // promote ideogram ele to own compositing layer
+    .style('position', 'relative')
+    .style('overflow-x', 'auto')
+    .style('transform', 'translateZ(0)') // promote ideogram ele to own compositing layer
     .append('div')
     .attr('id', '_ideogramInnerWrap') // needed for overflow and scrolling
     .append('svg')
@@ -109,4 +109,4 @@ function writeContainer(bandsArray, taxid, t0) {
   ideo.finishInit(bandsArray, t0);
 }
 
-export {writeContainer}
+export {writeContainer};
