@@ -11,6 +11,7 @@ function getRawBars(chrModels, ideo) {
         chrModel = chrModels[chr];
         lastBand = chrModel.bands[chrModel.bands.length - 1];
         numBins = Math.round(lastBand.px.stop / barWidth); // chrPxStop / barWidth
+        console.log(chr, numBins);
         bar = {chr: chr, annots: []};
         for (i = 0; i < numBins; i++) {
             px = i * barWidth - ideo.bump;

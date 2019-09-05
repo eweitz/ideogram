@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>Annotations, histogram | Ideogram</title>
-    <script type="text/javascript" src="../dist/js/ideogram.min.js"></script>
+    <script type="text/javascript" src="js/ideogram.min.js"></script>
     <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
     <style>
         body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
@@ -42,6 +42,7 @@
 </div>
 <div id="container"></div>
 <div id="container2"></div>
+<div id="container3"></div>
 <ul id="expression-level">
     Expression level
     <li>
@@ -213,6 +214,20 @@
     };
 
     var ideogram2 = new Ideogram(config2);
+
+    var config3 = {
+        container: '#container3',
+        orientation: 'vertical',
+        organism: 'human',
+        assembly: 'GRCh37',
+        chrHeight: 275,
+        annotationsPath: 'data/annotations/SRR562646.json',
+        annotationsLayout: 'barplot',
+        barWidth: 1,
+        filterable: true
+    };
+
+    var ideogram3 = new Ideogram(config3);
 </script>
 </body>
 </html>
