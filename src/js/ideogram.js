@@ -20,7 +20,7 @@ import {
   getHistogramBars, drawHeatmaps, deserializeAnnotsForHeatmap, fillAnnots,
   drawProcessedAnnots, drawSynteny, startHideAnnotTooltipTimeout,
   showAnnotTooltip, onWillShowAnnotTooltip, setOriginalTrackIndexes,
-  afterRawAnnots
+  afterRawAnnots, getBarplotBars
 } from './annotations/annotations';
 
 import {
@@ -78,6 +78,7 @@ export default class Ideogram {
     this.fetchAnnots = fetchAnnots;
     this.drawAnnots = drawAnnots;
     this.getHistogramBars = getHistogramBars;
+    this.getBarplostBars = getBarplotBars;
     this.drawHeatmaps = drawHeatmaps;
     this.deserializeAnnotsForHeatmap = deserializeAnnotsForHeatmap;
     this.fillAnnots = fillAnnots;

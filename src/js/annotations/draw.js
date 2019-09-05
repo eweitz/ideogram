@@ -1,5 +1,6 @@
 import {d3} from '../lib';
 import {writeHistogramAnnots} from './histogram';
+import {writeBarplotAnnots} from "./barplot";
 import {writeLegend} from './legend';
 
 function parseFriendlyAnnots(friendlyAnnots, rawAnnots) {
@@ -186,6 +187,8 @@ function drawAnnotsByLayoutType(layout, annots, ideo) {
   warnIfTooManyAnnots(layout, annots);
 
   if (layout === 'histogram') annots = ideo.getHistogramBars(annots);
+  if (layout === 'barplot') annots = ideo.getBarplostBars(annots);
+
 
   filledAnnots = ideo.fillAnnots(annots);
 
@@ -197,6 +200,8 @@ function drawAnnotsByLayoutType(layout, annots, ideo) {
     writeOverlayAnnots(chrAnnot, ideo);
   } else if (layout === 'histogram') {
     writeHistogramAnnots(chrAnnot, ideo);
+  } else if (layout === 'barplot') {
+    writeBarplotAnnots(chrAnnot, ideo)
   }
 }
 

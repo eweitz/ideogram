@@ -17,7 +17,8 @@
     "debugbuild": "node scripts/js/prepublish.js; webpack -p --display-modules --display-reasons && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
     "build": "node scripts/js/prepublish.js; webpack -p --mode production && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
     "watch": "webpack --watch && mkdir -p dist/data && cp -r data/{bands,annotations} dist/data",
-    "start": "webpack-dev-server --mode development"
+    "start": "webpack-dev-server --mode development",
+    "localbuild": "webpack -p --mode production"
   },
   "husky": {
     "hooks": {

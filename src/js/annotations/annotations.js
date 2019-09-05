@@ -17,6 +17,7 @@ import {
 } from './events';
 import {drawAnnots, drawProcessedAnnots} from './draw';
 import {getHistogramBars} from './histogram';
+import {getBarplotBars} from "./barplot";
 import {drawSynteny} from './synteny';
 import {
   restoreDefaultTracks, setOriginalTrackIndexes, updateDisplayedTracks
@@ -208,8 +209,8 @@ function fillAnnots(annots) {
 export {
   onLoadAnnots, onDrawAnnots, processAnnotData, restoreDefaultTracks,
   updateDisplayedTracks, initAnnotSettings, fetchAnnots, drawAnnots,
-  getHistogramBars, drawHeatmaps, deserializeAnnotsForHeatmap, fillAnnots,
+  getHistogramBars,  drawHeatmaps, deserializeAnnotsForHeatmap, fillAnnots,
   drawProcessedAnnots, drawSynteny, startHideAnnotTooltipTimeout,
   showAnnotTooltip, onWillShowAnnotTooltip, setOriginalTrackIndexes,
-  afterRawAnnots
+  afterRawAnnots, getBarplotBars
 };
