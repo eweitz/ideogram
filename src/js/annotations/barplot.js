@@ -44,7 +44,7 @@ function assignAnnotsToBars(annots, bars, chrModels, ideo) {
         for (i = 0; i < chrAnnots.length; i++) {
             annot = chrAnnots[i];
             px = annot.px - ideo.bump;
-            let var_count = annot["expression-level"];
+            let var_count = annot["count"];
             for (j = 0; j < barAnnots.length; j++) {
                 barPx = barAnnots[j].px;
                 nextBarPx = barPx + barWidth;
