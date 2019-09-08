@@ -114,12 +114,14 @@ function setChrsByTaxidsWithBands(taxid, chrs, bandsArray, ideo) {
 function setChromosomesByTaxid(taxid, chrs, bandsArray, ideo) {
   var chr, k;
 
-  if (ideo.coordinateSystem === 'iscn' || ideo.config.multiorganism) {
+  if (ideo.coordinateSystem === 'iscn') {
     bandsArray = setChrsByTaxidsWithBands(taxid, chrs, bandsArray, ideo);
   } else if (ideo.coordinateSystem === 'bp') {
     // If lacking band-level data
     ideo.config.chromosomes[taxid] = chrs.slice();
     ideo.numChromosomes += ideo.config.chromosomes[taxid].length;
+
+    delete chrs[String(taxid)];
 
     for (k = 0; k < chrs.length; k++) {
       chr = chrs[k];
