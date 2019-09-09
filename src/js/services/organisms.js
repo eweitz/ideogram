@@ -55,8 +55,6 @@ function setTaxidData(taxid, ideo) {
         seenChrs = {},
         chr;
 
-      window.chrBands = data.chrBands;
-
       for (var i = 0; i < chrBands.length; i++) {
         chr = chrBands[i].split(' ')[0];
         if (chr in seenChrs) {
@@ -93,7 +91,10 @@ function setAssemblyAndChromosomes(taxid, resolve, ideo) {
       console.log('in setTaxidData.then, assembly, chromosomes:')
       console.log(assembly)
       console.log(chromosomes)
-      ideo.config.chromosomes = chromosomes;
+      if ('chromosomes' in ideo.config === false) {
+        ideo.config.chromosomes = {};
+      }
+      ideo.config.chromosomes[taxid] = chromosomes;
       ideo.organisms[taxid].assemblies = {
         default: assembly
       };

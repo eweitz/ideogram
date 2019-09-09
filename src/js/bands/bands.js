@@ -18,30 +18,31 @@ import {
   drawBandLabelText, drawBandLabelStalk
 } from './draw';
 import {parseBands} from './parse';
+import {organismMetadata} from '../init/organism-metadata';
 
-/**
- * TODO: Should this be in services/organism.js?
- */
-function setTaxids(ideo) {
-  var i, taxid, taxids;
+// /**
+//  * TODO: Should this be in services/organism.js?
+//  */
+// function setTaxids(ideo) {
+//   var i, taxid, taxids;
 
-  if (ideo.config.multiorganism === true) {
-    ideo.coordinateSystem = 'bp';
-    taxids = ideo.config.taxids;
-    for (i = 0; i < taxids.length; i++) {
-      taxid = taxids[i];
-    }
-  } else {
-    if (typeof ideo.config.taxid === 'undefined') {
-      ideo.config.taxid = ideo.config.taxids[0];
-    }
-    taxid = ideo.config.taxid;
-    taxids = [taxid];
-    ideo.config.taxids = taxids;
-  }
+//   if (ideo.config.multiorganism === true) {
+//     ideo.coordinateSystem = 'bp';
+//     taxids = ideo.config.taxids;
+//     for (i = 0; i < taxids.length; i++) {
+//       taxid = taxids[i];
+//     }
+//   } else {
+//     if (typeof ideo.config.taxid === 'undefined') {
+//       ideo.config.taxid = ideo.config.taxids[0];
+//     }
+//     taxid = ideo.config.taxid;
+//     taxids = [taxid];
+//     ideo.config.taxids = taxids;
+//   }
 
-  return [taxid, taxids];
-}
+//   return [taxid, taxids];
+// }
 
 /**
  * Gets bands array for given chromosomes, sets ideo.maxLength
@@ -112,19 +113,17 @@ function setChrsByTaxidsWithBands(taxid, chrs, bandsArray, ideo) {
 }
 
 function setChromosomesByTaxid(taxid, chrs, bandsArray, ideo) {
-  var chr, k;
+  var chr, i;
 
-  if (ideo.coordinateSystem === 'iscn') {
+  if (ideo.coordinateSystem === 'iscn' || taxid in organismMetadata) {
     bandsArray = setChrsByTaxidsWithBands(taxid, chrs, bandsArray, ideo);
   } else if (ideo.coordinateSystem === 'bp') {
     // If lacking band-level data
-    ideo.config.chromosomes[taxid] = chrs.slice();
-    ideo.numChromosomes += ideo.config.chromosomes[taxid].length;
+    // ideo.config.chromosomes[taxid] = chrs.slice();
+    ideo.numChromosomes += chrs.length;
 
-    delete chrs[String(taxid)];
-
-    for (k = 0; k < chrs.length; k++) {
-      chr = chrs[k];
+    for (i = 0; i < chrs.length; i++) {
+      chr = chrs[i];
       if (chr.length > ideo.maxLength.bp) ideo.maxLength.bp = chr.length;
     }
   }
@@ -145,15 +144,15 @@ function reportPerformance(t0, ideo) {
  * cytoband figures and labels, apply initial graphical transformations,
  * hide overlapping band labels, and execute callbacks defined by client code
  */
-function processBandData() {
-  var bandsArray, j, taxid, taxids, chrs,
+function processBandData(taxid) {
+  var bandsArray, chrs,
     ideo = this,
     config = ideo.config,
     t0 = new Date().getTime();
 
   bandsArray = [];
 
-  [taxid, taxids] = setTaxids(ideo);
+  // [taxid, taxids] = setTaxids(ideo);
 
   if ('chromosomes' in config) {
     if (config.multiorganism) {
@@ -161,14 +160,12 @@ function processBandData() {
       chrs = config.chromosomes;
     } else {
       // Copy array by value
-      chrs = config.chromosomes.slice();
+      chrs = config.chromosomes[taxid].slice();
     }
   }
 
-  for (j = 0; j < taxids.length; j++) {
-    taxid = taxids[j];
-    bandsArray = setChromosomesByTaxid(taxid, chrs, bandsArray, ideo);
-  }
+  bandsArray = setChromosomesByTaxid(taxid, chrs, bandsArray, ideo);
+
   reportPerformance(t0, ideo);
   return bandsArray;
 }

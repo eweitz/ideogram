@@ -163,18 +163,13 @@ function getBandFileNames(taxid, bandFileNames, ideo) {
 }
 
 function prepareContainer(taxid, bandFileNames, t0, ideo) {
-  var bandsArray;
 
   if (shouldFetchBands(bandFileNames, taxid, ideo)) {
-    fetchBands(bandFileNames, taxid, t0, ideo);
+    return fetchBands(bandFileNames, taxid, t0, ideo);
   } else {
-    if (typeof chrBands !== 'undefined') {
-      // If bands already available,
-      // e.g. via <script> tag in initial page load
-      ideo.bandData[taxid] = chrBands;
-    }
-    bandsArray = ideo.processBandData();
-    ideo.writeContainer(bandsArray, taxid, t0);
+    return new Promise(function() {
+      return ideo.processBandData(taxid);
+    });
   }
 }
 
@@ -193,11 +188,8 @@ function initializeTaxids(ideo) {
 }
 
 function getBandsAndPrepareContainer(taxids, t0, ideo) {
-  var bandFileNames, i, taxid;
-
-  taxid = taxids[0];
-  ideo.config.taxid = taxid;
-  ideo.config.taxids = taxids;
+  var bandFileNames, i, taxid,
+    promises = [];
 
   bandFileNames = {};
   for (taxid in organismMetadata) {
@@ -207,8 +199,14 @@ function getBandsAndPrepareContainer(taxids, t0, ideo) {
   for (i = 0; i < taxids.length; i++) {
     taxid = String(taxids[i]);
     bandFileNames = getBandFileNames(taxid, bandFileNames, ideo);
-    prepareContainer(taxid, bandFileNames, t0, ideo);
+    promises.push(prepareContainer(taxid, bandFileNames, t0, ideo));
   }
+
+  Promise.all(promises).then(function(bandsArray) {
+    console.log('in Promise.all, bandsArray:');
+    console.log(bandsArray);
+    ideo.writeContainer(bandsArray, t0);
+  });
 }
 
 /**
@@ -234,6 +232,11 @@ function init(ideo) {
     ideoWait[containerId] = true;
     initializeTaxids(ideo)
       .then(function(taxids) {
+
+        var taxid = taxids[0];
+        ideo.config.taxid = taxid;
+        ideo.config.taxids = taxids;
+
         var t0 = new Date().getTime();
         getBandsAndPrepareContainer(taxids, t0, ideo);
 
