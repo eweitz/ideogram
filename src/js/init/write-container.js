@@ -91,7 +91,7 @@ function writeContainerDom(ideo) {
 /**
  * Writes the HTML elements that contain this ideogram instance.
  */
-function writeContainer(bandsArray, t0) {
+function writeContainer(t0) {
   var ideo = this;
 
   if (ideo.config.annotationsPath) {
@@ -106,7 +106,7 @@ function writeContainer(bandsArray, t0) {
 
   ideo.isOnlyIdeogram = document.querySelectorAll('#_ideogram').length === 1;
   writeTooltipContainer(ideo);
-  ideo.finishInit(bandsArray, t0);
+  ideo.finishInit(t0);
 }
 
 export {writeContainer};

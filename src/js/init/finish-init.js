@@ -82,13 +82,13 @@ function reportDebugTimings(config, t0, t0A) {
  * processes and draws annotations;
  * creates brush, emits notification of load completion, etc.
  */
-function finishInit(bandsArray, t0) {
+function finishInit(t0) {
   var t0A = new Date().getTime(),
     ideo = this,
     config = ideo.config,
     confAnnots = config.annotations;
 
-  ideo.initDrawChromosomes(bandsArray);
+  ideo.initDrawChromosomes();
 
   if (config.annotationsPath) waitForAndProcessAnnots(ideo);
 

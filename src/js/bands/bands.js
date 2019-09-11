@@ -167,7 +167,7 @@ function processBandData(taxid) {
   bandsArray = setChromosomesByTaxid(taxid, chrs, bandsArray, ideo);
 
   reportPerformance(t0, ideo);
-  return bandsArray;
+  return [taxid, bandsArray];
 }
 
 export {

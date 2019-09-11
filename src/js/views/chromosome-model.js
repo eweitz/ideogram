@@ -155,7 +155,7 @@ function getChromosomeModel(bands, chrName, taxid, chrIndex) {
 
   if (ideo.config.fullChromosomeLabels === true) {
     var name = this.organisms[taxid].scientificName.split(' ');
-    var scientificNameAbbr = name[0][0] + '. ' + name[1];
+    var scientificNameAbbr = name[0][0].toUpperCase() + '. ' + name[1];
     chr.name = scientificNameAbbr + ' chr' + chr.name;
   }
 

@@ -20,28 +20,27 @@ function isHeterogameticChromosome(chrModel, chrIndex, ideo) {
   );
 }
 
-function prepareChromosomes(bandsArray, chrs, taxid, chrIndex, ideo) {
-  var j, bands, chromosome, chrModel;
+function prepareChromosomes(bandsArray, chrs, taxid, ideo) {
+  var j, bands, chromosome, chrModel, chrIndex;
 
   for (j = 0; j < chrs.length; j++) {
     chromosome = chrs[j];
-    if ('bandsArray' in ideo) bands = bandsArray[chrIndex];
+    if (typeof bandsArray !== 'undefined') bands = bandsArray[j];
 
+    chrIndex = j + ideo.config.taxids.indexOf(taxid);
     chrModel = ideo.getChromosomeModel(bands, chromosome, taxid, chrIndex);
 
-    chrIndex += 1;
-
-    if (typeof chromosome !== 'string') chromosome = chromosome.name;
+    if (typeof chromosome !== 'string') {
+      chromosome = chromosome.name.split(' ').slice(-1)[0].replace('chr', '');
+    }
 
     ideo.chromosomes[taxid][chromosome] = chrModel;
     ideo.chromosomesArray.push(chrModel);
 
-    if (isHeterogameticChromosome(chrModel, chrIndex, ideo)) continue;
+    if (isHeterogameticChromosome(chrModel, j, ideo)) continue;
 
     ideo.drawChromosome(chrModel);
   }
-
-  return chrIndex;
 }
 
 function setCoordinateSystem(chrs, ideo) {
@@ -56,26 +55,23 @@ function setCoordinateSystem(chrs, ideo) {
 /**
  * Configures chromosome data and calls downstream chromosome drawing functions
  */
-function initDrawChromosomes(bandsArray) {
-  var ideo = this,
-    taxids = ideo.config.taxids,
-    chrIndex = 0,
-    taxid, i, chrs;
-
-  if (bandsArray.length > 0) ideo.bandsArray = {};
+function initDrawChromosomes() {
+  var taxid, i, chrs, bandsArray,
+    ideo = this,
+    taxids = ideo.config.taxids;
 
   for (i = 0; i < taxids.length; i++) {
     taxid = taxids[i];
     chrs = ideo.config.chromosomes[taxid];
+
+    bandsArray = ideo.bandsArray[taxid];
 
     setCoordinateSystem(chrs, ideo);
 
     ideo.chromosomes[taxid] = {};
     ideo.setSexChromosomes(chrs);
 
-    if ('bandsArray' in ideo) ideo.bandsArray[taxid] = bandsArray;
-
-    chrIndex = prepareChromosomes(bandsArray, chrs, taxid, chrIndex, ideo);
+    prepareChromosomes(bandsArray, chrs, taxid, ideo);
 
     if (ideo.config.showBandLabels) ideo.drawBandLabels(ideo.chromosomes);
     ideo.handleRotateOnClick();
@@ -165,10 +161,13 @@ function getBandFileNames(taxid, bandFileNames, ideo) {
 function prepareContainer(taxid, bandFileNames, t0, ideo) {
 
   if (shouldFetchBands(bandFileNames, taxid, ideo)) {
-    return fetchBands(bandFileNames, taxid, t0, ideo);
-  } else {
-    return new Promise(function() {
+    return fetchBands(bandFileNames, taxid, t0, ideo).then(function() {
       return ideo.processBandData(taxid);
+    });
+  } else {
+    return new Promise(function(resolve) {
+      ideo.processBandData(taxid);
+      resolve([taxid, undefined]);
     });
   }
 }
@@ -184,6 +183,7 @@ function initializeTaxids(ideo) {
     } else {
       ideo.getTaxids(resolve);
     }
+    
   });
 }
 
@@ -202,10 +202,23 @@ function getBandsAndPrepareContainer(taxids, t0, ideo) {
     promises.push(prepareContainer(taxid, bandFileNames, t0, ideo));
   }
 
-  Promise.all(promises).then(function(bandsArray) {
-    console.log('in Promise.all, bandsArray:');
-    console.log(bandsArray);
-    ideo.writeContainer(bandsArray, t0);
+  Promise.all(promises).then(function(taxidsAndBandsArrays) {
+    var taxidAndBandsArray, taxid, bandsArray;
+    console.log('in Promise.all, taxidsAndBandsArrays:');
+    console.log(taxidsAndBandsArrays);
+
+    for (i = 0; i < taxidsAndBandsArrays.length; i++) {
+      taxidAndBandsArray = taxidsAndBandsArrays[i];
+      taxid = taxidAndBandsArray[0];
+      bandsArray = taxidAndBandsArray[1];
+
+      if ('bandsArray' in ideo === false) {
+        ideo.bandsArray = {};
+      }
+
+      ideo.bandsArray[taxid] = bandsArray;
+    }
+    ideo.writeContainer(t0);
   });
 }
 
