@@ -52,19 +52,17 @@ function getChrScale(chr, hasBands, ideo) {
     taxid = chr.id.split('-')[1],
     scale = {};
 
+  scale.bp = chrHeight / maxLength.bp;
+
   if (ideo.config.multiorganism === true) {
-    scale.bp = 1;
     // chr.scale.bp = band.iscn.stop / band.bp.stop;
     if (ideo.config.chromosomeScale === 'relative') {
       scale.iscn = chrHeight * chrLength / maxLength[taxid].bp;
     } else {
       scale.iscn = chrHeight * chrLength / maxLength.bp;
     }
-  } else {
-    scale.bp = chrHeight / maxLength.bp;
-    if (hasBands) {
-      scale.iscn = chrHeight / maxLength.iscn;
-    }
+  } else if (hasBands) {
+    scale.iscn = chrHeight / maxLength.iscn;
   }
 
   return scale;
