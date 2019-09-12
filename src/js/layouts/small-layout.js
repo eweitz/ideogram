@@ -55,22 +55,20 @@ class SmallLayout extends Layout {
   }
 
   getChromosomeSetTranslate(setIndex) {
-    // Get organisms id list
-    var organisms = [];
-    this._ideo.getTaxids(function(taxidList) {
-      organisms = taxidList;
-    });
+    var taxid = this._ideo.getTaxid(this._ideo.config.organism);
+
     // Get first organism chromosomes amount
-    var size = this._ideo.config.chromosomes[organisms[0]].length;
-    // Amount of chromosomes per number
-    var rowSize = size / this._config.rows;
+    var numChrs = this._ideo.config.chromosomes[taxid].length;
+
+    // Number of chromosomes per row
+    var chrsPerRow = numChrs / this._config.rows;
 
     var xOffset;
     var yOffset;
 
-    if (setIndex > rowSize - 1) {
+    if (setIndex > chrsPerRow - 1) {
       xOffset = this.margin.left + this._config.chrHeight * 1.4;
-      yOffset = this.getChromosomeSetYTranslate(setIndex - rowSize);
+      yOffset = this.getChromosomeSetYTranslate(setIndex - chrsPerRow);
     } else {
       xOffset = this.margin.left;
       yOffset = this.getChromosomeSetYTranslate(setIndex);

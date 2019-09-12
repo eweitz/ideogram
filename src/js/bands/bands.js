@@ -152,8 +152,6 @@ function processBandData(taxid) {
 
   bandsArray = [];
 
-  // [taxid, taxids] = setTaxids(ideo);
-
   if ('chromosomes' in config) {
     if (config.multiorganism) {
       // Copy object
