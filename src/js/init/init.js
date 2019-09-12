@@ -173,7 +173,6 @@ function prepareContainer(taxid, bandFileNames, t0, ideo) {
 }
 
 function initializeTaxids(ideo) {
-  console.log('initializeTaxids')
   return new Promise(function(resolve) {
     if (typeof ideo.config.organism === 'number') {
       // 'organism' is a taxid, e.g. 9606
@@ -183,7 +182,7 @@ function initializeTaxids(ideo) {
     } else {
       ideo.getTaxids(resolve);
     }
-    
+
   });
 }
 
@@ -204,8 +203,6 @@ function getBandsAndPrepareContainer(taxids, t0, ideo) {
 
   Promise.all(promises).then(function(taxidsAndBandsArrays) {
     var taxidAndBandsArray, taxid, bandsArray;
-    console.log('in Promise.all, taxidsAndBandsArrays:');
-    console.log(taxidsAndBandsArrays);
 
     for (i = 0; i < taxidsAndBandsArrays.length; i++) {
       taxidAndBandsArray = taxidsAndBandsArrays[i];

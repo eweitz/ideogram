@@ -20,30 +20,6 @@ import {
 import {parseBands} from './parse';
 import {organismMetadata} from '../init/organism-metadata';
 
-// /**
-//  * TODO: Should this be in services/organism.js?
-//  */
-// function setTaxids(ideo) {
-//   var i, taxid, taxids;
-
-//   if (ideo.config.multiorganism === true) {
-//     ideo.coordinateSystem = 'bp';
-//     taxids = ideo.config.taxids;
-//     for (i = 0; i < taxids.length; i++) {
-//       taxid = taxids[i];
-//     }
-//   } else {
-//     if (typeof ideo.config.taxid === 'undefined') {
-//       ideo.config.taxid = ideo.config.taxids[0];
-//     }
-//     taxid = ideo.config.taxid;
-//     taxids = [taxid];
-//     ideo.config.taxids = taxids;
-//   }
-
-//   return [taxid, taxids];
-// }
-
 /**
  * Gets bands array for given chromosomes, sets ideo.maxLength
  */

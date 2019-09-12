@@ -6,13 +6,10 @@ import {d3} from '../lib';
 function getTaxidFromEutils(orgName, ideo) {
   var taxonomySearch, taxid;
 
-  console.log('in getTaxidFromEutils')
-
   taxonomySearch = ideo.esearch + '&db=taxonomy&term=' + orgName;
 
   return d3.json(taxonomySearch).then(function(data) {
     taxid = data.esearchresult.idlist[0];
-    console.log('succeeded getTaxidFromEutils, taxid:', taxid)
     return taxid;
   });
 }
@@ -45,7 +42,7 @@ function setTaxidData(taxid, ideo) {
   });
 
   return promise2
-    .then(function(data) {
+    .then(function() {
       // Check if chromosome data exists locally.
       // This is used for pre-processed centromere data,
       // which is not accessible via EUtils.  See get_chromosomes.py.
@@ -80,7 +77,6 @@ function setTaxidData(taxid, ideo) {
 }
 
 function setAssemblyAndChromosomes(taxid, resolve, ideo) {
-  console.log('setAssemblyAndChromosomes')
   var assembly, chrs, originalChrs, filteredChrs;
 
   setTaxidData(taxid, ideo)
@@ -88,9 +84,6 @@ function setAssemblyAndChromosomes(taxid, resolve, ideo) {
       assembly = asmChrTaxidsArray[0];
       chrs = asmChrTaxidsArray[1];
 
-      console.log('in setTaxidData.then, assembly, chrs:')
-      console.log(assembly)
-      console.log(chrs)
       if ('chromosomes' in ideo.config === false) {
         ideo.config.chromosomes = {};
         ideo.config.chromosomes[taxid] = chrs;
@@ -138,8 +131,6 @@ function populateNonNativeOrg(orgs, ideo) {
     getTaxidFromEutilsPromises = [],
     augmentedOrganismMetadata = {};
 
-  console.log('entered populateNonNativeOrg')
-
   for (i = 0; i < orgs.length; i++) {
     org = orgs[i];
     if (isOrganismSupported(org, ideo) === false) {
@@ -165,12 +156,7 @@ function populateNonNativeOrg(orgs, ideo) {
     getTaxidFromEutilsPromises.push(promise);
   }
 
-  console.log('before Promise.all')
-
   return Promise.all(getTaxidFromEutilsPromises).then(function() {
-    console.log('in Promise.all, ideo.organisms, augmentedOrganismMetadata:')
-    console.log(ideo.organisms)
-    console.log(augmentedOrganismMetadata)
     return augmentedOrganismMetadata;
   });
 }
@@ -185,19 +171,10 @@ function prepareTmpChrsAndTaxids(ideo) {
 
   return populateNonNativeOrg(orgs, ideo).then(function(orgMetadata) {
 
-    console.log('entering populateNonNativeOrg, orgMetadata:')
-    console.log(orgMetadata)
-
     for (taxid in orgMetadata) {
       org = orgMetadata[taxid].scientificName;
-      console.log('org')
-      console.log(org)
       taxids.push(taxid);
-      console.log('taxid')
-      console.log(taxid)
       if (config.multiorganism) {
-        console.log('config.chromosomes')
-        console.log(config.chromosomes)
         if (typeof config.chromosomes !== 'undefined') {
           // Adjusts 'chromosomes' configuration parameter to make object
           // keys use taxid instead of common organism name
@@ -207,8 +184,6 @@ function prepareTmpChrsAndTaxids(ideo) {
         }
       }
     }
-    console.log('ending populateNonNativeOrg, [tmpChrs, taxids]')
-    console.log([tmpChrs, taxids])
     return [tmpChrs, taxids];
   });
 }
@@ -231,18 +206,10 @@ function sortTaxidsByOriginalOrganismOption(ideo) {
 }
 
 function getTaxidsForOrganismsInConfig(callback, ideo) {
-  // var tmpChrs, taxids;
-
-  console.log('entering getTaxidsForOrganismInConfig, ideo.config.organisms')
-  console.log(ideo.config.organism)
 
   prepareTmpChrsAndTaxids(ideo).then(function([tmpChrs, taxids]) {
-    var i, taxid, promise;
-    console.log('in prepareTmpChrsAndTaxids.then, tmpChrs, taxids:')
-    console.log(tmpChrs)
-    console.log(taxids)
-
-    var asmAndChrPromises = [];
+    var i, taxid, promise,
+      asmAndChrPromises = [];
 
     for (i = 0; i < taxids.length; i++) {
       taxid = taxids[i];
@@ -259,7 +226,6 @@ function getTaxidsForOrganismsInConfig(callback, ideo) {
           ideo.config.chromosomes = tmpChrs;
         }
         promise = new Promise(function(resolve) {
-          console.log('in prepareTmpChrsAndTaxids immediate promise')
           resolve();
         });
       }
@@ -268,10 +234,8 @@ function getTaxidsForOrganismsInConfig(callback, ideo) {
     }
 
     Promise.all(asmAndChrPromises).then(function() {
-      console.log('in Promise.all(asmAndChrPromises), taxids:')
       taxids = sortTaxidsByOriginalOrganismOption(ideo);
       ideo.config.taxids = taxids;
-      console.log(taxids)
       return callback(taxids);
     });
   });
@@ -310,7 +274,6 @@ function getTaxidsForOrganismsNotInConfig(taxidInit, callback, ideo) {
  * multiorganism, and adjusts chromosomes parameters as needed
  **/
 function getTaxids(callback) {
-  console.log('getTaxids')
   var taxidInit,
     ideo = this;
 
