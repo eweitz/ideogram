@@ -158,9 +158,12 @@ function processBandData(taxid) {
     if (config.multiorganism) {
       // Copy object
       chrs = config.chromosomes;
-    } else {
+    } else if (taxid in config.chromosomes) {
       // Copy array by value
       chrs = config.chromosomes[taxid].slice();
+    } else {
+      // Copy array by value.  Needed for e.g. "Homology, basic"
+      chrs = config.chromosomes.slice();
     }
   }
 
