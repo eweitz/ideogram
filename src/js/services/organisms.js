@@ -35,14 +35,14 @@ function setTaxidData(taxid, ideo) {
         reject(Error('Fetch failed for ' + chromosomesUrl));
       } else {
         return response.json().then(function(json) {
-          resolve(json);
+          resolve(json.chrBands);
         });
       }
     });
   });
 
   return promise2
-    .then(function() {
+    .then(function(chrBands) {
       // Check if chromosome data exists locally.
       // This is used for pre-processed centromere data,
       // which is not accessible via EUtils.  See get_chromosomes.py.
@@ -64,7 +64,6 @@ function setTaxidData(taxid, ideo) {
       chromosomes = chromosomes.sort(Ideogram.sortChromosomes);
       asmAndChrTaxidsArray.push(chromosomes);
       asmAndChrTaxidsArray.push(taxids);
-      ideo.coordinateSystem = 'iscn';
       return asmAndChrTaxidsArray;
     },
     function() {

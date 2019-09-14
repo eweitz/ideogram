@@ -91,9 +91,9 @@ function setChrsByTaxidsWithBands(taxid, chrs, bandsArray, ideo) {
 function setChromosomesByTaxid(taxid, chrs, bandsArray, ideo) {
   var chr, i;
 
-  if (ideo.coordinateSystem === 'iscn' || taxid in organismMetadata) {
+  if (taxid in organismMetadata) {
     bandsArray = setChrsByTaxidsWithBands(taxid, chrs, bandsArray, ideo);
-  } else if (ideo.coordinateSystem === 'bp') {
+  } else {
     // If lacking band-level data
     // ideo.config.chromosomes[taxid] = chrs.slice();
     ideo.numChromosomes += chrs.length;
