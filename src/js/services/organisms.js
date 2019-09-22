@@ -1,7 +1,7 @@
 import {d3} from '../lib';
 
 /**
- *  Returns the NCBI taxonomy identifier (taxid) for the configured organism
+ *  Returns NCBI Taxonomy identifier (taxid) for organism name
  */
 function getTaxidFromEutils(orgName, ideo) {
   var taxonomySearch, taxid;
@@ -123,8 +123,10 @@ function isOrganismSupported(org, ideo) {
   return false;
 }
 
-// Augment "organisms" metadata with for any requested organism that is
-// not natively supported (i.e., not in organism-metadata.js).
+/**
+ * Augment "organisms" metadata with for any requested organism that is
+ * not natively supported (i.e., not in organism-metadata.js).
+*/
 function populateNonNativeOrg(orgs, ideo) {
   var org, promise, i,
     getTaxidFromEutilsPromises = [],
@@ -187,7 +189,11 @@ function prepareTmpChrsAndTaxids(ideo) {
   });
 }
 
-// TODO: Handle taxid being passed as organism
+/**
+ * Sort taxids by the "organism" configuration option
+ *
+ * TODO: Handle taxid being passed as organism
+ */
 function sortTaxidsByOriginalOrganismOption(ideo) {
   var configOrganisms, sortedTaxids, i;
   configOrganisms = ideo.config.organism;
