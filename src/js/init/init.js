@@ -176,7 +176,8 @@ function initializeTaxids(ideo) {
   return new Promise(function(resolve) {
     if (typeof ideo.config.organism === 'number') {
       // 'organism' is a taxid, e.g. 9606
-      ideo.getOrganismFromEutils(function() {
+      var taxid = ideo.config.organism;
+      ideo.getOrganismFromEutils(taxid, function() {
         ideo.getTaxids(resolve);
       });
     } else {

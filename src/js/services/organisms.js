@@ -14,6 +14,27 @@ function getTaxidFromEutils(orgName, ideo) {
   });
 }
 
+/**
+ * Returns organism common name given an NCBI Taxonomy ID
+ *
+ * @param taxid NCBI Taxonomy ID
+ * @param callback Function to call upon completing ESearch request
+ */
+function getOrganismFromEutils(taxid, callback) {
+  var organism, taxonomySearch,
+    ideo = this;
+
+  taxid = ideo.config.organism;
+
+  taxonomySearch = ideo.esummary + '&db=taxonomy&id=' + taxid;
+
+  d3.json(taxonomySearch).then(function(data) {
+    organism = data.result[String(taxid)].commonname;
+    ideo.config.organism = organism;
+    return callback(organism);
+  });
+}
+
 function setTaxidData(taxid, ideo) {
   var dataDir, organism, urlOrg, taxids;
 
@@ -171,14 +192,20 @@ function prepareTmpChrsAndTaxids(ideo) {
   orgs = (config.multiorganism) ? config.organism : [config.organism];
 
   return populateNonNativeOrg(orgs, ideo).then(function(orgMetadata) {
+    var orgFields = orgMetadata[taxid];
 
     for (taxid in orgMetadata) {
-      org = orgMetadata[taxid].scientificName;
+      orgFields = orgMetadata[taxid];
       taxids.push(taxid);
       if (config.multiorganism) {
         if (typeof config.chromosomes !== 'undefined') {
           // Adjusts 'chromosomes' configuration parameter to make object
           // keys use taxid instead of common organism name
+          if (orgFields.scientificName.toLowerCase() in config.chromosomes) {
+            org = orgFields.scientificName;
+          } else if (orgFields.commonName.toLowerCase() in config.chromosomes) {
+            org = orgFields.commonName;
+          }
           tmpChrs[taxid] = config.chromosomes[org.toLowerCase()];
         } else {
           tmpChrs = null;
@@ -294,27 +321,6 @@ function getTaxids(callback) {
   } else {
     getTaxidsForOrganismsNotInConfig(taxidInit, callback, ideo);
   }
-}
-
-/**
- * Searches NCBI EUtils for the common organism name for this ideogram
- * instance's taxid (i.e. NCBI Taxonomy ID)
- *
- * @param callback Function to call upon completing ESearch request
- */
-function getOrganismFromEutils(callback) {
-  var organism, taxonomySearch, taxid,
-    ideo = this;
-
-  taxid = ideo.config.organism;
-
-  taxonomySearch = ideo.esummary + '&db=taxonomy&id=' + taxid;
-
-  d3.json(taxonomySearch).then(function(data) {
-    organism = data.result[String(taxid)].commonname;
-    ideo.config.organism = organism;
-    return callback(organism);
-  });
 }
 
 export {

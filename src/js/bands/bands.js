@@ -95,7 +95,6 @@ function setChromosomesByTaxid(taxid, chrs, bandsArray, ideo) {
     bandsArray = setChrsByTaxidsWithBands(taxid, chrs, bandsArray, ideo);
   } else {
     // If lacking band-level data
-    // ideo.config.chromosomes[taxid] = chrs.slice();
     ideo.numChromosomes += chrs.length;
 
     for (i = 0; i < chrs.length; i++) {
