@@ -260,7 +260,6 @@ function getTaxidsForOrganismsNotInConfig(taxidInit, callback, ideo) {
   var taxids;
 
   if (ideo.config.multiorganism) {
-    ideo.coordinateSystem = 'bp';
     if (taxidInit) {
       taxids = ideo.config.taxid;
     }
@@ -285,6 +284,10 @@ function getTaxids(callback) {
   taxidInit = 'taxid' in ideo.config;
 
   ideo.config.multiorganism = getIsMultiorganism(taxidInit, ideo);
+
+  if (ideo.config.multiorganism) {
+    ideo.coordinateSystem = 'bp';
+  }
 
   if ('organism' in ideo.config) {
     getTaxidsForOrganismsInConfig(callback, ideo);
