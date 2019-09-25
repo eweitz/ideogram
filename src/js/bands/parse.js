@@ -79,7 +79,7 @@ function updateLines(lines, columns, taxid) {
  * #chromosome arm band iscn_start iscn_stop bp_start bp_stop stain density
  * ftp://ftp.ncbi.nlm.nih.gov/pub/gdp/ideogram_9606_GCF_000001305.14_550_V1
  */
-function parseBands(content, taxid, chromosomes) {
+function parseBands(content, taxid, chromosomes, ideo) {
   var delimiter, tsvLines, columns, chr, i, init, source,
     lines = {};
 
@@ -99,7 +99,8 @@ function parseBands(content, taxid, chromosomes) {
     chr = columns[0];
     if (
       (typeof chromosomes !== 'undefined' && chromosomes !== null) &&
-      ((Array.isArray(chromosomes) && chromosomes.indexOf(chr) === -1) ||
+      (((Array.isArray(chromosomes) && chromosomes.indexOf(chr) === -1) &&
+      taxid in ideo.bandData === false) ||
       (typeof chromosomes === 'object' && taxid in chromosomes &&
         chromosomes[taxid].includes(chr) === false))
     ) {

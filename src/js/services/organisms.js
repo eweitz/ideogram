@@ -36,7 +36,15 @@ function getOrganismFromEutils(taxid, callback) {
 }
 
 function setTaxidData(taxid, ideo) {
+
   var dataDir, organism, urlOrg, taxids;
+
+  if (ideo.assemblyIsAccession()) {
+    return new Promise(function(resolve) {
+      ideo.coordinateSystem = 'bp';
+      ideo.getAssemblyAndChromosomesFromEutils(taxid, resolve);
+    });
+  }
 
   dataDir = ideo.config.dataDir;
   organism = ideo.organisms[taxid].scientificName.toLowerCase();
@@ -247,7 +255,7 @@ function getTaxidsForOrganismsInConfig(callback, ideo) {
       taxid = taxids[i];
       if (
         ideo.organisms[taxid].assemblies.default === '' ||
-        ideo.assemblyIsAccession() && /GCA_/.test(ideo.config.assembly)
+        ideo.assemblyIsAccession()
       ) {
         promise = new Promise(function(resolve) {
           setAssemblyAndChromosomes(taxid, resolve, ideo);
@@ -312,9 +320,7 @@ function getTaxids(callback) {
 
   ideo.config.multiorganism = getIsMultiorganism(taxidInit, ideo);
 
-  if (ideo.config.multiorganism) {
-    ideo.coordinateSystem = 'bp';
-  }
+  if (ideo.config.multiorganism) ideo.coordinateSystem = 'bp';
 
   if ('organism' in ideo.config) {
     getTaxidsForOrganismsInConfig(callback, ideo);

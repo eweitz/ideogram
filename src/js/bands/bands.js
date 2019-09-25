@@ -64,7 +64,7 @@ function setChrsByTaxidsWithBands(taxid, chrs, bandsArray, ideo) {
 
   bandData = ideo.bandData[taxid];
 
-  bandsByChr = parseBands(bandData, taxid, chrs);
+  bandsByChr = parseBands(bandData, taxid, chrs, ideo);
 
   chrs = Object.keys(bandsByChr).sort(function(a, b) {
     return naturalSort(a, b);
@@ -91,7 +91,11 @@ function setChrsByTaxidsWithBands(taxid, chrs, bandsArray, ideo) {
 function setChromosomesByTaxid(taxid, chrs, bandsArray, ideo) {
   var chr, i;
 
-  if (taxid in organismMetadata) {
+  if (
+    taxid in ideo.bandData ||
+    taxid in organismMetadata &&
+    ideo.assemblyIsAccession() === false
+  ) {
     bandsArray = setChrsByTaxidsWithBands(taxid, chrs, bandsArray, ideo);
   } else {
     // If lacking band-level data
