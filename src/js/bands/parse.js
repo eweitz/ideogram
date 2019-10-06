@@ -79,7 +79,7 @@ function updateLines(lines, columns, taxid) {
  * #chromosome arm band iscn_start iscn_stop bp_start bp_stop stain density
  * ftp://ftp.ncbi.nlm.nih.gov/pub/gdp/ideogram_9606_GCF_000001305.14_550_V1
  */
-function parseBands(content, taxid, chromosomes, ideo) {
+function parseBands(content, taxid, chromosomes) {
   var delimiter, tsvLines, columns, chr, i, init, source,
     lines = {};
 

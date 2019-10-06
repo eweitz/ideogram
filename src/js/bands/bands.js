@@ -64,7 +64,7 @@ function setChrsByTaxidsWithBands(taxid, chrs, bandsArray, ideo) {
 
   bandData = ideo.bandData[taxid];
 
-  bandsByChr = parseBands(bandData, taxid, chrs, ideo);
+  bandsByChr = parseBands(bandData, taxid, chrs);
 
   chrs = Object.keys(bandsByChr).sort(function(a, b) {
     return naturalSort(a, b);

@@ -1,7 +1,5 @@
 import {d3} from '../lib';
 
-import shouldFetchBands from '../bands/fetch';
-
 /**
  *  Returns NCBI Taxonomy identifier (taxid) for organism name
  */
