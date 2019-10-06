@@ -5,7 +5,8 @@ var organismMetadata = {
     assemblies: {
       default: 'GCF_000001405.26', // GRCh38
       GRCh38: 'GCF_000001405.26',
-      GRCh37: 'GCF_000001405.13'
+      GRCh37: 'GCF_000001405.13',
+      NCBI36: 'GCF_000001405.12'
     }
   },
   10090: {

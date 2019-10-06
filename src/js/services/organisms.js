@@ -1,5 +1,7 @@
 import {d3} from '../lib';
 
+import shouldFetchBands from '../bands/fetch';
+
 /**
  *  Returns NCBI Taxonomy identifier (taxid) for organism name
  */
@@ -248,14 +250,17 @@ function sortTaxidsByOriginalOrganismOption(ideo) {
 function getTaxidsForOrganismsInConfig(callback, ideo) {
 
   prepareTmpChrsAndTaxids(ideo).then(function([tmpChrs, taxids]) {
-    var i, taxid, promise,
+    var i, taxid, promise, assemblies, asmAccs,
+      config = ideo.config,
       asmAndChrPromises = [];
 
     for (i = 0; i < taxids.length; i++) {
       taxid = taxids[i];
+      assemblies = ideo.organisms[taxid].assemblies;
+      asmAccs = Object.values(assemblies);
       if (
-        ideo.organisms[taxid].assemblies.default === '' ||
-        ideo.assemblyIsAccession()
+        assemblies.default === '' ||
+        ideo.assemblyIsAccession() && !asmAccs.includes(config.assembly)
       ) {
         promise = new Promise(function(resolve) {
           setAssemblyAndChromosomes(taxid, resolve, ideo);
