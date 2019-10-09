@@ -8,16 +8,14 @@ var esearch = eutils + 'esearch.fcgi?retmode=json' + apiKey;
 var esummary = eutils + 'esummary.fcgi?retmode=json' + apiKey;
 var elink = eutils + 'elink.fcgi?retmode=json' + apiKey;
 
-function getAssemblySearchUrl(ideo) {
-  var organism, termStem, asmSearchUrl;
-
-  organism = ideo.config.organism;
+function getAssemblySearchUrl(taxid, ideo) {
+  var termStem, asmSearchUrl;
 
   if (ideo.assemblyIsAccession()) {
     termStem = ideo.config.assembly + '%22[Assembly%20Accession]';
   } else {
     termStem = (
-      organism + '%22[organism]' +
+      taxid + '%22[taxid]' +
       'AND%20(%22latest%20refseq%22[filter])%20'
     );
   }

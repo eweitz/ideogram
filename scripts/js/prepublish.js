@@ -16,7 +16,7 @@ fs.readFile('package.json', 'utf8', function(error, text) {
   // (used to report version at runtime, among other things)
   fs.writeFileSync('src/js/version.js',
     'var version = \'' + newVersion + '\';\n' +
-    'export default version;'
+    'export default version;\n'
   );
 
   // Update to new version in package-lock.json

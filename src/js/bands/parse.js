@@ -99,6 +99,8 @@ function parseBands(content, taxid, chromosomes) {
     chr = columns[0];
     if (
       (typeof chromosomes !== 'undefined' && chromosomes !== null) &&
+      // (((Array.isArray(chromosomes) && chromosomes.indexOf(chr) === -1) &&
+      // taxid in ideo.bandData === false) ||
       ((Array.isArray(chromosomes) && chromosomes.indexOf(chr) === -1) ||
       (typeof chromosomes === 'object' && taxid in chromosomes &&
         chromosomes[taxid].includes(chr) === false))

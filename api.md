@@ -38,6 +38,7 @@ var ideogram = new Ideogram({
 * [chrMargin](#chrmargin)
 * [chrWidth](#chrwidth)
 * [chromosomes](#chromosomes)
+* [chromosomeScale](#chromosomescale)
 * [container](#container)
 * [dataDir](#datadir)
 * [demarcateCollinearChromosomes](#demarcatecollinearchromosomes)
@@ -135,6 +136,9 @@ Number.  Optional.  Default: 10.  The pixel width of each chromosome.  Example i
 
 ## chromosomes
 Array.  Optional.  Default: all chromosomes in assembly.  A list of the names of chromosomes to display.  Useful for depicting a subset of the chromosomes in the genome, e.g. a single chromosome.  Example in [Annotations, basic](https://eweitz.github.io/ideogram/annotations-basic).
+
+## chromosomeScale
+String.  Optional.  Default: absolute.  Either "absolute" or "relative".  Used when comparing multiple genomes.  If absolute, chromosomes will be scaled by base pairs in each genome.  If relative, the first chromosme in each genome will be of equal length, and subsequent chromosomes will be scaled relative to the first chromosome.
 
 ## container
 String.  Optional.  Default: "body".  CSS selector of the HTML element that will contain the ideogram.  Example in [Layout, small](https://eweitz.github.io/ideogram/layout-small).

@@ -1571,115 +1571,117 @@ describe('Ideogram', function() {
   // These tests fail due to an upstream breaking change in NCBI E-Utils.
   // Specifically, the Entrez GenColl database was retired without notice.
   //
-  it('should support GenBank accessions in "assembly" parameter', function(done) {
-    // Tests use case for non-default assemblies.
-    // GCA_000002125.2 is commonly called HuRef
-    // https://www.ncbi.nlm.nih.gov/assembly/GCA_000002125.2
-
-    function callback() {
-      var chr1Length = ideogram.chromosomes['9606']['1'].length;
-      // For reference, see length section of LOCUS field in GenBank record at
-      // https://www.ncbi.nlm.nih.gov/nuccore/CM001609.2
-      assert.equal(chr1Length, 219475005);
-      done();
-    }
-
-    config.assembly = 'GCA_000002125.2';
-    config.onLoad = callback;
-    var ideogram = new Ideogram(config);
-  });
-
-  it('should recover chromosomes when given scaffolds', function(done) {
-    // Tests use case from ../examples/vanilla/eukaryotes?org=sus-scrofa
-
-    function callback() {
-      var numChromosomes = document.querySelectorAll('.chromosome').length;
-      assert.equal(numChromosomes, 20);
-      done();
-    }
-
-    var config = {
-      organism: 'Sus scrofa', // pig
-      onLoad: callback
-    };
-
-    setTimeout(function() {
-      var ideogram = new Ideogram(config);
-    }, 2000);
-
-  });
-
-  it('should not have race condition when init is quickly called multiple times', function(done) {
-    // Verifies handling for a Plotly use case.
-    // See https://github.com/eweitz/ideogram/pull/154
-
-    /**
-    * Differences in remotely cached (static) vs. uncached (queried via EUtils)
-    * response times is the likely cause of the race condition that's tested
-    * against here.
-    **/
-
-    var numTimesOnLoadHasBeenCalled = 0;
-
-    function testRaceCondition() {
-      var ideo = this;
-      numTimesOnLoadHasBeenCalled++;
-      var numChimpChromosomes = 25; // See e.g. https://eweitz.github.io/ideogram/eukaryotes?org=pan-troglodytes
-      var numHumanChromosomes = 24; // (22,X,Y)
-      var numChromosomes = ideo.chromosomesArray.length;
-
-      if (numTimesOnLoadHasBeenCalled === 1) {
-        assert.equal(numChromosomes, numChimpChromosomes);
-      } else if (numTimesOnLoadHasBeenCalled === 2) {
-        assert.equal(numChromosomes, numHumanChromosomes);
-        done();
-      }
-    }
-
-    function startRaceCondition() {
-      new Ideogram({
-        organism: 'pan-troglodytes',
-        dataDir: '/dist/data/bands/native/',
-        onLoad: testRaceCondition
-      });
-      new Ideogram({
-        organism: 'human',
-        dataDir: '/dist/data/bands/native/',
-        onLoad: testRaceCondition
-      });
-    }
-
-    var ideogram = new Ideogram({
-      organism: 'human',
-      dataDir: '/dist/data/bands/native/',
-      onLoad: startRaceCondition
-    });
-  });
-
-  // eweitz, 2018-10-18: This test passes locally and the apicoplast displays
-  // as expected in https://eweitz.github.io/ideogram/eukaryotes?org=plasmodium-falciparum,
-  // but the test fails on Travis CI, e.g. https://travis-ci.org/eweitz/ideogram/builds/443002664
-  // Why?  It seems like a Travis-specific false positive.  Disabling for now.
-  // it('should support apicoplast chromosomes of malaria parasite', function(done) {
-  //   // Tests use case from ../examples/vanilla/eukaryotes.html
+  // it('should support GenBank accessions in "assembly" parameter', function(done) {
+  //   // Tests use case for non-default assemblies.
+  //   // GCA_000002125.2 is commonly called HuRef
+  //   // https://www.ncbi.nlm.nih.gov/assembly/GCA_000002125.2
 
   //   function callback() {
-  //     var chromosomes = Array.from(document.querySelectorAll('.chromosome'));
-  //     var nonNuclearChrs = chromosomes.slice(-1);
-  //     assert.equal(chromosomes.length, 15);
-  //     assert.equal(nonNuclearChrs[0].id, 'chrAP-5833'); // apicoplast (CP)
+  //     var chr1Length = ideogram.chromosomes['9606']['1'].length;
+  //     // For reference, see length section of LOCUS field in GenBank record at
+  //     // https://www.ncbi.nlm.nih.gov/nuccore/CM001609.2
+  //     assert.equal(chr1Length, 219475005);
+  //     done();
+  //   }
+
+  //   config.assembly = 'GCA_000002125.2';
+  //   config.onLoad = callback;
+  //   console.log('config')
+  //   console.log(config)
+  //   var ideogram = new Ideogram(config);
+  // });
+
+  // it('should recover chromosomes when given scaffolds', function(done) {
+  //   // Tests use case from ../examples/vanilla/eukaryotes?org=sus-scrofa
+
+  //   function callback() {
+  //     var numChromosomes = document.querySelectorAll('.chromosome').length;
+  //     assert.equal(numChromosomes, 20);
   //     done();
   //   }
 
   //   var config = {
-  //     organism: 'plasmodium-falciparum', // P. falciparum, malaria parasite
-  //     showNonNuclearChromosomes: true,
+  //     organism: 'Sus scrofa', // pig
   //     onLoad: callback
   //   };
 
-  //   var ideogram = new Ideogram(config);
+  //   setTimeout(function() {
+  //     var ideogram = new Ideogram(config);
+  //   }, 2000);
+
   // });
-  //
+
+  // it('should not have race condition when init is quickly called multiple times', function(done) {
+  //   // Verifies handling for a Plotly use case.
+  //   // See https://github.com/eweitz/ideogram/pull/154
+
+  //   /**
+  //   * Differences in remotely cached (static) vs. uncached (queried via EUtils)
+  //   * response times is the likely cause of the race condition that's tested
+  //   * against here.
+  //   **/
+
+  //   var numTimesOnLoadHasBeenCalled = 0;
+
+  //   function testRaceCondition() {
+  //     var ideo = this;
+  //     numTimesOnLoadHasBeenCalled++;
+  //     var numChimpChromosomes = 25; // See e.g. https://eweitz.github.io/ideogram/eukaryotes?org=pan-troglodytes
+  //     var numHumanChromosomes = 24; // (22,X,Y)
+  //     var numChromosomes = ideo.chromosomesArray.length;
+
+  //     if (numTimesOnLoadHasBeenCalled === 1) {
+  //       assert.equal(numChromosomes, numChimpChromosomes);
+  //     } else if (numTimesOnLoadHasBeenCalled === 2) {
+  //       assert.equal(numChromosomes, numHumanChromosomes);
+  //       done();
+  //     }
+  //   }
+
+  //   function startRaceCondition() {
+  //     new Ideogram({
+  //       organism: 'pan-troglodytes',
+  //       dataDir: '/dist/data/bands/native/',
+  //       onLoad: testRaceCondition
+  //     });
+  //     new Ideogram({
+  //       organism: 'human',
+  //       dataDir: '/dist/data/bands/native/',
+  //       onLoad: testRaceCondition
+  //     });
+  //   }
+
+  //   var ideogram = new Ideogram({
+  //     organism: 'human',
+  //     dataDir: '/dist/data/bands/native/',
+  //     onLoad: startRaceCondition
+  //   });
+  // });
+
+  // // eweitz, 2018-10-18: This test passes locally and the apicoplast displays
+  // // as expected in https://eweitz.github.io/ideogram/eukaryotes?org=plasmodium-falciparum,
+  // // but the test fails on Travis CI, e.g. https://travis-ci.org/eweitz/ideogram/builds/443002664
+  // // Why?  It seems like a Travis-specific false positive.  Disabling for now.
+  // // it('should support apicoplast chromosomes of malaria parasite', function(done) {
+  // //   // Tests use case from ../examples/vanilla/eukaryotes.html
+
+  // //   function callback() {
+  // //     var chromosomes = Array.from(document.querySelectorAll('.chromosome'));
+  // //     var nonNuclearChrs = chromosomes.slice(-1);
+  // //     assert.equal(chromosomes.length, 15);
+  // //     assert.equal(nonNuclearChrs[0].id, 'chrAP-5833'); // apicoplast (CP)
+  // //     done();
+  // //   }
+
+  // //   var config = {
+  // //     organism: 'plasmodium-falciparum', // P. falciparum, malaria parasite
+  // //     showNonNuclearChromosomes: true,
+  // //     onLoad: callback
+  // //   };
+
+  // //   var ideogram = new Ideogram(config);
+  // // });
+  // //
   ////
   // END REGRESSED NCBI INTEGRATION TESTS
   ////

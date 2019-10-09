@@ -86,6 +86,7 @@ class HorizontalLayout extends Layout {
   }
 
   getHeight(taxid) {
+    if (typeof taxid === 'undefined') taxid = this._config.taxids[0];
     // Get last chromosome set offset.
     var numChromosomes = this._config.chromosomes[taxid].length;
     var lastSetOffset = this.getChromosomeSetYTranslate(numChromosomes - 1);

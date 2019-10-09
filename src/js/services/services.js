@@ -197,7 +197,7 @@ function fetchAssemblySummary(data, ideo) {
  *
  * @param callback Function to call upon completion of this async method
  */
-function getAssemblyAndChromosomesFromEutils(callback) {
+function getAssemblyAndChromosomesFromEutils(taxid, callback) {
   var assemblyAccession,
     ideo = this;
 
@@ -207,7 +207,7 @@ function getAssemblyAndChromosomesFromEutils(callback) {
   // get search results containing chromosome IDs, then
   // get summaries of each of those chromosome IDs, then
   // format the chromosome summaries and pass them into callback function.
-  var asmSearchUrl = getAssemblySearchUrl(ideo);
+  var asmSearchUrl = getAssemblySearchUrl(taxid, ideo);
   d3.json(asmSearchUrl)
     .then(function(data) { return fetchAssemblySummary(data, ideo); })
     .then(function(data) {

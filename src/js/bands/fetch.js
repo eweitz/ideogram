@@ -37,7 +37,7 @@ function fetchBands(bandDataFileNames, taxid, t0, ideo) {
 
   if (!ideo.numBandDataResponses) ideo.numBandDataResponses = 0;
 
-  fetch(bandDataUrl)
+  return fetch(bandDataUrl)
     .then(function(response) {
       return response.json().then(function(rawBands) {
         lastBandDataUrl = bandDataUrl;
@@ -46,14 +46,6 @@ function fetchBands(bandDataFileNames, taxid, t0, ideo) {
         window.chrBands = rawBands.chrBands;
 
         setBandData(response.url, bandDataFileNames, chrBands, ideo);
-
-        ideo.numBandDataResponses += 1;
-
-        if (ideo.numBandDataResponses === ideo.config.taxids.length) {
-          var bandsArray = ideo.processBandData();
-          ideo.writeContainer(bandsArray, taxid, t0);
-          delete ideo.numBandDataResponses;
-        }
       });
     });
 }
