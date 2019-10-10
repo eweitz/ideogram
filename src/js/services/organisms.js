@@ -105,21 +105,32 @@ function setTaxidData(taxid, ideo) {
 }
 
 function setAssemblyAndChromosomes(taxid, resolve, ideo) {
-  var assembly, chrs, originalChrs, filteredChrs;
+  var assembly, chrs, originalChrs, orgName, filteredChrs,
+    config = ideo.config;
 
   setTaxidData(taxid, ideo)
     .then(function(asmChrTaxidsArray) {
       assembly = asmChrTaxidsArray[0];
       chrs = asmChrTaxidsArray[1];
 
-      if ('chromosomes' in ideo.config === false) {
+      if ('chromosomes' in config === false || config.chromosomes === null) {
         ideo.config.chromosomes = {};
         ideo.config.chromosomes[taxid] = chrs;
       } else {
-        if (ideo.config.multiorganism) {
-          originalChrs = ideo.config.chromosomes[taxid];
+        if (config.multiorganism) {
+          if (taxid in config.chromosomes) {
+            // Encountered when either organism has centromere data
+            originalChrs = config.chromosomes[taxid];
+          } else {
+            // Encountered when neither organism has centromere data
+            orgName = ideo.getScientificName(taxid).toLowerCase();
+            ideo.config.chromosomes[taxid] =
+              config.chromosomes[orgName].slice();
+            originalChrs = ideo.config.chromosomes[taxid];
+            // delete ideo.config.chromosomes[orgName];
+          }
         } else {
-          originalChrs = ideo.config.chromosomes;
+          originalChrs = config.chromosomes;
         }
 
         filteredChrs = chrs.filter(d => originalChrs.includes(d.name));
