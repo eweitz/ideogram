@@ -79,18 +79,27 @@ function setTaxidData(taxid, ideo) {
       var asmAndChrTaxidsArray = [''],
         chromosomes = [],
         seenChrs = {},
-        chr;
+        chr, maxLength, splitBand, length;
+
+      ideo.bandData[taxid] = chrBands;
 
       for (var i = 0; i < chrBands.length; i++) {
-        chr = chrBands[i].split(' ')[0];
+        splitBand = chrBands[i].split(' ');
+        chr = splitBand[0];
+        length = splitBand.slice(-1)[0];
         if (chr in seenChrs) {
           continue;
         } else {
-          chromosomes.push({name: chr, type: 'nuclear'});
+          chromosomes.push({name: chr, type: 'nuclear', length: length});
           seenChrs[chr] = 1;
         }
       }
       chromosomes = chromosomes.sort(Ideogram.sortChromosomes);
+      maxLength = {bp: 0, iscn: 0};
+      chromosomes.forEach(chr => {
+        if (chr.length > maxLength.bp) maxLength.bp = chr.length;
+      });
+      ideo.maxLength[taxid] = maxLength;
       asmAndChrTaxidsArray.push(chromosomes);
       asmAndChrTaxidsArray.push(taxids);
       return asmAndChrTaxidsArray;
@@ -136,6 +145,7 @@ function setAssemblyAndChromosomes(taxid, resolve, ideo) {
         filteredChrs = chrs.filter(d => originalChrs.includes(d.name));
         ideo.config.chromosomes[taxid] = filteredChrs;
       }
+      ideo.chromosomes[taxid] = ideo.config.chromosomes[taxid].slice();
       ideo.organisms[taxid].assemblies = {
         default: assembly
       };

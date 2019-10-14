@@ -76,7 +76,9 @@ function setChrsByTaxidsWithBands(taxid, chrs, bandsArray, ideo) {
   ) {
     ideo.config.chromosomes = {};
   }
-  ideo.config.chromosomes[taxid] = chrs.slice();
+  if (chrs.length > 0) {
+    ideo.config.chromosomes[taxid] = chrs.slice();
+  }
   ideo.numChromosomes += ideo.config.chromosomes[taxid].length;
 
   for (k = 0; k < chrs.length; k++) {

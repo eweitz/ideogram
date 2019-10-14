@@ -71,6 +71,36 @@ function updateLines(lines, columns, taxid) {
   return lines;
 }
 
+function shouldSkipBand(chrs, chr, taxid) {
+  var hasChrs, chrsAreList, chrNotInList, chrsAreObject, taxidInChrs,
+    innerChrsAreStrings, matchingChrObjs, chrNotInObject;
+
+  hasChrs = typeof chrs !== 'undefined' && chrs !== null;
+  if (!hasChrs) return true;
+
+  chrsAreList = Array.isArray(chrs);
+  chrNotInList = chrsAreList && chrs.indexOf(chr) === -1;
+
+  chrsAreObject = typeof chrs === 'object';
+  if (!chrsAreList && chrsAreObject) {
+    taxidInChrs = taxid in chrs;
+    if (taxidInChrs) {
+      innerChrsAreStrings = typeof chrs[taxid][0] === 'string';
+      if (innerChrsAreStrings) {
+        chrNotInObject = chrs[taxid].includes(chr) === false;
+      } else {
+        matchingChrObjs = chrs[taxid].filter(thisChr => thisChr.name === chr);
+        chrNotInObject = matchingChrObjs.length === 0;
+      }
+      return chrNotInObject;
+    } else {
+      return true;
+    }
+  } else {
+    return chrNotInList;
+  }
+}
+
 /**
  * Parses cytogenetic band data from a TSV file, or, if band data is
  * prefetched, from an array
@@ -97,14 +127,7 @@ function parseBands(content, taxid, chromosomes) {
     columns = tsvLines[i].split(delimiter);
 
     chr = columns[0];
-    if (
-      (typeof chromosomes !== 'undefined' && chromosomes !== null) &&
-      // (((Array.isArray(chromosomes) && chromosomes.indexOf(chr) === -1) &&
-      // taxid in ideo.bandData === false) ||
-      ((Array.isArray(chromosomes) && chromosomes.indexOf(chr) === -1) ||
-      (typeof chromosomes === 'object' && taxid in chromosomes &&
-        chromosomes[taxid].includes(chr) === false))
-    ) {
+    if (shouldSkipBand(chromosomes, chr, taxid)) {
       // If specific chromosomes are configured, then skip processing all
       // other fetched chromosomes.
       continue;
