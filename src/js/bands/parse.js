@@ -71,6 +71,9 @@ function updateLines(lines, columns, taxid) {
   return lines;
 }
 
+/**
+ * Reports if a cytogenetic band should be included in parse results
+ */
 function shouldSkipBand(chrs, chr, taxid) {
   var hasChrs, chrsAreList, chrNotInList, chrsAreObject, taxidInChrs,
     innerChrsAreStrings, matchingChrObjs, chrNotInObject;
