@@ -60,11 +60,9 @@ function getBandsArray(chromosome, bandsByChr, taxid, ideo) {
  * Updates bandsArray, sets ideo.config.chromosomes and ideo.numChromosomes
  */
 function setChrsByTaxidsWithBands(taxid, chrs, bandsArray, ideo) {
-  var bandData, bandsByChr, chromosome, k, chrBandsArray;
+  var bandsByChr, chromosome, k, chrBandsArray;
 
-  bandData = ideo.bandData[taxid];
-
-  bandsByChr = parseBands(bandData, taxid, chrs);
+  bandsByChr = parseBands(taxid, chrs, ideo);
 
   chrs = Object.keys(bandsByChr).sort(function(a, b) {
     return naturalSort(a, b);
