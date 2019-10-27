@@ -315,7 +315,7 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  it('should have 1 syntenic region between a human and a mouse chromosome', function(done) {
+  it('should have 1 syntenic region between human and mouse chromosomes', function(done) {
     // Tests use case from ../examples/vanilla/homology-interspecies.html
 
     function callback() {
@@ -379,6 +379,111 @@ describe('Ideogram', function() {
     config.chromosomes = {
       human: ['1'],
       mouse: ['4']
+    };
+    config.orientation = 'vertical';
+    config.perspective = 'comparative';
+
+    config.onLoad = callback;
+    var ideogram = new Ideogram(config);
+  });
+
+  it('should have 1 syntenic region between human and chimpanzee chromosomes', function(done) {
+    // Tests support for drawing features between a fully-banded genome and a
+    // genome that only has centromere data, as is possible in "Orthologs"
+    // example
+
+    function callback() {
+
+      var chrs = ideogram.chromosomes,
+        humanTaxid = ideogram.getTaxid('human'),
+        chimpanzeeTaxid = ideogram.getTaxid('chimpanzee'),
+        chr1 = chrs[humanTaxid]['1'],
+        chr4 = chrs[chimpanzeeTaxid]['4'],
+        syntenicRegions = [],
+        range1, range2;
+
+      range1 = {
+        chr: chr1, start: 11106531, stop: 11262557, orientation: 'reverse'
+      };
+
+      range2 = {
+        chr: chr4, start: 148448582, stop: 148557685
+      };
+
+      syntenicRegions.push({r1: range1, r2: range2});
+
+      ideogram.drawSynteny(syntenicRegions);
+
+      var numHumanChromosomes = Object.keys(ideogram.chromosomes['9606']).length;
+      assert.equal(numHumanChromosomes, 1);
+
+      var numChimpanzeeChromosomes = Object.keys(ideogram.chromosomes['9598']).length;
+      assert.equal(numChimpanzeeChromosomes, 1);
+
+      var numSyntenicRegions = document.getElementsByClassName('syntenicRegion').length;
+      // console.log(d3.selectAll('.syntenicRegion'));
+
+      assert.equal(numSyntenicRegions, 1);
+
+      done();
+    }
+
+    config.organism = ['human', 'chimpanzee'];
+    config.chromosomes = {
+      human: ['1'],
+      chimpanzee: ['4']
+    };
+    config.orientation = 'vertical';
+    config.perspective = 'comparative';
+
+    config.onLoad = callback;
+    var ideogram = new Ideogram(config);
+  });
+
+  it('should have 1 syntenic region between a chimpanzee and gorilla chromosome', function(done) {
+    // Tests support for drawing two genomes that have centromere data,
+    // as is possible in "Orthologs" example
+
+    function callback() {
+
+      var chrs = ideogram.chromosomes,
+        chimpanzeeTaxid = ideogram.getTaxid('chimpanzee'),
+        gorillaTaxid = ideogram.getTaxid('gorilla'),
+        chr1 = chrs[chimpanzeeTaxid]['1'],
+        chr4 = chrs[gorillaTaxid]['4'],
+        syntenicRegions = [],
+        range1, range2;
+
+      range1 = {
+        chr: chr1, start: 11106531, stop: 11262557, orientation: 'reverse'
+      };
+
+      range2 = {
+        chr: chr4, start: 148448582, stop: 148557685
+      };
+
+      syntenicRegions.push({r1: range1, r2: range2});
+
+      ideogram.drawSynteny(syntenicRegions);
+
+      var numChimpanzeeChromosomes = Object.keys(ideogram.chromosomes[chimpanzeeTaxid]).length;
+      assert.equal(numChimpanzeeChromosomes, 1);
+
+      var numGorillaChromosomes = Object.keys(ideogram.chromosomes[gorillaTaxid]).length;
+      assert.equal(numGorillaChromosomes, 1);
+
+      var numSyntenicRegions = document.getElementsByClassName('syntenicRegion').length;
+      // console.log(d3.selectAll('.syntenicRegion'));
+
+      assert.equal(numSyntenicRegions, 1);
+
+      done();
+    }
+
+    config.organism = ['chimpanzee', 'gorilla'];
+    config.chromosomes = {
+      chimpanzee: ['1'],
+      gorilla: ['4']
     };
     config.orientation = 'vertical';
     config.perspective = 'comparative';
