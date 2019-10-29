@@ -2,7 +2,7 @@
  * @fileoveriew Methods for initialization
  */
 
-import {d3} from '../lib';
+import {d3, slug} from '../lib';
 import {configure} from './configure';
 import {finishInit} from './finish-init';
 import {writeContainer} from './write-container';
@@ -106,7 +106,7 @@ function onLoad() {
 
 function getBandFileName(taxid, accession, ideo) {
   var organism = ideo.organisms[taxid];
-  var bandFileName = [Ideogram.slugify(organism.scientificName)];
+  var bandFileName = [slug(organism.scientificName)];
   var assemblies = organism.assemblies;
   var resolution = ideo.config.resolution;
 

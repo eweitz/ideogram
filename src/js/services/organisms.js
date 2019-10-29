@@ -1,4 +1,4 @@
-import {d3} from '../lib';
+import {d3, slug} from '../lib';
 
 /**
  *  Returns NCBI Taxonomy identifier (taxid) for organism name
@@ -10,7 +10,7 @@ function getTaxidFromEutils(orgName, ideo) {
 
   return d3.json(taxonomySearch).then(function(data) {
     taxid = data.esearchresult.idlist[0];
-    return taxid;
+    return [orgName, taxid];
   });
 }
 
@@ -37,7 +37,7 @@ function getOrganismFromEutils(taxid, callback) {
 
 function setTaxidData(taxid, ideo) {
 
-  var dataDir, organism, urlOrg, taxids;
+  var dataDir, urlOrg, taxids;
 
   if (ideo.assemblyIsAccession()) {
     return new Promise(function(resolve) {
@@ -47,8 +47,7 @@ function setTaxidData(taxid, ideo) {
   }
 
   dataDir = ideo.config.dataDir;
-  organism = ideo.organisms[taxid].scientificName.toLowerCase();
-  urlOrg = organism.replace(' ', '-');
+  urlOrg = slug(ideo.organisms[taxid].scientificName);
 
   taxids = [taxid];
 
@@ -132,7 +131,7 @@ function setAssemblyAndChromosomes(taxid, resolve, ideo) {
             originalChrs = config.chromosomes[taxid];
           } else {
             // Encountered when neither organism has centromere data
-            orgName = ideo.getScientificName(taxid).toLowerCase();
+            orgName = slug(ideo.getScientificName(taxid));
             ideo.config.chromosomes[taxid] =
               config.chromosomes[orgName].slice();
             originalChrs = ideo.config.chromosomes[taxid];
@@ -162,9 +161,9 @@ function isOrganismSupported(org, ideo) {
   for (taxid in ideo.organisms) {
     ideoOrg = ideo.organisms[taxid];
     if (
-      taxid === org ||
-      ideoOrg.commonName.toLowerCase() === org.toLowerCase() ||
-      ideoOrg.scientificName.toLowerCase() === org.toLowerCase()
+      taxid === slug(org) ||
+      slug(ideoOrg.commonName) === slug(org) ||
+      slug(ideoOrg.scientificName) === slug(org)
     ) {
       return true;
     }
@@ -186,11 +185,17 @@ function populateNonNativeOrg(orgs, ideo) {
     org = orgs[i];
     if (isOrganismSupported(org, ideo) === false) {
       promise = getTaxidFromEutils(org, ideo)
-        .then(function(taxid) {
+        .then(function(orgNameAndTaxid) {
+
+          var taxid = orgNameAndTaxid[1],
+            orgName = orgNameAndTaxid[0],
+            name, scientificName;
+
+          name = orgName.replace('-', ' ');
+          scientificName = name[0].toUpperCase() + name.slice(1);
 
           augmentedOrganismMetadata[taxid] = {
-            scientificName: org,
-            scientificNameAbbr: '',
+            scientificName: scientificName,
             commonName: '',
             assemblies: {default: ''}
           };
@@ -213,7 +218,7 @@ function populateNonNativeOrg(orgs, ideo) {
 }
 
 function prepareTmpChrsAndTaxids(ideo) {
-  var orgs, taxids, tmpChrs, org, taxid,
+  var orgs, taxids, tmpChrs, org, taxid, chrsOrgSlugs,
     config = ideo.config;
 
   taxids = [];
@@ -228,14 +233,19 @@ function prepareTmpChrsAndTaxids(ideo) {
       taxids.push(taxid);
       if (config.multiorganism) {
         if (typeof config.chromosomes !== 'undefined') {
+          chrsOrgSlugs = Object.keys(config.chromosomes).map(org => slug(org));
           // Adjusts 'chromosomes' configuration parameter to make object
           // keys use taxid instead of common organism name
-          if (orgFields.scientificName.toLowerCase() in config.chromosomes) {
+          if (chrsOrgSlugs.includes(slug(orgFields.scientificName))) {
             org = orgFields.scientificName;
-          } else if (orgFields.commonName.toLowerCase() in config.chromosomes) {
+          } else if (chrsOrgSlugs.includes(slug(orgFields.commonName))) {
             org = orgFields.commonName;
           }
-          tmpChrs[taxid] = config.chromosomes[org.toLowerCase()];
+          if (slug(org) in config.chromosomes) {
+            tmpChrs[taxid] = config.chromosomes[slug(org)];
+          } else {
+            tmpChrs[taxid] = config.chromosomes[org.toLowerCase()];
+          }
         } else {
           tmpChrs = null;
         }
