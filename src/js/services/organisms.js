@@ -79,18 +79,27 @@ function setTaxidData(taxid, ideo) {
       var asmAndChrTaxidsArray = [''],
         chromosomes = [],
         seenChrs = {},
-        chr;
+        chr, maxLength, splitBand, length;
+
+      ideo.bandData[taxid] = chrBands;
 
       for (var i = 0; i < chrBands.length; i++) {
-        chr = chrBands[i].split(' ')[0];
+        splitBand = chrBands[i].split(' ');
+        chr = splitBand[0];
+        length = splitBand.slice(-1)[0];
         if (chr in seenChrs) {
           continue;
         } else {
-          chromosomes.push({name: chr, type: 'nuclear'});
+          chromosomes.push({name: chr, type: 'nuclear', length: length});
           seenChrs[chr] = 1;
         }
       }
       chromosomes = chromosomes.sort(Ideogram.sortChromosomes);
+      maxLength = {bp: 0, iscn: 0};
+      chromosomes.forEach(chr => {
+        if (chr.length > maxLength.bp) maxLength.bp = chr.length;
+      });
+      ideo.maxLength[taxid] = maxLength;
       asmAndChrTaxidsArray.push(chromosomes);
       asmAndChrTaxidsArray.push(taxids);
       return asmAndChrTaxidsArray;
@@ -105,26 +114,38 @@ function setTaxidData(taxid, ideo) {
 }
 
 function setAssemblyAndChromosomes(taxid, resolve, ideo) {
-  var assembly, chrs, originalChrs, filteredChrs;
+  var assembly, chrs, originalChrs, orgName, filteredChrs,
+    config = ideo.config;
 
   setTaxidData(taxid, ideo)
     .then(function(asmChrTaxidsArray) {
       assembly = asmChrTaxidsArray[0];
       chrs = asmChrTaxidsArray[1];
 
-      if ('chromosomes' in ideo.config === false) {
+      if ('chromosomes' in config === false || config.chromosomes === null) {
         ideo.config.chromosomes = {};
         ideo.config.chromosomes[taxid] = chrs;
       } else {
-        if (ideo.config.multiorganism) {
-          originalChrs = ideo.config.chromosomes[taxid];
+        if (config.multiorganism) {
+          if (taxid in config.chromosomes) {
+            // Encountered when either organism has centromere data
+            originalChrs = config.chromosomes[taxid];
+          } else {
+            // Encountered when neither organism has centromere data
+            orgName = ideo.getScientificName(taxid).toLowerCase();
+            ideo.config.chromosomes[taxid] =
+              config.chromosomes[orgName].slice();
+            originalChrs = ideo.config.chromosomes[taxid];
+            // delete ideo.config.chromosomes[orgName];
+          }
         } else {
-          originalChrs = ideo.config.chromosomes;
+          originalChrs = config.chromosomes;
         }
 
         filteredChrs = chrs.filter(d => originalChrs.includes(d.name));
         ideo.config.chromosomes[taxid] = filteredChrs;
       }
+      ideo.chromosomes[taxid] = ideo.config.chromosomes[taxid].slice();
       ideo.organisms[taxid].assemblies = {
         default: assembly
       };

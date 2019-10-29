@@ -149,8 +149,8 @@ function parseChromosome(result, ideo) {
   return chromosome;
 }
 
-function parseChromosomes(results, ideo) {
-  var x, chromosome, seenChrId,
+function parseChromosomes(results, taxid, ideo) {
+  var x, chromosome, seenChrId, maxLength,
     seenChrs = {},
     chromosomes = [];
 
@@ -170,6 +170,12 @@ function parseChromosomes(results, ideo) {
   }
 
   chromosomes = chromosomes.sort(Ideogram.sortChromosomes);
+
+  maxLength = {bp: 0, iscn: 0};
+  chromosomes.forEach(chr => {
+    if (chr.length > maxLength.bp) maxLength.bp = chr.length;
+  });
+  ideo.maxLength[taxid] = maxLength;
 
   ideo.coordinateSystem = 'bp';
 
@@ -217,7 +223,7 @@ function getAssemblyAndChromosomesFromEutils(taxid, callback) {
     }).then(function(esearchUrl) { return d3.json(esearchUrl); })
     .then(function(data) { return fetchNucleotideSummary(data, ideo); })
     .then(function(data) {
-      var chromosomes = parseChromosomes(data.result, ideo);
+      var chromosomes = parseChromosomes(data.result, taxid, ideo);
       return callback([assemblyAccession, chromosomes]);
     }, function(rejectedReason) {
       console.warn(rejectedReason);

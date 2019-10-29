@@ -72,6 +72,56 @@ function updateLines(lines, columns, taxid) {
 }
 
 /**
+ * Reports if a cytogenetic band should be included in parse results
+ *
+ * TODO:
+ * Normalize ideogram.chromosomes upstream.
+ *
+ * This function is complex because ideogram.chromosomes is (likely
+ * unnecessarily) complex.  The "ideogram.chromosomes" object can
+ * take many forms depending on the use case, and this results in
+ * hard-to-reason-about functions like this.
+ *
+ * Normalizing ideogram.chromosomes to a common format somewhere upstream
+ * would likely make this specific function and Ideogram in general much
+ * more maintainable.
+ */
+function shouldSkipBand(chrs, chr, taxid, ideo) {
+
+  var hasChrs, chrsAreList, chrNotInList, chrsAreObject,
+    innerChrsAreStrings, matchingChrObjs, chrNotInObject,
+    multiorganism = ideo.config.multiorganism;
+
+  hasChrs = typeof chrs !== 'undefined' && chrs !== null;
+  if (!hasChrs) return false;
+
+  chrsAreList = Array.isArray(chrs);
+  chrNotInList = chrsAreList && chrs.indexOf(chr) === -1;
+  chrsAreObject = typeof chrs === 'object';
+
+  if (chrsAreList && !chrsAreObject && chrNotInList) return true;
+
+  if (taxid in chrs === false && multiorganism) return false;
+
+  if (!multiorganism) {
+    // Encountered in single organism when showing subset of all chromosomes,
+    // e.g. only human X and Y as in https://eweitz.github.io/ideogram/homology-basic
+    matchingChrObjs = chrs.filter(thisChr => thisChr === chr);
+    chrNotInObject = matchingChrObjs.length === 0;
+  } else {
+    innerChrsAreStrings = typeof chrs[taxid][0] === 'string';
+    if (innerChrsAreStrings) {
+      chrNotInObject = chrs[taxid].includes(chr) === false;
+    } else {
+      matchingChrObjs = chrs[taxid].filter(thisChr => thisChr.name === chr);
+      chrNotInObject = matchingChrObjs.length === 0;
+    }
+  }
+  return chrNotInObject;
+
+}
+
+/**
  * Parses cytogenetic band data from a TSV file, or, if band data is
  * prefetched, from an array
  *
@@ -79,9 +129,11 @@ function updateLines(lines, columns, taxid) {
  * #chromosome arm band iscn_start iscn_stop bp_start bp_stop stain density
  * ftp://ftp.ncbi.nlm.nih.gov/pub/gdp/ideogram_9606_GCF_000001305.14_550_V1
  */
-function parseBands(content, taxid, chromosomes) {
-  var delimiter, tsvLines, columns, chr, i, init, source,
+function parseBands(taxid, chromosomes, ideo) {
+  var delimiter, tsvLines, columns, chr, i, init, source, content,
     lines = {};
+
+  content = ideo.bandData[taxid];
 
   if (Array.isArray(content)) source = 'native';
 
@@ -97,14 +149,7 @@ function parseBands(content, taxid, chromosomes) {
     columns = tsvLines[i].split(delimiter);
 
     chr = columns[0];
-    if (
-      (typeof chromosomes !== 'undefined' && chromosomes !== null) &&
-      // (((Array.isArray(chromosomes) && chromosomes.indexOf(chr) === -1) &&
-      // taxid in ideo.bandData === false) ||
-      ((Array.isArray(chromosomes) && chromosomes.indexOf(chr) === -1) ||
-      (typeof chromosomes === 'object' && taxid in chromosomes &&
-        chromosomes[taxid].includes(chr) === false))
-    ) {
+    if (shouldSkipBand(chromosomes, chr, taxid, ideo)) {
       // If specific chromosomes are configured, then skip processing all
       // other fetched chromosomes.
       continue;
