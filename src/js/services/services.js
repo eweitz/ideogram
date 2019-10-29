@@ -149,8 +149,8 @@ function parseChromosome(result, ideo) {
   return chromosome;
 }
 
-function parseChromosomes(results, ideo) {
-  var x, chromosome, seenChrId,
+function parseChromosomes(results, taxid, ideo) {
+  var x, chromosome, seenChrId, maxLength,
     seenChrs = {},
     chromosomes = [];
 
@@ -171,6 +171,12 @@ function parseChromosomes(results, ideo) {
 
   chromosomes = chromosomes.sort(Ideogram.sortChromosomes);
 
+  maxLength = {bp: 0, iscn: 0};
+  chromosomes.forEach(chr => {
+    if (chr.length > maxLength.bp) maxLength.bp = chr.length;
+  });
+  if (maxLength.bp > ideo.maxLength.bp) ideo.maxLength.bp = maxLength.bp;
+  ideo.maxLength[taxid] = maxLength;
   ideo.coordinateSystem = 'bp';
 
   return chromosomes;
@@ -197,7 +203,7 @@ function fetchAssemblySummary(data, ideo) {
  *
  * @param callback Function to call upon completion of this async method
  */
-function getAssemblyAndChromosomesFromEutils(callback) {
+function getAssemblyAndChromosomesFromEutils(taxid, callback) {
   var assemblyAccession,
     ideo = this;
 
@@ -207,7 +213,7 @@ function getAssemblyAndChromosomesFromEutils(callback) {
   // get search results containing chromosome IDs, then
   // get summaries of each of those chromosome IDs, then
   // format the chromosome summaries and pass them into callback function.
-  var asmSearchUrl = getAssemblySearchUrl(ideo);
+  var asmSearchUrl = getAssemblySearchUrl(taxid, ideo);
   d3.json(asmSearchUrl)
     .then(function(data) { return fetchAssemblySummary(data, ideo); })
     .then(function(data) {
@@ -217,7 +223,7 @@ function getAssemblyAndChromosomesFromEutils(callback) {
     }).then(function(esearchUrl) { return d3.json(esearchUrl); })
     .then(function(data) { return fetchNucleotideSummary(data, ideo); })
     .then(function(data) {
-      var chromosomes = parseChromosomes(data.result, ideo);
+      var chromosomes = parseChromosomes(data.result, taxid, ideo);
       return callback([assemblyAccession, chromosomes]);
     }, function(rejectedReason) {
       console.warn(rejectedReason);

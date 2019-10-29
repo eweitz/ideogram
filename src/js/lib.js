@@ -136,12 +136,12 @@ function getTaxid(name) {
     ideo = this,
     organisms = ideo.organisms;
 
-  name = name.toLowerCase();
+  name = slug(name);
 
   for (taxid in organisms) {
     organism = organisms[taxid];
-    commonName = organism.commonName.toLowerCase();
-    scientificName = organism.scientificName.toLowerCase();
+    commonName = slug(organism.commonName);
+    scientificName = slug(organism.scientificName);
     if (commonName === name || scientificName === name) {
       return taxid;
     }
@@ -172,7 +172,15 @@ function getScientificName(taxid) {
   return null;
 }
 
+/**
+* e.g. "Homo sapiens" -> "homo-sapiens"
+*/
+function slug(value) {
+  return value.toLowerCase().replace(' ', '-');
+}
+
 export {
   assemblyIsAccession, hasNonGenBankAssembly, hasGenBankAssembly, getDataDir,
-  round, onDidRotate, getSvg, fetch, d3, getTaxid, getCommonName, getScientificName
+  round, onDidRotate, getSvg, fetch, d3, getTaxid, getCommonName,
+  getScientificName, slug
 };

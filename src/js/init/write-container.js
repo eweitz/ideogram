@@ -61,7 +61,7 @@ function writeTooltipContainer(ideo) {
     .style('z-index', '100');
 }
 
-function writeContainerDom(taxid, ideo) {
+function writeContainerDom(ideo) {
 
   // Remove any previous container content
   d3.selectAll(ideo.config.container + ' #_ideogramOuterWrap').remove();
@@ -83,15 +83,15 @@ function writeContainerDom(taxid, ideo) {
     .append('svg')
     .attr('id', '_ideogram')
     .attr('class', getContainerSvgClass(ideo))
-    .attr('width', ideo._layout.getWidth(taxid))
-    .attr('height', ideo._layout.getHeight(taxid))
+    .attr('width', ideo._layout.getWidth())
+    .attr('height', ideo._layout.getHeight())
     .html(ideo.getBandColorGradients());
 }
 
 /**
  * Writes the HTML elements that contain this ideogram instance.
  */
-function writeContainer(bandsArray, taxid, t0) {
+function writeContainer(t0) {
   var ideo = this;
 
   if (ideo.config.annotationsPath) {
@@ -102,11 +102,11 @@ function writeContainer(bandsArray, taxid, t0) {
 
   ideo._layout = getLayout(ideo);
 
-  writeContainerDom(taxid, ideo);
+  writeContainerDom(ideo);
 
   ideo.isOnlyIdeogram = document.querySelectorAll('#_ideogram').length === 1;
   writeTooltipContainer(ideo);
-  ideo.finishInit(bandsArray, t0);
+  ideo.finishInit(t0);
 }
 
 export {writeContainer};

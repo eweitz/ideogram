@@ -52,19 +52,17 @@ function getChrScale(chr, hasBands, ideo) {
     taxid = chr.id.split('-')[1],
     scale = {};
 
+  scale.bp = chrHeight / maxLength.bp;
+
   if (ideo.config.multiorganism === true) {
-    scale.bp = 1;
     // chr.scale.bp = band.iscn.stop / band.bp.stop;
     if (ideo.config.chromosomeScale === 'relative') {
       scale.iscn = chrHeight * chrLength / maxLength[taxid].bp;
     } else {
       scale.iscn = chrHeight * chrLength / maxLength.bp;
     }
-  } else {
-    scale.bp = chrHeight / maxLength.bp;
-    if (hasBands) {
-      scale.iscn = chrHeight / maxLength.iscn;
-    }
+  } else if (hasBands) {
+    scale.iscn = chrHeight / maxLength.iscn;
   }
 
   return scale;
@@ -142,7 +140,7 @@ function getCentromerePosition(hasBands, bands) {
  * bands, centromere position, etc.
  */
 function getChromosomeModel(bands, chrName, taxid, chrIndex) {
-  var hasBands,
+  var hasBands, org, abbreviatedName, splitName,
     chr = {},
     ideo = this;
 
@@ -154,9 +152,12 @@ function getChromosomeModel(bands, chrName, taxid, chrIndex) {
   chr.id = 'chr' + chr.name + '-' + taxid;
 
   if (ideo.config.fullChromosomeLabels === true) {
-    var name = this.organisms[taxid].scientificName.split(' ');
-    var scientificNameAbbr = name[0][0] + '. ' + name[1];
-    chr.name = scientificNameAbbr + ' chr' + chr.name;
+    org = this.organisms[taxid];
+    console.log(org.scientificName);
+    splitName = org.scientificName.split(' ');
+    abbreviatedName = splitName[0][0] + '. ' + splitName[1];
+
+    chr.name = abbreviatedName + ' chr' + chr.name;
   }
 
   chr.bands = bands;
