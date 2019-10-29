@@ -167,13 +167,6 @@ export default class Ideogram {
   }
 
   /**
-  * e.g. "Homo sapiens" -> "homo-sapiens"
-  */
-  static slugify(value) {
-    return value.toLowerCase().replace(' ', '-');
-  }
-
-  /**
    * Sorts two chromosome objects by type and name
    * - Nuclear chromosomes come before non-nuclear chromosomes.
    * - Among nuclear chromosomes, use "natural sorting", e.g.

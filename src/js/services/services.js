@@ -175,8 +175,8 @@ function parseChromosomes(results, taxid, ideo) {
   chromosomes.forEach(chr => {
     if (chr.length > maxLength.bp) maxLength.bp = chr.length;
   });
+  if (maxLength.bp > ideo.maxLength.bp) ideo.maxLength.bp = maxLength.bp;
   ideo.maxLength[taxid] = maxLength;
-
   ideo.coordinateSystem = 'bp';
 
   return chromosomes;
