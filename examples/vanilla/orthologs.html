@@ -112,7 +112,7 @@
     async function handleOrganism(event) {
       var organism =
           event.target.value.split('(')[1].split(')')[0]
-          .replace(' ', '-').toLowerCase();
+          .replace(/ /g, '-').toLowerCase();
 
       urlParams[event.target.id] = organism;
 
@@ -205,8 +205,8 @@
         urlParams['backend'] = 'oma';
       }
 
-      org1 = urlParams['org'].replace('-', ' ');
-      org2 = urlParams['org2'].replace('-', ' ');
+      org1 = urlParams['org'].replace(/-/g, ' ');
+      org2 = urlParams['org2'].replace(/-/g, ' ');
 
       showBandLabels = 'band-labels' in urlParams;
 
