@@ -76,7 +76,6 @@
   <script type="text/javascript">
 
     var prevState = {};
-    var loci1, loci2;
     var orthologs = []; // arrays of [loci1, loci2]
 
     function shouldUpdateState() {
@@ -93,12 +92,10 @@
 
     // Process text input for the "Gene" field.
     async function handleGene(event) {
-      var geneNames, loci1, loci2;
-
       // Ignore non-"Enter" keyups
       if (event.type === 'keyup' && event.keyCode !== 13) return;
 
-      geneNames = event.target.value;
+      var geneNames = event.target.value;
 
       // Ignore when input value is unchanged
       if (urlParams['genes'] === geneNames) return;
@@ -123,7 +120,7 @@
 
     function splitList(csvList) {
       return csvList
-        .replace('%20', '')
+        .replace(/%20/g, '')
         .replace(/^\s+|\s+$/g, '')
         .split(',');
     }
@@ -176,6 +173,8 @@
     }
 
     async function processUrl() {
+      var genesList;
+
       document.querySelector('#ideogram-container').innerHTML = '';
       document.querySelector('#status-container').innerHTML = 'Loading...';
       parseUrlParams();
@@ -223,13 +222,8 @@
 
       if (shouldUpdateState()) {
         try {
-          orthologs = [];
-          var geneList = splitList(genes);
-          for (i = 0; i < geneList.length; i++) {
-            gene = geneList[i];
-            [loci1, loci2] = await fetchOrthologs(gene, org1, [org2], backend);
-            orthologs.push([loci1, loci2]);
-          }
+          genesList = splitList(genes);
+          orthologs = await fetchOrthologs(genesList, org1, [org2], backend);
         } catch (error) {
           document.querySelector('#status-container').innerHTML =
             `<span id="error-container">${error}</span>`;
@@ -242,13 +236,13 @@
     }
 
     function parseGenomicRawRanges(ortholog) {
-      loci1 = ortholog[0];
-      loci2 = ortholog[1];
 
-      [loci1Chr, loci1Range] = loci1.split(':');
-      [loci2Chr, loci2Range] = loci2.split(':');
-      [loci1Start, loci1Stop] = loci1Range.split('-');
-      [loci2Start, loci2Stop] = loci2Range.split('-');
+      var [loci1, loci2] = ortholog;
+
+      var [loci1Chr, loci1Range] = loci1.split(':');
+      var [loci2Chr, loci2Range] = loci2.split(':');
+      var [loci1Start, loci1Stop] = loci1Range.split('-');
+      var [loci2Start, loci2Stop] = loci2Range.split('-');
 
       range1 = {
         chr: loci1Chr,
@@ -357,7 +351,7 @@
         });
       } else {
         // Multiple chromosomes
-        ranges = parseGenomicRawRanges(orthologs[0]);
+        ranges = parseGenomicRawRanges(orthologs[0][0]);
         chromosomesConfig = {}
         chromosomesConfig[org1] = [ranges[0].chr];
         chromosomesConfig[org2] = [ranges[1].chr];
