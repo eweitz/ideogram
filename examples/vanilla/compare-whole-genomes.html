@@ -105,6 +105,7 @@
       chrs = ideogram.chromosomes;
       humanTaxid = ideogram.getTaxid('human');
       plantTaxid = ideogram.getTaxid('thale cress'); // Arabidopsis thaliana
+      // plantTaxid = ideogram.getTaxid('mus-musculus'); // Mouse
       humanChrs = chrs[humanTaxid];
       plantChrs = chrs[plantTaxid];
 
@@ -198,6 +199,7 @@
 
       config = {
         organism: ['human', 'thale cress'],
+        // organism: ['human', 'mus musculus'],
         orientation: orientation,
         geometry: 'collinear',
         chromosomeScale: chromosomeScale,
