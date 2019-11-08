@@ -351,7 +351,7 @@
         });
       } else {
         // Multiple chromosomes
-        ranges = parseGenomicRawRanges(orthologs[0][0]);
+        ranges = parseGenomicRawRanges(orthologs[0]);
         chromosomesConfig = {}
         chromosomesConfig[org1] = [ranges[0].chr];
         chromosomesConfig[org2] = [ranges[1].chr];
