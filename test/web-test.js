@@ -563,12 +563,12 @@ describe('Ideogram', function() {
       line1 = document.querySelector(selector1 + ' .syntenyBorder');
       line3 = document.querySelector(selector3 + ' .syntenyBorder');
 
-      assert.equal(Math.round(line1.getAttribute('x1')), 23);
+      assert.equal(Math.round(line1.getAttribute('x1')), 19);
       assert.equal(Math.round(line1.getAttribute('x2')), 220);
-      assert.equal(Math.round(line1.getAttribute('y1')), 14);
+      assert.equal(Math.round(line1.getAttribute('y1')), 15);
 
-      assert.equal(Math.round(line3.getAttribute('y1')), 315);
-      assert.equal(Math.round(line3.getAttribute('y2')), 52);
+      assert.equal(Math.round(line3.getAttribute('y1')), 313);
+      assert.equal(Math.round(line3.getAttribute('y2')), 51);
       done();
     }
 

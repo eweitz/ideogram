@@ -14,7 +14,7 @@ function isHeterogameticChromosome(chrModel, chrIndex, ideo) {
   return (
     'sex' in ideo.config &&
       (
-        ploidy === 2 && ideo.sexChromosomes.index + 2 === chrIndex ||
+        ploidy === 2 && ideo.sexChromosomes.index + 1 === chrIndex ||
         ideo.config.sex === 'female' && chrModel.name === 'Y'
       )
   );
