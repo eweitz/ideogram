@@ -153,7 +153,6 @@ function getChromosomeModel(bands, chrName, taxid, chrIndex) {
 
   if (ideo.config.fullChromosomeLabels === true) {
     org = this.organisms[taxid];
-    console.log(org.scientificName);
     splitName = org.scientificName.split(' ');
     abbreviatedName = splitName[0][0] + '. ' + splitName[1];
 
