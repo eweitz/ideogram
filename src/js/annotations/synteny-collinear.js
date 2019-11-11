@@ -23,7 +23,7 @@ function writeSyntenicRegion(syntenies, regionID, ideo) {
     });
 }
 
-function getRegionsR1AndR2(regions, xOffset, ideo) {
+function getRegionsR1AndR2(regions, ideo) {
   var r1, r2;
 
   r1 = regions.r1;
@@ -86,7 +86,7 @@ function writeSyntenicRegions(syntenicRegions, syntenies, xOffset, ideo) {
   for (i = 0; i < syntenicRegions.length; i++) {
     regions = syntenicRegions[i];
 
-    [r1, r2] = getRegionsR1AndR2(regions, xOffset, ideo);
+    [r1, r2] = getRegionsR1AndR2(regions, ideo);
 
     regionID = (
       r1.chr.id + '_' + r1.start + '_' + r1.stop + '_' +
