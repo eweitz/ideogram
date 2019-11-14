@@ -97,8 +97,8 @@ function writeSyntenicRegions(syntenicRegions, syntenies, xOffset, ideo) {
     syntenicRegion = writeSyntenicRegion(syntenies, regionID, ideo);
 
     chrWidth = ideo.config.chrWidth;
-    x1 = chrWidth + 9;
-    x2 = chrWidth + 210; // Genomes are spaced ~200 pixels apart
+    x1 = chrWidth + 46;
+    x2 = chrWidth + 240; // Genomes are spaced ~200 pixels apart
 
     writeSyntenicRegionPolygons(syntenicRegion, x1, x2, r1, r2, regions);
     writeSyntenicRegionLines(syntenicRegion, x1, x2, r1, r2);

@@ -6,6 +6,22 @@
 
 import {d3} from './lib';
 
+function labelGenomes(ideo) {
+
+  ideo.config.taxids.forEach((taxid, i) => {
+    var org = ideo.organisms[taxid];
+    // var commonName = slug(org.commonName);
+    var scientificName = org.scientificName;
+    d3.select(ideo.selector)
+      .append('text')
+      .attr('class', 'genomeLabel')
+      .attr('x', 50 + 200 * i)
+      .attr('y', 10)
+      .text(scientificName)
+      .attr('text-anchor', 'middle');
+  });
+}
+
 /**
 * Rearrange chromosomes from horizontal to collinear
 */
@@ -15,12 +31,12 @@ function rearrangeChromosomes(chrSets, yOffsets, x, ideo) {
 
   for (i = 0; i < chrSets.length; i++) {
     chrSet = chrSets[i];
-    y = yOffsets[i];
+    y = yOffsets[i] + 15;
 
     chr = ideo.chromosomesArray[i];
     taxid = chr.id.split('-')[1];
     orgIndex = ideo.config.taxids.indexOf(taxid);
-    adjustedX = x - orgIndex * 200;
+    adjustedX = x - orgIndex * 200 - 30;
     if (orgIndex === 0) {
       chrLabelX = -34;
       adjustedX += ideo.config.chrWidth * 2 - 16;
@@ -35,6 +51,8 @@ function rearrangeChromosomes(chrSets, yOffsets, x, ideo) {
     chrSet.setAttribute('transform', 'rotate(90) translate(' + y + ',' + adjustedX + ')');
     chrSet.querySelector('.chromosome').setAttribute('transform', 'translate(-13, 10)');
   }
+
+  labelGenomes(ideo);
 }
 
 /**

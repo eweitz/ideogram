@@ -66,80 +66,80 @@
 
   var initialized = false;
 
-  // function onIdeogramLoad() {
-  //     var chrs, humanChrs, mouseChrs, syntenicRegions, humanTaxid, mouseTaxid;
-
-  //     chrs = ideogram.chromosomes;
-  //     humanTaxid = ideogram.getTaxid('human');
-  //     mouseTaxid = ideogram.getTaxid('mouse');
-  //     humanChrs = chrs[humanTaxid];
-  //     mouseChrs = chrs[mouseTaxid];
-
-  //     syntenicRegions = [];
-
-  //     // MTOR gene
-  //     range1 = {chr: humanChrs['1'], start: 11106531, stop: 11262557};
-  //     range2 = {chr: mouseChrs['4'], start: 148448582, stop: 148557685};
-  //     syntenicRegions.push({'r1': range1, 'r2': range2});
-
-  //     // PTEN gene
-  //     range3 = {chr: humanChrs['10'], start: 87864470, stop: 87965472};
-  //     range4 = {chr: mouseChrs['19'], start: 32758445, stop: 32820028};
-  //     syntenicRegions.push({'r1': range3, 'r2': range4});
-
-  //     // GAD2 gene
-  //     range5 = {chr: humanChrs['10'], start: 26216810, stop: 26300961}
-  //     range6 = {chr: mouseChrs['2'], start: 22622663, stop: 22690346};
-  //     syntenicRegions.push({'r1': range5, 'r2': range6});
-
-  //     ideogram.drawSynteny(syntenicRegions);
-  //   }
-
-    function onIdeogramLoad() {
-      // These genes were fetched via the Orthologs example in Ideogram, e.g.:
-      // https://eweitz.github.io/ideogram/orthologs?gene=KDM5A&org=homo-sapiens&org2=arabidopsis-thaliana&backend=orthodb
-
-      var chrs, humanChrs, mouseChrs, syntenicRegions, humanTaxid, mouseTaxid,
-        range1, range2;
+  function onIdeogramLoad() {
+      var chrs, humanChrs, mouseChrs, syntenicRegions, humanTaxid, mouseTaxid;
 
       chrs = ideogram.chromosomes;
       humanTaxid = ideogram.getTaxid('human');
-      plantTaxid = ideogram.getTaxid('thale cress'); // Arabidopsis thaliana
-      // plantTaxid = ideogram.getTaxid('mus-musculus'); // Mouse
+      mouseTaxid = ideogram.getTaxid('mouse');
       humanChrs = chrs[humanTaxid];
-      plantChrs = chrs[plantTaxid];
+      mouseChrs = chrs[mouseTaxid];
 
       syntenicRegions = [];
 
-      // GTF2B gene
-      range1 = {chr: humanChrs['1'], start: 88853213, stop: 88891499};
-      range2 = {chr: plantChrs['3'], start: 3199907, stop: 3201642};
+      // MTOR gene
+      range1 = {chr: humanChrs['1'], start: 11106531, stop: 11262557};
+      range2 = {chr: mouseChrs['4'], start: 148448582, stop: 148557685};
       syntenicRegions.push({'r1': range1, 'r2': range2});
 
-      // E2F4 gene
-      range1 = {chr: humanChrs['16'], start: 67192154, stop: 67198917};
-      range2 = {chr: plantChrs['1'], start: 17634696, stop: 17637808};
-      syntenicRegions.push({'r1': range1, 'r2': range2});
+      // PTEN gene
+      range3 = {chr: humanChrs['10'], start: 87864470, stop: 87965472};
+      range4 = {chr: mouseChrs['19'], start: 32758445, stop: 32820028};
+      syntenicRegions.push({'r1': range3, 'r2': range4});
 
-      // Gtf2e2 gene
-      range1 = {chr: humanChrs['8'], start: 30658240, stop: 30578317};
-      range2 = {chr: plantChrs['4'], start: 10984520, stop: 10982516};
-      syntenicRegions.push({'r1': range1, 'r2': range2});
-
-      // NFYC gene
-      range1 = {chr: humanChrs['1'], start: 40691698, stop: 40771602};
-      range2 = {chr: plantChrs['1'], start: 20451082, stop: 20452670};
-      syntenicRegions.push({'r1': range1, 'r2': range2});
-
-      // KDM5A gene
-      range1 = {chr: humanChrs['12'], start: 389319, stop: 280056};
-      range2 = {chr: plantChrs['1'], start: 23553231, stop: 23544553};
-      syntenicRegions.push({'r1': range1, 'r2': range2});
+      // GAD2 gene
+      range5 = {chr: humanChrs['10'], start: 26216810, stop: 26300961}
+      range6 = {chr: mouseChrs['2'], start: 22622663, stop: 22690346};
+      syntenicRegions.push({'r1': range5, 'r2': range6});
 
       ideogram.drawSynteny(syntenicRegions);
-
-      document.querySelector('#_ideogram').setAttribute('width', 1000);
     }
+
+    // function onIdeogramLoad() {
+    //   // These genes were fetched via the Orthologs example in Ideogram, e.g.:
+    //   // https://eweitz.github.io/ideogram/orthologs?gene=KDM5A&org=homo-sapiens&org2=arabidopsis-thaliana&backend=orthodb
+
+    //   var chrs, humanChrs, mouseChrs, syntenicRegions, humanTaxid, mouseTaxid,
+    //     range1, range2;
+
+    //   chrs = ideogram.chromosomes;
+    //   humanTaxid = ideogram.getTaxid('human');
+    //   // plantTaxid = ideogram.getTaxid('thale cress'); // Arabidopsis thaliana
+    //   plantTaxid = ideogram.getTaxid('mus-musculus'); // Mouse
+    //   humanChrs = chrs[humanTaxid];
+    //   plantChrs = chrs[plantTaxid];
+
+    //   syntenicRegions = [];
+
+    //   // GTF2B gene
+    //   range1 = {chr: humanChrs['1'], start: 88853213, stop: 88891499};
+    //   range2 = {chr: plantChrs['3'], start: 3199907, stop: 3201642};
+    //   syntenicRegions.push({'r1': range1, 'r2': range2});
+
+    //   // E2F4 gene
+    //   range1 = {chr: humanChrs['16'], start: 67192154, stop: 67198917};
+    //   range2 = {chr: plantChrs['1'], start: 17634696, stop: 17637808};
+    //   syntenicRegions.push({'r1': range1, 'r2': range2});
+
+    //   // Gtf2e2 gene
+    //   range1 = {chr: humanChrs['8'], start: 30658240, stop: 30578317};
+    //   range2 = {chr: plantChrs['4'], start: 10984520, stop: 10982516};
+    //   syntenicRegions.push({'r1': range1, 'r2': range2});
+
+    //   // NFYC gene
+    //   range1 = {chr: humanChrs['1'], start: 40691698, stop: 40771602};
+    //   range2 = {chr: plantChrs['1'], start: 20451082, stop: 20452670};
+    //   syntenicRegions.push({'r1': range1, 'r2': range2});
+
+    //   // KDM5A gene
+    //   range1 = {chr: humanChrs['12'], start: 389319, stop: 280056};
+    //   range2 = {chr: plantChrs['1'], start: 23553231, stop: 23544553};
+    //   syntenicRegions.push({'r1': range1, 'r2': range2});
+
+    //   ideogram.drawSynteny(syntenicRegions);
+
+    //   document.querySelector('#_ideogram').setAttribute('width', 1000);
+    // }
 
     // Record app state in URL
     function updateUrl(params) {
@@ -198,8 +198,8 @@
       }
 
       config = {
-        organism: ['human', 'thale cress'],
-        // organism: ['human', 'mus musculus'],
+        // organism: ['human', 'thale cress'],
+        organism: ['human', 'mus musculus'],
         orientation: orientation,
         geometry: 'collinear',
         chromosomeScale: chromosomeScale,
