@@ -14,7 +14,7 @@ function labelGenomes(ideo) {
     var scientificName = org.scientificName;
     d3.select(ideo.selector)
       .append('text')
-      .attr('class', 'genomeLabel')
+      .attr('class', 'genomeLabel italic')
       .attr('x', 50 + 200 * i)
       .attr('y', 10)
       .text(scientificName)
