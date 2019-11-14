@@ -239,22 +239,27 @@
 
       var [loci1, loci2] = ortholog;
 
-      var [loci1Chr, loci1Range] = loci1.split(':');
-      var [loci2Chr, loci2Range] = loci2.split(':');
+      var [loci1Chr, loci1Range] = loci1.location.split(':');
+      var [loci2Chr, loci2Range] = loci2.location.split(':');
       var [loci1Start, loci1Stop] = loci1Range.split('-');
       var [loci2Start, loci2Stop] = loci2Range.split('-');
 
       range1 = {
         chr: loci1Chr,
         start: loci1Start,
-        stop: loci1Stop
+        stop: loci1Stop,
+        name: loci1.gene
       };
 
       range2 = {
         chr: loci2Chr,
         start: loci2Start,
-        stop: loci2Stop
+        stop: loci2Stop,
+        name: loci2.gene
       };
+
+      console.log('range1')
+      console.log(range1)
 
       return [range1, range2];
     }
@@ -290,13 +295,15 @@
         range1 = {
           chr: org1ChrObj,
           start: rawRanges[0].start,
-          stop: rawRanges[0].stop
+          stop: rawRanges[0].stop,
+          name: rawRanges[0].name
         };
 
         range2 = {
           chr: org2ChrObj,
           start: rawRanges[1].start,
-          stop: rawRanges[1].stop
+          stop: rawRanges[1].stop,
+          name: rawRanges[1].name
         };
 
         syntenicRegions.push({'r1': range1, 'r2': range2});
