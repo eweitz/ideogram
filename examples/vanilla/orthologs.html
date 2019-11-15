@@ -66,8 +66,8 @@
   <label for="backend">
     Orthology backend:
     <select class="left-select backend-select" id="backend">
-      <option id="oma" selected>OMA Browser</option>
-      <option id="orthodb">OrthoDB</option>
+      <option id="orthodb" selected>OrthoDB</option>
+      <option id="oma">OMA Browser</option>
     </select>
   </label>
   </div>
@@ -190,7 +190,7 @@
         urlParams['genes'] = 'MTOR'
         urlParams['org'] = 'homo-sapiens';
         urlParams['org2'] = 'mus-musculus';
-        urlParams['backend'] = 'oma';
+        urlParams['backend'] = 'orthodb';
         // urlParams['loci'] = '1:11106531-11262557,4:148448582-148557685';
       }
 
@@ -201,7 +201,7 @@
       }
 
       if ('backend' in urlParams === false) {
-        urlParams['backend'] = 'oma';
+        urlParams['backend'] = 'orthodb';
       }
 
       org1 = urlParams['org'].replace(/-/g, ' ');
@@ -313,8 +313,8 @@
 
       var ideoContainer = document.querySelector('#ideogram-container');
       if (orthologs.length > 1) {
-        document.querySelector('#_ideogram').setAttribute('width', 250);
-        ideoContainer.setAttribute('style', 'position: relative; top: -100px; left: 200px;');
+        document.querySelector('#_ideogram').setAttribute('width', 350);
+        ideoContainer.setAttribute('style', 'position: relative; top: -110px; left: 200px;');
       } else {
         ideoContainer.setAttribute('style', '');
       }
