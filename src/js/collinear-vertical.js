@@ -109,9 +109,9 @@ function collinearizeVerticalChromosomes(ideo) {
     yOffsets.forEach(d => {
       if (d > maxHeight) maxHeight = d;
     });
-    height = maxHeight + 20;
+    height = maxHeight + 30;
   } else {
-    height = xOffsets.slice(-1)[0] + 20;
+    height = xOffsets.slice(-1)[0] + 30;
   }
 
   d3.select(ideo.selector)
