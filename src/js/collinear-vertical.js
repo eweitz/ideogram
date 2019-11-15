@@ -101,7 +101,7 @@ function collinearizeVerticalChromosomes(ideo) {
   yOffsets = getyOffsets(chrSets, ideo);
   rearrangeChromosomes(chrSets, yOffsets, x, ideo);
 
-  width = Math.round(yOffsets.slice(-1)[0] + 20);
+  width = Math.round(yOffsets.slice(-1)[0] + 70);
 
   if (config.multiorganism) {
     height *= 8;
