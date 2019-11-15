@@ -565,10 +565,10 @@ describe('Ideogram', function() {
 
       assert.equal(Math.round(line1.getAttribute('x1')), 56);
       assert.equal(Math.round(line1.getAttribute('x2')), 250);
-      assert.equal(Math.round(line1.getAttribute('y1')), 30);
+      assert.equal(Math.round(line1.getAttribute('y1')), 25);
 
-      assert.equal(Math.round(line3.getAttribute('y1')), 328);
-      assert.equal(Math.round(line3.getAttribute('y2')), 66);
+      assert.equal(Math.round(line3.getAttribute('y1')), 323);
+      assert.equal(Math.round(line3.getAttribute('y2')), 61);
       done();
     }
 
