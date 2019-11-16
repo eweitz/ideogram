@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Homology, human and fly | Ideogram</title>
+  <style>
+    body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
+    a, a:visited {text-decoration: none;}
+    a:hover {text-decoration: underline;}
+    a, a:hover, a:visited, a:active {color: #0366d6;}
+  </style>
+  <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
+<link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
+</head>
+<body>
+  <h1>Homology, human and fly | Ideogram</h1>
+  <a href="../">Overview</a> |
+  <a href="homology-advanced">Previous</a> |
+  <a href="annotations-basic">Next</a> |
+  <a href="https://github.com/eweitz/ideogram/blob/gh-pages/homology-interspecies.html" target="_blank">Source</a>
+
+  <p>
+    This demonstrates support for drawing features on a target genome that has
+    very many cytogenetic bands
+  </p>
+  <p>
+    See also: <a href='homology-human-chimpanzee'>Homology, human and chimpanzee</a>
+  </p>
+
+  <script type="text/javascript">
+
+    function onIdeogramLoad() {
+
+      var chrs, chr1, chr4, syntheticRegions, taxid1, taxid2;
+
+      taxid1 = ideogram.getTaxid('homo-sapiens');
+      // taxid2 = ideogram.getTaxid('mus-musculus');
+      taxid2 = ideogram.getTaxid('drosophila-melanogaster');
+
+      var chrs = ideogram.chromosomes,
+        chr1 = chrs[taxid1]['1'],
+        chr17 = chrs[taxid1]['17'],
+        // chr3 = chrs[taxid2]['3'],
+        // chr4 = chrs[taxid2]['4'],
+        chr2L = chrs[taxid2]['2L'],
+        chr2R = chrs[taxid2]['2R'],
+        chr3L = chrs[taxid2]['3L'],
+        chr3R = chrs[taxid2]['3R'],
+        chr4 = chrs[taxid2]['4'],
+        chrX = chrs[taxid2]['X'],
+        syntenicRegions = [];
+
+      range1 = {
+        chr: chr1,
+        start: 1,
+        stop: 1,
+        orientation: 'reverse'
+      };
+      
+
+      range17 = {
+        chr: chr17,
+        start: 1,
+        stop: 1,
+        orientation: 'reverse'
+      };
+
+      range2 = {
+        chr: chr2L,
+        // chr: chr3,
+        start: 1,
+        stop: 1
+      };
+
+      range3 = {
+        chr: chr2R,
+        // chr: chr4,
+        start: 1,
+        stop: 1
+      };
+
+      range4 = {
+        chr: chr3L,
+        // chr: chr4,
+        start: 1,
+        stop: 1
+      };
+
+      range5 = {
+        chr: chr3R,
+        // chr: chr4,
+        start: 1,
+        stop: 1
+      };
+
+      range6 = {
+        chr: chr4,
+        // chr: chr4,
+        start: 1,
+        stop: 1
+      };
+
+      range7 = {
+        chr: chrX,
+        start: 1,
+        stop: 1 
+      };
+
+      syntenicRegions.push({'r1': range1, 'r2': range2});
+      syntenicRegions.push({'r1': range1, 'r2': range3});
+      syntenicRegions.push({'r1': range1, 'r2': range4});
+      syntenicRegions.push({'r1': range1, 'r2': range5});
+      syntenicRegions.push({'r1': range1, 'r2': range6});
+      syntenicRegions.push({'r1': range1, 'r2': range7});
+      syntenicRegions.push({'r1': range17, 'r2': range7});
+      syntenicRegions.push({'r1': range17, 'r2': range2});
+
+      ideogram.drawSynteny(syntenicRegions);
+
+    }
+
+  var config = {
+    organism: ['homo-sapiens', 'drosophila-melanogaster'],
+    // organism: ['homo-sapiens', 'mus-musculus'],
+    chrHeight: 50,
+    chrMargin: 5,
+    perspective: 'comparative',
+    chromosomeScale: 'relative',
+    geometry: 'collinear',
+    rotatable: false,
+    onLoad: onIdeogramLoad
+  };
+
+  var ideogram = new Ideogram(config);
+
+  </script>
+</body>
+</html>

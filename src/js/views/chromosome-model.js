@@ -140,7 +140,7 @@ function getCentromerePosition(hasBands, bands) {
  * bands, centromere position, etc.
  */
 function getChromosomeModel(bands, chrName, taxid, chrIndex) {
-  var hasBands, org, abbreviatedName, splitName,
+  var hasBands, org,
     chr = {},
     ideo = this;
 
@@ -153,11 +153,7 @@ function getChromosomeModel(bands, chrName, taxid, chrIndex) {
 
   if (ideo.config.fullChromosomeLabels === true) {
     org = this.organisms[taxid];
-    console.log(org.scientificName);
-    splitName = org.scientificName.split(' ');
-    abbreviatedName = splitName[0][0] + '. ' + splitName[1];
-
-    chr.name = abbreviatedName + ' chr' + chr.name;
+    chr.name = org.scientificName + ' chr' + chr.name;
   }
 
   chr.bands = bands;

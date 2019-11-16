@@ -23,29 +23,22 @@ function writeSyntenicRegion(syntenies, regionID, ideo) {
     });
 }
 
-function getRegionsR1AndR2(regions, xOffset, ideo) {
+function getRegionsR1AndR2(regions, ideo) {
   var r1, r2;
 
   r1 = regions.r1;
   r2 = regions.r2;
 
-  var r1ChrLengthPx = r1.chr.bands.slice(-1)[0].px.stop;
-  var r2ChrLengthPx = r2.chr.bands.slice(-1)[0].px.stop;
-  var ratio = r2ChrLengthPx / r1ChrLengthPx;
   var r1ChrDom = document.querySelector('#' + r1.chr.id + '-chromosome-set');
   var r1GenomeOffset = r1ChrDom.getCTM().f;
   var r2ChrDom = document.querySelector('#' + r2.chr.id + '-chromosome-set');
   // var r2GenomeOffset = r2ChrDom.getBoundingClientRect().top;
   var r2GenomeOffset = r2ChrDom.getCTM().f;
 
-  r1.startPx = ideo.convertBpToPx(r1.chr, r1.start) * ratio + r1GenomeOffset - 7;
-  r1.stopPx = ideo.convertBpToPx(r1.chr, r1.stop) * ratio + r1GenomeOffset - 7;
-  r2.startPx = ideo.convertBpToPx(r2.chr, r2.start) * ratio + r2GenomeOffset - 7;
-  r2.stopPx = ideo.convertBpToPx(r2.chr, r2.stop) * ratio + r2GenomeOffset - 7;
-  // r2.startPx = (ideo.convertBpToPx(r2.chr, r2.start) + xOffset) * ratio;
-  // r2.stopPx = (ideo.convertBpToPx(r2.chr, r2.stop) + xOffset) * ratio;
-  // r2.startPx = (ideo.convertBpToPx(r2.chr, r2.start) + xOffset) + r2GenomeOffset;
-  // r2.stopPx = (ideo.convertBpToPx(r2.chr, r2.stop) + xOffset) + r2GenomeOffset;
+  r1.startPx = ideo.convertBpToPx(r1.chr, r1.start) + r1GenomeOffset - 12;
+  r1.stopPx = ideo.convertBpToPx(r1.chr, r1.stop) + r1GenomeOffset - 12;
+  r2.startPx = ideo.convertBpToPx(r2.chr, r2.start) + r2GenomeOffset - 12;
+  r2.stopPx = ideo.convertBpToPx(r2.chr, r2.stop) + r2GenomeOffset - 12;
 
   return [r1, r2];
 }
@@ -89,7 +82,7 @@ function writeSyntenicRegions(syntenicRegions, syntenies, xOffset, ideo) {
   for (i = 0; i < syntenicRegions.length; i++) {
     regions = syntenicRegions[i];
 
-    [r1, r2] = getRegionsR1AndR2(regions, xOffset, ideo);
+    [r1, r2] = getRegionsR1AndR2(regions, ideo);
 
     regionID = (
       r1.chr.id + '_' + r1.start + '_' + r1.stop + '_' +
@@ -100,8 +93,8 @@ function writeSyntenicRegions(syntenicRegions, syntenies, xOffset, ideo) {
     syntenicRegion = writeSyntenicRegion(syntenies, regionID, ideo);
 
     chrWidth = ideo.config.chrWidth;
-    x1 = ideo._layout.getChromosomeSetYTranslate(0) + 9;
-    x2 = ideo._layout.getChromosomeSetYTranslate(1) - chrWidth + 201;
+    x1 = chrWidth + 46;
+    x2 = chrWidth + 240; // Genomes are spaced ~200 pixels apart
 
     writeSyntenicRegionPolygons(syntenicRegion, x1, x2, r1, r2, regions);
     writeSyntenicRegionLines(syntenicRegion, x1, x2, r1, r2);

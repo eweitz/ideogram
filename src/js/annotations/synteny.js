@@ -71,6 +71,27 @@ function writeSyntenicRegionLines(syntenicRegion, x1, x2, r1, r2) {
     .attr('y2', r2.stopPx);
 }
 
+function writeSyntenicRegionLabels(syntenicRegion, x1, x2, r1, r2, regionId) {
+  var rangeIds = regionId.split('__').map(d => 'label_' + d);
+  if ('name' in r1) {
+    syntenicRegion.append('text')
+      .attr('id', rangeIds[0])
+      .attr('y', r1.startPx + 3)
+      .text(r1.name);
+    var r1Width =
+      document.querySelector('#' + rangeIds[0]).getBoundingClientRect().width;
+    d3.select('#' + rangeIds[0]).attr('x', x1 - 15 - r1Width);
+  }
+  if ('name' in r2) {
+    syntenicRegion.append('text')
+      .attr('id', rangeIds[1])
+      .text(r2.name)
+      .attr('x', x2 + 15)
+      .attr('y', r2.startPx + 3)
+      .text(r2.name);
+  }
+}
+
 function writeSyntenicRegions(syntenicRegions, syntenies, xOffset, ideo) {
   var i, regions, r1, r2, regionID, syntenicRegion, chrWidth, x1, x2;
 
@@ -93,6 +114,7 @@ function writeSyntenicRegions(syntenicRegions, syntenies, xOffset, ideo) {
 
     writeSyntenicRegionPolygons(syntenicRegion, x1, x2, r1, r2, regions);
     writeSyntenicRegionLines(syntenicRegion, x1, x2, r1, r2);
+    writeSyntenicRegionLabels(syntenicRegion, x1, x2, r1, r2, regionID);
   }
 }
 

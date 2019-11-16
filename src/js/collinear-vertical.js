@@ -6,6 +6,22 @@
 
 import {d3} from './lib';
 
+function labelGenomes(ideo) {
+
+  ideo.config.taxids.forEach((taxid, i) => {
+    var org = ideo.organisms[taxid];
+    // var commonName = slug(org.commonName);
+    var scientificName = org.scientificName;
+    d3.select(ideo.selector)
+      .append('text')
+      .attr('class', 'genomeLabel italic')
+      .attr('x', 50 + 200 * i)
+      .attr('y', 10)
+      .text(scientificName)
+      .attr('text-anchor', 'middle');
+  });
+}
+
 /**
 * Rearrange chromosomes from horizontal to collinear
 */
@@ -15,12 +31,12 @@ function rearrangeChromosomes(chrSets, yOffsets, x, ideo) {
 
   for (i = 0; i < chrSets.length; i++) {
     chrSet = chrSets[i];
-    y = yOffsets[i];
+    y = yOffsets[i] + 15;
 
     chr = ideo.chromosomesArray[i];
     taxid = chr.id.split('-')[1];
     orgIndex = ideo.config.taxids.indexOf(taxid);
-    adjustedX = x - orgIndex * 200;
+    adjustedX = x - orgIndex * 200 - 30;
     if (orgIndex === 0) {
       chrLabelX = -34;
       adjustedX += ideo.config.chrWidth * 2 - 16;
@@ -35,6 +51,8 @@ function rearrangeChromosomes(chrSets, yOffsets, x, ideo) {
     chrSet.setAttribute('transform', 'rotate(90) translate(' + y + ',' + adjustedX + ')');
     chrSet.querySelector('.chromosome').setAttribute('transform', 'translate(-13, 10)');
   }
+
+  labelGenomes(ideo);
 }
 
 /**
@@ -83,7 +101,7 @@ function collinearizeVerticalChromosomes(ideo) {
   yOffsets = getyOffsets(chrSets, ideo);
   rearrangeChromosomes(chrSets, yOffsets, x, ideo);
 
-  width = Math.round(yOffsets.slice(-1)[0] + 20);
+  width = Math.round(yOffsets.slice(-1)[0] + 70);
 
   if (config.multiorganism) {
     height *= 8;
@@ -91,9 +109,9 @@ function collinearizeVerticalChromosomes(ideo) {
     yOffsets.forEach(d => {
       if (d > maxHeight) maxHeight = d;
     });
-    height = maxHeight + 20;
+    height = maxHeight + 30;
   } else {
-    height = xOffsets.slice(-1)[0] + 20;
+    height = xOffsets.slice(-1)[0] + 30;
   }
 
   d3.select(ideo.selector)
