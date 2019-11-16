@@ -38,9 +38,12 @@
       <option>Chimpanzee (Pan troglodytes)</option>
       <option>Mouse (Mus musculus)</option>
       <option>Rat (Rattus norvegicus)</option>
+      <option>Dog (Canis lupus familiaris)</option>
+      <option>Cat (Felis catus)</option>
       <option>Chicken (Gallus gallus)</option>
       <option>Zebrafish (Danio rerio)</option>
       <option>Fly (Drosophila melanogaster)</option>
+      <option>Mosquito (Anopheles gambiae)</option>
       <option>Worm (Caenorhabditis elegans)</option>
       <option>Thale cress (Arabidopsis thaliana)</option>
       <option>Corn (Zea mays)</option>
@@ -50,17 +53,20 @@
   <label for="org2">
     Target organism:
     <select class="left-select org-select" id="org2">
-        <option>Human (Homo sapiens)</option>
-        <option>Chimpanzee (Pan troglodytes)</option>
-        <option selected>Mouse (Mus musculus)</option>
-        <option>Rat (Rattus norvegicus)</option>
-        <option>Chicken (Gallus gallus)</option>
-        <option>Zebrafish (Danio rerio)</option>
-        <option>Fly (Drosophila melanogaster)</option>
-        <option>Worm (Caenorhabditis elegans)</option>
-        <option>Thale cress (Arabidopsis thaliana)</option>
-        <option>Corn (Zea mays)</option>
-        <option>Rice (Oryza sativa)</option>
+      <option>Human (Homo sapiens)</option>
+      <option>Chimpanzee (Pan troglodytes)</option>
+      <option selected>Mouse (Mus musculus)</option>
+      <option>Rat (Rattus norvegicus)</option>
+      <option>Dog (Canis lupus familiaris)</option>
+      <option>Cat (Felis catus)</option>
+      <option>Chicken (Gallus gallus)</option>
+      <option>Zebrafish (Danio rerio)</option>
+      <option>Fly (Drosophila melanogaster)</option>
+      <option>Mosquito (Anopheles gambiae)</option>
+      <option>Worm (Caenorhabditis elegans)</option>
+      <option>Thale cress (Arabidopsis thaliana)</option>
+      <option>Corn (Zea mays)</option>
+      <option>Rice (Oryza sativa)</option>
       </select>
   </label>
   <label for="backend">
@@ -346,7 +352,7 @@
       }
 
       if (orthologs.length > 1) {
-        // Multiple genomes
+        // For (likely) multiple chromosomes in each genome
         Object.assign(config, {
           chrHeight: 45,
           chrMargin: 3,
@@ -354,7 +360,7 @@
           geometry: 'collinear'
         });
       } else {
-        // Multiple chromosomes
+        // For one chromosome in each genome
         ranges = parseGenomicRawRanges(orthologs[0]);
         chromosomesConfig = {}
         chromosomesConfig[org1] = [ranges[0].chr];
