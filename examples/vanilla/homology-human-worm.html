@@ -58,49 +58,8 @@
         stop: 15072434
       };
 
-      // range3 = {
-      //   chr: chr2R,
-      //   // chr: chr4,
-      //   start: 1,
-      //   stop: 1
-      // };
-
-      // range4 = {
-      //   chr: chr3L,
-      //   // chr: chr4,
-      //   start: 1,
-      //   stop: 1
-      // };
-
-      // range5 = {
-      //   chr: chr3R,
-      //   // chr: chr4,
-      //   start: 1,
-      //   stop: 1
-      // };
-
-      // range6 = {
-      //   chr: chr4,
-      //   // chr: chr4,
-      //   start: 1,
-      //   stop: 1
-      // };
-
-      // range7 = {
-      //   chr: chrX,
-      //   start: 1,
-      //   stop: 1 
-      // };
-
       syntenicRegions.push({'r1': range1, 'r2': range2});
       syntenicRegions.push({'r1': range1, 'r2': range2End});
-      // syntenicRegions.push({'r1': range1, 'r2': range3});
-      // syntenicRegions.push({'r1': range1, 'r2': range4});
-      // syntenicRegions.push({'r1': range1, 'r2': range5});
-      // syntenicRegions.push({'r1': range1, 'r2': range6});
-      // syntenicRegions.push({'r1': range1, 'r2': range7});
-      // syntenicRegions.push({'r1': range17, 'r2': range7});
-      // syntenicRegions.push({'r1': range17, 'r2': range2});
 
       ideogram.drawSynteny(syntenicRegions);
 
@@ -108,7 +67,6 @@
 
   var config = {
     organism: ['homo-sapiens', 'caenorhabditis-elegans'],
-    // organism: ['homo-sapiens', 'mus-musculus'],
     chrHeight: 50,
     chrMargin: 5,
     perspective: 'comparative',
