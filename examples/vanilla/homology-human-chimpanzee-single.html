@@ -19,16 +19,16 @@
   <a href="https://github.com/eweitz/ideogram/blob/gh-pages/homology-interspecies.html" target="_blank">Source</a>
 
   <p>
-    This demonstrates support for drawing features between a fully-banded
-    genome and a genome that only has centromere data.
+    This demonstrates support for drawing features on a target genome that has
+    very many cytogenetic bands
   </p>
   <p>
-    See also: <a href='homology-chimpanzee-gorilla'>Homology, chimpanzee and gorilla</a>
+    See also: <a href='homology-human-chimpanzee'>Homology, human and chimpanzee</a>
   </p>
 
   <script type="text/javascript">
 
-    function onIdeogramLoad() {
+function onIdeogramLoad() {
       // See HomoloGene entry for MTOR at
       // http://www.ncbi.nlm.nih.gov/homologene/3637
       // Placements for H. sapiens and M. musculus used below.
@@ -71,14 +71,17 @@
 
     }
 
-    var config = {
+  var config = {
     organism: ['homo-sapiens', 'pan-troglodytes'],
+    chromosomes: {
+      'homo-sapiens': ['1'],
+      'pan-troglodytes': ['1'],
+    },
     // organism: ['homo-sapiens', 'mus-musculus'],
-    chrHeight: 50,
-    chrMargin: 5,
+    chrHeight: 400,
+    chrMargin: 50,
     perspective: 'comparative',
-    chromosomeScale: 'relative',
-    geometry: 'collinear',
+    fullChromosomeLabels: true,
     rotatable: false,
     onLoad: onIdeogramLoad
   };

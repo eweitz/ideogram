@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Homology, human and chimpanzee | Ideogram</title>
+  <title>Homology, human and plant | Ideogram</title>
   <style>
     body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
     a, a:visited {text-decoration: none;}
@@ -12,23 +12,23 @@
 <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
 </head>
 <body>
-  <h1>Homology, human and chimpanzee | Ideogram</h1>
+  <h1>Homology, human and plant | Ideogram</h1>
   <a href="../">Overview</a> |
   <a href="homology-advanced">Previous</a> |
   <a href="annotations-basic">Next</a> |
   <a href="https://github.com/eweitz/ideogram/blob/gh-pages/homology-interspecies.html" target="_blank">Source</a>
 
   <p>
-    This demonstrates support for drawing features between a fully-banded
-    genome and a genome that only has centromere data.
+    This demonstrates support for drawing features on a target genome that has
+    very many cytogenetic bands
   </p>
   <p>
-    See also: <a href='homology-chimpanzee-gorilla'>Homology, chimpanzee and gorilla</a>
+    See also: <a href='homology-human-chimpanzee'>Homology, human and chimpanzee</a>
   </p>
 
   <script type="text/javascript">
 
-    function onIdeogramLoad() {
+function onIdeogramLoad() {
       // See HomoloGene entry for MTOR at
       // http://www.ncbi.nlm.nih.gov/homologene/3637
       // Placements for H. sapiens and M. musculus used below.
@@ -38,12 +38,12 @@
 
       var chrs, chr1, chr4, syntheticRegions, humanTaxid, mouseTaxid;
 
-      humanTaxid = ideogram.getTaxid('human');
-      mouseTaxid = ideogram.getTaxid('chimpanzee');
+      org1Taxid = ideogram.getTaxid('human');
+      org2Taxid = ideogram.getTaxid('arabidopsis-thaliana');
 
       var chrs = ideogram.chromosomes,
-        chr1Org1 = chrs[humanTaxid]['1'],
-        chr1Org2 = chrs[mouseTaxid]['1'],
+        chr1Org1 = chrs[org1Taxid]['1'],
+        chr1Org2 = chrs[org2Taxid]['1'],
         syntenicRegions = [];
 
       range1 = {
@@ -60,8 +60,8 @@
 
       range2End = {
         chr: chr1Org2,
-        start: 228573442,
-        stop: 228573442
+        start: 30427670,
+        stop: 30427670
       };
 
       syntenicRegions.push({'r1': range1, 'r2': range2});
@@ -71,14 +71,17 @@
 
     }
 
-    var config = {
-    organism: ['homo-sapiens', 'pan-troglodytes'],
+  var config = {
+    organism: ['homo-sapiens', 'arabidopsis-thaliana'],
+    chromosomes: {
+      'homo-sapiens': ['1'],
+      'arabidopsis-thaliana': ['1'],
+    },
     // organism: ['homo-sapiens', 'mus-musculus'],
-    chrHeight: 50,
-    chrMargin: 5,
+    chrHeight: 400,
+    chrMargin: 50,
     perspective: 'comparative',
-    chromosomeScale: 'relative',
-    geometry: 'collinear',
+    fullChromosomeLabels: true,
     rotatable: false,
     onLoad: onIdeogramLoad
   };

@@ -58,6 +58,7 @@ function getChrScale(chr, hasBands, ideo) {
     // chr.scale.bp = band.iscn.stop / band.bp.stop;
     if (ideo.config.chromosomeScale === 'relative') {
       scale.iscn = chrHeight * chrLength / maxLength[taxid].bp;
+      scale.bp = chrHeight / maxLength[taxid].bp;
     } else {
       scale.iscn = chrHeight * chrLength / maxLength.bp;
     }
