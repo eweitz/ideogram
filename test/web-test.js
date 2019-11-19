@@ -586,6 +586,71 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
+  it('should plot accurate synteny in relative collinear vertical genomes', function(done) {
+    // Tests use case from ../examples/vanilla/compare-whole-genomes
+    // Used for comparing multiple whole genomes
+
+    function onIdeogramLoad() {
+      var chrs, chr1, chrI, taxid1, taxid2, syntenicRegions,
+        range1, range2, range2End;
+
+      taxid1 = ideogram.getTaxid('homo-sapiens');
+      taxid2 = ideogram.getTaxid('caenorhabditis-elegans');
+
+      chrs = ideogram.chromosomes;
+      chr1 = chrs[taxid1]['1'];
+      chrI = chrs[taxid2]['I']; // eslint-disable-line dot-notation
+      syntenicRegions = [];
+
+      range1 = {
+        chr: chr1,
+        start: 1,
+        stop: 1
+      };
+
+      range2 = {
+        chr: chrI,
+        start: 1,
+        stop: 1
+      };
+
+      range2End = {
+        chr: chrI,
+        start: 15072434,
+        stop: 15072434
+      };
+
+      syntenicRegions.push({r1: range1, r2: range2});
+      syntenicRegions.push({r1: range1, r2: range2End});
+
+      ideogram.drawSynteny(syntenicRegions);
+
+      line1 = document.querySelectorAll('.syntenyBorder')[0];
+      line2 = document.querySelectorAll('.syntenyBorder')[3];
+
+      assert.equal(Math.round(line1.getAttribute('x1')), 56);
+      assert.equal(Math.round(line1.getAttribute('x2')), 250);
+      assert.equal(Math.round(line1.getAttribute('y2')), 23);
+      assert.equal(Math.round(line2.getAttribute('y2')), 59);
+
+      done();
+
+    }
+
+    var config = {
+      organism: ['homo-sapiens', 'caenorhabditis-elegans'],
+      chrHeight: 50,
+      chrMargin: 5,
+      perspective: 'comparative',
+      chromosomeScale: 'relative',
+      geometry: 'collinear',
+      dataDir: '/dist/data/bands/native/',
+      onLoad: onIdeogramLoad
+    };
+
+    var ideogram = new Ideogram(config);
+  });
+
   it('should have 1000 annotations in basic annotations example', function(done) {
     // Tests use case from ../examples/vanilla/annotations-basic.html
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Homology, human and fly | Ideogram</title>
+  <title>Homology, human and worm | Ideogram</title>
   <style>
     body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
     a, a:visited {text-decoration: none;}
@@ -12,7 +12,7 @@
 <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
 </head>
 <body>
-  <h1>Homology, human and fly | Ideogram</h1>
+  <h1>Homology, human and worm | Ideogram</h1>
   <a href="../">Overview</a> |
   <a href="homology-advanced">Previous</a> |
   <a href="annotations-basic">Next</a> |
@@ -33,47 +33,29 @@
       var chrs, chr1, chr4, syntheticRegions, taxid1, taxid2;
 
       taxid1 = ideogram.getTaxid('homo-sapiens');
-      // taxid2 = ideogram.getTaxid('mus-musculus');
-      taxid2 = ideogram.getTaxid('drosophila-melanogaster');
+      taxid2 = ideogram.getTaxid('caenorhabditis-elegans');
 
       var chrs = ideogram.chromosomes,
         chr1 = chrs[taxid1]['1'],
-        chr17 = chrs[taxid1]['17'],
-        // chr3 = chrs[taxid2]['3'],
-        // chr4 = chrs[taxid2]['4'],
-        chr2L = chrs[taxid2]['2L'],
-        chr2R = chrs[taxid2]['2R'],
-        chr3L = chrs[taxid2]['3L'],
-        chr3R = chrs[taxid2]['3R'],
-        chr4 = chrs[taxid2]['4'],
-        chrX = chrs[taxid2]['X'],
+        chrI = chrs[taxid2]['I'],
         syntenicRegions = [];
 
       range1 = {
         chr: chr1,
         start: 1,
         stop: 1,
-        orientation: 'reverse'
       };
-      
-
-      // range17 = {
-      //   chr: chr17,
-      //   start: 1,
-      //   stop: 1,
-      //   orientation: 'reverse'
-      // };
 
       range2 = {
-        chr: chr2L,
+        chr: chrI,
         start: 1,
         stop: 1
       };
 
       range2End = {
-        chr: chr2L,
-        start: 22677528,
-        stop: 22677528
+        chr: chrI,
+        start: 15072434,
+        stop: 15072434
       };
 
       // range3 = {
@@ -125,13 +107,16 @@
     }
 
   var config = {
-    organism: ['homo-sapiens', 'drosophila-melanogaster'],
+    organism: ['homo-sapiens', 'caenorhabditis-elegans'],
+    chromosomes: {
+      'homo-sapiens': ['1'],
+      'caenorhabditis-elegans': ['I'],
+    },
     // organism: ['homo-sapiens', 'mus-musculus'],
-    chrHeight: 50,
-    chrMargin: 5,
+    chrHeight: 400,
+    chrMargin: 50,
     perspective: 'comparative',
-    chromosomeScale: 'relative',
-    geometry: 'collinear',
+    fullChromosomeLabels: true,
     rotatable: false,
     onLoad: onIdeogramLoad
   };
