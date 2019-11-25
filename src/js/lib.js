@@ -72,7 +72,7 @@ function getDataDir() {
 
   if (host !== 'localhost' && host !== '127.0.0.1') {
     return (
-      'https://unpkg.com/ideogram@' + version + '/dist/data/bands/native/'
+      'https://cdn.jsdelivr.net/npm/ideogram@' + version + '/dist/data/bands/native/'
     );
   }
 
