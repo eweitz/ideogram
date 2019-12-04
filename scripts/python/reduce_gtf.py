@@ -21,23 +21,58 @@ with open(input_path) as f:
 
 genes = []
 
+provider = 'ncbi'
+if 'Ensembl' in gtf[0]:
+    provider = 'ensembl'
+
+# Chromosome or scaffolds.  Needed for NCBI RefSeq, but not Ensembl.
+chrs_by_accession = {}
+
 for line in gtf:
     if line[0] == '#':
         continue
     columns = line.split('\t')
     chr = columns[0] # chromosome or scaffold
     feature_type = columns[2] # gene, transcript, exon, etc.
-    if feature_type != 'gene':
-        continue
-    start, stop = columns[3:5]
-    raw_attrs = [x.strip() for x in columns[8].split('; ')]
+
+    raw_attrs = [x.strip() for x in columns[8].split(';')]
     raw_attrs[-1] = raw_attrs[-1].replace('";', '')
+
     attrs = {}
     for raw_attr in raw_attrs:
-        split_attr = raw_attr.split()
+        if provider == 'ncbi':
+            split_attr = raw_attr.split('=')
+        else:
+            split_attr = raw_attr.split()
         attrs[split_attr[0]] = split_attr[1].strip('"')
-    gene_id = attrs['gene_id']
-    gene_name = attrs['gene_name'] if 'gene_name' in attrs else gene_id
+
+    if provider == 'ncbi' and feature_type == 'region':
+        # Map chromosome accessions to names, e.g. NC_000067.6 -> 1
+        print('attrs')
+        print(attrs)
+        chr_accession = chr
+        if 'genome' not in attrs:
+            # Skip regions that aren't chromosomes, e.g. scaffolds
+            continue
+        chr_name = attrs['Name']
+        chrs_by_accession[chr_accession] = chr_name
+
+    if feature_type != 'gene':
+        continue
+
+    start, stop = columns[3:5]
+
+    if provider == 'ncbi':
+        gene_id = attrs['Dbxref'].split('GeneID:')[1].split(',')[0]
+        gene_name = attrs['Name']
+        if chr in chrs_by_accession:
+            chr = chrs_by_accession[chr]
+        else:
+            # Skip unlocalized genes
+            continue
+    else:
+        gene_id = attrs['gene_id']
+        gene_name = attrs['gene_name'] if 'gene_name' in attrs else gene_id
     gene = [
         gene_id,
         gene_name,
