@@ -33,6 +33,8 @@ def get_gene_coordinates(gene_pos_path):
     with open(gene_pos_path) as f:
         lines = f.readlines()
 
+    gene_types = {}
+
     gene_coordinates = {}
     for line in lines:
         # Example line: "AT1G01190	CYP78A8	1	82984	84946	protein_coding"
@@ -40,17 +42,23 @@ def get_gene_coordinates(gene_pos_path):
 
         gene_id = columns[0]
 
+        gene_type = columns[5]
+        if gene_type not in gene_types:
+            gene_types[gene_type] = 0
+        else:
+            gene_types[gene_type] += 1
+
         gene = {
             'chromosome': columns[2], # Chromosome name, e.g. "1" or "X"
             'start': columns[3], # Genomic start coordinate
             'stop': columns[4], # Genomic stop coordinate
             'symbol': columns[1], # Gene symbol, e.g. "BRCA1"
-            'type': columns[5], # Gene type, e.g. "protein_coding"
+            'type': gene_type, # Gene type, e.g. "protein_coding"
         }
 
         gene_coordinates[gene_id] = gene
 
-    return gene_coordinates
+    return [gene_coordinates, gene_types]
 
 def get_gene_expressions(deg_matrix_path):
     """Parse DEG matrix, return dictionary of statistics and corresponding keys
@@ -60,8 +68,6 @@ def get_gene_expressions(deg_matrix_path):
 
     with open(deg_matrix_path, newline='') as f:
         reader = csv.reader(f)
-        # for row in reader:
-        #     print(row)
 
         # CSV/TSV headers for numeric expression values
         metric_keys = next(reader, None)[7:]
@@ -72,15 +78,15 @@ def get_gene_expressions(deg_matrix_path):
 
     return [gene_expressions, metric_keys]
 
-def get_annots_by_chr(gene_coordinates, gene_expressions):
+def get_annots_by_chr(gene_coordinates, gene_expressions, gene_types):
     """Merge coordinates and expressions, return Ideogram annotations
     """
     annots_by_chr = {}
 
-    seen_gene_types = set()
-
-    # print('gene_coordinates')
-    # print(gene_coordinates)
+    # Sort keys by descending count value, then
+    # make a list of those keys (i.e., without values)
+    sorted_items = sorted(gene_types.items(), key=lambda x: -x[1])
+    sorted_gene_types = [x[0] for x in sorted_items]
 
     for gene in gene_coordinates:
         coordinates = gene_coordinates[gene]
@@ -98,13 +104,11 @@ def get_annots_by_chr(gene_coordinates, gene_expressions):
         stop = int(coordinates['stop'])
         length = stop - start
 
-        seen_gene_types.add(coordinates['type'])
-
         annot = [
             coordinates['symbol'],
             start,
             length,
-            coordinates['type']
+            sorted_gene_types.index(coordinates['type'])
         ]
 
         # Convert numeric strings to floats, and clean as needed
@@ -113,18 +117,20 @@ def get_annots_by_chr(gene_coordinates, gene_expressions):
 
         annots_by_chr[chr]['annots'].append(annot)
 
-    return annots_by_chr
+    return [annots_by_chr, sorted_gene_types]
 
-coordinates = get_gene_coordinates(gene_pos_path)
+coordinates, gene_types = get_gene_coordinates(gene_pos_path)
 expressions, metric_keys = get_gene_expressions(deg_path)
 
-annots_by_chr = get_annots_by_chr(coordinates, expressions)
+[annots_by_chr, sorted_gene_types] = get_annots_by_chr(coordinates, expressions, gene_types)
 
 annots_list = list(annots_by_chr.values())
 
 keys = ['name', 'start', 'length', 'gene-type'] + metric_keys
 
-metadata = {'species': 'Mus musculus', 'assembly': 'GRCm38'}
+labels = {'gene-type': sorted_gene_types}
+
+metadata = {'species': 'Mus musculus', 'assembly': 'GRCm38', 'labels': labels}
 
 annots = {'keys': keys, 'annots': annots_list, 'metadata': metadata}
 
@@ -132,7 +138,7 @@ annots_json = json.dumps(annots)
 
 output_filename = deg_path.split('/')[-1] \
                     .replace('.csv', '') + '_ideogram_annots' + '.json'
-        
+
 output_path = output_dir + output_filename
 
 output_filename = output_dir + output_filename
