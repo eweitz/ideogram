@@ -6,7 +6,7 @@
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/nouislider@14.1.0"></script>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/wnumb@1.2.0/wNumb.min.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/nouislider@14.1.0/distribute/nouislider.css" rel="stylesheet">
-<link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
+  <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
   <style>
     body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
     a, a:visited {text-decoration: none;}
@@ -42,8 +42,7 @@
   <a href="https://github.com/eweitz/ideogram/blob/gh-pages/annotations-histogram.html" target="_blank">Source</a>
   <br/><br/>
   <div>
-    This ideogram shows the distribution of all human genes throughout the genome.
-    You can filter all 20,000+ genes in < 100 milliseconds by clicking the boxes below.
+    Distribution of all <span id="organismName" style="font-style: italic"></span> genes throughout the genome.  Filter genes using controls below.  Created with <a href="https://github.com/eweitz/ideogram">Ideogram.js</a>.
   </div>
   <div id="container"></div>
   <div id="facets"></div>
@@ -77,46 +76,56 @@
   //   }
   // };
 
-function getSliderConfig() {
+  function getSliderConfig() {
 
-  var sliderNumberFormat = wNumb({decimals: 3});
+    var sliderNumberFormat = wNumb({decimals: 3});
 
-  return {
-    range: {
-      'min': [0, 0.001],
-      '50%': [0.05, 0.01],
-      'max': 1
-    },
+    return {
+      range: {
+        'min': [0, 0.001],
+        '50%': [0.05, 0.01],
+        'max': 1
+      },
 
-    // Handles start at ...
-    start: [0.05],
+      // Handles start at ...
+      start: [0.05],
 
-    // Move handle on tap, bars are draggable
-    behaviour: 'tap-drag',
-    tooltips: true,
-    format: sliderNumberFormat,
+      // Move handle on tap, bars are draggable
+      behaviour: 'tap-drag',
+      tooltips: true,
+      format: sliderNumberFormat,
 
-    // Show a scale with the slider
-    pips: {
-        mode: 'positions',
-        values: [0, 25, 50, 75, 100],
-        stepped: true,
-        density: 4,
-        format: sliderNumberFormat
+      // Show a scale with the slider
+      pips: {
+          mode: 'positions',
+          values: [0, 25, 50, 75, 100],
+          stepped: true,
+          density: 4,
+          format: sliderNumberFormat
+      }
     }
   }
-}
 
-function writeRangeSlider(metric, i, comparisonId) {
-  console.log(metric)
-  console.log(comparisonId)
-  var metricId = metric.replace(/\./g, '');
-  var sliderId = metricId + '_' + comparisonId;
-  var top = i * 100;
-  document.querySelector(`#${comparisonId}`).innerHTML += `<div id="${sliderId}" style="top: ${top}px;"></div>`;
-  var container = document.getElementById(sliderId);
-  noUiSlider.create(container, getSliderConfig());
-}
+  function writeRangeSlider(metric, i, comparisonId) {
+    var metricId = metric.replace(/\./g, '');
+    var sliderId = metricId + '_' + comparisonId;
+    var left = i * 400;
+    var style = `left: ${left}px; top: 40px`;
+    var metricLabels = {
+      'Log2fc': 'log<sub>2</sub>(fold change)',
+      'Adj.p.value': 'Adjusted <i>p</i>-value'
+    }
+    var metricLabel = metricLabels[metric];
+    document.querySelector(`#${comparisonId}`).innerHTML += 
+      `<div style="position: absolute;">
+        <div style="width: 300px;">
+          <div style="position: relative; left: ${left}px;">${metricLabel}</div>
+          <div id="${sliderId}" style="${style}"></div>
+        </div>
+      </div>`;
+    var container = document.getElementById(sliderId);
+    noUiSlider.create(container, getSliderConfig());
+  }
 
   function writeRangeSliders(comparison) {
     // var metrics = ['Log2fc', 'P.value', 'Adj.p.value'];
@@ -124,14 +133,15 @@ function writeRangeSlider(metric, i, comparisonId) {
     var comparisonId = comparison.toLowerCase().replace(/[()\s]/g, '');
     document.querySelector('#facets').innerHTML += `
       <div id="${comparisonId}" style="position: relative; left: 300px; width: 300px;">
-      <div style="margin-bottom: 15px;">${comparison}</div>
+        <div style="position: relative; left: -150px; width: 400px;">${comparison}</div>
       <div>`;
 
     metrics.forEach((metric, i) => writeRangeSlider(metric, i, comparisonId));
   }
 
   function writeFacets() {
-    const labels = this.rawAnnots.metadata.labels;
+    const metadata = this.rawAnnots.metadata;
+    const labels = metadata.labels;
     let filters = [];
 
     for (const facetKey in labels) {
@@ -154,6 +164,8 @@ function writeRangeSlider(metric, i, comparisonId) {
 
     addInputHandlers();
 
+    document.querySelector('#organismName').innerHTML = metadata.organism;
+
     var comparison = '(Space Flight)v(Ground Control)'
     writeRangeSliders(comparison);
   }
@@ -172,9 +184,6 @@ function writeRangeSlider(metric, i, comparisonId) {
         facet = tmp[1];
         checkedFilter = tmp.slice(2).join('_');
 
-        console.log('checkedFilter')
-        console.log(checkedFilter)
-
         const labels = ideogram.rawAnnots.metadata.labels[facet];
         filterID = labels.indexOf(checkedFilter);
         
@@ -183,8 +192,7 @@ function writeRangeSlider(metric, i, comparisonId) {
         }
         selections[facet][filterID] = 1;
       }
-      console.log('selections')
-      console.log(selections)
+      
       counts = ideogram.filterAnnots(selections);
 
       for (facet in counts) {
@@ -204,7 +212,9 @@ function writeRangeSlider(metric, i, comparisonId) {
     orientation: 'vertical',
     organism: 'mouse',
     assembly: 'GRCm38',
-    chrHeight: 275,
+    chrHeight: 400,
+    chrWidth: 12,
+    chrMargin: 20,
     annotationsPath: '../../data/annotations/GLDS-4_array_differential_expression_ideogram_annots.json',
     annotationsLayout: 'histogram',
     barWidth: 3,

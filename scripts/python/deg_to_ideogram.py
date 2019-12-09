@@ -130,7 +130,7 @@ keys = ['name', 'start', 'length', 'gene-type'] + metric_keys
 
 labels = {'gene-type': sorted_gene_types}
 
-metadata = {'species': 'Mus musculus', 'assembly': 'GRCm38', 'labels': labels}
+metadata = {'organism': 'Mus musculus', 'assembly': 'GRCm38', 'labels': labels}
 
 annots = {'keys': keys, 'annots': annots_list, 'metadata': metadata}
 
