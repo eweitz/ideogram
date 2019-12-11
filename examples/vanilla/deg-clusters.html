@@ -76,19 +76,39 @@
   //   }
   // };
 
-  function getSliderConfig() {
+  function getSliderConfig(metric) {
 
-    var sliderNumberFormat = wNumb({decimals: 3});
-
-    return {
-      range: {
+    var rangesByMetric = {
+      'Adj.p.value': {
         'min': [0, 0.001],
         '50%': [0.05, 0.01],
         'max': 1
       },
+      'Log2fc': {
+        'min': [0, 0.01],
+        'max': 1.5
+      }
+    };
+
+    var startsByMetric = {
+      'Adj.p.value': 0.05,
+      'Log2fc': 0.25
+    };
+
+    var decimalPlacesByMetric = {
+      'Adj.p.value': 3,
+      'Log2fc': 2
+    };
+
+    var sliderNumberFormat = wNumb({
+      decimals: decimalPlacesByMetric[metric]
+    });
+
+    return {
+      range: rangesByMetric[metric],
 
       // Handles start at ...
-      start: [0.05],
+      start: [startsByMetric[metric]],
 
       // Move handle on tap, bars are draggable
       behaviour: 'tap-drag',
@@ -106,11 +126,11 @@
     }
   }
 
-  function writeRangeSlider(metric, i, comparisonId) {
+  function writeSliderContainer(metric, i, comparisonId) {
     var metricId = metric.replace(/\./g, '');
     var sliderId = metricId + '_' + comparisonId;
     var left = i * 400;
-    var style = `left: ${left}px; top: 40px`;
+    var style = `left: ${left}px; top: 45px`;
     var metricLabels = {
       'Log2fc': 'log<sub>2</sub>(fold change)',
       'Adj.p.value': 'Adjusted <i>p</i>-value'
@@ -120,23 +140,25 @@
       `<div style="position: absolute;">
         <div style="width: 300px;">
           <div style="position: relative; left: ${left}px;">${metricLabel}</div>
-          <div id="${sliderId}" style="${style}"></div>
+          <div id="${sliderId}" class="ideogramSlider" style="${style}"></div>
         </div>
       </div>`;
-    var container = document.getElementById(sliderId);
-    noUiSlider.create(container, getSliderConfig());
   }
 
-  function writeRangeSliders(comparison) {
+  function writeSliders(comparison) {
     // var metrics = ['Log2fc', 'P.value', 'Adj.p.value'];
     var metrics = ['Log2fc', 'Adj.p.value'];
+    // var metrics = ['Adj.p.value'];
     var comparisonId = comparison.toLowerCase().replace(/[()\s]/g, '');
     document.querySelector('#facets').innerHTML += `
       <div id="${comparisonId}" style="position: relative; left: 300px; width: 300px;">
-        <div style="position: relative; left: -150px; width: 400px;">${comparison}</div>
+        <div style="margin-bottom: 15px; position: relative; left: -150px; width: 400px;">${comparison}</div>
       <div>`;
 
-    metrics.forEach((metric, i) => writeRangeSlider(metric, i, comparisonId));
+    metrics.forEach((metric, i) => writeSliderContainer(metric, i, comparisonId));
+    document.querySelectorAll('.ideogramSlider').forEach((slider, i) => {
+      noUiSlider.create(slider, getSliderConfig(metrics[i]));
+    });
   }
 
   function writeFacets() {
@@ -167,7 +189,7 @@
     document.querySelector('#organismName').innerHTML = metadata.organism;
 
     var comparison = '(Space Flight)v(Ground Control)'
-    writeRangeSliders(comparison);
+    writeSliders(comparison);
   }
 
   function addInputHandlers() {
