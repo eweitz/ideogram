@@ -50,32 +50,6 @@
 
   const d3 = Ideogram.d3;
 
-  // const filterMap = {
-  //   'expression-level': {
-  //     'extremely-high': 7,
-  //     'very-high': 6,
-  //     'high': 5,
-  //     'moderately-high': 4,
-  //     'moderate': 3,
-  //     'low': 2,
-  //     'very-low': 1
-  //   },
-  //   'gene-type': {
-  //     'mrna': 1,
-  //     'misc-rna': 2,
-  //     'mirna': 3,
-  //     'trna': 4,
-  //     'lncrna': 5
-  //   },
-  //   'tissue-type': {
-  //     'cerebral-cortex': 1,
-  //     'heart': 2,
-  //     'liver': 3,
-  //     'skin': 4,
-  //     'skeletal-muscle': 5
-  //   }
-  // };
-
   function getSliderConfig(metric) {
 
     const rangesByMetric = {
@@ -146,9 +120,7 @@
   }
 
   function writeSliders(comparison) {
-    // const metrics = ['Log2fc', 'P.value', 'Adj.p.value'];
     const metrics = ['Log2fc', 'Adj.p.value'];
-    // const metrics = ['Adj.p.value'];
     const comparisonId = comparison.toLowerCase().replace(/[()\s]/g, '');
     document.querySelector('#facets').innerHTML += `
       <div id="${comparisonId}" style="position: relative; left: 300px; width: 300px;">
@@ -184,12 +156,12 @@
     filters = '<ul>' + filters.join('\n') + '</ul>';
     document.querySelector('#facets').innerHTML = filters;
 
-    addInputHandlers();
-
     document.querySelector('#organismName').innerHTML = metadata.organism;
 
-    const comparisons = '(Space Flight)v(Ground Control)'
+    const comparison = '(Space Flight)v(Ground Control)'
     writeSliders(comparison);
+
+    addInputHandlers();
   }
 
   function addInputHandlers() {
