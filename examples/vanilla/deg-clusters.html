@@ -48,9 +48,9 @@
   <div id="facets"></div>
   <script type="text/javascript">
 
-  var d3 = Ideogram.d3;
+  const d3 = Ideogram.d3;
 
-  // var filterMap = {
+  // const filterMap = {
   //   'expression-level': {
   //     'extremely-high': 7,
   //     'very-high': 6,
@@ -78,7 +78,7 @@
 
   function getSliderConfig(metric) {
 
-    var rangesByMetric = {
+    const rangesByMetric = {
       'Adj.p.value': {
         'min': [0, 0.001],
         '50%': [0.05, 0.01],
@@ -90,17 +90,17 @@
       }
     };
 
-    var startsByMetric = {
+    const startsByMetric = {
       'Adj.p.value': 0.05,
       'Log2fc': 0.25
     };
 
-    var decimalPlacesByMetric = {
+    const decimalPlacesByMetric = {
       'Adj.p.value': 3,
       'Log2fc': 2
     };
 
-    var sliderNumberFormat = wNumb({
+    const sliderNumberFormat = wNumb({
       decimals: decimalPlacesByMetric[metric]
     });
 
@@ -127,15 +127,15 @@
   }
 
   function writeSliderContainer(metric, i, comparisonId) {
-    var metricId = metric.replace(/\./g, '');
-    var sliderId = metricId + '_' + comparisonId;
-    var left = i * 400;
-    var style = `left: ${left}px; top: 45px`;
-    var metricLabels = {
+    const metricId = metric.replace(/\./g, '');
+    const sliderId = metricId + '_' + comparisonId;
+    const left = i * 400;
+    const style = `left: ${left}px; top: 45px`;
+    const metricLabels = {
       'Log2fc': 'log<sub>2</sub>(fold change)',
       'Adj.p.value': 'Adjusted <i>p</i>-value'
     }
-    var metricLabel = metricLabels[metric];
+    const metricLabel = metricLabels[metric];
     document.querySelector(`#${comparisonId}`).innerHTML += 
       `<div style="position: absolute;">
         <div style="width: 300px;">
@@ -146,10 +146,10 @@
   }
 
   function writeSliders(comparison) {
-    // var metrics = ['Log2fc', 'P.value', 'Adj.p.value'];
-    var metrics = ['Log2fc', 'Adj.p.value'];
-    // var metrics = ['Adj.p.value'];
-    var comparisonId = comparison.toLowerCase().replace(/[()\s]/g, '');
+    // const metrics = ['Log2fc', 'P.value', 'Adj.p.value'];
+    const metrics = ['Log2fc', 'Adj.p.value'];
+    // const metrics = ['Adj.p.value'];
+    const comparisonId = comparison.toLowerCase().replace(/[()\s]/g, '');
     document.querySelector('#facets').innerHTML += `
       <div id="${comparisonId}" style="position: relative; left: 300px; width: 300px;">
         <div style="margin-bottom: 15px; position: relative; left: -150px; width: 400px;">${comparison}</div>
@@ -188,7 +188,7 @@
 
     document.querySelector('#organismName').innerHTML = metadata.organism;
 
-    var comparison = '(Space Flight)v(Ground Control)'
+    const comparisons = '(Space Flight)v(Ground Control)'
     writeSliders(comparison);
   }
 
@@ -229,7 +229,7 @@
     });
   }
 
-  var config = {
+  const config = {
     container: '#container',
     orientation: 'vertical',
     organism: 'mouse',
@@ -244,7 +244,7 @@
     onLoadAnnots: writeFacets
   };
 
-  var ideogram = new Ideogram(config);
+  const ideogram = new Ideogram(config);
   </script>
 </body>
 </html>
