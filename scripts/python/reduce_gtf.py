@@ -44,12 +44,11 @@ for line in gtf:
             split_attr = raw_attr.split('=')
         else:
             split_attr = raw_attr.split()
+        if len(split_attr) == 0: continue
         attrs[split_attr[0]] = split_attr[1].strip('"')
 
     if provider == 'ncbi' and feature_type == 'region':
         # Map chromosome accessions to names, e.g. NC_000067.6 -> 1
-        print('attrs')
-        print(attrs)
         chr_accession = chr
         if 'genome' not in attrs:
             # Skip regions that aren't chromosomes, e.g. scaffolds
@@ -65,28 +64,32 @@ for line in gtf:
     if provider == 'ncbi':
         gene_id = attrs['Dbxref'].split('GeneID:')[1].split(',')[0]
         gene_name = attrs['Name']
+        gene_type = attrs['gene_biotype']
         if chr in chrs_by_accession:
             chr = chrs_by_accession[chr]
         else:
             # Skip unlocalized genes
             continue
     else:
+        chr = chr.replace('chr', '')
         gene_id = attrs['gene_id']
         gene_name = attrs['gene_name'] if 'gene_name' in attrs else gene_id
+        gene_type = attrs['gene_type']
+
     gene = [
         gene_id,
         gene_name,
         chr,
         start,
         stop,
-        attrs['gene_biotype']
+        gene_type
     ]
     genes.append('\t'.join(gene))
     
 genes = '\n'.join(genes)
 
-output_filename = input_path.split('/')[-1]
-output_path = output_dir + output_filename
+output_filename = input_path.split('/')[-1].replace('.gtf', '.tsv').replace('.gff', '.tsv')
+output_path = output_dir + 'gen_pos_' + output_filename
 with open(output_path, 'w') as f:
     f.write(genes)
 

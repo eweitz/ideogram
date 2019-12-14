@@ -126,9 +126,23 @@ expressions, metric_keys = get_gene_expressions(deg_path)
 
 annots_list = list(annots_by_chr.values())
 
-keys = ['name', 'start', 'length', 'gene-type'] + metric_keys
+key_labels = {}
+for key in metric_keys:
+    key_labels[key] = key.lower()\
+            .replace(')v(', '-v-')\
+            .replace('(', '')\
+            .replace(')', '')\
+            .replace(' ', '-')\
+            .replace('.', '-')\
+            .replace('_', '-')
+
+key_labels = dict((v, k) for k, v in key_labels.items())
+print('list(key_labels.keys())')
+print(list(key_labels.keys()))
+keys = ['name', 'start', 'length', 'gene-type'] + list(key_labels.keys())
 
 labels = {'gene-type': sorted_gene_types}
+labels.update(key_labels)
 
 metadata = {'organism': 'Mus musculus', 'assembly': 'GRCm38', 'labels': labels}
 
