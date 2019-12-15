@@ -21,7 +21,7 @@
     }
 
     li {padding: 2px 0;}
-    li.hidden {visibility: hidden;}
+    li.hidden {display: none;}
 
     input {margin-right: 5px;}
 
@@ -33,8 +33,13 @@
       clear: left;
     }
 
+    ul.category-facet {
+      padding-right: 15px;
+      margin-right: 15px;
+      border-right: 1px solid #EEE;
+    }
+
     .category-facet li {
-      width: 300px;
       background: #FFF;
     }
 
@@ -55,7 +60,7 @@
     Distribution of all <span id="organismName" style="font-style: italic"></span> genes throughout the genome.  Filter genes below.  Visualized with <a href="https://github.com/eweitz/ideogram">Ideogram.js</a>.
   </div>
   <div id="facets" style="position: absolute; z-index: 9999;"></div>
-  <div id="container" style="position: relative; top: 180px;"></div>
+  <div id="container" style="position: relative; top: 180px; border-top: 1px solid #EEE"></div>
   <script type="text/javascript">
 
   const d3 = Ideogram.d3;
@@ -122,7 +127,7 @@
     const metricId = metric.replace(/\./g, '');
     const sliderId = metricId + '-' + comparisonId;
     const left = i * 400;
-    const style = `left: ${left}px; top: 45px`;
+    const style = `left: ${left + 20}px; top: 45px`;
     const metricLabels = {
       'log2fc': 'log<sub>2</sub>(fold change)',
       'adj-p-value': 'Adjusted <i>p</i>-value'
@@ -130,7 +135,7 @@
     const metricLabel = metricLabels[metric];
     document.querySelector(`#${comparisonId}`).innerHTML += 
       `<div style="position: absolute;">
-        <div style="width: 300px; position: relative; left: ${left - 20}px; z-index: 2;">
+        <div style="width: 300px; position: relative; left: ${left}px; z-index: 2;">
           <input type="checkbox" class="slider-checkbox" id="slider-checkbox-${sliderId}"/>
           <label for="slider-checkbox-${sliderId}">${metricLabel}</label>
         </div>
@@ -175,7 +180,7 @@
         labels[facetKey].forEach((label, i) => {
           const lowerLabel = label.toLowerCase();
           const filterID = `filter_${facetKey}_${label}`;
-          const toggleClass = i > 5 ? 'hidden' : '';
+          const toggleClass = i >= 5 ? 'hidden' : '';
           const filter = `<li class="${toggleClass}">
             <label for="${filterID}">
               <input type="checkbox" id="${filterID}">${label}</input>
@@ -184,6 +189,9 @@
           </li>`;
           filters.push(filter);
         });
+        if (filters.length >= 5) {
+          filters.push('<a href="#" class="facet-toggler">More...</a>');
+        }
       }
     }
 
@@ -197,6 +205,18 @@
 
     d3.selectAll('input').on('click', function() {
       filterGenes();
+    });
+
+    d3.selectAll('.facet-toggler').on('click', function() {
+      if (this.text === 'More...') {
+        var hiddenItems = document.querySelectorAll('li.hidden');
+        hiddenItems.forEach(item => item.classList.remove('hidden'));
+        this.text = 'Less...';
+      } else {
+        var extraItems = document.querySelectorAll('li:nth-child(n+6)');
+        extraItems.forEach(item => item.classList.add('hidden'));
+        this.text = 'More...';
+      }
     });
   }
 
@@ -273,7 +293,7 @@
     orientation: 'vertical',
     organism: 'mouse',
     assembly: 'GRCm38',
-    chrHeight: 400,
+    chrHeight: 380,
     chrWidth: 12,
     chrMargin: 20,
     annotationsPath: '../../data/annotations/GLDS-4_array_differential_expression_ideogram_annots.json',
