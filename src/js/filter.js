@@ -92,17 +92,16 @@ function getFilteredResults(selections, ideo) {
       if (facet in selections) {
         filter = selections[facet];
         if (Array.isArray(filter)) {
-          fn = function(d, i) {
+          fn = function(d) {
             // Filter is numeric range
-            return filter[0] <= d && d < filter[1]
-          }
+            return filter[0] <= d && d < filter[1];
+          };
         } else {
           fn = function(d) {
             // Filter is set of categories
             return (d in filter);
           };
         }
-        
       } else {
         fn = null;
       }
