@@ -154,12 +154,13 @@
     })
   }
 
-  function writeSliders(comparison) {
+  function writeSliders(comparison, labels) {
+    const comparisonLabel = labels[`log2fc-${comparison}`].replace('Log2fc_', '');
     const metrics = ['log2fc', 'adj-p-value'];
     const comparisonId = comparison.toLowerCase().replace(/[()\s]/g, '');
     document.querySelector('#facets').innerHTML += `
       <div id="${comparisonId}" style="float: left">
-        <div style="margin-bottom: 15px; width: 400px; margin-top: 15px;">${comparison}</div>
+        <div style="margin-bottom: 15px; width: 400px; margin-top: 15px;">${comparisonLabel}</div>
       <div>`;
 
     metrics.forEach((metric, i) => writeSliderContainer(metric, i, comparisonId));
@@ -174,12 +175,14 @@
     const labels = metadata.labels;
     let filters = [];
 
-    for (const facetKey in labels) {
-      if (Array.isArray(labels[facetKey])) {
-        filters.push(facetKey);
-        labels[facetKey].forEach((label, i) => {
+    for (const key in labels) {
+      if (Array.isArray(labels[key])) {
+        var editedKey = key[0].toUpperCase() + key.slice(1).replace(/-/g, ' ')
+        filters.push(editedKey);
+        labels[key].forEach((label, i) => {
+          const editedLabel = label[0].toUpperCase() + label.slice(1).replace(/-/g, ' ')
           const lowerLabel = label.toLowerCase();
-          const filterID = `filter_${facetKey}_${label}`;
+          const filterID = `filter_${key}_${label}`;
           const toggleClass = i >= 5 ? 'hidden' : '';
           const filter = `<li class="${toggleClass}">
             <label for="${filterID}">
@@ -201,7 +204,7 @@
     document.querySelector('#organismName').innerHTML = metadata.organism;
 
     const comparison = 'space-flight-v-ground-control'
-    writeSliders(comparison);
+    writeSliders(comparison, labels);
 
     d3.selectAll('input').on('click', function() {
       filterGenes();
