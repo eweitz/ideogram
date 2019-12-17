@@ -20,6 +20,12 @@
       float: left;
     }
 
+    #ideogram-container {
+      position: relative;
+      top: 180px;
+      border-top: 1px solid #EEE;
+    }
+
     li {padding: 2px 0;}
     li.hidden {display: none;}
 
@@ -56,15 +62,18 @@
   <a href="annotations-animated">Next</a> |
   <a href="https://github.com/eweitz/ideogram/blob/gh-pages/annotations-histogram.html" target="_blank">Source</a>
   <br/><br/>
-  <div>
-    Distribution of all <span id="organismName" style="font-style: italic"></span> genes throughout the genome.  Filter genes below.  Visualized with <a href="https://github.com/eweitz/ideogram">Ideogram.js</a>.
-  </div>
+  <div id="summary"></div>
   <div id="facets" style="position: absolute; z-index: 9999;"></div>
-  <div id="container" style="position: relative; top: 180px; border-top: 1px solid #EEE"></div>
+  <div id="ideogram-container" style="display: none;"></div>
   <script type="text/javascript">
 
   const d3 = Ideogram.d3;
 
+  /**
+  * Provides "noUiSlider" configuration object for the given metric
+  * 
+  * noUiSlider docs: https://refreshless.com/nouislider/
+  **/
   function getSliderConfig(metric) {
 
     const props = {
@@ -123,6 +132,9 @@
     }
   }
 
+  /**
+  * Adds slider widget for a numerical metric
+  **/
   function writeSliderContainer(metric, i, comparisonId) {
     const metricId = metric.replace(/\./g, '');
     const sliderId = metricId + '-' + comparisonId;
@@ -154,6 +166,9 @@
     })
   }
 
+  /**
+  * Adds slider widgets for all numerical metrics in this comparison
+  */
   function writeSliders(comparison, labels) {
     const comparisonLabel = labels[`log2fc-${comparison}`].replace('Log2fc_', '');
     const metrics = ['log2fc', 'adj-p-value'];
@@ -170,10 +185,21 @@
     });
   }
 
+  /**
+  * Adds facets, i.e. groups of filters, to query Ideogram annotations
+  **/
   function writeFacets() {
     const metadata = this.rawAnnots.metadata;
     const labels = metadata.labels;
     let filters = [];
+
+    document.querySelector('#ideogram-container').style.display = '';
+
+    document.querySelector('#summary').innerHTML = 
+      `Distribution of all 
+      <span id="organismName" style="font-style: italic">${metadata.organism}</span> 
+      genes throughout the genome.  Filter genes below.  
+      Visualized with <a href="https://github.com/eweitz/ideogram">Ideogram.js</a>.`;
 
     for (const key in labels) {
       if (Array.isArray(labels[key])) {
@@ -223,6 +249,28 @@
     });
   }
 
+  /**
+  * Writes count of how many annotations match each filter
+  *
+  * TODO: Finish implementation
+  **/
+  function writeCounts(counts) {
+    var facet, count, key, value;
+
+    for (facet in counts) {
+      for (i = 0; i < counts[facet].length; i++) {
+        count = counts[facet][i];
+        key = count.key - 1;
+        value = '(' + count.value + ')';
+
+        // document.querySelectorAll('#' + facet + ' .count')[key].innerHTML = value;
+      }
+    }
+  }
+
+  /**
+  * Reads which categorical filters are selected
+  **/
   function getCategorySelections() {
     var tmp, checkedFilter, checkedFilters,  i, facet, counts, count,
       filterID, key, filterDomId, labels,
@@ -248,20 +296,9 @@
     return selections;
   }
 
-  function writeCounts(counts) {
-    var facet, count, key, value;
-
-    for (facet in counts) {
-      for (i = 0; i < counts[facet].length; i++) {
-        count = counts[facet][i];
-        key = count.key - 1;
-        value = '(' + count.value + ')';
-
-        // document.querySelectorAll('#' + facet + ' .count')[key].innerHTML = value;
-      }
-    }
-  }
-
+  /**
+  * Reads which numerical filters are selected
+  **/
   function getRangeSelections() {
     var selections = {}
     document.querySelectorAll('.ideogramSlider').forEach(slider => {
@@ -277,6 +314,9 @@
     return selections;
   }
 
+  /**
+  * Applies all selected categorical and numerical filters
+  **/
   function filterGenes() {
     var selections = {};
 
@@ -291,22 +331,28 @@
     writeCounts(counts);
   }
 
-  const config = {
-    container: '#container',
-    orientation: 'vertical',
-    organism: 'mouse',
-    assembly: 'GRCm38',
-    chrHeight: 380,
-    chrWidth: 12,
-    chrMargin: 20,
-    annotationsPath: '../../data/annotations/GLDS-4_array_differential_expression_ideogram_annots.json',
-    annotationsLayout: 'histogram',
-    barWidth: 3,
-    filterable: true,
-    onLoadAnnots: writeFacets
-  };
+  // Fetch annotations, then create Ideogram
+  const annotationsPath = '../../data/annotations/GLDS-4_array_differential_expression_ideogram_annots.json';
+  fetch(annotationsPath)
+    .then(response => response.json())
+    .then(rawAnnots => {
+        const config = {
+          container: '#ideogram-container',
+          orientation: 'vertical',
+          organism: rawAnnots.metadata.organism, // This is why we need to fetch annots first
+          assembly: rawAnnots.metadata.assembly,
+          chrHeight: 380,
+          chrWidth: 12,
+          chrMargin: 20,
+          annotations: rawAnnots,
+          annotationsLayout: 'histogram',
+          barWidth: 3,
+          filterable: true,
+          onLoad: writeFacets
+        };
+        window.ideogram = new Ideogram(config);
+    });
 
-  const ideogram = new Ideogram(config);
   </script>
 </body>
 </html>
