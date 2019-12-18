@@ -88,6 +88,10 @@ for line in gtf:
     
 genes = '\n'.join(genes)
 
+headers = [
+    ["Gene_ID", "Gene_name", "Chromosome", "Start", "Stop", "Gene_type"]
+]
+
 output_filename = input_path.split('/')[-1].replace('.gtf', '.tsv').replace('.gff', '.tsv')
 output_path = output_dir + 'gen_pos_' + output_filename
 with open(output_path, 'w') as f:
