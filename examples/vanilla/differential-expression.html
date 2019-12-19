@@ -3,6 +3,7 @@
 <head>
   <title>Differential expression of genes | Ideogram</title>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/c3@0.7.11"></script>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/nouislider@14.1.0"></script>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/wnumb@1.2.0/wNumb.min.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/nouislider@14.1.0/distribute/nouislider.css" rel="stylesheet">
@@ -17,14 +18,9 @@
     ul {
       list-style: none;
       padding-left: 10px;
-      float: left;
     }
 
-    #ideogram-container {
-      position: relative;
-      top: 180px;
-      border-top: 1px solid #EEE;
-    }
+    #summary {margin-bottom: 20px;}
 
     li {padding: 2px 0;}
     li.hidden {display: none;}
@@ -33,16 +29,18 @@
 
     #gene-type {padding-left: 30px;}
 
+    #left-content {
+      float: left;
+      padding-right: 30px;
+      border-right: 1px solid #EEE;
+      margin-right: 15px;
+      width: 275px;
+    }
+
     .note {
       font-style: italic;
       padding-left: 10px;
       clear: left;
-    }
-
-    ul.category-facet {
-      padding-right: 15px;
-      margin-right: 15px;
-      border-right: 1px solid #EEE;
     }
 
     .category-facet li {
@@ -50,6 +48,11 @@
     }
 
     .noUi-value-horizontal {transform: translate(-50%, 70%);}
+    .noUi-horizontal .noUi-handle {width: 20px; right: -10px;}
+    .noUi-handle:before, .noUi-handle:before {left: 7px;}
+    .noUi-handle:after, .noUi-handle:after {left: 10px;}
+    .noUi-horizontal .noUi-tooltip {bottom: 115%;}
+    .noUi-tooltip {padding-top: 2px; padding-bottom: 0px;}
 
     .inactive .noUi-connect {background: #AAA;}
     .inactive .noUi-tooltip {color: #AAA;}
@@ -63,8 +66,13 @@
   <a href="https://github.com/eweitz/ideogram/blob/gh-pages/annotations-histogram.html" target="_blank">Source</a>
   <br/><br/>
   <div id="summary"></div>
-  <div id="facets" style="position: absolute; z-index: 9999;"></div>
-  <div id="ideogram-container" style="display: none;"></div>
+  <div id="left-content">
+    <div id="facets" style="z-index: 9999;"></div>
+  </div>
+  <div id="content">
+    <div id="ideogram-container"></div>
+  </div>
+  
   <script type="text/javascript">
 
   const d3 = Ideogram.d3;
@@ -138,51 +146,35 @@
   function writeSliderContainer(metric, i, comparisonId) {
     const metricId = metric.replace(/\./g, '');
     const sliderId = metricId + '-' + comparisonId;
-    const left = i * 400;
-    const style = `left: ${left + 20}px; top: 45px`;
+    const top = i * 300;
+    const style = `top: ${top + 20}px; top: 45px`;
     const metricLabels = {
       'log2fc': 'log<sub>2</sub>(fold change)',
       'adj-p-value': 'Adjusted <i>p</i>-value'
     }
     const metricLabel = metricLabels[metric];
     document.querySelector(`#${comparisonId}`).innerHTML += 
-      `<div style="position: absolute;">
-        <div style="width: 300px; position: relative; left: ${left}px; z-index: 2;">
+      `<div style="margin-bottom: 125px; margin-left: 15px;">
+        <div style="width: 200px; top: ${top}px; margin-left: -15px; z-index: 2;">
           <input type="checkbox" class="slider-checkbox" id="slider-checkbox-${sliderId}"/>
           <label for="slider-checkbox-${sliderId}">${metricLabel}</label>
         </div>
         <div id="${sliderId}" class="ideogramSlider inactive" style="${style}"></div>
       </div>`;
-    document.querySelectorAll('.slider-checkbox').forEach(checkbox => {
-      checkbox.addEventListener('change', function() {
-        var sliderId = this.id.replace('slider-checkbox-', '');
-        var slider = document.querySelector(`#${sliderId}`);
-        if (this.checked) {
-          slider.classList.remove('inactive');
-        } else {
-          slider.classList.add('inactive');
-        }
-      });
-    })
   }
 
   /**
   * Adds slider widgets for all numerical metrics in this comparison
   */
-  function writeSliders(comparison, labels) {
+  function writeSliders(comparison, labels, metrics) {
     const comparisonLabel = labels[`log2fc-${comparison}`].replace('Log2fc_', '');
-    const metrics = ['log2fc', 'adj-p-value'];
     const comparisonId = comparison.toLowerCase().replace(/[()\s]/g, '');
     document.querySelector('#facets').innerHTML += `
-      <div id="${comparisonId}" style="float: left">
-        <div style="margin-bottom: 15px; width: 400px; margin-top: 15px;">${comparisonLabel}</div>
+      <div id="${comparisonId}">
+        <div style="margin-bottom: 30px; width: 200px; margin-top: 5px;">${comparisonLabel}</div>
       <div>`;
 
     metrics.forEach((metric, i) => writeSliderContainer(metric, i, comparisonId));
-    document.querySelectorAll('.ideogramSlider').forEach((slider, i) => {
-      noUiSlider.create(slider, getSliderConfig(metrics[i]));
-      slider.noUiSlider.on('change', filterGenes);
-    });
   }
 
   /**
@@ -193,14 +185,13 @@
     const labels = metadata.labels;
     let filters = [];
 
-    document.querySelector('#ideogram-container').style.display = '';
-
     document.querySelector('#summary').innerHTML = 
       `Distribution of all 
       <span id="organismName" style="font-style: italic">${metadata.organism}</span> 
       genes throughout the genome.  Filter genes below.  
       Visualized with <a href="https://github.com/eweitz/ideogram">Ideogram.js</a>.`;
 
+    // Build category facets
     for (const key in labels) {
       if (Array.isArray(labels[key])) {
         var editedKey = key[0].toUpperCase() + key.slice(1).replace(/-/g, ' ')
@@ -224,18 +215,19 @@
       }
     }
 
+    const comparison = 'space-flight-v-ground-control';
+    const metrics = ['log2fc', 'adj-p-value'];
+    writeSliders(comparison, labels, metrics);
+
     filters = '<ul class="category-facet">' + filters.join('\n') + '</ul>';
-    document.querySelector('#facets').innerHTML = filters;
+    document.querySelector('#facets').innerHTML += filters;
 
-    document.querySelector('#organismName').innerHTML = metadata.organism;
-
-    const comparison = 'space-flight-v-ground-control'
-    writeSliders(comparison, labels);
-
+    // Listen for clicks on category filters and slider checkboxes
     d3.selectAll('input').on('click', function() {
       filterGenes();
     });
 
+    // Listen for clicks on "More..." and "Less..." category facet toggler
     d3.selectAll('.facet-toggler').on('click', function() {
       if (this.text === 'More...') {
         var hiddenItems = document.querySelectorAll('li.hidden');
@@ -246,6 +238,25 @@
         extraItems.forEach(item => item.classList.add('hidden'));
         this.text = 'More...';
       }
+    });
+
+    // Listen for changes in slider checkboxes
+    document.querySelectorAll('.slider-checkbox').forEach(checkbox => {
+      checkbox.addEventListener('change', function() {
+        var sliderId = this.id.replace('slider-checkbox-', '');
+        var slider = document.querySelector(`#${sliderId}`);
+        if (this.checked) {
+          slider.classList.remove('inactive');
+        } else {
+          slider.classList.add('inactive');
+        }
+      });
+    });
+
+    // Listen for dragging slider
+    document.querySelectorAll('.ideogramSlider').forEach((slider, i) => {
+      noUiSlider.create(slider, getSliderConfig(metrics[i]));
+      slider.noUiSlider.on('change', filterGenes);
     });
   }
 
@@ -341,9 +352,9 @@
           orientation: 'vertical',
           organism: rawAnnots.metadata.organism, // This is why we need to fetch annots first
           assembly: rawAnnots.metadata.assembly,
-          chrHeight: 380,
+          chrHeight: 330,
           chrWidth: 12,
-          chrMargin: 20,
+          chrMargin: 18,
           annotations: rawAnnots,
           annotationsLayout: 'histogram',
           barWidth: 3,
