@@ -92,13 +92,22 @@ def get_annots_by_chr(gene_coordinates, gene_expressions, gene_types):
     """
     annots_by_chr = {}
 
+    # Some gene types (e.g. pseudogenes) exist in the genome annotation,
+    # but are never expressed.  Don't count these.
+    for gene_id in gene_coordinates:
+        coordinates = gene_coordinates[gene_id]
+        gene_symbol = coordinates['symbol']
+        if gene_symbol not in gene_expressions:
+            gene_type = coordinates['type']
+            gene_types[gene_type] -= 1
+
     # Sort keys by descending count value, then
     # make a list of those keys (i.e., without values)
-    sorted_items = sorted(gene_types.items(), key=lambda x: -x[1])
+    sorted_items = sorted(gene_types.items(), key=lambda x: -int(x[1]))
     sorted_gene_types = [x[0] for x in sorted_items]
 
-    for gene in gene_coordinates:
-        coordinates = gene_coordinates[gene]
+    for gene_id in gene_coordinates:
+        coordinates = gene_coordinates[gene_id]
         gene_symbol = coordinates['symbol']
         if gene_symbol not in gene_expressions:
             continue
