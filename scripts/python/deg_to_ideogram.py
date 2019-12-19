@@ -37,6 +37,9 @@ def get_gene_coordinates(gene_pos_path):
 
     gene_coordinates = {}
     for line in lines:
+
+        if line[0] == '#': continue
+
         # Example line: "AT1G01190	CYP78A8	1	82984	84946	protein_coding"
         columns = [column.strip() for column in line.split('\t')]
 
@@ -58,7 +61,13 @@ def get_gene_coordinates(gene_pos_path):
 
         gene_coordinates[gene_id] = gene
 
-    return [gene_coordinates, gene_types]
+    gene_pos_metadata = {}
+    header_fields = lines[0][2:].strip().split('; ')
+    for h in header_fields:
+        k, v = h.split(': ')
+        gene_pos_metadata[k.lower()] = v
+
+    return [gene_coordinates, gene_types, gene_pos_metadata]
 
 def get_gene_expressions(deg_matrix_path):
     """Parse DEG matrix, return dictionary of statistics and corresponding keys
@@ -119,32 +128,46 @@ def get_annots_by_chr(gene_coordinates, gene_expressions, gene_types):
 
     return [annots_by_chr, sorted_gene_types]
 
-coordinates, gene_types = get_gene_coordinates(gene_pos_path)
+
+def get_key_labels(metric_keys):
+    key_labels = {}
+    for key in metric_keys:
+        key_labels[key] = key.lower()\
+                .replace(')v(', '-v-')\
+                .replace('(', '')\
+                .replace(')', '')\
+                .replace(' ', '-')\
+                .replace('.', '-')\
+                .replace('_', '-')
+
+    key_labels = dict((v, k) for k, v in key_labels.items())
+
+    return key_labels
+
+
+def get_metadata(gene_pos_metadata, sorted_gene_types, key_labels):
+    labels = {'gene-type': sorted_gene_types}
+    labels.update(key_labels)
+
+    metadata = {
+        'organism': gene_pos_metadata['organism'],
+        'assembly': gene_pos_metadata['assembly'],
+        'annotation': gene_pos_metadata['annotation'],
+        'labels': labels
+    }
+
+    return metadata
+
+coordinates, gene_types, gene_pos_metadata = get_gene_coordinates(gene_pos_path)
 expressions, metric_keys = get_gene_expressions(deg_path)
+
+key_labels = get_key_labels(metric_keys)
 
 [annots_by_chr, sorted_gene_types] = get_annots_by_chr(coordinates, expressions, gene_types)
 
-annots_list = list(annots_by_chr.values())
-
-key_labels = {}
-for key in metric_keys:
-    key_labels[key] = key.lower()\
-            .replace(')v(', '-v-')\
-            .replace('(', '')\
-            .replace(')', '')\
-            .replace(' ', '-')\
-            .replace('.', '-')\
-            .replace('_', '-')
-
-key_labels = dict((v, k) for k, v in key_labels.items())
-print('list(key_labels.keys())')
-print(list(key_labels.keys()))
 keys = ['name', 'start', 'length', 'gene-type'] + list(key_labels.keys())
-
-labels = {'gene-type': sorted_gene_types}
-labels.update(key_labels)
-
-metadata = {'organism': 'Mus musculus', 'assembly': 'GRCm38', 'labels': labels}
+annots_list = list(annots_by_chr.values())
+metadata = get_metadata(gene_pos_metadata, sorted_gene_types, key_labels)
 
 annots = {'keys': keys, 'annots': annots_list, 'metadata': metadata}
 
