@@ -3,10 +3,17 @@
 <head>
   <title>Differential expression of genes | Ideogram</title>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/datatables.net@1.10.20/js/jquery.dataTables.js"></script>
+  <script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/c3@0.7.11"></script>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/nouislider@14.1.0"></script>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/wnumb@1.2.0/wNumb.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/wnumb@1.2.0/wNumb.min.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/nouislider@14.1.0/distribute/nouislider.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.dataTables.min.css" rel="stylesheet">
+  
   <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
   <style>
     body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
@@ -21,6 +28,8 @@
     }
 
     #summary {margin-bottom: 20px;}
+
+    #ideogram-container {margin-top: -15px;}
 
     li {padding: 2px 0;}
     li.hidden {display: none;}
@@ -47,10 +56,25 @@
       background: #FFF;
     }
 
+    #table-container {
+      position: absolute;
+      left: 324px;
+      margin-left: 5px;
+      border-top: 1px solid #EEE;
+      padding-top: 10px;
+    }
+
+    .dataTables_length {margin-left: 10px;}
+
+    table.dataTable tbody td {padding: 2px 10px;}
+
     .noUi-value-horizontal {transform: translate(-50%, 70%);}
-    .noUi-horizontal .noUi-handle {width: 20px; right: -10px;}
-    .noUi-handle:before, .noUi-handle:before {left: 7px;}
-    .noUi-handle:after, .noUi-handle:after {left: 10px;}
+    .noUi-horizontal {height: 12px;}
+    .noUi-horizontal .noUi-handle {width: 20px; right: -10px; height: 22px; top: -6px;}
+    .noUi-handle:before, .noUi-handle:before {left: 7px; top: 3px;}
+    .noUi-handle:after, .noUi-handle:after {left: 10px; top: 3px;}
+    .noUi-marker-horizontal.noUi-marker-large {height: 12px;}
+    noUi-marker noUi-marker-horizontal noUi-marker-normal {height: 3px;}
     .noUi-horizontal .noUi-tooltip {bottom: 115%;}
     .noUi-tooltip {padding-top: 2px; padding-bottom: 0px;}
 
@@ -71,6 +95,7 @@
   </div>
   <div id="content">
     <div id="ideogram-container"></div>
+    <div id="table-container"></div>
   </div>
   
   <script type="text/javascript">
@@ -147,7 +172,7 @@
     const metricId = metric.replace(/\./g, '');
     const sliderId = metricId + '-' + comparisonId;
     const top = i * 300;
-    const style = `top: ${top + 20}px; top: 45px`;
+    const style = `top: ${top + 20}px; top: 40px`;
     const metricLabels = {
       'log2fc': 'log<sub>2</sub>(fold change)',
       'adj-p-value': 'Adjusted <i>p</i>-value'
@@ -218,6 +243,8 @@
     const comparison = 'space-flight-v-ground-control';
     const metrics = ['log2fc', 'adj-p-value'];
     writeSliders(comparison, labels, metrics);
+
+    writeTable();
 
     filters = '<ul class="category-facet">' + filters.join('\n') + '</ul>';
     document.querySelector('#facets').innerHTML += filters;
@@ -318,11 +345,87 @@
       var checkbox = document.querySelector(`#slider-checkbox-${slider.id}`);
       if (checkbox.checked === false) return;
       
-      var [min, max] = slider.noUiSlider.get().map(d => parseFloat(d));
-      selections[slider.id] = [min, max];
+      var range = slider.noUiSlider.get().map(d => parseFloat(d));
+      selections[slider.id] = range;
     });
 
     return selections;
+  }
+
+  function getLocation(annot) {
+    let start = annot.start.toLocaleString();
+    let end = (annot.start + annot.length).toLocaleString();
+    return `chr${annot.chr}:${start}-${end}`;
+  }
+
+  function deslug(string) {
+    return string[0].toUpperCase() + string.slice(1).replace(/-/g, ' ');
+  }
+
+  function hyperlinkGene(annot) {
+    let org = ideogram.rawAnnots.metadata.organism.replace(/ /g, '+');
+    var term = '(' + annot.name + '[gene])+AND+(' + org + '[orgn])';
+    var url = 'https://ncbi.nlm.nih.gov/gene/?term=' + term;
+    var link =
+      '<a target="_blank" href="' + url + '">' + annot.name + '</a>';
+    return link;
+  }
+
+  function writeTable() {
+    const annotsContainer = ideogram.filteredAnnots;
+    let rows = [];
+
+    let headers = 
+      ['name', 'Location', 'gene-type',
+        'log2fc-space-flight-v-ground-control',
+        'adj-p-value-space-flight-v-ground-control'];
+
+    const sortKey = 'log2fc-space-flight-v-ground-control';
+
+    window.annotsContainer = annotsContainer;
+
+    let annotsList = [];
+    for (let i = 0; i < annotsContainer.length; i++) {
+      annotsList = annotsList.concat(annotsContainer[i].annots);
+    }
+    for (let i = 0; i < annotsList.length; i++) {
+      let annot = annotsList[i];
+      let cells = [];
+      for (let j = 0; j < headers.length; j++) {
+        let value = annot[headers[j]];
+        if (j === 0) {
+          cells.push(hyperlinkGene(annot));
+        } else if (j === 1) {
+          cells.push(getLocation(annot));
+        } else {
+          cells.push(value);
+        }
+      }
+      rows.push(cells);
+    };
+
+    const displayHeaders = headers.map(h => {
+      let labels = ideogram.rawAnnots.metadata.labels;
+      if (h in labels === false) return deslug(h);
+      if (Array.isArray(labels[h])) {
+        // e.g. gene-type -> Gene type
+        return deslug(h);
+      } else {
+        return labels[h]; //.split('_')[0];
+      }
+    });
+
+    const head = '<thead><tr><th>' + displayHeaders.join('</th><th>') + '</th></tr></thead>';
+
+    const table = `<table id="ideogram-annots-table" class="display">${head}</table>`;
+    document.querySelector('#table-container').innerHTML = table;
+
+    $('#ideogram-annots-table').DataTable({
+      data: rows,
+      order: [[headers.indexOf(sortKey), 'desc']],
+      deferRender: true,
+      columns: [null, {width: '200px'}, null, null, null]
+    });
   }
 
   /**
@@ -334,12 +437,16 @@
     selections = getCategorySelections();
 
     rangeSelections = getRangeSelections();
+    console.log('rangeSelections')
+    console.log(rangeSelections)
     
     Object.assign(selections, rangeSelections);
 
     counts = ideogram.filterAnnots(selections);
 
     writeCounts(counts);
+
+    writeTable();
   }
 
   // Fetch annotations, then create Ideogram
@@ -352,7 +459,7 @@
           orientation: 'vertical',
           organism: rawAnnots.metadata.organism, // This is why we need to fetch annots first
           assembly: rawAnnots.metadata.assembly,
-          chrHeight: 330,
+          chrHeight: 210,
           chrWidth: 12,
           chrMargin: 18,
           annotations: rawAnnots,
