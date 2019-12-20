@@ -56,6 +56,12 @@
       background: #FFF;
     }
 
+    sub {
+        font-size: 0.83em;
+        vertical-align: sub;
+        line-height: 0;
+    }
+
     #table-container {
       position: absolute;
       left: 324px;
@@ -67,6 +73,7 @@
     .dataTables_length {margin-left: 10px;}
 
     table.dataTable tbody td {padding: 2px 10px;}
+    table.dataTable thead th {padding: 8px 18px 4px 18px;}
 
     .noUi-value-horizontal {transform: translate(-50%, 70%);}
     .noUi-horizontal {height: 12px;}
@@ -101,6 +108,11 @@
   <script type="text/javascript">
 
   const d3 = Ideogram.d3;
+
+  const metricLabels = {
+    'log2fc': 'log<sub>2</sub>(fold change)',
+    'adj-p-value': 'Adjusted <i>p</i>-value'
+  }
 
   /**
   * Provides "noUiSlider" configuration object for the given metric
@@ -173,10 +185,6 @@
     const sliderId = metricId + '-' + comparisonId;
     const top = i * 300;
     const style = `top: ${top + 20}px; top: 40px`;
-    const metricLabels = {
-      'log2fc': 'log<sub>2</sub>(fold change)',
-      'adj-p-value': 'Adjusted <i>p</i>-value'
-    }
     const metricLabel = metricLabels[metric];
     document.querySelector(`#${comparisonId}`).innerHTML += 
       `<div style="margin-bottom: 125px; margin-left: 15px;">
@@ -244,14 +252,14 @@
     const metrics = ['log2fc', 'adj-p-value'];
     writeSliders(comparison, labels, metrics);
 
-    writeTable();
+    writeTable(metrics, comparison);
 
     filters = '<ul class="category-facet">' + filters.join('\n') + '</ul>';
     document.querySelector('#facets').innerHTML += filters;
 
     // Listen for clicks on category filters and slider checkboxes
     d3.selectAll('input').on('click', function() {
-      filterGenes();
+      filterGenes(metrics, comparison);
     });
 
     // Listen for clicks on "More..." and "Less..." category facet toggler
@@ -283,7 +291,7 @@
     // Listen for dragging slider
     document.querySelectorAll('.ideogramSlider').forEach((slider, i) => {
       noUiSlider.create(slider, getSliderConfig(metrics[i]));
-      slider.noUiSlider.on('change', filterGenes);
+      slider.noUiSlider.on('change', filterGenes(metrics, comparison));
     });
   }
 
@@ -371,16 +379,16 @@
     return link;
   }
 
-  function writeTable() {
+  function writeTable(metrics, comparison) {
     const annotsContainer = ideogram.filteredAnnots;
+    let labels = ideogram.rawAnnots.metadata.labels;
     let rows = [];
 
-    let headers = 
-      ['name', 'Location', 'gene-type',
-        'log2fc-space-flight-v-ground-control',
-        'adj-p-value-space-flight-v-ground-control'];
+    let headers = ['name', 'Location', 'gene-type'];
+    metrics.forEach(metric => headers.push(metric + '-' + comparison));
 
-    const sortKey = 'log2fc-space-flight-v-ground-control';
+
+    const sortKey = metrics[0] + '-' + comparison;
 
     window.annotsContainer = annotsContainer;
 
@@ -397,6 +405,8 @@
           cells.push(hyperlinkGene(annot));
         } else if (j === 1) {
           cells.push(getLocation(annot));
+        } else if (j === 2) {
+          cells.push(labels[headers[j]][value]);
         } else {
           cells.push(value);
         }
@@ -404,14 +414,16 @@
       rows.push(cells);
     };
 
-    const displayHeaders = headers.map(h => {
-      let labels = ideogram.rawAnnots.metadata.labels;
+    const displayHeaders = headers.map((h, i) => {
       if (h in labels === false) return deslug(h);
       if (Array.isArray(labels[h])) {
         // e.g. gene-type -> Gene type
         return deslug(h);
+      } else if (i > 2) {
+        const metric = metrics.filter(m => h.includes(m))[0];
+        return metricLabels[metric];
       } else {
-        return labels[h]; //.split('_')[0];
+        return labels[h];
       }
     });
 
@@ -431,7 +443,7 @@
   /**
   * Applies all selected categorical and numerical filters
   **/
-  function filterGenes() {
+  function filterGenes(metrics, comparison) {
     var selections = {};
 
     selections = getCategorySelections();
@@ -446,7 +458,7 @@
 
     writeCounts(counts);
 
-    writeTable();
+    writeTable(metrics, comparison);
   }
 
   // Fetch annotations, then create Ideogram

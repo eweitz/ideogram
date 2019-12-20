@@ -155,7 +155,7 @@ def get_key_labels(metric_keys):
 
 
 def get_metadata(gene_pos_metadata, sorted_gene_types, key_labels):
-    labels = {'gene-type': sorted_gene_types}
+    labels = {'gene-type': [t.replace('_', ' ') for t in sorted_gene_types]}
     labels.update(key_labels)
 
     metadata = {
