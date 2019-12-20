@@ -81,7 +81,7 @@
     .noUi-handle:before, .noUi-handle:before {left: 7px; top: 3px;}
     .noUi-handle:after, .noUi-handle:after {left: 10px; top: 3px;}
     .noUi-marker-horizontal.noUi-marker-large {height: 12px;}
-    noUi-marker noUi-marker-horizontal noUi-marker-normal {height: 3px;}
+    .noUi-marker .noUi-marker-horizontal .noUi-marker-normal {height: 3px;}
     .noUi-horizontal .noUi-tooltip {bottom: 115%;}
     .noUi-tooltip {padding-top: 2px; padding-bottom: 0px;}
 
@@ -183,12 +183,11 @@
   function writeSliderContainer(metric, i, comparisonId) {
     const metricId = metric.replace(/\./g, '');
     const sliderId = metricId + '-' + comparisonId;
-    const top = i * 300;
-    const style = `top: ${top + 20}px; top: 40px`;
+    const style = 'top: 40px';
     const metricLabel = metricLabels[metric];
     document.querySelector(`#${comparisonId}`).innerHTML += 
-      `<div style="margin-bottom: 125px; margin-left: 15px;">
-        <div style="width: 200px; top: ${top}px; margin-left: -15px; z-index: 2;">
+      `<div style="margin-bottom: 115px; margin-left: 15px;">
+        <div style="width: 200px; margin-left: -15px; z-index: 2;">
           <input type="checkbox" class="slider-checkbox" id="slider-checkbox-${sliderId}"/>
           <label for="slider-checkbox-${sliderId}">${metricLabel}</label>
         </div>
@@ -462,7 +461,7 @@
   }
 
   // Fetch annotations, then create Ideogram
-  const annotationsPath = '../../data/annotations/GLDS-4_array_differential_expression_ideogram_annots.json';
+  const annotationsPath = '../../data/annotations/GLDS-25_array_differential_expression_ideogram_annots.json';
   fetch(annotationsPath)
     .then(response => response.json())
     .then(rawAnnots => {

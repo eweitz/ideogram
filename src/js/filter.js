@@ -1,5 +1,5 @@
 import {d3} from './lib';
-import * as crossfilter from 'crossfilter';
+import crossfilter from 'crossfilter2';
 
 /* Decompresses ideogram's annotations for crossfilter initialization
 By default, annotations are clustered by chromosome, e.g.
