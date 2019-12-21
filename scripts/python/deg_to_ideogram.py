@@ -69,25 +69,33 @@ def get_gene_coordinates(gene_pos_path):
 
     return [gene_coordinates, gene_types, gene_pos_metadata]
 
-def get_gene_expressions(deg_matrix_path):
-    """Parse DEG matrix, return dictionary of statistics and corresponding keys
+def parse_deg_matrix(deg_matrix_path):
+    """Get gene metadata and expression values from DEG matrix
     """
 
     gene_expressions = {}
+    gene_metadata = {}
 
     with open(deg_matrix_path, newline='') as f:
         reader = csv.reader(f)
 
-        # CSV/TSV headers for numeric expression values
-        metric_keys = next(reader, None)[7:]
+        first_line = next(reader, None)
+        # Headers for gene metadata
+        metadata_keys = first_line[:6]
+
+        # Headers for numeric expression values
+        metric_keys = first_line[7:]
         
         for row in reader:
             gene_symbol = row[1]
+            gene_metadata[gene_symbol] = row[:6]
             gene_expressions[gene_symbol] = row[7:]
 
-    return [gene_expressions, metric_keys]
+    print(metadata_keys)
+    print(list(gene_metadata.items())[0])
+    return [gene_metadata, metadata_keys, gene_expressions, metric_keys]
 
-def get_annots_by_chr(gene_coordinates, gene_expressions, gene_types):
+def get_annots_by_chr(gene_coordinates, gene_expressions, gene_types, gene_metadata):
     """Merge coordinates and expressions, return Ideogram annotations
     """
     annots_by_chr = {}
@@ -106,12 +114,15 @@ def get_annots_by_chr(gene_coordinates, gene_expressions, gene_types):
     sorted_items = sorted(gene_types.items(), key=lambda x: -int(x[1]))
     sorted_gene_types = [x[0] for x in sorted_items]
 
+    print('gene_metadata["Alb"]')
+    print(gene_metadata["Alb"])
+
     for gene_id in gene_coordinates:
         coordinates = gene_coordinates[gene_id]
-        gene_symbol = coordinates['symbol']
-        if gene_symbol not in gene_expressions:
+        symbol = coordinates['symbol']
+        if symbol not in gene_expressions:
             continue
-        expressions = gene_expressions[gene_symbol]
+        expressions = gene_expressions[symbol]
 
         chr = coordinates['chromosome']
 
@@ -123,11 +134,13 @@ def get_annots_by_chr(gene_coordinates, gene_expressions, gene_types):
         length = stop - start
 
         annot = [
-            coordinates['symbol'],
+            symbol,
             start,
             length,
             sorted_gene_types.index(coordinates['type'])
-        ]
+        ] + gene_metadata[symbol]
+
+        annot.append(expressions)
 
         # Convert numeric strings to floats, and clean as needed
         for exp_value in expressions:
@@ -138,9 +151,9 @@ def get_annots_by_chr(gene_coordinates, gene_expressions, gene_types):
     return [annots_by_chr, sorted_gene_types]
 
 
-def get_key_labels(metric_keys):
+def get_key_labels(keys):
     key_labels = {}
-    for key in metric_keys:
+    for key in keys:
         key_labels[key] = key.lower()\
                 .replace(')v(', '-v-')\
                 .replace('(', '')\
@@ -168,15 +181,22 @@ def get_metadata(gene_pos_metadata, sorted_gene_types, key_labels):
     return metadata
 
 coordinates, gene_types, gene_pos_metadata = get_gene_coordinates(gene_pos_path)
-expressions, metric_keys = get_gene_expressions(deg_path)
+metadata, metadata_keys, expressions, metric_keys = parse_deg_matrix(deg_path)
 
-key_labels = get_key_labels(metric_keys)
+metadata_labels = get_key_labels(metadata_keys)
+metadata_list = list(metadata_labels.keys())
 
-[annots_by_chr, sorted_gene_types] = get_annots_by_chr(coordinates, expressions, gene_types)
+print(metadata_list)
+metric_labels = get_key_labels(metric_keys)
+metric_list = list(metric_labels.keys())
 
-keys = ['name', 'start', 'length', 'gene-type'] + list(key_labels.keys())
+print(metric_list)
+
+[annots_by_chr, sorted_gene_types] = get_annots_by_chr(coordinates, expressions, gene_types, metadata)
+
+keys = ['name', 'start', 'length', 'gene-type'] + metadata_list + metric_list
 annots_list = list(annots_by_chr.values())
-metadata = get_metadata(gene_pos_metadata, sorted_gene_types, key_labels)
+metadata = get_metadata(gene_pos_metadata, sorted_gene_types, metric_labels)
 
 annots = {'keys': keys, 'annots': annots_list, 'metadata': metadata}
 
