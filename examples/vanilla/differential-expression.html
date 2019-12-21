@@ -3,16 +3,15 @@
 <head>
   <title>Differential expression of genes | Ideogram</title>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.js"></script>
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/datatables.net@1.10.20/js/jquery.dataTables.js"></script>
-  <script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/c3@0.7.11"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/datatables.net@1.10.20/js/jquery.dataTables.min.js"></script>
+  <!-- <script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script> -->
+  <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/c3@0.7.11"></script> -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/nouislider@14.1.0"></script>
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/wnumb@1.2.0/wNumb.min.js"></script>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/wnumb@1.2.0/wNumb.min.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/nouislider@14.1.0/distribute/nouislider.css" rel="stylesheet">
   <link href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css" rel="stylesheet">
-  <link href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.dataTables.min.css" rel="stylesheet">
+  <!-- <link href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.dataTables.min.css" rel="stylesheet"> -->
   
   <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
   <style>
@@ -190,7 +189,7 @@
           <input type="checkbox" class="slider-checkbox" id="slider-checkbox-${sliderId}"/>
           <label for="slider-checkbox-${sliderId}">${metricLabel}</label>
         </div>
-        <div id="${sliderId}" class="ideogramSlider inactive" style="top: 40px"></div>
+        <div id="${sliderId}" class="ideogramSlider" style="top: 40px"></div>
       </div>`;
   }
 
@@ -246,10 +245,9 @@
     }
 
     const comparison = 'space-flight-v-ground-control';
+    // const comparison = 'flt-c1-v-cc-c1';
     const metrics = ['log2fc', 'adj-p-value'];
     writeSliders(comparison, labels, metrics);
-
-    writeTable(metrics, comparison);
 
     filters = '<ul class="category-facet">' + filters.join('\n') + '</ul>';
     document.querySelector('#facets').innerHTML += filters;
@@ -286,14 +284,22 @@
     });
 
     // Listen for dragging slider
-    document.querySelectorAll('.ideogramSlider').forEach((slider, i) => {
+    let sliders = document.querySelectorAll('.ideogramSlider');
+    sliders.forEach((slider, i) => {
       noUiSlider.create(slider, getSliderConfig(metrics[i]));
-      slider.noUiSlider.on('change', filterGenes(metrics, comparison));
+      slider.noUiSlider.on('change', function(){filterGenes(metrics, comparison);});
     });
 
-    document.querySelectorAll('.slider-checkbox').forEach(sliderCheckbox => {
-      sliderCheckbox.click();
-    });
+    let sliderCheckboxes = document.querySelectorAll('.slider-checkbox');
+    for (let i = 0; i < sliderCheckboxes.length; i++) {
+      let checkbox = sliderCheckboxes[i];
+      if (i < sliderCheckboxes.length - 1) {
+        checkbox.checked = true;
+      } else {
+        checkbox.click();
+      }
+    }
+
   }
 
   /**
@@ -469,7 +475,8 @@
   }
 
   // Fetch annotations, then create Ideogram
-  const annotationsPath = '../../data/annotations/GLDS-25_array_differential_expression_ideogram_annots.json';
+  const annotationsPath = '../../data/annotations/GLDS-21_array_differential_expression_ideogram_annots.json';
+  // const annotationsPath = '../../data/annotations/GLDS-242_rna_seq_ERCCnorm_differential_expression_ideogram_annots.json'
   fetch(annotationsPath)
     .then(response => response.json())
     .then(rawAnnots => {
