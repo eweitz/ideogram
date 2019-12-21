@@ -183,7 +183,6 @@
   function writeSliderContainer(metric, i, comparisonId) {
     const metricId = metric.replace(/\./g, '');
     const sliderId = metricId + '-' + comparisonId;
-    const style = 'top: 40px';
     const metricLabel = metricLabels[metric];
     document.querySelector(`#${comparisonId}`).innerHTML += 
       `<div style="margin-bottom: 115px; margin-left: 15px;">
@@ -191,7 +190,7 @@
           <input type="checkbox" class="slider-checkbox" id="slider-checkbox-${sliderId}"/>
           <label for="slider-checkbox-${sliderId}">${metricLabel}</label>
         </div>
-        <div id="${sliderId}" class="ideogramSlider inactive" style="${style}"></div>
+        <div id="${sliderId}" class="ideogramSlider inactive" style="top: 40px"></div>
       </div>`;
   }
 
@@ -218,10 +217,9 @@
     let filters = [];
 
     document.querySelector('#summary').innerHTML = 
-      `Distribution of all 
+      `Genomic distribution of differentially expressed 
       <span id="organismName" style="font-style: italic">${metadata.organism}</span> 
-      genes throughout the genome.  Filter genes below.  
-      Visualized with <a href="https://github.com/eweitz/ideogram">Ideogram.js</a>.`;
+      genes.    Visualized with <a href="https://github.com/eweitz/ideogram">Ideogram.js</a>.`;
 
     // Build category facets
     for (const key in labels) {
@@ -291,6 +289,10 @@
     document.querySelectorAll('.ideogramSlider').forEach((slider, i) => {
       noUiSlider.create(slider, getSliderConfig(metrics[i]));
       slider.noUiSlider.on('change', filterGenes(metrics, comparison));
+    });
+
+    document.querySelectorAll('.slider-checkbox').forEach(sliderCheckbox => {
+      sliderCheckbox.click();
     });
   }
 
@@ -365,6 +367,11 @@
     return `chr${annot.chr}:${start}-${end}`;
   }
 
+  function getRoughLocation(annot) {
+    let start = d3.formatPrefix('.2s', annot.start)(annot.start);
+    return `chr${annot.chr}:${start}`;
+  }
+
   function deslug(string) {
     return string[0].toUpperCase() + string.slice(1).replace(/-/g, ' ');
   }
@@ -383,9 +390,9 @@
     let labels = ideogram.rawAnnots.metadata.labels;
     let rows = [];
 
-    let headers = ['name', 'Location', 'gene-type'];
+    let headers = ['name', 'genename'];
     metrics.forEach(metric => headers.push(metric + '-' + comparison));
-
+    headers.push('Location');
 
     const sortKey = metrics[0] + '-' + comparison;
 
@@ -399,13 +406,14 @@
       let annot = annotsList[i];
       let cells = [];
       for (let j = 0; j < headers.length; j++) {
-        let value = annot[headers[j]];
-        if (j === 0) {
+        let header = headers[j];
+        let value = annot[header];
+        if (header === 'name') {
           cells.push(hyperlinkGene(annot));
-        } else if (j === 1) {
-          cells.push(getLocation(annot));
-        } else if (j === 2) {
-          cells.push(labels[headers[j]][value]);
+        } else if (header === 'Location') {
+          cells.push(getRoughLocation(annot));
+        } else if (header === 'gene-type') {
+          cells.push(labels[header][value]);
         } else {
           cells.push(value);
         }
@@ -414,11 +422,13 @@
     };
 
     const displayHeaders = headers.map((h, i) => {
+      if (h === 'name') return 'Symbol';
+      if (h === 'genename') return 'Gene name';
       if (h in labels === false) return deslug(h);
       if (Array.isArray(labels[h])) {
         // e.g. gene-type -> Gene type
         return deslug(h);
-      } else if (i > 2) {
+      } else if (i === 2 || i === 3) {
         const metric = metrics.filter(m => h.includes(m))[0];
         return metricLabels[metric];
       } else {
@@ -435,7 +445,7 @@
       data: rows,
       order: [[headers.indexOf(sortKey), 'desc']],
       deferRender: true,
-      columns: [null, {width: '200px'}, null, null, null]
+      columns: [{width: '50px'}, {width: '475px'}, {width: '125px'}, {width: '125px'}, {width: '100px'}]
     });
   }
 
@@ -448,8 +458,6 @@
     selections = getCategorySelections();
 
     rangeSelections = getRangeSelections();
-    console.log('rangeSelections')
-    console.log(rangeSelections)
     
     Object.assign(selections, rangeSelections);
 
@@ -470,7 +478,7 @@
           orientation: 'vertical',
           organism: rawAnnots.metadata.organism, // This is why we need to fetch annots first
           assembly: rawAnnots.metadata.assembly,
-          chrHeight: 210,
+          chrHeight: 200,
           chrWidth: 12,
           chrMargin: 18,
           annotations: rawAnnots,
