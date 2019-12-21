@@ -81,15 +81,30 @@ def parse_deg_matrix(deg_matrix_path):
 
         first_line = next(reader, None)
         # Headers for gene metadata
-        metadata_keys = first_line[:6]
+        metadata_keys = first_line[1:3]
 
         # Headers for numeric expression values
-        metric_keys = first_line[7:]
-        
+        for i, header in enumerate(first_line):
+            if 'Log2fc_' in header:
+                log2fc_index = i
+                break
+
+        # Exclude reciprocal comparisons, which trivially equate via -n
+        metric_indices = []
+        for i, header in enumerate(first_line[log2fc_index:]):
+            if ')v(' not in header: continue # not a comparison, so skip
+            # Detect e.g. "FLT" in "Log2fc_(FLT_C1)v(GC_C2)" from GLDS-242
+            # or "Space Flight" in "Log2fc_(Space Flight)v(Ground Control)" from GLDS-4
+            first_comparator = header.split(')v(')[0].split('_')[1]
+            if 'FLT' in first_comparator or 'Space Flight':
+                metric_indices.append(log2fc_index + i)
+
+        metric_keys = [first_line[i] for i in metric_indices]
+
         for row in reader:
             gene_symbol = row[1]
-            gene_metadata[gene_symbol] = row[:6]
-            gene_expressions[gene_symbol] = row[7:]
+            gene_metadata[gene_symbol] = row[1:3]
+            gene_expressions[gene_symbol] = [row[i] for i in metric_indices]
 
     print(metadata_keys)
     print(list(gene_metadata.items())[0])
@@ -114,9 +129,6 @@ def get_annots_by_chr(gene_coordinates, gene_expressions, gene_types, gene_metad
     sorted_items = sorted(gene_types.items(), key=lambda x: -int(x[1]))
     sorted_gene_types = [x[0] for x in sorted_items]
 
-    print('gene_metadata["Alb"]')
-    print(gene_metadata["Alb"])
-
     for gene_id in gene_coordinates:
         coordinates = gene_coordinates[gene_id]
         symbol = coordinates['symbol']
@@ -140,10 +152,11 @@ def get_annots_by_chr(gene_coordinates, gene_expressions, gene_types, gene_metad
             sorted_gene_types.index(coordinates['type'])
         ] + gene_metadata[symbol]
 
-        annot.append(expressions)
-
         # Convert numeric strings to floats, and clean as needed
         for exp_value in expressions:
+            if exp_value == 'NA':
+                # print(symbol + ' had an "NA" expression value; setting to -1')
+                exp_value = -1
             annot.append(round(float(exp_value), 3))
 
         annots_by_chr[chr]['annots'].append(annot)
