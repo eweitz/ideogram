@@ -218,7 +218,9 @@
     document.querySelector('#summary').innerHTML = 
       `Genomic distribution of differentially expressed 
       <span id="organismName" style="font-style: italic">${metadata.organism}</span> 
-      genes.    Visualized with <a href="https://github.com/eweitz/ideogram">Ideogram.js</a>.`;
+      genes.  Data from NASA GeneLab 
+      <a href="https://genelab-data.ndc.nasa.gov/genelab/accession/GLDS-21/" target="_blank">GLDS-21</a>, 
+      "Effects of spaceflight on murine skeletal muscle gene expression".`;
 
     // Build category facets
     for (const key in labels) {
