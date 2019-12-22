@@ -386,8 +386,7 @@
 
   function hyperlinkGene(annot) {
     let org = ideogram.rawAnnots.metadata.organism.replace(/ /g, '+');
-    var term = '(' + annot.name + '[gene])+AND+(' + org + '[orgn])';
-    var url = 'https://ncbi.nlm.nih.gov/gene/?term=' + term;
+    var url = 'https://ncbi.nlm.nih.gov/gene/' + annot.entrezid;
     var link =
       '<a target="_blank" href="' + url + '">' + annot.name + '</a>';
     return link;

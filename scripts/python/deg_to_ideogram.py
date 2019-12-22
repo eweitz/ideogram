@@ -80,8 +80,8 @@ def parse_deg_matrix(deg_matrix_path):
         reader = csv.reader(f)
 
         first_line = next(reader, None)
-        # Headers for gene metadata
-        metadata_keys = first_line[1:3]
+        # Headers for gene metadata: GENENAME, ENTREZID
+        metadata_keys = [first_line[2], first_line[4]]
 
         # Headers for numeric expression values
         for i, header in enumerate(first_line):
@@ -103,7 +103,7 @@ def parse_deg_matrix(deg_matrix_path):
 
         for row in reader:
             gene_symbol = row[1]
-            gene_metadata[gene_symbol] = row[1:3]
+            gene_metadata[gene_symbol] = [row[2], row[4]]
             gene_expressions[gene_symbol] = [row[i] for i in metric_indices]
 
     print(metadata_keys)
