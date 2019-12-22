@@ -6,11 +6,12 @@ import {select, selectAll} from 'd3-selection';
 import * as d3fetch from 'd3-fetch';
 import * as d3brush from 'd3-brush';
 import * as d3dispatch from 'd3-dispatch';
+import * as d3format from 'd3-format';
 import {scaleLinear} from 'd3-scale';
 import {max} from 'd3-array';
 
 var d3 = Object.assign(
-  {}, d3fetch, d3brush, d3dispatch
+  {}, d3fetch, d3brush, d3dispatch, d3format
 );
 
 d3.select = select;
@@ -72,7 +73,7 @@ function getDataDir() {
 
   if (host !== 'localhost' && host !== '127.0.0.1') {
     return (
-      'https://unpkg.com/ideogram@' + version + '/dist/data/bands/native/'
+      'https://cdn.jsdelivr.net/npm/ideogram@' + version + '/dist/data/bands/native/'
     );
   }
 
