@@ -37,6 +37,9 @@ def get_gene_coordinates(gene_pos_path):
 
     gene_coordinates = {}
     for line in lines:
+
+        if line[0] == '#': continue
+
         # Example line: "AT1G01190	CYP78A8	1	82984	84946	protein_coding"
         columns = [column.strip() for column in line.split('\t')]
 
@@ -58,42 +61,80 @@ def get_gene_coordinates(gene_pos_path):
 
         gene_coordinates[gene_id] = gene
 
-    return [gene_coordinates, gene_types]
+    gene_pos_metadata = {}
+    header_fields = lines[0][2:].strip().split('; ')
+    for h in header_fields:
+        k, v = h.split(': ')
+        gene_pos_metadata[k.lower()] = v
 
-def get_gene_expressions(deg_matrix_path):
-    """Parse DEG matrix, return dictionary of statistics and corresponding keys
+    return [gene_coordinates, gene_types, gene_pos_metadata]
+
+def parse_deg_matrix(deg_matrix_path):
+    """Get gene metadata and expression values from DEG matrix
     """
 
     gene_expressions = {}
+    gene_metadata = {}
 
     with open(deg_matrix_path, newline='') as f:
         reader = csv.reader(f)
 
-        # CSV/TSV headers for numeric expression values
-        metric_keys = next(reader, None)[7:]
-        
+        first_line = next(reader, None)
+        # Headers for gene metadata: GENENAME, ENTREZID
+        metadata_keys = [first_line[2], first_line[4]]
+
+        # Headers for numeric expression values
+        for i, header in enumerate(first_line):
+            if 'Log2fc_' in header:
+                log2fc_index = i
+                break
+
+        # Exclude reciprocal comparisons, which trivially equate via -n
+        metric_indices = []
+        for i, header in enumerate(first_line[log2fc_index:]):
+            if ')v(' not in header: continue # not a comparison, so skip
+            # Detect e.g. "FLT" in "Log2fc_(FLT_C1)v(GC_C2)" from GLDS-242
+            # or "Space Flight" in "Log2fc_(Space Flight)v(Ground Control)" from GLDS-4
+            first_comparator = header.split(')v(')[0].split('_')[1]
+            if 'FLT' in first_comparator or 'Space Flight':
+                metric_indices.append(log2fc_index + i)
+
+        metric_keys = [first_line[i] for i in metric_indices]
+
         for row in reader:
             gene_symbol = row[1]
-            gene_expressions[gene_symbol] = row[7:]
+            gene_metadata[gene_symbol] = [row[2], row[4]]
+            gene_expressions[gene_symbol] = [row[i] for i in metric_indices]
 
-    return [gene_expressions, metric_keys]
+    print(metadata_keys)
+    print(list(gene_metadata.items())[0])
+    return [gene_metadata, metadata_keys, gene_expressions, metric_keys]
 
-def get_annots_by_chr(gene_coordinates, gene_expressions, gene_types):
+def get_annots_by_chr(gene_coordinates, gene_expressions, gene_types, gene_metadata):
     """Merge coordinates and expressions, return Ideogram annotations
     """
     annots_by_chr = {}
 
-    # Sort keys by descending count value, then
-    # make a list of those keys (i.e., without values)
-    sorted_items = sorted(gene_types.items(), key=lambda x: -x[1])
-    sorted_gene_types = [x[0] for x in sorted_items]
-
-    for gene in gene_coordinates:
-        coordinates = gene_coordinates[gene]
+    # Some gene types (e.g. pseudogenes) exist in the genome annotation,
+    # but are never expressed.  Don't count these.
+    for gene_id in gene_coordinates:
+        coordinates = gene_coordinates[gene_id]
         gene_symbol = coordinates['symbol']
         if gene_symbol not in gene_expressions:
+            gene_type = coordinates['type']
+            gene_types[gene_type] -= 1
+
+    # Sort keys by descending count value, then
+    # make a list of those keys (i.e., without values)
+    sorted_items = sorted(gene_types.items(), key=lambda x: -int(x[1]))
+    sorted_gene_types = [x[0] for x in sorted_items]
+
+    for gene_id in gene_coordinates:
+        coordinates = gene_coordinates[gene_id]
+        symbol = coordinates['symbol']
+        if symbol not in gene_expressions:
             continue
-        expressions = gene_expressions[gene_symbol]
+        expressions = gene_expressions[symbol]
 
         chr = coordinates['chromosome']
 
@@ -105,46 +146,70 @@ def get_annots_by_chr(gene_coordinates, gene_expressions, gene_types):
         length = stop - start
 
         annot = [
-            coordinates['symbol'],
+            symbol,
             start,
             length,
             sorted_gene_types.index(coordinates['type'])
-        ]
+        ] + gene_metadata[symbol]
 
         # Convert numeric strings to floats, and clean as needed
         for exp_value in expressions:
+            if exp_value == 'NA':
+                # print(symbol + ' had an "NA" expression value; setting to -1')
+                exp_value = -1
             annot.append(round(float(exp_value), 3))
 
         annots_by_chr[chr]['annots'].append(annot)
 
     return [annots_by_chr, sorted_gene_types]
 
-coordinates, gene_types = get_gene_coordinates(gene_pos_path)
-expressions, metric_keys = get_gene_expressions(deg_path)
 
-[annots_by_chr, sorted_gene_types] = get_annots_by_chr(coordinates, expressions, gene_types)
+def get_key_labels(keys):
+    key_labels = {}
+    for key in keys:
+        key_labels[key] = key.lower()\
+                .replace(')v(', '-v-')\
+                .replace('(', '')\
+                .replace(')', '')\
+                .replace(' ', '-')\
+                .replace('.', '-')\
+                .replace('_', '-')
 
+    key_labels = dict((v, k) for k, v in key_labels.items())
+
+    return key_labels
+
+
+def get_metadata(gene_pos_metadata, sorted_gene_types, key_labels):
+    labels = {'gene-type': [t.replace('_', ' ') for t in sorted_gene_types]}
+    labels.update(key_labels)
+
+    metadata = {
+        'organism': gene_pos_metadata['organism'],
+        'assembly': gene_pos_metadata['assembly'],
+        'annotation': gene_pos_metadata['annotation'],
+        'labels': labels
+    }
+
+    return metadata
+
+coordinates, gene_types, gene_pos_metadata = get_gene_coordinates(gene_pos_path)
+metadata, metadata_keys, expressions, metric_keys = parse_deg_matrix(deg_path)
+
+metadata_labels = get_key_labels(metadata_keys)
+metadata_list = list(metadata_labels.keys())
+
+print(metadata_list)
+metric_labels = get_key_labels(metric_keys)
+metric_list = list(metric_labels.keys())
+
+print(metric_list)
+
+[annots_by_chr, sorted_gene_types] = get_annots_by_chr(coordinates, expressions, gene_types, metadata)
+
+keys = ['name', 'start', 'length', 'gene-type'] + metadata_list + metric_list
 annots_list = list(annots_by_chr.values())
-
-key_labels = {}
-for key in metric_keys:
-    key_labels[key] = key.lower()\
-            .replace(')v(', '-v-')\
-            .replace('(', '')\
-            .replace(')', '')\
-            .replace(' ', '-')\
-            .replace('.', '-')\
-            .replace('_', '-')
-
-key_labels = dict((v, k) for k, v in key_labels.items())
-print('list(key_labels.keys())')
-print(list(key_labels.keys()))
-keys = ['name', 'start', 'length', 'gene-type'] + list(key_labels.keys())
-
-labels = {'gene-type': sorted_gene_types}
-labels.update(key_labels)
-
-metadata = {'organism': 'Mus musculus', 'assembly': 'GRCm38', 'labels': labels}
+metadata = get_metadata(gene_pos_metadata, sorted_gene_types, metric_labels)
 
 annots = {'keys': keys, 'annots': annots_list, 'metadata': metadata}
 

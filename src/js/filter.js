@@ -1,5 +1,5 @@
 import {d3} from './lib';
-import * as crossfilter from 'crossfilter';
+import crossfilter from 'crossfilter2';
 
 /* Decompresses ideogram's annotations for crossfilter initialization
 By default, annotations are clustered by chromosome, e.g.
@@ -78,6 +78,8 @@ function initCrossFilter() {
   if ('filterSelections' in ideo) {
     ideo.filterAnnots(ideo.filterSelections);
   }
+
+  ideo.filteredAnnots = ideo.annots;
 }
 
 function getFilteredResults(selections, ideo) {
@@ -94,7 +96,16 @@ function getFilteredResults(selections, ideo) {
         if (Array.isArray(filter)) {
           fn = function(d) {
             // Filter is numeric range
-            return filter[0] <= d && d < filter[1];
+            if (filter.length === 2) {
+              // [min, max]
+              return filter[0] <= d && d < filter[1];
+            } else if (filter.length === 4) {
+              // [min1, max1, min2, max2]
+              return (
+                filter[0] <= d && d < filter[1] ||
+                filter[2] <= d && d < filter[3]
+              );
+            }
           };
         } else {
           fn = function(d) {
@@ -152,6 +163,8 @@ function filterAnnots(selections) {
 
   delete ideo.maxAnnotsPerBar;
   delete ideo.maxAnnotsPerBarAllChrs;
+
+  ideo.filteredAnnots = results;
 
   d3.selectAll(ideo.selector + ' polygon.annot').remove();
   ideo.drawAnnots(results);

@@ -8,11 +8,14 @@ parser = argparse.ArgumentParser(
     formatter_class=argparse.RawDescriptionHelpFormatter)
 parser.add_argument('--input_path',
                     help='Path to input GTF file')
+parser.add_argument('--organism',
+                    help='Scientific name of organism (e.g. Mus musculus)')
 parser.add_argument('--output_dir',
                     help='Directory to send output data to',
                     default='../../data/annotations/')
 
 args = parser.parse_args()
+organism = args.organism
 input_path = args.input_path
 output_dir = args.output_dir
 
@@ -23,7 +26,7 @@ genes = []
 
 provider = 'ncbi'
 if 'Ensembl' in gtf[0]:
-    provider = 'ensembl'
+    provider = 'GENCODE'
 
 # Chromosome or scaffolds.  Needed for NCBI RefSeq, but not Ensembl.
 chrs_by_accession = {}
@@ -88,14 +91,24 @@ for line in gtf:
     
 genes = '\n'.join(genes)
 
+first_line = gtf[0].strip()
+assembly = first_line.split('genome (')[1].split(')')[0]
+annotation = first_line.split(', ')[1]
+
 headers = [
-    ["Gene_ID", "Gene_name", "Chromosome", "Start", "Stop", "Gene_type"]
+    [f'# Organism: {organism}; assembly: {assembly}; annotation: {provider} {annotation}'],
+    ['# Gene_ID', 'Gene_name', 'Chromosome', 'Start', 'End', 'Gene_type']
 ]
+
+headers = ['\t'.join(row) for row in headers]
+headers = '\n'.join(headers) + '\n'
+
+content = headers + genes
 
 output_filename = input_path.split('/')[-1].replace('.gtf', '.tsv').replace('.gff', '.tsv')
 output_path = output_dir + 'gen_pos_' + output_filename
 with open(output_path, 'w') as f:
-    f.write(genes)
+    f.write(content)
 
 print('Wrote ' + output_path)
     
