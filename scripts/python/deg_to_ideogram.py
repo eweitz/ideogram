@@ -69,6 +69,66 @@ def get_gene_coordinates(gene_pos_path):
 
     return [gene_coordinates, gene_types, gene_pos_metadata]
 
+def get_comparisons(headers):
+    """Return indices of unique comparisons and list of compared factors
+
+    Reciprocal comparisons like:
+        * Log2fc_(Ground Control)v(Space Flight)
+        * Log2fc_(Space Flight)v(Ground Control)
+    differ only in sign.  They can be obtained by multiplying the other by -1.
+
+    Given this redundancy, we can reduce the Ideogram JSON payload size by 2x
+    by omitting such reciprocal comparisons.  This function achieves that by
+    returning pointers to only non-reciprocal (and thus non-redundant) comparisons.
+
+    It also returns a list of compared factors, e.g. "Ground Control", "Space
+    Flight", "Hindlimb suspension".
+    """
+    # Headers for numeric expression values
+    for i, header in enumerate(headers):
+        if 'Log2fc_' in header:
+            log2fc_index = i
+            break
+
+    comparison_indices = []
+
+    seen_comparisons = []
+    seen_factors = set()
+
+    # Exclude reciprocal comparisons, which trivially equate via -1
+    for i, header in enumerate(headers[log2fc_index:]):
+        if ')v(' not in header: continue # not a comparison, so skip
+        # Detect e.g. "FLT" in "Log2fc_(FLT_C1)v(GC_C2)" from GLDS-242
+        # or "Space Flight" in "Log2fc_(Space Flight)v(Ground Control)" from GLDS-4
+        factors = []
+        metric = header.split('_')[0]
+        for m in header.split(')v('):
+            split_metric = m.split('_')
+            if len(split_metric) > 1:
+                factors.append(split_metric[1].replace('(', ''))
+            else:
+                factors.append(split_metric[0].strip(')'))
+
+        for factor in factors:
+            seen_factors.add(factor)
+
+        # Ensure spaceflight factors are prioritized, and never listed second
+        if factors[1] in ('FLT', 'Space Flight'):
+            continue
+
+        factors_obverse = metric + '_' + '_'.join(factors)
+        factors_reverse = metric + '_' + '_'.join(reversed(factors))
+
+        if factors_obverse in seen_comparisons or factors_reverse in seen_comparisons:
+            continue
+
+        seen_comparisons.append(factors_obverse)
+        seen_comparisons.append(factors_reverse)
+
+        comparison_indices.append(log2fc_index + i)
+
+    return [comparison_indices, list(seen_factors)]
+
 def parse_deg_matrix(deg_matrix_path):
     """Get gene metadata and expression values from DEG matrix
     """
@@ -79,36 +139,23 @@ def parse_deg_matrix(deg_matrix_path):
     with open(deg_matrix_path, newline='') as f:
         reader = csv.reader(f)
 
-        first_line = next(reader, None)
-        # Headers for gene metadata: GENENAME, ENTREZID
-        metadata_keys = [first_line[2], first_line[4]]
+        headers = next(reader, None)
+        metadata_keys = [headers[2], headers[4]] # GENENAME, ENTREZID
 
-        # Headers for numeric expression values
-        for i, header in enumerate(first_line):
-            if 'Log2fc_' in header:
-                log2fc_index = i
-                break
+        [comparison_indices, compared_factors] = get_comparisons(headers)
+        print('compared_factors')
+        print(compared_factors)
 
-        # Exclude reciprocal comparisons, which trivially equate via -n
-        metric_indices = []
-        for i, header in enumerate(first_line[log2fc_index:]):
-            if ')v(' not in header: continue # not a comparison, so skip
-            # Detect e.g. "FLT" in "Log2fc_(FLT_C1)v(GC_C2)" from GLDS-242
-            # or "Space Flight" in "Log2fc_(Space Flight)v(Ground Control)" from GLDS-4
-            first_comparator = header.split(')v(')[0].split('_')[1]
-            if 'FLT' in first_comparator or 'Space Flight':
-                metric_indices.append(log2fc_index + i)
-
-        metric_keys = [first_line[i] for i in metric_indices]
+        comparison_keys = [headers[i] for i in comparison_indices]
 
         for row in reader:
             gene_symbol = row[1]
             gene_metadata[gene_symbol] = [row[2], row[4]]
-            gene_expressions[gene_symbol] = [row[i] for i in metric_indices]
+            gene_expressions[gene_symbol] = [row[i] for i in comparison_indices]
 
     print(metadata_keys)
     print(list(gene_metadata.items())[0])
-    return [gene_metadata, metadata_keys, gene_expressions, metric_keys]
+    return [gene_metadata, metadata_keys, gene_expressions, comparison_keys]
 
 def get_annots_by_chr(gene_coordinates, gene_expressions, gene_types, gene_metadata):
     """Merge coordinates and expressions, return Ideogram annotations
@@ -153,7 +200,7 @@ def get_annots_by_chr(gene_coordinates, gene_expressions, gene_types, gene_metad
         ] + gene_metadata[symbol]
 
         # Convert numeric strings to floats, and clean as needed
-        for exp_value in expressions:
+        for i, exp_value in enumerate(expressions):
             if exp_value == 'NA':
                 # print(symbol + ' had an "NA" expression value; setting to -1')
                 exp_value = -1
@@ -194,22 +241,23 @@ def get_metadata(gene_pos_metadata, sorted_gene_types, key_labels):
     return metadata
 
 coordinates, gene_types, gene_pos_metadata = get_gene_coordinates(gene_pos_path)
-metadata, metadata_keys, expressions, metric_keys = parse_deg_matrix(deg_path)
+metadata, metadata_keys, expressions, comparison_keys = parse_deg_matrix(deg_path)
 
 metadata_labels = get_key_labels(metadata_keys)
 metadata_list = list(metadata_labels.keys())
 
 print(metadata_list)
-metric_labels = get_key_labels(metric_keys)
-metric_list = list(metric_labels.keys())
+comparison_labels = get_key_labels(comparison_keys)
+comparison_list = list(comparison_labels.keys())
 
-print(metric_list)
+print(comparison_list)
 
-[annots_by_chr, sorted_gene_types] = get_annots_by_chr(coordinates, expressions, gene_types, metadata)
+[annots_by_chr, sorted_gene_types] =\
+    get_annots_by_chr(coordinates, expressions, gene_types, metadata)
 
-keys = ['name', 'start', 'length', 'gene-type'] + metadata_list + metric_list
+keys = ['name', 'start', 'length', 'gene-type'] + metadata_list + comparison_list
 annots_list = list(annots_by_chr.values())
-metadata = get_metadata(gene_pos_metadata, sorted_gene_types, metric_labels)
+metadata = get_metadata(gene_pos_metadata, sorted_gene_types, comparison_labels)
 
 annots = {'keys': keys, 'annots': annots_list, 'metadata': metadata}
 
