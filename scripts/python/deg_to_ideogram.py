@@ -70,19 +70,9 @@ def get_gene_coordinates(gene_pos_path):
     return [gene_coordinates, gene_types, gene_pos_metadata]
 
 def get_comparisons(headers):
-    """Return indices of unique comparisons and list of compared factors
+    """Return indices of comparisons by factor, and names of comparisons
 
-    Reciprocal comparisons like:
-        * Log2fc_(Ground Control)v(Space Flight)
-        * Log2fc_(Space Flight)v(Ground Control)
-    differ only in sign.  They can be obtained by multiplying the other by -1.
-
-    Given this redundancy, we can reduce the Ideogram JSON payload size by 2x
-    by omitting such reciprocal comparisons.  This function achieves that by
-    returning pointers to only non-reciprocal (and thus non-redundant) comparisons.
-
-    It also returns a list of compared factors, e.g. "Ground Control", "Space
-    Flight", "Hindlimb suspension".
+    A factor is something like "Space Flight" or "Ground Control".
     """
     # Headers for numeric expression values
     for i, header in enumerate(headers):
@@ -90,50 +80,37 @@ def get_comparisons(headers):
             log2fc_index = i
             break
 
-    comparison_indices = []
+    comparisons_by_factor = {}
 
-    seen_comparisons = []
-    seen_factors = set()
-
-    # Exclude reciprocal comparisons, which trivially equate via -1
     for i, header in enumerate(headers[log2fc_index:]):
         if ')v(' not in header: continue # not a comparison, so skip
-        # Detect e.g. "FLT" in "Log2fc_(FLT_C1)v(GC_C2)" from GLDS-242
-        # or "Space Flight" in "Log2fc_(Space Flight)v(Ground Control)" from GLDS-4
+        metric = header.split('_')[0] # e.g. Log2fc, P.value, or Adj.p.value
         factors = []
-        metric = header.split('_')[0]
         for m in header.split(')v('):
             split_metric = m.split('_')
             if len(split_metric) > 1:
+                # E.g. "Log2fc" "(Ground Control"
                 factors.append(split_metric[1].replace('(', ''))
             else:
+                # E.g. "Hindlimb suspension and reloading)"
                 factors.append(split_metric[0].strip(')'))
 
-        for factor in factors:
-            seen_factors.add(factor)
+        index = log2fc_index + i
 
-        # Ensure spaceflight factors are prioritized, and never listed second
-        if factors[1] in ('FLT', 'Space Flight'):
-            continue
+        factor_1 = slug(factors[0])
+        if factor_1 in comparisons_by_factor:
+            comparisons_by_factor[factor_1]['indices'].append(index)
+            comparisons_by_factor[factor_1]['comparisons'].append(header)
+        else:
+            comparisons_by_factor[factor_1] = {'indices': [index], 'comparisons': [header]}
 
-        factors_obverse = metric + '_' + '_'.join(factors)
-        factors_reverse = metric + '_' + '_'.join(reversed(factors))
-
-        if factors_obverse in seen_comparisons or factors_reverse in seen_comparisons:
-            continue
-
-        seen_comparisons.append(factors_obverse)
-        seen_comparisons.append(factors_reverse)
-
-        comparison_indices.append(log2fc_index + i)
-
-    return [comparison_indices, list(seen_factors)]
+    return comparisons_by_factor
 
 def parse_deg_matrix(deg_matrix_path):
     """Get gene metadata and expression values from DEG matrix
     """
 
-    gene_expressions = {}
+    gene_stats = {}
     gene_metadata = {}
 
     with open(deg_matrix_path, newline='') as f:
@@ -142,25 +119,23 @@ def parse_deg_matrix(deg_matrix_path):
         headers = next(reader, None)
         metadata_keys = [headers[2], headers[4]] # GENENAME, ENTREZID
 
-        [comparison_indices, compared_factors] = get_comparisons(headers)
-        print('compared_factors')
-        print(compared_factors)
-
-        comparison_keys = [headers[i] for i in comparison_indices]
+        comparisons_by_factor = get_comparisons(headers)
+        for factor in comparisons_by_factor:
+            gene_stats[factor] = {}
 
         for row in reader:
             gene_symbol = row[1]
             gene_metadata[gene_symbol] = [row[2], row[4]]
-            gene_expressions[gene_symbol] = [row[i] for i in comparison_indices]
-
-    print(metadata_keys)
-    print(list(gene_metadata.items())[0])
-    return [gene_metadata, metadata_keys, gene_expressions, comparison_keys]
+            for factor in comparisons_by_factor:
+                comparison_indices = comparisons_by_factor[factor]['indices']
+                gene_stats[factor][gene_symbol] = [row[i] for i in comparison_indices]
+    
+    return [gene_metadata, metadata_keys, gene_stats, comparisons_by_factor]
 
 def get_annots_by_chr(gene_coordinates, gene_expressions, gene_types, gene_metadata):
     """Merge coordinates and expressions, return Ideogram annotations
     """
-    annots_by_chr = {}
+    annots_by_chr_by_factor = {}
 
     # Some gene types (e.g. pseudogenes) exist in the genome annotation,
     # but are never expressed.  Don't count these.
@@ -171,56 +146,73 @@ def get_annots_by_chr(gene_coordinates, gene_expressions, gene_types, gene_metad
             gene_type = coordinates['type']
             gene_types[gene_type] -= 1
 
+    # print('list(gene_expressions.items())[0]')
+    # print(list(gene_expressions.items())[0])
+
     # Sort keys by descending count value, then
     # make a list of those keys (i.e., without values)
     sorted_items = sorted(gene_types.items(), key=lambda x: -int(x[1]))
     sorted_gene_types = [x[0] for x in sorted_items]
 
+    first_key = list(gene_expressions.keys())[0]
+    
     for gene_id in gene_coordinates:
         coordinates = gene_coordinates[gene_id]
         symbol = coordinates['symbol']
-        if symbol not in gene_expressions:
-            continue
-        expressions = gene_expressions[symbol]
+
 
         chr = coordinates['chromosome']
 
-        if chr not in annots_by_chr:
-            annots_by_chr[chr] = {'chr': chr, 'annots': []}
 
         start = int(coordinates['start'])
         stop = int(coordinates['stop'])
         length = stop - start
 
-        annot = [
-            symbol,
-            start,
-            length,
-            sorted_gene_types.index(coordinates['type'])
-        ] + gene_metadata[symbol]
+        for factor in gene_expressions:
+            if symbol not in gene_expressions[factor]:
+                continue
 
-        # Convert numeric strings to floats, and clean as needed
-        for i, exp_value in enumerate(expressions):
-            if exp_value == 'NA':
-                # print(symbol + ' had an "NA" expression value; setting to -1')
-                exp_value = -1
-            annot.append(round(float(exp_value), 3))
+            if factor not in annots_by_chr_by_factor:
+                annots_by_chr_by_factor[factor] = {}
+            if chr not in annots_by_chr_by_factor[factor]:
+                annots_by_chr_by_factor[factor][chr] = {'chr': chr, 'annots': []}
 
-        annots_by_chr[chr]['annots'].append(annot)
+            expressions = gene_expressions[factor][symbol]
+    
+            annot = [
+                symbol,
+                start,
+                length,
+                sorted_gene_types.index(coordinates['type'])
+            ] + gene_metadata[symbol]
 
-    return [annots_by_chr, sorted_gene_types]
+            # Convert numeric strings to floats, and clean as needed
+            for i, exp_value in enumerate(expressions):
+                if exp_value == 'NA':
+                    # print(symbol + ' had an "NA" expression value; setting to -1')
+                    exp_value = -1
+                annot.append(round(float(exp_value), 3))
 
+            annots_by_chr_by_factor[factor][chr]['annots'].append(annot)
+
+    print('annots_by_chr_by_factor.keys()')
+    print(annots_by_chr_by_factor.keys())
+
+    return [annots_by_chr_by_factor, sorted_gene_types]
+
+def slug(value):
+    return value.lower()\
+        .replace(')v(', '-v-')\
+        .replace('(', '')\
+        .replace(')', '')\
+        .replace(' ', '-')\
+        .replace('.', '-')\
+        .replace('_', '-')
 
 def get_key_labels(keys):
     key_labels = {}
     for key in keys:
-        key_labels[key] = key.lower()\
-                .replace(')v(', '-v-')\
-                .replace('(', '')\
-                .replace(')', '')\
-                .replace(' ', '-')\
-                .replace('.', '-')\
-                .replace('_', '-')
+        key_labels[key] = slug(key)
 
     key_labels = dict((v, k) for k, v in key_labels.items())
 
@@ -241,35 +233,36 @@ def get_metadata(gene_pos_metadata, sorted_gene_types, key_labels):
     return metadata
 
 coordinates, gene_types, gene_pos_metadata = get_gene_coordinates(gene_pos_path)
-metadata, metadata_keys, expressions, comparison_keys = parse_deg_matrix(deg_path)
+metadata, metadata_keys, expressions, comparisons_by_factor = parse_deg_matrix(deg_path)
 
 metadata_labels = get_key_labels(metadata_keys)
 metadata_list = list(metadata_labels.keys())
 
-print(metadata_list)
-comparison_labels = get_key_labels(comparison_keys)
-comparison_list = list(comparison_labels.keys())
-
-print(comparison_list)
-
-[annots_by_chr, sorted_gene_types] =\
+[annots_by_chr_by_factor, sorted_gene_types] =\
     get_annots_by_chr(coordinates, expressions, gene_types, metadata)
 
-keys = ['name', 'start', 'length', 'gene-type'] + metadata_list + comparison_list
-annots_list = list(annots_by_chr.values())
-metadata = get_metadata(gene_pos_metadata, sorted_gene_types, comparison_labels)
+for factor in annots_by_chr_by_factor:
+    annots_by_chr = annots_by_chr_by_factor[factor]
 
-annots = {'keys': keys, 'annots': annots_list, 'metadata': metadata}
+    comparisons = comparisons_by_factor[factor]['comparisons']
+    comparison_labels = get_key_labels(comparisons)
+    comparison_list = list(comparison_labels.keys())
 
-annots_json = json.dumps(annots)
+    keys = ['name', 'start', 'length', 'gene-type'] + metadata_list + comparison_list
+    annots_list = list(annots_by_chr.values())
+    metadata = get_metadata(gene_pos_metadata, sorted_gene_types, comparison_labels)
 
-output_filename = deg_path.split('/')[-1] \
-                    .replace('.csv', '') + '_ideogram_annots' + '.json'
+    annots = {'keys': keys, 'annots': annots_list, 'metadata': metadata}
 
-output_path = output_dir + output_filename
+    annots_json = json.dumps(annots)
 
-output_filename = output_dir + output_filename
-with open(output_filename, 'w') as f:
-    f.write(annots_json)
+    output_filename = deg_path.split('/')[-1].replace('.csv', '') + \
+        '_ideogram_annots_' + factor + '.json'
 
-print('Wrote ' + output_filename)
+    output_path = output_dir + output_filename
+
+    output_filename = output_dir + output_filename
+    with open(output_filename, 'w') as f:
+        f.write(annots_json)
+
+    print('Wrote ' + output_filename)
