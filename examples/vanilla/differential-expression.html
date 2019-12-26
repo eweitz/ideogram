@@ -87,7 +87,7 @@
   <a href="../">Overview</a> |
   <a href="annotations-heatmap">Previous</a> |
   <a href="geometry-collinear">Next</a> |
-  <a href="https://github.com/eweitz/ideogram/blob/gh-pages/annotations-histogram.html" target="_blank">Source</a>
+  <a href="https://github.com/eweitz/ideogram/blob/gh-pages/differential-expression.html" target="_blank">Source</a>
   <br/><br/>
   <div id="summary"></div>
   <div id="left-content">
@@ -286,13 +286,14 @@
       slider.noUiSlider.on('change', function(){filterGenes(metrics, comparison);});
     });
 
+    // Apply log2fc and adjusted p-value filters
     let sliderCheckboxes = document.querySelectorAll('.slider-checkbox');
     for (let i = 0; i < sliderCheckboxes.length; i++) {
       let checkbox = sliderCheckboxes[i];
       if (i < sliderCheckboxes.length - 1) {
-        checkbox.checked = true;
+        checkbox.checked = true; // mark as checked, but don't trigger filter
       } else {
-        checkbox.click();
+        checkbox.click(); // trigger filter for all checked (as a batch)
       }
     }
 
@@ -470,7 +471,7 @@
   }
 
   // Fetch annotations, then create Ideogram
-  const annotationsPath = '../../data/annotations/GLDS-21_array_differential_expression_ideogram_annots.json';
+  const annotationsPath = '../../data/annotations/GLDS-21_array_differential_expression_ideogram_annots_space-flight.json';
   // const annotationsPath = '../../data/annotations/GLDS-242_rna_seq_ERCCnorm_differential_expression_ideogram_annots.json'
   fetch(annotationsPath)
     .then(response => response.json())
