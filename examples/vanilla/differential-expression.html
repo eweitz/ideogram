@@ -21,6 +21,8 @@
     a, a:hover, a:visited, a:active {color: #0366d6;}
   </style>
   <style>
+    select {font: 14px Arial;}
+    
     ul {
       list-style: none;
       padding-left: 10px;
@@ -188,15 +190,46 @@
   }
 
   /**
+  * Adds dropdown menus for available comparison factors
+  **/
+  function writeComparisonDropdowns() {
+    let dropdown1 = [];
+    let dropdown2 = [];
+    const factors = ideogram.rawAnnots.metadata.deg.factors;
+    const factor1Index = factors.indexOf(window.factor1);
+    const factor2Index = factors.indexOf(window.factor2);
+
+    factors.forEach((factor, i) => {
+      let otherFactor = i < factors.length - 1 ? factors[i + 1] : factors[0];
+      let s1 = (i === factor1Index) ? 'selected' : '';
+      let s2 = (factors.indexOf(otherFactor) === factor2Index) ? 'selected' : '';
+
+      dropdown1.push(`<option id="option-${factor}" ${s1}>${deslug(factor)}</option>`);
+      dropdown2.push(`<option id="option-${otherFactor}" ${s2}>${deslug(otherFactor)}</option>`);
+    });
+
+    dropdown1 = `<select id="comparison-dropdown-1" class="comparison-dropdown">${dropdown1.join()}</select>`;
+    dropdown2 = `<select id="comparison-dropdown-2" class="comparison-dropdown">${dropdown2.join()}</select>`;
+
+    document.querySelector('.comparison-dropdowns > div').innerHTML += dropdown1 + ' compared to ' + dropdown2;
+  }
+
+  /**
   * Adds slider widgets for all numerical metrics in this comparison
   */
   function writeSliders(comparison, labels, metrics) {
     const comparisonLabel = labels[`log2fc-${comparison}`].replace('Log2fc_', '');
     const comparisonId = comparison.toLowerCase().replace(/[()\s]/g, '');
+    
+    let prevDiv = document.querySelector('.comparison-dropdowns > div');
+    if (prevDiv !== null) prevDiv.innerHTML = ''; // clear any previous content
+
     document.querySelector('#facets').innerHTML += `
-      <div id="${comparisonId}">
-        <div style="margin-bottom: 30px; width: 200px; margin-top: 5px;">${comparisonLabel}</div>
+      <div class="comparison-dropdowns" id="${comparisonId}">
+        <div style="margin-bottom: 30px; width: 200px; margin-top: 5px;"></div>
       <div>`;
+
+    writeComparisonDropdowns();
 
     metrics.forEach((metric, i) => writeSliderContainer(metric, i, comparisonId));
   }
@@ -205,9 +238,11 @@
   * Adds facets, i.e. groups of filters, to query Ideogram annotations
   **/
   function writeFacets() {
-    const metadata = this.rawAnnots.metadata;
+    const metadata = ideogram.rawAnnots.metadata;
     const labels = metadata.labels;
     let filters = [];
+
+    document.querySelector('#facets').innerHTML = '';
 
     document.querySelector('#summary').innerHTML = 
       `Genomic distribution of differentially expressed 
@@ -240,7 +275,12 @@
       }
     }
 
-    const comparison = 'space-flight-v-ground-control';
+    if (typeof factor1 === 'undefined') {
+      window.factor1 = metadata.deg.thisFactor;
+      window.factor2 = metadata.deg.otherFactor;
+    }
+
+    const comparison = window.factor1 + '-v-' + window.factor2;
     // const comparison = 'flt-c1-v-cc-c1';
     const metrics = ['log2fc', 'adj-p-value'];
     writeSliders(comparison, labels, metrics);
@@ -248,12 +288,12 @@
     filters = '<ul class="category-facet">' + filters.join('\n') + '</ul>';
     document.querySelector('#facets').innerHTML += filters;
 
-    // Listen for clicks on category filters and slider checkboxes
+    // Filter genes upon clicking a category filter or slider checkbox
     d3.selectAll('input').on('click', function() {
       filterGenes(metrics, comparison);
     });
 
-    // Listen for clicks on "More..." and "Less..." category facet toggler
+    // Toggle "More..." and "Less..." for category facet upon click
     d3.selectAll('.facet-toggler').on('click', function() {
       if (this.text === 'More...') {
         var hiddenItems = document.querySelectorAll('li.hidden');
@@ -266,11 +306,11 @@
       }
     });
 
-    // Listen for changes in slider checkboxes
+    // Toggle activation color upon change in slider checkbox
     document.querySelectorAll('.slider-checkbox').forEach(checkbox => {
       checkbox.addEventListener('change', function() {
-        var sliderId = this.id.replace('slider-checkbox-', '');
-        var slider = document.querySelector(`#${sliderId}`);
+        const sliderId = this.id.replace('slider-checkbox-', '');
+        let slider = document.querySelector(`#${sliderId}`);
         if (this.checked) {
           slider.classList.remove('inactive');
         } else {
@@ -279,14 +319,32 @@
       });
     });
 
-    // Listen for dragging slider
+
+    // Listen for changes in comparison dropdown menus
+    document.querySelectorAll('.comparison-dropdown').forEach(dropdown => {
+      dropdown.addEventListener('change', function() {
+        window.factor1 = slug(document.querySelector('#comparison-dropdown-1').value);
+        window.factor2 = slug(document.querySelector('#comparison-dropdown-2').value);
+        if (factor1 === factor2) return;
+        if (
+          this.id === 'comparison-dropdown-1' ||
+          factor1 !== ideogram.rawAnnots.metadata.deg.thisFactor
+        ) {
+          initIdeogram(baseAnnotsPath + '_' + window.factor1 + '.json');
+        } else {
+          writeFacets();
+        }
+      });
+    });
+
+    // Filter genes upon dragging slider
     let sliders = document.querySelectorAll('.ideogramSlider');
     sliders.forEach((slider, i) => {
       noUiSlider.create(slider, getSliderConfig(metrics[i]));
       slider.noUiSlider.on('change', function(){filterGenes(metrics, comparison);});
     });
 
-    // Apply log2fc and adjusted p-value filters
+    // Filter by log2fc and adjusted p-value upon calling writeFacets()
     let sliderCheckboxes = document.querySelectorAll('.slider-checkbox');
     for (let i = 0; i < sliderCheckboxes.length; i++) {
       let checkbox = sliderCheckboxes[i];
@@ -377,6 +435,10 @@
 
   function deslug(string) {
     return string[0].toUpperCase() + string.slice(1).replace(/-/g, ' ');
+  }
+
+  function slug(string) {
+    return string.toLowerCase().replace(/ /g, '-');
   }
 
   function hyperlinkGene(annot) {
@@ -470,29 +532,41 @@
     writeTable(metrics, comparison);
   }
 
-  // Fetch annotations, then create Ideogram
-  const annotationsPath = '../../data/annotations/GLDS-21_array_differential_expression_ideogram_annots_space-flight.json';
-  // const annotationsPath = '../../data/annotations/GLDS-242_rna_seq_ERCCnorm_differential_expression_ideogram_annots.json'
-  fetch(annotationsPath)
-    .then(response => response.json())
-    .then(rawAnnots => {
-        const config = {
-          container: '#ideogram-container',
-          orientation: 'vertical',
-          organism: rawAnnots.metadata.organism, // This is why we need to fetch annots first
-          assembly: rawAnnots.metadata.assembly,
-          chrHeight: 200,
-          chrWidth: 12,
-          chrMargin: 18,
-          annotations: rawAnnots,
-          annotationsLayout: 'histogram',
-          barWidth: 3,
-          filterable: true,
-          onLoad: writeFacets
-        };
-        window.ideogram = new Ideogram(config);
-    });
+  /**
+  * Fetch annotations, then create Ideogram
+  **/
+  function initIdeogram(annotationsPath) {
+    // const annotationsPath = '../../data/annotations/GLDS-242_rna_seq_ERCCnorm_differential_expression_ideogram_annots.json'
+    fetch(annotationsPath)
+      .then(response => response.json())
+      .then(rawAnnots => {
+          const config = {
+            container: '#ideogram-container',
+            orientation: 'vertical',
+            organism: rawAnnots.metadata.organism, // This is why we need to fetch annots first
+            assembly: rawAnnots.metadata.assembly,
+            chrHeight: 200,
+            chrWidth: 12,
+            chrMargin: 18,
+            annotations: rawAnnots,
+            annotationsLayout: 'histogram',
+            barWidth: 3,
+            filterable: true,
+            onLoad: writeFacets
+          };
+          window.ideogram = new Ideogram(config);
+      });
+  }
 
+  window.basePath = '../../data/annotations/';
+  window.accession = 'GLDS-21';
+  window.assay = 'array_differential_expression';
+  window.factor = '';
+  window.baseAnnotsPath = `${basePath}${accession}_${assay}_ideogram_annots`;
+  window.annotsPath = `${baseAnnotsPath}${factor}.json`;
+
+  initIdeogram(annotsPath);
+  
   </script>
 </body>
 </html>
