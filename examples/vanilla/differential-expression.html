@@ -195,7 +195,8 @@
   function writeComparisonDropdowns() {
     let dropdown1 = [];
     let dropdown2 = [];
-    const factors = ideogram.rawAnnots.metadata.deg.factors;
+    const metadata = ideogram.rawAnnots.metadata
+    const factors = metadata.deg.factors;
     const factor1Index = factors.indexOf(window.factor1);
     const factor2Index = factors.indexOf(window.factor2);
 
@@ -203,15 +204,18 @@
       let otherFactor = i < factors.length - 1 ? factors[i + 1] : factors[0];
       let s1 = (i === factor1Index) ? 'selected' : '';
       let s2 = (factors.indexOf(otherFactor) === factor2Index) ? 'selected' : '';
+      let factorLabel = metadata.labels[factor]
+      let otherFactorLabel = metadata.labels[otherFactor];
 
-      dropdown1.push(`<option id="option-${factor}" ${s1}>${deslug(factor)}</option>`);
-      dropdown2.push(`<option id="option-${otherFactor}" ${s2}>${deslug(otherFactor)}</option>`);
+      dropdown1.push(`<option id="option-${factor}" ${s1}>${factorLabel}</option>`);
+      dropdown2.push(`<option id="option-${otherFactor}" ${s2}>${otherFactorLabel}</option>`);
     });
 
     dropdown1 = `<select id="comparison-dropdown-1" class="comparison-dropdown">${dropdown1.join()}</select>`;
     dropdown2 = `<select id="comparison-dropdown-2" class="comparison-dropdown">${dropdown2.join()}</select>`;
 
-    document.querySelector('.comparison-dropdowns > div').innerHTML += dropdown1 + ' compared to ' + dropdown2;
+    document.querySelector('.comparison-dropdowns > div').innerHTML +=
+      dropdown1 + ' <div style="padding: 4px 2px;">compared to</div> ' + dropdown2;
   }
 
   /**
@@ -558,10 +562,14 @@
   }
 
   window.basePath = '../../data/annotations/';
-  // window.accession = 'GLDS-21';
+  window.accession = 'GLDS-21';
+  window.assay = 'array_differential_expression';
+  // window.accession = 'GLDS-25';
   // window.assay = 'array_differential_expression';
-  window.accession = 'GLDS-242';
-  window.assay = 'rna_seq_ERCCnorm_differential_expression';
+  // window.accession = 'GLDS-242';
+  // window.assay = 'rna_seq_ERCCnorm_differential_expression';
+  // window.accession = 'GLDS-168';
+  // window.assay = 'rna_seq_ERCCnorm_differential_expression';
   window.factor = '';
   window.baseAnnotsPath = `${basePath}${accession}_${assay}_ideogram_annots`;
   window.annotsPath = `${baseAnnotsPath}${factor}.json`;

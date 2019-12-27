@@ -97,7 +97,11 @@ def get_comparisons(headers):
             comparisons_by_factor[factor_1]['indices'].append(index)
             comparisons_by_factor[factor_1]['comparisons'].append(header)
         else:
-            comparisons_by_factor[factor_1] = {'indices': [index], 'comparisons': [header]}
+            comparisons_by_factor[factor_1] = {
+                'indices': [index],
+                'comparisons': [header],
+                'label': factors[0]
+            }
 
     return comparisons_by_factor
 
@@ -244,16 +248,25 @@ for i, factor in enumerate(annots_by_chr_by_factor):
     keys = ['name', 'start', 'length', 'gene-type'] + metadata_list + comparison_list
     annots_list = list(annots_by_chr.values())
     metadata = get_metadata(gene_pos_metadata, sorted_gene_types, comparison_labels)
+    for factor2 in annots_by_chr_by_factor:
+        factor_label = comparisons_by_factor[factor2]['label']
+        metadata['labels'][factor2] = factor_label
 
     factors = list(annots_by_chr_by_factor.keys())
+
+    split_factor = factor.split('-')
 
     if 'space-flight' in factor:
         suffix = ''
         other_factor = 'ground-control'
-    elif 'flt' in factor:
-        # Seen in https://genelab-data.ndc.nasa.gov/genelab/accession/GLDS-242
+    elif 'flt' in factor and 'rr' not in factor.lower():
+        # Seen in GLDS-168 (e.g. "FLT")
         suffix = ''
-        other_factor = 'bsl-' + factor.split('-')[1]
+        other_factor = 'bsl-' + split_factor[1]
+    elif factor == 'rr1-flt-wercc':
+        # Seen in GLDS-242 (e.g. "RR1_FLT_wERCC")
+        other_factor = 'rr1-bsl-wercc'
+        suffix = ''
     else:
         suffix = '_' + factor
         factor_index = factors.index(factor) 
