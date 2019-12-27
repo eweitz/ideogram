@@ -141,12 +141,13 @@ def get_annots_by_chr(gene_coordinates, gene_expressions, gene_types, gene_metad
     for gene_id in gene_coordinates:
         coordinates = gene_coordinates[gene_id]
         gene_symbol = coordinates['symbol']
-        if gene_symbol not in gene_expressions:
-            gene_type = coordinates['type']
+        gene_type = coordinates['type']
+        lacks_gene_type = True
+        for factor in gene_expressions:
+            if gene_symbol not in gene_expressions[factor]:
+                lacks_gene_type = False
+        if lacks_gene_type is False:
             gene_types[gene_type] -= 1
-
-    # print('list(gene_expressions.items())[0]')
-    # print(list(gene_expressions.items())[0])
 
     # Sort keys by descending count value, then
     # make a list of those keys (i.e., without values)
