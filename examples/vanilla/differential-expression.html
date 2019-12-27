@@ -306,7 +306,7 @@
       }
     });
 
-    // Toggle activation color upon change in slider checkbox
+    // Toggle slider color upon changing slider checkbox
     document.querySelectorAll('.slider-checkbox').forEach(checkbox => {
       checkbox.addEventListener('change', function() {
         const sliderId = this.id.replace('slider-checkbox-', '');
@@ -320,7 +320,7 @@
     });
 
 
-    // Listen for changes in comparison dropdown menus
+    // Update annotations upon changing selection in either comparison dropdown
     document.querySelectorAll('.comparison-dropdown').forEach(dropdown => {
       dropdown.addEventListener('change', function() {
         window.factor1 = slug(document.querySelector('#comparison-dropdown-1').value);
@@ -536,7 +536,6 @@
   * Fetch annotations, then create Ideogram
   **/
   function initIdeogram(annotationsPath) {
-    // const annotationsPath = '../../data/annotations/GLDS-242_rna_seq_ERCCnorm_differential_expression_ideogram_annots.json'
     fetch(annotationsPath)
       .then(response => response.json())
       .then(rawAnnots => {
@@ -559,8 +558,10 @@
   }
 
   window.basePath = '../../data/annotations/';
-  window.accession = 'GLDS-21';
-  window.assay = 'array_differential_expression';
+  // window.accession = 'GLDS-21';
+  // window.assay = 'array_differential_expression';
+  window.accession = 'GLDS-242';
+  window.assay = 'rna_seq_ERCCnorm_differential_expression';
   window.factor = '';
   window.baseAnnotsPath = `${basePath}${accession}_${assay}_ideogram_annots`;
   window.annotsPath = `${baseAnnotsPath}${factor}.json`;
