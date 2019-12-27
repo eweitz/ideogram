@@ -248,12 +248,14 @@
 
     document.querySelector('#facets').innerHTML = '';
 
+    const acc = window.accession;
+
     document.querySelector('#summary').innerHTML = 
       `Genomic distribution of differentially expressed 
       <span id="organismName" style="font-style: italic">${metadata.organism}</span> 
       genes.  Data from NASA GeneLab 
-      <a href="https://genelab-data.ndc.nasa.gov/genelab/accession/GLDS-21/" target="_blank">GLDS-21</a>, 
-      "Effects of spaceflight on murine skeletal muscle gene expression".`;
+      <a href="https://genelab-data.ndc.nasa.gov/genelab/accession/${acc}/" target="_blank">${acc}</a>, 
+      "${window.studyTitle}".`;
 
     // Build category facets
     for (const key in labels) {
@@ -562,14 +564,23 @@
   }
 
   window.basePath = '../../data/annotations/';
-  window.accession = 'GLDS-21';
-  window.assay = 'array_differential_expression';
-  // window.accession = 'GLDS-25';
+  
+  // window.accession = 'GLDS-21';
   // window.assay = 'array_differential_expression';
-  // window.accession = 'GLDS-242';
-  // window.assay = 'rna_seq_ERCCnorm_differential_expression';
+  // window.studyTitle = 'Effects of spaceflight on murine skeletal muscle gene expression';
+  
+  window.accession = 'GLDS-25';
+  window.assay = 'array_differential_expression';
+  window.studyTitle = 'STS-135 Liver Transcriptomics';
+
+  // // window.accession = 'GLDS-242';
+  // // window.assay = 'rna_seq_ERCCnorm_differential_expression';
+  // window.studyTitle = 'Effect of spaceflight on liver from mice flown on the ISS for 33 days: transcriptional analysis';
+  
   // window.accession = 'GLDS-168';
   // window.assay = 'rna_seq_ERCCnorm_differential_expression';
+  // window.studyTitle = 'RR-1 and RR-3 mouse liver transcriptomics with and without ERCC control RNA spike-ins';
+
   window.factor = '';
   window.baseAnnotsPath = `${basePath}${accession}_${assay}_ideogram_annots`;
   window.annotsPath = `${baseAnnotsPath}${factor}.json`;
