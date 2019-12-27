@@ -86,14 +86,9 @@ def get_comparisons(headers):
         if ')v(' not in header: continue # not a comparison, so skip
         metric = header.split('_')[0] # e.g. Log2fc, P.value, or Adj.p.value
         factors = []
-        for m in header.split(')v('):
-            split_metric = m.split('_')
-            if len(split_metric) > 1:
-                # E.g. "Log2fc" "(Ground Control"
-                factors.append(split_metric[1].replace('(', ''))
-            else:
-                # E.g. "Hindlimb suspension and reloading)"
-                factors.append(split_metric[0].strip(')'))
+        comparison = header.replace(metric + '_', '').strip('(').strip(')')
+        for factor in comparison.split(')v('):
+            factors.append(factor)
 
         index = log2fc_index + i
 
@@ -160,9 +155,7 @@ def get_annots_by_chr(gene_coordinates, gene_expressions, gene_types, gene_metad
         coordinates = gene_coordinates[gene_id]
         symbol = coordinates['symbol']
 
-
         chr = coordinates['chromosome']
-
 
         start = int(coordinates['start'])
         stop = int(coordinates['stop'])
@@ -254,9 +247,13 @@ for i, factor in enumerate(annots_by_chr_by_factor):
 
     factors = list(annots_by_chr_by_factor.keys())
 
-    if factor in ('space-flight', 'flt'):
+    if 'space-flight' in factor:
         suffix = ''
         other_factor = 'ground-control'
+    elif 'flt' in factor:
+        # Seen in https://genelab-data.ndc.nasa.gov/genelab/accession/GLDS-242
+        suffix = ''
+        other_factor = 'bsl-' + factor.split('-')[1]
     else:
         suffix = '_' + factor
         factor_index = factors.index(factor) 
