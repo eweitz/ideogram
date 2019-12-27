@@ -241,7 +241,7 @@ metadata_list = list(metadata_labels.keys())
 [annots_by_chr_by_factor, sorted_gene_types] =\
     get_annots_by_chr(coordinates, expressions, gene_types, metadata)
 
-for factor in annots_by_chr_by_factor:
+for i, factor in enumerate(annots_by_chr_by_factor):
     annots_by_chr = annots_by_chr_by_factor[factor]
 
     comparisons = comparisons_by_factor[factor]['comparisons']
@@ -252,12 +252,32 @@ for factor in annots_by_chr_by_factor:
     annots_list = list(annots_by_chr.values())
     metadata = get_metadata(gene_pos_metadata, sorted_gene_types, comparison_labels)
 
+    factors = list(annots_by_chr_by_factor.keys())
+
+    if factor in ('space-flight', 'flt'):
+        suffix = ''
+        other_factor = 'ground-control'
+    else:
+        suffix = '_' + factor
+        factor_index = factors.index(factor) 
+        if factor_index < len(factors) - 1:
+            other_index = factor_index + 1
+        else:
+            other_index = factor_index - 1
+        other_factor = factors[other_index]
+
+    metadata['deg'] = {
+        'factors': factors,
+        'thisFactor': factor,
+        'otherFactor': other_factor
+    }
+
     annots = {'keys': keys, 'annots': annots_list, 'metadata': metadata}
 
     annots_json = json.dumps(annots)
 
     output_filename = deg_path.split('/')[-1].replace('.csv', '') + \
-        '_ideogram_annots_' + factor + '.json'
+        '_ideogram_annots' + suffix + '.json'
 
     output_path = output_dir + output_filename
 
