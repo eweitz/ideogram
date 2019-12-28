@@ -21,6 +21,8 @@
     a, a:hover, a:visited, a:active {color: #0366d6;}
   </style>
   <style>
+    select {font: 14px Arial;}
+    
     ul {
       list-style: none;
       padding-left: 10px;
@@ -84,7 +86,7 @@
 </head>
 <body>
   <h1>Differential expression of genes | Ideogram</h1>
-  <a href="/ideogram">Overview</a> |
+  <a href="../">Overview</a> |
   <a href="annotations-heatmap">Previous</a> |
   <a href="geometry-collinear">Next</a> |
   <a href="https://github.com/eweitz/ideogram/blob/gh-pages/differential-expression.html" target="_blank">Source</a>
@@ -188,15 +190,50 @@
   }
 
   /**
+  * Adds dropdown menus for available comparison factors
+  **/
+  function writeComparisonDropdowns() {
+    let dropdown1 = [];
+    let dropdown2 = [];
+    const metadata = ideogram.rawAnnots.metadata
+    const factors = metadata.deg.factors;
+    const factor1Index = factors.indexOf(window.factor1);
+    const factor2Index = factors.indexOf(window.factor2);
+
+    factors.forEach((factor, i) => {
+      let otherFactor = i < factors.length - 1 ? factors[i + 1] : factors[0];
+      let s1 = (i === factor1Index) ? 'selected' : '';
+      let s2 = (factors.indexOf(otherFactor) === factor2Index) ? 'selected' : '';
+      let factorLabel = metadata.labels[factor]
+      let otherFactorLabel = metadata.labels[otherFactor];
+
+      dropdown1.push(`<option id="option-${factor}" ${s1}>${factorLabel}</option>`);
+      dropdown2.push(`<option id="option-${otherFactor}" ${s2}>${otherFactorLabel}</option>`);
+    });
+
+    dropdown1 = `<select id="comparison-dropdown-1" class="comparison-dropdown">${dropdown1.join()}</select>`;
+    dropdown2 = `<select id="comparison-dropdown-2" class="comparison-dropdown">${dropdown2.join()}</select>`;
+
+    document.querySelector('.comparison-dropdowns > div').innerHTML +=
+      dropdown1 + ' <div style="padding: 4px 2px;">compared to</div> ' + dropdown2;
+  }
+
+  /**
   * Adds slider widgets for all numerical metrics in this comparison
   */
   function writeSliders(comparison, labels, metrics) {
     const comparisonLabel = labels[`log2fc-${comparison}`].replace('Log2fc_', '');
     const comparisonId = comparison.toLowerCase().replace(/[()\s]/g, '');
+    
+    let prevDiv = document.querySelector('.comparison-dropdowns > div');
+    if (prevDiv !== null) prevDiv.innerHTML = ''; // clear any previous content
+
     document.querySelector('#facets').innerHTML += `
-      <div id="${comparisonId}">
-        <div style="margin-bottom: 30px; width: 200px; margin-top: 5px;">${comparisonLabel}</div>
+      <div class="comparison-dropdowns" id="${comparisonId}">
+        <div style="margin-bottom: 30px; width: 200px; margin-top: 5px;"></div>
       <div>`;
+
+    writeComparisonDropdowns();
 
     metrics.forEach((metric, i) => writeSliderContainer(metric, i, comparisonId));
   }
@@ -205,16 +242,20 @@
   * Adds facets, i.e. groups of filters, to query Ideogram annotations
   **/
   function writeFacets() {
-    const metadata = this.rawAnnots.metadata;
+    const metadata = ideogram.rawAnnots.metadata;
     const labels = metadata.labels;
     let filters = [];
+
+    document.querySelector('#facets').innerHTML = '';
+
+    const acc = window.accession;
 
     document.querySelector('#summary').innerHTML = 
       `Genomic distribution of differentially expressed 
       <span id="organismName" style="font-style: italic">${metadata.organism}</span> 
       genes.  Data from NASA GeneLab 
-      <a href="https://genelab-data.ndc.nasa.gov/genelab/accession/GLDS-21/" target="_blank">GLDS-21</a>, 
-      "Effects of spaceflight on murine skeletal muscle gene expression".`;
+      <a href="https://genelab-data.ndc.nasa.gov/genelab/accession/${acc}/" target="_blank">${acc}</a>, 
+      "${window.studyTitle}".`;
 
     // Build category facets
     for (const key in labels) {
@@ -240,7 +281,12 @@
       }
     }
 
-    const comparison = 'space-flight-v-ground-control';
+    if (typeof factor1 === 'undefined') {
+      window.factor1 = metadata.deg.thisFactor;
+      window.factor2 = metadata.deg.otherFactor;
+    }
+
+    const comparison = window.factor1 + '-v-' + window.factor2;
     // const comparison = 'flt-c1-v-cc-c1';
     const metrics = ['log2fc', 'adj-p-value'];
     writeSliders(comparison, labels, metrics);
@@ -248,12 +294,12 @@
     filters = '<ul class="category-facet">' + filters.join('\n') + '</ul>';
     document.querySelector('#facets').innerHTML += filters;
 
-    // Listen for clicks on category filters and slider checkboxes
+    // Filter genes upon clicking a category filter or slider checkbox
     d3.selectAll('input').on('click', function() {
       filterGenes(metrics, comparison);
     });
 
-    // Listen for clicks on "More..." and "Less..." category facet toggler
+    // Toggle "More..." and "Less..." for category facet upon click
     d3.selectAll('.facet-toggler').on('click', function() {
       if (this.text === 'More...') {
         var hiddenItems = document.querySelectorAll('li.hidden');
@@ -266,11 +312,11 @@
       }
     });
 
-    // Listen for changes in slider checkboxes
+    // Toggle slider color upon changing slider checkbox
     document.querySelectorAll('.slider-checkbox').forEach(checkbox => {
       checkbox.addEventListener('change', function() {
-        var sliderId = this.id.replace('slider-checkbox-', '');
-        var slider = document.querySelector(`#${sliderId}`);
+        const sliderId = this.id.replace('slider-checkbox-', '');
+        let slider = document.querySelector(`#${sliderId}`);
         if (this.checked) {
           slider.classList.remove('inactive');
         } else {
@@ -279,20 +325,39 @@
       });
     });
 
-    // Listen for dragging slider
+
+    // Update annotations upon changing selection in either comparison dropdown
+    document.querySelectorAll('.comparison-dropdown').forEach(dropdown => {
+      dropdown.addEventListener('change', function() {
+        window.factor1 = slug(document.querySelector('#comparison-dropdown-1').value);
+        window.factor2 = slug(document.querySelector('#comparison-dropdown-2').value);
+        if (factor1 === factor2) return;
+        if (
+          this.id === 'comparison-dropdown-1' ||
+          factor1 !== ideogram.rawAnnots.metadata.deg.thisFactor
+        ) {
+          initIdeogram(baseAnnotsPath + '_' + window.factor1 + '.json');
+        } else {
+          writeFacets();
+        }
+      });
+    });
+
+    // Filter genes upon dragging slider
     let sliders = document.querySelectorAll('.ideogramSlider');
     sliders.forEach((slider, i) => {
       noUiSlider.create(slider, getSliderConfig(metrics[i]));
       slider.noUiSlider.on('change', function(){filterGenes(metrics, comparison);});
     });
 
+    // Filter by log2fc and adjusted p-value upon calling writeFacets()
     let sliderCheckboxes = document.querySelectorAll('.slider-checkbox');
     for (let i = 0; i < sliderCheckboxes.length; i++) {
       let checkbox = sliderCheckboxes[i];
       if (i < sliderCheckboxes.length - 1) {
-        checkbox.checked = true;
+        checkbox.checked = true; // mark as checked, but don't trigger filter
       } else {
-        checkbox.click();
+        checkbox.click(); // trigger filter for all checked (as a batch)
       }
     }
 
@@ -376,6 +441,10 @@
 
   function deslug(string) {
     return string[0].toUpperCase() + string.slice(1).replace(/-/g, ' ');
+  }
+
+  function slug(string) {
+    return string.toLowerCase().replace(/ /g, '-');
   }
 
   function hyperlinkGene(annot) {
@@ -469,29 +538,55 @@
     writeTable(metrics, comparison);
   }
 
-  // Fetch annotations, then create Ideogram
-  const annotationsPath = 'data/annotations/GLDS-21_array_differential_expression_ideogram_annots.json';
-  // const annotationsPath = '../../data/annotations/GLDS-242_rna_seq_ERCCnorm_differential_expression_ideogram_annots.json'
-  fetch(annotationsPath)
-    .then(response => response.json())
-    .then(rawAnnots => {
-        const config = {
-          container: '#ideogram-container',
-          orientation: 'vertical',
-          organism: rawAnnots.metadata.organism, // This is why we need to fetch annots first
-          assembly: rawAnnots.metadata.assembly,
-          chrHeight: 200,
-          chrWidth: 12,
-          chrMargin: 18,
-          annotations: rawAnnots,
-          annotationsLayout: 'histogram',
-          barWidth: 3,
-          filterable: true,
-          onLoad: writeFacets
-        };
-        window.ideogram = new Ideogram(config);
-    });
+  /**
+  * Fetch annotations, then create Ideogram
+  **/
+  function initIdeogram(annotationsPath) {
+    fetch(annotationsPath)
+      .then(response => response.json())
+      .then(rawAnnots => {
+          const config = {
+            container: '#ideogram-container',
+            orientation: 'vertical',
+            organism: rawAnnots.metadata.organism, // This is why we need to fetch annots first
+            assembly: rawAnnots.metadata.assembly,
+            chrHeight: 200,
+            chrWidth: 12,
+            chrMargin: 18,
+            annotations: rawAnnots,
+            annotationsLayout: 'histogram',
+            barWidth: 3,
+            filterable: true,
+            onLoad: writeFacets
+          };
+          window.ideogram = new Ideogram(config);
+      });
+  }
 
+  window.basePath = 'data/annotations/';
+  
+  window.accession = 'GLDS-21';
+  window.assay = 'array_differential_expression';
+  window.studyTitle = 'Effects of spaceflight on murine skeletal muscle gene expression';
+  
+  // window.accession = 'GLDS-25';
+  // window.assay = 'array_differential_expression';
+  // window.studyTitle = 'STS-135 Liver Transcriptomics';
+
+  // // window.accession = 'GLDS-242';
+  // // window.assay = 'rna_seq_ERCCnorm_differential_expression';
+  // window.studyTitle = 'Effect of spaceflight on liver from mice flown on the ISS for 33 days: transcriptional analysis';
+  
+  // window.accession = 'GLDS-168';
+  // window.assay = 'rna_seq_ERCCnorm_differential_expression';
+  // window.studyTitle = 'RR-1 and RR-3 mouse liver transcriptomics with and without ERCC control RNA spike-ins';
+
+  window.factor = '';
+  window.baseAnnotsPath = `${basePath}${accession}_${assay}_ideogram_annots`;
+  window.annotsPath = `${baseAnnotsPath}${factor}.json`;
+
+  initIdeogram(annotsPath);
+  
   </script>
 </body>
 </html>
