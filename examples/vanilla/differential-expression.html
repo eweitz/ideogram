@@ -346,14 +346,16 @@
     // Update annotations upon changing selection in either comparison dropdown
     document.querySelectorAll('.comparison-dropdown').forEach(dropdown => {
       dropdown.addEventListener('change', function() {
-        window.factor1 = slug(document.querySelector('#comparison-dropdown-1').value);
-        window.factor2 = slug(document.querySelector('#comparison-dropdown-2').value);
+        window.factor1 =
+          slug(document.querySelector('#comparison-dropdown-1').value).replace(/_/g, '-');
+        window.factor2 =
+          slug(document.querySelector('#comparison-dropdown-2').value).replace(/_/g, '-');
         if (factor1 === factor2) return;
         if (
           this.id === 'comparison-dropdown-1' ||
           factor1 !== ideogram.rawAnnots.metadata.deg.thisFactor
         ) {
-          initIdeogram(baseAnnotsPath + '_' + window.factor1 + '.json');
+          initIdeogram(baseAnnotsPath + '_' + window.factor1 + '.json?alt=media');
         } else {
           writeFacets();
         }
@@ -515,6 +517,9 @@
           cells.push(getRoughLocation(annot));
         } else if (header === 'gene-type') {
           cells.push(labels[header][value]);
+        } else if (header.includes(metrics[1]) && value === 0) {
+          // TODO: Update sort to handle < 1E-18 as 0
+          cells.push(1e-18)
         } else {
           cells.push(value);
         }
@@ -623,8 +628,12 @@
       assay: 'array_differential_expression',
       studyTitle: 'STS-135 Liver Transcriptomics'
     },
+    // 'GLDS-242': {
+    //   assay: 'rna_seq_ERCCnorm_differential_expression',
+    //   studyTitle: 'Effect of spaceflight on liver from mice flown on the ISS for 33 days: transcriptional analysis'
+    // },
     'GLDS-242': {
-      assay: 'rna_seq_ERCCnorm_differential_expression',
+      assay: 'rna_seq_differential_expression',
       studyTitle: 'Effect of spaceflight on liver from mice flown on the ISS for 33 days: transcriptional analysis'
     },
     'GLDS-168': {
