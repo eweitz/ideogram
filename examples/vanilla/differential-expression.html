@@ -596,27 +596,52 @@
       });
   }
 
-  window.basePath = '../../data/annotations/';
-  
-  window.accession = 'GLDS-21';
-  window.assay = 'array_differential_expression';
-  window.studyTitle = 'Effects of spaceflight on murine skeletal muscle gene expression';
-  
-  // window.accession = 'GLDS-25';
-  // window.assay = 'array_differential_expression';
-  // window.studyTitle = 'STS-135 Liver Transcriptomics';
+  function parseUrlParams() {
+      var rawParams = document.location.search;
+      var urlParams = {};
+      var param, key, value;
+      if (rawParams !== '') {
+        rawParams = rawParams.split('?')[1].split('&');
+        rawParams.forEach(rawParam => {
+          param = rawParam.split('=');
+          key = param[0];
+          value = param[1];
+          urlParams[key] = value;
+        });
+      }
+      return urlParams;
+    }
 
-  // window.accession = 'GLDS-242';
-  // window.assay = 'rna_seq_ERCCnorm_differential_expression';
-  // window.studyTitle = 'Effect of spaceflight on liver from mice flown on the ISS for 33 days: transcriptional analysis';
+  window.basePath = 'https://www.googleapis.com/storage/v1/b/ideogram/o/nasa%2f';
   
-  // window.accession = 'GLDS-168';
-  // window.assay = 'rna_seq_ERCCnorm_differential_expression';
-  // window.studyTitle = 'RR-1 and RR-3 mouse liver transcriptomics with and without ERCC control RNA spike-ins';
+  window.datasets = {
+    'GLDS-21': {
+      assay: 'array_differential_expression',
+      studyTitle:  'Effects of spaceflight on murine skeletal muscle gene expression'
+    },
+    'GLDS-25': {
+      assay: 'array_differential_expression',
+      studyTitle: 'STS-135 Liver Transcriptomics'
+    },
+    'GLDS-242': {
+      assay: 'rna_seq_ERCCnorm_differential_expression',
+      studyTitle: 'Effect of spaceflight on liver from mice flown on the ISS for 33 days: transcriptional analysis'
+    },
+    'GLDS-168': {
+      assay: 'rna_seq_ERCCnorm_differential_expression',
+      studyTitle: 'RR-1 and RR-3 mouse liver transcriptomics with and without ERCC control RNA spike-ins'
+    }
+  }
+
+  window.urlParams = parseUrlParams();
+
+  window.accession = 'acc' in urlParams ? urlParams.acc : 'GLDS-21';
+  window.assay = datasets[accession].assay;
+  window.studyTitle = datasets[accession].studyTitle;
 
   window.factor = '';
   window.baseAnnotsPath = `${basePath}${accession}_${assay}_ideogram_annots`;
-  window.annotsPath = `${baseAnnotsPath}${factor}.json`;
+  window.annotsPath = `${baseAnnotsPath}${factor}.json?alt=media`;
 
   initIdeogram(annotsPath);
   
