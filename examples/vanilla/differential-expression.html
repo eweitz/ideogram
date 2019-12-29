@@ -35,7 +35,7 @@
 
     #summary {margin-bottom: 20px;}
 
-    #ideogram-container {margin-top: -15px;}
+    #ideogram-container {margin-top: -20px;}
 
     li {padding: 2px 0;}
     li.hidden {display: none;}
@@ -94,6 +94,11 @@
       margin-left: 20px;
       top: -1px;
     }
+
+    #table-container .paginate_button {padding: 3px 9px;}
+    #table-container .dataTables_info {padding-top: 0.3em;}
+    #table-container .dataTables_paginate {margin-right: 10px;}
+    #table-container table.dataTable thead th {padding-top: 4px;}
   </style>
 </head>
 <body>
@@ -242,7 +247,7 @@
 
     document.querySelector('#facets').innerHTML += `
       <div class="comparison-dropdowns" id="${comparisonId}">
-        <div style="margin-bottom: 30px; width: 200px; margin-top: 5px;"></div>
+        <div style="margin-bottom: 30px; width: 200px;"></div>
       <div>`;
 
     writeComparisonDropdowns();
@@ -263,9 +268,9 @@
     const acc = window.accession;
 
     document.querySelector('#summary').innerHTML = 
-      `Genomic distribution of differentially expressed 
-      <span id="organismName" style="font-style: italic">${metadata.organism}</span> 
-      genes.  Data from NASA GeneLab 
+      `Genomic distribution of differentially expressed <span id="organismName" style="font-style: italic">${metadata.organism}</span> 
+      genes, viewed with <a href="https://github.com/eweitz/ideogram">Ideogram.js</a>.
+      Data: NASA GeneLab 
       <a href="https://genelab-data.ndc.nasa.gov/genelab/accession/${acc}/" target="_blank">${acc}</a>, 
       "${window.studyTitle}".`;
 
@@ -359,6 +364,12 @@
     let sliders = document.querySelectorAll('.ideogramSlider');
     sliders.forEach((slider, i) => {
       noUiSlider.create(slider, getSliderConfig(metrics[i]));
+      if (i === 0) {
+        let val1 = document.querySelector(`#${slider.id} .noUi-value:nth-child(2)`);
+        val1.innerHTML = '≤ ' + val1.innerHTML;
+        let val2 = document.querySelector(`#${slider.id} .noUi-value:last-child`);
+        val2.innerHTML = '≥ ' + val2.innerHTML;
+      }
       slider.noUiSlider.on('change', function(){filterGenes(metrics, comparison);});
     });
 
@@ -434,6 +445,14 @@
       if (checkbox.checked === false) return;
       
       var range = slider.noUiSlider.get().map(d => parseFloat(d));
+
+      if (slider.id.includes('log2fc')) {
+        range = range.map(v => {
+          if (v === -4) return -Infinity;
+          if (v === 4) return Infinity;
+          return v;
+        })
+      }
       selections[slider.id] = range;
     });
 
@@ -524,12 +543,12 @@
     document.querySelector('#table-container').innerHTML = table;
 
     $('#ideogram-annots-table').DataTable({
-      dom: 'lBfrtip', // Confused?  See https://datatables.net/reference/option/dom.
+      dom: 'lBfrtip', // Docs: https://datatables.net/reference/option/dom
       buttons: [{extend: 'csv', text: 'Export'}],
       data: rows,
       order: [[headers.indexOf(sortKey), 'desc']],
       deferRender: true,
-      columns: [{width: '50px'}, {width: '475px'}, {width: '125px'}, {width: '125px'}, {width: '100px'}]
+      columns: [{width: '50px'}, {width: '515px'}, {width: '120px'}, {width: '115px'}, {width: '80px'}]
     });
   }
 
@@ -564,9 +583,9 @@
             orientation: 'vertical',
             organism: rawAnnots.metadata.organism, // This is why we need to fetch annots first
             assembly: rawAnnots.metadata.assembly,
-            chrHeight: 200,
+            chrHeight: 225,
             chrWidth: 12,
-            chrMargin: 18,
+            chrMargin: 19,
             annotations: rawAnnots,
             annotationsLayout: 'histogram',
             barWidth: 3,
@@ -587,8 +606,8 @@
   // window.assay = 'array_differential_expression';
   // window.studyTitle = 'STS-135 Liver Transcriptomics';
 
-  // // window.accession = 'GLDS-242';
-  // // window.assay = 'rna_seq_ERCCnorm_differential_expression';
+  // window.accession = 'GLDS-242';
+  // window.assay = 'rna_seq_ERCCnorm_differential_expression';
   // window.studyTitle = 'Effect of spaceflight on liver from mice flown on the ISS for 33 days: transcriptional analysis';
   
   // window.accession = 'GLDS-168';
