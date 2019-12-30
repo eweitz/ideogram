@@ -518,7 +518,7 @@
         } else if (header === 'gene-type') {
           cells.push(labels[header][value]);
         } else if (header.includes(metrics[1])) {
-          const dispVal = value === 0 ? '< 1e-18' : value;
+          const dispVal = value === 0 ? '< 10e-18' : value;
           cells.push({display: dispVal, sortVal: value})
         } else {
           cells.push(value);
