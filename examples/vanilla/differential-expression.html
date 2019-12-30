@@ -517,9 +517,9 @@
           cells.push(getRoughLocation(annot));
         } else if (header === 'gene-type') {
           cells.push(labels[header][value]);
-        } else if (header.includes(metrics[1]) && value === 0) {
-          // TODO: Update sort to handle < 1E-18 as 0
-          cells.push(1e-18)
+        } else if (header.includes(metrics[1])) {
+          const dispVal = value === 0 ? '< 1e-18' : value;
+          cells.push({display: dispVal, sortVal: value})
         } else {
           cells.push(value);
         }
@@ -553,7 +553,14 @@
       data: rows,
       order: [[headers.indexOf(sortKey), 'desc']],
       deferRender: true,
-      columns: [{width: '50px'}, {width: '515px'}, {width: '120px'}, {width: '115px'}, {width: '80px'}]
+      // columnDefs: [null, null, null, null, {render: }]
+      columns: [
+        {width: '50px'},
+        {width: '515px'},
+        {width: '120px'},
+        {width: '115px', render: {_: 'display', sort: 'sortVal'}},
+        {width: '80px', type: 'genomeorder'}
+      ]
     });
   }
 
@@ -653,6 +660,25 @@
   window.annotsPath = `${baseAnnotsPath}${factor}.json?alt=media`;
 
   initIdeogram(annotsPath);
+
+  function orderByGenomicPosition(a, b) {
+    const splitA = a.split(':');
+    const splitB = b.split(':');
+    const chrNameA = splitA[0].slice(3);
+    const chrNameB = splitB[0].slice(3);
+    if (chrNameA === chrNameB) {
+      const posA = parseFloat(splitA[1].slice(0, -1));
+      const posB = parseFloat(splitB[1].slice(0, -1));
+      return (posA < posB) ? -1 : (posA > posB) ? 1 : 0;
+    } else {
+      return chrNameA.localeCompare(chrNameB, undefined, {numeric: true, sensitivity: 'base'})
+    }
+  }
+
+  jQuery.extend(jQuery.fn.dataTable.ext.type.order, {
+    'genomeorder-asc': function(a, b) {return orderByGenomicPosition(a, b);},
+    'genomeorder-desc': function(a, b) {return -1 * orderByGenomicPosition(a, b)}
+  });
   
   </script>
 </body>
