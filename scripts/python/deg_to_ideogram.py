@@ -34,10 +34,9 @@ def get_gene_coordinates(gene_pos_path):
         lines = f.readlines()
 
     gene_types = {}
-
     gene_coordinates = {}
-    for line in lines:
 
+    for line in lines:
         if line[0] == '#': continue
 
         # Example line: "AT1G01190	CYP78A8	1	82984	84946	protein_coding"
@@ -230,6 +229,40 @@ def get_metadata(gene_pos_metadata, sorted_gene_types, key_labels):
 
     return metadata
 
+
+def get_deg_metadata(factor, factors):
+
+    split_factor = factor.split('-')
+
+    if 'space-flight' in factor:
+        suffix = ''
+        other_factor = 'ground-control'
+    elif 'flt' in factor and 'rr' not in factor.lower():
+        # Seen in GLDS-168 (e.g. "FLT")
+        suffix = ''
+        other_factor = 'bsl-' + split_factor[1]
+    elif factor == 'rr1-flt-wercc':
+        # Seen in GLDS-242 (e.g. "RR1_FLT_wERCC")
+        other_factor = 'rr1-bsl-wercc'
+        suffix = ''
+    else:
+        suffix = '_' + factor
+        factor_index = factors.index(factor) 
+        if factor_index < len(factors) - 1:
+            other_index = factor_index + 1
+        else:
+            other_index = factor_index - 1
+        other_factor = factors[other_index]
+
+    deg_metadata = {
+        'factors': factors,
+        'thisFactor': factor,
+        'otherFactor': other_factor
+    }
+
+    return deg_metadata, suffix
+
+
 coordinates, gene_types, gene_pos_metadata = get_gene_coordinates(gene_pos_path)
 metadata, metadata_keys, expressions, comparisons_by_factor = parse_deg_matrix(deg_path)
 
@@ -255,33 +288,9 @@ for i, factor in enumerate(annots_by_chr_by_factor):
 
     factors = list(annots_by_chr_by_factor.keys())
 
-    split_factor = factor.split('-')
+    deg_metadata, suffix = get_deg_metadata(factor, factors)
 
-    if 'space-flight' in factor:
-        suffix = ''
-        other_factor = 'ground-control'
-    elif 'flt' in factor and 'rr' not in factor.lower():
-        # Seen in GLDS-168 (e.g. "FLT")
-        suffix = ''
-        other_factor = 'bsl-' + split_factor[1]
-    elif factor == 'rr1-flt-wercc':
-        # Seen in GLDS-242 (e.g. "RR1_FLT_wERCC")
-        other_factor = 'rr1-bsl-wercc'
-        suffix = ''
-    else:
-        suffix = '_' + factor
-        factor_index = factors.index(factor) 
-        if factor_index < len(factors) - 1:
-            other_index = factor_index + 1
-        else:
-            other_index = factor_index - 1
-        other_factor = factors[other_index]
-
-    metadata['deg'] = {
-        'factors': factors,
-        'thisFactor': factor,
-        'otherFactor': other_factor
-    }
+    metadata['deg'] = get_deg_metadata(factor, factor)
 
     annots = {'keys': keys, 'annots': annots_list, 'metadata': metadata}
 
