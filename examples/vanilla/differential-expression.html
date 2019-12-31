@@ -270,7 +270,7 @@
     document.querySelector('#summary').innerHTML = 
       `Genomic distribution of differentially expressed <span id="organismName" style="font-style: italic">${metadata.organism}</span> 
       genes, viewed with <a href="https://github.com/eweitz/ideogram">Ideogram.js</a>.
-      Data: NASA GeneLab 
+      NASA GeneLab 
       <a href="https://genelab-data.ndc.nasa.gov/genelab/accession/${acc}/" target="_blank">${acc}</a>, 
       "${window.studyTitle}".`;
 
@@ -590,19 +590,19 @@
       .then(response => response.json())
       .then(rawAnnots => {
           const numChrs = rawAnnots.annots.length;
-          const ideoWidth = 1100;
+          const ideoWidth = window.outerWidth - 340;
 
           const maxChrWidth = ideoWidth/(numChrs*4.5);
           const maxChrMargin = ideoWidth/(numChrs*2.8);
           const chrWidth = maxChrWidth <= 13 ? maxChrWidth : 13;
-          const chrMargin = maxChrMargin <= 18 ? maxChrMargin : 18;
+          const chrMargin = maxChrMargin <= 24 ? maxChrMargin : 24;
 
           const config = {
             container: '#ideogram-container',
             orientation: 'vertical',
             organism: rawAnnots.metadata.organism, // This is why we need to fetch annots first
             assembly: rawAnnots.metadata.assembly,
-            chrHeight: 205,
+            chrHeight: 225,
             chrWidth: chrWidth,
             chrMargin: chrMargin,
             annotations: rawAnnots,
@@ -661,6 +661,10 @@
     'GLDS-37': {
       assay: 'rna_seq_differential_expression',
       studyTitle: 'Comparison of the spaceflight transcriptome of four commonly used Arabidopsis thaliana ecotypes'
+    },
+    'GLDS-42': {
+      assay: 'array_differential_expression',
+      studyTitle: 'Expression data from C. elegans'
     }
   }
 
