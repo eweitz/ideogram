@@ -83,7 +83,7 @@
     .noUi-marker-horizontal.noUi-marker-large {height: 12px;}
     .noUi-marker .noUi-marker-horizontal .noUi-marker-normal {height: 3px;}
     .noUi-horizontal .noUi-tooltip {bottom: 115%;}
-    .noUi-tooltip {padding-top: 2px; padding-bottom: 0px;}
+    .noUi-tooltip {padding-top: 2px; padding-bottom: 0px; font-size: 12px;}
 
     .inactive .noUi-connect {background: #AAA;}
     .inactive .noUi-tooltip {color: #AAA;}
@@ -149,15 +149,15 @@
       },
       'log2fc': {
         range: {
-          'min': [-4],
-          'max': 4
+          'min': [-1.5],
+          'max': 1.5
         },
-        start: [-4, -1, 1, 4],
-        sliderDecimals: 1,
-        pipDecimals: 0,
+        start: [-1.5, -0.26, 0.26, 1.5],
+        sliderDecimals: 2,
+        pipDecimals: 1,
         connect: [false, true, false, true, false],
-        values: [0, 12.5, 25, 37.5, 50, 62.5, 75, 87.5, 100],
-        density: 4
+        values: [0, 16.7, 34.4, 50, 66.7, 84.4, 100],
+        density: 3
       }
     };
   
@@ -198,7 +198,7 @@
     const metricLabel = metricLabels[metric];
     document.querySelector(`#${comparisonId}`).innerHTML += 
       `<div style="margin-bottom: 115px; margin-left: 15px;">
-        <div style="width: 200px; margin-left: -15px; z-index: 2;">
+        <div style="margin-left: -15px; z-index: 2;">
           <input type="checkbox" class="slider-checkbox" id="slider-checkbox-${sliderId}"/>
           <label for="slider-checkbox-${sliderId}">${metricLabel}</label>
         </div>
@@ -247,7 +247,7 @@
 
     document.querySelector('#facets').innerHTML += `
       <div class="comparison-dropdowns" id="${comparisonId}">
-        <div style="margin-bottom: 30px; width: 200px;"></div>
+        <div style="margin-bottom: 30px;"></div>
       <div>`;
 
     writeComparisonDropdowns();
@@ -450,8 +450,8 @@
 
       if (slider.id.includes('log2fc')) {
         range = range.map(v => {
-          if (v === -4) return -Infinity;
-          if (v === 4) return Infinity;
+          if (v === -1.5) return -Infinity;
+          if (v === 1.5) return Infinity;
           return v;
         })
       }
@@ -518,7 +518,7 @@
         } else if (header === 'gene-type') {
           cells.push(labels[header][value]);
         } else if (header.includes(metrics[1])) {
-          const dispVal = value === 0 ? '< 1e-18' : value;
+          const dispVal = value === 0 ? '< 10e-18' : value;
           cells.push({display: dispVal, sortVal: value})
         } else {
           cells.push(value);
@@ -577,7 +577,6 @@
     Object.assign(selections, rangeSelections);
 
     counts = ideogram.filterAnnots(selections);
-
     writeCounts(counts);
 
     writeTable(metrics, comparison);
@@ -592,16 +591,20 @@
       .then(rawAnnots => {
           const numChrs = rawAnnots.annots.length;
           const ideoWidth = 1100;
-          const chrWidth = ideoWidth/(numChrs*4.5);
-          const chrMargin = ideoWidth/(numChrs*2.8);
+
+          const maxChrWidth = ideoWidth/(numChrs*4.5);
+          const maxChrMargin = ideoWidth/(numChrs*2.8);
+          const chrWidth = maxChrWidth <= 13 ? maxChrWidth : 13;
+          const chrMargin = maxChrMargin <= 18 ? maxChrMargin : 18;
+
           const config = {
             container: '#ideogram-container',
             orientation: 'vertical',
             organism: rawAnnots.metadata.organism, // This is why we need to fetch annots first
             assembly: rawAnnots.metadata.assembly,
             chrHeight: 205,
-            chrWidth: chrWidth < 15 ? chrWidth : 15,
-            chrMargin: chrMargin < 25 ? chrMargin : 25,
+            chrWidth: chrWidth,
+            chrMargin: chrMargin,
             annotations: rawAnnots,
             annotationsLayout: 'histogram',
             barWidth: 3,
