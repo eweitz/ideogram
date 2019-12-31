@@ -600,8 +600,8 @@
             organism: rawAnnots.metadata.organism, // This is why we need to fetch annots first
             assembly: rawAnnots.metadata.assembly,
             chrHeight: 205,
-            chrWidth: chrWidth,
-            chrMargin: chrMargin,
+            chrWidth: chrWidth < 15 ? chrWidth : 15,
+            chrMargin: chrMargin < 25 ? chrMargin : 25,
             annotations: rawAnnots,
             annotationsLayout: 'histogram',
             barWidth: 3,
@@ -655,6 +655,10 @@
       assay: 'array_differential_expression',
       studyTitle: 'Dynamic gene expression response to altered gravity in human T cells (sounding rocket flight)'
     },
+    'GLDS-37': {
+      assay: 'rna_seq_differential_expression',
+      studyTitle: 'Comparison of the spaceflight transcriptome of four commonly used Arabidopsis thaliana ecotypes'
+    }
   }
 
   window.urlParams = parseUrlParams();
