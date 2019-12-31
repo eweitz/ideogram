@@ -590,14 +590,18 @@
     fetch(annotationsPath)
       .then(response => response.json())
       .then(rawAnnots => {
+          const numChrs = rawAnnots.annots.length;
+          const ideoWidth = 1100;
+          const chrWidth = ideoWidth/(numChrs*4.5);
+          const chrMargin = ideoWidth/(numChrs*2.8);
           const config = {
             container: '#ideogram-container',
             orientation: 'vertical',
             organism: rawAnnots.metadata.organism, // This is why we need to fetch annots first
             assembly: rawAnnots.metadata.assembly,
-            chrHeight: 225,
-            chrWidth: 12,
-            chrMargin: 19,
+            chrHeight: 205,
+            chrWidth: chrWidth,
+            chrMargin: chrMargin,
             annotations: rawAnnots,
             annotationsLayout: 'histogram',
             barWidth: 3,
@@ -646,7 +650,11 @@
     'GLDS-168': {
       assay: 'rna_seq_ERCCnorm_differential_expression',
       studyTitle: 'RR-1 and RR-3 mouse liver transcriptomics with and without ERCC control RNA spike-ins'
-    }
+    },
+    'GLDS-188': {
+      assay: 'array_differential_expression',
+      studyTitle: 'Dynamic gene expression response to altered gravity in human T cells (sounding rocket flight)'
+    },
   }
 
   window.urlParams = parseUrlParams();
