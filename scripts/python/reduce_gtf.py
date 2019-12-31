@@ -15,6 +15,8 @@ ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M23/gencode.vM23
 * Thale cress (Arabidopsis thaliana), from Ensembl:
 ftp://ftp.ensemblgenomes.org/pub/release-45/plants/gtf/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.45.gtf.gz
 
+* Worm (Caenorhabditis elegans), from Ensembl:
+ftp://ftp.ensemblgenomes.org/pub/release-45/metazoa/gtf/caenorhabditis_elegans/Caenorhabditis_elegans.WBcel235.45.gtf.gz
 
 PREREQUISITES
 * GTF file, local and unzipped
@@ -26,6 +28,7 @@ python3 reduce_gtf.py --input_path=/Users/alice/Downloads/Arabidopsis_thaliana.T
 '''
 
 import argparse
+import re
 
 parser = argparse.ArgumentParser(
     description=__doc__,
@@ -54,8 +57,31 @@ if 'Ensembl' in gtf[0]:
 if 'genome-build' in gtf[0]:
     provider = 'Ensembl'
 
+
+def natural_sort(l):
+    """For sorting chromosomes names.  Extends https://stackoverflow.com/a/4836734.
+
+    Includes special handling for C. elegans chromosomes
+    """
+    has_roman_numerals = False
+    romans = ['I', 'II', 'III', 'IV', 'V']
+    if 'I' in l and 'II' in l:
+        has_roman_numerals = True
+        unsorted_list = [str(romans.index(item)) if item in romans else item for item in l]
+    else:
+        unsorted_list = l
+    convert = lambda text: int(text) if text.isdigit() else text.lower()
+    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
+    sorted_list = sorted(unsorted_list, key=alphanum_key)
+
+    if has_roman_numerals:
+        sorted_list = [romans[int(item)] if item.isdigit() else item for item in sorted_list]
+    return sorted_list
+
 # Chromosome or scaffolds.  Needed for NCBI RefSeq, but not Ensembl.
 chrs_by_accession = {}
+
+genes_by_chr = {}
 
 for line in gtf:
     if line[0] == '#':
@@ -105,16 +131,26 @@ for line in gtf:
         gene_name = attrs['gene_name'] if 'gene_name' in attrs else gene_id
         gene_type = attrs['gene_type'] if provider == 'GENCODE' else attrs['gene_biotype']
 
-    gene = [
+    gene = '\t'.join([
         gene_id,
         gene_name,
         chr,
         start,
         stop,
         gene_type
-    ]
-    genes.append('\t'.join(gene))
+    ])
     
+    if chr in genes_by_chr:
+        genes_by_chr[chr].append(gene)
+    else:
+        genes_by_chr[chr] = [gene]
+
+
+sorted_chrs = natural_sort(list(genes_by_chr.keys()))
+
+genes = []
+for chr in sorted_chrs:
+    genes += genes_by_chr[chr]
 genes = '\n'.join(genes)
 
 first_line = gtf[0].strip()
