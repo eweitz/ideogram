@@ -1,4 +1,28 @@
-'''Reduce a GTF file to a simpler, gene-only TSV file
+'''Reduce a GTF file to a simpler gene position TSV file.
+
+This CLI converts a GTF genome annotation file from GENCODE, Ensembl, or NCBI
+into a smaller, simpler, and more metadata-rich TSV gene position ("gene pos")
+file.  The purpose is to speed up, simplify, and enrich downstream pipelines
+that require only data on genes, and not e.g. transcripts or exons.
+
+URLs for example GTF files:
+* Human (Homo sapiens), from GENCODE:
+ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_32/gencode.v32.basic.annotation.gtf.gz
+
+* Mouse (Mus musculus), from GENCODE:
+ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M23/gencode.vM23.basic.annotation.gtf.gz
+
+* Thale cress (Arabidopsis thaliana), from Ensembl:
+ftp://ftp.ensemblgenomes.org/pub/release-45/plants/gtf/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.45.gtf.gz
+
+
+PREREQUISITES
+* GTF file, local and unzipped
+* Python 3
+
+EXAMPLES
+# Convert Arabidopsis GTF to gene position file
+python3 reduce_gtf.py --input_path=/Users/alice/Downloads/Arabidopsis_thaliana.TAIR10.45.gtf --organism="Arabidopsis thaliana"
 '''
 
 import argparse
@@ -27,6 +51,8 @@ genes = []
 provider = 'ncbi'
 if 'Ensembl' in gtf[0]:
     provider = 'GENCODE'
+if 'genome-build' in gtf[0]:
+    provider = 'Ensembl'
 
 # Chromosome or scaffolds.  Needed for NCBI RefSeq, but not Ensembl.
 chrs_by_accession = {}
@@ -47,7 +73,7 @@ for line in gtf:
             split_attr = raw_attr.split('=')
         else:
             split_attr = raw_attr.split()
-        if len(split_attr) == 0: continue
+        if len(split_attr) < 2: continue
         attrs[split_attr[0]] = split_attr[1].strip('"')
 
     if provider == 'ncbi' and feature_type == 'region':
@@ -77,7 +103,7 @@ for line in gtf:
         chr = chr.replace('chr', '')
         gene_id = attrs['gene_id']
         gene_name = attrs['gene_name'] if 'gene_name' in attrs else gene_id
-        gene_type = attrs['gene_type']
+        gene_type = attrs['gene_type'] if provider == 'GENCODE' else attrs['gene_biotype']
 
     gene = [
         gene_id,
@@ -92,12 +118,16 @@ for line in gtf:
 genes = '\n'.join(genes)
 
 first_line = gtf[0].strip()
-assembly = first_line.split('genome (')[1].split(')')[0]
-annotation = first_line.split(', ')[1]
+if provider == 'GENCODE':
+    assembly = first_line.split('genome (')[1].split(')')[0]
+    annotation = first_line.split(', ')[1]
+elif provider == 'Ensembl':
+    assembly = first_line.split('genome-build ')[1]
+    annotation = input_path.split('.')[-2]
 
 headers = [
     [f'# Organism: {organism}; assembly: {assembly}; annotation: {provider} {annotation}'],
-    ['# Gene_ID', 'Gene_name', 'Chromosome', 'Start', 'End', 'Gene_type']
+    ['# Gene_ID', 'Gene_symbol', 'Chromosome', 'Start', 'End', 'Gene_type']
 ]
 
 headers = ['\t'.join(row) for row in headers]
@@ -111,12 +141,3 @@ with open(output_path, 'w') as f:
     f.write(content)
 
 print('Wrote ' + output_path)
-    
-    
-
-
-
-
-
-
-
