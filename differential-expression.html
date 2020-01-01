@@ -83,7 +83,7 @@
     .noUi-marker-horizontal.noUi-marker-large {height: 12px;}
     .noUi-marker .noUi-marker-horizontal .noUi-marker-normal {height: 3px;}
     .noUi-horizontal .noUi-tooltip {bottom: 115%;}
-    .noUi-tooltip {padding-top: 2px; padding-bottom: 0px;}
+    .noUi-tooltip {padding-top: 2px; padding-bottom: 0px; font-size: 12px;}
 
     .inactive .noUi-connect {background: #AAA;}
     .inactive .noUi-tooltip {color: #AAA;}
@@ -149,15 +149,15 @@
       },
       'log2fc': {
         range: {
-          'min': [-4],
-          'max': 4
+          'min': [-1.5],
+          'max': 1.5
         },
-        start: [-4, -1, 1, 4],
-        sliderDecimals: 1,
-        pipDecimals: 0,
+        start: [-1.5, -0.26, 0.26, 1.5],
+        sliderDecimals: 2,
+        pipDecimals: 1,
         connect: [false, true, false, true, false],
-        values: [0, 12.5, 25, 37.5, 50, 62.5, 75, 87.5, 100],
-        density: 4
+        values: [0, 16.7, 34.4, 50, 66.7, 84.4, 100],
+        density: 3
       }
     };
   
@@ -198,7 +198,7 @@
     const metricLabel = metricLabels[metric];
     document.querySelector(`#${comparisonId}`).innerHTML += 
       `<div style="margin-bottom: 115px; margin-left: 15px;">
-        <div style="width: 200px; margin-left: -15px; z-index: 2;">
+        <div style="margin-left: -15px; z-index: 2;">
           <input type="checkbox" class="slider-checkbox" id="slider-checkbox-${sliderId}"/>
           <label for="slider-checkbox-${sliderId}">${metricLabel}</label>
         </div>
@@ -247,7 +247,7 @@
 
     document.querySelector('#facets').innerHTML += `
       <div class="comparison-dropdowns" id="${comparisonId}">
-        <div style="margin-bottom: 30px; width: 200px;"></div>
+        <div style="margin-bottom: 30px;"></div>
       <div>`;
 
     writeComparisonDropdowns();
@@ -270,7 +270,7 @@
     document.querySelector('#summary').innerHTML = 
       `Genomic distribution of differentially expressed <span id="organismName" style="font-style: italic">${metadata.organism}</span> 
       genes, viewed with <a href="https://github.com/eweitz/ideogram">Ideogram.js</a>.
-      Data: NASA GeneLab 
+      NASA GeneLab 
       <a href="https://genelab-data.ndc.nasa.gov/genelab/accession/${acc}/" target="_blank">${acc}</a>, 
       "${window.studyTitle}".`;
 
@@ -450,8 +450,8 @@
 
       if (slider.id.includes('log2fc')) {
         range = range.map(v => {
-          if (v === -4) return -Infinity;
-          if (v === 4) return Infinity;
+          if (v === -1.5) return -Infinity;
+          if (v === 1.5) return Infinity;
           return v;
         })
       }
@@ -577,7 +577,6 @@
     Object.assign(selections, rangeSelections);
 
     counts = ideogram.filterAnnots(selections);
-
     writeCounts(counts);
 
     writeTable(metrics, comparison);
@@ -590,14 +589,23 @@
     fetch(annotationsPath)
       .then(response => response.json())
       .then(rawAnnots => {
+          const numChrs = rawAnnots.annots.length;
+          const ideoWidth = window.outerWidth - 340;
+
+          const chrWidth = 11;
+
+          const calcChrMargin = (ideoWidth/numChrs - chrWidth) - chrWidth*1.8;
+          const maxChrMargin = 50;
+          const chrMargin = calcChrMargin > maxChrMargin ? maxChrMargin : calcChrMargin;
+
           const config = {
             container: '#ideogram-container',
             orientation: 'vertical',
             organism: rawAnnots.metadata.organism, // This is why we need to fetch annots first
             assembly: rawAnnots.metadata.assembly,
             chrHeight: 225,
-            chrWidth: 12,
-            chrMargin: 19,
+            chrWidth: chrWidth,
+            chrMargin: chrMargin,
             annotations: rawAnnots,
             annotationsLayout: 'histogram',
             barWidth: 3,
@@ -646,6 +654,22 @@
     'GLDS-168': {
       assay: 'rna_seq_ERCCnorm_differential_expression',
       studyTitle: 'RR-1 and RR-3 mouse liver transcriptomics with and without ERCC control RNA spike-ins'
+    },
+    'GLDS-188': {
+      assay: 'array_differential_expression',
+      studyTitle: 'Dynamic gene expression response to altered gravity in human T cells (sounding rocket flight)'
+    },
+    'GLDS-37': {
+      assay: 'rna_seq_differential_expression',
+      studyTitle: 'Comparison of the spaceflight transcriptome of four commonly used Arabidopsis thaliana ecotypes'
+    },
+    'GLDS-42': {
+      assay: 'array_differential_expression',
+      studyTitle: 'Expression data from C. elegans'
+    },
+    'GLDS-3': {
+      assay: 'array_differential_expression',
+      studyTitle: 'Drosophila melanogaster gene expression changes after spaceflight'
     }
   }
 
