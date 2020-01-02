@@ -1,7 +1,7 @@
 '''Reduce a GTF file to a simpler gene position TSV file.
 
 This CLI converts a GTF genome annotation file from GENCODE, Ensembl, or NCBI
-into a smaller, simpler, and more metadata-rich TSV gene position ("gene pos")
+into a smaller, simpler, and more metadata-rich TSV gene position ("gen_pos")
 file.  The purpose is to speed up, simplify, and enrich downstream pipelines
 that require only data on genes, and not e.g. transcripts or exons.
 
@@ -17,6 +17,10 @@ ftp://ftp.ensemblgenomes.org/pub/release-45/plants/gtf/arabidopsis_thaliana/Arab
 
 * Worm (Caenorhabditis elegans), from Ensembl:
 ftp://ftp.ensemblgenomes.org/pub/release-45/metazoa/gtf/caenorhabditis_elegans/Caenorhabditis_elegans.WBcel235.45.gtf.gz
+
+
+* Rat (Rattus norvegicus), from Ensembl:
+ftp://ftp.ensembl.org/pub/release-98/gtf/rattus_norvegicus/Rattus_norvegicus.Rnor_6.0.98.chr.gtf.gz
 
 PREREQUISITES
 * GTF file, local and unzipped
