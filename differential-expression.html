@@ -547,11 +547,16 @@
     const table = `<table id="ideogram-annots-table" class="display">${head}</table>`;
     document.querySelector('#table-container').innerHTML = table;
 
+    // Show more rows in each page for larger screens
+    const pageLength = window.outerHeight >= 950 ? 20 : 10;
+
     $('#ideogram-annots-table').DataTable({
+      data: rows,
       dom: 'lBfrtip', // Docs: https://datatables.net/reference/option/dom
       buttons: [{extend: 'csv', text: 'Export'}],
-      data: rows,
       order: [[headers.indexOf(sortKey), 'desc']],
+      pageLength: pageLength,
+      lengthMenu: [10, 20, 50, 100, 500, 1000],
       deferRender: true,
       // columnDefs: [null, null, null, null, {render: }]
       columns: [
@@ -597,6 +602,13 @@
           const calcChrMargin = (ideoWidth/numChrs - chrWidth) - chrWidth*1.8;
           const maxChrMargin = 50;
           const chrMargin = calcChrMargin > maxChrMargin ? maxChrMargin : calcChrMargin;
+
+          // TODO: Make chromosome height responsive to larger screens
+          // const tableHeight = 490;
+          // const headerHeight = 120;
+          // const calcChrHeight = window.outerHeight - tableHeight - headerHeight;
+          // // const maxChrHeight = 225;
+          // // const chrHeight = calcChrHeight > maxChrHeight ? maxChrHeight : calcChrHeight;
 
           const config = {
             container: '#ideogram-container',
