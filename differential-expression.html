@@ -548,7 +548,7 @@
     document.querySelector('#table-container').innerHTML = table;
 
     // Show more rows in each page for larger screens
-    const pageLength = window.outerHeight >= 950 ? 20 : 10;
+    const pageLength = window.outerHeight >= 950 ? 15 : 10;
 
     $('#ideogram-annots-table').DataTable({
       data: rows,
@@ -556,7 +556,7 @@
       buttons: [{extend: 'csv', text: 'Export'}],
       order: [[headers.indexOf(sortKey), 'desc']],
       pageLength: pageLength,
-      lengthMenu: [10, 20, 50, 100, 500, 1000],
+      lengthMenu: [10, 15, 25, 50, 100, 500, 1000],
       deferRender: true,
       // columnDefs: [null, null, null, null, {render: }]
       columns: [
