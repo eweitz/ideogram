@@ -207,7 +207,8 @@ def slug(value):
         .replace(')', '')\
         .replace(' ', '-')\
         .replace('.', '-')\
-        .replace('_', '-')
+        .replace('_', '-')\
+        .replace('&', 'and')
 
 def get_key_labels(keys):
     key_labels = {}
