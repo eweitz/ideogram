@@ -56,6 +56,11 @@
       background: #FFF;
     }
 
+    .comparison-dropdown {
+      max-width: 285px;
+    }
+
+    /* Vertically shortens the 2 in log2(fold change)*/
     sub {
       font-size: 0.83em;
       vertical-align: sub;
@@ -477,7 +482,7 @@
   }
 
   function slug(string) {
-    return string.toLowerCase().replace(/ /g, '-');
+    return string.toLowerCase().replace(/ /g, '-').replace(/\&/g, 'and');
   }
 
   function hyperlinkGene(annot) {
@@ -547,6 +552,7 @@
     const table = `<table id="ideogram-annots-table" class="display">${head}</table>`;
     document.querySelector('#table-container').innerHTML = table;
 
+
     // Show more rows in each page for larger screens
     const screenIsTall = window.innerHeight >= 850;
     const screenIsWide = window.innerWidth >= 1600;
@@ -600,6 +606,28 @@
   }
 
   /**
+  * Returns chromosome margin value that best fits overall ideogram width
+  * 
+  * TODO: Merge this into Ideogram.js library
+  **/
+  function getChrMargin(ideoWidth, numChrs, chrWidth) {
+    var chrMargin;
+    const calcChrMargin = ideoWidth/numChrs - chrWidth - chrWidth * 1.8;
+    const maxChrMargin = 50;
+    const minChrMargin = 13;
+
+    if (minChrMargin <= calcChrMargin && calcChrMargin <= maxChrMargin) {
+      chrMargin = calcChrMargin;
+    } else if (minChrMargin > calcChrMargin) {
+      chrMargin = minChrMargin;
+    } else {
+      chrMargin = maxChrMargin;
+    }
+
+    return chrMargin
+  }
+
+  /**
   * Fetch annotations, then create Ideogram
   **/
   function initIdeogram(annotationsPath) {
@@ -611,10 +639,7 @@
 
           const chrWidth = 11;
 
-          const calcChrMargin = (ideoWidth/numChrs - chrWidth) - chrWidth*1.8;
-          const maxChrMargin = 50;
-          const chrMargin = calcChrMargin > maxChrMargin ? maxChrMargin : calcChrMargin;
-
+          const chrMargin = getChrMargin(ideoWidth, numChrs, chrWidth);
           // TODO: Make chromosome height responsive to larger screens
           // const tableHeight = 490;
           // const headerHeight = 120;
@@ -656,7 +681,7 @@
       return urlParams;
     }
 
-  window.basePath = 'https://www.googleapis.com/storage/v1/b/ideogram/o/nasa%2f';
+  window.basePath = 'https://www.googleapis.com/storage/v1/b/ideogram/o/nasa%2fannots%2f';
   
   window.datasets = {
     'GLDS-21': {
@@ -694,12 +719,29 @@
     'GLDS-3': {
       assay: 'array_differential_expression',
       studyTitle: 'Drosophila melanogaster gene expression changes after spaceflight'
+    },
+    'GLDS-19': {
+      assay: 'array_differential_expression',
+      studyTitle: 'Transcription profiling of rat to study the effect of hindlimb unloading on healing of medial collateral ligaments 3 weeks after injury'
     }
+  }
+
+  window.datasetsByOrganism = {
+    'mus-musculus': 'GLDS-21',
+    'homo-sapiens': 'GLDS-188',
+    'arabidopsis-thaliana': 'GLDS-37',
+    'rattus-norvegicus': 'GLDS-19'
   }
 
   window.urlParams = parseUrlParams();
 
-  window.accession = 'acc' in urlParams ? urlParams.acc : 'GLDS-21';
+  if ('acc' in urlParams) {
+    window.accession = urlParams.acc;
+  } else if ('org' in urlParams) {
+    window.accession = datasetsByOrganism[urlParams.org];
+  } else {
+    window.accession = 'GLDS-21';
+  }
   window.assay = datasets[accession].assay;
   window.studyTitle = datasets[accession].studyTitle;
 
