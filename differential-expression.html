@@ -548,7 +548,19 @@
     document.querySelector('#table-container').innerHTML = table;
 
     // Show more rows in each page for larger screens
-    const pageLength = window.outerHeight >= 950 ? 15 : 10;
+    const screenIsTall = window.innerHeight >= 850;
+    const screenIsWide = window.innerWidth >= 1600;
+    const pageLength = screenIsTall ? 15 : 10;
+    const colWidths = {
+      symbol: 50,
+      geneName: 515,
+      log2fc: 120,
+      adjustedPValue: 115,
+      location: 80
+    }
+    if (screenIsWide) {
+      for (key in colWidths) {colWidths[key] += 5;}
+    }
 
     $('#ideogram-annots-table').DataTable({
       data: rows,
@@ -560,11 +572,11 @@
       deferRender: true,
       // columnDefs: [null, null, null, null, {render: }]
       columns: [
-        {width: '50px'},
-        {width: '515px'},
-        {width: '120px'},
-        {width: '115px', render: {_: 'display', sort: 'sortVal'}},
-        {width: '80px', type: 'genomeorder'}
+        {width: colWidths.symbol},
+        {width: colWidths.geneName},
+        {width: colWidths.log2fc},
+        {width: colWidths.adjustedPValue, render: {_: 'display', sort: 'sortVal'}},
+        {width: colWidths.location, type: 'genomeorder'}
       ]
     });
   }
