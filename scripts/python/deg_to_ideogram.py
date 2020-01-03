@@ -34,10 +34,9 @@ def get_gene_coordinates(gene_pos_path):
         lines = f.readlines()
 
     gene_types = {}
-
     gene_coordinates = {}
-    for line in lines:
 
+    for line in lines:
         if line[0] == '#': continue
 
         # Example line: "AT1G01190	CYP78A8	1	82984	84946	protein_coding"
@@ -128,8 +127,11 @@ def parse_deg_matrix(deg_matrix_path):
             for factor in comparisons_by_factor:
                 comparison_indices = comparisons_by_factor[factor]['indices']
                 gene_stats[factor][gene_symbol] = [row[i] for i in comparison_indices]
+
+    metadata_labels = get_key_labels(metadata_keys)
+    metadata_list = list(metadata_labels.keys())
     
-    return [gene_metadata, metadata_keys, gene_stats, comparisons_by_factor]
+    return [gene_metadata, metadata_list, gene_stats, comparisons_by_factor]
 
 def get_annots_by_chr(gene_coordinates, gene_expressions, gene_types, gene_metadata):
     """Merge coordinates and expressions, return Ideogram annotations
@@ -205,7 +207,8 @@ def slug(value):
         .replace(')', '')\
         .replace(' ', '-')\
         .replace('.', '-')\
-        .replace('_', '-')
+        .replace('_', '-')\
+        .replace('&', 'and')
 
 def get_key_labels(keys):
     key_labels = {}
@@ -230,28 +233,8 @@ def get_metadata(gene_pos_metadata, sorted_gene_types, key_labels):
 
     return metadata
 
-coordinates, gene_types, gene_pos_metadata = get_gene_coordinates(gene_pos_path)
-metadata, metadata_keys, expressions, comparisons_by_factor = parse_deg_matrix(deg_path)
 
-metadata_labels = get_key_labels(metadata_keys)
-metadata_list = list(metadata_labels.keys())
-
-[annots_by_chr_by_factor, sorted_gene_types] =\
-    get_annots_by_chr(coordinates, expressions, gene_types, metadata)
-
-for i, factor in enumerate(annots_by_chr_by_factor):
-    annots_by_chr = annots_by_chr_by_factor[factor]
-
-    comparisons = comparisons_by_factor[factor]['comparisons']
-    comparison_labels = get_key_labels(comparisons)
-    comparison_list = list(comparison_labels.keys())
-
-    keys = ['name', 'start', 'length', 'gene-type'] + metadata_list + comparison_list
-    annots_list = list(annots_by_chr.values())
-    metadata = get_metadata(gene_pos_metadata, sorted_gene_types, comparison_labels)
-    for factor2 in annots_by_chr_by_factor:
-        factor_label = comparisons_by_factor[factor2]['label']
-        metadata['labels'][factor2] = factor_label
+def get_deg_metadata(factor, annots_by_chr_by_factor):
 
     factors = list(annots_by_chr_by_factor.keys())
 
@@ -261,11 +244,14 @@ for i, factor in enumerate(annots_by_chr_by_factor):
         suffix = ''
         other_factor = 'ground-control'
     elif 'flt' in factor and 'rr' not in factor.lower():
-        # Seen in GLDS-168 (e.g. "FLT")
         suffix = ''
-        other_factor = 'bsl-' + split_factor[1]
+        if len(split_factor) > 2:
+            other_factor = '-'.join(split_factor[:2]) + '-gc'
+        else:
+            # Seen in GLDS-242 (e.g. "FLT-C1")
+            other_factor = 'bsl-' + split_factor[1]
     elif factor == 'rr1-flt-wercc':
-        # Seen in GLDS-242 (e.g. "RR1_FLT_wERCC")
+        # Seen in GLDS-168
         other_factor = 'rr1-bsl-wercc'
         suffix = ''
     else:
@@ -277,16 +263,66 @@ for i, factor in enumerate(annots_by_chr_by_factor):
             other_index = factor_index - 1
         other_factor = factors[other_index]
 
-    metadata['deg'] = {
+    deg_metadata = {
         'factors': factors,
         'thisFactor': factor,
         'otherFactor': other_factor
     }
 
+    return deg_metadata, suffix
+
+
+coordinates, gene_types, gene_pos_metadata = get_gene_coordinates(gene_pos_path)
+metadata, metadata_list, expressions, comparisons_by_factor = parse_deg_matrix(deg_path)
+
+[annots_by_chr_by_factor, sorted_gene_types] =\
+    get_annots_by_chr(coordinates, expressions, gene_types, metadata)
+
+content_by_suffix = {}
+
+for i, factor in enumerate(annots_by_chr_by_factor):
+    annots_by_chr = annots_by_chr_by_factor[factor]
+    annots_list = list(annots_by_chr.values())
+
+    comparisons = comparisons_by_factor[factor]['comparisons']
+    comparison_labels = get_key_labels(comparisons)
+    comparison_list = list(comparison_labels.keys())
+
+    keys = ['name', 'start', 'length', 'gene-type'] + metadata_list + comparison_list
+
+    metadata = get_metadata(gene_pos_metadata, sorted_gene_types, comparison_labels)
+    for factor2 in annots_by_chr_by_factor:
+        factor_label = comparisons_by_factor[factor2]['label']
+        metadata['labels'][factor2] = factor_label
+
+    deg_metadata, suffix = get_deg_metadata(factor, annots_by_chr_by_factor)
+
+    metadata['deg'] = deg_metadata
+
     annots = {'keys': keys, 'annots': annots_list, 'metadata': metadata}
 
     annots_json = json.dumps(annots)
+    content_by_suffix[suffix] = annots_json
 
+# Ensure we have a default suffix (indicated by '') so Ideogram can load
+# annotations data given only an accession
+if '' not in content_by_suffix:
+    default_suffix = None
+    print(content_by_suffix.keys())
+    for suffix in content_by_suffix:
+        if 'control' not in suffix:
+            # Try to find a suffix indicating strongest treatment factor
+            default_suffix = suffix
+            break
+    if default_suffix is None:
+        # Fallback; just use the first suffix as default if none found yet
+        first_suffix = list(content_by_suffix.keys())[0]
+        default_suffix = first_suffix
+    content_by_suffix[''] = content_by_suffix[default_suffix]
+    del content_by_suffix[default_suffix]
+
+for suffix in content_by_suffix:
+    annots_json = content_by_suffix[suffix]
     output_filename = deg_path.split('/')[-1].replace('.csv', '') + \
         '_ideogram_annots' + suffix + '.json'
 
