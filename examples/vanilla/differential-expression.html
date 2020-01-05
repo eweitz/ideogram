@@ -212,25 +212,25 @@
   }
 
   /**
-  * Adds dropdown menus for available comparison factors
+  * Adds dropdown menus for available comparison groups
   **/
   function writeComparisonDropdowns() {
     let dropdown1 = [];
     let dropdown2 = [];
     const metadata = ideogram.rawAnnots.metadata
-    const factors = metadata.deg.factors;
-    const factor1Index = factors.indexOf(window.factor1);
-    const factor2Index = factors.indexOf(window.factor2);
+    const groups = metadata.dge.groups;
+    const group1Index = groups.indexOf(window.group1);
+    const group2Index = groups.indexOf(window.group2);
 
-    factors.forEach((factor, i) => {
-      let otherFactor = i < factors.length - 1 ? factors[i + 1] : factors[0];
-      let s1 = (i === factor1Index) ? 'selected' : '';
-      let s2 = (factors.indexOf(otherFactor) === factor2Index) ? 'selected' : '';
-      let factorLabel = metadata.labels[factor]
-      let otherFactorLabel = metadata.labels[otherFactor];
+    groups.forEach((group, i) => {
+      let otherGroup = i < groups.length - 1 ? groups[i + 1] : groups[0];
+      let s1 = (i === group1Index) ? 'selected' : '';
+      let s2 = (groups.indexOf(otherGroup) === group2Index) ? 'selected' : '';
+      let groupLabel = metadata.labels[group];
+      let otherGroupLabel = metadata.labels[otherGroup];
 
-      dropdown1.push(`<option id="option-${factor}" ${s1}>${factorLabel}</option>`);
-      dropdown2.push(`<option id="option-${otherFactor}" ${s2}>${otherFactorLabel}</option>`);
+      dropdown1.push(`<option id="option-${group}" ${s1}>${groupLabel}</option>`);
+      dropdown2.push(`<option id="option-${otherGroup}" ${s2}>${otherGroupLabel}</option>`);
     });
 
     dropdown1 = `<select id="comparison-dropdown-1" class="comparison-dropdown">${dropdown1.join()}</select>`;
@@ -303,12 +303,12 @@
       }
     }
 
-    if (typeof factor1 === 'undefined') {
-      window.factor1 = metadata.deg.thisFactor;
-      window.factor2 = metadata.deg.otherFactor;
+    if (typeof group1 === 'undefined') {
+      window.group1 = metadata.dge.thisGroup;
+      window.group2 = metadata.dge.otherGroup;
     }
 
-    const comparison = window.factor1 + '-v-' + window.factor2;
+    const comparison = window.group1 + '-v-' + window.group2;
     // const comparison = 'flt-c1-v-cc-c1';
     const metrics = ['log2fc', 'adj-p-value'];
     writeSliders(comparison, labels, metrics);
@@ -351,16 +351,16 @@
     // Update annotations upon changing selection in either comparison dropdown
     document.querySelectorAll('.comparison-dropdown').forEach(dropdown => {
       dropdown.addEventListener('change', function() {
-        window.factor1 =
+        window.group1 =
           slug(document.querySelector('#comparison-dropdown-1').value).replace(/_/g, '-');
-        window.factor2 =
+        window.group2 =
           slug(document.querySelector('#comparison-dropdown-2').value).replace(/_/g, '-');
-        if (factor1 === factor2) return;
+        if (group1 === group2) return;
         if (
           this.id === 'comparison-dropdown-1' ||
-          factor1 !== ideogram.rawAnnots.metadata.deg.thisFactor
+          group1 !== ideogram.rawAnnots.metadata.dge.thisGroup
         ) {
-          initIdeogram(baseAnnotsPath + '_' + window.factor1 + '.json?alt=media');
+          initIdeogram(baseAnnotsPath + '_' + window.group1 + '.json?alt=media');
         } else {
           writeFacets();
         }
@@ -745,9 +745,9 @@
   window.assay = datasets[accession].assay;
   window.studyTitle = datasets[accession].studyTitle;
 
-  window.factor = '';
+  window.group = '';
   window.baseAnnotsPath = `${basePath}${accession}_${assay}_ideogram_annots`;
-  window.annotsPath = `${baseAnnotsPath}${factor}.json?alt=media`;
+  window.annotsPath = `${baseAnnotsPath}${group}.json?alt=media`;
 
   initIdeogram(annotsPath);
 

@@ -1,12 +1,12 @@
-'''Convert differentially expressed gene (DEG) matrix into Ideogram annotations
+'''Convert differential gene expression (DGE) matrix into Ideogram annotations
 
-This pipeline converts a DEG matrix file containing gene expression summary
+This pipeline converts a DGE matrix file containing gene expression summary
 statistics into an Ideogram.js annotations JSON file.  The resulting JSON file
 is used for exploratory data analysis as demonstrated at:
 
 https://eweitz.github.io/ideogram/differential-expression
 
-The DEG matrix has several groups of columns, with headers ordered like so:
+The DGE matrix has several groups of columns, with headers ordered like so:
 
 * metadata: "REFSEQ","SYMBOL","GENENAME","ENSEMBL","ENTREZID","STRING_id","GOSLIM_IDS"
 * replicates: <sample_prefix>-<group>-<replicate_number>, e.g. "Mmus-C57-6T-TMS-FLT-Rep1"
@@ -15,7 +15,7 @@ The DEG matrix has several groups of columns, with headers ordered like so:
 * stats_by_comparison: <stat>_(<group1>)v(<group2>), e.g. "Log2fc_(Ground Control)v(Space Flight)"
 
 Example call:
-python3 deg_to_ideogram.py --gen-pos-path TODO --deg-path TODO
+python3 dge_to_ideogram.py --gen-pos-path TODO --dge-path TODO
 '''
 
 import argparse
@@ -27,15 +27,15 @@ parser = argparse.ArgumentParser(
     formatter_class=argparse.RawDescriptionHelpFormatter)
 parser.add_argument('--gen-pos-path',
                     help='Path to input gene position file built by reduce_gtf.py')
-parser.add_argument('--deg-path',
-                    help='Path to input differentially expressed gene (DEG) matrix')
+parser.add_argument('--dge-path',
+                    help='Path to input differential gene expression (DGE) matrix')
 parser.add_argument('--output-dir',
                     help='Directory to send output data to',
                     default='ideogram/data/annotations/')
 
 args = parser.parse_args()
 gene_pos_path = args.gen_pos_path
-deg_path = args.deg_path
+dge_path = args.dge_path
 output_dir = args.output_dir
 
 if output_dir[-1] != '/':
@@ -118,14 +118,14 @@ def get_comparisons(headers):
 
     return comparisons_by_group
 
-def parse_deg_matrix(deg_matrix_path):
-    """Get gene metadata and expression values from DEG matrix
+def parse_dge_matrix(dge_matrix_path):
+    """Get gene metadata and expression values from DGE matrix
     """
 
     gene_stats = {}
     gene_metadata = {}
 
-    with open(deg_matrix_path, newline='') as f:
+    with open(dge_matrix_path, newline='') as f:
         reader = csv.reader(f)
 
         headers = next(reader, None)
@@ -245,7 +245,7 @@ def get_metadata(gene_pos_metadata, sorted_gene_types, key_labels):
     return metadata
 
 
-def get_deg_metadata(group, annots_by_chr_by_group):
+def get_dge_metadata(group, annots_by_chr_by_group):
 
     groups = list(annots_by_chr_by_group.keys())
 
@@ -274,17 +274,17 @@ def get_deg_metadata(group, annots_by_chr_by_group):
             other_index = group_index - 1
         other_group = groups[other_index]
 
-    deg_metadata = {
+    dge_metadata = {
         'groups': groups,
         'thisgroup': group,
         'othergroup': other_group
     }
 
-    return deg_metadata, suffix
+    return dge_metadata, suffix
 
 
 coordinates, gene_types, gene_pos_metadata = get_gene_coordinates(gene_pos_path)
-metadata, metadata_list, expressions, comparisons_by_group = parse_deg_matrix(deg_path)
+metadata, metadata_list, expressions, comparisons_by_group = parse_dge_matrix(dge_path)
 
 [annots_by_chr_by_group, sorted_gene_types] =\
     get_annots_by_chr(coordinates, expressions, gene_types, metadata)
@@ -306,9 +306,9 @@ for i, group in enumerate(annots_by_chr_by_group):
         group_label = comparisons_by_group[group2]['label']
         metadata['labels'][group2] = group_label
 
-    deg_metadata, suffix = get_deg_metadata(group, annots_by_chr_by_group)
+    dge_metadata, suffix = get_dge_metadata(group, annots_by_chr_by_group)
 
-    metadata['deg'] = deg_metadata
+    metadata['dge'] = dge_metadata
 
     annots = {'keys': keys, 'annots': annots_list, 'metadata': metadata}
 
@@ -334,7 +334,7 @@ if '' not in content_by_suffix:
 
 for suffix in content_by_suffix:
     annots_json = content_by_suffix[suffix]
-    output_filename = deg_path.split('/')[-1].replace('.csv', '') + \
+    output_filename = dge_path.split('/')[-1].replace('.csv', '') + \
         '_ideogram_annots' + suffix + '.json'
 
     output_path = output_dir + output_filename
