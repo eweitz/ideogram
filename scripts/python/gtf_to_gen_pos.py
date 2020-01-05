@@ -27,7 +27,7 @@ PREREQUISITES
 
 EXAMPLES
 # Convert Arabidopsis GTF to gene position file
-python3 reduce_gtf.py --input_path=/Users/alice/Downloads/Arabidopsis_thaliana.TAIR10.45.gtf --organism="Arabidopsis thaliana"
+python3 reduce_gtf.py --gtf-path=/Users/alice/Downloads/Arabidopsis_thaliana.TAIR10.45.gtf --organism="Arabidopsis thaliana"
 '''
 
 import argparse
@@ -36,20 +36,20 @@ import re
 parser = argparse.ArgumentParser(
     description=__doc__,
     formatter_class=argparse.RawDescriptionHelpFormatter)
-parser.add_argument('--input_path',
+parser.add_argument('--gtf-path',
                     help='Path to input GTF file')
 parser.add_argument('--organism',
                     help='Scientific name of organism (e.g. Mus musculus)')
-parser.add_argument('--output_dir',
+parser.add_argument('--output-dir',
                     help='Directory to send output data to',
                     default='../../data/annotations/')
 
 args = parser.parse_args()
 organism = args.organism
-input_path = args.input_path
+gtf_path = args.gtf_path
 output_dir = args.output_dir
 
-with open(input_path) as f:
+with open(gtf_path) as f:
     gtf = f.readlines()
 
 genes = []
@@ -162,7 +162,7 @@ if provider == 'GENCODE':
     annotation = first_line.split(', ')[1]
 elif provider == 'Ensembl':
     assembly = first_line.split('genome-build ')[1]
-    annotation = input_path.split('.')[-2]
+    annotation = gtf_path.split('.')[-2]
 
 headers = [
     [f'# Organism: {organism}; assembly: {assembly}; annotation: {provider} {annotation}'],
@@ -174,7 +174,7 @@ headers = '\n'.join(headers) + '\n'
 
 content = headers + genes
 
-output_filename = input_path.split('/')[-1].replace('.gtf', '.tsv').replace('.gff', '.tsv')
+output_filename = gtf_path.split('/')[-1].replace('.gtf', '.tsv').replace('.gff', '.tsv')
 output_path = output_dir + 'gen_pos_' + output_filename
 with open(output_path, 'w') as f:
     f.write(content)
