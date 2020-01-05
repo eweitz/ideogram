@@ -22,22 +22,23 @@ ftp://ftp.ensemblgenomes.org/pub/release-45/metazoa/gtf/caenorhabditis_elegans/C
 ftp://ftp.ensembl.org/pub/release-98/gtf/rattus_norvegicus/Rattus_norvegicus.Rnor_6.0.98.chr.gtf.gz
 
 PREREQUISITES
-* GTF file, local and unzipped
+* GTF file, local and gzipped
 * Python 3
 
 EXAMPLES
 # Convert Arabidopsis GTF to gene position file
-python3 reduce_gtf.py --gtf-path=/Users/alice/Downloads/Arabidopsis_thaliana.TAIR10.45.gtf --organism="Arabidopsis thaliana"
+python3 gtf_to_gen_pos.py --gtf-path=/Users/alice/Downloads/Arabidopsis_thaliana.TAIR10.45.gtf.gz --organism="Arabidopsis thaliana"
 '''
 
 import argparse
+import gzip
 import re
 
 parser = argparse.ArgumentParser(
     description=__doc__,
     formatter_class=argparse.RawDescriptionHelpFormatter)
 parser.add_argument('--gtf-path',
-                    help='Path to input GTF file')
+                    help='Path to input gzipped GTF file')
 parser.add_argument('--organism',
                     help='Scientific name of organism (e.g. Mus musculus)')
 parser.add_argument('--output-dir',
@@ -49,7 +50,7 @@ organism = args.organism
 gtf_path = args.gtf_path
 output_dir = args.output_dir
 
-with open(gtf_path) as f:
+with gzip.open(gtf_path, mode='rt') as f:
     gtf = f.readlines()
 
 genes = []
@@ -174,7 +175,7 @@ headers = '\n'.join(headers) + '\n'
 
 content = headers + genes
 
-output_filename = gtf_path.split('/')[-1].replace('.gtf', '.tsv').replace('.gff', '.tsv')
+output_filename = gtf_path.split('/')[-1].replace('.gtf.gz', '.tsv').replace('.gff', '.tsv')
 output_path = output_dir + 'gen_pos_' + output_filename
 with open(output_path, 'w') as f:
     f.write(content)
