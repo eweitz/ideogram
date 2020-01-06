@@ -276,8 +276,8 @@ def get_dge_metadata(group, annots_by_chr_by_group):
 
     dge_metadata = {
         'groups': groups,
-        'thisgroup': group,
-        'othergroup': other_group
+        'thisGroup': group,
+        'otherGroup': other_group
     }
 
     return dge_metadata, suffix

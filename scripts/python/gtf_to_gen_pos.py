@@ -135,14 +135,7 @@ for line in gtf:
         gene_name = attrs['gene_name'] if 'gene_name' in attrs else gene_id
         gene_type = attrs['gene_type'] if provider == 'GENCODE' else attrs['gene_biotype']
 
-    gene = '\t'.join([
-        gene_id,
-        gene_name,
-        chr,
-        start,
-        stop,
-        gene_type
-    ])
+    gene = '\t'.join([gene_id, gene_name, chr, start, stop, gene_type])
     
     if chr in genes_by_chr:
         genes_by_chr[chr].append(gene)
@@ -160,13 +153,15 @@ genes = '\n'.join(genes)
 first_line = gtf[0].strip()
 if provider == 'GENCODE':
     assembly = first_line.split('genome (')[1].split(')')[0]
-    annotation = first_line.split(', ')[1]
 elif provider == 'Ensembl':
     assembly = first_line.split('genome-build ')[1]
-    annotation = gtf_path.split('.')[-2]
+
+original_gtf_file = gtf_path.split('/')[-1]
+
+annotation = f'{provider} {original_gtf_file}'
 
 headers = [
-    [f'# Organism: {organism}; assembly: {assembly}; annotation: {provider} {annotation}'],
+    [f'# Organism: {organism}; assembly: {assembly}; annotation: {annotation}'],
     ['# Gene_ID', 'Gene_symbol', 'Chromosome', 'Start', 'End', 'Gene_type']
 ]
 
@@ -175,8 +170,7 @@ headers = '\n'.join(headers) + '\n'
 
 content = headers + genes
 
-output_filename = gtf_path.split('/')[-1].replace('.gtf.gz', '.tsv').replace('.gff', '.tsv')
-output_path = output_dir + 'gen_pos_' + output_filename
+output_path = output_dir + organism.replace(' ', '_') + '.gen_pos.tsv'
 with open(output_path, 'w') as f:
     f.write(content)
 
