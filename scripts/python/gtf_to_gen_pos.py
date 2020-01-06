@@ -18,39 +18,39 @@ ftp://ftp.ensemblgenomes.org/pub/release-45/plants/gtf/arabidopsis_thaliana/Arab
 * Worm (Caenorhabditis elegans), from Ensembl:
 ftp://ftp.ensemblgenomes.org/pub/release-45/metazoa/gtf/caenorhabditis_elegans/Caenorhabditis_elegans.WBcel235.45.gtf.gz
 
-
 * Rat (Rattus norvegicus), from Ensembl:
 ftp://ftp.ensembl.org/pub/release-98/gtf/rattus_norvegicus/Rattus_norvegicus.Rnor_6.0.98.chr.gtf.gz
 
 PREREQUISITES
-* GTF file, local and unzipped
+* GTF file, local and gzipped
 * Python 3
 
 EXAMPLES
 # Convert Arabidopsis GTF to gene position file
-python3 reduce_gtf.py --input_path=/Users/alice/Downloads/Arabidopsis_thaliana.TAIR10.45.gtf --organism="Arabidopsis thaliana"
+python3 gtf_to_gen_pos.py --gtf-path=/Users/alice/Downloads/Arabidopsis_thaliana.TAIR10.45.gtf.gz --organism="Arabidopsis thaliana"
 '''
 
 import argparse
+import gzip
 import re
 
 parser = argparse.ArgumentParser(
     description=__doc__,
     formatter_class=argparse.RawDescriptionHelpFormatter)
-parser.add_argument('--input_path',
-                    help='Path to input GTF file')
+parser.add_argument('--gtf-path',
+                    help='Path to input gzipped GTF file')
 parser.add_argument('--organism',
                     help='Scientific name of organism (e.g. Mus musculus)')
-parser.add_argument('--output_dir',
+parser.add_argument('--output-dir',
                     help='Directory to send output data to',
                     default='../../data/annotations/')
 
 args = parser.parse_args()
 organism = args.organism
-input_path = args.input_path
+gtf_path = args.gtf_path
 output_dir = args.output_dir
 
-with open(input_path) as f:
+with gzip.open(gtf_path, mode='rt') as f:
     gtf = f.readlines()
 
 genes = []
@@ -135,14 +135,7 @@ for line in gtf:
         gene_name = attrs['gene_name'] if 'gene_name' in attrs else gene_id
         gene_type = attrs['gene_type'] if provider == 'GENCODE' else attrs['gene_biotype']
 
-    gene = '\t'.join([
-        gene_id,
-        gene_name,
-        chr,
-        start,
-        stop,
-        gene_type
-    ])
+    gene = '\t'.join([gene_id, gene_name, chr, start, stop, gene_type])
     
     if chr in genes_by_chr:
         genes_by_chr[chr].append(gene)
@@ -160,13 +153,15 @@ genes = '\n'.join(genes)
 first_line = gtf[0].strip()
 if provider == 'GENCODE':
     assembly = first_line.split('genome (')[1].split(')')[0]
-    annotation = first_line.split(', ')[1]
 elif provider == 'Ensembl':
     assembly = first_line.split('genome-build ')[1]
-    annotation = input_path.split('.')[-2]
+
+original_gtf_file = gtf_path.split('/')[-1]
+
+annotation = f'{provider} {original_gtf_file}'
 
 headers = [
-    [f'# Organism: {organism}; assembly: {assembly}; annotation: {provider} {annotation}'],
+    [f'# Organism: {organism}; assembly: {assembly}; annotation: {annotation}'],
     ['# Gene_ID', 'Gene_symbol', 'Chromosome', 'Start', 'End', 'Gene_type']
 ]
 
@@ -175,8 +170,7 @@ headers = '\n'.join(headers) + '\n'
 
 content = headers + genes
 
-output_filename = input_path.split('/')[-1].replace('.gtf', '.tsv').replace('.gff', '.tsv')
-output_path = output_dir + 'gen_pos_' + output_filename
+output_path = output_dir + organism.replace(' ', '_') + '.gen_pos.tsv'
 with open(output_path, 'w') as f:
     f.write(content)
 
