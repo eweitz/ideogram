@@ -15,7 +15,7 @@ The DGE matrix has several groups of columns, with headers ordered like so:
 * stats_by_comparison: <stat>_(<group1>)v(<group2>), e.g. "Log2fc_(Ground Control)v(Space Flight)"
 
 Example call:
-python3 dge_to_ideogram.py --gen-pos-path TODO --dge-path TODO
+python3 dge_to_ideogram.py --gen-pos-path Mus_musculus.gen_pos.tsv --dge-path GLDS-21_array_differential_expression.csv
 '''
 
 import argparse
