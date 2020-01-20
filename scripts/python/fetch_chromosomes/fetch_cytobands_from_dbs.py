@@ -93,6 +93,18 @@ if os.path.exists(cache_dir) is False:
 
 def patch_telomeres(bands_by_chr):
     """Account for special case with Drosophila melanogaster
+
+    TODO: Per https://github.com/eweitz/ideogram/issues/189, excise these lines:
+
+        * (1) "X q pter 1 10976635 1 10976635 gpos"
+        * (2) "2R q pter 1 4460914 1 4460914 gpos"
+        * (3) "3R q pter 1 30597427 1 30597427 gpos"
+
+    And report data problem to NCBI.
+
+    Before reporting bug, investigate possibility that above 'pter' issues could
+    be due to an erroneous start coordinate of 1.  Look at linked GitHub issue;
+    the large black band ends near where one could envision a centromere.
     """
     for chr in bands_by_chr:
         first_band = bands_by_chr[chr][0]
