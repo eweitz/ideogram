@@ -122,6 +122,7 @@
     <div id="table-container"></div>
   </div>
   
+
   <script type="text/javascript">
 
   const d3 = Ideogram.d3;
@@ -260,6 +261,18 @@
     metrics.forEach((metric, i) => writeSliderContainer(metric, i, comparisonId));
   }
 
+  function getSummary(metadata) {
+    
+    const intro = `Genomic distribution of differentially expressed <span id="organismName" style="font-style: italic">${metadata.organism}</span> genes, viewed with <a href="https://github.com/eweitz/ideogram">Ideogram.js</a>.`;
+    if ('annots-url' in urlParams) {
+      return intro;
+    } else {
+      const acc = window.accession;
+      return `${intro} NASA GeneLab <a href="https://genelab-data.ndc.nasa.gov/genelab/accession/${acc}/" target="_blank">${acc}</a>, 
+      "${window.studyTitle}".`;
+    }
+  }
+
   /**
   * Adds facets, i.e. groups of filters, to query Ideogram annotations
   **/
@@ -270,14 +283,7 @@
 
     document.querySelector('#facets').innerHTML = '';
 
-    const acc = window.accession;
-
-    document.querySelector('#summary').innerHTML = 
-      `Genomic distribution of differentially expressed <span id="organismName" style="font-style: italic">${metadata.organism}</span> 
-      genes, viewed with <a href="https://github.com/eweitz/ideogram">Ideogram.js</a>.
-      NASA GeneLab 
-      <a href="https://genelab-data.ndc.nasa.gov/genelab/accession/${acc}/" target="_blank">${acc}</a>, 
-      "${window.studyTitle}".`;
+    document.querySelector('#summary').innerHTML = getSummary(metadata);
 
     // Build category facets
     for (const key in labels) {
@@ -735,19 +741,28 @@
 
   window.urlParams = parseUrlParams();
 
-  if ('acc' in urlParams) {
-    window.accession = urlParams.acc;
-  } else if ('org' in urlParams) {
-    window.accession = datasetsByOrganism[urlParams.org];
-  } else {
-    window.accession = 'GLDS-21';
-  }
-  window.assay = datasets[accession].assay;
-  window.studyTitle = datasets[accession].studyTitle;
-
   window.group = '';
-  window.baseAnnotsPath = `${basePath}${accession}_${assay}_ideogram_annots`;
-  window.annotsPath = `${baseAnnotsPath}${group}.json?alt=media`;
+
+  if ('annots-url' in urlParams) {
+    // e.g. 'https://www.googleapis.com/storage/v1/b/degenome/o/GLDS-4_array_differential_expression_ideogram_annots.json';
+    window.assay = 'array_differential_expression';
+    window.studyTitle = '';
+    window.annotsPath = urlParams['annots-url'] + '?alt=media';
+    window.baseAnnotsPath = annotsPath.split('ideogram_annots')[0] + 'ideogram_annots';
+  } else {
+    if ('acc' in urlParams) {
+      window.accession = urlParams.acc;
+    } else if ('org' in urlParams) {
+      window.accession = datasetsByOrganism[urlParams.org];
+    } else {
+      window.accession = 'GLDS-21';
+    }
+    window.assay = datasets[accession].assay;
+    window.studyTitle = datasets[accession].studyTitle;
+
+    window.baseAnnotsPath = `${basePath}${accession}_${assay}_ideogram_annots`;
+    window.annotsPath = `${baseAnnotsPath}${group}.json?alt=media`;
+  }
 
   initIdeogram(annotsPath);
 
