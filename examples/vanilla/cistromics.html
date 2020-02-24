@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Cistromics across the genome: SIN3A | Ideogram</title>
+  <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
+  <link href="https://cdn.jsdelivr.net/npm/nouislider@14.1.0/distribute/nouislider.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.6.1/css/buttons.dataTables.min.css">
+  <!-- <link href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.dataTables.min.css" rel="stylesheet"> -->
+
+  <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/datatables.net@1.10.20/js/jquery.dataTables.min.js"></script>
+  <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/dataTables.buttons.min.js"></script>
+	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jszip@3.2.2/dist/jszip.min.js"></script>
+	<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.html5.min.js"></script>
+  <!-- <script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script> -->
+  <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/c3@0.7.11"></script> -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/nouislider@14.1.0"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/wnumb@1.2.0/wNumb.min.js"></script>
+
+  <style>
+    body {font: 16px Arial; line-height: 19.6px; padding: 0 15px;}
+    a, a:visited {text-decoration: none;}
+    a:hover {text-decoration: underline;}
+    a, a:hover, a:visited, a:active {color: #0366d6;}
+  </style>
+  <style>
+    select {font: 14px Arial;}
+    
+    ul {
+      list-style: none;
+      padding-left: 10px;
+    }
+
+    #summary {margin-bottom: 20px;}
+
+    #ideogram-container {margin-top: -20px;}
+
+    li {padding: 2px 0;}
+    li.hidden {display: none;}
+
+    input {margin-right: 5px;}
+
+    #gene-type {padding-left: 30px;}
+
+    #left-content {
+      float: left;
+      padding-right: 30px;
+      border-right: 1px solid #EEE;
+      margin-right: 15px;
+      width: 275px;
+    }
+
+    .category-facet li {
+      background: #FFF;
+    }
+
+    .comparison-dropdown {
+      max-width: 285px;
+    }
+
+    /* Vertically shortens the 2 in log2(fold change)*/
+    sub {
+      font-size: 0.83em;
+      vertical-align: sub;
+      line-height: 0;
+    }
+
+    #table-container {
+      position: absolute;
+      left: 324px;
+      margin-left: 5px;
+      border-top: 1px solid #EEE;
+      padding-top: 10px;
+    }
+
+    .dataTables_length {margin-left: 10px;}
+
+    table.dataTable tbody td {padding: 2px 10px;}
+    table.dataTable thead th {padding: 8px 18px 4px 18px;}
+
+    .noUi-value-horizontal {transform: translate(-50%, 70%);}
+    .noUi-horizontal {height: 12px;}
+    .noUi-horizontal .noUi-handle {width: 20px; right: -10px; height: 22px; top: -6px;}
+    .noUi-handle:before, .noUi-handle:before {left: 7px; top: 3px;}
+    .noUi-handle:after, .noUi-handle:after {left: 10px; top: 3px;}
+    .noUi-marker-horizontal.noUi-marker-large {height: 12px;}
+    .noUi-marker .noUi-marker-horizontal .noUi-marker-normal {height: 3px;}
+    .noUi-horizontal .noUi-tooltip {bottom: 115%;}
+    .noUi-tooltip {padding-top: 2px; padding-bottom: 0px; font-size: 12px;}
+
+    .inactive .noUi-connect {background: #AAA;}
+    .inactive .noUi-tooltip {color: #AAA;}
+
+    #table-container .dt-button {
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 20px;
+      top: -1px;
+    }
+
+    #table-container .paginate_button {padding: 3px 9px;}
+    #table-container .dataTables_info {padding-top: 0.3em;}
+    #table-container .dataTables_paginate {margin-right: 10px;}
+    #table-container table.dataTable thead th {padding-top: 4px;}
+  </style>
+</head>
+<body>
+  <h1>Cistromics across the genome: SIN3A | Ideogram</h1>
+  <div id="summary"></div>
+  <div id="left-content">
+    <div id="facets" style="z-index: 9999;"></div>
+  </div>
+  <div id="content">
+    <div id="ideogram-container"></div>
+    <div id="table-container"></div>
+  </div>
+  
+
+  <script type="text/javascript">
+
+  const d3 = Ideogram.d3;
+
+  const metricLabels = {
+    'log2fc': 'log<sub>2</sub>(fold change)',
+    'adj-p-value': 'Binding score'
+  }
+
+  /**
+  * Provides "noUiSlider" configuration object for the given metric
+  * 
+  * noUiSlider docs: https://refreshless.com/nouislider/
+  **/
+  function getSliderConfig(metric) {
+
+    const props = {
+      'adj-p-value': {
+        range: {
+          'min': [0],
+          'max': 3000
+        },
+        start: [0, 3000],
+        sliderDecimals: 0,
+        pipDecimals: 0,
+        connect: true,
+        values: [0, 1000, 2000, 3000],
+        density: 4
+      },
+      'log2fc': {
+        range: {
+          'min': [-1.5],
+          'max': 1.5
+        },
+        start: [-1.5, -0.26, 0.26, 1.5],
+        sliderDecimals: 2,
+        pipDecimals: 1,
+        connect: [false, true, false, true, false],
+        values: [0, 16.7, 34.4, 50, 66.7, 84.4, 100],
+        density: 3
+      }
+    };
+  
+    const pipDecimals = wNumb({ decimals: props[metric].pipDecimals });
+
+    const sliderDecimals = wNumb({ decimals: props[metric].sliderDecimals });
+
+    return {
+      range: props[metric].range,
+
+      // Handles start at ...
+      start: props[metric].start,
+
+      connect: props[metric].connect,
+
+      // Move handle on tap, bars are draggable
+      behaviour: 'tap-drag',
+      tooltips: true,
+      format: sliderDecimals,
+
+      // Show a scale with the slider
+      pips: {
+        mode: 'positions',
+        values: props[metric].values,
+        stepped: true,
+        density: props[metric].density,
+        format: pipDecimals
+      }
+    }
+  }
+
+  /**
+  * Adds slider widget for a numerical metric
+  **/
+  function writeSliderContainer(metric, i, comparisonId) {
+    const metricId = metric.replace(/\./g, '');
+    const sliderId = metricId + '-' + comparisonId;
+    const metricLabel = metricLabels[metric];
+    document.querySelector(`#${comparisonId}`).innerHTML += 
+      `<div style="margin-bottom: 115px; margin-left: 15px;">
+        <div style="margin-left: -15px; z-index: 2;">
+          <input type="checkbox" class="slider-checkbox" id="slider-checkbox-${sliderId}"/>
+          <label for="slider-checkbox-${sliderId}">${metricLabel}</label>
+        </div>
+        <div id="${sliderId}" class="ideogramSlider" style="top: 40px"></div>
+      </div>`;
+  }
+
+  /**
+  * Adds dropdown menus for available comparison groups
+  **/
+  function writeComparisonDropdowns() {
+    let dropdown1 = [];
+    let dropdown2 = [];
+    const metadata = ideogram.rawAnnots.metadata
+    const groups = metadata.dge.groups;
+    const group1Index = groups.indexOf(window.group1);
+    const group2Index = groups.indexOf(window.group2);
+
+    groups.forEach((group, i) => {
+      let otherGroup = i < groups.length - 1 ? groups[i + 1] : groups[0];
+      let s1 = (i === group1Index) ? 'selected' : '';
+      let s2 = (groups.indexOf(otherGroup) === group2Index) ? 'selected' : '';
+      let groupLabel = metadata.labels[group];
+      let otherGroupLabel = metadata.labels[otherGroup];
+
+      dropdown1.push(`<option id="option-${group}" ${s1}>${groupLabel}</option>`);
+      dropdown2.push(`<option id="option-${otherGroup}" ${s2}>${otherGroupLabel}</option>`);
+    });
+
+    dropdown1 = `<select id="comparison-dropdown-1" class="comparison-dropdown">${dropdown1.join()}</select>`;
+    dropdown2 = `<select id="comparison-dropdown-2" class="comparison-dropdown">${dropdown2.join()}</select>`;
+
+    document.querySelector('.comparison-dropdowns > div').innerHTML +=
+      dropdown1 + ' <div style="padding: 4px 2px;">compared to</div> ' + dropdown2;
+  }
+
+  /**
+  * Adds slider widgets for all numerical metrics in this comparison
+  */
+  function writeSliders(comparison, labels, metrics) {
+    const comparisonLabel = labels[`log2fc-${comparison}`].replace('Log2fc_', '');
+    const comparisonId = comparison.toLowerCase().replace(/[()\s]/g, '');
+    
+    let prevDiv = document.querySelector('.comparison-dropdowns > div');
+    if (prevDiv !== null) prevDiv.innerHTML = ''; // clear any previous content
+
+    document.querySelector('#facets').innerHTML += `
+      <div class="comparison-dropdowns" id="${comparisonId}">
+        <div style="margin-bottom: 30px;"></div>
+      <div>`;
+
+    writeComparisonDropdowns();
+
+    metrics.forEach((metric, i) => writeSliderContainer(metric, i, comparisonId));
+  }
+
+  function getSummary(metadata) {
+    
+    const intro = `Genomic distribution of <span id="organismName" style="font-style: italic">${metadata.organism}</span> transcription factors, promoters, and candidate binding sites, using data from SPP and GeneLab and viewed with <a href="https://github.com/eweitz/ideogram">Ideogram.js</a>.`;
+    if ('annots-url' in urlParams) {
+      return intro;
+    } else {
+      const acc = window.accession;
+      return `${intro} NASA GeneLab <a href="https://genelab-data.ndc.nasa.gov/genelab/accession/${acc}/" target="_blank">${acc}</a>.`;
+    }
+  }
+
+  /**
+  * Adds facets, i.e. groups of filters, to query Ideogram annotations
+  **/
+  function writeFacets() {
+    const metadata = ideogram.rawAnnots.metadata;
+    const labels = metadata.labels;
+    let filters = [];
+
+    document.querySelector('#facets').innerHTML = '';
+
+    document.querySelector('#summary').innerHTML = getSummary(metadata);
+
+    // Build category facets
+    for (const key in labels) {
+      if (Array.isArray(labels[key])) {
+        var editedKey = key[0].toUpperCase() + key.slice(1).replace(/-/g, ' ')
+        filters.push(editedKey);
+        labels[key].forEach((label, i) => {
+          const editedLabel = label[0].toUpperCase() + label.slice(1).replace(/-/g, ' ')
+          const lowerLabel = label.toLowerCase();
+          const filterID = `filter_${key}_${label}`;
+          const toggleClass = i >= 5 ? 'hidden' : '';
+          const filter = `<li class="${toggleClass}">
+            <label for="${filterID}">
+              <input type="checkbox" id="${filterID}">${label}</input>
+            <span class="count"></span>
+            </label>
+          </li>`;
+          filters.push(filter);
+        });
+        if (filters.length >= 5) {
+          filters.push('<a href="#" class="facet-toggler">More...</a>');
+        }
+      }
+    }
+
+    if (typeof group1 === 'undefined') {
+      window.group1 = metadata.dge.thisGroup;
+      window.group2 = metadata.dge.otherGroup;
+    }
+
+    const comparison = window.group1 + '-v-' + window.group2;
+    // const comparison = 'flt-c1-v-cc-c1';
+    const metrics = ['log2fc', 'adj-p-value'];
+    writeSliders(comparison, labels, metrics);
+
+    filters = '<ul class="category-facet">' + filters.join('\n') + '</ul>';
+    document.querySelector('#facets').innerHTML += filters;
+
+    // Filter genes upon clicking a category filter or slider checkbox
+    d3.selectAll('input').on('click', function() {
+      filterGenes(metrics, comparison);
+    });
+
+    // Toggle "More..." and "Less..." for category facet upon click
+    d3.selectAll('.facet-toggler').on('click', function() {
+      if (this.text === 'More...') {
+        var hiddenItems = document.querySelectorAll('li.hidden');
+        hiddenItems.forEach(item => item.classList.remove('hidden'));
+        this.text = 'Less...';
+      } else {
+        var extraItems = document.querySelectorAll('li:nth-child(n+6)');
+        extraItems.forEach(item => item.classList.add('hidden'));
+        this.text = 'More...';
+      }
+    });
+
+    // Toggle slider color upon changing slider checkbox
+    document.querySelectorAll('.slider-checkbox').forEach(checkbox => {
+      checkbox.addEventListener('change', function() {
+        const sliderId = this.id.replace('slider-checkbox-', '');
+        let slider = document.querySelector(`#${sliderId}`);
+        if (this.checked) {
+          slider.classList.remove('inactive');
+        } else {
+          slider.classList.add('inactive');
+        }
+      });
+    });
+
+
+    // Update annotations upon changing selection in either comparison dropdown
+    document.querySelectorAll('.comparison-dropdown').forEach(dropdown => {
+      dropdown.addEventListener('change', function() {
+        window.group1 =
+          slug(document.querySelector('#comparison-dropdown-1').value).replace(/_/g, '-');
+        window.group2 =
+          slug(document.querySelector('#comparison-dropdown-2').value).replace(/_/g, '-');
+        if (group1 === group2) return;
+        if (
+          this.id === 'comparison-dropdown-1' ||
+          group1 !== ideogram.rawAnnots.metadata.dge.thisGroup
+        ) {
+          initIdeogram(baseAnnotsPath + '_' + window.group1 + '.json?alt=media');
+        } else {
+          writeFacets();
+        }
+      });
+    });
+
+    // Filter genes upon dragging slider
+    let sliders = document.querySelectorAll('.ideogramSlider');
+    sliders.forEach((slider, i) => {
+      noUiSlider.create(slider, getSliderConfig(metrics[i]));
+      if (i === 0) {
+        let val1 = document.querySelector(`#${slider.id} .noUi-value:nth-child(2)`);
+        val1.innerHTML = '≤ ' + val1.innerHTML;
+        let val2 = document.querySelector(`#${slider.id} .noUi-value:last-child`);
+        val2.innerHTML = '≥ ' + val2.innerHTML;
+      }
+      slider.noUiSlider.on('change', function(){filterGenes(metrics, comparison);});
+    });
+
+    // Filter by log2fc and adjusted p-value upon calling writeFacets()
+    let sliderCheckboxes = document.querySelectorAll('.slider-checkbox');
+    for (let i = 0; i < sliderCheckboxes.length; i++) {
+      let checkbox = sliderCheckboxes[i];
+      if (i < sliderCheckboxes.length - 1) {
+        checkbox.checked = true; // mark as checked, but don't trigger filter
+      } else {
+        checkbox.click(); // trigger filter for all checked (as a batch)
+      }
+    }
+
+  }
+
+  /**
+  * Writes count of how many annotations match each filter
+  *
+  * TODO: Finish implementation
+  **/
+  function writeCounts(counts) {
+    var facet, count, key, value;
+
+    for (facet in counts) {
+      for (i = 0; i < counts[facet].length; i++) {
+        count = counts[facet][i];
+        key = count.key - 1;
+        value = '(' + count.value + ')';
+
+        // document.querySelectorAll('#' + facet + ' .count')[key].innerHTML = value;
+      }
+    }
+  }
+
+  /**
+  * Reads which categorical filters are selected
+  **/
+  function getCategorySelections() {
+    var tmp, checkedFilter, checkedFilters,  i, facet, counts, count,
+      filterID, key, filterDomId, labels,
+      selections = {};
+
+    checkedFilters = d3.selectAll('.category-facet input:checked').nodes();
+
+    for (i = 0; i < checkedFilters.length; i++) {
+      filterDomId = checkedFilters[i].id;
+      tmp = filterDomId.split('_'); 
+      facet = tmp[1];
+      checkedFilter = tmp.slice(2).join('_');
+
+      labels = ideogram.rawAnnots.metadata.labels[facet];
+      filterID = labels.indexOf(checkedFilter);
+      
+      if (facet in selections === false) {
+        selections[facet] = {};
+      }
+      selections[facet][filterID] = 1;
+    }
+
+    return selections;
+  }
+
+  /**
+  * Reads which numerical filters are selected
+  **/
+  function getRangeSelections() {
+    var selections = {}
+    document.querySelectorAll('.ideogramSlider').forEach(slider => {
+      
+      // Don't apply range filter if this slider is unchecked
+      var checkbox = document.querySelector(`#slider-checkbox-${slider.id}`);
+      if (checkbox.checked === false) return;
+      
+      var range = slider.noUiSlider.get().map(d => parseFloat(d));
+
+      if (slider.id.includes('log2fc')) {
+        range = range.map(v => {
+          if (v === -1.5) return -Infinity;
+          if (v === 1.5) return Infinity;
+          return v;
+        })
+      }
+      selections[slider.id] = range;
+    });
+
+    return selections;
+  }
+
+  function getLocation(annot) {
+    let start = annot.start.toLocaleString();
+    let end = (annot.start + annot.length).toLocaleString();
+    return `chr${annot.chr}:${start}-${end}`;
+  }
+
+  function getRoughLocation(annot) {
+    let start = d3.formatPrefix('.2s', annot.start)(annot.start);
+    return `chr${annot.chr}:${start}`;
+  }
+
+  function deslug(string) {
+    return string[0].toUpperCase() + string.slice(1).replace(/-/g, ' ');
+  }
+
+  function slug(string) {
+    return string.toLowerCase().replace(/ /g, '-').replace(/\&/g, 'and');
+  }
+
+  function hyperlinkGene(annot) {
+    let org = ideogram.rawAnnots.metadata.organism.replace(/ /g, '+');
+    var url = 'https://ncbi.nlm.nih.gov/gene/' + annot.entrezid;
+    var link =
+      '<a target="_blank" href="' + url + '">' + annot.name + '</a>';
+    return link;
+  }
+
+  function writeTable(metrics, comparison) {
+    const annotsContainer = ideogram.filteredAnnots;
+    let labels = ideogram.rawAnnots.metadata.labels;
+    let rows = [];
+
+    let headers = ['name', 'genename'];
+    metrics.forEach(metric => headers.push(metric + '-' + comparison));
+    headers.push('Location');
+
+    const sortKey = metrics[0] + '-' + comparison;
+
+    window.annotsContainer = annotsContainer;
+
+    let annotsList = [];
+    for (let i = 0; i < annotsContainer.length; i++) {
+      annotsList = annotsList.concat(annotsContainer[i].annots);
+    }
+    for (let i = 0; i < annotsList.length; i++) {
+      let annot = annotsList[i];
+      let cells = [];
+      for (let j = 0; j < headers.length; j++) {
+        let header = headers[j];
+        let value = annot[header];
+        if (header === 'name') {
+          cells.push(hyperlinkGene(annot));
+        } else if (header === 'Location') {
+          cells.push(getRoughLocation(annot));
+        } else if (header === 'gene-type') {
+          cells.push(labels[header][value]);
+        } else if (header.includes(metrics[1])) {
+          const dispVal = value === 0 ? '< 10e-18' : value;
+          cells.push({display: dispVal, sortVal: value})
+        } else {
+          cells.push(value);
+        }
+      }
+      rows.push(cells);
+    };
+
+    const displayHeaders = headers.map((h, i) => {
+      if (h === 'name') return 'Symbol';
+      if (h === 'genename') return 'Gene name';
+      if (h in labels === false) return deslug(h);
+      if (Array.isArray(labels[h])) {
+        // e.g. gene-type -> Gene type
+        return deslug(h);
+      } else if (i === 2 || i === 3) {
+        const metric = metrics.filter(m => h.includes(m))[0];
+        return metricLabels[metric];
+      } else {
+        return labels[h];
+      }
+    });
+
+    const head = '<thead><tr><th>' + displayHeaders.join('</th><th>') + '</th></tr></thead>';
+
+    const table = `<table id="ideogram-annots-table" class="display">${head}</table>`;
+    document.querySelector('#table-container').innerHTML = table;
+
+
+    // Show more rows in each page for larger screens
+    const screenIsTall = window.innerHeight >= 850;
+    const screenIsWide = window.innerWidth >= 1600;
+    const pageLength = screenIsTall ? 15 : 10;
+    const colWidths = {
+      symbol: 50,
+      geneName: 515,
+      log2fc: 120,
+      adjustedPValue: 115,
+      location: 80
+    }
+    if (screenIsWide) {
+      for (key in colWidths) {colWidths[key] += 50;}
+    }
+
+    $('#ideogram-annots-table').DataTable({
+      data: rows,
+      dom: 'lBfrtip', // Docs: https://datatables.net/reference/option/dom
+      buttons: [{extend: 'csv', text: 'Export'}],
+      order: [[headers.indexOf(sortKey), 'desc']],
+      pageLength: pageLength,
+      lengthMenu: [10, 15, 25, 50, 100, 500, 1000],
+      deferRender: true,
+      // columnDefs: [null, null, null, null, {render: }]
+      columns: [
+        {width: colWidths.symbol},
+        {width: colWidths.geneName},
+        {width: colWidths.log2fc},
+        {width: colWidths.adjustedPValue, render: {_: 'display', sort: 'sortVal'}},
+        {width: colWidths.location, type: 'genomeorder'}
+      ]
+    });
+  }
+
+  /**
+  * Applies all selected categorical and numerical filters
+  **/
+  function filterGenes(metrics, comparison) {
+    var selections = {};
+
+    selections = getCategorySelections();
+
+    rangeSelections = getRangeSelections();
+    
+    Object.assign(selections, rangeSelections);
+
+    counts = ideogram.filterAnnots(selections);
+    writeCounts(counts);
+
+    writeTable(metrics, comparison);
+  }
+
+  /**
+  * Returns chromosome margin value that best fits overall ideogram width
+  * 
+  * TODO: Merge this into Ideogram.js library
+  **/
+  function getChrMargin(ideoWidth, numChrs, chrWidth) {
+    var chrMargin;
+    const calcChrMargin = ideoWidth/numChrs - chrWidth - chrWidth * 1.8;
+    const maxChrMargin = 50;
+    const minChrMargin = 13;
+
+    if (minChrMargin <= calcChrMargin && calcChrMargin <= maxChrMargin) {
+      chrMargin = calcChrMargin;
+    } else if (minChrMargin > calcChrMargin) {
+      chrMargin = minChrMargin;
+    } else {
+      chrMargin = maxChrMargin;
+    }
+
+    return chrMargin
+  }
+
+  /**
+  * Fetch annotations, then create Ideogram
+  **/
+  function initIdeogram(annotationsPath) {
+    fetch(annotationsPath)
+      .then(response => response.json())
+      .then(rawAnnots => {
+          const numChrs = rawAnnots.annots.length;
+          const ideoWidth = window.outerWidth - 340;
+
+          const chrWidth = 11;
+
+          const chrMargin = getChrMargin(ideoWidth, numChrs, chrWidth);
+          // TODO: Make chromosome height responsive to larger screens
+          // const tableHeight = 490;
+          // const headerHeight = 120;
+          // const calcChrHeight = window.outerHeight - tableHeight - headerHeight;
+          // // const maxChrHeight = 225;
+          // // const chrHeight = calcChrHeight > maxChrHeight ? maxChrHeight : calcChrHeight;
+
+          const config = {
+            container: '#ideogram-container',
+            orientation: 'vertical',
+            organism: rawAnnots.metadata.organism, // This is why we need to fetch annots first
+            assembly: rawAnnots.metadata.assembly,
+            chrHeight: 225,
+            chrWidth: chrWidth,
+            chrMargin: chrMargin,
+            annotations: rawAnnots,
+            annotationsLayout: 'histogram',
+            barWidth: 3,
+            filterable: true,
+            onLoad: writeFacets
+          };
+          window.ideogram = new Ideogram(config);
+      });
+  }
+
+  function parseUrlParams() {
+      var rawParams = document.location.search;
+      var urlParams = {};
+      var param, key, value;
+      if (rawParams !== '') {
+        rawParams = rawParams.split('?')[1].split('&');
+        rawParams.forEach(rawParam => {
+          param = rawParam.split('=');
+          key = param[0];
+          value = param[1];
+          urlParams[key] = value;
+        });
+      }
+      return urlParams;
+    }
+
+  window.basePath = 'https://www.googleapis.com/storage/v1/b/ideogram/o/nasa%2fannots%2f';
+  
+  window.datasets = {
+    'GLDS-21': {
+      assay: 'array_differential_expression',
+      studyTitle:  'Effects of spaceflight on murine skeletal muscle gene expression'
+    },
+    'GLDS-25': {
+      assay: 'array_differential_expression',
+      studyTitle: 'STS-135 Liver Transcriptomics'
+    },
+    // 'GLDS-242': {
+    //   assay: 'rna_seq_ERCCnorm_differential_expression',
+    //   studyTitle: 'Effect of spaceflight on liver from mice flown on the ISS for 33 days: transcriptional analysis'
+    // },
+    'GLDS-242': {
+      assay: 'rna_seq_differential_expression',
+      studyTitle: 'Effect of spaceflight on liver from mice flown on the ISS for 33 days: transcriptional analysis'
+    },
+    'GLDS-168': {
+      assay: 'rna_seq_ERCCnorm_differential_expression',
+      studyTitle: 'RR-1 and RR-3 mouse liver transcriptomics with and without ERCC control RNA spike-ins'
+    },
+    'GLDS-188': {
+      assay: 'array_differential_expression',
+      studyTitle: 'Dynamic gene expression response to altered gravity in human T cells (sounding rocket flight)'
+    },
+    'GLDS-37': {
+      assay: 'rna_seq_differential_expression',
+      studyTitle: 'Comparison of the spaceflight transcriptome of four commonly used Arabidopsis thaliana ecotypes'
+    },
+    'GLDS-42': {
+      assay: 'array_differential_expression',
+      studyTitle: 'Expression data from C. elegans'
+    },
+    'GLDS-3': {
+      assay: 'array_differential_expression',
+      studyTitle: 'Drosophila melanogaster gene expression changes after spaceflight'
+    },
+    'GLDS-19': {
+      assay: 'array_differential_expression',
+      studyTitle: 'Transcription profiling of rat to study the effect of hindlimb unloading on healing of medial collateral ligaments 3 weeks after injury'
+    }
+  }
+
+  window.datasetsByOrganism = {
+    'mus-musculus': 'GLDS-21',
+    'homo-sapiens': 'GLDS-188',
+    'arabidopsis-thaliana': 'GLDS-37',
+    'rattus-norvegicus': 'GLDS-19'
+  }
+
+  window.urlParams = parseUrlParams();
+
+  window.group = '';
+
+  if ('annots-url' in urlParams) {
+    // e.g. 'https://www.googleapis.com/storage/v1/b/degenome/o/GLDS-4_array_differential_expression_ideogram_annots.json';
+    window.assay = 'array_differential_expression';
+    window.studyTitle = '';
+    window.annotsPath = urlParams['annots-url'] + '?alt=media';
+    window.baseAnnotsPath = annotsPath.split('ideogram_annots')[0] + 'ideogram_annots';
+  } else {
+    if ('acc' in urlParams) {
+      window.accession = urlParams.acc;
+    } else if ('org' in urlParams) {
+      window.accession = datasetsByOrganism[urlParams.org];
+    } else {
+      window.accession = 'GLDS-21';
+    }
+    window.assay = datasets[accession].assay;
+    window.studyTitle = datasets[accession].studyTitle;
+
+    window.baseAnnotsPath = `${basePath}${accession}_${assay}_ideogram_annots`;
+    window.annotsPath = `${baseAnnotsPath}${group}.json?alt=media`;
+  }
+
+  initIdeogram(annotsPath);
+
+  function orderByGenomicPosition(a, b) {
+    const splitA = a.split(':');
+    const splitB = b.split(':');
+    const chrNameA = splitA[0].slice(3);
+    const chrNameB = splitB[0].slice(3);
+    if (chrNameA === chrNameB) {
+      const posA = parseFloat(splitA[1].slice(0, -1));
+      const posB = parseFloat(splitB[1].slice(0, -1));
+      return (posA < posB) ? -1 : (posA > posB) ? 1 : 0;
+    } else {
+      return chrNameA.localeCompare(chrNameB, undefined, {numeric: true, sensitivity: 'base'})
+    }
+  }
+
+  jQuery.extend(jQuery.fn.dataTable.ext.type.order, {
+    'genomeorder-asc': function(a, b) {return orderByGenomicPosition(a, b);},
+    'genomeorder-desc': function(a, b) {return -1 * orderByGenomicPosition(a, b)}
+  });
+  
+  </script>
+</body>
+</html>
