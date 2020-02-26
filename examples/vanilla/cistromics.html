@@ -20,7 +20,7 @@
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/wnumb@1.2.0/wNumb.min.js"></script>
 
   <style>
-    body {font: 16px Arial; line-height: 19.6px; padding: 0 15px;}
+    body {font: 18px Arial; line-height: 19.6px; padding: 0 15px;}
     a, a:visited {text-decoration: none;}
     a:hover {text-decoration: underline;}
     a, a:hover, a:visited, a:active {color: #0366d6;}
@@ -44,12 +44,14 @@
 
     #gene-type {padding-left: 30px;}
 
+    .chrLabel {font-size: 12px;}
+
     #left-content {
       float: left;
       padding-right: 30px;
       border-right: 1px solid #EEE;
       margin-right: 15px;
-      width: 275px;
+      width: 235px;
     }
 
     .category-facet li {
@@ -57,7 +59,8 @@
     }
 
     .comparison-dropdown {
-      max-width: 285px;
+      max-width: 245px;
+      display: none;
     }
 
     /* Vertically shortens the 2 in log2(fold change)*/
@@ -145,7 +148,7 @@
         pipDecimals: 0,
         connect: true,
         values: [0, 1000, 2000, 3000],
-        density: 4
+        density: 3
       },
       'log2fc': {
         range: {
@@ -228,11 +231,13 @@
       dropdown2.push(`<option id="option-${otherGroup}" ${s2}>${otherGroupLabel}</option>`);
     });
 
-    dropdown1 = `<select id="comparison-dropdown-1" class="comparison-dropdown">${dropdown1.join()}</select>`;
-    dropdown2 = `<select id="comparison-dropdown-2" class="comparison-dropdown">${dropdown2.join()}</select>`;
+    // dropdown1 = `<select id="comparison-dropdown-1" class="comparison-dropdown">${dropdown1.join()}</select>`;
+    // dropdown2 = `<select id="comparison-dropdown-2" class="comparison-dropdown">${dropdown2.join()}</select>`;
 
+    // document.querySelector('.comparison-dropdowns > div').innerHTML +=
+    //   dropdown1 + ' <div style="padding: 4px 2px;">compared to</div> ' + dropdown2;
     document.querySelector('.comparison-dropdowns > div').innerHTML +=
-      dropdown1 + ' <div style="padding: 4px 2px;">compared to</div> ' + dropdown2;
+      '<input style="width: 240px; font-size: 16px; color: #333; padding: 4px; border-radius: 3px;" placeholder="Search gene (e.g. HDAC1)" />';
   }
 
   /**
@@ -257,12 +262,13 @@
 
   function getSummary(metadata) {
     
-    const intro = `Genomic distribution of <span id="organismName" style="font-style: italic">${metadata.organism}</span> transcription factors, promoters, and candidate binding sites, using data from SPP and GeneLab and viewed with <a href="https://github.com/eweitz/ideogram">Ideogram.js</a>.`;
+    const intro = `Genomic distribution of <span id="organismName" style="font-style: italic">${metadata.organism}</span> transcription factors, promoters, and candidate binding sites, using data from SPP and GeneLab.`;
     if ('annots-url' in urlParams) {
       return intro;
     } else {
       const acc = window.accession;
-      return `${intro} NASA GeneLab <a href="https://genelab-data.ndc.nasa.gov/genelab/accession/${acc}/" target="_blank">${acc}</a>.`;
+      return intro;
+      // return `${intro} <br/><br/>Data from NASA GeneLab <a href="https://genelab-data.ndc.nasa.gov/genelab/accession/${acc}/" target="_blank">${acc}</a>.`;
     }
   }
 
@@ -498,6 +504,11 @@
     let rows = [];
 
     let headers = ['name', 'genename'];
+    console.log('metrics')
+    console.log(metrics)
+    metrics = [metrics[1]];
+    console.log('metrics')
+    console.log(metrics)
     metrics.forEach(metric => headers.push(metric + '-' + comparison));
     headers.push('Location');
 
@@ -538,7 +549,7 @@
       if (Array.isArray(labels[h])) {
         // e.g. gene-type -> Gene type
         return deslug(h);
-      } else if (i === 2 || i === 3) {
+      } else if (i === 2) {
         const metric = metrics.filter(m => h.includes(m))[0];
         return metricLabels[metric];
       } else {
@@ -558,9 +569,8 @@
     const pageLength = screenIsTall ? 15 : 10;
     const colWidths = {
       symbol: 50,
-      geneName: 515,
-      log2fc: 120,
-      adjustedPValue: 115,
+      geneName: 250,
+      adjustedPValue: 75,
       location: 80
     }
     if (screenIsWide) {
@@ -579,7 +589,6 @@
       columns: [
         {width: colWidths.symbol},
         {width: colWidths.geneName},
-        {width: colWidths.log2fc},
         {width: colWidths.adjustedPValue, render: {_: 'display', sort: 'sortVal'}},
         {width: colWidths.location, type: 'genomeorder'}
       ]
@@ -634,9 +643,9 @@
       .then(response => response.json())
       .then(rawAnnots => {
           const numChrs = rawAnnots.annots.length;
-          const ideoWidth = window.outerWidth - 340;
+          const ideoWidth = window.outerWidth - 500;
 
-          const chrWidth = 11;
+          const chrWidth = 9;
 
           const chrMargin = getChrMargin(ideoWidth, numChrs, chrWidth);
           // TODO: Make chromosome height responsive to larger screens
@@ -646,12 +655,23 @@
           // // const maxChrHeight = 225;
           // // const chrHeight = calcChrHeight > maxChrHeight ? maxChrHeight : calcChrHeight;
 
+          console.log('rawAnnots.metadata')
+          console.log(rawAnnots.metadata);
+
+          // rawAnnots.metadata.
+          // 'Catalytic receptor',
+          // 'Nuclear receptor',
+          // 'Acetyltransferase',
+          // 'Deacetylase',
+          // 'ARID domain',
+          // 'BHLH'
+
           const config = {
             container: '#ideogram-container',
             orientation: 'vertical',
             organism: rawAnnots.metadata.organism, // This is why we need to fetch annots first
             assembly: rawAnnots.metadata.assembly,
-            chrHeight: 225,
+            chrHeight: 200,
             chrWidth: chrWidth,
             chrMargin: chrMargin,
             annotations: rawAnnots,
