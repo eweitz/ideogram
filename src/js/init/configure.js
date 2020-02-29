@@ -158,6 +158,8 @@ function configureTextStyle(ideo) {
  * High-level helper method for Ideogram constructor.
  *
  * @param config Configuration object.  Enables setting Ideogram properties.
+ *
+ * Docs: https://github.com/eweitz/ideogram/blob/master/api.md
  */
 function configure(config) {
 
