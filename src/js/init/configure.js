@@ -1,4 +1,5 @@
 import {organismMetadata} from './organism-metadata';
+import {staticCss} from './../bands/styles';
 
 function configurePloidy(ideo) {
   if (!ideo.config.ploidy) ideo.config.ploidy = 1;
@@ -145,10 +146,20 @@ function configureBands(ideo) {
   ideo.bandData = {};
 }
 
+let configuredCss = staticCss;
+function configureTextStyle(ideo) {
+  if (!ideo.config.chrLabelSize) return;
+
+  const size = ideo.config.chrLabelSize;
+  configuredCss += `#_ideogram text {font-size: ${size}px}`;
+}
+
 /**
  * High-level helper method for Ideogram constructor.
  *
  * @param config Configuration object.  Enables setting Ideogram properties.
+ *
+ * Docs: https://github.com/eweitz/ideogram/blob/master/api.md
  */
 function configure(config) {
 
@@ -166,6 +177,7 @@ function configure(config) {
   configureOrganisms(this);
   configureBump(this);
   configureSingleChromosome(config, this);
+  configureTextStyle(this);
   this.initAnnotSettings();
   if ('geometry' in this.config === false) {
     this.config.chrMargin += this.config.chrWidth;
@@ -178,4 +190,4 @@ function configure(config) {
   this.init();
 }
 
-export {configure};
+export {configure, configuredCss};

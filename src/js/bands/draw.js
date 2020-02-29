@@ -5,7 +5,8 @@
 
 import {d3} from '../lib';
 import {hideUnshownBandLabels, setBandsToShow} from './show';
-import {staticColors, staticCss, staticGradients} from './styles';
+import {staticColors, staticGradients} from './styles';
+import {configuredCss} from './../init/configure';
 
 /**
  * Draws text of cytoband label
@@ -159,7 +160,7 @@ function getBandColorGradients() {
 
   gradients = getGradients(staticColors);
 
-  css = staticCss;
+  css = `<style>${configuredCss}</style>`;
 
   gradients += staticGradients;
   gradients = "<defs>" + gradients + "</defs>";
