@@ -1,7 +1,7 @@
 # Ideogram in React
 This is a very basic example of integrating Ideogram with [React](https://reactjs.org/).
 
-More examples showing the breadth of Ideogram's functionality are at https://eweitz.github.io/ideogram/.
+For more examples, check out [React Ideogram](https://github.com/eweitz/react-ideogram)!
 
 # Install
 ```
