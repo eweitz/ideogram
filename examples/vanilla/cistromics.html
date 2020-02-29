@@ -78,6 +78,10 @@
       padding-top: 10px;
     }
 
+    .chrLabel tspan {
+      font-size: 16px;
+    }
+
     .dataTables_length {margin-left: 10px;}
 
     table.dataTable tbody td {padding: 2px 10px;}
@@ -147,7 +151,7 @@
         sliderDecimals: 0,
         pipDecimals: 0,
         connect: true,
-        values: [0, 1000, 2000, 3000],
+        values: [0, 1500, 3000],
         density: 3
       },
       'log2fc': {
@@ -262,7 +266,7 @@
 
   function getSummary(metadata) {
     
-    const intro = `Genomic distribution of <span id="organismName" style="font-style: italic">${metadata.organism}</span> transcription factors, promoters, and candidate binding sites, using data from SPP and GeneLab.`;
+    const intro = `Genomic distribution of <span id="organismName" style="font-style: italic">${metadata.organism}</span> transcription factors, promoters, and candidate binding sites, using mock data from SPP and GeneLab.`;
     if ('annots-url' in urlParams) {
       return intro;
     } else {
@@ -395,6 +399,10 @@
         checkbox.click(); // trigger filter for all checked (as a batch)
       }
     }
+
+
+    // Remove log2fc; this mockup is for cistromics, not DE
+    document.querySelectorAll('.comparison-dropdowns > div')[2].remove()
 
   }
 
@@ -568,9 +576,9 @@
     const screenIsWide = window.innerWidth >= 1600;
     const pageLength = screenIsTall ? 15 : 10;
     const colWidths = {
-      symbol: 50,
+      symbol: 30,
       geneName: 250,
-      adjustedPValue: 75,
+      adjustedPValue: 85,
       location: 80
     }
     if (screenIsWide) {
@@ -643,9 +651,9 @@
       .then(response => response.json())
       .then(rawAnnots => {
           const numChrs = rawAnnots.annots.length;
-          const ideoWidth = window.outerWidth - 500;
+          const ideoWidth = window.outerWidth - 550;
 
-          const chrWidth = 9;
+          const chrWidth = 10;
 
           const chrMargin = getChrMargin(ideoWidth, numChrs, chrWidth);
           // TODO: Make chromosome height responsive to larger screens
