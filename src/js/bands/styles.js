@@ -13,7 +13,6 @@ staticColors = [
 ];
 
 staticCss =
-  '<style>' +
   '#_ideogram {padding-left: 5px;} ' +
   '#_ideogram .labeled {padding-left: 15px;} ' +
   '#_ideogram.labeledLeft {padding-left: 15px; padding-top: 15px;} ' +
@@ -71,8 +70,7 @@ staticCss =
   '#_ideogram .stalk {fill: url("#stalk")} ' +
   '#_ideogram .gvar {fill: url("#gvar")} ' +
   '#_ideogram .noBands {fill: url("#noBands")} ' +
-  '#_ideogram .chromosome {fill: url("#noBands")} ' +
-  '</style>';
+  '#_ideogram .chromosome {fill: url("#noBands")} ';
 
 staticGradients =
   '<pattern id="stalk" width="2" height="1" patternUnits="userSpaceOnUse" ' +

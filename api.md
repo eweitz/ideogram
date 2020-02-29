@@ -37,6 +37,7 @@ var ideogram = new Ideogram({
 * [chrHeight](#chrheight)
 * [chrMargin](#chrmargin)
 * [chrWidth](#chrwidth)
+* [chrLabelSize](#chrlabelsize)
 * [chromosomes](#chromosomes)
 * [chromosomeScale](#chromosomescale)
 * [container](#container)
@@ -133,6 +134,9 @@ Number.  Optional.  Default: 10.  The pixel space of the margin between each chr
 
 ## chrWidth
 Number.  Optional.  Default: 10.  The pixel width of each chromosome.  Example in [Annotations, tracks](https://eweitz.github.io/ideogram/annotations-tracks).
+
+## chrLabelSize
+Number.  Optional.  Default: 9.  The pixel font size of chromosome labels.  Example in [Differential expression of genes](https://eweitz.github.io/ideogram/differential-expression).
 
 ## chromosomes
 Array.  Optional.  Default: all chromosomes in assembly.  A list of the names of chromosomes to display.  Useful for depicting a subset of the chromosomes in the genome, e.g. a single chromosome.  Example in [Annotations, basic](https://eweitz.github.io/ideogram/annotations-basic).
