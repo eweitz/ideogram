@@ -184,10 +184,10 @@
     * Examples:
     *
     * Single ortholog:
-    * https://eweitz.github.io/ideogram/orthologs?loci=1:11106531-11262557|gene:MTOR,4:148448582-148557685|gene:Mtor&org=homo-sapiens&org2=mus-musculus
+    * https://eweitz.github.io/ideogram/orthologs?loci=1:11106531-11262557|name:MTOR,4:148448582-148557685|name:Mtor&org=homo-sapiens&org2=mus-musculus
     *
     * Multiple orthologs:
-    * https://eweitz.github.io/ideogram/orthologs?loci=1:11106531-11262557|gene:MTOR,4:148448582-148557685|gene:Mtor;10:11106531-11262557|gene:FOO,X:148448582-148557685|gene:Foo&org=homo-sapiens&org2=mus-musculus
+    * https://eweitz.github.io/ideogram/orthologs?loci=1:11106531-11262557|name:MTOR,4:148448582-148557685|name:Mtor;10:11106531-11262557|name:FOO,X:148448582-148557685|name:Foo&org=homo-sapiens&org2=mus-musculus
     */
     function parseRawOrthologs(rawOrthologs) {
       return rawOrthologs.split(';').map(ortholog => {
@@ -200,7 +200,7 @@
               locus[key] = value
             })
           }
-          if ('gene' in locus === false) locus['gene'] = ''
+          if ('name' in locus === false) locus['name'] = ''
           return locus
         })
       })
@@ -289,18 +289,28 @@
       var [loci1Start, loci1Stop] = loci1Range.split('-');
       var [loci2Start, loci2Stop] = loci2Range.split('-');
 
+      if ('gene' in loci1) {
+        loci1.name = loci1.gene
+        delete loci1.gene
+      }
+
+      if ('gene' in loci2) {
+        loci2.name = loci2.gene
+        delete loci2.gene
+      }
+
       range1 = {
         chr: loci1Chr,
         start: loci1Start,
         stop: loci1Stop,
-        name: loci1.gene
+        name: loci1.name
       };
 
       range2 = {
         chr: loci2Chr,
         start: loci2Start,
         stop: loci2Stop,
-        name: loci2.gene
+        name: loci2.name
       };
 
       return [range1, range2];
