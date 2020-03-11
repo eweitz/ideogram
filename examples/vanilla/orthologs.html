@@ -16,8 +16,8 @@
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
   <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/homology@0.4.0/dist/homology.min.js"></script> -->
-  <!-- <script type="text/javascript" src="https://eweitz.github.io/homology/dist/homology.min.js"></script> -->
-  <script type="text/javascript" src="http://localhost/homology/dist/homology.min.js"></script>
+  <script type="text/javascript" src="https://eweitz.github.io/homology/dist/homology.min.js"></script>
+  <!-- <script type="text/javascript" src="http://localhost/homology/dist/homology.min.js"></script> -->
 <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
 </head>
 <body>
@@ -179,7 +179,7 @@
     }
 
     async function processUrl() {
-      var genesList;
+      var genesList, hasGenes, hasLoci;
 
       document.querySelector('#ideogram-container').innerHTML = '';
       document.querySelector('#status-container').innerHTML = 'Loading...';
@@ -191,9 +191,15 @@
         delete urlParams['gene'];
       }
 
+      hasGenes = 'genes' in urlParams;
+      hasLoci = 'loci' in urlParams;
+
       // Set default parameters if none are provided.
       if ('org' in urlParams === false) {
-        urlParams['genes'] = 'MTOR'
+        if (!hasLoci) {
+          urlParams['genes'] = 'MTOR'
+          hasGenes = true
+        }
         urlParams['org'] = 'homo-sapiens';
         urlParams['org2'] = 'mus-musculus';
         urlParams['backend'] = 'orthodb';
@@ -218,18 +224,28 @@
       updateOrganismMenu('org', org1);
       updateOrganismMenu('org2', org2);
 
-      genes = urlParams['genes'];
-      document.querySelector('#genes').value = genes.replace('%20', ' ');
+      if (hasGenes) {
+        genes = urlParams['genes'];
+        document.querySelector('#genes').value = genes.replace('%20', ' ');
+        updateGenesParams(genes);
+      }
 
       backend = urlParams['backend'];
       document.querySelector('#backend #' + backend).selected = true;
 
-      updateGenesParams(genes);
-
       if (shouldUpdateState()) {
         try {
-          genesList = splitList(genes);
-          orthologs = await fetchOrthologs(genesList, org1, [org2], backend);
+          if (hasGenes) {
+            genesList = splitList(genes);
+            orthologs = await fetchOrthologs(genesList, org1, [org2], backend);
+          } else {
+            orthologs = urlParams['loci'].split(';').map(ortholog => {
+              return ortholog.split(',').map(locus => {
+                return {location: locus, gene: ''}
+              })
+            })
+            console.log(orthologs)
+          }
         } catch (error) {
           document.querySelector('#status-container').innerHTML =
             `<span id="error-container">${error}</span>`;
@@ -238,7 +254,7 @@
       };
       prevState = Object.assign({}, urlParams);
 
-      
+
     }
 
     function parseGenomicRawRanges(ortholog) {
