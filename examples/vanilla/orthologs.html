@@ -178,6 +178,34 @@
       }
     }
 
+    /**
+    * Parses orthologs specifies via "loci" URL parameter
+    *
+    * Examples:
+    *
+    * Single ortholog:
+    * https://eweitz.github.io/ideogram/orthologs?loci=1:11106531-11262557|gene:MTOR,4:148448582-148557685|gene:Mtor&org=homo-sapiens&org2=mus-musculus
+    *
+    * Multiple orthologs:
+    * https://eweitz.github.io/ideogram/orthologs?loci=1:11106531-11262557|gene:MTOR,4:148448582-148557685|gene:Mtor;10:11106531-11262557|gene:FOO,X:148448582-148557685|gene:Foo&org=homo-sapiens&org2=mus-musculus
+    */
+    function parseRawOrthologs(rawOrthologs) {
+      return rawOrthologs.split(';').map(ortholog => {
+        return ortholog.split(',').map(loc => {
+          const entries = loc.split('|')
+          locus = {location: entries[0]}
+          if (entries.length > 1) {
+            entries.splice(1).map(entry => {
+              const [key, value] = entry.split(':')
+              locus[key] = value
+            })
+          }
+          if ('gene' in locus === false) locus['gene'] = ''
+          return locus
+        })
+      })
+    }
+
     async function processUrl() {
       var genesList, hasGenes, hasLoci;
 
@@ -239,21 +267,7 @@
             genesList = splitList(genes);
             orthologs = await fetchOrthologs(genesList, org1, [org2], backend);
           } else {
-            orthologs = urlParams['loci'].split(';').map(ortholog => {
-              return ortholog.split(',').map(loc => {
-                const entries = loc.split('|')
-                locus = {location: entries[0]}
-                if (entries.length > 1) {
-                  entries.splice(1).map(entry => {
-                    const [key, value] = entry.split(':')
-                    locus[key] = value
-                  })
-                }
-                if ('gene' in locus === false) locus['gene'] = ''
-                console.log(locus)
-                return locus
-              })
-            })
+            orthologs = parseRawOrthologs(urlParams['loci'])
           }
         } catch (error) {
           document.querySelector('#status-container').innerHTML =
