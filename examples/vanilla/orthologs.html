@@ -240,11 +240,20 @@
             orthologs = await fetchOrthologs(genesList, org1, [org2], backend);
           } else {
             orthologs = urlParams['loci'].split(';').map(ortholog => {
-              return ortholog.split(',').map(locus => {
-                return {location: locus, gene: ''}
+              return ortholog.split(',').map(loc => {
+                const entries = loc.split('|')
+                locus = {location: entries[0]}
+                if (entries.length > 1) {
+                  entries.splice(1).map(entry => {
+                    const [key, value] = entry.split(':')
+                    locus[key] = value
+                  })
+                }
+                if ('gene' in locus === false) locus['gene'] = ''
+                console.log(locus)
+                return locus
               })
             })
-            console.log(orthologs)
           }
         } catch (error) {
           document.querySelector('#status-container').innerHTML =
