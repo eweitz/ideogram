@@ -30,7 +30,13 @@
     Compare gene locations across organisms.
   </p>
   <div style="float: left; width: 350px;">
-  <label for="genes">Genes: <input id="genes"/></label>
+  <label for="genes">Search: <input id="genes" placeholder="Gene or location"/></label>
+  <div style="font-size: 12px; position: relative; top: -7px;">
+    Examples:
+    <a href="?genes=MTOR">MTOR</a> |
+    <a href="?genes=MTOR,BRCA1&org=homo-sapiens&org2=mus-musculus&backend=orthodb">MTOR, BRCA1</a> |
+    <a href="?loci=2:150000000,X:50000000">2:150000000, X:50000000</a>
+  </div>
   <label for="org">
     Source organism:
     <select class="left-select org-select" id="org">
@@ -288,6 +294,9 @@
       var [loci2Chr, loci2Range] = loci2.location.split(':');
       var [loci1Start, loci1Stop] = loci1Range.split('-');
       var [loci2Start, loci2Stop] = loci2Range.split('-');
+
+      if (typeof loci1Stop === 'undefined') loci1Stop = loci1Start
+      if (typeof loci2Stop === 'undefined') loci2Stop = loci2Start
 
       if ('gene' in loci1) {
         loci1.name = loci1.gene
