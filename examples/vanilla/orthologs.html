@@ -16,8 +16,8 @@
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
   <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/homology@0.4.0/dist/homology.min.js"></script> -->
-  <!-- <script type="text/javascript" src="https://eweitz.github.io/homology/dist/homology.min.js"></script> -->
-  <script type="text/javascript" src="http://localhost/homology/dist/homology.min.js"></script>
+  <script type="text/javascript" src="https://eweitz.github.io/homology/dist/homology.min.js"></script>
+  <!-- <script type="text/javascript" src="http://localhost/homology/dist/homology.min.js"></script> -->
 <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
 </head>
 <body>
@@ -178,8 +178,36 @@
       }
     }
 
+    /**
+    * Parses orthologs specifies via "loci" URL parameter
+    *
+    * Examples:
+    *
+    * Single ortholog:
+    * https://eweitz.github.io/ideogram/orthologs?loci=1:11106531-11262557!name:MTOR,4:148448582-148557685!name:Mtor&org=homo-sapiens&org2=mus-musculus
+    *
+    * Multiple orthologs:
+    * https://eweitz.github.io/ideogram/orthologs?loci=1:11106531-11262557!name:MTOR,4:148448582-148557685!name:Mtor;10:11106531-11262557!name:FOO,X:148448582-148557685!name:Foo&org=homo-sapiens&org2=mus-musculus
+    */
+    function parseRawOrthologs(rawOrthologs) {
+      return rawOrthologs.split(';').map(ortholog => {
+        return ortholog.split(',').map(loc => {
+          const entries = loc.split('!')
+          locus = {location: entries[0]}
+          if (entries.length > 1) {
+            entries.splice(1).map(entry => {
+              const [key, value] = entry.split(':')
+              locus[key] = value
+            })
+          }
+          if ('name' in locus === false) locus['name'] = ''
+          return locus
+        })
+      })
+    }
+
     async function processUrl() {
-      var genesList;
+      var genesList, hasGenes, hasLoci;
 
       document.querySelector('#ideogram-container').innerHTML = '';
       document.querySelector('#status-container').innerHTML = 'Loading...';
@@ -191,9 +219,15 @@
         delete urlParams['gene'];
       }
 
+      hasGenes = 'genes' in urlParams;
+      hasLoci = 'loci' in urlParams;
+
       // Set default parameters if none are provided.
       if ('org' in urlParams === false) {
-        urlParams['genes'] = 'MTOR'
+        if (!hasLoci) {
+          urlParams['genes'] = 'MTOR'
+          hasGenes = true
+        }
         urlParams['org'] = 'homo-sapiens';
         urlParams['org2'] = 'mus-musculus';
         urlParams['backend'] = 'orthodb';
@@ -218,18 +252,23 @@
       updateOrganismMenu('org', org1);
       updateOrganismMenu('org2', org2);
 
-      genes = urlParams['genes'];
-      document.querySelector('#genes').value = genes.replace('%20', ' ');
+      if (hasGenes) {
+        genes = urlParams['genes'];
+        document.querySelector('#genes').value = genes.replace('%20', ' ');
+        updateGenesParams(genes);
+      }
 
       backend = urlParams['backend'];
       document.querySelector('#backend #' + backend).selected = true;
 
-      updateGenesParams(genes);
-
       if (shouldUpdateState()) {
         try {
-          genesList = splitList(genes);
-          orthologs = await fetchOrthologs(genesList, org1, [org2], backend);
+          if (hasGenes) {
+            genesList = splitList(genes);
+            orthologs = await fetchOrthologs(genesList, org1, [org2], backend);
+          } else {
+            orthologs = parseRawOrthologs(urlParams['loci'])
+          }
         } catch (error) {
           document.querySelector('#status-container').innerHTML =
             `<span id="error-container">${error}</span>`;
@@ -238,7 +277,7 @@
       };
       prevState = Object.assign({}, urlParams);
 
-      
+
     }
 
     function parseGenomicRawRanges(ortholog) {
@@ -250,18 +289,28 @@
       var [loci1Start, loci1Stop] = loci1Range.split('-');
       var [loci2Start, loci2Stop] = loci2Range.split('-');
 
+      if ('gene' in loci1) {
+        loci1.name = loci1.gene
+        delete loci1.gene
+      }
+
+      if ('gene' in loci2) {
+        loci2.name = loci2.gene
+        delete loci2.gene
+      }
+
       range1 = {
         chr: loci1Chr,
         start: loci1Start,
         stop: loci1Stop,
-        name: loci1.gene
+        name: loci1.name
       };
 
       range2 = {
         chr: loci2Chr,
         start: loci2Start,
         stop: loci2Stop,
-        name: loci2.gene
+        name: loci2.name
       };
 
       return [range1, range2];
