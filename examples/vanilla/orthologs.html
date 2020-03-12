@@ -12,7 +12,7 @@
     #status-container {display: inline-block; margin-left: 86px;}
     #error-container {color: red;}
     #ideogram-container {margin-left: 125px;}
-    #genes {width: 280px;}
+    #search {width: 280px;}
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
   <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/homology@0.4.0/dist/homology.min.js"></script> -->
@@ -30,7 +30,7 @@
     Compare gene locations across organisms.
   </p>
   <div style="float: left; width: 350px;">
-  <label for="genes">Search: <input id="genes" placeholder="Gene or location"/></label>
+  <label for="search">Search: <input id="search" placeholder="Gene or location"/></label>
   <div style="font-size: 12px; position: relative; top: -7px;">
     Examples:
     <a href="?genes=MTOR">MTOR</a> |
@@ -102,17 +102,25 @@
       updateUrl();
     }
 
+    function updateLociParams(loci) {
+      urlParams['loci'] = loci
+      updateUrl()
+    }
+
     // Process text input for the "Gene" field.
-    async function handleGene(event) {
+    async function handleSearch(event) {
       // Ignore non-"Enter" keyups
       if (event.type === 'keyup' && event.keyCode !== 13) return;
 
-      var geneNames = event.target.value;
+      var searchInput = event.target.value;
 
-      // Ignore when input value is unchanged
-      if (urlParams['genes'] === geneNames) return;
-
-      updateGenesParams(geneNames);
+      if (isGenomicLocation(searchInput)) {
+        updateLociParams(searchInput)
+      } else {
+        // Ignore when input value is unchanged
+        if (urlParams['genes'] === geneNames) return;
+        updateGenesParams(searchInput);
+      }
 
       createIdeogram();
     }
@@ -135,6 +143,13 @@
         .replace(/%20/g, '')
         .replace(/^\s+|\s+$/g, '')
         .split(',');
+    }
+
+    /**
+     * Determines if string value has the format of a genomic location
+     */
+    function isGenomicLocation(value) {
+      return value.includes(':')
     }
 
     // Process selections in "Orthology source" drop-down menu
@@ -260,7 +275,7 @@
 
       if (hasGenes) {
         genes = urlParams['genes'];
-        document.querySelector('#genes').value = genes.replace('%20', ' ');
+        document.querySelector('#search').value = genes.replace('%20', ' ');
         updateGenesParams(genes);
       }
 
@@ -437,8 +452,8 @@
       ideogram = new Ideogram(config);
     }
 
-    document.querySelector('#genes').addEventListener('blur', handleGene);
-    document.querySelector('#genes').addEventListener('keyup', handleGene);
+    document.querySelector('#search').addEventListener('blur', handleSearch);
+    document.querySelector('#search').addEventListener('keyup', handleSearch);
     document.querySelectorAll('.org-select').forEach(select => {
       select.addEventListener('change', handleOrganism);
     });
