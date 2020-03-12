@@ -184,15 +184,15 @@
     * Examples:
     *
     * Single ortholog:
-    * https://eweitz.github.io/ideogram/orthologs?loci=1:11106531-11262557|name:MTOR,4:148448582-148557685|name:Mtor&org=homo-sapiens&org2=mus-musculus
+    * https://eweitz.github.io/ideogram/orthologs?loci=1:11106531-11262557!name:MTOR,4:148448582-148557685!name:Mtor&org=homo-sapiens&org2=mus-musculus
     *
     * Multiple orthologs:
-    * https://eweitz.github.io/ideogram/orthologs?loci=1:11106531-11262557|name:MTOR,4:148448582-148557685|name:Mtor;10:11106531-11262557|name:FOO,X:148448582-148557685|name:Foo&org=homo-sapiens&org2=mus-musculus
+    * https://eweitz.github.io/ideogram/orthologs?loci=1:11106531-11262557!name:MTOR,4:148448582-148557685!name:Mtor;10:11106531-11262557!name:FOO,X:148448582-148557685!name:Foo&org=homo-sapiens&org2=mus-musculus
     */
     function parseRawOrthologs(rawOrthologs) {
       return rawOrthologs.split(';').map(ortholog => {
         return ortholog.split(',').map(loc => {
-          const entries = loc.split('|')
+          const entries = loc.split('!')
           locus = {location: entries[0]}
           if (entries.length > 1) {
             entries.splice(1).map(entry => {
