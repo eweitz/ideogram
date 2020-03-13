@@ -30,12 +30,14 @@
     Compare gene locations across organisms.
   </p>
   <div style="float: left; width: 350px;">
-  <label for="search">Search: <input id="search" placeholder="Gene or location"/></label>
+  <label for="search">Search:
+    <input id="search" autocomplete="off" placeholder="Gene or location"/>
+  </label>
   <div style="font-size: 12px; position: relative; top: -7px;">
     Examples:
-    <a href="?genes=MTOR">MTOR</a> |
+    <a href="?genes=MTOR&org=homo-sapiens&org2=mus-musculus&backend=orthodb">MTOR</a> |
     <a href="?genes=MTOR,BRCA1&org=homo-sapiens&org2=mus-musculus&backend=orthodb">MTOR, BRCA1</a> |
-    <a href="?loci=2:150000000,X:50000000">2:150000000, X:50000000</a>
+    <a href="?loci=2:150000000,5:20000000&org=homo-sapiens&org2=mus-musculus">2:150000000, 5:200000000</a>
   </div>
   <label for="org">
     Source organism:
@@ -98,11 +100,13 @@
       if (typeof geneNames === 'undefined') {
         geneNames = genes;
       }
+      delete urlParams['loci']
       urlParams['genes'] = geneNames;
       updateUrl();
     }
 
     function updateLociParams(loci) {
+      delete urlParams['genes']
       urlParams['loci'] = loci
       updateUrl()
     }
@@ -112,8 +116,9 @@
       // Ignore non-"Enter" keyups
       if (event.type === 'keyup' && event.keyCode !== 13) return;
 
-      var searchInput = event.target.value;
+      var searchInput = event.target.value.trim();
 
+      console.log(searchInput)
       if (isGenomicLocation(searchInput)) {
         updateLociParams(searchInput)
       } else {
@@ -133,7 +138,7 @@
 
       urlParams[event.target.id] = organism;
 
-      updateGenesParams();
+      updateUrl()
 
       createIdeogram();
     }
@@ -214,10 +219,10 @@
       return rawOrthologs.split(';').map(ortholog => {
         return ortholog.split(',').map(loc => {
           const entries = loc.split('!')
-          locus = {location: entries[0]}
+          locus = {location: entries[0].trim()}
           if (entries.length > 1) {
             entries.splice(1).map(entry => {
-              const [key, value] = entry.split(':')
+              const [key, value] = entry.split(':').map(v => v.trim())
               locus[key] = value
             })
           }
@@ -228,7 +233,7 @@
     }
 
     async function processUrl() {
-      var genesList, hasGenes, hasLoci;
+      var genesList, hasGenes, hasLoci, loci;
 
       document.querySelector('#ideogram-container').innerHTML = '';
       document.querySelector('#status-container').innerHTML = 'Loading...';
@@ -277,6 +282,9 @@
         genes = urlParams['genes'];
         document.querySelector('#search').value = genes.replace('%20', ' ');
         updateGenesParams(genes);
+      } else {
+        loci = urlParams['loci'].replace(/%20/g, ' ')
+        document.querySelector('#search').value = loci
       }
 
       backend = urlParams['backend'];
@@ -288,7 +296,7 @@
             genesList = splitList(genes);
             orthologs = await fetchOrthologs(genesList, org1, [org2], backend);
           } else {
-            orthologs = parseRawOrthologs(urlParams['loci'])
+            orthologs = parseRawOrthologs(loci)
           }
         } catch (error) {
           document.querySelector('#status-container').innerHTML =
@@ -387,6 +395,8 @@
 
       ideogram.drawSynteny(syntenicRegions);
 
+      // If showing multiple orthologs, then adjust ideogram position
+      // to account for whole-genome rendering
       var ideoContainer = document.querySelector('#ideogram-container');
       if (orthologs.length > 1) {
         document.querySelector('#_ideogram').setAttribute('width', 350);
