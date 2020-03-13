@@ -305,8 +305,6 @@
         }
       };
       prevState = Object.assign({}, urlParams);
-
-
     }
 
     function parseGenomicRawRanges(ortholog) {
@@ -349,46 +347,23 @@
     }
 
     function drawSynteny() {
-      var chrs, humanTaxid, mouseTaxid;
+      var chrs, org1Taxid, org2Taxid, ideoContainer, i, rawRange1, rawRange2,
+        syntenicRegions = [];
 
-      var syntenicRegions = []
+      document.querySelector('#status-container').innerHTML = '';
 
-      for (var i = 0; i < orthologs.length; i++) {
+      chrs = ideogram.chromosomes;
+      org1Taxid = ideogram.getTaxid(org1);
+      org2Taxid = ideogram.getTaxid(org2);
 
-        document.querySelector('#status-container').innerHTML = '';
+      for (i = 0; i < orthologs.length; i++) {
+        [rawRange1, rawRange2] = parseGenomicRawRanges(orthologs[i]);
 
-        rawRanges = parseGenomicRawRanges(orthologs[i]);
+        range1 = rawRange1
+        range1.chr = chrs[org1Taxid][rawRange1.chr]
 
-        org1Taxid = ideogram.getTaxid(org1);
-        org2Taxid = ideogram.getTaxid(org2);
-
-        var chrs = ideogram.chromosomes;
-
-        if (!chrs.hasOwnProperty(org1Taxid) || !chrs.hasOwnProperty(org2Taxid)) {
-          document.querySelector('#ideogram-container').innerHTML = '';
-          document.querySelector('#status-container').innerHTML =
-            `Orthologous pair found, but cannot be drawn.<br/>
-            Ortholog in source organism at: ${loci1}<br/>
-            Ortholog in target organism at: ${loci2}<br/>`;
-          return;
-        }
-
-        var org1ChrObj = chrs[org1Taxid][rawRanges[0].chr],
-          org2ChrObj = chrs[org2Taxid][rawRanges[1].chr];
-
-        range1 = {
-          chr: org1ChrObj,
-          start: rawRanges[0].start,
-          stop: rawRanges[0].stop,
-          name: rawRanges[0].name
-        };
-
-        range2 = {
-          chr: org2ChrObj,
-          start: rawRanges[1].start,
-          stop: rawRanges[1].stop,
-          name: rawRanges[1].name
-        };
+        range2 = rawRange2
+        range2.chr = chrs[org2Taxid][rawRange2.chr]
 
         syntenicRegions.push({'r1': range1, 'r2': range2});
       }
@@ -397,7 +372,7 @@
 
       // If showing multiple orthologs, then adjust ideogram position
       // to account for whole-genome rendering
-      var ideoContainer = document.querySelector('#ideogram-container');
+      ideoContainer = document.querySelector('#ideogram-container');
       if (orthologs.length > 1) {
         document.querySelector('#_ideogram').setAttribute('width', 350);
         ideoContainer.setAttribute('style', 'position: relative; top: -110px; left: 200px;');
