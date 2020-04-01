@@ -12,7 +12,7 @@
     #status-container {display: inline-block; margin-left: 86px;}
     #error-container {color: red;}
     #ideogram-container {margin-left: 125px;}
-    #genes {width: 280px;}
+    #search {width: 280px;}
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
   <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/homology@0.4.0/dist/homology.min.js"></script> -->
@@ -30,7 +30,15 @@
     Compare gene locations across organisms.
   </p>
   <div style="float: left; width: 350px;">
-  <label for="genes">Genes: <input id="genes"/></label>
+  <label for="search">Search:
+    <input id="search" autocomplete="off" placeholder="Gene or location"/>
+  </label>
+  <div style="font-size: 12px; position: relative; top: -7px;">
+    Examples:
+    <a href="?genes=MTOR&org=homo-sapiens&org2=mus-musculus&backend=orthodb">MTOR</a> |
+    <a href="?genes=MTOR,BRCA1&org=homo-sapiens&org2=mus-musculus&backend=orthodb">MTOR, BRCA1</a> |
+    <a href="?loci=2:150000000,5:20000000&org=homo-sapiens&org2=mus-musculus">2:150000000, 5:200000000</a>
+  </div>
   <label for="org">
     Source organism:
     <select class="left-select org-select" id="org">
@@ -92,21 +100,32 @@
       if (typeof geneNames === 'undefined') {
         geneNames = genes;
       }
+      delete urlParams['loci']
       urlParams['genes'] = geneNames;
       updateUrl();
     }
 
+    function updateLociParams(loci) {
+      delete urlParams['genes']
+      urlParams['loci'] = loci
+      updateUrl()
+    }
+
     // Process text input for the "Gene" field.
-    async function handleGene(event) {
+    async function handleSearch(event) {
       // Ignore non-"Enter" keyups
       if (event.type === 'keyup' && event.keyCode !== 13) return;
 
-      var geneNames = event.target.value;
+      var searchInput = event.target.value.trim();
 
-      // Ignore when input value is unchanged
-      if (urlParams['genes'] === geneNames) return;
-
-      updateGenesParams(geneNames);
+      console.log(searchInput)
+      if (isGenomicLocation(searchInput)) {
+        updateLociParams(searchInput)
+      } else {
+        // Ignore when input value is unchanged
+        if (urlParams['genes'] === geneNames) return;
+        updateGenesParams(searchInput);
+      }
 
       createIdeogram();
     }
@@ -119,7 +138,7 @@
 
       urlParams[event.target.id] = organism;
 
-      updateGenesParams();
+      updateUrl()
 
       createIdeogram();
     }
@@ -129,6 +148,13 @@
         .replace(/%20/g, '')
         .replace(/^\s+|\s+$/g, '')
         .split(',');
+    }
+
+    /**
+     * Determines if string value has the format of a genomic location
+     */
+    function isGenomicLocation(value) {
+      return value.includes(':')
     }
 
     // Process selections in "Orthology source" drop-down menu
@@ -193,10 +219,10 @@
       return rawOrthologs.split(';').map(ortholog => {
         return ortholog.split(',').map(loc => {
           const entries = loc.split('!')
-          locus = {location: entries[0]}
+          locus = {location: entries[0].trim()}
           if (entries.length > 1) {
             entries.splice(1).map(entry => {
-              const [key, value] = entry.split(':')
+              const [key, value] = entry.split(':').map(v => v.trim())
               locus[key] = value
             })
           }
@@ -207,7 +233,7 @@
     }
 
     async function processUrl() {
-      var genesList, hasGenes, hasLoci;
+      var genesList, hasGenes, hasLoci, loci;
 
       document.querySelector('#ideogram-container').innerHTML = '';
       document.querySelector('#status-container').innerHTML = 'Loading...';
@@ -254,8 +280,11 @@
 
       if (hasGenes) {
         genes = urlParams['genes'];
-        document.querySelector('#genes').value = genes.replace('%20', ' ');
+        document.querySelector('#search').value = genes.replace('%20', ' ');
         updateGenesParams(genes);
+      } else {
+        loci = urlParams['loci'].replace(/%20/g, ' ')
+        document.querySelector('#search').value = loci
       }
 
       backend = urlParams['backend'];
@@ -267,7 +296,7 @@
             genesList = splitList(genes);
             orthologs = await fetchOrthologs(genesList, org1, [org2], backend);
           } else {
-            orthologs = parseRawOrthologs(urlParams['loci'])
+            orthologs = parseRawOrthologs(loci)
           }
         } catch (error) {
           document.querySelector('#status-container').innerHTML =
@@ -276,8 +305,6 @@
         }
       };
       prevState = Object.assign({}, urlParams);
-
-
     }
 
     function parseGenomicRawRanges(ortholog) {
@@ -288,6 +315,9 @@
       var [loci2Chr, loci2Range] = loci2.location.split(':');
       var [loci1Start, loci1Stop] = loci1Range.split('-');
       var [loci2Start, loci2Stop] = loci2Range.split('-');
+
+      if (typeof loci1Stop === 'undefined') loci1Stop = loci1Start
+      if (typeof loci2Stop === 'undefined') loci2Stop = loci2Start
 
       if ('gene' in loci1) {
         loci1.name = loci1.gene
@@ -317,53 +347,32 @@
     }
 
     function drawSynteny() {
-      var chrs, humanTaxid, mouseTaxid;
+      var chrs, org1Taxid, org2Taxid, ideoContainer, i, rawRange1, rawRange2,
+        syntenicRegions = [];
 
-      var syntenicRegions = []
+      document.querySelector('#status-container').innerHTML = '';
 
-      for (var i = 0; i < orthologs.length; i++) {
+      chrs = ideogram.chromosomes;
+      org1Taxid = ideogram.getTaxid(org1);
+      org2Taxid = ideogram.getTaxid(org2);
 
-        document.querySelector('#status-container').innerHTML = '';
+      for (i = 0; i < orthologs.length; i++) {
+        [rawRange1, rawRange2] = parseGenomicRawRanges(orthologs[i]);
 
-        rawRanges = parseGenomicRawRanges(orthologs[i]);
+        range1 = rawRange1
+        range1.chr = chrs[org1Taxid][rawRange1.chr]
 
-        org1Taxid = ideogram.getTaxid(org1);
-        org2Taxid = ideogram.getTaxid(org2);
-
-        var chrs = ideogram.chromosomes;
-
-        if (!chrs.hasOwnProperty(org1Taxid) || !chrs.hasOwnProperty(org2Taxid)) {
-          document.querySelector('#ideogram-container').innerHTML = '';
-          document.querySelector('#status-container').innerHTML =
-            `Orthologous pair found, but cannot be drawn.<br/>
-            Ortholog in source organism at: ${loci1}<br/>
-            Ortholog in target organism at: ${loci2}<br/>`;
-          return;
-        }
-
-        var org1ChrObj = chrs[org1Taxid][rawRanges[0].chr],
-          org2ChrObj = chrs[org2Taxid][rawRanges[1].chr];
-
-        range1 = {
-          chr: org1ChrObj,
-          start: rawRanges[0].start,
-          stop: rawRanges[0].stop,
-          name: rawRanges[0].name
-        };
-
-        range2 = {
-          chr: org2ChrObj,
-          start: rawRanges[1].start,
-          stop: rawRanges[1].stop,
-          name: rawRanges[1].name
-        };
+        range2 = rawRange2
+        range2.chr = chrs[org2Taxid][rawRange2.chr]
 
         syntenicRegions.push({'r1': range1, 'r2': range2});
       }
 
       ideogram.drawSynteny(syntenicRegions);
 
-      var ideoContainer = document.querySelector('#ideogram-container');
+      // If showing multiple orthologs, then adjust ideogram position
+      // to account for whole-genome rendering
+      ideoContainer = document.querySelector('#ideogram-container');
       if (orthologs.length > 1) {
         document.querySelector('#_ideogram').setAttribute('width', 350);
         ideoContainer.setAttribute('style', 'position: relative; top: -110px; left: 200px;');
@@ -428,8 +437,8 @@
       ideogram = new Ideogram(config);
     }
 
-    document.querySelector('#genes').addEventListener('blur', handleGene);
-    document.querySelector('#genes').addEventListener('keyup', handleGene);
+    document.querySelector('#search').addEventListener('blur', handleSearch);
+    document.querySelector('#search').addEventListener('keyup', handleSearch);
     document.querySelectorAll('.org-select').forEach(select => {
       select.addEventListener('change', handleOrganism);
     });
