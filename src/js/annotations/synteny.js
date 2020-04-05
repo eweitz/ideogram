@@ -66,20 +66,37 @@ function writeSyntenicRegionPolygons(syntenicRegion, x1, x2, r1, r2, regions) {
     .style('fill-opacity', opacity);
 }
 
-function writeSyntenicRegionLines(syntenicRegion, x1, x2, r1, r2) {
+function writeSyntenicRegionLines(syntenicRegion, x1, x2, r1, r2, regions) {
+
+  var stroke, width;
+  if (
+    Math.abs(r1.startPx - r1.startPx) < 2 &&
+    Math.abs(r1.stopPx - r1.stopPx) < 2
+  ) {
+    stroke = regions.color;
+    width = regions.width;
+  } else {
+    stroke = '';
+    width = '';
+  }
+
   syntenicRegion.append('line')
     .attr('class', 'syntenyBorder')
     .attr('x1', x1)
     .attr('x2', x2)
     .attr('y1', r1.startPx)
-    .attr('y2', r2.startPx);
+    .attr('y2', r2.startPx)
+    .style('stroke', stroke)
+    .style('stroke-width', width);
 
   syntenicRegion.append('line')
     .attr('class', 'syntenyBorder')
     .attr('x1', x1)
     .attr('x2', x2)
     .attr('y1', r1.stopPx)
-    .attr('y2', r2.stopPx);
+    .attr('y2', r2.stopPx)
+    .style('stroke', stroke)
+    .style('stroke-width', stroke);
 }
 
 function writeSyntenicRegionLabels(syntenicRegion, x1, x2, r1, r2, regionId) {
@@ -124,7 +141,7 @@ function writeSyntenicRegions(syntenicRegions, syntenies, xOffset, ideo) {
     x2 = ideo._layout.getChromosomeSetYTranslate(1) - chrWidth;
 
     writeSyntenicRegionPolygons(syntenicRegion, x1, x2, r1, r2, regions);
-    writeSyntenicRegionLines(syntenicRegion, x1, x2, r1, r2);
+    writeSyntenicRegionLines(syntenicRegion, x1, x2, r1, r2, regions);
     writeSyntenicRegionLabels(syntenicRegion, x1, x2, r1, r2, regionID);
   }
 }

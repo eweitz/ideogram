@@ -219,6 +219,7 @@
       return rawOrthologs.split(';').map(ortholog => {
         let region = {}
 
+        // Two exclamation points ("!!") demarcate ranges from props
         let [rawRanges, regionProps] = ortholog.split('!!')
         ranges = rawRanges.split(',').map(loc => {
           const entries = loc.split('!')
@@ -232,16 +233,18 @@
           if ('name' in locus === false) locus['name'] = ''
           return locus
         })
-        // region['ranges'] = ranges
 
         if (regionProps) {
           regionProps.split(',').map(prop => {
             const [key, value] = prop.split(':').map(v => v.trim())
             region[key] = value
           })
+
+          // TODO: Refactor orthologs code to enable specifying arbitrary props
+          if ('color' in region) ranges.push(region.color)
+          if ('width' in region) ranges.push(region.width)
         }
 
-        // return region
         return ranges
       })
     }
@@ -323,7 +326,7 @@
 
     function parseSyntenicRegion(ortholog) {
 
-      var [loci1, loci2, color] = ortholog;
+      var [loci1, loci2, color, width] = ortholog;
 
       var [loci1Chr, loci1Range] = loci1.location.split(':');
       var [loci2Chr, loci2Range] = loci2.location.split(':');
@@ -359,6 +362,7 @@
 
       let region = {r1, r2};
       if (typeof color !== 'undefined') region.color = color
+      if (typeof width !== 'undefined') region.width = width
 
       return region;
     }
