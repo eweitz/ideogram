@@ -118,7 +118,6 @@
 
       var searchInput = event.target.value.trim();
 
-      console.log(searchInput)
       if (isGenomicLocation(searchInput)) {
         updateLociParams(searchInput)
       } else {
@@ -148,6 +147,20 @@
         .replace(/%20/g, '')
         .replace(/^\s+|\s+$/g, '')
         .split(',');
+    }
+
+    /** Returns [geneList, genePropList] */
+    function parseGenesParam(genesParam) {
+      let geneList = []
+      let genePropList = []
+      splitList(genesParam).map(rawValue => {
+        const splitValue = rawValue.split('!')
+        geneList.push(splitValue[0])
+        if (splitValue.length > 1) {
+          genePropList.push(splitValue[1])
+        }
+      });
+      return [geneList, genePropList]
     }
 
     /**
@@ -205,7 +218,7 @@
     }
 
     /**
-    * Parses orthologs specifies via "loci" URL parameter
+    * Parses orthologs specified via "loci" URL parameter
     *
     * Examples:
     *
@@ -215,8 +228,8 @@
     * Multiple orthologs:
     * https://eweitz.github.io/ideogram/orthologs?loci=1:11106531-11262557!name:MTOR,4:148448582-148557685!name:Mtor;10:11106531-11262557!name:FOO,X:148448582-148557685!name:Foo&org=homo-sapiens&org2=mus-musculus
     */
-    function parseRawOrthologs(rawOrthologs) {
-      return rawOrthologs.split(';').map(ortholog => {
+    function parseLociParam(lociParam) {
+      return lociParam.split(';').map(ortholog => {
         let region = {}
 
         // Two exclamation points ("!!") demarcate ranges from props
@@ -250,7 +263,7 @@
     }
 
     async function processUrl() {
-      var genesList, hasGenes, hasLoci, loci;
+      var geneList, genePropList, hasGenes, hasLoci, loci;
 
       document.querySelector('#ideogram-container').innerHTML = '';
       document.querySelector('#status-container').innerHTML = 'Loading...';
@@ -296,8 +309,9 @@
       updateOrganismMenu('org2', org2);
 
       if (hasGenes) {
-        genes = urlParams['genes'];
-        document.querySelector('#search').value = genes.replace('%20', ' ');
+        [geneList, genePropList] = parseGenesParam(urlParams['genes']);
+        genes = geneList.toString()
+        document.querySelector('#search').value = genes
         updateGenesParams(genes);
       } else {
         loci = urlParams['loci'].replace(/%20/g, ' ')
@@ -310,10 +324,18 @@
       if (shouldUpdateState()) {
         try {
           if (hasGenes) {
-            genesList = splitList(genes);
-            orthologs = await fetchOrthologs(genesList, org1, [org2], backend);
+            rawOrthologs = await fetchOrthologs(geneList, org1, [org2], backend);
+            orthologs = rawOrthologs.map((rawOrtholog, i) => {
+              if (genePropList.length === 0) return rawOrtholog
+
+              const propVals = genePropList[i].split(',').map(prop => {
+                return prop.split(':')[1]
+              })
+
+              return rawOrtholog.concat(propVals)
+            })
           } else {
-            orthologs = parseRawOrthologs(loci)
+            orthologs = parseLociParam(loci)
           }
         } catch (error) {
           document.querySelector('#status-container').innerHTML =
