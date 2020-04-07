@@ -1,5 +1,6 @@
 import {d3} from '../lib';
 import {drawSyntenyCollinear} from './synteny-collinear';
+import {getRegionsR1AndR2} from './synteny-lib';
 
 function writeSyntenicRegion(syntenies, regionID, ideo) {
   return syntenies.append('g')
@@ -22,31 +23,6 @@ function writeSyntenicRegion(syntenies, regionID, ideo) {
       d3.selectAll(ideo.selector + ' .syntenicRegion')
         .classed('ghost', false);
     });
-}
-
-function getRegionsR1AndR2(regions, xOffset, ideo) {
-  var r1, r2;
-
-  r1 = regions.r1;
-  r2 = regions.r2;
-
-  if (typeof r1.chr === 'string') {
-    const taxids = ideo.config.taxids;
-    if (ideo.config.multiorganism) {
-      r1.chr = ideo.chromosomes[taxids[0]][r1.chr];
-      r2.chr = ideo.chromosomes[taxids[1]][r2.chr];
-    } else {
-      r1.chr = ideo.chromosomes[taxids[0]][r1.chr];
-      r2.chr = ideo.chromosomes[taxids[0]][r2.chr];
-    }
-  }
-
-  r1.startPx = ideo.convertBpToPx(r1.chr, r1.start) + xOffset;
-  r1.stopPx = ideo.convertBpToPx(r1.chr, r1.stop) + xOffset;
-  r2.startPx = ideo.convertBpToPx(r2.chr, r2.start) + xOffset;
-  r2.stopPx = ideo.convertBpToPx(r2.chr, r2.stop) + xOffset;
-
-  return [r1, r2];
 }
 
 function writeSyntenicRegionPolygons(syntenicRegion, x1, x2, r1, r2, regions) {
@@ -126,7 +102,7 @@ function writeSyntenicRegions(syntenicRegions, syntenies, xOffset, ideo) {
   for (i = 0; i < syntenicRegions.length; i++) {
     regions = syntenicRegions[i];
 
-    [r1, r2] = getRegionsR1AndR2(regions, xOffset, ideo);
+    [r1, r2] = getRegionsR1AndR2(regions, ideo, xOffset);
 
     regionID = (
       r1.chr.id + '_' + r1.start + '_' + r1.stop + '_' +
