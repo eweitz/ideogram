@@ -1,45 +1,7 @@
 import {d3} from '../lib';
-import {getRegionsR1AndR2} from './synteny-lib';
-
-function writeSyntenicRegion(syntenies, regionID, ideo) {
-  return syntenies.append('g')
-    .attr('class', 'syntenicRegion')
-    .attr('id', regionID)
-    .on('click', function() {
-      var activeRegion = this;
-      var others = d3.selectAll(ideo.selector + ' .syntenicRegion')
-        .filter(function() { return (this !== activeRegion); });
-
-      others.classed('hidden', !others.classed('hidden'));
-    })
-    .on('mouseover', function() {
-      var activeRegion = this;
-      d3.selectAll(ideo.selector + ' .syntenicRegion')
-        .filter(function() { return (this !== activeRegion); })
-        .classed('ghost', true);
-    })
-    .on('mouseout', function() {
-      d3.selectAll(ideo.selector + ' .syntenicRegion')
-        .classed('ghost', false);
-    });
-}
-
-function writeSyntenicRegionPolygons(syntenicRegion, x1, x2, r1, r2, regions) {
-  var color, opacity;
-
-  color = ('color' in regions) ? regions.color : '#CFC';
-  opacity = ('opacity' in regions) ? regions.opacity : 1;
-
-  syntenicRegion.append('polygon')
-    .attr('points',
-      x1 + ', ' + r1.startPx + ' ' +
-      x1 + ', ' + r1.stopPx + ' ' +
-      x2 + ', ' + r2.stopPx + ' ' +
-      x2 + ', ' + r2.startPx
-    )
-    .style('fill', color)
-    .style('fill-opacity', opacity);
-}
+import {
+  getRegionsR1AndR2, writeSyntenicRegionPolygons, writeSyntenicRegion
+} from './synteny-lib';
 
 function writeSyntenicRegionLines(syntenicRegion, x1, x2, r1, r2) {
   syntenicRegion.append('line')
