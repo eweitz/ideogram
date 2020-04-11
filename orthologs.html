@@ -35,8 +35,8 @@
   </label>
   <div style="font-size: 12px; position: relative; top: -7px;">
     Examples:
-    <a href="?genes=MTOR&org=homo-sapiens&org2=mus-musculus&backend=orthodb">MTOR</a> |
-    <a href="?genes=MTOR,BRCA1&org=homo-sapiens&org2=mus-musculus&backend=orthodb">MTOR, BRCA1</a> |
+    <a href="?genes=MTOR&org=homo-sapiens&org2=mus-musculus&backend=oma">MTOR</a> |
+    <a href="?genes=MTOR,BRCA1&org=homo-sapiens&org2=mus-musculus&backend=oma">MTOR, BRCA1</a> |
     <a href="?loci=2:150000000,5:20000000&org=homo-sapiens&org2=mus-musculus">2:150000000, 5:200000000</a>
   </div>
   <label for="org">
@@ -80,8 +80,8 @@
   <label for="backend">
     Orthology backend:
     <select class="left-select backend-select" id="backend">
+      <option id="oma" selected>OMA Browser</option>
       <option id="orthodb" selected>OrthoDB</option>
-      <option id="oma">OMA Browser</option>
     </select>
   </label>
   </div>
@@ -256,7 +256,7 @@
         }
         urlParams['org'] = 'homo-sapiens';
         urlParams['org2'] = 'mus-musculus';
-        urlParams['backend'] = 'orthodb';
+        urlParams['backend'] = 'oma';
         // urlParams['loci'] = '1:11106531-11262557,4:148448582-148557685';
       }
 
@@ -267,7 +267,7 @@
       }
 
       if ('backend' in urlParams === false) {
-        urlParams['backend'] = 'orthodb';
+        urlParams['backend'] = 'oma';
       }
 
       org1 = urlParams['org'].replace(/-/g, ' ');
