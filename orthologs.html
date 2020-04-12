@@ -81,7 +81,7 @@
     Orthology backend:
     <select class="left-select backend-select" id="backend">
       <option id="oma" selected>OMA Browser</option>
-      <option id="orthodb" selected>OrthoDB</option>
+      <option id="orthodb">OrthoDB</option>
     </select>
   </label>
   </div>
@@ -118,7 +118,6 @@
 
       var searchInput = event.target.value.trim();
 
-      console.log(searchInput)
       if (isGenomicLocation(searchInput)) {
         updateLociParams(searchInput)
       } else {
@@ -148,6 +147,20 @@
         .replace(/%20/g, '')
         .replace(/^\s+|\s+$/g, '')
         .split(',');
+    }
+
+    /** Returns [geneList, genePropList] */
+    function parseGenesParam(genesParam) {
+      let geneList = []
+      let genePropList = []
+      splitList(genesParam).map(rawValue => {
+        const splitValue = rawValue.split('!')
+        geneList.push(splitValue[0])
+        if (splitValue.length > 1) {
+          genePropList.push(splitValue[1])
+        }
+      });
+      return [geneList, genePropList]
     }
 
     /**
@@ -205,19 +218,30 @@
     }
 
     /**
-    * Parses orthologs specifies via "loci" URL parameter
+    * Parses orthologs specified via "loci" URL parameter
     *
     * Examples:
     *
     * Single ortholog:
     * https://eweitz.github.io/ideogram/orthologs?loci=1:11106531-11262557!name:MTOR,4:148448582-148557685!name:Mtor&org=homo-sapiens&org2=mus-musculus
     *
+    * Single ortholog with custom color and width:
+    * https://eweitz.github.io/ideogram/orthologs?loci=6:40611225-77560424,1:111464150-67465953!!color:pink&org=canis-lupus-familiaris&org2=homo-sapiens
+    *
     * Multiple orthologs:
     * https://eweitz.github.io/ideogram/orthologs?loci=1:11106531-11262557!name:MTOR,4:148448582-148557685!name:Mtor;10:11106531-11262557!name:FOO,X:148448582-148557685!name:Foo&org=homo-sapiens&org2=mus-musculus
+    *
+    * Synteny block:
+    * https://eweitz.github.io/ideogram/orthologs?loci=6:40611225-77560424,1:111464150-67465953!!color:pink&org=canis-lupus-familiaris&org2=homo-sapiens
     */
-    function parseRawOrthologs(rawOrthologs) {
-      return rawOrthologs.split(';').map(ortholog => {
-        return ortholog.split(',').map(loc => {
+    function parseLociParam(lociParam) {
+      return lociParam.split(';').map(ortholog => {
+        let region = {}
+
+        // Two exclamation points ("!!") demarcate a pair of ranges from its props
+        let [rawRanges, regionProps] = ortholog.split('!!')
+        ranges = rawRanges.split(',').map(loc => {
+          // One exclamation point ("!") demarcates one range from its props
           const entries = loc.split('!')
           locus = {location: entries[0].trim()}
           if (entries.length > 1) {
@@ -229,11 +253,24 @@
           if ('name' in locus === false) locus['name'] = ''
           return locus
         })
+
+        if (regionProps) {
+          regionProps.split(',').map(prop => {
+            const [key, value] = prop.split(':').map(v => v.trim())
+            region[key] = value
+          })
+
+          // TODO: Refactor orthologs code to enable specifying arbitrary props
+          if ('color' in region) ranges.push(region.color)
+          if ('width' in region) ranges.push(region.width)
+        }
+
+        return ranges
       })
     }
 
     async function processUrl() {
-      var genesList, hasGenes, hasLoci, loci;
+      var geneList, genePropList, hasGenes, hasLoci, loci;
 
       document.querySelector('#ideogram-container').innerHTML = '';
       document.querySelector('#status-container').innerHTML = 'Loading...';
@@ -279,8 +316,9 @@
       updateOrganismMenu('org2', org2);
 
       if (hasGenes) {
-        genes = urlParams['genes'];
-        document.querySelector('#search').value = genes.replace('%20', ' ');
+        [geneList, genePropList] = parseGenesParam(urlParams['genes']);
+        genes = geneList.toString()
+        document.querySelector('#search').value = genes
         updateGenesParams(genes);
       } else {
         loci = urlParams['loci'].replace(/%20/g, ' ')
@@ -293,10 +331,18 @@
       if (shouldUpdateState()) {
         try {
           if (hasGenes) {
-            genesList = splitList(genes);
-            orthologs = await fetchOrthologs(genesList, org1, [org2], backend);
+            rawOrthologs = await fetchOrthologs(geneList, org1, [org2], backend);
+            orthologs = rawOrthologs.map((rawOrtholog, i) => {
+              if (genePropList.length === 0) return rawOrtholog
+
+              const propVals = genePropList[i].split(',').map(prop => {
+                return prop.split(':')[1]
+              })
+
+              return rawOrtholog.concat(propVals)
+            })
           } else {
-            orthologs = parseRawOrthologs(loci)
+            orthologs = parseLociParam(loci)
           }
         } catch (error) {
           document.querySelector('#status-container').innerHTML =
@@ -307,9 +353,9 @@
       prevState = Object.assign({}, urlParams);
     }
 
-    function parseGenomicRawRanges(ortholog) {
+    function parseSyntenicRegion(ortholog) {
 
-      var [loci1, loci2] = ortholog;
+      var [loci1, loci2, color, width] = ortholog;
 
       var [loci1Chr, loci1Range] = loci1.location.split(':');
       var [loci2Chr, loci2Range] = loci2.location.split(':');
@@ -329,21 +375,25 @@
         delete loci2.gene
       }
 
-      range1 = {
+      r1 = {
         chr: loci1Chr,
         start: loci1Start,
         stop: loci1Stop,
         name: loci1.name
       };
 
-      range2 = {
+      r2 = {
         chr: loci2Chr,
         start: loci2Start,
         stop: loci2Stop,
         name: loci2.name
       };
 
-      return [range1, range2];
+      let region = {r1, r2};
+      if (typeof color !== 'undefined') region.color = color
+      if (typeof width !== 'undefined') region.width = width
+
+      return region;
     }
 
     function drawSynteny() {
@@ -353,19 +403,10 @@
       document.querySelector('#status-container').innerHTML = '';
 
       chrs = ideogram.chromosomes;
-      org1Taxid = ideogram.getTaxid(org1);
-      org2Taxid = ideogram.getTaxid(org2);
 
       for (i = 0; i < orthologs.length; i++) {
-        [rawRange1, rawRange2] = parseGenomicRawRanges(orthologs[i]);
-
-        range1 = rawRange1
-        range1.chr = chrs[org1Taxid][rawRange1.chr]
-
-        range2 = rawRange2
-        range2.chr = chrs[org2Taxid][rawRange2.chr]
-
-        syntenicRegions.push({'r1': range1, 'r2': range2});
+        const region = parseSyntenicRegion(orthologs[i]);
+        syntenicRegions.push(region);
       }
 
       ideogram.drawSynteny(syntenicRegions);
@@ -419,10 +460,10 @@
         });
       } else {
         // For one chromosome in each genome
-        ranges = parseGenomicRawRanges(orthologs[0]);
+        region = parseSyntenicRegion(orthologs[0]);
         chromosomesConfig = {}
-        chromosomesConfig[org1] = [ranges[0].chr];
-        chromosomesConfig[org2] = [ranges[1].chr];
+        chromosomesConfig[org1] = [region.r1.chr];
+        chromosomesConfig[org2] = [region.r2.chr];
         Object.assign(config, {
           chromosomes: chromosomesConfig,
           chrHeight: 400,
