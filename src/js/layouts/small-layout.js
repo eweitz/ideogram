@@ -61,7 +61,7 @@ class SmallLayout extends Layout {
     var numChrs = this._ideo.config.chromosomes[taxid].length;
 
     // Number of chromosomes per row
-    var chrsPerRow = numChrs / this._config.rows;
+    var chrsPerRow = Math.ceil(numChrs / this._config.rows);
 
     var xOffset;
     var yOffset;
