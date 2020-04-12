@@ -225,16 +225,23 @@
     * Single ortholog:
     * https://eweitz.github.io/ideogram/orthologs?loci=1:11106531-11262557!name:MTOR,4:148448582-148557685!name:Mtor&org=homo-sapiens&org2=mus-musculus
     *
+    * Single ortholog with custom color and width:
+    * https://eweitz.github.io/ideogram/orthologs?loci=6:40611225-77560424,1:111464150-67465953!!color:pink&org=canis-lupus-familiaris&org2=homo-sapiens
+    *
     * Multiple orthologs:
     * https://eweitz.github.io/ideogram/orthologs?loci=1:11106531-11262557!name:MTOR,4:148448582-148557685!name:Mtor;10:11106531-11262557!name:FOO,X:148448582-148557685!name:Foo&org=homo-sapiens&org2=mus-musculus
+    *
+    * Synteny block:
+    * https://eweitz.github.io/ideogram/orthologs?loci=6:40611225-77560424,1:111464150-67465953!!color:pink&org=canis-lupus-familiaris&org2=homo-sapiens
     */
     function parseLociParam(lociParam) {
       return lociParam.split(';').map(ortholog => {
         let region = {}
 
-        // Two exclamation points ("!!") demarcate ranges from props
+        // Two exclamation points ("!!") demarcate a pair of two ranges from its props
         let [rawRanges, regionProps] = ortholog.split('!!')
         ranges = rawRanges.split(',').map(loc => {
+          // One exclamation point ("!") demarcates one range from its props
           const entries = loc.split('!')
           locus = {location: entries[0].trim()}
           if (entries.length > 1) {

@@ -1,3 +1,5 @@
+import {d3} from '../lib';
+
 export function writeSyntenicRegion(syntenies, regionID, ideo) {
   return syntenies.append('g')
     .attr('class', 'syntenicRegion')
