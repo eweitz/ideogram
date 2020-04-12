@@ -174,10 +174,12 @@ function getScientificName(taxid) {
 }
 
 /**
-* e.g. "Homo sapiens" -> "homo-sapiens"
+* Examples:
+* "Homo sapiens" -> "homo-sapiens"
+* "Canis lupus familiaris" -> "canis-lupus-familiaris"
 */
 function slug(value) {
-  return value.toLowerCase().replace(' ', '-');
+  return value.toLowerCase().replace(/ /g, '-');
 }
 
 export {
