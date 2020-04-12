@@ -238,7 +238,7 @@
       return lociParam.split(';').map(ortholog => {
         let region = {}
 
-        // Two exclamation points ("!!") demarcate a pair of two ranges from its props
+        // Two exclamation points ("!!") demarcate a pair of ranges from its props
         let [rawRanges, regionProps] = ortholog.split('!!')
         ranges = rawRanges.split(',').map(loc => {
           // One exclamation point ("!") demarcates one range from its props
