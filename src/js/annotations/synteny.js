@@ -1,74 +1,40 @@
 import {d3} from '../lib';
 import {drawSyntenyCollinear} from './synteny-collinear';
+import {
+  getRegionsR1AndR2, writeSyntenicRegionPolygons, writeSyntenicRegion
+} from './synteny-lib';
 
-function writeSyntenicRegion(syntenies, regionID, ideo) {
-  return syntenies.append('g')
-    .attr('class', 'syntenicRegion')
-    .attr('id', regionID)
-    .on('click', function() {
-      var activeRegion = this;
-      var others = d3.selectAll(ideo.selector + ' .syntenicRegion')
-        .filter(function() { return (this !== activeRegion); });
+function writeSyntenicRegionLines(syntenicRegion, x1, x2, r1, r2, regions) {
 
-      others.classed('hidden', !others.classed('hidden'));
-    })
-    .on('mouseover', function() {
-      var activeRegion = this;
-      d3.selectAll(ideo.selector + ' .syntenicRegion')
-        .filter(function() { return (this !== activeRegion); })
-        .classed('ghost', true);
-    })
-    .on('mouseout', function() {
-      d3.selectAll(ideo.selector + ' .syntenicRegion')
-        .classed('ghost', false);
-    });
-}
+  var stroke, width;
+  if (
+    Math.abs(r1.startPx - r1.startPx) < 2 &&
+    Math.abs(r1.stopPx - r1.stopPx) < 2
+  ) {
+    stroke = regions.color;
+    width = regions.width;
+  } else {
+    stroke = '';
+    width = '';
+  }
 
-function getRegionsR1AndR2(regions, xOffset, ideo) {
-  var r1, r2;
-
-  r1 = regions.r1;
-  r2 = regions.r2;
-
-  r1.startPx = ideo.convertBpToPx(r1.chr, r1.start) + xOffset;
-  r1.stopPx = ideo.convertBpToPx(r1.chr, r1.stop) + xOffset;
-  r2.startPx = ideo.convertBpToPx(r2.chr, r2.start) + xOffset;
-  r2.stopPx = ideo.convertBpToPx(r2.chr, r2.stop) + xOffset;
-
-  return [r1, r2];
-}
-
-function writeSyntenicRegionPolygons(syntenicRegion, x1, x2, r1, r2, regions) {
-  var color, opacity;
-
-  color = ('color' in regions) ? regions.color : '#CFC';
-  opacity = ('opacity' in regions) ? regions.opacity : 1;
-
-  syntenicRegion.append('polygon')
-    .attr('points',
-      x1 + ', ' + r1.startPx + ' ' +
-      x1 + ', ' + r1.stopPx + ' ' +
-      x2 + ', ' + r2.stopPx + ' ' +
-      x2 + ', ' + r2.startPx
-    )
-    .style('fill', color)
-    .style('fill-opacity', opacity);
-}
-
-function writeSyntenicRegionLines(syntenicRegion, x1, x2, r1, r2) {
   syntenicRegion.append('line')
     .attr('class', 'syntenyBorder')
     .attr('x1', x1)
     .attr('x2', x2)
     .attr('y1', r1.startPx)
-    .attr('y2', r2.startPx);
+    .attr('y2', r2.startPx)
+    .style('stroke', stroke)
+    .style('stroke-width', width);
 
   syntenicRegion.append('line')
     .attr('class', 'syntenyBorder')
     .attr('x1', x1)
     .attr('x2', x2)
     .attr('y1', r1.stopPx)
-    .attr('y2', r2.stopPx);
+    .attr('y2', r2.stopPx)
+    .style('stroke', stroke)
+    .style('stroke-width', stroke);
 }
 
 function writeSyntenicRegionLabels(syntenicRegion, x1, x2, r1, r2, regionId) {
@@ -98,7 +64,7 @@ function writeSyntenicRegions(syntenicRegions, syntenies, xOffset, ideo) {
   for (i = 0; i < syntenicRegions.length; i++) {
     regions = syntenicRegions[i];
 
-    [r1, r2] = getRegionsR1AndR2(regions, xOffset, ideo);
+    [r1, r2] = getRegionsR1AndR2(regions, ideo, xOffset);
 
     regionID = (
       r1.chr.id + '_' + r1.start + '_' + r1.stop + '_' +
@@ -113,7 +79,7 @@ function writeSyntenicRegions(syntenicRegions, syntenies, xOffset, ideo) {
     x2 = ideo._layout.getChromosomeSetYTranslate(1) - chrWidth;
 
     writeSyntenicRegionPolygons(syntenicRegion, x1, x2, r1, r2, regions);
-    writeSyntenicRegionLines(syntenicRegion, x1, x2, r1, r2);
+    writeSyntenicRegionLines(syntenicRegion, x1, x2, r1, r2, regions);
     writeSyntenicRegionLabels(syntenicRegion, x1, x2, r1, r2, regionID);
   }
 }

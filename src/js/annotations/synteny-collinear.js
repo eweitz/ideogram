@@ -1,64 +1,7 @@
 import {d3} from '../lib';
-
-function writeSyntenicRegion(syntenies, regionID, ideo) {
-  return syntenies.append('g')
-    .attr('class', 'syntenicRegion')
-    .attr('id', regionID)
-    .on('click', function() {
-      var activeRegion = this;
-      var others = d3.selectAll(ideo.selector + ' .syntenicRegion')
-        .filter(function() { return (this !== activeRegion); });
-
-      others.classed('hidden', !others.classed('hidden'));
-    })
-    .on('mouseover', function() {
-      var activeRegion = this;
-      d3.selectAll(ideo.selector + ' .syntenicRegion')
-        .filter(function() { return (this !== activeRegion); })
-        .classed('ghost', true);
-    })
-    .on('mouseout', function() {
-      d3.selectAll(ideo.selector + ' .syntenicRegion')
-        .classed('ghost', false);
-    });
-}
-
-function getRegionsR1AndR2(regions, ideo) {
-  var r1, r2;
-
-  r1 = regions.r1;
-  r2 = regions.r2;
-
-  var r1ChrDom = document.querySelector('#' + r1.chr.id + '-chromosome-set');
-  var r1GenomeOffset = r1ChrDom.getCTM().f;
-  var r2ChrDom = document.querySelector('#' + r2.chr.id + '-chromosome-set');
-  // var r2GenomeOffset = r2ChrDom.getBoundingClientRect().top;
-  var r2GenomeOffset = r2ChrDom.getCTM().f;
-
-  r1.startPx = ideo.convertBpToPx(r1.chr, r1.start) + r1GenomeOffset - 12;
-  r1.stopPx = ideo.convertBpToPx(r1.chr, r1.stop) + r1GenomeOffset - 12;
-  r2.startPx = ideo.convertBpToPx(r2.chr, r2.start) + r2GenomeOffset - 12;
-  r2.stopPx = ideo.convertBpToPx(r2.chr, r2.stop) + r2GenomeOffset - 12;
-
-  return [r1, r2];
-}
-
-function writeSyntenicRegionPolygons(syntenicRegion, x1, x2, r1, r2, regions) {
-  var color, opacity;
-
-  color = ('color' in regions) ? regions.color : '#CFC';
-  opacity = ('opacity' in regions) ? regions.opacity : 1;
-
-  syntenicRegion.append('polygon')
-    .attr('points',
-      x1 + ', ' + r1.startPx + ' ' +
-      x1 + ', ' + r1.stopPx + ' ' +
-      x2 + ', ' + r2.stopPx + ' ' +
-      x2 + ', ' + r2.startPx
-    )
-    .style('fill', color)
-    .style('fill-opacity', opacity);
-}
+import {
+  getRegionsR1AndR2, writeSyntenicRegionPolygons, writeSyntenicRegion
+} from './synteny-lib';
 
 function writeSyntenicRegionLines(syntenicRegion, x1, x2, r1, r2) {
   syntenicRegion.append('line')
