@@ -11,6 +11,13 @@ class SmallLayout extends Layout {
       left: 36.5,
       top: 10
     };
+
+    var taxid = this._ideo.getTaxid(this._ideo.config.organism);
+
+    var numChrs = config.chromosomes[taxid].length;
+
+    // Number of chromosomes per row
+    this.chrsPerRow = Math.ceil(numChrs / config.rows);
   }
 
   // rotateForward(setIndex, chrIndex, chrElement, callback) {
@@ -38,8 +45,9 @@ class SmallLayout extends Layout {
   // }
 
   getHeight() {
-    var chrHeight = this._config.chrHeight;
-    return this._config.rows * (chrHeight + this.margin.top * 1.5);
+    var config = this._config;
+    var chrHeight = config.chrHeight * 1.25;
+    return this._config.rows * (chrHeight + this.margin.top);
   }
 
   getWidth() {
@@ -55,20 +63,11 @@ class SmallLayout extends Layout {
   }
 
   getChromosomeSetTranslate(setIndex) {
-    var taxid = this._ideo.getTaxid(this._ideo.config.organism);
+    var xOffset, yOffset;
 
-    // Get first organism chromosomes amount
-    var numChrs = this._ideo.config.chromosomes[taxid].length;
-
-    // Number of chromosomes per row
-    var chrsPerRow = Math.ceil(numChrs / this._config.rows);
-
-    var xOffset;
-    var yOffset;
-
-    if (setIndex > chrsPerRow - 1) {
-      xOffset = this.margin.left + this._config.chrHeight * 1.4;
-      yOffset = this.getChromosomeSetYTranslate(setIndex - chrsPerRow);
+    if (setIndex > this.chrsPerRow - 1) {
+      xOffset = this.margin.left + this._config.chrHeight * 1.3;
+      yOffset = this.getChromosomeSetYTranslate(setIndex - this.chrsPerRow);
     } else {
       xOffset = this.margin.left;
       yOffset = this.getChromosomeSetYTranslate(setIndex);
