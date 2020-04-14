@@ -14,8 +14,8 @@ class SmallLayout extends Layout {
 
     var taxid = this._ideo.getTaxid(this._ideo.config.organism);
 
-    this.chrs = ideo.chromosomes[taxid];
-    var numChrs = Object.entries(this.chrs).length;
+    this.chrs = config.chromosomes[taxid];
+    var numChrs = this.chrs.length;
 
     // Number of chromosomes per row
     this.chrsPerRow = Math.ceil(numChrs / config.rows);
