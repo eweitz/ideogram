@@ -11,6 +11,14 @@ class SmallLayout extends Layout {
       left: 36.5,
       top: 10
     };
+
+    var taxid = this._ideo.getTaxid(this._ideo.config.organism);
+
+    this.chrs = config.chromosomes[taxid];
+    var numChrs = this.chrs.length;
+
+    // Number of chromosomes per row
+    this.chrsPerRow = Math.ceil(numChrs / config.rows);
   }
 
   // rotateForward(setIndex, chrIndex, chrElement, callback) {
@@ -37,10 +45,56 @@ class SmallLayout extends Layout {
   //     .on('end', callback);
   // }
 
+  /**
+   * eweitz 2020-04-13:
+   * This height metric is crude because it is calculated before
+   * the height ("width") of each chromosome is calculated.
+   *
+   * It calculates height by multiplying the max height of all chromosomes
+   * (specified in the Ideogram configuration object) by the number of rows.
+   * This ensures the ideogram height doesn't truncate in cases like dog
+   * (where chrX on the second row is longer than chr1 on the first), but it
+   * often leaves too much space on the second row, e.g. for human.
+   *
+   * Ideally, ideogram height would be cumulative height per row, plus top
+   * margin.  This would require calling getHeight _after_ all chromosomes
+   * have had their height (technically, chr.width) assigned.  See draft new
+   * getHeight method below this getHeight method.
+  */
   getHeight() {
-    var chrHeight = this._config.chrHeight;
-    return this._config.rows * (chrHeight + this.margin.top * 1.5);
+    var config = this._config;
+    var chrHeight = config.chrHeight * 1.25;
+    return this._config.rows * (chrHeight + this.margin.top);
   }
+
+  /**
+   * eweitz 2020-04-13:
+   * Draft refinement of getHeight.  See note in classic version above.
+   *
+   * Total height is cumulative height per row, plus top margin
+   */
+  // getHeight() {
+  //   let height = 0;
+  //   const rows = this._config.rows;
+  //   const chrEntries = Object.entries(this.chrs);
+
+  //   for (let i = 0; i < rows; i++) {
+  //     let rowHeight = 0;
+  //     // Starting and ending indexes of chromosomes of this row
+  //     const startIndex = this.chrsPerRow * i;
+  //     const endIndex = this.chrsPerRow * (i + 1) - 1;
+
+  //     for (let j = startIndex; j < endIndex; j++) {
+  //       const thisChrHeight = chrEntries[j][1].width;
+  //       if (thisChrHeight > rowHeight) {
+  //         rowHeight = thisChrHeight;
+  //       }
+  //     }
+  //     height += rowHeight + this.margin.top;
+  //   }
+
+  //   return height;
+  // }
 
   getWidth() {
     return '97%';
@@ -55,20 +109,11 @@ class SmallLayout extends Layout {
   }
 
   getChromosomeSetTranslate(setIndex) {
-    var taxid = this._ideo.getTaxid(this._ideo.config.organism);
+    var xOffset, yOffset;
 
-    // Get first organism chromosomes amount
-    var numChrs = this._ideo.config.chromosomes[taxid].length;
-
-    // Number of chromosomes per row
-    var chrsPerRow = numChrs / this._config.rows;
-
-    var xOffset;
-    var yOffset;
-
-    if (setIndex > chrsPerRow - 1) {
-      xOffset = this.margin.left + this._config.chrHeight * 1.4;
-      yOffset = this.getChromosomeSetYTranslate(setIndex - chrsPerRow);
+    if (setIndex > this.chrsPerRow - 1) {
+      xOffset = this.margin.left + this._config.chrHeight * 1.3;
+      yOffset = this.getChromosomeSetYTranslate(setIndex - this.chrsPerRow);
     } else {
       xOffset = this.margin.left;
       yOffset = this.getChromosomeSetYTranslate(setIndex);
