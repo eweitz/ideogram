@@ -177,6 +177,13 @@ var organismMetadata = {
     assemblies: {
       default: ''
     }
+  },
+  9615: {
+    commonName: 'Dog',
+    scientificName: 'Canis lupus familiaris',
+    assemblies: {
+      default: ''
+    }
   }
 };
 
