@@ -8,7 +8,15 @@ import {d3} from './lib';
 import collinearizeVerticalChromosomes from './collinear-vertical';
 
 /**
-* Rearrange chromosomes from horizontal to collinear
+* Rearrange chromosomes from parallel horizontal to collinear horizontal
+*
+* Parallel horizontal (as in https://eweitz.github.io/ideogram/mouse)
+*     ---
+*     ---
+*     ---
+*
+* Collinear horizontal (as in https://eweitz.github.io/ideogram/geometry-collinear):
+*     --- --- ---
 */
 function rearrangeChromosomes(chrSets, xOffsets, y, ideo) {
   var i, chr, chrSet, taxid, x, adjustedY, orgIndex, chrLabelY;

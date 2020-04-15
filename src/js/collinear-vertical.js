@@ -23,7 +23,15 @@ function labelGenomes(ideo) {
 }
 
 /**
-* Rearrange chromosomes from horizontal to collinear
+* Rearrange chromosomes from parallel vertical to collinear vertical
+*
+* Parallel vertical (as in https://eweitz.github.io/ideogram/human)
+* | | |
+*
+* Collinear vertical (as in https://eweitz.github.io/ideogram/orthologs?loci=2:150000000,5:20000000;3:100000000,10:80000000&org=homo-sapiens&org2=mus-musculus)
+* |
+* |
+* |
 */
 function rearrangeChromosomes(chrSets, yOffsets, x, ideo) {
   var i, chrSet, y, chrLabelX, adjustedX, chr, taxid, orgIndex,
