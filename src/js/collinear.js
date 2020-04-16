@@ -48,7 +48,7 @@ function rearrangeChromosomes(chrSets, xOffsets, y, ideo) {
 /**
 * Get pixel coordinates to use for rearrangement
 */
-function getxOffsets(chrSets, ideo) {
+function getXOffsets(chrSets, ideo) {
   var xOffsets, i, index, chr, prevChr, x, prevWidth, prevX, xBump, taxid,
     seenTaxids = {};
 
@@ -136,7 +136,7 @@ function collinearizeChromosomes(ideo) {
     config.chrWidth + 1
   );
 
-  xOffsets = getxOffsets(chrSets, ideo);
+  xOffsets = getXOffsets(chrSets, ideo);
   rearrangeChromosomes(chrSets, xOffsets, y, ideo);
 
   height = y + config.chrWidth * 2 + 20;

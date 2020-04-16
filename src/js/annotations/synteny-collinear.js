@@ -19,7 +19,7 @@ function writeSyntenicRegionLines(syntenicRegion, x1, x2, r1, r2) {
     .attr('y2', r2.stopPx);
 }
 
-function writeSyntenicRegions(syntenicRegions, syntenies, xOffset, ideo) {
+function writeSyntenicRegions(syntenicRegions, syntenies, ideo) {
   var i, regions, r1, r2, regionID, syntenicRegion, chrWidth, x1, x2;
 
   for (i = 0; i < syntenicRegions.length; i++) {
@@ -57,16 +57,14 @@ function reportPerformance(t0, ideo) {
  * a syntenic region.
  */
 function drawSyntenyCollinear(syntenicRegions, ideo) {
-  var syntenies, xOffset,
+  var syntenies,
     t0 = new Date().getTime();
 
   syntenies = d3.select(ideo.selector)
     .insert('g', ':first-child')
     .attr('class', 'synteny');
 
-  xOffset = ideo._layout.margin.left;
-
-  writeSyntenicRegions(syntenicRegions, syntenies, xOffset, ideo);
+  writeSyntenicRegions(syntenicRegions, syntenies, ideo);
 
   reportPerformance(t0, ideo);
 }
