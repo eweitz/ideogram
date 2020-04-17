@@ -14,11 +14,12 @@
     #ideogram-container {margin-left: 125px;}
     #search {width: 280px;}
 
-    #options {float: left;}
+    #options label {display: inline;}
+    /* .option {text-decoration: underline;} */
 
     ul {padding: 2px 10px 10px 10px;}
 
-    ul li {list-style-type: none; padding-inline-start: 20px;}
+    ul li {list-style-type: none;}
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/homology@0.4.0/dist/homology.min.js"></script>
@@ -83,39 +84,41 @@
       <option>Rice (Oryza sativa)</option>
       </select>
   </label>
-  <a href="#" id="advanced-toggle">Advanced</a>
-  <div id="advanced">
-    <ul id="options">
-      Chromosome scale
+  <div id="options">
+  <a href="#" id="options-toggle">Options</a>
+  <div id="settings">
+    <ul>
+      <span class="option">Chromosome scale</span>
       <li>
         <input type="radio" name="chromosome-scale" id="absolute" value="absolute" checked>
-        <label for="absolute" style="display: inline;">Absolute</label>
+        <label for="absolute">Absolute</label>
       </li>
       <li>
         <input type="radio" name="chromosome-scale" id="relative" value="relative">
-        <label for="relative" style="display: inline;">Relative</label>
+        <label for="relative">Relative</label>
       </li>
       <br/>
-      Orientation
+      <span class="option">Orientation</span>
       <li>
         <input type="radio" name="orientation" id="vertical" value="vertical" checked>
-        <label for="vertical" style="display: inline;">Vertical</label>
+        <label for="vertical">Vertical</label>
       </li>
       <li>
         <input type="radio" name="orientation" id="horizontal" value="horizontal">
-        <label for="horizontal" style="display: inline;">Horizontal</label>
+        <label for="horizontal">Horizontal</label>
       </li>
       <br/>
-      Orthology backend
+      <span class="option">Orthology backend</span>
       <li>
         <input type="radio" name="backend" id="orthodb" value="orthodb" checked>
-        <label for="orthodb" style="display: inline;">OrthoDB</label>
+        <label for="orthodb">OrthoDB</label>
       </li>
       <li>
         <input type="radio" name="backend" id="oma" value="oma">
-        <label for="oma" style="display: inline;">OMA Browser</label>
+        <label for="oma">OMA Browser</label>
       </li>
     </ul>
+  </div>
   </div>
   </div>
   <div id="ideogram-container"></div>
