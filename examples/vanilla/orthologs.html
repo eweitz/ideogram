@@ -84,41 +84,39 @@
       <option>Rice (Oryza sativa)</option>
       </select>
   </label>
-  <div id="options">
-  <a href="#" id="options-toggle">Options</a>
-  <div id="settings">
-    <ul>
-      <span class="option">Chromosome scale</span>
-      <li>
-        <input type="radio" name="chromosome-scale" id="absolute" value="absolute" checked>
-        <label for="absolute">Absolute</label>
-      </li>
-      <li>
-        <input type="radio" name="chromosome-scale" id="relative" value="relative">
-        <label for="relative">Relative</label>
-      </li>
-      <br/>
-      <span class="option">Orientation</span>
-      <li>
-        <input type="radio" name="orientation" id="vertical" value="vertical" checked>
-        <label for="vertical">Vertical</label>
-      </li>
-      <li>
-        <input type="radio" name="orientation" id="horizontal" value="horizontal">
-        <label for="horizontal">Horizontal</label>
-      </li>
-      <br/>
-      <span class="option">Orthology backend</span>
-      <li>
-        <input type="radio" name="backend" id="orthodb" value="orthodb" checked>
-        <label for="orthodb">OrthoDB</label>
-      </li>
-      <li>
-        <input type="radio" name="backend" id="oma" value="oma">
-        <label for="oma">OMA Browser</label>
-      </li>
-    </ul>
-  </div>
+    <a href="#" id="options-toggle">Options</a>
+    <div id="options" style="display: none">
+      <ul>
+        <span class="option">Chromosome scale</span>
+        <li>
+          <input type="radio" name="chromosome-scale" id="absolute" value="absolute" checked>
+          <label for="absolute">Absolute</label>
+        </li>
+        <li>
+          <input type="radio" name="chromosome-scale" id="relative" value="relative">
+          <label for="relative">Relative</label>
+        </li>
+        <br/>
+        <span class="option">Orientation</span>
+        <li>
+          <input type="radio" name="orientation" id="vertical" value="vertical" checked>
+          <label for="vertical">Vertical</label>
+        </li>
+        <li>
+          <input type="radio" name="orientation" id="horizontal" value="horizontal">
+          <label for="horizontal">Horizontal</label>
+        </li>
+        <br/>
+        <span class="option">Orthology backend</span>
+        <li>
+          <input type="radio" name="backend" id="orthodb" value="orthodb" checked>
+          <label for="orthodb">OrthoDB</label>
+        </li>
+        <li>
+          <input type="radio" name="backend" id="oma" value="oma">
+          <label for="oma">OMA Browser</label>
+        </li>
+      </ul>
   </div>
   </div>
   <div id="ideogram-container"></div>
@@ -576,6 +574,14 @@
     document.querySelector('#search').addEventListener('keyup', handleSearch);
     document.querySelectorAll('.org-select').forEach(select => {
       select.addEventListener('change', handleOrganism);
+    });
+    document.querySelector('#options-toggle').addEventListener('click', (event) => {
+      var options = document.querySelector('#options');
+      if (options.style.display === 'none') {
+        options.style.display = '';
+      } else {
+        options.style.display = 'none';
+      }
     });
 
     radioButtons = document.querySelectorAll('input[type=radio]');
