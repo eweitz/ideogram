@@ -1,5 +1,6 @@
 import {d3} from '../lib';
 import {drawSyntenyCollinear} from './synteny-collinear';
+import {drawSyntenyCollinearHorizontal} from './synteny-collinear-horizontal';
 import {
   getRegionsR1AndR2, writeSyntenicRegionPolygons, writeSyntenicRegion
 } from './synteny-lib';
@@ -99,14 +100,18 @@ function reportPerformance(t0, ideo) {
 function drawSynteny(syntenicRegions) {
   var syntenies, xOffset,
     t0 = new Date().getTime(),
-    ideo = this;
+    ideo = this,
+    config = ideo.config;
 
   if (
-    ideo.config.multiorganism &&
-    ideo.config.geometry === 'collinear' &&
-    ideo.config.orientation === 'vertical'
+    config.multiorganism &&
+    config.geometry === 'collinear'
   ) {
-    return drawSyntenyCollinear(syntenicRegions, ideo);
+    if (config.orientation === 'vertical') {
+      return drawSyntenyCollinear(syntenicRegions, ideo);
+    } else {
+      return drawSyntenyCollinearHorizontal(syntenicRegions, ideo);
+    }
   }
 
   syntenies = d3.select(ideo.selector)

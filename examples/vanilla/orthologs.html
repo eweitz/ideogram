@@ -11,8 +11,17 @@
     .left-select {position: absolute; left: 150px;}
     #status-container {display: inline-block; margin-left: 86px;}
     #error-container {color: red;}
-    #ideogram-container {margin-left: 125px;}
+    #ideogram-container {margin-left: 125px; z-index: -1}
     #search {width: 280px;}
+
+    #options {z-index: 9999; background: white; border: 1px solid #DDD;}
+
+    #options label {display: inline;}
+    /* .option {text-decoration: underline;} */
+
+    ul {padding: 2px 10px 10px 10px;}
+
+    ul li {list-style-type: none;}
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/homology@0.4.0/dist/homology.min.js"></script>
@@ -77,13 +86,40 @@
       <option>Rice (Oryza sativa)</option>
       </select>
   </label>
-  <label for="backend">
-    Orthology backend:
-    <select class="left-select backend-select" id="backend">
-      <option id="orthodb" selected>OrthoDB</option>
-      <option id="oma">OMA Browser</option>
-    </select>
-  </label>
+    <a href="#" id="options-toggle">Options</a>
+    <div id="options" style="display: none">
+      <ul>
+        <span class="option">Chromosome scale</span>
+        <li>
+          <input type="radio" name="chromosome-scale" id="absolute" value="absolute" checked>
+          <label for="absolute">Absolute</label>
+        </li>
+        <li>
+          <input type="radio" name="chromosome-scale" id="relative" value="relative">
+          <label for="relative">Relative</label>
+        </li>
+        <br/>
+        <span class="option">Orientation</span>
+        <li>
+          <input type="radio" name="orientation" id="vertical" value="vertical" checked>
+          <label for="vertical">Vertical</label>
+        </li>
+        <li>
+          <input type="radio" name="orientation" id="horizontal" value="horizontal">
+          <label for="horizontal">Horizontal</label>
+        </li>
+        <br/>
+        <span class="option">Orthology backend</span>
+        <li>
+          <input type="radio" name="backend" id="orthodb" value="orthodb" checked>
+          <label for="orthodb">OrthoDB</label>
+        </li>
+        <li>
+          <input type="radio" name="backend" id="oma" value="oma">
+          <label for="oma">OMA Browser</label>
+        </li>
+      </ul>
+  </div>
   </div>
   <div id="ideogram-container"></div>
   <div id="status-container"></div>
@@ -97,11 +133,13 @@
     }
 
     function updateGenesParams(geneNames) {
-      if (typeof geneNames === 'undefined') {
-        geneNames = genes;
+      if (typeof genes !== 'undefined') {
+        if (typeof geneNames === 'undefined') {
+          geneNames = genes;
+        }
+        delete urlParams['loci']
+        urlParams['genes'] = geneNames;
       }
-      delete urlParams['loci']
-      urlParams['genes'] = geneNames;
       updateUrl();
     }
 
@@ -170,11 +208,41 @@
       return value.includes(':')
     }
 
-    // Process selections in "Orthology source" drop-down menu
+    // Process selections in "Orthology backend" drop-down menu
     async function handleBackend(event) {
-      var menu = document.querySelector('#backend');
+      var backend = document.querySelector('input[name=backend]:checked').id;
 
-      urlParams['backend'] = menu.options[menu.selectedIndex].id;
+      urlParams['backend'] = backend;
+
+      updateGenesParams();
+      createIdeogram();
+    }
+
+    // Process selections in "Orthology source" radio inputs
+    async function handleBackend(event) {
+      var backend = document.querySelector('input[name=backend]:checked').id;
+
+      urlParams['backend'] = backend;
+
+      updateGenesParams();
+      createIdeogram();
+    }
+
+    // Process selections in "Orientation" radio inputs
+    async function handleOrientation(event) {
+      var orientation = document.querySelector('input[name=orientation]:checked').id;
+
+      urlParams['orientation'] = orientation;
+
+      updateGenesParams();
+      createIdeogram();
+    }
+
+    // Process selections in "Orientation" radio inputs
+    async function handleChromosomeScale(event) {
+      var scale = document.querySelector('input[name=chromosome-scale]:checked').id;
+
+      urlParams['chromosome-scale'] = scale;
 
       updateGenesParams();
       createIdeogram();
@@ -307,6 +375,14 @@
         urlParams['backend'] = 'orthodb';
       }
 
+      if ('orientation' in urlParams === false) {
+        urlParams['orientation'] = 'vertical';
+      }
+
+      if ('chromosome-scale' in urlParams === false) {
+        urlParams['chromosome-scale'] = 'relative';
+      }
+
       org1 = urlParams['org'].replace(/-/g, ' ');
       org2 = urlParams['org2'].replace(/-/g, ' ');
 
@@ -326,7 +402,13 @@
       }
 
       backend = urlParams['backend'];
-      document.querySelector('#backend #' + backend).selected = true;
+      document.querySelector('input[name=backend]#' + backend).checked = true;
+
+      scale = urlParams['chromosome-scale'];
+      document.querySelector('input[name=chromosome-scale]#' + scale).checked = true;
+
+      orientation = urlParams['orientation'];
+      document.querySelector('input[name=orientation]#' + orientation).checked = true;
 
       if (shouldUpdateState()) {
         try {
@@ -415,8 +497,20 @@
       // to account for whole-genome rendering
       ideoContainer = document.querySelector('#ideogram-container');
       if (orthologs.length > 1) {
-        document.querySelector('#_ideogram').setAttribute('width', 350);
-        ideoContainer.setAttribute('style', 'position: relative; top: -110px; left: 200px;');
+        if (orientation === 'vertical') {
+          width = 700
+          left = 200
+          topPx = -110
+        } else {
+          width = 2000
+          left = -350
+          topPx = 150
+        }
+        document.querySelector('#_ideogram').setAttribute('width', width);
+        ideoContainer.setAttribute(
+          'style',
+          'position: relative; top: ' + topPx + 'px; left: ' + left + 'px; width: ' + width + 'px;'
+        );
       } else {
         ideoContainer.setAttribute('style', '');
       }
@@ -433,12 +527,14 @@
       if (document.querySelector('#error-container') !== null) {
         return;
       }
-
+      console.log('orientation')
+      console.log(orientation)
       var config = {
         container: '#ideogram-container',
         showBandLabels: showBandLabels,
         rotatable: false,
-        onLoad: onIdeogramLoad
+        onLoad: onIdeogramLoad,
+        orientation: orientation
       };
 
       if (org1 !== org2) {
@@ -452,10 +548,24 @@
 
       if (orthologs.length > 1) {
         // For (likely) multiple chromosomes in each genome
+        organism = config.organism;
+        if (
+          (
+            organism.includes('canis lupus familiaris') ||
+            organism.includes('danio rerio')
+          ) &&
+          orientation === 'horizontal'
+        ) {
+          chrHeight = 65;
+        } else if (orientation === 'horizontal') {
+          chrHeight = 90;
+        } else {
+          chrHeight = 45;
+        }
         Object.assign(config, {
-          chrHeight: 45,
+          chrHeight: chrHeight,
           chrMargin: 3,
-          chromosomeScale: 'relative',
+          chromosomeScale: scale,
           geometry: 'collinear'
         });
       } else {
@@ -466,7 +576,7 @@
         chromosomesConfig[org2] = [region.r2.chr];
         Object.assign(config, {
           chromosomes: chromosomesConfig,
-          chrHeight: 400,
+          chrHeight: orientation === 'vertical' ? 350 : 700,
           chrMargin: 50,
           fullChromosomeLabels: true,
           perspective: 'comparative'
@@ -483,8 +593,27 @@
     document.querySelectorAll('.org-select').forEach(select => {
       select.addEventListener('change', handleOrganism);
     });
-    document.querySelectorAll('.backend-select').forEach(select => {
-      select.addEventListener('change', handleBackend);
+    document.querySelector('#options-toggle').addEventListener('click', (event) => {
+      var options = document.querySelector('#options');
+      if (options.style.display === 'none') {
+        options.style.display = '';
+      } else {
+        options.style.display = 'none';
+      }
+    });
+
+    radioButtons = document.querySelectorAll('input[type=radio]');
+    radioButtons.forEach(function(radioButton) {
+      radioButton.addEventListener('click', function(event) {
+        var name = event.target.name;
+        if (name === 'backend') {
+          handleBackend(event);
+        } else if (name === 'orientation') {
+          handleOrientation(event);
+        } else if (name === 'chromosome-scale') {
+          handleChromosomeScale(event);
+        }
+      });
     });
 
     createIdeogram();

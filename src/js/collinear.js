@@ -8,7 +8,15 @@ import {d3} from './lib';
 import collinearizeVerticalChromosomes from './collinear-vertical';
 
 /**
-* Rearrange chromosomes from horizontal to collinear
+* Rearrange chromosomes from parallel horizontal to collinear horizontal
+*
+* Parallel horizontal (as in https://eweitz.github.io/ideogram/mouse)
+*     ---
+*     ---
+*     ---
+*
+* Collinear horizontal (as in https://eweitz.github.io/ideogram/geometry-collinear):
+*     --- --- ---
 */
 function rearrangeChromosomes(chrSets, xOffsets, y, ideo) {
   var i, chr, chrSet, taxid, x, adjustedY, orgIndex, chrLabelY;
@@ -40,7 +48,7 @@ function rearrangeChromosomes(chrSets, xOffsets, y, ideo) {
 /**
 * Get pixel coordinates to use for rearrangement
 */
-function getxOffsets(chrSets, ideo) {
+function getXOffsets(chrSets, ideo) {
   var xOffsets, i, index, chr, prevChr, x, prevWidth, prevX, xBump, taxid,
     seenTaxids = {};
 
@@ -128,7 +136,7 @@ function collinearizeChromosomes(ideo) {
     config.chrWidth + 1
   );
 
-  xOffsets = getxOffsets(chrSets, ideo);
+  xOffsets = getXOffsets(chrSets, ideo);
   rearrangeChromosomes(chrSets, xOffsets, y, ideo);
 
   height = y + config.chrWidth * 2 + 20;

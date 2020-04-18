@@ -586,6 +586,102 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
+  it('should show 3 syntenic regions in collinear horizontal genomes', function(done) {
+    // Tests use case from ../examples/vanilla/compare-whole-genomes
+    // Used for comparing multiple whole genomes
+
+    function onIdeogramLoad() {
+      var chrs, chr1, chr4, humanTaxid, mouseTaxid;
+
+      humanTaxid = ideogram.getTaxid('human');
+      mouseTaxid = ideogram.getTaxid('mouse');
+
+      chrs = ideogram.chromosomes;
+      chr1 = chrs[humanTaxid]['1'];
+      chr4 = chrs[mouseTaxid]['4'];
+      chr19 = chrs[mouseTaxid]['19'];
+      syntenicRegions = [];
+
+      range1 = {
+        chr: chr1,
+        start: 11106531,
+        stop: 11262557,
+        orientation: 'reverse'
+      };
+
+      range2 = {
+        chr: chr4,
+        start: 148448582,
+        stop: 148557685
+      };
+      // range2 = {
+      //   chr: chr19,
+      //   start: 61431564,
+      //   stop: 61431565 // end of mouse chr19
+      // };
+
+      syntenicRegions.push({r1: range1, r2: range2});
+
+      var chr10 = chrs[humanTaxid]['10'];
+      var range3 = {
+        chr: chr10,
+        start: 87864470,
+        stop: 87965472
+      };
+      var range4 = {
+        chr: chr19,
+        start: 32758445,
+        stop: 32820028
+      };
+      syntenicRegions.push({r1: range3, r2: range4});
+
+      var range5 = {
+        chr: chr10,
+        start: 26216810,
+        stop: 26300961
+      };
+      var range6 = {
+        chr: chrs[mouseTaxid]['2'],
+        start: 22622663,
+        stop: 22690346
+      };
+      syntenicRegions.push({r1: range5, r2: range6});
+
+      ideogram.drawSynteny(syntenicRegions);
+
+      var selector1, selector3, line1, line3;
+
+      selector1 = '#chr1-9606_11106531_11262557___chr4-10090_148448582_148557685';
+      selector3 = '#chr10-9606_26216810_26300961___chr2-10090_22622663_22690346';
+
+      line1 = document.querySelector(selector1 + ' .syntenyBorder');
+      line3 = document.querySelector(selector3 + ' .syntenyBorder');
+
+      assert.equal(Math.round(line1.getAttribute('x1')), 22);
+      assert.equal(Math.round(line1.getAttribute('x2')), 139);
+      assert.equal(Math.round(line1.getAttribute('y1')), 31);
+      assert.equal(Math.round(line1.getAttribute('y2')), 201);
+
+      assert.equal(Math.round(line3.getAttribute('x1')), 320);
+      assert.equal(Math.round(line3.getAttribute('x2')), 58);
+
+      done();
+    }
+
+    config = {
+      organism: ['human', 'mouse'],
+      orientation: 'horizontal',
+      geometry: 'collinear',
+      chromosomeScale: 'absolute',
+      chrHeight: 40,
+      chrMargin: 3,
+      dataDir: '/dist/data/bands/native/',
+      onLoad: onIdeogramLoad
+    };
+
+    ideogram = new Ideogram(config);
+  });
+
   it('should plot accurate synteny in relative collinear vertical genomes', function(done) {
     // Tests use case from ../examples/vanilla/compare-whole-genomes
     // Used for comparing multiple whole genomes
