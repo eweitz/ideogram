@@ -11,8 +11,10 @@
     .left-select {position: absolute; left: 150px;}
     #status-container {display: inline-block; margin-left: 86px;}
     #error-container {color: red;}
-    #ideogram-container {margin-left: 125px;}
+    #ideogram-container {margin-left: 125px; z-index: -1}
     #search {width: 280px;}
+
+    #options {z-index: 9999; background: white; border: 1px solid #DDD;}
 
     #options label {display: inline;}
     /* .option {text-decoration: underline;} */
@@ -131,11 +133,13 @@
     }
 
     function updateGenesParams(geneNames) {
-      if (typeof geneNames === 'undefined') {
-        geneNames = genes;
+      if (typeof genes !== 'undefined') {
+        if (typeof geneNames === 'undefined') {
+          geneNames = genes;
+        }
+        delete urlParams['loci']
+        urlParams['genes'] = geneNames;
       }
-      delete urlParams['loci']
-      urlParams['genes'] = geneNames;
       updateUrl();
     }
 
@@ -498,9 +502,9 @@
           left = 200
           topPx = -110
         } else {
-          width = 1350
-          left = 0
-          topPx = 0
+          width = 2000
+          left = -350
+          topPx = 150
         }
         document.querySelector('#_ideogram').setAttribute('width', width);
         ideoContainer.setAttribute(
@@ -544,8 +548,22 @@
 
       if (orthologs.length > 1) {
         // For (likely) multiple chromosomes in each genome
+        organism = config.organism;
+        if (
+          (
+            organism.includes('canis lupus familiaris') ||
+            organism.includes('danio rerio')
+          ) &&
+          orientation === 'horizontal'
+        ) {
+          chrHeight = 65;
+        } else if (orientation === 'horizontal') {
+          chrHeight = 90;
+        } else {
+          chrHeight = 45;
+        }
         Object.assign(config, {
-          chrHeight: orientation === 'vertical' ? 45 : 70,
+          chrHeight: chrHeight,
           chrMargin: 3,
           chromosomeScale: scale,
           geometry: 'collinear'
