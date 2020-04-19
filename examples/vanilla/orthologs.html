@@ -8,11 +8,39 @@
     a:hover {text-decoration: underline;}
     a, a:hover, a:visited, a:active {color: #0366d6;}
     label {display: block; margin-bottom: 10px;}
-    .left-select {position: absolute; left: 150px;}
+    .left-select {position: absolute; left: 140px;}
     #status-container {display: inline-block; margin-left: 86px;}
     #error-container {color: red;}
     #ideogram-container {margin-left: 125px; z-index: -1}
-    #search {width: 280px;}
+    #search-container {
+      height: 26px;
+    }
+
+    #search {
+      width: 290px;
+      height: 20px;
+      font-size: 14px;
+      border-radius: 3px;
+      border: 1px solid #888;
+    }
+
+    #search-button {
+      height: 21px;
+      width: 23px;
+      font-size: 24px;
+      background: #58F;
+      color: #FFF;
+      display: inline-block;
+      position: relative;
+      top: -23.5px;
+      left: 325px;
+      border-radius: 3px;
+      text-align: center;
+      padding-top: 3px;
+      cursor: pointer;
+    }
+
+    select {height: 22px; font-size: 14px;}
 
     #options {z-index: 9999; background: white; border: 1px solid #DDD;}
 
@@ -39,8 +67,9 @@
     Compare gene locations across organisms.
   </p>
   <div style="float: left; width: 350px;">
-  <label for="search">Search:
+  <label for="search" id="search-container">Search:
     <input id="search" autocomplete="off" placeholder="Gene or location"/>
+    <span id="search-button">&#x2315;</span>
   </label>
   <div style="font-size: 12px; position: relative; top: -7px;">
     Examples:
@@ -160,7 +189,7 @@
         updateLociParams(searchInput)
       } else {
         // Ignore when input value is unchanged
-        if (urlParams['genes'] === geneNames) return;
+        if (typeof geneNames !== 'undefined' && urlParams['genes'] === geneNames) return;
         updateGenesParams(searchInput);
       }
 
@@ -512,7 +541,7 @@
           'position: relative; top: ' + topPx + 'px; left: ' + left + 'px; width: ' + width + 'px;'
         );
       } else {
-        ideoContainer.setAttribute('style', '');
+        ideoContainer.setAttribute('style', 'position: relative; top: -60px;');
       }
     }
 
@@ -554,11 +583,12 @@
             organism.includes('canis lupus familiaris') ||
             organism.includes('danio rerio')
           ) &&
-          orientation === 'horizontal'
+          orientation === 'horizontal' &&
+          scale === 'relative'
         ) {
           chrHeight = 65;
         } else if (orientation === 'horizontal') {
-          chrHeight = 90;
+          chrHeight = 95;
         } else {
           chrHeight = 48;
         }
@@ -576,7 +606,8 @@
         chromosomesConfig[org2] = [region.r2.chr];
         Object.assign(config, {
           chromosomes: chromosomesConfig,
-          chrHeight: orientation === 'vertical' ? 350 : 700,
+          chrHeight: orientation === 'vertical' ? 600 : 700,
+          chrWidth: 10,
           chrMargin: 50,
           fullChromosomeLabels: true,
           perspective: 'comparative'
@@ -588,6 +619,7 @@
       ideogram = new Ideogram(config);
     }
 
+    document.querySelector('#search-button').addEventListener('click', handleSearch);
     document.querySelector('#search').addEventListener('blur', handleSearch);
     document.querySelector('#search').addEventListener('keyup', handleSearch);
     document.querySelectorAll('.org-select').forEach(select => {
