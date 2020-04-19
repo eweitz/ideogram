@@ -57,7 +57,7 @@
       <option>Rat (Rattus norvegicus)</option>
       <option>Dog (Canis lupus familiaris)</option>
       <option>Cat (Felis catus)</option>
-      <option>Chicken (Gallus gallus)</option>
+      <!-- <option>Chicken (Gallus gallus)</option> -->
       <option>Zebrafish (Danio rerio)</option>
       <option>Fly (Drosophila melanogaster)</option>
       <option>Mosquito (Anopheles gambiae)</option>
@@ -76,7 +76,7 @@
       <option>Rat (Rattus norvegicus)</option>
       <option>Dog (Canis lupus familiaris)</option>
       <option>Cat (Felis catus)</option>
-      <option>Chicken (Gallus gallus)</option>
+      <!-- <option>Chicken (Gallus gallus)</option> -->
       <option>Zebrafish (Danio rerio)</option>
       <option>Fly (Drosophila melanogaster)</option>
       <option>Mosquito (Anopheles gambiae)</option>
@@ -380,7 +380,7 @@
       }
 
       if ('chromosome-scale' in urlParams === false) {
-        urlParams['chromosome-scale'] = 'relative';
+        urlParams['chromosome-scale'] = 'absolute';
       }
 
       org1 = urlParams['org'].replace(/-/g, ' ');
@@ -560,7 +560,7 @@
         } else if (orientation === 'horizontal') {
           chrHeight = 90;
         } else {
-          chrHeight = 45;
+          chrHeight = 48;
         }
         Object.assign(config, {
           chrHeight: chrHeight,
