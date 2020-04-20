@@ -35,11 +35,12 @@ function labelGenomes(ideo) {
 */
 function rearrangeChromosomes(chrSets, yOffsets, x, ideo) {
   var i, chrSet, y, chrLabelX, adjustedX, chr, taxid, orgIndex,
-    config = ideo.config;
+    config = ideo.config,
+    chrLabelSize = config.chrLabelSize;
 
   for (i = 0; i < chrSets.length; i++) {
     chrSet = chrSets[i];
-    y = yOffsets[i] + 15;
+    y = yOffsets[i] + 23 - chrLabelSize;
 
     chr = ideo.chromosomesArray[i];
     taxid = chr.id.split('-')[1];
@@ -53,7 +54,9 @@ function rearrangeChromosomes(chrSets, yOffsets, x, ideo) {
     }
 
     if (config.showChromosomeLabels) {
-      chrSet.querySelector('.chrLabel > tspan').setAttribute('x', chrLabelX);
+      let labelSpan = chrSet.querySelector('.chrLabel > tspan');
+      labelSpan.setAttribute('x', chrLabelX);
+      labelSpan.setAttribute('dy', chrLabelSize - 8);
       chrSet.querySelector('.chrLabel').setAttribute('text-anchor', 'start');
     }
     chrSet.setAttribute('transform', 'rotate(90) translate(' + y + ',' + adjustedX + ')');

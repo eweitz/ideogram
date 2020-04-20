@@ -146,7 +146,10 @@ function configureBands(ideo) {
 
 let configuredCss = staticCss;
 function configureTextStyle(ideo) {
-  if (!ideo.config.chrLabelSize) return;
+  if (!ideo.config.chrLabelSize) {
+    ideo.config.chrLabelSize = 9;
+    return;
+  }
 
   const size = ideo.config.chrLabelSize;
   configuredCss += `#_ideogram text {font-size: ${size}px}`;
