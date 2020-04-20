@@ -42,7 +42,13 @@
 
     select {height: 22px; font-size: 14px;}
 
-    #options {z-index: 9999; background: white; border: 1px solid #DDD;}
+    #options-toggle {cursor: pointer;}
+
+    #options {
+      z-index: 9999;
+      background: white;
+      border: 1px solid #DDD;
+    }
 
     #options label {display: inline;}
     /* .option {text-decoration: underline;} */
@@ -115,7 +121,7 @@
       <option>Rice (Oryza sativa)</option>
       </select>
   </label>
-    <a href="#" id="options-toggle">Options</a>
+    <a id="options-toggle">Options</a>
     <div id="options" style="display: none">
       <ul>
         <label class="option" for="chr-height">Chromosome height</label>
@@ -592,7 +598,7 @@
         chrHeight = 95;
       } else {
         // vertical
-        chrHeight = 50;
+        chrHeight = 48;
       }
 
       return chrHeight;
@@ -659,7 +665,7 @@
     document.querySelectorAll('.org-select').forEach(select => {
       select.addEventListener('change', handleOrganism);
     });
-    document.querySelector('#options-toggle').addEventListener('click', (event) => {
+    document.querySelector('#options-toggle').addEventListener('click', event => {
       var options = document.querySelector('#options');
       if (options.style.display === 'none') {
         options.style.display = '';
