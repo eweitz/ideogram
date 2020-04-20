@@ -111,4 +111,4 @@ function drawHeatmapsCollinear(annotContainers, ideo) {
   if (ideo.onDrawAnnotsCallback) ideo.onDrawAnnotsCallback();
 }
 
-export {drawHeatmapsCollinear, inflateHeatmaps};
+export {drawHeatmapsCollinear};
