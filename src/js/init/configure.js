@@ -136,9 +136,7 @@ function configureMiscellaneous(ideo) {
 function configureBands(ideo) {
   if (!ideo.config.showBandLabels) ideo.config.showBandLabels = false;
 
-  if ('showFullyBanded' in ideo.config) {
-    ideo.config.showFullyBanded = ideo.config.showFullyBanded;
-  } else {
+  if ('showFullyBanded' in ideo.config === false) {
     ideo.config.showFullyBanded = true;
   }
 

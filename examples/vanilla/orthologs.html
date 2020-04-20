@@ -8,13 +8,47 @@
     a:hover {text-decoration: underline;}
     a, a:hover, a:visited, a:active {color: #0366d6;}
     label {display: block; margin-bottom: 10px;}
-    .left-select {position: absolute; left: 150px;}
+    .left-select {position: absolute; left: 140px;}
     #status-container {display: inline-block; margin-left: 86px;}
     #error-container {color: red;}
     #ideogram-container {margin-left: 125px; z-index: -1}
-    #search {width: 280px;}
+    #search-container {
+      height: 26px;
+    }
 
-    #options {z-index: 9999; background: white; border: 1px solid #DDD;}
+    #search {
+      width: 290px;
+      height: 20px;
+      font-size: 14px;
+      border-radius: 3px;
+      border: 1px solid #888;
+    }
+
+    #search-button {
+      height: 21px;
+      width: 23px;
+      font-size: 24px;
+      background: #58F;
+      color: #FFF;
+      display: inline-block;
+      position: relative;
+      top: -23.5px;
+      left: 325px;
+      border-radius: 3px;
+      text-align: center;
+      padding-top: 3px;
+      cursor: pointer;
+    }
+
+    select {height: 22px; font-size: 14px;}
+
+    #options-toggle {cursor: pointer;}
+
+    #options {
+      z-index: 9999;
+      background: white;
+      border: 1px solid #DDD;
+    }
 
     #options label {display: inline;}
     /* .option {text-decoration: underline;} */
@@ -39,8 +73,9 @@
     Compare gene locations across organisms.
   </p>
   <div style="float: left; width: 350px;">
-  <label for="search">Search:
+  <label for="search" id="search-container">Search:
     <input id="search" autocomplete="off" placeholder="Gene or location"/>
+    <span id="search-button">&#x2315;</span>
   </label>
   <div style="font-size: 12px; position: relative; top: -7px;">
     Examples:
@@ -57,7 +92,7 @@
       <option>Rat (Rattus norvegicus)</option>
       <option>Dog (Canis lupus familiaris)</option>
       <option>Cat (Felis catus)</option>
-      <option>Chicken (Gallus gallus)</option>
+      <!-- <option>Chicken (Gallus gallus)</option> -->
       <option>Zebrafish (Danio rerio)</option>
       <option>Fly (Drosophila melanogaster)</option>
       <option>Mosquito (Anopheles gambiae)</option>
@@ -76,7 +111,7 @@
       <option>Rat (Rattus norvegicus)</option>
       <option>Dog (Canis lupus familiaris)</option>
       <option>Cat (Felis catus)</option>
-      <option>Chicken (Gallus gallus)</option>
+      <!-- <option>Chicken (Gallus gallus)</option> -->
       <option>Zebrafish (Danio rerio)</option>
       <option>Fly (Drosophila melanogaster)</option>
       <option>Mosquito (Anopheles gambiae)</option>
@@ -86,16 +121,21 @@
       <option>Rice (Oryza sativa)</option>
       </select>
   </label>
-    <a href="#" id="options-toggle">Options</a>
+    <a id="options-toggle">Options</a>
     <div id="options" style="display: none">
       <ul>
+        <label class="option" for="chr-height">Chromosome height</label>
+        <li>
+          <input type="number" id="chr-height">
+        </li>
+        <br/>
         <span class="option">Chromosome scale</span>
         <li>
-          <input type="radio" name="chromosome-scale" id="absolute" value="absolute" checked>
+          <input type="radio" name="chr-scale" id="absolute" value="absolute" checked>
           <label for="absolute">Absolute</label>
         </li>
         <li>
-          <input type="radio" name="chromosome-scale" id="relative" value="relative">
+          <input type="radio" name="chr-scale" id="relative" value="relative">
           <label for="relative">Relative</label>
         </li>
         <br/>
@@ -160,7 +200,7 @@
         updateLociParams(searchInput)
       } else {
         // Ignore when input value is unchanged
-        if (urlParams['genes'] === geneNames) return;
+        if (typeof geneNames !== 'undefined' && urlParams['genes'] === geneNames) return;
         updateGenesParams(searchInput);
       }
 
@@ -238,11 +278,21 @@
       createIdeogram();
     }
 
+    // Process selections in "Orthology backend" drop-down menu
+    async function handleChromosomeHeight(event) {
+      var chrHeight = document.querySelector('#chr-height').value;
+
+      urlParams['chr-height'] = chrHeight;
+
+      updateGenesParams();
+      createIdeogram();
+    }
+
     // Process selections in "Orientation" radio inputs
     async function handleChromosomeScale(event) {
-      var scale = document.querySelector('input[name=chromosome-scale]:checked').id;
+      var scale = document.querySelector('input[name=chr-scale]:checked').id;
 
-      urlParams['chromosome-scale'] = scale;
+      urlParams['chr-scale'] = scale;
 
       updateGenesParams();
       createIdeogram();
@@ -338,7 +388,7 @@
     }
 
     async function processUrl() {
-      var geneList, genePropList, hasGenes, hasLoci, loci;
+      var geneList, genePropList, hasGenes, hasLoci, loci, lociList, numAnnots;
 
       document.querySelector('#ideogram-container').innerHTML = '';
       document.querySelector('#status-container').innerHTML = 'Loading...';
@@ -371,18 +421,6 @@
         urlParams['org2'] = org2;
       }
 
-      if ('backend' in urlParams === false) {
-        urlParams['backend'] = 'orthodb';
-      }
-
-      if ('orientation' in urlParams === false) {
-        urlParams['orientation'] = 'vertical';
-      }
-
-      if ('chromosome-scale' in urlParams === false) {
-        urlParams['chromosome-scale'] = 'relative';
-      }
-
       org1 = urlParams['org'].replace(/-/g, ' ');
       org2 = urlParams['org2'].replace(/-/g, ' ');
 
@@ -401,14 +439,30 @@
         document.querySelector('#search').value = loci
       }
 
+      if ('backend' in urlParams === false) urlParams['backend'] = 'orthodb';
       backend = urlParams['backend'];
       document.querySelector('input[name=backend]#' + backend).checked = true;
 
-      scale = urlParams['chromosome-scale'];
-      document.querySelector('input[name=chromosome-scale]#' + scale).checked = true;
-
+      if ('orientation' in urlParams === false) urlParams['orientation'] = 'vertical';
+      orientation = urlParams['orientation'];
       orientation = urlParams['orientation'];
       document.querySelector('input[name=orientation]#' + orientation).checked = true;
+
+      if ('chr-scale' in urlParams === false) urlParams['chr-scale'] = 'absolute';
+      scale = urlParams['chr-scale'];
+      document.querySelector('input[name=chr-scale]#' + scale).checked = true;
+
+      if (hasGenes) {
+        numAnnots = geneList.length;
+      } else {
+        lociList = parseLociParam(loci);
+        numAnnots = lociList.length;
+      }
+      if ('chr-height' in urlParams === false) {
+        urlParams['chr-height'] = getChromosomeHeight(org1, numAnnots);
+      }
+      chrHeight = urlParams['chr-height'];
+      document.querySelector('#chr-height').value = chrHeight;
 
       if (shouldUpdateState()) {
         try {
@@ -424,7 +478,7 @@
               return rawOrtholog.concat(propVals)
             })
           } else {
-            orthologs = parseLociParam(loci)
+            orthologs = lociList;
           }
         } catch (error) {
           document.querySelector('#status-container').innerHTML =
@@ -512,12 +566,42 @@
           'position: relative; top: ' + topPx + 'px; left: ' + left + 'px; width: ' + width + 'px;'
         );
       } else {
-        ideoContainer.setAttribute('style', '');
+        ideoContainer.setAttribute('style', 'position: relative; top: -60px;');
       }
     }
 
     function onIdeogramLoad() {
       drawSynteny();
+    }
+
+    function getChromosomeHeight(organism, numAnnots) {
+      var chrHeight;
+
+      if ('chr-height' in urlParams) {
+        return urlParams['chr-height'];
+      }
+
+      if (numAnnots < 2) {
+        return orientation === 'vertical' ? 600 : 700
+      }
+
+      if (
+        (
+          organism.includes('canis lupus familiaris') ||
+          organism.includes('danio rerio')
+        ) &&
+        orientation === 'horizontal' &&
+        scale === 'relative'
+      ) {
+        chrHeight = 65;
+      } else if (orientation === 'horizontal') {
+        chrHeight = 95;
+      } else {
+        // vertical
+        chrHeight = 48;
+      }
+
+      return chrHeight;
     }
 
     async function createIdeogram() {
@@ -527,14 +611,17 @@
       if (document.querySelector('#error-container') !== null) {
         return;
       }
-      console.log('orientation')
-      console.log(orientation)
+
+      chrHeight = getChromosomeHeight(org1);
+
       var config = {
         container: '#ideogram-container',
         showBandLabels: showBandLabels,
         rotatable: false,
+        chrWidth: 10,
         onLoad: onIdeogramLoad,
-        orientation: orientation
+        orientation: orientation,
+        chrHeight: chrHeight,
       };
 
       if (org1 !== org2) {
@@ -549,24 +636,10 @@
       if (orthologs.length > 1) {
         // For (likely) multiple chromosomes in each genome
         organism = config.organism;
-        if (
-          (
-            organism.includes('canis lupus familiaris') ||
-            organism.includes('danio rerio')
-          ) &&
-          orientation === 'horizontal'
-        ) {
-          chrHeight = 65;
-        } else if (orientation === 'horizontal') {
-          chrHeight = 90;
-        } else {
-          chrHeight = 45;
-        }
         Object.assign(config, {
-          chrHeight: chrHeight,
-          chrMargin: 3,
           chromosomeScale: scale,
-          geometry: 'collinear'
+          geometry: 'collinear',
+          chrMargin: 3
         });
       } else {
         // For one chromosome in each genome
@@ -576,8 +649,6 @@
         chromosomesConfig[org2] = [region.r2.chr];
         Object.assign(config, {
           chromosomes: chromosomesConfig,
-          chrHeight: orientation === 'vertical' ? 350 : 700,
-          chrMargin: 50,
           fullChromosomeLabels: true,
           perspective: 'comparative'
         });
@@ -588,12 +659,13 @@
       ideogram = new Ideogram(config);
     }
 
+    document.querySelector('#search-button').addEventListener('click', handleSearch);
     document.querySelector('#search').addEventListener('blur', handleSearch);
     document.querySelector('#search').addEventListener('keyup', handleSearch);
     document.querySelectorAll('.org-select').forEach(select => {
       select.addEventListener('change', handleOrganism);
     });
-    document.querySelector('#options-toggle').addEventListener('click', (event) => {
+    document.querySelector('#options-toggle').addEventListener('click', event => {
       var options = document.querySelector('#options');
       if (options.style.display === 'none') {
         options.style.display = '';
@@ -601,6 +673,10 @@
         options.style.display = 'none';
       }
     });
+
+    document.querySelector('#chr-height').addEventListener('change', event => {
+      handleChromosomeHeight(event)
+    })
 
     radioButtons = document.querySelectorAll('input[type=radio]');
     radioButtons.forEach(function(radioButton) {
@@ -610,7 +686,7 @@
           handleBackend(event);
         } else if (name === 'orientation') {
           handleOrientation(event);
-        } else if (name === 'chromosome-scale') {
+        } else if (name === 'chr-scale') {
           handleChromosomeScale(event);
         }
       });
