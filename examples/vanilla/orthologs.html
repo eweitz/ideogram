@@ -622,6 +622,7 @@
         onLoad: onIdeogramLoad,
         orientation: orientation,
         chrHeight: chrHeight,
+        chrLabelSize: 11
       };
 
       if (org1 !== org2) {
@@ -639,7 +640,7 @@
         Object.assign(config, {
           chromosomeScale: scale,
           geometry: 'collinear',
-          chrMargin: 3
+          chrMargin: 6
         });
       } else {
         // For one chromosome in each genome

@@ -7,6 +7,22 @@
 import {d3} from './lib';
 import collinearizeVerticalChromosomes from './collinear-vertical';
 
+function labelGenomes(ideo) {
+
+  ideo.config.taxids.forEach((taxid, i) => {
+    var org = ideo.organisms[taxid];
+    var config = ideo.config;
+    // var commonName = slug(org.commonName);
+    var scientificName = org.scientificName;
+    d3.select(ideo.selector)
+      .append('text')
+      .attr('class', 'genomeLabel italic')
+      .attr('x', 5)
+      .attr('y', config.chrLabelSize + (200 + (3 * config.chrWidth)) * i)
+      .text(scientificName);
+  });
+}
+
 /**
 * Rearrange chromosomes from parallel horizontal to collinear horizontal
 *
@@ -19,7 +35,10 @@ import collinearizeVerticalChromosomes from './collinear-vertical';
 *     --- --- ---
 */
 function rearrangeChromosomes(chrSets, xOffsets, y, ideo) {
-  var i, chr, chrSet, taxid, x, adjustedY, orgIndex, chrLabelY;
+  var i, chr, chrSet, taxid, x, adjustedY, orgIndex, chrLabelY,
+    config = ideo.config,
+    chrWidth = config.chrWidth,
+    chrLabelSize = config.chrLabelSize;
 
   for (i = 0; i < chrSets.length; i++) {
     chrSet = chrSets[i];
@@ -27,13 +46,13 @@ function rearrangeChromosomes(chrSets, xOffsets, y, ideo) {
 
     chr = ideo.chromosomesArray[i];
     taxid = chr.id.split('-')[1];
-    orgIndex = ideo.config.taxids.indexOf(taxid);
+    orgIndex = config.taxids.indexOf(taxid);
     adjustedY = y + orgIndex * 200;
     if (orgIndex === 0 && ideo.config.multiorganism) {
-      chrLabelY = 6;
-      adjustedY += ideo.config.chrWidth * 2;
+      chrLabelY = chrLabelSize - 4;
+      adjustedY += chrWidth * 2 + chrLabelSize;
     } else {
-      chrLabelY = ideo.config.chrWidth * 2 + 10;
+      chrLabelY = chrWidth * 2 + chrLabelSize + 2;
     }
 
     if (ideo.config.showChromosomeLabels) {
@@ -42,6 +61,10 @@ function rearrangeChromosomes(chrSets, xOffsets, y, ideo) {
     }
     chrSet.setAttribute('transform', 'translate(' + x + ',' + adjustedY + ')');
     chrSet.querySelector('.chromosome').setAttribute('transform', 'translate(-13, 10)');
+  }
+
+  if (config.multiorganism) {
+    labelGenomes(ideo);
   }
 }
 
