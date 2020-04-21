@@ -11,13 +11,14 @@ function labelGenomes(ideo) {
 
   ideo.config.taxids.forEach((taxid, i) => {
     var org = ideo.organisms[taxid];
+    var config = ideo.config;
     // var commonName = slug(org.commonName);
     var scientificName = org.scientificName;
     d3.select(ideo.selector)
       .append('text')
       .attr('class', 'genomeLabel italic')
       .attr('x', 5)
-      .attr('y', 10 + 240 * i)
+      .attr('y', config.chrLabelSize + (200 + (3 * config.chrWidth)) * i)
       .text(scientificName);
   });
 }
@@ -49,9 +50,9 @@ function rearrangeChromosomes(chrSets, xOffsets, y, ideo) {
     adjustedY = y + orgIndex * 200;
     if (orgIndex === 0 && ideo.config.multiorganism) {
       chrLabelY = chrLabelSize - 4;
-      adjustedY += chrWidth * 2;
+      adjustedY += chrWidth * 2 + chrLabelSize;
     } else {
-      chrLabelY = chrWidth * 2 + chrLabelSize;
+      chrLabelY = chrWidth * 2 + chrLabelSize + 2;
     }
 
     if (ideo.config.showChromosomeLabels) {
@@ -62,7 +63,9 @@ function rearrangeChromosomes(chrSets, xOffsets, y, ideo) {
     chrSet.querySelector('.chromosome').setAttribute('transform', 'translate(-13, 10)');
   }
 
-  labelGenomes(ideo);
+  if (config.multiorganism) {
+    labelGenomes(ideo);
+  }
 }
 
 /**
@@ -153,7 +156,7 @@ function collinearizeChromosomes(ideo) {
 
   y = (
     (config.numAnnotTracks * (annotHeight + annotLabelHeight + 4)) -
-    config.chrWidth + 1 + 10
+    config.chrWidth + 1
   );
 
   xOffsets = getXOffsets(chrSets, ideo);

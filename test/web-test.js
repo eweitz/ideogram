@@ -565,10 +565,10 @@ describe('Ideogram', function() {
 
       assert.equal(Math.round(line1.getAttribute('x1')), 56);
       assert.equal(Math.round(line1.getAttribute('x2')), 250);
-      assert.equal(Math.round(line1.getAttribute('y1')), 25);
+      assert.equal(Math.round(line1.getAttribute('y1')), 24);
 
-      assert.equal(Math.round(line3.getAttribute('y1')), 323);
-      assert.equal(Math.round(line3.getAttribute('y2')), 61);
+      assert.equal(Math.round(line3.getAttribute('y1')), 322);
+      assert.equal(Math.round(line3.getAttribute('y2')), 60);
       done();
     }
 
@@ -659,8 +659,8 @@ describe('Ideogram', function() {
 
       assert.equal(Math.round(line1.getAttribute('x1')), 22);
       assert.equal(Math.round(line1.getAttribute('x2')), 139);
-      assert.equal(Math.round(line1.getAttribute('y1')), 31);
-      assert.equal(Math.round(line1.getAttribute('y2')), 201);
+      assert.equal(Math.round(line1.getAttribute('y1')), 41);
+      assert.equal(Math.round(line1.getAttribute('y2')), 211);
 
       assert.equal(Math.round(line3.getAttribute('x1')), 320);
       assert.equal(Math.round(line3.getAttribute('x2')), 58);
@@ -726,8 +726,8 @@ describe('Ideogram', function() {
 
       assert.equal(Math.round(line1.getAttribute('x1')), 56);
       assert.equal(Math.round(line1.getAttribute('x2')), 250);
-      assert.equal(Math.round(line1.getAttribute('y2')), 23);
-      assert.equal(Math.round(line2.getAttribute('y2')), 59);
+      assert.equal(Math.round(line1.getAttribute('y2')), 22);
+      assert.equal(Math.round(line2.getAttribute('y2')), 58);
 
       done();
 
@@ -2497,7 +2497,7 @@ describe('Ideogram', function() {
       assert.equal(chr2CanvasBox.x, 111);
 
       assert.equal(labelX, '-8');
-      assert.equal(labelY, '30');
+      assert.equal(labelY, '31');
 
       done();
     }
