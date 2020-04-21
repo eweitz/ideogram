@@ -6,15 +6,15 @@ import {
 function writeSyntenicRegionLines(syntenicRegion, y1, y2, r1, r2) {
   syntenicRegion.append('line')
     .attr('class', 'syntenyBorder')
-    .attr('x1', r1.startPx)
-    .attr('x2', r2.startPx)
+    .attr('x1', r1.startPx - 15)
+    .attr('x2', r2.startPx - 15)
     .attr('y1', y1)
     .attr('y2', y2);
 
   syntenicRegion.append('line')
     .attr('class', 'syntenyBorder')
-    .attr('x1', r1.stopPx)
-    .attr('x2', r2.stopPx)
+    .attr('x1', r1.stopPx - 15)
+    .attr('x2', r2.stopPx - 15)
     .attr('y1', y1)
     .attr('y2', y2);
 }
@@ -37,7 +37,7 @@ function writeSyntenicRegions(syntenicRegions, syntenies, ideo) {
 
     chrWidth = ideo.config.chrWidth;
     y1 = chrWidth + 31;
-    y2 = chrWidth + 201; // Genomes are spaced ~200 pixels apart
+    y2 = chrWidth + 191; // Genomes are spaced ~200 pixels apart
 
     writeSyntenicRegionPolygonsHorizontal(syntenicRegion, y1, y2, r1, r2, regions);
     writeSyntenicRegionLines(syntenicRegion, y1, y2, r1, r2);

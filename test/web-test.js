@@ -657,13 +657,13 @@ describe('Ideogram', function() {
       line1 = document.querySelector(selector1 + ' .syntenyBorder');
       line3 = document.querySelector(selector3 + ' .syntenyBorder');
 
-      assert.equal(Math.round(line1.getAttribute('x1')), 22);
-      assert.equal(Math.round(line1.getAttribute('x2')), 139);
+      assert.equal(Math.round(line1.getAttribute('x1')), 7);
+      assert.equal(Math.round(line1.getAttribute('x2')), 124);
       assert.equal(Math.round(line1.getAttribute('y1')), 41);
-      assert.equal(Math.round(line1.getAttribute('y2')), 211);
+      assert.equal(Math.round(line1.getAttribute('y2')), 201);
 
-      assert.equal(Math.round(line3.getAttribute('x1')), 320);
-      assert.equal(Math.round(line3.getAttribute('x2')), 58);
+      assert.equal(Math.round(line3.getAttribute('x1')), 305);
+      assert.equal(Math.round(line3.getAttribute('x2')), 43);
 
       done();
     }
