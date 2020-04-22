@@ -48,10 +48,10 @@ export function writeSyntenicRegionPolygonsHorizontal(syntenicRegion, y1, y2, r1
 
   syntenicRegion.append('polygon')
     .attr('points',
-      r1.startPx + ', ' + y1 + ' ' +
-      r1.stopPx + ', ' + y1 + ' ' +
-      r2.stopPx + ', ' + y2 + ' ' +
-      r2.startPx + ', ' + y2
+      (r1.startPx - 15) + ', ' + y1 + ' ' +
+      (r1.stopPx - 15) + ', ' + y1 + ' ' +
+      (r2.stopPx - 15) + ', ' + y2 + ' ' +
+      (r2.startPx - 15) + ', ' + y2
     )
     .style('fill', color)
     .style('fill-opacity', opacity);

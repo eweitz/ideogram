@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Synteny | Ideogram</title>
+  <style>
+    body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
+    a, a:visited {text-decoration: none;}
+    a:hover {text-decoration: underline;}
+    a, a:hover, a:visited, a:active {color: #0366d6;}
+  </style>
+  <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
+<link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
+</head>
+<body>
+  <h1>Synteny | Ideogram</h1>
+  <a href="../">Overview</a> |
+  <a href="multiple-primates">Previous</a> |
+  <a href="mouse">Next</a> |
+  <a href="https://github.com/eweitz/ideogram/blob/gh-pages/synteny.html" target="_blank">Source</a>
+  <p>
+    Genome alignment for human and mouse.
+  </p>
+  <script type="text/javascript">
+
+  chrColorMap = {
+    1: "rgb(153, 102, 0)",
+    2: "rgb(102, 102, 0)",
+    3: "rgb(153, 153, 30)",
+    4: "rgb(204, 0, 0)",
+    5: "rgb(255, 0, 0)",
+    6: "rgb(255, 0, 204)",
+    7: "rgb(255, 204, 204)",
+    8: "rgb(255, 153, 0)",
+    9: "rgb(255, 204, 0)",
+    10: "rgb(255, 255, 0)",
+    11: "rgb(204, 255, 0)",
+    12: "rgb(0, 255, 0)",
+    13: "rgb(53, 128, 0)",
+    14: "rgb(0, 0, 204)",
+    15: "rgb(102, 153, 255)",
+    16: "rgb(153, 204, 255)",
+    17: "rgb(0, 255, 255)",
+    18: "rgb(204, 255, 255)",
+    19: "rgb(153, 0, 204)",
+    20: "rgb(204, 51, 255)",
+    21: "rgb(204, 153, 255)",
+    22: "rgb(102, 102, 102)",
+    X: "rgb(255, 102, 102)",
+    Y: "rgb(102, 102, 255)"
+  }
+
+  async function onIdeogramLoad() {
+    // See HomoloGene entry for MTOR at
+    // http://www.ncbi.nlm.nih.gov/homologene/3637
+    // Placements for H. sapiens and M. musculus used below.
+    // Placements from latest annotation release in
+    // Human: http://www.ncbi.nlm.nih.gov/gene/2475#genomic-context
+    // Mouse: http://www.ncbi.nlm.nih.gov/gene/56717#genomic-context
+
+    var chrs, chr1, chr4, syntheticRegions, humanTaxid, mouseTaxid;
+
+    response = await fetch ('/data/annotations/homo_sapiens-mus_musculus-synteny-v73.tsv')
+    text = await response.text()
+    lines = text.split('\n')
+    syntenicRegions = []
+    lines.forEach(line => {
+      if (line[0] === '#') return
+      columns = line.split('\t')
+      if (columns.length === 1) return
+      chrOrg1 = columns[1].replace('chr', '')
+      startOrg1 = columns[2]
+      endOrg1 = columns[3]
+      chrOrg2 = columns[4].replace('chr', '')
+      startOrg2 = columns[5]
+      endOrg2 = columns[6]
+      orientation = columns[7] === '-1' ? 'reverse' : '';
+      if (orientation === 'reverse') {
+        tmp = startOrg2;
+        startOrg2 = endOrg2;
+        endOrg2 = tmp;
+      }
+
+      range1 = {
+        chr: chrOrg1,
+        start: startOrg1,
+        stop: endOrg1,
+        orientation: orientation
+      }
+      range2 = {
+        chr: chrOrg2,
+        start: startOrg2,
+        stop: endOrg2
+      }
+      syntenicRegions.push({r1: range1, r2: range2, color: chrColorMap[chrOrg1]})
+    })
+
+    ideogram.drawSynteny(syntenicRegions);
+
+  }
+
+  var config = {
+    organism: ['human', 'mouse'],
+    chrHeight: 90,
+    orientation: 'horizontal',
+    geometry: 'collinear',
+    // perspective: 'comparative',
+    chrMargin: 10,
+    rotatable: false,
+    chrLabelSize: 11,
+    onLoad: onIdeogramLoad
+  };
+
+  ideogram = new Ideogram(config);
+  </script>
+</body>
+</html>
