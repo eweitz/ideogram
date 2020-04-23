@@ -136,9 +136,7 @@ function configureMiscellaneous(ideo) {
 function configureBands(ideo) {
   if (!ideo.config.showBandLabels) ideo.config.showBandLabels = false;
 
-  if ('showFullyBanded' in ideo.config) {
-    ideo.config.showFullyBanded = ideo.config.showFullyBanded;
-  } else {
+  if ('showFullyBanded' in ideo.config === false) {
     ideo.config.showFullyBanded = true;
   }
 
@@ -148,7 +146,10 @@ function configureBands(ideo) {
 
 let configuredCss = staticCss;
 function configureTextStyle(ideo) {
-  if (!ideo.config.chrLabelSize) return;
+  if (!ideo.config.chrLabelSize) {
+    ideo.config.chrLabelSize = 9;
+    return;
+  }
 
   const size = ideo.config.chrLabelSize;
   configuredCss += `#_ideogram text {font-size: ${size}px}`;

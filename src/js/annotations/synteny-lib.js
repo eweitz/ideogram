@@ -40,6 +40,23 @@ export function writeSyntenicRegionPolygons(syntenicRegion, x1, x2, r1, r2, regi
     .style('fill-opacity', opacity);
 }
 
+export function writeSyntenicRegionPolygonsHorizontal(syntenicRegion, y1, y2, r1, r2, regions) {
+  var color, opacity;
+
+  color = ('color' in regions) ? regions.color : '#CFC';
+  opacity = ('opacity' in regions) ? regions.opacity : 1;
+
+  syntenicRegion.append('polygon')
+    .attr('points',
+      (r1.startPx - 15) + ', ' + y1 + ' ' +
+      (r1.stopPx - 15) + ', ' + y1 + ' ' +
+      (r2.stopPx - 15) + ', ' + y2 + ' ' +
+      (r2.startPx - 15) + ', ' + y2
+    )
+    .style('fill', color)
+    .style('fill-opacity', opacity);
+}
+
 export function getRegionsR1AndR2(regions, ideo, xOffset = null) {
   var r1, r2,
     r1Offset, r2Offset;
@@ -59,17 +76,27 @@ export function getRegionsR1AndR2(regions, ideo, xOffset = null) {
   }
 
   var r1ChrDom = document.querySelector('#' + r1.chr.id + '-chromosome-set');
-  var r1GenomeOffset = r1ChrDom.getCTM().f;
+  var r1GenomeHorizontalXOffset = r1ChrDom.getCTM().e;
+  var r1GenomeVerticalXOffset = r1ChrDom.getCTM().f;
   var r2ChrDom = document.querySelector('#' + r2.chr.id + '-chromosome-set');
   // var r2GenomeOffset = r2ChrDom.getBoundingClientRect().top;
-  var r2GenomeOffset = r2ChrDom.getCTM().f;
+  var r2GenomeHorizontalXOffset = r2ChrDom.getCTM().e;
+  var r2GenomeVerticalXOffset = r2ChrDom.getCTM().f;
 
   if (xOffset === null) {
-    // When collinear
-    r1Offset = r1GenomeOffset - 12;
-    r2Offset = r2GenomeOffset - 12;
+    if (ideo.config.orientation === 'vertical') {
+      // When vertical collinear
+      // http://localhost:8080/examples/vanilla/compare-whole-genomes?chromosome-scale=absolute&orientation=vertical
+      r1Offset = r1GenomeVerticalXOffset - 12;
+      r2Offset = r2GenomeVerticalXOffset - 12;
+    } else {
+      // When horizontal collinear, e.g.
+      // http://localhost:8080/examples/vanilla/compare-whole-genomes?chromosome-scale=absolute&orientation=horizontal
+      r1Offset = r1GenomeHorizontalXOffset;
+      r2Offset = r2GenomeHorizontalXOffset;
+    }
   } else {
-    // When parallel
+    // When horizontal parallel
     r1Offset = xOffset;
     r2Offset = xOffset;
   }

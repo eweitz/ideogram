@@ -1,26 +1,26 @@
 import {d3} from '../lib';
 import {
-  getRegionsR1AndR2, writeSyntenicRegionPolygons, writeSyntenicRegion
+  getRegionsR1AndR2, writeSyntenicRegionPolygonsHorizontal, writeSyntenicRegion
 } from './synteny-lib';
 
-function writeSyntenicRegionLines(syntenicRegion, x1, x2, r1, r2) {
+function writeSyntenicRegionLines(syntenicRegion, y1, y2, r1, r2) {
   syntenicRegion.append('line')
     .attr('class', 'syntenyBorder')
-    .attr('x1', x1)
-    .attr('x2', x2)
-    .attr('y1', r1.startPx)
-    .attr('y2', r2.startPx);
+    .attr('x1', r1.startPx - 15)
+    .attr('x2', r2.startPx - 15)
+    .attr('y1', y1)
+    .attr('y2', y2);
 
   syntenicRegion.append('line')
     .attr('class', 'syntenyBorder')
-    .attr('x1', x1)
-    .attr('x2', x2)
-    .attr('y1', r1.stopPx)
-    .attr('y2', r2.stopPx);
+    .attr('x1', r1.stopPx - 15)
+    .attr('x2', r2.stopPx - 15)
+    .attr('y1', y1)
+    .attr('y2', y2);
 }
 
 function writeSyntenicRegions(syntenicRegions, syntenies, ideo) {
-  var i, regions, r1, r2, regionID, syntenicRegion, chrWidth, x1, x2;
+  var i, regions, r1, r2, regionID, syntenicRegion, chrWidth, y1, y2;
 
   for (i = 0; i < syntenicRegions.length; i++) {
     regions = syntenicRegions[i];
@@ -36,11 +36,11 @@ function writeSyntenicRegions(syntenicRegions, syntenies, ideo) {
     syntenicRegion = writeSyntenicRegion(syntenies, regionID, ideo);
 
     chrWidth = ideo.config.chrWidth;
-    x1 = chrWidth + 46;
-    x2 = chrWidth + 240; // Genomes are spaced ~200 pixels apart
+    y1 = chrWidth + 31;
+    y2 = chrWidth + 191; // Genomes are spaced ~200 pixels apart
 
-    writeSyntenicRegionPolygons(syntenicRegion, x1, x2, r1, r2, regions);
-    writeSyntenicRegionLines(syntenicRegion, x1, x2, r1, r2);
+    writeSyntenicRegionPolygonsHorizontal(syntenicRegion, y1, y2, r1, r2, regions);
+    writeSyntenicRegionLines(syntenicRegion, y1, y2, r1, r2);
   }
 }
 
@@ -56,7 +56,7 @@ function reportPerformance(t0, ideo) {
  * one chromosome to a genomic range on another chromosome;
  * a syntenic region.
  */
-function drawSyntenyCollinear(syntenicRegions, ideo) {
+function drawSyntenyCollinearHorizontal(syntenicRegions, ideo) {
   var syntenies,
     t0 = new Date().getTime();
 
@@ -69,4 +69,4 @@ function drawSyntenyCollinear(syntenicRegions, ideo) {
   reportPerformance(t0, ideo);
 }
 
-export {drawSyntenyCollinear};
+export {drawSyntenyCollinearHorizontal};

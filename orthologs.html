@@ -8,11 +8,54 @@
     a:hover {text-decoration: underline;}
     a, a:hover, a:visited, a:active {color: #0366d6;}
     label {display: block; margin-bottom: 10px;}
-    .left-select {position: absolute; left: 150px;}
+    .left-select {position: absolute; left: 140px;}
     #status-container {display: inline-block; margin-left: 86px;}
     #error-container {color: red;}
-    #ideogram-container {margin-left: 125px;}
-    #search {width: 280px;}
+    #ideogram-container {margin-left: 125px; z-index: -1}
+    #search-container {
+      height: 26px;
+    }
+
+    #search {
+      width: 290px;
+      height: 20px;
+      font-size: 14px;
+      border-radius: 3px;
+      border: 1px solid #888;
+    }
+
+    #search-button {
+      height: 21px;
+      width: 23px;
+      font-size: 24px;
+      background: #58F;
+      color: #FFF;
+      display: inline-block;
+      position: relative;
+      top: -23.5px;
+      left: 325px;
+      border-radius: 3px;
+      text-align: center;
+      padding-top: 3px;
+      cursor: pointer;
+    }
+
+    select {height: 22px; font-size: 14px;}
+
+    #options-toggle {cursor: pointer;}
+
+    #options {
+      z-index: 9999;
+      background: white;
+      border: 1px solid #DDD;
+    }
+
+    #options label {display: inline;}
+    /* .option {text-decoration: underline;} */
+
+    ul {padding: 2px 10px 10px 10px;}
+
+    ul li {list-style-type: none;}
   </style>
   <script type="text/javascript" src="dist/js/ideogram.min.js"></script>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/homology@0.4.0/dist/homology.min.js"></script>
@@ -30,8 +73,9 @@
     Compare gene locations across organisms.
   </p>
   <div style="float: left; width: 350px;">
-  <label for="search">Search:
+  <label for="search" id="search-container">Search:
     <input id="search" autocomplete="off" placeholder="Gene or location"/>
+    <span id="search-button">&#x2315;</span>
   </label>
   <div style="font-size: 12px; position: relative; top: -7px;">
     Examples:
@@ -48,7 +92,7 @@
       <option>Rat (Rattus norvegicus)</option>
       <option>Dog (Canis lupus familiaris)</option>
       <option>Cat (Felis catus)</option>
-      <option>Chicken (Gallus gallus)</option>
+      <!-- <option>Chicken (Gallus gallus)</option> -->
       <option>Zebrafish (Danio rerio)</option>
       <option>Fly (Drosophila melanogaster)</option>
       <option>Mosquito (Anopheles gambiae)</option>
@@ -67,7 +111,7 @@
       <option>Rat (Rattus norvegicus)</option>
       <option>Dog (Canis lupus familiaris)</option>
       <option>Cat (Felis catus)</option>
-      <option>Chicken (Gallus gallus)</option>
+      <!-- <option>Chicken (Gallus gallus)</option> -->
       <option>Zebrafish (Danio rerio)</option>
       <option>Fly (Drosophila melanogaster)</option>
       <option>Mosquito (Anopheles gambiae)</option>
@@ -77,13 +121,45 @@
       <option>Rice (Oryza sativa)</option>
       </select>
   </label>
-  <label for="backend">
-    Orthology backend:
-    <select class="left-select backend-select" id="backend">
-      <option id="orthodb" selected>OrthoDB</option>
-      <option id="oma">OMA Browser</option>
-    </select>
-  </label>
+    <a id="options-toggle">Options</a>
+    <div id="options" style="display: none">
+      <ul>
+        <label class="option" for="chr-height">Chromosome height</label>
+        <li>
+          <input type="number" id="chr-height">
+        </li>
+        <br/>
+        <span class="option">Chromosome scale</span>
+        <li>
+          <input type="radio" name="chr-scale" id="absolute" value="absolute" checked>
+          <label for="absolute">Absolute</label>
+        </li>
+        <li>
+          <input type="radio" name="chr-scale" id="relative" value="relative">
+          <label for="relative">Relative</label>
+        </li>
+        <br/>
+        <span class="option">Orientation</span>
+        <li>
+          <input type="radio" name="orientation" id="vertical" value="vertical" checked>
+          <label for="vertical">Vertical</label>
+        </li>
+        <li>
+          <input type="radio" name="orientation" id="horizontal" value="horizontal">
+          <label for="horizontal">Horizontal</label>
+        </li>
+        <br/>
+        <span class="option">Orthology backend</span>
+        <li>
+          <input type="radio" name="backend" id="orthodb" value="orthodb" checked>
+          <label for="orthodb">OrthoDB</label>
+        </li>
+        <li>
+          <input type="radio" name="backend" id="oma" value="oma">
+          <label for="oma">OMA Browser</label>
+        </li>
+      </ul>
+  </div>
   </div>
   <div id="ideogram-container"></div>
   <div id="status-container"></div>
@@ -97,11 +173,13 @@
     }
 
     function updateGenesParams(geneNames) {
-      if (typeof geneNames === 'undefined') {
-        geneNames = genes;
+      if (typeof genes !== 'undefined') {
+        if (typeof geneNames === 'undefined') {
+          geneNames = genes;
+        }
+        delete urlParams['loci']
+        urlParams['genes'] = geneNames;
       }
-      delete urlParams['loci']
-      urlParams['genes'] = geneNames;
       updateUrl();
     }
 
@@ -122,7 +200,7 @@
         updateLociParams(searchInput)
       } else {
         // Ignore when input value is unchanged
-        if (urlParams['genes'] === geneNames) return;
+        if (typeof geneNames !== 'undefined' && urlParams['genes'] === geneNames) return;
         updateGenesParams(searchInput);
       }
 
@@ -170,11 +248,51 @@
       return value.includes(':')
     }
 
-    // Process selections in "Orthology source" drop-down menu
+    // Process selections in "Orthology backend" drop-down menu
     async function handleBackend(event) {
-      var menu = document.querySelector('#backend');
+      var backend = document.querySelector('input[name=backend]:checked').id;
 
-      urlParams['backend'] = menu.options[menu.selectedIndex].id;
+      urlParams['backend'] = backend;
+
+      updateGenesParams();
+      createIdeogram();
+    }
+
+    // Process selections in "Orthology source" radio inputs
+    async function handleBackend(event) {
+      var backend = document.querySelector('input[name=backend]:checked').id;
+
+      urlParams['backend'] = backend;
+
+      updateGenesParams();
+      createIdeogram();
+    }
+
+    // Process selections in "Orientation" radio inputs
+    async function handleOrientation(event) {
+      var orientation = document.querySelector('input[name=orientation]:checked').id;
+
+      urlParams['orientation'] = orientation;
+
+      updateGenesParams();
+      createIdeogram();
+    }
+
+    // Process selections in "Orthology backend" drop-down menu
+    async function handleChromosomeHeight(event) {
+      var chrHeight = document.querySelector('#chr-height').value;
+
+      urlParams['chr-height'] = chrHeight;
+
+      updateGenesParams();
+      createIdeogram();
+    }
+
+    // Process selections in "Orientation" radio inputs
+    async function handleChromosomeScale(event) {
+      var scale = document.querySelector('input[name=chr-scale]:checked').id;
+
+      urlParams['chr-scale'] = scale;
 
       updateGenesParams();
       createIdeogram();
@@ -270,7 +388,7 @@
     }
 
     async function processUrl() {
-      var geneList, genePropList, hasGenes, hasLoci, loci;
+      var geneList, genePropList, hasGenes, hasLoci, loci, lociList, numAnnots;
 
       document.querySelector('#ideogram-container').innerHTML = '';
       document.querySelector('#status-container').innerHTML = 'Loading...';
@@ -303,10 +421,6 @@
         urlParams['org2'] = org2;
       }
 
-      if ('backend' in urlParams === false) {
-        urlParams['backend'] = 'orthodb';
-      }
-
       org1 = urlParams['org'].replace(/-/g, ' ');
       org2 = urlParams['org2'].replace(/-/g, ' ');
 
@@ -325,8 +439,30 @@
         document.querySelector('#search').value = loci
       }
 
+      if ('backend' in urlParams === false) urlParams['backend'] = 'orthodb';
       backend = urlParams['backend'];
-      document.querySelector('#backend #' + backend).selected = true;
+      document.querySelector('input[name=backend]#' + backend).checked = true;
+
+      if ('orientation' in urlParams === false) urlParams['orientation'] = 'vertical';
+      orientation = urlParams['orientation'];
+      orientation = urlParams['orientation'];
+      document.querySelector('input[name=orientation]#' + orientation).checked = true;
+
+      if ('chr-scale' in urlParams === false) urlParams['chr-scale'] = 'absolute';
+      scale = urlParams['chr-scale'];
+      document.querySelector('input[name=chr-scale]#' + scale).checked = true;
+
+      if (hasGenes) {
+        numAnnots = geneList.length;
+      } else {
+        lociList = parseLociParam(loci);
+        numAnnots = lociList.length;
+      }
+      if ('chr-height' in urlParams === false) {
+        urlParams['chr-height'] = getChromosomeHeight(org1, numAnnots);
+      }
+      chrHeight = urlParams['chr-height'];
+      document.querySelector('#chr-height').value = chrHeight;
 
       if (shouldUpdateState()) {
         try {
@@ -342,7 +478,7 @@
               return rawOrtholog.concat(propVals)
             })
           } else {
-            orthologs = parseLociParam(loci)
+            orthologs = lociList;
           }
         } catch (error) {
           document.querySelector('#status-container').innerHTML =
@@ -415,15 +551,57 @@
       // to account for whole-genome rendering
       ideoContainer = document.querySelector('#ideogram-container');
       if (orthologs.length > 1) {
-        document.querySelector('#_ideogram').setAttribute('width', 350);
-        ideoContainer.setAttribute('style', 'position: relative; top: -110px; left: 200px;');
+        if (orientation === 'vertical') {
+          width = 700
+          left = 200
+          topPx = -110
+        } else {
+          width = 2000
+          left = -350
+          topPx = 150
+        }
+        document.querySelector('#_ideogram').setAttribute('width', width);
+        ideoContainer.setAttribute(
+          'style',
+          'position: relative; top: ' + topPx + 'px; left: ' + left + 'px; width: ' + width + 'px;'
+        );
       } else {
-        ideoContainer.setAttribute('style', '');
+        ideoContainer.setAttribute('style', 'position: relative; top: -60px;');
       }
     }
 
     function onIdeogramLoad() {
       drawSynteny();
+    }
+
+    function getChromosomeHeight(organism, numAnnots) {
+      var chrHeight;
+
+      if ('chr-height' in urlParams) {
+        return urlParams['chr-height'];
+      }
+
+      if (numAnnots < 2) {
+        return orientation === 'vertical' ? 600 : 700
+      }
+
+      if (
+        (
+          organism.includes('canis lupus familiaris') ||
+          organism.includes('danio rerio')
+        ) &&
+        orientation === 'horizontal' &&
+        scale === 'relative'
+      ) {
+        chrHeight = 65;
+      } else if (orientation === 'horizontal') {
+        chrHeight = 95;
+      } else {
+        // vertical
+        chrHeight = 48;
+      }
+
+      return chrHeight;
     }
 
     async function createIdeogram() {
@@ -434,11 +612,17 @@
         return;
       }
 
+      chrHeight = getChromosomeHeight(org1);
+
       var config = {
         container: '#ideogram-container',
         showBandLabels: showBandLabels,
         rotatable: false,
+        chrWidth: 10,
         onLoad: onIdeogramLoad,
+        orientation: orientation,
+        chrHeight: chrHeight,
+        chrLabelSize: 11,
         dataDir: 'dist/data/bands/native/'
       };
 
@@ -453,11 +637,11 @@
 
       if (orthologs.length > 1) {
         // For (likely) multiple chromosomes in each genome
+        organism = config.organism;
         Object.assign(config, {
-          chrHeight: 45,
-          chrMargin: 3,
-          chromosomeScale: 'relative',
-          geometry: 'collinear'
+          chromosomeScale: scale,
+          geometry: 'collinear',
+          chrMargin: 6
         });
       } else {
         // For one chromosome in each genome
@@ -467,8 +651,6 @@
         chromosomesConfig[org2] = [region.r2.chr];
         Object.assign(config, {
           chromosomes: chromosomesConfig,
-          chrHeight: 400,
-          chrMargin: 50,
           fullChromosomeLabels: true,
           perspective: 'comparative'
         });
@@ -479,13 +661,37 @@
       ideogram = new Ideogram(config);
     }
 
+    document.querySelector('#search-button').addEventListener('click', handleSearch);
     document.querySelector('#search').addEventListener('blur', handleSearch);
     document.querySelector('#search').addEventListener('keyup', handleSearch);
     document.querySelectorAll('.org-select').forEach(select => {
       select.addEventListener('change', handleOrganism);
     });
-    document.querySelectorAll('.backend-select').forEach(select => {
-      select.addEventListener('change', handleBackend);
+    document.querySelector('#options-toggle').addEventListener('click', event => {
+      var options = document.querySelector('#options');
+      if (options.style.display === 'none') {
+        options.style.display = '';
+      } else {
+        options.style.display = 'none';
+      }
+    });
+
+    document.querySelector('#chr-height').addEventListener('change', event => {
+      handleChromosomeHeight(event)
+    })
+
+    radioButtons = document.querySelectorAll('input[type=radio]');
+    radioButtons.forEach(function(radioButton) {
+      radioButton.addEventListener('click', function(event) {
+        var name = event.target.name;
+        if (name === 'backend') {
+          handleBackend(event);
+        } else if (name === 'orientation') {
+          handleOrientation(event);
+        } else if (name === 'chr-scale') {
+          handleChromosomeScale(event);
+        }
+      });
     });
 
     createIdeogram();
