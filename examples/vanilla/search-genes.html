@@ -145,9 +145,18 @@
           annots.push(annot)
           ideogram.drawAnnots(annots);
         })
+
+        const lastChr = [...document.querySelectorAll('.chromosome-set')].slice(-1)[0]
+        const left = lastChr.getBoundingClientRect().x;
+        const topPx = chrHeight + 40;
+        var style = 'float: left; position: relative; top: -' + topPx + 'px; left: ' + left + 'px;';
+        document.querySelector('#_ideogramLegend').style = style;
       });
 
       ideogram.drawAnnots(annots);
+
+      document.querySelector('#_ideogramLegend').style = 'display: none;';
+
 
       // if (isGenomicLocation(searchInput)) {
       //   updateLociParams(searchInput)
@@ -177,10 +186,12 @@
         ]
       }];
 
+      chrHeight = 90;
+
       config = {
         organism: organism,
         chrWidth: 8,
-        chrHeight: 90,
+        chrHeight: chrHeight,
         chrLabelSize: 10,
         annotationHeight: 5,
         showFullyBanded: false,
