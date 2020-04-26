@@ -37,6 +37,10 @@
       padding-top: 3px;
       cursor: pointer;
     }
+
+    #ideogram .annot path {
+      cursor: pointer;
+    }
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
 <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
@@ -89,15 +93,7 @@
       return json;
     }
 
-    // Process text input for the "Gene" field.
-    async function handleSearch(event) {
-      // Ignore non-"Enter" keyups
-      if (event.type === 'keyup' && event.keyCode !== 13) return;
-
-      var searchInput = event.target.value.trim();
-
-      // Handles "BRCA1,BRCA2", "BRCA1 BRCA2", and "BRCA1, BRCA2"
-      let geneSymbols = searchInput.split(/[, ]/).filter(d => d !== '')
+    async function searchGenes(geneSymbols) {
       const genesParam = geneSymbols.map(gene => 'symbol:' + gene).join(' OR ')
 
       const orgUnderscored = ideogram.config.organism.replace(/-/g, '_');
@@ -151,6 +147,15 @@
         const topPx = chrHeight + 40;
         var style = 'float: left; position: relative; top: -' + topPx + 'px; left: ' + left + 'px;';
         document.querySelector('#_ideogramLegend').style = style;
+
+        document.querySelectorAll('.annot').forEach(annot => {
+          annot.addEventListener('click', event => {
+            console.log('event')
+            console.log(event)
+            document.querySelector('#search').value = 'DMC1';
+            searchGenes(['DMC1']);
+          })
+        });
       });
 
       ideogram.drawAnnots(annots);
@@ -167,6 +172,20 @@
       // }
       //
       // createIdeogram();
+    }
+
+    // Process text input for the "Gene" field.
+    function handleSearch(event) {
+      console.log('handleSearch event')
+      console.log(event)
+      // Ignore non-"Enter" keyups
+      if (event.type === 'keyup' && event.keyCode !== 13) return;
+
+      var searchInput = event.target.value.trim();
+
+      // Handles "BRCA1,BRCA2", "BRCA1 BRCA2", and "BRCA1, BRCA2"
+      let geneSymbols = searchInput.split(/[, ]/).filter(d => d !== '')
+      searchGenes(geneSymbols);
     }
 
       var urlParams = parseUrlParams();
@@ -195,6 +214,7 @@
         chrLabelSize: 10,
         annotationHeight: 5,
         showFullyBanded: false,
+        rotatable: false,
         legend: legend
       }
       var ideogram = new Ideogram(config);
