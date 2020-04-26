@@ -101,7 +101,7 @@
       const genesParam = geneSymbols.map(gene => 'symbol:' + gene).join(' OR ')
 
       const orgUnderscored = ideogram.config.organism.replace(/-/g, '_');
-      let path = '/lookup/symbol/' + orgUnderscored + '?expand=1';
+      let path = '/lookup/symbol/' + orgUnderscored;
       let body = {'symbols': geneSymbols}
 
       const ensemblGenes = await fetchEnsembl(path, body, 'POST');
@@ -109,12 +109,12 @@
 
       let annots = []
       geneSymbols.forEach(async geneSymbol => {
-        const gene = ensemblGenes[geneSymbol]
+        let gene = ensemblGenes[geneSymbol]
         console.log('ensemblGenes')
         console.log(ensemblGenes)
         console.log('geneSymbol')
         console.log(geneSymbol)
-        const annot = {
+        let annot = {
           name: geneSymbol,
           chr: gene.seq_region_name,
           start: gene.start,
@@ -123,19 +123,38 @@
           shape: 'triangle',
           color: '#F00'
         };
-
+        annots.push(annot)
 
         const params = '&format=condensed&type=paralogues&target_taxon=' + taxid;
-        const path = `/homology/id/${annot.id}?${params}`
+        path = `/homology/id/${annot.id}?${params}`
         const ensemblHomologs = await fetchEnsembl(path);
-        const homologs = ensemblHomologs.data[0];
+        const homologs = ensemblHomologs.data[0].homologies;
+        console.log('homologs')
+        console.log(homologs)
 
-        body = {'symbols': geneSymbols}
-
-        console.log('ensemblHomologs')
-        console.log(ensemblHomologs)
-
-        return annot;
+        homologIds = homologs.map(homolog => homolog.id)
+        path = '/lookup/id/' + orgUnderscored + '?format=condensed';
+        body = {'ids': homologIds}
+        const ensemblHomologGenes = await fetchEnsembl(path, body, 'POST');
+        console.log('ensemblHomologGenes')
+        console.log(ensemblHomologGenes)
+        Object.entries(ensemblHomologGenes).map((idGene, i) => {
+          gene = idGene[1]
+          console.log('homolog gene:')
+          console.log(gene)
+          annot = {
+            name: gene.display_name,
+            chr: gene.seq_region_name,
+            start: gene.start,
+            stop: gene.end,
+            id: gene.id,
+            shape: 'triangle',
+            color: 'orange',
+            height: 3
+          };
+          annots.push(annot)
+          ideogram.drawAnnots(annots);
+        })
       });
 
       ideogram.drawAnnots(annots);
