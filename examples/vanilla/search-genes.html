@@ -167,13 +167,24 @@
       document.querySelector('#search-button').addEventListener('click', handleSearch);
       document.querySelector('#search').addEventListener('keyup', handleSearch);
 
+      const shape = 'triangle';
+
+      var legend = [{
+        name: '&nbsp;',
+        rows: [
+          {name: 'Searched gene', color: 'red', shape: shape},
+          {name: 'Paralog', color: 'pink', shape: shape}
+        ]
+      }];
+
       config = {
         organism: organism,
         chrWidth: 8,
         chrHeight: 90,
         chrLabelSize: 10,
         annotationHeight: 5,
-        showFullyBanded: false
+        showFullyBanded: false,
+        legend: legend
       }
       var ideogram = new Ideogram(config);
     </script>
