@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Search genes | Ideogram</title>
+  <style>
+    body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
+    a, a:visited {text-decoration: none;}
+    a:hover {text-decoration: underline;}
+    a, a:hover, a:visited, a:active {color: #0366d6;}
+
+    #ideogram-container {z-index: -1}
+
+    #search-container {
+      height: 26px;
+    }
+
+    #search {
+      width: 290px;
+      height: 20px;
+      font-size: 14px;
+      border-radius: 3px;
+      border: 1px solid #888;
+    }
+
+    #search-button {
+      height: 21px;
+      width: 23px;
+      font-size: 24px;
+      background: #58F;
+      color: #FFF;
+      display: inline-block;
+      position: relative;
+      top: -23.5px;
+      left: 325px;
+      border-radius: 3px;
+      text-align: center;
+      padding-top: 3px;
+      cursor: pointer;
+    }
+  </style>
+  <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
+<link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
+</head>
+<body>
+  <h1>Search genes | Ideogram</h1>
+  <a href="../">Overview</a> |
+  <a href="multiple-primates">Previous</a> |
+  <a href="mouse">Next</a> |
+  <a href="https://github.com/eweitz/ideogram/blob/gh-pages/human.html" target="_blank">Source</a>
+  <p>
+    Search a gene, and see its location on the genome.  Also plots related genes.
+  </p>
+  <div style="float: left; width: 350px;">
+    <label for="search" id="search-container">Search:
+      <input id="search" autocomplete="off" placeholder="Genes (e.g. BRCA1, BRCA2)"/>
+      <span id="search-button">&#x2315;</span>
+    </label>
+  </div>
+  <br/><br/><br/>
+  <div id="ideogram-container"></div>
+  <script type="text/javascript">
+
+    const ensemblBase = 'https://rest.ensembl.org';
+
+    function parseUrlParams() {
+      var rawParams = document.location.search;
+      var urlParams = {};
+      var param, key, value;
+      if (rawParams !== '') {
+        rawParams = rawParams.split('?')[1].split('&');
+        rawParams.forEach(rawParam => {
+          param = rawParam.split('=');
+          key = param[0];
+          value = param[1];
+          urlParams[key] = value;
+        });
+      }
+      return urlParams;
+    }
+
+    async function fetchEnsembl(path, body=null, method='GET') {
+      let init = {
+        method: method,
+        headers: {'Content-Type': 'application/json'}
+      }
+      if (body !== null) init.body = JSON.stringify(body);
+      const response = await fetch(ensemblBase + path, init);
+      const json = await response.json();
+      return json;
+    }
+
+    // Process text input for the "Gene" field.
+    async function handleSearch(event) {
+      // Ignore non-"Enter" keyups
+      if (event.type === 'keyup' && event.keyCode !== 13) return;
+
+      var searchInput = event.target.value.trim();
+
+      // Handles "BRCA1,BRCA2", "BRCA1 BRCA2", and "BRCA1, BRCA2"
+      let geneSymbols = searchInput.split(/[, ]/).filter(d => d !== '')
+      const genesParam = geneSymbols.map(gene => 'symbol:' + gene).join(' OR ')
+
+      const orgUnderscored = ideogram.config.organism.replace(/-/g, '_');
+      let path = '/lookup/symbol/' + orgUnderscored + '?expand=1';
+      let body = {'symbols': geneSymbols}
+
+      const ensemblGenes = await fetchEnsembl(path, body, 'POST');
+      const taxid = ideogram.config.taxid;
+
+      let annots = []
+      geneSymbols.forEach(async geneSymbol => {
+        const gene = ensemblGenes[geneSymbol]
+        console.log('ensemblGenes')
+        console.log(ensemblGenes)
+        console.log('geneSymbol')
+        console.log(geneSymbol)
+        const annot = {
+          name: geneSymbol,
+          chr: gene.seq_region_name,
+          start: gene.start,
+          stop: gene.end,
+          id: gene.id,
+          shape: 'triangle',
+          color: '#F00'
+        };
+
+
+        const params = '&format=condensed&type=paralogues&target_taxon=' + taxid;
+        const path = `/homology/id/${annot.id}?${params}`
+        const ensemblHomologs = await fetchEnsembl(path);
+        const homologs = ensemblHomologs.data[0];
+
+        body = {'symbols': geneSymbols}
+
+        console.log('ensemblHomologs')
+        console.log(ensemblHomologs)
+
+        return annot;
+      });
+
+      ideogram.drawAnnots(annots);
+
+      // if (isGenomicLocation(searchInput)) {
+      //   updateLociParams(searchInput)
+      // } else {
+      //   // Ignore when input value is unchanged
+      //   if (typeof geneNames !== 'undefined' && urlParams['genes'] === geneNames) return;
+      //   updateGenesParams(searchInput);
+      // }
+      //
+      // createIdeogram();
+    }
+
+      var urlParams = parseUrlParams();
+
+      var organism = 'org' in urlParams ? urlParams.org : 'human';
+
+      document.querySelector('#search-button').addEventListener('click', handleSearch);
+      document.querySelector('#search').addEventListener('blur', handleSearch);
+      document.querySelector('#search').addEventListener('keyup', handleSearch);
+
+      config = {
+        organism: organism,
+        chrWidth: 9,
+        chrHeight: 150,
+        chrLabelSize: 10,
+        annotationHeight: 5,
+        showFullyBanded: false
+      }
+      var ideogram = new Ideogram(config);
+    </script>
+</body>
+</html>
