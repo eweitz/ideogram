@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Search genes | Ideogram</title>
+  <title>Search genes and paralogs | Ideogram</title>
   <style>
     body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
     a, a:visited {text-decoration: none;}
@@ -42,13 +42,13 @@
 <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
 </head>
 <body>
-  <h1>Search genes | Ideogram</h1>
+  <h1>Search genes and paralogs | Ideogram</h1>
   <a href="../">Overview</a> |
   <a href="multiple-primates">Previous</a> |
   <a href="mouse">Next</a> |
   <a href="https://github.com/eweitz/ideogram/blob/gh-pages/human.html" target="_blank">Source</a>
   <p>
-    Search a gene, and see its location on the genome.  Also plots related genes.
+    See where a search gene and its paralogs exist on the genome.
   </p>
   <div style="float: left; width: 350px;">
     <label for="search" id="search-container">Search:
@@ -110,18 +110,14 @@
       let annots = []
       geneSymbols.forEach(async geneSymbol => {
         let gene = ensemblGenes[geneSymbol]
-        console.log('ensemblGenes')
-        console.log(ensemblGenes)
-        console.log('geneSymbol')
-        console.log(geneSymbol)
         let annot = {
-          name: geneSymbol,
+          name: gene.display_name,
           chr: gene.seq_region_name,
           start: gene.start,
           stop: gene.end,
           id: gene.id,
           shape: 'triangle',
-          color: '#F00'
+          color: 'red'
         };
         annots.push(annot)
 
@@ -129,19 +125,13 @@
         path = `/homology/id/${annot.id}?${params}`
         const ensemblHomologs = await fetchEnsembl(path);
         const homologs = ensemblHomologs.data[0].homologies;
-        console.log('homologs')
-        console.log(homologs)
 
         homologIds = homologs.map(homolog => homolog.id)
-        path = '/lookup/id/' + orgUnderscored + '?format=condensed';
-        body = {'ids': homologIds}
+        path = '/lookup/id/' + orgUnderscored;
+        body = {'ids': homologIds, 'species': orgUnderscored, 'object_type': 'gene'}
         const ensemblHomologGenes = await fetchEnsembl(path, body, 'POST');
-        console.log('ensemblHomologGenes')
-        console.log(ensemblHomologGenes)
         Object.entries(ensemblHomologGenes).map((idGene, i) => {
           gene = idGene[1]
-          console.log('homolog gene:')
-          console.log(gene)
           annot = {
             name: gene.display_name,
             chr: gene.seq_region_name,
@@ -149,7 +139,7 @@
             stop: gene.end,
             id: gene.id,
             shape: 'triangle',
-            color: 'orange',
+            color: 'pink',
             height: 3
           };
           annots.push(annot)
@@ -175,13 +165,12 @@
       var organism = 'org' in urlParams ? urlParams.org : 'human';
 
       document.querySelector('#search-button').addEventListener('click', handleSearch);
-      document.querySelector('#search').addEventListener('blur', handleSearch);
       document.querySelector('#search').addEventListener('keyup', handleSearch);
 
       config = {
         organism: organism,
-        chrWidth: 9,
-        chrHeight: 150,
+        chrWidth: 8,
+        chrHeight: 90,
         chrLabelSize: 10,
         annotationHeight: 5,
         showFullyBanded: false
