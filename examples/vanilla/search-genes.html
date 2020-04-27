@@ -94,14 +94,22 @@
     }
 
     async function searchGenes(geneSymbols) {
-      const genesParam = geneSymbols.map(gene => 'symbol:' + gene).join(' OR ')
 
+      // Refine style
+      document.querySelectorAll('.chromosome').forEach(chromosome => {
+        chromosome.style.cursor = '';
+      })
+      const lastChr = [...document.querySelectorAll('.chromosome-set')].slice(-1)[0]
+      const left = lastChr.getBoundingClientRect().x;
+      const topPx = chrHeight + 40;
+      const style =
+        `float: left; position: relative; top: -${topPx}px; left: ${left}px;`;
+
+      // Fetch positon of searched gene
       const orgUnderscored = ideogram.config.organism.replace(/-/g, '_');
       let path = '/lookup/symbol/' + orgUnderscored;
       let body = {'symbols': geneSymbols}
-
       const ensemblGenes = await fetchEnsembl(path, body, 'POST');
-      const taxid = ideogram.config.taxid;
 
       let annots = []
       geneSymbols.forEach(async geneSymbol => {
@@ -117,15 +125,19 @@
         };
         annots.push(annot)
 
+        // Fetch paralogs of searched gene
+        const taxid = ideogram.config.taxid;
         const params = '&format=condensed&type=paralogues&target_taxon=' + taxid;
         path = `/homology/id/${annot.id}?${params}`
         const ensemblHomologs = await fetchEnsembl(path);
         const homologs = ensemblHomologs.data[0].homologies;
 
+        // Fetch positions of paralogs
         homologIds = homologs.map(homolog => homolog.id)
         path = '/lookup/id/' + orgUnderscored;
         body = {'ids': homologIds, 'species': orgUnderscored, 'object_type': 'gene'}
         const ensemblHomologGenes = await fetchEnsembl(path, body, 'POST');
+
         Object.entries(ensemblHomologGenes).map((idGene, i) => {
           gene = idGene[1]
           annot = {
@@ -138,46 +150,20 @@
             color: 'pink',
             height: 3
           };
-          annots.push(annot)
-          ideogram.drawAnnots(annots);
+          // Add to start of array, so searched gene gets top z-index
+          annots.unshift(annot);
         })
-
-        const lastChr = [...document.querySelectorAll('.chromosome-set')].slice(-1)[0]
-        const left = lastChr.getBoundingClientRect().x;
-        const topPx = chrHeight + 40;
-        var style = 'float: left; position: relative; top: -' + topPx + 'px; left: ' + left + 'px;';
+        ideogram.drawAnnots(annots);
         document.querySelector('#_ideogramLegend').style = style;
-
-        document.querySelectorAll('.annot').forEach(annot => {
-          annot.addEventListener('click', event => {
-            console.log('event')
-            console.log(event)
-            document.querySelector('#search').value = 'DMC1';
-            searchGenes(['DMC1']);
-          })
-        });
       });
 
       ideogram.drawAnnots(annots);
 
       document.querySelector('#_ideogramLegend').style = 'display: none;';
-
-
-      // if (isGenomicLocation(searchInput)) {
-      //   updateLociParams(searchInput)
-      // } else {
-      //   // Ignore when input value is unchanged
-      //   if (typeof geneNames !== 'undefined' && urlParams['genes'] === geneNames) return;
-      //   updateGenesParams(searchInput);
-      // }
-      //
-      // createIdeogram();
     }
 
     // Process text input for the "Gene" field.
     function handleSearch(event) {
-      console.log('handleSearch event')
-      console.log(event)
       // Ignore non-"Enter" keyups
       if (event.type === 'keyup' && event.keyCode !== 13) return;
 
@@ -188,7 +174,11 @@
       searchGenes(geneSymbols);
     }
 
-      var urlParams = parseUrlParams();
+    function onClickAnnot(annot) {
+      searchGenes([annot.name]);
+    }
+
+    var urlParams = parseUrlParams();
 
       var organism = 'org' in urlParams ? urlParams.org : 'human';
 
@@ -215,7 +205,8 @@
         annotationHeight: 5,
         showFullyBanded: false,
         rotatable: false,
-        legend: legend
+        legend: legend,
+        onClickAnnot: onClickAnnot
       }
       var ideogram = new Ideogram(config);
     </script>
