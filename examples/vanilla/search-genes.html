@@ -93,6 +93,43 @@
       return json;
     }
 
+    /**
+     * Fetch paralogs of searched gene
+     */
+    async function fetchParalogPositions(annot, annots) {
+      const taxid = ideogram.config.taxid;
+      const orgUnderscored = ideogram.config.organism.replace(/-/g, '_');
+
+      const params = '&format=condensed&type=paralogues&target_taxon=' + taxid;
+      let path = `/homology/id/${annot.id}?${params}`
+      const ensemblHomologs = await fetchEnsembl(path);
+      const homologs = ensemblHomologs.data[0].homologies;
+
+      // Fetch positions of paralogs
+      homologIds = homologs.map(homolog => homolog.id)
+      path = '/lookup/id/' + orgUnderscored;
+      let body = {'ids': homologIds, 'species': orgUnderscored, 'object_type': 'gene'}
+      const ensemblHomologGenes = await fetchEnsembl(path, body, 'POST');
+
+      Object.entries(ensemblHomologGenes).map((idGene, i) => {
+        let gene = idGene[1]
+        annot = {
+          name: gene.display_name,
+          chr: gene.seq_region_name,
+          start: gene.start,
+          stop: gene.end,
+          id: gene.id,
+          shape: 'triangle',
+          color: 'pink',
+          height: 3
+        };
+        // Add to start of array, so searched gene gets top z-index
+        annots.unshift(annot);
+      })
+
+      return annots;
+    }
+
     async function searchGenes(geneSymbols) {
 
       // Refine style
@@ -125,34 +162,7 @@
         };
         annots.push(annot)
 
-        // Fetch paralogs of searched gene
-        const taxid = ideogram.config.taxid;
-        const params = '&format=condensed&type=paralogues&target_taxon=' + taxid;
-        path = `/homology/id/${annot.id}?${params}`
-        const ensemblHomologs = await fetchEnsembl(path);
-        const homologs = ensemblHomologs.data[0].homologies;
-
-        // Fetch positions of paralogs
-        homologIds = homologs.map(homolog => homolog.id)
-        path = '/lookup/id/' + orgUnderscored;
-        body = {'ids': homologIds, 'species': orgUnderscored, 'object_type': 'gene'}
-        const ensemblHomologGenes = await fetchEnsembl(path, body, 'POST');
-
-        Object.entries(ensemblHomologGenes).map((idGene, i) => {
-          gene = idGene[1]
-          annot = {
-            name: gene.display_name,
-            chr: gene.seq_region_name,
-            start: gene.start,
-            stop: gene.end,
-            id: gene.id,
-            shape: 'triangle',
-            color: 'pink',
-            height: 3
-          };
-          // Add to start of array, so searched gene gets top z-index
-          annots.unshift(annot);
-        })
+        annots = await fetchParalogPositions(annot, annots)
         ideogram.drawAnnots(annots);
         document.querySelector('#_ideogramLegend').style = style;
       });
