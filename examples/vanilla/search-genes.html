@@ -172,7 +172,7 @@
       document.querySelector('#_ideogramLegend').style = 'display: none;';
     }
 
-    // Process text input for the "Gene" field.
+    // Process text input for the "Search" field.
     function handleSearch(event) {
       // Ignore non-"Enter" keyups
       if (event.type === 'keyup' && event.keyCode !== 13) return;
@@ -190,35 +190,35 @@
 
     var urlParams = parseUrlParams();
 
-      var organism = 'org' in urlParams ? urlParams.org : 'human';
+    var organism = 'org' in urlParams ? urlParams.org : 'human';
 
-      document.querySelector('#search-button').addEventListener('click', handleSearch);
-      document.querySelector('#search').addEventListener('keyup', handleSearch);
+    document.querySelector('#search-button').addEventListener('click', handleSearch);
+    document.querySelector('#search').addEventListener('keyup', handleSearch);
 
-      const shape = 'triangle';
+    const shape = 'triangle';
 
-      var legend = [{
-        name: 'Click paralog to search',
-        rows: [
-          {name: 'Paralog', color: 'pink', shape: shape},
-          {name: 'Searched gene', color: 'red', shape: shape}
-        ]
-      }];
+    var legend = [{
+      name: 'Click paralog to search',
+      rows: [
+        {name: 'Paralog', color: 'pink', shape: shape},
+        {name: 'Searched gene', color: 'red', shape: shape}
+      ]
+    }];
 
-      chrHeight = 90;
+    chrHeight = 90;
 
-      config = {
-        organism: organism,
-        chrWidth: 8,
-        chrHeight: chrHeight,
-        chrLabelSize: 10,
-        annotationHeight: 5,
-        showFullyBanded: false,
-        rotatable: false,
-        legend: legend,
-        onClickAnnot: onClickAnnot
-      }
-      var ideogram = new Ideogram(config);
-    </script>
+    config = {
+      organism: organism,
+      chrWidth: 8,
+      chrHeight: chrHeight,
+      chrLabelSize: 10,
+      annotationHeight: 5,
+      showFullyBanded: false,
+      rotatable: false,
+      legend: legend,
+      onClickAnnot: onClickAnnot
+    }
+    var ideogram = new Ideogram(config);
+  </script>
 </body>
 </html>
