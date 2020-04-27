@@ -13,7 +13,7 @@ import {inflateThresholds} from './heatmap-lib';
 import {inflateHeatmaps} from './heatmap-collinear';
 import {
   onLoadAnnots, onDrawAnnots, startHideAnnotTooltipTimeout,
-  onWillShowAnnotTooltip, showAnnotTooltip
+  onWillShowAnnotTooltip, showAnnotTooltip, onClickAnnot
 } from './events';
 import {drawAnnots, drawProcessedAnnots} from './draw';
 import {getHistogramBars} from './histogram';
@@ -88,6 +88,10 @@ function initAnnotSettings() {
 
   if (typeof config.annotationsColor === 'undefined') {
     ideo.config.annotationsColor = '#F00';
+  }
+
+  if (config.onClickAnnot) {
+    ideo.onClickAnnotCallback = config.onClickAnnot;
   }
 
   initTooltip(ideo, config);
@@ -219,5 +223,5 @@ export {
   getHistogramBars, drawHeatmaps, deserializeAnnotsForHeatmap, fillAnnots,
   drawProcessedAnnots, drawSynteny, startHideAnnotTooltipTimeout,
   showAnnotTooltip, onWillShowAnnotTooltip, setOriginalTrackIndexes,
-  afterRawAnnots
+  afterRawAnnots, onClickAnnot
 };

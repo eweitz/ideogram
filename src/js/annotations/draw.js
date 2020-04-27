@@ -130,7 +130,8 @@ function writeTrackAnnots(chrAnnot, ideo) {
     .attr('d', function(d) { return determineShape(d, shapes); })
     .attr('fill', function(d) { return d.color; })
     .on('mouseover', function(d) { ideo.showAnnotTooltip(d, this); })
-    .on('mouseout', function() { ideo.startHideAnnotTooltipTimeout(); });
+    .on('mouseout', function() { ideo.startHideAnnotTooltipTimeout(); })
+    .on('click', function(d) { ideo.onClickAnnot(d); });
 }
 
 /**
