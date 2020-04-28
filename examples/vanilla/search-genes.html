@@ -8,14 +8,24 @@
     a:hover {text-decoration: underline;}
     a, a:hover, a:visited, a:active {color: #0366d6;}
 
+    select, optgroup, option {
+      float: left;
+      font-size: 14px;
+    }
+
     #ideogram-container {z-index: -1}
 
     #search-container {
       height: 26px;
+      float: left;
+      position: relative;
+      top: -4px;
+      margin-left: 10px;
     }
 
-    #search {
-      width: 290px;
+    #search-genes {
+      padding-left: 3px;
+      width: 175px;
       height: 20px;
       font-size: 14px;
       border-radius: 3px;
@@ -30,8 +40,8 @@
       color: #FFF;
       display: inline-block;
       position: relative;
-      top: -23.5px;
-      left: 325px;
+      top: 3px;
+      left: -25px;
       border-radius: 3px;
       text-align: center;
       padding-top: 3px;
@@ -52,19 +62,54 @@
   <a href="mouse">Next</a> |
   <a href="https://github.com/eweitz/ideogram/blob/gh-pages/human.html" target="_blank">Source</a>
   <p>
-    See where a search gene and its paralogs exist on the genome.
+    Search a gene and see where its <a href="https://en.wikipedia.org/wiki/Sequence_homology" target="_blank">paralogs</a> exist on the genome.
   </p>
+  <div>
+  <select>
+    <optgroup label="Model organisms">
+      <option value="homo-sapiens" selected>Human (Homo sapiens)</option>
+      <option value="mus-musculus">Mouse (Mus musculus)</option>
+      <option value="rattus-norvegicus">Rat (Rattus norvegicus)</option>
+      <option value="drosophila-melanogaster">Fly (Drosophila melanogaster)</option>
+      <option value="caenorhabditis-elegans">Worm (Caenorhabditis elegans)</option>
+      <option value="danio-rerio">Zebrafish (Danio rerio)</option>
+      <option value="arabidopsis-thaliana">Thale cress (Arabidopsis thaliana)</option>
+      <option value="saccharomyces-cerevisiae">Yeast (Saccharomyces cerevisiae)</option>
+    </optgroup>
+    <optgroup label="Vertebrates">
+      <option value="pan-troglodytes">Chimpanzee (Pan troglodytes)</option>
+      <option value="macaca-mulatta">Macaque (Macaca mulatta)</option>
+      <option value="felis-catus">Cat (Felis catus)</option>
+      <option value="canis-lupus-familiaris">Dog (Canis lupus familiaris)</option>
+      <option value="bos-taurus">Cow (Bos taurus)</option>
+      <option value="sus-scrofa">Pig (Sus scrofa)</option>
+    </optgroup>
+    <optgroup label="Plants">
+      <option value="zea-mays">Maize (Zea mays)</option>
+      <option value="oryza-sativa">Rice (Oryza sativa)</option>
+      <option value="solanum-lycopersicum">Tomato (Solanum lycopersicum)</option>
+      <option value="musa-acuminata">Banana (Musa acuminata)</option>
+      <option value="vitis-vinifera">Grape (Vitis vinifera)</option>
+      <option value="micromonas-commoda">Green algae (Micromonas commoda)</option>
+    </optgroup>
+    <optgroup label="Insects">
+      <option value="anopheles-gambiae">Mosquito (Anopheles gambiae)</option>
+    </optgroup>
+    <optgroup label="Protozoa">
+      <option value="plasmodium falciparum">Malaria parasite (Plasmodium falciparum)</option>
+      <option value="leishmania donovani">Leishmania parasite (Leishmania donovani)</option>
+    </optgroup>
+  </select>
+  </div>
   <div style="float: left; width: 350px;">
-    <label for="search" id="search-container">Search:
-      <input id="search" autocomplete="off" placeholder="Genes (e.g. BRCA1, BRCA2)"/>
+    <label for="search-genes" id="search-container">
+      <input id="search-genes" autocomplete="off" placeholder="Search genes"/>
       <span id="search-button">&#x2315;</span>
     </label>
   </div>
   <br/><br/><br/>
   <div id="ideogram-container"></div>
   <script type="text/javascript">
-
-    const ensemblBase = 'https://rest.ensembl.org';
 
     function parseUrlParams() {
       var rawParams = document.location.search;
@@ -82,13 +127,23 @@
       return urlParams;
     }
 
+    function handleOrganism() {
+      document.querySelector('#search-genes').value = '';
+      var selectedOrg = document.querySelector('option:checked').text;
+      selectedOrg = selectedOrg.split('(')[1].split(')')[0].toLowerCase();
+      config.organism = selectedOrg;
+      var banded = !['homo sapiens', 'mus musculus'].includes(selectedOrg);
+      config.showFullyBanded = banded;
+      ideogram = new Ideogram(config);
+    }
+
     async function fetchEnsembl(path, body=null, method='GET') {
       let init = {
         method: method,
         headers: {'Content-Type': 'application/json'}
       }
       if (body !== null) init.body = JSON.stringify(body);
-      const response = await fetch(ensemblBase + path, init);
+      const response = await fetch(`https://rest.ensembl.org${path}`, init);
       const json = await response.json();
       return json;
     }
@@ -100,7 +155,7 @@
       const taxid = ideogram.config.taxid;
       const orgUnderscored = ideogram.config.organism.replace(/-/g, '_');
 
-      const params = '&format=condensed&type=paralogues&target_taxon=' + taxid;
+      const params = `&format=condensed&type=paralogues&target_taxon=${taxid}`;
       let path = `/homology/id/${annot.id}?${params}`
       const ensemblHomologs = await fetchEnsembl(path);
       const homologs = ensemblHomologs.data[0].homologies;
@@ -108,7 +163,11 @@
       // Fetch positions of paralogs
       homologIds = homologs.map(homolog => homolog.id)
       path = '/lookup/id/' + orgUnderscored;
-      let body = {'ids': homologIds, 'species': orgUnderscored, 'object_type': 'gene'}
+      let body = {
+        'ids': homologIds,
+        'species': orgUnderscored,
+        'object_type': 'gene'
+      }
       const ensemblHomologGenes = await fetchEnsembl(path, body, 'POST');
 
       Object.entries(ensemblHomologGenes).map((idGene, i) => {
@@ -190,10 +249,12 @@
 
     var urlParams = parseUrlParams();
 
-    var organism = 'org' in urlParams ? urlParams.org : 'human';
+    var organism = 'org' in urlParams ? urlParams.org : 'homo-sapiens';
 
     document.querySelector('#search-button').addEventListener('click', handleSearch);
-    document.querySelector('#search').addEventListener('keyup', handleSearch);
+    document.querySelector('#search-genes').addEventListener('keyup', handleSearch);
+
+    document.querySelector('select').addEventListener('change', handleOrganism);
 
     const shape = 'triangle';
 
