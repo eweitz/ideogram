@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Search genes and paralogs | Ideogram</title>
+  <title>Paralogs | Ideogram</title>
   <style>
     body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
     a, a:visited {text-decoration: none;}
@@ -25,7 +25,7 @@
 
     #search-genes {
       padding-left: 3px;
-      width: 175px;
+      width: 200px;
       height: 20px;
       font-size: 14px;
       border-radius: 3px;
@@ -56,13 +56,13 @@
 <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
 </head>
 <body>
-  <h1>Search genes and paralogs | Ideogram</h1>
+  <h1>Paralogs | Ideogram</h1>
   <a href="../">Overview</a> |
   <a href="multiple-primates">Previous</a> |
   <a href="mouse">Next</a> |
-  <a href="https://github.com/eweitz/ideogram/blob/gh-pages/human.html" target="_blank">Source</a>
+  <a href="https://github.com/eweitz/ideogram/blob/gh-pages/paralogs.html" target="_blank">Source</a>
   <p>
-    Search a gene and see where its <a href="https://en.wikipedia.org/wiki/Sequence_homology" target="_blank">paralogs</a> exist on the genome.
+    Find evolutionarily similar genes across the genome.  See also <a href="orthologs">Orthologs</a>.
   </p>
   <div>
   <select>
@@ -103,7 +103,7 @@
   </div>
   <div style="float: left; width: 350px;">
     <label for="search-genes" id="search-container">
-      <input id="search-genes" autocomplete="off" placeholder="Search genes"/>
+      <input id="search-genes" autocomplete="off" placeholder="Search genes (e.g. RAD51)"/>
       <span id="search-button">&#x2315;</span>
     </label>
   </div>
