@@ -197,7 +197,7 @@
       })
       const lastChr = [...document.querySelectorAll('.chromosome-set')].slice(-1)[0]
       const left = lastChr.getBoundingClientRect().x;
-      const topPx = chrHeight + 40;
+      const topPx = ideogram.config.chrHeight + 40;
       const style =
         `float: left; position: relative; top: -${topPx}px; left: ${left}px;`;
 
@@ -272,18 +272,26 @@
       ]
     }];
 
-    chrHeight = 90;
+    function hyperlinkGene(annot) {
+      var org = ideogram.getScientificName(ideogram.config.taxid);
+      var term = `(${annot.name}[gene])+AND+(${org}[orgn])`;
+      var url = `https://ncbi.nlm.nih.gov/gene/?term=${term}`;
+      annot.displayName =
+        `<a target="_blank" href="${url}">${annot.name}</a>`;
+      return annot
+    }
 
     config = {
       organism: organism,
       chrWidth: 8,
-      chrHeight: chrHeight,
+      chrHeight: 90,
       chrLabelSize: 10,
       annotationHeight: 5,
       showFullyBanded: false,
       rotatable: false,
       legend: legend,
-      onClickAnnot: onClickAnnot
+      onClickAnnot: onClickAnnot,
+      onWillShowAnnotTooltip: hyperlinkGene
     }
     var ideogram = new Ideogram(config);
   </script>
