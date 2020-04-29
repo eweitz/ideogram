@@ -70,21 +70,21 @@
       <option value="homo-sapiens" selected>Human (Homo sapiens)</option>
       <option value="mus-musculus">Mouse (Mus musculus)</option>
       <option value="rattus-norvegicus">Rat (Rattus norvegicus)</option>
-      <option value="drosophila-melanogaster">Fly (Drosophila melanogaster)</option>
-      <option value="caenorhabditis-elegans">Worm (Caenorhabditis elegans)</option>
+      <!-- <option value="drosophila-melanogaster">Fly (Drosophila melanogaster)</option> -->
+      <!-- <option value="caenorhabditis-elegans">Worm (Caenorhabditis elegans)</option> -->
       <option value="danio-rerio">Zebrafish (Danio rerio)</option>
-      <option value="arabidopsis-thaliana">Thale cress (Arabidopsis thaliana)</option>
-      <option value="saccharomyces-cerevisiae">Yeast (Saccharomyces cerevisiae)</option>
+      <!-- <option value="arabidopsis-thaliana">Thale cress (Arabidopsis thaliana)</option> -->
+      <!-- <option value="saccharomyces-cerevisiae">Yeast (Saccharomyces cerevisiae)</option> -->
     </optgroup>
     <optgroup label="Vertebrates">
       <option value="pan-troglodytes">Chimpanzee (Pan troglodytes)</option>
-      <option value="macaca-mulatta">Macaque (Macaca mulatta)</option>
+      <!-- <option value="macaca-mulatta">Macaque (Macaca mulatta)</option> -->
       <option value="felis-catus">Cat (Felis catus)</option>
       <option value="canis-lupus-familiaris">Dog (Canis lupus familiaris)</option>
       <option value="bos-taurus">Cow (Bos taurus)</option>
       <option value="sus-scrofa">Pig (Sus scrofa)</option>
     </optgroup>
-    <optgroup label="Plants">
+    <!-- <optgroup label="Plants">
       <option value="zea-mays">Maize (Zea mays)</option>
       <option value="oryza-sativa">Rice (Oryza sativa)</option>
       <option value="solanum-lycopersicum">Tomato (Solanum lycopersicum)</option>
@@ -98,7 +98,7 @@
     <optgroup label="Protozoa">
       <option value="plasmodium falciparum">Malaria parasite (Plasmodium falciparum)</option>
       <option value="leishmania donovani">Leishmania parasite (Leishmania donovani)</option>
-    </optgroup>
+    </optgroup> -->
   </select>
   </div>
   <div style="float: left; width: 350px;">
@@ -222,7 +222,13 @@
         annots.push(annot)
 
         annots = await fetchParalogPositions(annot, annots)
+
+        // More notable genes tend to have shorter names.
+        // This helps ensure such genes appear atop overlapping annotations.
+        annots.sort((a, b) => { return a.name.length > b.name.length })
+
         ideogram.drawAnnots(annots);
+
         document.querySelector('#_ideogramLegend').style = style;
       });
 
