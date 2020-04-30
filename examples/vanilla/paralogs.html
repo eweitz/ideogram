@@ -237,7 +237,7 @@
 
         // More notable genes tend to have shorter names.
         // This helps ensure such genes appear atop overlapping annotations.
-        annots.sort((a, b) => { return a.name.length > b.name.length })
+        annots.sort((a, b) => { return b.name.length - a.name.length })
 
         ideogram.drawAnnots(annots);
 
