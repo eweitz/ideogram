@@ -78,7 +78,7 @@
     </optgroup>
     <optgroup label="Vertebrates">
       <option value="pan-troglodytes">Chimpanzee (Pan troglodytes)</option>
-      <!-- <option value="macaca-mulatta">Macaque (Macaca mulatta)</option> -->
+      <option value="macaca-mulatta">Macaque (Macaca mulatta)</option>
       <option value="felis-catus">Cat (Felis catus)</option>
       <option value="canis-lupus-familiaris">Dog (Canis lupus familiaris)</option>
       <option value="bos-taurus">Cow (Bos taurus)</option>
@@ -184,10 +184,13 @@
         };
         // Add to start of array, so searched gene gets top z-index
         annots.unshift(annot);
+        annotDescriptions[annot.name] = gene.description;
       })
 
       return annots;
     }
+
+    annotDescriptions = {}
 
     async function searchGenes(geneSymbols) {
 
@@ -212,14 +215,16 @@
         let gene = ensemblGenes[geneSymbol]
         let annot = {
           name: gene.display_name,
+          id: gene.id,
           chr: gene.seq_region_name,
           start: gene.start,
           stop: gene.end,
-          id: gene.id,
           shape: 'triangle',
           color: 'red'
         };
-        annots.push(annot)
+
+        annots.push(annot);
+        annotDescriptions[annot.name] = gene.description;
 
         annots = await fetchParalogPositions(annot, annots)
 
@@ -272,12 +277,15 @@
       ]
     }];
 
-    function hyperlinkGene(annot) {
+    function decorateGene(annot) {
       var org = ideogram.getScientificName(ideogram.config.taxid);
       var term = `(${annot.name}[gene])+AND+(${org}[orgn])`;
       var url = `https://ncbi.nlm.nih.gov/gene/?term=${term}`;
+      var description = annotDescriptions[annot.name].split(' [')[0];
       annot.displayName =
-        `<a target="_blank" href="${url}">${annot.name}</a>`;
+        `<a target="_blank" href="${url}">${annot.name}</a>
+        <br/>
+        ${description}`;
       return annot
     }
 
@@ -291,7 +299,7 @@
       rotatable: false,
       legend: legend,
       onClickAnnot: onClickAnnot,
-      onWillShowAnnotTooltip: hyperlinkGene
+      onWillShowAnnotTooltip: decorateGene
     }
     var ideogram = new Ideogram(config);
   </script>
