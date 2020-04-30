@@ -79,6 +79,13 @@ function onWillShowAnnotTooltip(annot) {
 }
 
 /**
+ * Optional callback, invoked on clicking annotation
+ */
+function onClickAnnot(annot) {
+  this.onClickAnnotCallback(annot);
+}
+
+/**
  * Shows a tooltip for the given annotation.
  *
  * See notes in startHideAnnotTooltipTimeout about show/hide logic.
@@ -112,5 +119,5 @@ function showAnnotTooltip(annot, context) {
 
 export {
   onLoadAnnots, onDrawAnnots, startHideAnnotTooltipTimeout,
-  onWillShowAnnotTooltip, showAnnotTooltip
+  onWillShowAnnotTooltip, showAnnotTooltip, onClickAnnot
 };
