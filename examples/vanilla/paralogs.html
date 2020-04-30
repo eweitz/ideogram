@@ -51,6 +51,10 @@
     #ideogram .annot path {
       cursor: pointer;
     }
+
+    #ideogram .chromosome {
+      cursor: default;
+    }
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
 <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
@@ -79,10 +83,13 @@
     <optgroup label="Vertebrates">
       <option value="pan-troglodytes">Chimpanzee (Pan troglodytes)</option>
       <option value="macaca-mulatta">Macaque (Macaca mulatta)</option>
+      <option value="macaca-fascicularis">Crab-eating macaque (Macaca fascicularis)</option>
       <option value="felis-catus">Cat (Felis catus)</option>
       <option value="canis-lupus-familiaris">Dog (Canis lupus familiaris)</option>
+      <option value="equus-caballus">Horse (Horse)</option>
       <option value="bos-taurus">Cow (Bos taurus)</option>
       <option value="sus-scrofa">Pig (Sus scrofa)</option>
+      <!-- <option value="petromyzon-marinus">Lamprey (Petromyzon marinus)</option> -->
     </optgroup>
     <!-- <optgroup label="Plants">
       <option value="zea-mays">Maize (Zea mays)</option>
@@ -153,7 +160,7 @@
      */
     async function fetchParalogPositions(annot, annots) {
       const taxid = ideogram.config.taxid;
-      const orgUnderscored = ideogram.config.organism.replace(/-/g, '_');
+      const orgUnderscored = ideogram.config.organism.replace(/[ -]/g, '_');
 
       const params = `&format=condensed&type=paralogues&target_taxon=${taxid}`;
       let path = `/homology/id/${annot.id}?${params}`
@@ -205,7 +212,7 @@
         `float: left; position: relative; top: -${topPx}px; left: ${left}px;`;
 
       // Fetch positon of searched gene
-      const orgUnderscored = ideogram.config.organism.replace(/-/g, '_');
+      const orgUnderscored = ideogram.config.organism.replace(/[ -]/g, '_');
       let path = '/lookup/symbol/' + orgUnderscored;
       let body = {'symbols': geneSymbols}
       const ensemblGenes = await fetchEnsembl(path, body, 'POST');
