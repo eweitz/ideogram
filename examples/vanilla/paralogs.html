@@ -118,6 +118,8 @@
   <div id="ideogram-container"></div>
   <script type="text/javascript">
 
+    fetchEnsembl = Ideogram.fetchEnsembl;
+
     function parseUrlParams() {
       var rawParams = document.location.search;
       var urlParams = {};
@@ -142,17 +144,6 @@
       var banded = !['homo sapiens', 'mus musculus'].includes(selectedOrg);
       config.showFullyBanded = banded;
       ideogram = new Ideogram(config);
-    }
-
-    async function fetchEnsembl(path, body=null, method='GET') {
-      let init = {
-        method: method,
-        headers: {'Content-Type': 'application/json'}
-      }
-      if (body !== null) init.body = JSON.stringify(body);
-      const response = await fetch(`https://rest.ensembl.org${path}`, init);
-      const json = await response.json();
-      return json;
     }
 
     /**
