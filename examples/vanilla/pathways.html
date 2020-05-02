@@ -60,9 +60,12 @@
   <a href="../">Overview</a> |
   <a href="multiple-primates">Previous</a> |
   <a href="mouse">Next</a> |
-  <a href="https://github.com/eweitz/ideogram/blob/gh-pages/paralogs.html" target="_blank">Source</a>
+  <a href="https://github.com/eweitz/ideogram/blob/gh-pages/pathways.html" target="_blank">Source</a>
   <p>
-    Find genes in similar pathways across the genome.  See also <a href="paralogs">Paralogs</a>.
+    Find interacting genes in the same pathway, using data from
+    <a href="https://www.wikipathways.org">WikiPathways</a> and
+    <a href="https://mygene.info">MyGene.info</a>.
+    See also <a href="paralogs">Paralogs</a>.
   </p>
   <div>
   <select>
@@ -139,61 +142,73 @@
       ideogram = new Ideogram(config);
     }
 
+    /**
+     * Retrieve interacting genes from WikiPathways API
+     *
+     * Docs:
+     * https://webservice.wikipathways.org/ui/
+     * https://www.wikipathways.org/index.php/Help:WikiPathways_Webservice/API
+     *
+     * Example:
+     * https://webservice.wikipathways.org/findInteractions?query=ACE2&format=json
+     */
     async function fetchInteractingGenes(gene, organism) {
       let interactions = [];
-      const queryString = `?query=${gene}&format=json`
+      let orgNameSimple = organism.replace(/-/g, ' ');
+      const queryString = `?query=${gene.name}&format=json`
       const url =
         `https://webservice.wikipathways.org/findInteractions${queryString}`;
       response = await fetch(url)
-      data = response.json()
+      data = await response.json()
       data.result.forEach(interaction => {
-        console.log('interaction')
-        console.log(interaction)
-        if (interaction.species.toLowerCase() === organism) {
+        if (interaction.species.toLowerCase() === orgNameSimple) {
           var right = interaction.fields.right.values;
           var left = interaction.fields.left.values;
           interactions = interactions.concat(right, left);
         }
       })
+
+      // Filter out interactions that are definitely not gene symbols
+      interactions = interactions.filter(ixn => {
+        return ixn !== '' && !ixn.includes(' ') && ixn !== gene.name
+      })
+
+      interactions = Array.from(new Set(interactions)); // Deduplicate
+
       return interactions;
     }
 
     /**
-     * Fetch paralogs of searched gene
+     * Retrieves positions of interacting genes from MyGene.info
+     *
+     * Docs:
+     * https://docs.mygene.info/en/v3/
+     *
+     * Example:
+     * https://mygene.info/v3/query?q=symbol:cdk2%20OR%20symbol:brca1&species=9606&fields=symbol,genomic_pos
      */
-    async function fetchParalogPositions(annot, annots) {
+    async function fetchInteractingGeneAnnots(interactions) {
+
+      let annots = []
+
+      ixnParam = interactions.map(ixn => `symbol:${ixn}`).join(' OR ')
       const taxid = ideogram.config.taxid;
-      const orgUnderscored = ideogram.config.organism.replace(/-/g, '_');
 
-      const params = `&format=condensed&type=paralogues&target_taxon=${taxid}`;
-      let path = `/homology/id/${annot.id}?${params}`
-      const ensemblHomologs = await fetchEnsembl(path);
-      const homologs = ensemblHomologs.data[0].homologies;
-
-      // Fetch positions of paralogs
-      homologIds = homologs.map(homolog => homolog.id)
-      path = '/lookup/id/' + orgUnderscored;
-      let body = {
-        'ids': homologIds,
-        'species': orgUnderscored,
-        'object_type': 'gene'
-      }
-      const ensemblHomologGenes = await fetchEnsembl(path, body, 'POST');
-
-      Object.entries(ensemblHomologGenes).map((idGene, i) => {
-        let gene = idGene[1]
+      const myGeneBase = 'https://mygene.info/v3/query';
+      const queryString =
+        `?q=${ixnParam}&species=${taxid}&fields=symbol,genomic_pos`;
+      let response = await fetch(myGeneBase + queryString);
+      let data = await response.json();
+      data.hits.forEach(hit => {
         annot = {
-          name: gene.display_name,
-          chr: gene.seq_region_name,
-          start: gene.start,
-          stop: gene.end,
-          id: gene.id,
-          shape: 'triangle',
-          color: 'pink',
-          height: 3
-        };
-        // Add to start of array, so searched gene gets top z-index
-        annots.unshift(annot);
+          name: hit.symbol,
+          chr: hit.genomic_pos.chr,
+          start: hit.genomic_pos.start,
+          stop: hit.genomic_pos.end,
+          id: hit.genomic_pos.ensemblgene,
+          color: 'pink'
+        }
+        annots.push(annot)
       })
 
       return annots;
@@ -206,13 +221,14 @@
         chromosome.style.cursor = '';
       })
       const lastChr = [...document.querySelectorAll('.chromosome-set')].slice(-1)[0]
-      const left = lastChr.getBoundingClientRect().x;
-      const topPx = chrHeight + 40;
+      const left = lastChr.getBoundingClientRect().x + 10;
+      const topPx = ideogram.config.chrHeight + 30;
       const style =
         `float: left; position: relative; top: -${topPx}px; left: ${left}px;`;
 
       // Fetch positon of searched gene
-      const orgUnderscored = ideogram.config.organism.replace(/-/g, '_');
+      const organism = ideogram.config.organism
+      const orgUnderscored = organism.replace(/-/g, '_');
       let path = '/lookup/symbol/' + orgUnderscored;
       let body = {'symbols': geneSymbols}
       const ensemblGenes = await fetchEnsembl(path, body, 'POST');
@@ -231,10 +247,10 @@
         };
         annots.push(annot)
 
-        annots = await fetchParalogPositions(annot, annots)
+        interactions = await fetchInteractingGenes(annot, organism);
+        interactingAnnots = await fetchInteractingGeneAnnots(interactions)
+        annots = annots.concat(interactingAnnots)
 
-        // More notable genes tend to have shorter names.
-        // This helps ensure such genes appear atop overlapping annotations.
         annots.sort((a, b) => { return a.name.length > b.name.length })
 
         ideogram.drawAnnots(annots);
@@ -263,6 +279,16 @@
       searchGenes([annot.name]);
     }
 
+    function decorateGene(annot) {
+      var org = ideogram.getScientificName(ideogram.config.taxid);
+      var term = `(${annot.name}[gene])+AND+(${org}[orgn])`;
+      var url = `https://ncbi.nlm.nih.gov/gene/?term=${term}`;
+      // var description = annotDescriptions[annot.name].split(' [')[0];
+      annot.displayName =
+        `<a target="_blank" href="${url}">${annot.name}</a>`;
+      return annot
+    }
+
     var urlParams = parseUrlParams();
 
     var organism = 'org' in urlParams ? urlParams.org : 'homo-sapiens';
@@ -275,22 +301,19 @@
     const shape = 'triangle';
 
     var legend = [{
-      name: 'Click paralog to search',
+      name: 'Click interacting gene to search',
       rows: [
-        {name: 'Paralog', color: 'pink', shape: shape},
+        {name: 'Interacting gene', color: 'pink', shape: shape},
         {name: 'Searched gene', color: 'red', shape: shape}
       ]
     }];
 
-    chrHeight = 90;
-
     config = {
       organism: organism,
-      chrWidth: 8,
-      chrHeight: chrHeight,
-      chrLabelSize: 10,
-      annotationHeight: 5,
-      showFullyBanded: false,
+      chrHeight: 450,
+      chrMargin: 20,
+      chrLabelSize: 14,
+      annotationHeight: 7,
       rotatable: false,
       legend: legend,
       onClickAnnot: onClickAnnot
