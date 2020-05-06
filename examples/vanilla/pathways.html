@@ -106,7 +106,7 @@
   </div>
   <div style="float: left; width: 350px;">
     <label for="search-genes" id="search-container">
-      <input id="search-genes" autocomplete="off" placeholder="Search genes (e.g. RAD51)"/>
+      <input id="search-genes" autocomplete="off" placeholder="Search gene (e.g. RAD51)"/>
       <span id="search-button">&#x2315;</span>
     </label>
   </div>
@@ -137,9 +137,13 @@
       var selectedOrg = document.querySelector('option:checked').text;
       selectedOrg = selectedOrg.split('(')[1].split(')')[0].toLowerCase();
       config.organism = selectedOrg;
-      var banded = !['homo sapiens', 'mus musculus'].includes(selectedOrg);
-      config.showFullyBanded = banded;
+      // var banded = !['homo sapiens', 'mus musculus'].includes(selectedOrg);
+      // config.showFullyBanded = banded;
       ideogram = new Ideogram(config);
+    }
+
+    function maybeGeneSymbol(ixn, gene) {
+      return ixn !== '' && !ixn.includes(' ') && ixn !== gene.name;
     }
 
     /**
@@ -149,11 +153,13 @@
      * https://webservice.wikipathways.org/ui/
      * https://www.wikipathways.org/index.php/Help:WikiPathways_Webservice/API
      *
-     * Example:
+     * Examples:
      * https://webservice.wikipathways.org/findInteractions?query=ACE2&format=json
+     * https://webservice.wikipathways.org/findInteractions?query=RAD51&format=json
      */
     async function fetchInteractingGenes(gene, organism) {
-      let interactions = [];
+      let ixns = {};
+      let seenNameIds = {}
       let orgNameSimple = organism.replace(/-/g, ' ');
       const queryString = `?query=${gene.name}&format=json`
       const url =
@@ -164,18 +170,36 @@
         if (interaction.species.toLowerCase() === orgNameSimple) {
           var right = interaction.fields.right.values;
           var left = interaction.fields.left.values;
-          interactions = interactions.concat(right, left);
+          var rawIxns = right.concat(left)
+          var name = interaction.name;
+          var id = interaction.id;
+
+          rawIxns.forEach(rawIxn => {
+            let nameId = name + id;
+            if (
+              maybeGeneSymbol(rawIxn, gene) &&
+              !(nameId in seenNameIds)
+            ) {
+              seenNameIds[nameId] = 1;
+              let ixn = {name: name, pathwayId: id}
+              if (rawIxn in ixns) {
+                ixns[rawIxn].push(ixn)
+              } else {
+                ixns[rawIxn] = [ixn]
+              }
+            }
+          })
         }
       })
 
-      // Filter out interactions that are definitely not gene symbols
-      interactions = interactions.filter(ixn => {
-        return ixn !== '' && !ixn.includes(' ') && ixn !== gene.name
-      })
+      return ixns;
+    }
 
-      interactions = Array.from(new Set(interactions)); // Deduplicate
-
-      return interactions;
+    async function fetchMyGeneInfo(queryString) {
+      const myGeneBase = 'https://mygene.info/v3/query';
+      let response = await fetch(myGeneBase + queryString);
+      let data = await response.json();
+      return data;
     }
 
     /**
@@ -185,20 +209,20 @@
      * https://docs.mygene.info/en/v3/
      *
      * Example:
-     * https://mygene.info/v3/query?q=symbol:cdk2%20OR%20symbol:brca1&species=9606&fields=symbol,genomic_pos
+     * https://mygene.info/v3/query?q=symbol:cdk2%20OR%20symbol:brca1&species=9606&fields=symbol,genomic_pos,name
      */
     async function fetchInteractingGeneAnnots(interactions) {
 
       let annots = []
 
-      ixnParam = interactions.map(ixn => `symbol:${ixn}`).join(' OR ')
-      const taxid = ideogram.config.taxid;
+      ixnParam =
+        Object.keys(interactions).map(ixn => `symbol:${ixn}`).join(' OR ')
 
-      const myGeneBase = 'https://mygene.info/v3/query';
+      const taxid = ideogram.config.taxid;
       const queryString =
-        `?q=${ixnParam}&species=${taxid}&fields=symbol,genomic_pos`;
-      let response = await fetch(myGeneBase + queryString);
-      let data = await response.json();
+        `?q=${ixnParam}&species=${taxid}&fields=symbol,genomic_pos,name`;
+      let data = await fetchMyGeneInfo(queryString)
+
       data.hits.forEach(hit => {
         annot = {
           name: hit.symbol,
@@ -227,36 +251,35 @@
         `float: left; position: relative; top: -${topPx}px; left: ${left}px;`;
 
       // Fetch positon of searched gene
-      const organism = ideogram.config.organism
-      const orgUnderscored = organism.replace(/-/g, '_');
-      let path = '/lookup/symbol/' + orgUnderscored;
-      let body = {'symbols': geneSymbols}
-      const ensemblGenes = await fetchEnsembl(path, body, 'POST');
+      const taxid = ideogram.config.taxid;
+      const queryString =
+        `?q=${geneSymbols[0]}&species=${taxid}&fields=symbol,genomic_pos,name`;
+      let data = await fetchMyGeneInfo(queryString)
+
+      const gene = data.hits[0]
 
       let annots = []
-      geneSymbols.forEach(async geneSymbol => {
-        let gene = ensemblGenes[geneSymbol]
-        let annot = {
-          name: gene.display_name,
-          chr: gene.seq_region_name,
-          start: gene.start,
-          stop: gene.end,
-          id: gene.id,
-          shape: 'triangle',
-          color: 'red'
-        };
-        annots.push(annot)
 
-        interactions = await fetchInteractingGenes(annot, organism);
-        interactingAnnots = await fetchInteractingGeneAnnots(interactions)
-        annots = annots.concat(interactingAnnots)
+      let annot = {
+        name: gene.symbol,
+        chr: gene.genomic_pos.chr,
+        start: gene.genomic_pos.start,
+        stop: gene.genomic_pos.end,
+        id: gene.genomic_pos.ensemblgene,
+        color: 'red'
+      };
+      annots.push(annot)
 
-        annots.sort((a, b) => { return a.name.length > b.name.length })
+      interactions = await fetchInteractingGenes(annot, organism);
+      interactingAnnots = await fetchInteractingGeneAnnots(interactions)
+      annots = annots.concat(interactingAnnots)
 
-        ideogram.drawAnnots(annots);
+      annots.sort((a, b) => { return b.name.length - a.name.length })
 
-        document.querySelector('#_ideogramLegend').style = style;
-      });
+      ideogram.drawAnnots(annots);
+
+      document.querySelector('#_ideogramLegend').style = style;
+
 
       ideogram.drawAnnots(annots);
 
