@@ -62,47 +62,51 @@
   <a href="mouse">Next</a> |
   <a href="https://github.com/eweitz/ideogram/blob/gh-pages/related-genes.html" target="_blank">Source</a>
   <p>
-    Find interacting genes in the same pathway, using data from
-    <a href="https://www.wikipathways.org">WikiPathways</a> and
+    Find interacting pathway genes and paralogs.  Uses data from
+    <a href="https://rest.ensembl.org">Ensembl</a>,
+    <a href="https://www.wikipathways.org">WikiPathways</a>, and
     <a href="https://mygene.info">MyGene.info</a>.
-    See also <a href="paralogs">Paralogs</a>.
+    See also <a href="orthologs">Orthologs</a>.
   </p>
   <div>
-  <select>
-    <optgroup label="Model organisms">
-      <option value="homo-sapiens" selected>Human (Homo sapiens)</option>
-      <option value="mus-musculus">Mouse (Mus musculus)</option>
-      <option value="rattus-norvegicus">Rat (Rattus norvegicus)</option>
-      <!-- <option value="drosophila-melanogaster">Fly (Drosophila melanogaster)</option> -->
-      <!-- <option value="caenorhabditis-elegans">Worm (Caenorhabditis elegans)</option> -->
-      <option value="danio-rerio">Zebrafish (Danio rerio)</option>
-      <!-- <option value="arabidopsis-thaliana">Thale cress (Arabidopsis thaliana)</option> -->
-      <!-- <option value="saccharomyces-cerevisiae">Yeast (Saccharomyces cerevisiae)</option> -->
-    </optgroup>
-    <optgroup label="Vertebrates">
-      <option value="pan-troglodytes">Chimpanzee (Pan troglodytes)</option>
-      <!-- <option value="macaca-mulatta">Macaque (Macaca mulatta)</option> -->
-      <option value="felis-catus">Cat (Felis catus)</option>
-      <option value="canis-lupus-familiaris">Dog (Canis lupus familiaris)</option>
-      <option value="bos-taurus">Cow (Bos taurus)</option>
-      <option value="sus-scrofa">Pig (Sus scrofa)</option>
-    </optgroup>
-    <!-- <optgroup label="Plants">
-      <option value="zea-mays">Maize (Zea mays)</option>
-      <option value="oryza-sativa">Rice (Oryza sativa)</option>
-      <option value="solanum-lycopersicum">Tomato (Solanum lycopersicum)</option>
-      <option value="musa-acuminata">Banana (Musa acuminata)</option>
-      <option value="vitis-vinifera">Grape (Vitis vinifera)</option>
-      <option value="micromonas-commoda">Green algae (Micromonas commoda)</option>
-    </optgroup>
-    <optgroup label="Insects">
-      <option value="anopheles-gambiae">Mosquito (Anopheles gambiae)</option>
-    </optgroup>
-    <optgroup label="Protozoa">
-      <option value="plasmodium falciparum">Malaria parasite (Plasmodium falciparum)</option>
-      <option value="leishmania donovani">Leishmania parasite (Leishmania donovani)</option>
-    </optgroup> -->
-  </select>
+    <select>
+      <optgroup label="Model organisms">
+        <option value="homo-sapiens" selected>Human (Homo sapiens)</option>
+        <option value="mus-musculus">Mouse (Mus musculus)</option>
+        <option value="rattus-norvegicus">Rat (Rattus norvegicus)</option>
+        <!-- <option value="drosophila-melanogaster">Fly (Drosophila melanogaster)</option> -->
+        <!-- <option value="caenorhabditis-elegans">Worm (Caenorhabditis elegans)</option> -->
+        <option value="danio-rerio">Zebrafish (Danio rerio)</option>
+        <!-- <option value="arabidopsis-thaliana">Thale cress (Arabidopsis thaliana)</option> -->
+        <!-- <option value="saccharomyces-cerevisiae">Yeast (Saccharomyces cerevisiae)</option> -->
+      </optgroup>
+      <optgroup label="Vertebrates">
+        <option value="pan-troglodytes">Chimpanzee (Pan troglodytes)</option>
+        <option value="macaca-mulatta">Macaque (Macaca mulatta)</option>
+        <option value="macaca-fascicularis">Crab-eating macaque (Macaca fascicularis)</option>
+        <option value="felis-catus">Cat (Felis catus)</option>
+        <option value="canis-lupus-familiaris">Dog (Canis lupus familiaris)</option>
+        <option value="equus-caballus">Horse (Horse)</option>
+        <option value="bos-taurus">Cow (Bos taurus)</option>
+        <option value="sus-scrofa">Pig (Sus scrofa)</option>
+        <!-- <option value="petromyzon-marinus">Lamprey (Petromyzon marinus)</option> -->
+      </optgroup>
+      <!-- <optgroup label="Plants">
+        <option value="zea-mays">Maize (Zea mays)</option>
+        <option value="oryza-sativa">Rice (Oryza sativa)</option>
+        <option value="solanum-lycopersicum">Tomato (Solanum lycopersicum)</option>
+        <option value="musa-acuminata">Banana (Musa acuminata)</option>
+        <option value="vitis-vinifera">Grape (Vitis vinifera)</option>
+        <option value="micromonas-commoda">Green algae (Micromonas commoda)</option>
+      </optgroup>
+      <optgroup label="Insects">
+        <option value="anopheles-gambiae">Mosquito (Anopheles gambiae)</option>
+      </optgroup>
+      <optgroup label="Protozoa">
+        <option value="plasmodium falciparum">Malaria parasite (Plasmodium falciparum)</option>
+        <option value="leishmania donovani">Leishmania parasite (Leishmania donovani)</option>
+      </optgroup> -->
+    </select>
   </div>
   <div style="float: left; width: 350px;">
     <label for="search-genes" id="search-container">
@@ -145,7 +149,11 @@
     }
 
     function maybeGeneSymbol(ixn, gene) {
-      return ixn !== '' && !ixn.includes(' ') && ixn !== gene.name;
+      return (
+        ixn !== '' &&
+        !ixn.includes(' ') &&
+        ixn.toLowerCase() !== gene.name.toLowerCase()
+      );
     }
 
     /**
@@ -215,10 +223,12 @@
      */
     async function fetchInteractingGeneAnnots(interactions) {
 
-      let annots = []
+      let annots = [];
+      let geneList = Object.keys(interactions);
 
-      ixnParam =
-        Object.keys(interactions).map(ixn => `symbol:${ixn}`).join(' OR ')
+      if (geneList.length === 0) return annots
+
+      ixnParam = geneList.map(ixn => `symbol:${ixn}`).join(' OR ')
 
       const taxid = ideogram.config.taxid;
       const queryString =
@@ -235,6 +245,7 @@
           color: 'purple'
         }
         annots.push(annot)
+        annotDescriptions[hit.symbol] = hit.name;
       })
 
       return annots;
@@ -325,11 +336,6 @@
       ideogram.drawAnnots(annots);
 
       document.querySelector('#_ideogramLegend').style = style;
-
-
-      ideogram.drawAnnots(annots);
-
-      document.querySelector('#_ideogramLegend').style = 'display: none;';
     }
 
     // Process text input for the "Search" field.
@@ -375,8 +381,8 @@
     var legend = [{
       name: 'Click gene to search',
       rows: [
-        {name: 'Paralogous gene', color: 'pink', shape: shape},
         {name: 'Interacting gene', color: 'purple', shape: shape},
+        {name: 'Paralogous gene', color: 'pink', shape: shape},
         {name: 'Searched gene', color: 'red', shape: shape}
       ]
     }];
