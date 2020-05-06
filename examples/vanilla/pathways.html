@@ -116,6 +116,8 @@
 
     fetchEnsembl = Ideogram.fetchEnsembl;
 
+    annotDescriptions = {}
+
     function parseUrlParams() {
       var rawParams = document.location.search;
       var urlParams = {};
@@ -253,12 +255,13 @@
       // Fetch positon of searched gene
       const taxid = ideogram.config.taxid;
       const queryString =
-        `?q=${geneSymbols[0]}&species=${taxid}&fields=symbol,genomic_pos,name`;
+        `?q=symbol:${geneSymbols[0]}&species=${taxid}&fields=symbol,genomic_pos,name`;
       let data = await fetchMyGeneInfo(queryString)
 
       const gene = data.hits[0]
+      annotDescriptions[gene.symbol] = gene.name;
 
-      let annots = []
+      let annots = [];
 
       let annot = {
         name: gene.symbol,
@@ -306,9 +309,12 @@
       var org = ideogram.getScientificName(ideogram.config.taxid);
       var term = `(${annot.name}[gene])+AND+(${org}[orgn])`;
       var url = `https://ncbi.nlm.nih.gov/gene/?term=${term}`;
-      // var description = annotDescriptions[annot.name].split(' [')[0];
+      var description = annotDescriptions[annot.name].split(' [')[0];
       annot.displayName =
-        `<a target="_blank" href="${url}">${annot.name}</a>`;
+        `<a target="_blank" href="${url}">${annot.name}</a>
+        <br/>
+        ${description}
+        <br/>`;
       return annot
     }
 
@@ -339,7 +345,8 @@
       annotationHeight: 7,
       rotatable: false,
       legend: legend,
-      onClickAnnot: onClickAnnot
+      onClickAnnot: onClickAnnot,
+      onWillShowAnnotTooltip: decorateGene
     }
     var ideogram = new Ideogram(config);
   </script>
