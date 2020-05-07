@@ -1576,6 +1576,12 @@ describe('Ideogram', function() {
         var firstBpAnnotLeft = getLeft('#chr17-9606 > .annot:nth-child(51)');
         var firstBpSliderLeft = getLeft('#_ideogram > g:nth-child(5) > rect.selection');
         var firstBpLeft = getLeft('#chr17-9606');
+        console.log('firstBpAnnotLeft')
+        console.log(firstBpAnnotLeft)
+        console.log('firstBpSliderLeft')
+        console.log(firstBpSliderLeft)
+        console.log('firstBpLeft')
+        console.log(firstBpLeft)
         assert.equal(firstBpAnnotLeft, firstBpSliderLeft);
         assert.equal(firstBpSliderLeft, firstBpLeft);
         console.log('after assert set 2')
