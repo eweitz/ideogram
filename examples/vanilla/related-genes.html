@@ -86,7 +86,7 @@
         <option value="macaca-fascicularis">Crab-eating macaque (Macaca fascicularis)</option>
         <option value="felis-catus">Cat (Felis catus)</option>
         <option value="canis-lupus-familiaris">Dog (Canis lupus familiaris)</option>
-        <option value="equus-caballus">Horse (Horse)</option>
+        <option value="equus-caballus">Horse (Equus caballus)</option>
         <option value="bos-taurus">Cow (Bos taurus)</option>
         <option value="sus-scrofa">Pig (Sus scrofa)</option>
         <!-- <option value="petromyzon-marinus">Lamprey (Petromyzon marinus)</option> -->
@@ -118,9 +118,18 @@
   <div id="ideogram-container"></div>
   <script type="text/javascript">
 
-    fetchEnsembl = Ideogram.fetchEnsembl;
+    ////
+    // Start example-specific handling
+    ///
 
-    annotDescriptions = {}
+    var urlParams = parseUrlParams();
+
+    var organism = 'org' in urlParams ? urlParams.org : 'homo-sapiens';
+
+    document.querySelector('#search-button').addEventListener('click', handleSearch);
+    document.querySelector('#search-genes').addEventListener('keyup', handleSearch);
+
+    document.querySelector('select').addEventListener('change', handleOrganism);
 
     function parseUrlParams() {
       var rawParams = document.location.search;
@@ -147,6 +156,28 @@
       // config.showFullyBanded = banded;
       ideogram = new Ideogram(config);
     }
+
+    // Process text input for the "Search" field.
+    function handleSearch(event) {
+      // Ignore non-"Enter" keyups
+      if (event.type === 'keyup' && event.keyCode !== 13) return;
+
+      var searchInput = event.target.value.trim();
+
+      // Handles "BRCA1,BRCA2", "BRCA1 BRCA2", and "BRCA1, BRCA2"
+      let geneSymbols = searchInput.split(/[, ]/).filter(d => d !== '')
+      searchGenes(geneSymbols);
+    }
+
+    ////
+    // End example-specific handling
+    //
+    // Start generic "Related genes" handling
+    ////
+
+    fetchEnsembl = Ideogram.fetchEnsembl;
+
+    annotDescriptions = {}
 
     function maybeGeneSymbol(ixn, gene) {
       return (
@@ -281,7 +312,6 @@
           start: gene.start,
           stop: gene.end,
           id: gene.id,
-          shape: 'triangle',
           color: 'pink'
         };
         // Add to start of array, so searched gene gets top z-index
@@ -338,18 +368,6 @@
       document.querySelector('#_ideogramLegend').style = style;
     }
 
-    // Process text input for the "Search" field.
-    function handleSearch(event) {
-      // Ignore non-"Enter" keyups
-      if (event.type === 'keyup' && event.keyCode !== 13) return;
-
-      var searchInput = event.target.value.trim();
-
-      // Handles "BRCA1,BRCA2", "BRCA1 BRCA2", and "BRCA1, BRCA2"
-      let geneSymbols = searchInput.split(/[, ]/).filter(d => d !== '')
-      searchGenes(geneSymbols);
-    }
-
     function onClickAnnot(annot) {
       searchGenes([annot.name]);
     }
@@ -367,19 +385,10 @@
       return annot
     }
 
-    var urlParams = parseUrlParams();
-
-    var organism = 'org' in urlParams ? urlParams.org : 'homo-sapiens';
-
-    document.querySelector('#search-button').addEventListener('click', handleSearch);
-    document.querySelector('#search-genes').addEventListener('keyup', handleSearch);
-
-    document.querySelector('select').addEventListener('change', handleOrganism);
-
     const shape = 'triangle';
 
     var legend = [{
-      name: 'Click gene to search',
+      name: '<b>Click gene to search</b>',
       rows: [
         {name: 'Interacting gene', color: 'purple', shape: shape},
         {name: 'Paralogous gene', color: 'pink', shape: shape},
