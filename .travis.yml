@@ -1,7 +1,7 @@
 language: node_js
-dist: trusty
+dist: bionic
 node_js:
-  - "8.11.1"
+  - "12.13.1"
 addons:
   chrome: stable
 before_script:
