@@ -1558,9 +1558,11 @@ describe('Ideogram', function() {
       brush: 'chr17:5000000-10000000',
       onBrushMove: function() {},
       onLoad: function() {
+        console.log('in onLoad')
         this.createBrush('17', 1, 2);
         this.createBrush('17', 40900000, 44900000);
         this.createBrush('17', 81094108, 81094109);
+        console.log('after createBrush')
 
         // Closest test for https://github.com/eweitz/ideogram/issues/91
         var bandQ2131Left = getLeft('#chr17-9606-q21-31');
@@ -1568,6 +1570,7 @@ describe('Ideogram', function() {
         var bandQ2131BrushLeft = getLeft('#_ideogram > g:nth-child(6) > rect.selection');
         assert.equal(bandQ2131AnnotLeft, bandQ2131Left);
         assert.equal(bandQ2131AnnotLeft, bandQ2131BrushLeft);
+        console.log('after assert set 1')
 
         // Check alignment at far left
         var firstBpAnnotLeft = getLeft('#chr17-9606 > .annot:nth-child(51)');
@@ -1575,6 +1578,7 @@ describe('Ideogram', function() {
         var firstBpLeft = getLeft('#chr17-9606');
         assert.equal(firstBpAnnotLeft, firstBpSliderLeft);
         assert.equal(firstBpSliderLeft, firstBpLeft);
+        console.log('after assert set 2')
 
         // Check alignment at far right
         var lastBpAnnotRight = getRight('#chr17-9606 > .annot:nth-child(317)');
@@ -1582,6 +1586,7 @@ describe('Ideogram', function() {
         var lastBpRight = getRight('#chr17-9606');
         assert.isBelow(Math.abs(lastBpAnnotRight - lastBpSliderRight), 3);
         assert.isBelow(Math.abs(lastBpSliderRight - lastBpRight), 3);
+        console.log('after assert set 3')
 
         done();
       },
