@@ -256,6 +256,7 @@
 
       let annots = [];
       let geneList = Object.keys(interactions);
+      const pathwaysBase = 'https://www.wikipathways.org/index.php/Pathway:';
 
       if (geneList.length === 0) return annots
 
@@ -276,7 +277,20 @@
           color: 'purple'
         }
         annots.push(annot)
-        annotDescriptions[hit.symbol] = hit.name;
+
+        const ixns = interactions[hit.symbol];
+
+        const links = ixns.map(ixn => {
+          const url = `${pathwaysBase}${ixn.pathwayId}`
+          return `<a href="${url}" target="_blank">${ixn.name}</a>`;
+        }).join('<br/>')
+
+        const description = `
+          ${hit.name}<br/><br/>
+          Interacts in pathways:<br/>
+          ${links}`;
+
+        annotDescriptions[hit.symbol] = description;
       })
 
       return annots;
