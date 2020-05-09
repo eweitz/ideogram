@@ -122,9 +122,9 @@
     // Start example-specific handling
     ///
 
-    var urlParams = parseUrlParams();
+    const urlParams = parseUrlParams();
 
-    var organism = 'org' in urlParams ? urlParams.org : 'homo-sapiens';
+    const organism = 'org' in urlParams ? urlParams.org : 'homo-sapiens';
 
     document.querySelector(`[value="${organism}"]`).selected = true;
     document.querySelector('select').addEventListener('change', handleOrganism);
@@ -136,11 +136,11 @@
     document.querySelector('#search-button').addEventListener('click', handleSearch);
     document.querySelector('#search-genes').addEventListener('keyup', handleSearch);
 
-    var ideogramFirstLoad = true;
+    let ideogramFirstLoad = true;
 
     function parseUrlParams() {
-      var rawParams = document.location.search;
-      var urlParams = {};
+      let rawParams = document.location.search;
+      const urlParams = {};
       var param, key, value;
       if (rawParams !== '') {
         rawParams = rawParams.split('?')[1].split('&');
@@ -156,7 +156,7 @@
 
     // Record app state in URL
     function updateUrl() {
-      var params = Object.keys(urlParams).map(key => {
+      const params = Object.keys(urlParams).map(key => {
         return key + '=' + urlParams[key];
       }).join('&');
       history.pushState(null, null, '?' + params);
@@ -164,7 +164,7 @@
 
     function handleOrganism() {
       document.querySelector('#search-genes').value = '';
-      var selectedOrg = document.querySelector('option:checked').text;
+      const selectedOrg = document.querySelector('option:checked').text;
       selectedOrg =
         selectedOrg.split('(')[1].split(')')[0]
         .replace(/ /g, '-').toLowerCase();
@@ -173,7 +173,7 @@
       updateUrl();
 
       config.organism = selectedOrg;
-      // var banded = !['homo sapiens', 'mus musculus'].includes(selectedOrg);
+      // const banded = !['homo sapiens', 'mus musculus'].includes(selectedOrg);
       // config.showFullyBanded = banded;
       ideogram = new Ideogram(config);
     }
@@ -183,21 +183,22 @@
       // Ignore non-"Enter" keyups
       if (event.type === 'keyup' && event.keyCode !== 13) return;
 
-      var searchInput = event.target.value.trim();
+      const searchInput = event.target.value.trim();
 
       // Handles "BRCA1,BRCA2", "BRCA1 BRCA2", and "BRCA1, BRCA2"
-      let geneSymbols = searchInput.split(/[, ]/).filter(d => d !== '')
+      const geneSymbols = searchInput.split(/[, ]/).filter(d => d !== '')
+      const geneSymbol = geneSymbols[0];
 
-      urlParams['q'] = geneSymbols;
+      urlParams['q'] = geneSymbol;
       updateUrl();
 
-      plotRelatedGenes(geneSymbols);
+      plotRelatedGenes(geneSymbol);
     }
 
     function plotGeneFromUrl() {
       if (ideogramFirstLoad && 'q' in urlParams) {
         ideogramFirstLoad = false;
-        plotRelatedGenes([urlParams['q']]);
+        plotRelatedGenes(urlParams['q']);
       }
     }
 
@@ -212,7 +213,8 @@
     annotDescriptions = {}
 
     function onClickAnnot(annot) {
-      plotRelatedGenes([annot.name]);
+      document.querySelector('#search-genes').value = annot.name;
+      plotRelatedGenes(annot.name);
     }
 
     /**
@@ -348,7 +350,7 @@
 
         const ixns = interactions[gene.symbol];
 
-        description = describeInteractions(ixns)
+        const description = describeInteractions(gene, ixns);
 
         annotDescriptions[gene.symbol] = description;
       })
@@ -441,7 +443,7 @@
       // Fetch positon of searched gene
       const taxid = ideogram.config.taxid;
       const queryString =
-        `?q=symbol:${geneSymbols[0]}&species=${taxid}&fields=symbol,genomic_pos,name`;
+        `?q=symbol:${geneSymbol}&species=${taxid}&fields=symbol,genomic_pos,name`;
       let data = await fetchMyGeneInfo(queryString)
 
       const gene = data.hits[0]
@@ -466,10 +468,10 @@
     }
 
     function decorateGene(annot) {
-      var org = ideogram.getScientificName(ideogram.config.taxid);
-      var term = `(${annot.name}[gene])+AND+(${org}[orgn])`;
-      var url = `https://ncbi.nlm.nih.gov/gene/?term=${term}`;
-      var description = annotDescriptions[annot.name].split(' [')[0];
+      const org = ideogram.getScientificName(ideogram.config.taxid);
+      const term = `(${annot.name}[gene])+AND+(${org}[orgn])`;
+      const url = `https://ncbi.nlm.nih.gov/gene/?term=${term}`;
+      const description = annotDescriptions[annot.name].split(' [')[0];
       annot.displayName =
         `<a target="_blank" href="${url}">${annot.name}</a>
         <br/>
@@ -480,7 +482,7 @@
 
     const shape = 'triangle';
 
-    var legend = [{
+    const legend = [{
       name: '<b>Click gene to search</b>',
       rows: [
         {name: 'Interacting gene', color: 'purple', shape: shape},
@@ -504,7 +506,7 @@
 
     config.onLoad = plotGeneFromUrl;
 
-    var ideogram = new Ideogram(config);
+    const ideogram = new Ideogram(config);
   </script>
 </body>
 </html>
