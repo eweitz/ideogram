@@ -164,10 +164,10 @@
 
     function handleOrganism() {
       document.querySelector('#search-genes').value = '';
-      const selectedOrg = document.querySelector('option:checked').text;
-      selectedOrg =
-        selectedOrg.split('(')[1].split(')')[0]
-        .replace(/ /g, '-').toLowerCase();
+      const selectedOrg =
+        document.querySelector('option:checked').text
+          .split('(')[1].split(')')[0]
+          .replace(/ /g, '-').toLowerCase();
 
       urlParams['org'] = selectedOrg;
       updateUrl();
@@ -214,6 +214,8 @@
 
     function onClickAnnot(annot) {
       document.querySelector('#search-genes').value = annot.name;
+      urlParams['q'] = annot.name
+      updateUrl();
       plotRelatedGenes(annot.name);
     }
 
@@ -429,6 +431,11 @@
     }
 
     async function plotRelatedGenes(geneSymbol) {
+      const ideoSel = ideogram.selector
+      const annotSel = ideoSel + ' .annot';
+      document.querySelectorAll(annotSel).forEach(el => el.remove());
+
+      ideogram.startHideAnnotTooltipTimeout();
 
       // Refine style
       document.querySelectorAll('.chromosome').forEach(chromosome => {
