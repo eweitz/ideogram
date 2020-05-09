@@ -220,7 +220,7 @@
     }
 
     /**
-     * Retrieve interacting genes from WikiPathways API
+     * Retrieves interacting genes from WikiPathways API
      *
      * Docs:
      * https://webservice.wikipathways.org/ui/
@@ -268,6 +268,15 @@
       return ixns;
     }
 
+    /**
+     * Queries MyGene.info API, returns parsed JSON
+     *
+     * Docs:
+     * https://docs.mygene.info/en/v3/
+     *
+     * Example:
+     * https://mygene.info/v3/query?q=symbol:cdk2%20OR%20symbol:brca1&species=9606&fields=symbol,genomic_pos,name
+     */
     async function fetchMyGeneInfo(queryString) {
       const myGeneBase = 'https://mygene.info/v3/query';
       let response = await fetch(myGeneBase + queryString);
@@ -277,12 +286,6 @@
 
     /**
      * Retrieves positions of interacting genes from MyGene.info
-     *
-     * Docs:
-     * https://docs.mygene.info/en/v3/
-     *
-     * Example:
-     * https://mygene.info/v3/query?q=symbol:cdk2%20OR%20symbol:brca1&species=9606&fields=symbol,genomic_pos,name
      */
     async function fetchInteractingGeneAnnots(interactions) {
 
