@@ -301,13 +301,33 @@
     }
 
     /**
+     * Summarizes interactions for a gene
+     *
+     * This comprises most of the content for tooltips for interacting genes.
+     */
+    function describeInteractions(gene, ixns) {
+      const pathwaysBase = 'https://www.wikipathways.org/index.php/Pathway:';
+
+      const links = ixns.map(ixn => {
+          const url = `${pathwaysBase}${ixn.pathwayId}`
+          return `<a href="${url}" target="_blank">${ixn.name}</a>`;
+        }).join('<br/>')
+
+      const description = `
+        ${gene.name}<br/><br/>
+        Interacts in pathways:<br/>
+        ${links}`;
+
+      return description
+    }
+
+    /**
      * Retrieves position and other data on interacting genes from MyGene.info
      */
     async function fetchInteractingGeneAnnots(interactions) {
 
       let annots = [];
       const geneList = Object.keys(interactions);
-      const pathwaysBase = 'https://www.wikipathways.org/index.php/Pathway:';
 
       if (geneList.length === 0) return annots
 
@@ -328,15 +348,7 @@
 
         const ixns = interactions[gene.symbol];
 
-        const links = ixns.map(ixn => {
-          const url = `${pathwaysBase}${ixn.pathwayId}`
-          return `<a href="${url}" target="_blank">${ixn.name}</a>`;
-        }).join('<br/>')
-
-        const description = `
-          ${gene.name}<br/><br/>
-          Interacts in pathways:<br/>
-          ${links}`;
+        description = describeInteractions(ixns)
 
         annotDescriptions[gene.symbol] = description;
       })
