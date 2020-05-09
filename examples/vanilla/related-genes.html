@@ -126,10 +126,17 @@
 
     var organism = 'org' in urlParams ? urlParams.org : 'homo-sapiens';
 
+    document.querySelector(`[value="${organism}"]`).selected = true;
+    document.querySelector('select').addEventListener('change', handleOrganism);
+
+    if ('q' in urlParams) {
+      document.querySelector('#search-genes').value = urlParams['q']
+    }
+
     document.querySelector('#search-button').addEventListener('click', handleSearch);
     document.querySelector('#search-genes').addEventListener('keyup', handleSearch);
 
-    document.querySelector('select').addEventListener('change', handleOrganism);
+    var ideogramFirstLoad = true;
 
     function parseUrlParams() {
       var rawParams = document.location.search;
@@ -147,10 +154,24 @@
       return urlParams;
     }
 
+    // Record app state in URL
+    function updateUrl() {
+      var params = Object.keys(urlParams).map(key => {
+        return key + '=' + urlParams[key];
+      }).join('&');
+      history.pushState(null, null, '?' + params);
+    }
+
     function handleOrganism() {
       document.querySelector('#search-genes').value = '';
       var selectedOrg = document.querySelector('option:checked').text;
-      selectedOrg = selectedOrg.split('(')[1].split(')')[0].toLowerCase();
+      selectedOrg =
+        selectedOrg.split('(')[1].split(')')[0]
+        .replace(/ /g, '-').toLowerCase();
+
+      urlParams['org'] = selectedOrg;
+      updateUrl();
+
       config.organism = selectedOrg;
       // var banded = !['homo sapiens', 'mus musculus'].includes(selectedOrg);
       // config.showFullyBanded = banded;
@@ -166,7 +187,20 @@
 
       // Handles "BRCA1,BRCA2", "BRCA1 BRCA2", and "BRCA1, BRCA2"
       let geneSymbols = searchInput.split(/[, ]/).filter(d => d !== '')
-      searchGenes(geneSymbols);
+
+      urlParams['q'] = geneSymbols;
+      updateUrl();
+
+      plotRelatedGenes(geneSymbols);
+    }
+
+    function plotGeneFromUrl() {
+      if (ideogramFirstLoad && 'q' in urlParams) {
+        ideogramFirstLoad = false;
+        console.log('ideogram')
+        console.log(ideogram)
+        plotRelatedGenes([urlParams['q']]);
+      }
     }
 
     ////
@@ -268,6 +302,10 @@
       let data = await fetchMyGeneInfo(queryString)
 
       data.hits.forEach(hit => {
+
+        // If hit lacks position, skip processing
+        if ('genomic_pos' in hit === false) return;
+
         annot = {
           name: hit.symbol,
           chr: hit.genomic_pos.chr,
@@ -336,7 +374,7 @@
       return annots;
     }
 
-    async function searchGenes(geneSymbols) {
+    async function plotRelatedGenes(geneSymbols) {
 
       // Refine style
       document.querySelectorAll('.chromosome').forEach(chromosome => {
@@ -383,7 +421,7 @@
     }
 
     function onClickAnnot(annot) {
-      searchGenes([annot.name]);
+      plotRelatedGenes([annot.name]);
     }
 
     function decorateGene(annot) {
@@ -422,6 +460,9 @@
       onClickAnnot: onClickAnnot,
       onWillShowAnnotTooltip: decorateGene
     }
+
+    config.onLoad = plotGeneFromUrl;
+
     var ideogram = new Ideogram(config);
   </script>
 </body>
