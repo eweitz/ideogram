@@ -211,6 +211,19 @@
 
     annotDescriptions = {}
 
+    function onClickAnnot(annot) {
+      plotRelatedGenes([annot.name]);
+    }
+
+    /**
+     * Determines if interaction node might be a gene
+     *
+     * Some interaction nodes are biological processes; this filters out many.
+     * Filtering these out makes downstream queries faster.
+     *
+     * ixn {Object} Interaction from WikiPathways
+     * gene {Object} Gene from MyGene.info
+     */
     function maybeGeneSymbol(ixn, gene) {
       return (
         ixn !== '' &&
@@ -233,28 +246,31 @@
     async function fetchInteractingGenes(gene, organism) {
       let ixns = {};
       let seenNameIds = {}
-      let orgNameSimple = organism.replace(/-/g, ' ');
+      const orgNameSimple = organism.replace(/-/g, ' ');
       const queryString = `?query=${gene.name}&format=json`
       const url =
         `https://webservice.wikipathways.org/findInteractions${queryString}`;
+
       response = await fetch(url)
       data = await response.json()
+
+      // For each interaction, get nodes immediately upstream and downstream.
+      // Filter out pathway nodes that are definitely not gene symbols, then
+      // group pathways by (likely) gene symbol. Each interacting gene can have
+      // multiple pathways.
       data.result.forEach(interaction => {
         if (interaction.species.toLowerCase() === orgNameSimple) {
-          var right = interaction.fields.right.values;
-          var left = interaction.fields.left.values;
-          var rawIxns = right.concat(left)
-          var name = interaction.name;
-          var id = interaction.id;
+          const right = interaction.fields.right.values;
+          const left = interaction.fields.left.values;
+          const rawIxns = right.concat(left)
+          const name = interaction.name;
+          const id = interaction.id;
 
           rawIxns.forEach(rawIxn => {
-            let nameId = name + id;
-            if (
-              maybeGeneSymbol(rawIxn, gene) &&
-              !(nameId in seenNameIds)
-            ) {
+            const nameId = name + id;
+            if (maybeGeneSymbol(rawIxn, gene) && !(nameId in seenNameIds)) {
               seenNameIds[nameId] = 1;
-              let ixn = {name: name, pathwayId: id}
+              const ixn = {name: name, pathwayId: id}
               if (rawIxn in ixns) {
                 ixns[rawIxn].push(ixn)
               } else {
@@ -285,7 +301,7 @@
     }
 
     /**
-     * Retrieves positions of interacting genes from MyGene.info
+     * Retrieves position and other data on interacting genes from MyGene.info
      */
     async function fetchInteractingGeneAnnots(interactions) {
 
@@ -302,22 +318,15 @@
         `?q=${ixnParam}&species=${taxid}&fields=symbol,genomic_pos,name`;
       const data = await fetchMyGeneInfo(queryString)
 
-      data.hits.forEach(hit => {
+      data.hits.forEach(gene => {
 
         // If hit lacks position, skip processing
-        if ('genomic_pos' in hit === false) return;
+        if ('genomic_pos' in gene === false) return;
 
-        annot = {
-          name: hit.symbol,
-          chr: hit.genomic_pos.chr,
-          start: hit.genomic_pos.start,
-          stop: hit.genomic_pos.end,
-          id: hit.genomic_pos.ensemblgene,
-          color: 'purple'
-        }
+        annot = parseAnnotFromMgiGene(gene, 'purple')
         annots.push(annot)
 
-        const ixns = interactions[hit.symbol];
+        const ixns = interactions[gene.symbol];
 
         const links = ixns.map(ixn => {
           const url = `${pathwaysBase}${ixn.pathwayId}`
@@ -325,11 +334,11 @@
         }).join('<br/>')
 
         const description = `
-          ${hit.name}<br/><br/>
+          ${gene.name}<br/><br/>
           Interacts in pathways:<br/>
           ${links}`;
 
-        annotDescriptions[hit.symbol] = description;
+        annotDescriptions[gene.symbol] = description;
       })
 
       return annots;
@@ -375,7 +384,37 @@
       return annots;
     }
 
-    async function plotRelatedGenes(geneSymbols) {
+    /**
+     * Transforms MyGene.info (MGI) gene into Ideogram annotation
+     */
+    function parseAnnotFromMgiGene(gene, color='red') {
+      // Filters out placements on alternative loci scaffolds, an advanced
+      // genome assembly feature we are not concerned with in ideograms.
+      //
+      // Example:
+      // https://mygene.info/v3/query?q=symbol:PTPRC&species=9606&fields=symbol,genomic_pos,name
+      let genomic_pos = null;
+      if (Array.isArray(gene.genomic_pos)) {
+        genomic_pos = gene.genomic_pos.filter(pos => {
+          return pos.chr in ideogram.chromosomes[ideogram.config.taxid]
+        })[0];
+      } else {
+        genomic_pos = gene.genomic_pos;
+      }
+
+      let annot = {
+        name: gene.symbol,
+        chr: genomic_pos.chr,
+        start: genomic_pos.start,
+        stop: genomic_pos.end,
+        id: genomic_pos.ensemblgene,
+        color: color
+      };
+
+      return annot
+    }
+
+    async function plotRelatedGenes(geneSymbol) {
 
       // Refine style
       document.querySelectorAll('.chromosome').forEach(chromosome => {
@@ -398,23 +437,7 @@
 
       let annots = [];
 
-      // Filters out placements on alternative loci scaffolds, an advanced
-      // genome assembly feature we are not concerned with in ideograms.
-      //
-      // Example:
-      // https://mygene.info/v3/query?q=symbol:PTPRC&species=9606&fields=symbol,genomic_pos,name
-      const genomic_pos = gene.genomic_pos.filter(pos => {
-        return pos.chr in ideogram.chromosomes[ideogram.config.taxid]
-      })[0]
-
-      let annot = {
-        name: gene.symbol,
-        chr: genomic_pos.chr,
-        start: genomic_pos.start,
-        stop: genomic_pos.end,
-        id: genomic_pos.ensemblgene,
-        color: 'red'
-      };
+      annot = parseAnnotFromMgiGene(gene);
       annots.push(annot)
 
       interactions = await fetchInteractingGenes(annot, organism);
@@ -428,10 +451,6 @@
       ideogram.drawAnnots(annots);
 
       document.querySelector('#_ideogramLegend').style = style;
-    }
-
-    function onClickAnnot(annot) {
-      plotRelatedGenes([annot.name]);
     }
 
     function decorateGene(annot) {
