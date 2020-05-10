@@ -228,6 +228,7 @@
       return (
         ixn !== '' &&
         !ixn.includes(' ') &&
+        !ixn.includes('/') && // e.g. Akt/PKB
         ixn.toLowerCase() !== gene.name.toLowerCase()
       );
     }
@@ -330,7 +331,9 @@
 
       if (geneList.length === 0) return annots
 
-      const ixnParam = geneList.map(ixn => `symbol:${ixn}`).join(' OR ')
+      const ixnParam = geneList.map(ixn => {
+        return `symbol:${ixn.trim()}`
+      }).join(' OR ')
 
       const taxid = ideogram.config.taxid;
       const queryString =
@@ -379,6 +382,10 @@
 
       Object.entries(ensemblHomologGenes).map((idGene, i) => {
         let gene = idGene[1]
+
+        // Seen in related genes for SIRT2 in Pan troglodytes
+        if ('display_name' in gene === false) return;
+
         const annot = {
           name: gene.display_name,
           chr: gene.seq_region_name,
@@ -387,6 +394,7 @@
           id: gene.id,
           color: 'pink'
         };
+
         // Add to start of array, so searched gene gets top z-index
         annots.unshift(annot);
         ideogram.annotDescriptions[annot.name] = gene.description;
