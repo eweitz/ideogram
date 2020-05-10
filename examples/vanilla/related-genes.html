@@ -307,16 +307,25 @@
      * This comprises most of the content for tooltips for interacting genes.
      */
     function describeInteractions(gene, ixns) {
-      const pathwaysBase = 'https://www.wikipathways.org/index.php/Pathway:';
-      const links = ixns.map(ixn => {
-          const url = `${pathwaysBase}${ixn.pathwayId}`
-          return `<a href="${url}" target="_blank">${ixn.name}</a>`;
-        }).join('<br/>')
 
-      const description = `
-        ${gene.name}<br/><br/>
-        Interacts in pathways:<br/>
-        ${links}`;
+      let description = gene.name;
+
+      if (typeof ixns !== 'undefined') {
+        // ixns is undefined when querying e.g. CDKN1B in human
+        const pathwaysBase = 'https://www.wikipathways.org/index.php/Pathway:';
+        const links = ixns.map(ixn => {
+            const url = `${pathwaysBase}${ixn.pathwayId}`
+            return `<a href="${url}" target="_blank">${ixn.name}</a>`;
+          }).join('<br/>')
+
+        let pathwayText = 'pathway'
+        if (ixns.length > 1) pathwayText += 's'
+
+        description += `
+          <br/><br/>
+          Interacts in ${pathwayText}:<br/>
+          ${links}`;
+      }
 
       return description
     }
