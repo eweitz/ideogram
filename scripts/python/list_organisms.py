@@ -14,62 +14,35 @@ parser = argparse.ArgumentParser(
 args = parser.parse_args()
 # output_dir = args.output_dir
 
-groups = [
-    'fungi',
-    'invertebrate',
-    'plant',
-    'protozoa',
-    'vertebrate_mammalian',
-    'vertebrate_other'
-]
-
 asms_path = 'assembly_summary.txt'
-
-asms = []
+asms_path_historical = 'assembly_summary_historical.txt'
 
 eutils_base = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils'
 esummary_base = eutils_base + '/esummary.fcgi'
 
-def fetch_asm_summary(group, group_asms_path):
+def fetch_asm_summary(group, group_asms_path, group_asms_historical_path):
     '''Retrieve NCBI assembly summary TSV file by organism group
     '''
 
-    if os.path.exists(group_asms_path) == False:
-        # Example URL:
-        # https://ftp.ncbi.nlm.nih.gov/genomes/genbank/vertebrate_mammalian/assembly_summary.txt
-        url = f'https://ftp.ncbi.nlm.nih.gov/genomes/genbank/{group}/{asms_path}'
-        with request.urlopen(url) as response:
-            data = response.read().decode('utf-8')
-        with open(group_asms_path, 'w') as f:
-            f.write(data)
+    path_versions = {
+        'current': group_asms_path,
+        'historical': group_asms_historical_path,
+    }
+    for version in path_versions:
+        path = path_versions[version]
+        if version is 'current':
+            leaf = f'{group}/{asms_path}'
+        else:
+            leaf = f'{group}/{asms_path_historical}'
 
-for group in groups:
-    group_asms_path = f'{group}_{asms_path}'
-    fetch_asm_summary(group, group_asms_path)
-
-    with open(group_asms_path) as f:
-        asms_file = f.readlines()
-
-    # For reference, expected headers are:
-    # assembly_accession, bioproject, biosample, wgs_master, refseq_category,
-    # taxid, species_taxid, organism_name, infraspecific_name, isolate,
-    # version_status, assembly_level, release_type, genome_rep, seq_rel_date,
-    # asm_name, submitter, gbrs_paired_asm, paired_asm_comp, ftp_path,
-    # excluded_from_refseq, relation_to_type_material
-    headers = asms_file[1].replace('# ', '').strip().split('\t')
-
-    for line in asms_file[2:]:
-        columns = line.strip().split('\t')
-        asm = dict(zip(headers, columns))
-
-        categories = ['representative genome', 'reference genome']
-        if asm['refseq_category'] not in categories: continue
-        levels = ['Chromosome']
-        if asm['assembly_level'] not in levels: continue
-
-        asm['organism_group'] = group
-
-        asms.append(asm)
+        if os.path.exists(path) == False:
+            # Example URL:
+            # https://ftp.ncbi.nlm.nih.gov/genomes/genbank/vertebrate_mammalian/assembly_summary.txt
+            url = f'https://ftp.ncbi.nlm.nih.gov/genomes/genbank/{leaf}'
+            with request.urlopen(url) as response:
+                data = response.read().decode('utf-8')
+            with open(path, 'w') as f:
+                f.write(data)
 
 def get_taxid_chunks(taxids):
     '''Return taxids in comma-delimited lists of 500
@@ -111,9 +84,6 @@ def add_common_names(asms):
         taxid_json = data['result']
         del taxid_json['uids'] # Remove placeholder from relevant data
 
-        if '10090' in taxid_json:
-            print(taxid_json['10090'])
-
         for taxid in taxid_json:
             names_by_taxid[taxid] = taxid_json[taxid]['commonname']
 
@@ -125,7 +95,114 @@ def add_common_names(asms):
 
     return new_asms
 
-asms = add_common_names(asms)
+def parse_current_assemblies(group, group_asms_path):
+    ''' Parse current genome assemblies
+    '''
 
-print('len(asms)')
-print(len(asms))
+    asms = []
+
+    with open(group_asms_path) as f:
+        asms_file = f.readlines()
+
+    # For reference, expected headers are:
+    # assembly_accession, bioproject, biosample, wgs_master, refseq_category,
+    # taxid, species_taxid, organism_name, infraspecific_name, isolate,
+    # version_status, assembly_level, release_type, genome_rep, seq_rel_date,
+    # asm_name, submitter, gbrs_paired_asm, paired_asm_comp, ftp_path,
+    # excluded_from_refseq, relation_to_type_material
+    headers = asms_file[1].replace('# ', '').strip().split('\t')
+
+    for line in asms_file[2:]:
+        columns = line.strip().split('\t')
+        asm = dict(zip(headers, columns))
+
+        categories = ['representative genome', 'reference genome']
+
+        if (
+            asm['assembly_level'] != 'Chromosome' or
+            asm['release_type'] != 'Major' or
+            asm['refseq_category'] not in categories
+        ):
+            continue
+
+        asm['organism_group'] = group
+
+        asms.append(asm)
+
+    return asms
+
+def parse_historical_assemblies(group, group_asms_historical_path):
+    asms = []
+
+    with open(group_asms_historical_path) as f:
+        asms_file = f.readlines()
+
+    # See parse_current_assemblies for expected headers
+    headers = asms_file[1].replace('# ', '').strip().split('\t')
+
+    for line in asms_file[2:]:
+        columns = line.strip().split('\t')
+        asm = dict(zip(headers, columns))
+
+        level = asm['assembly_level']
+        release_type = asm['release_type']
+
+        if level != 'Chromosome' or release_type != 'Major': continue
+
+        asm['organism_group'] = group
+
+        asms.append(asm)
+
+    return asms
+
+def get_assemblies():
+    '''Fetch metadata on genome assemblies from NCBI, and write it locally
+
+    Background: Genome assemblies are sequenced chromosomes for an organism.
+
+    Here, we get metadata on each assembly, like its name (e.g. GRCh38),
+    accession (an identifier like GCA_000001405.15), the organism's scientific
+    and common names (Homo sapiens, human) and more.
+    '''
+
+    groups = [
+        'fungi',
+        'invertebrate',
+        'plant',
+        'protozoa',
+        'vertebrate_mammalian',
+        'vertebrate_other'
+    ]
+
+    asms = []
+
+    for group in groups:
+        group_asms_path = f'{group}_{asms_path}'
+        group_asms_historical_path = f'{group}_{asms_path_historical}'
+        fetch_asm_summary(group, group_asms_path, group_asms_historical_path)
+
+        asms += parse_current_assemblies(group, group_asms_path)
+        asms += parse_current_assemblies(group, group_asms_historical_path)
+
+    asms = add_common_names(asms)
+
+    return asms
+
+asms = get_assemblies()
+
+asm_list = []
+
+output_headers = [
+    'organism_name',
+    'organism_common_name',
+    'asm_name',
+    'assembly_accession'
+]
+for asm in asms:
+    asm_entry = [asm[header] for header in output_headers]
+    asm_list.append('\t'.join(asm_entry))
+
+asm_list.insert(0, output_headers)
+print(asm_list[1])
+content = '\n'.join('\t'.join(asm_list))
+open('assemblies.txt', 'w').write(content)
