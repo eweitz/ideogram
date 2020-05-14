@@ -1,3 +1,17 @@
+'''Write TSV file of high-quality genome assemblies by organism
+
+Output file has one row per assembly, with columns for:
+
+* Organism scientific name (e.g. Homo sapiens, Macaca fascicularis)
+* Organism common name (e.g. human, crab-eating macaque)
+* Assembly name (e.g. GRCh38, Macaca_fascicularis_5.0)
+* Assembly accession (e.g. GCA_000001405.28, GCA_000364345.1)
+
+EXAMPLES
+
+python3 list_assemblies.py
+'''
+
 import argparse
 import json
 import math
@@ -7,12 +21,15 @@ import urllib.request as request
 parser = argparse.ArgumentParser(
     description=__doc__,
     formatter_class=argparse.RawDescriptionHelpFormatter)
-# parser.add_argument('--output_dir',
-#                     help='Directory to send output data to',
-#                     default='../../data/annotations/')
+parser.add_argument('--output-dir',
+                    help='Directory to send output data to',
+                    default='')
 
 args = parser.parse_args()
-# output_dir = args.output_dir
+output_dir = args.output_dir
+
+if len(output_dir) > 0 and output_dir[0] != '':
+    output_dir = '/' + output_dir
 
 asms_path = 'assembly_summary.txt'
 asms_path_historical = 'assembly_summary_historical.txt'
@@ -22,6 +39,8 @@ esummary_base = eutils_base + '/esummary.fcgi'
 
 def fetch_asm_summary(group, group_asms_path, group_asms_historical_path):
     '''Retrieve NCBI assembly summary TSV file by organism group
+
+    Fetched files are written locally as a cache
     '''
 
     path_versions = {
@@ -144,10 +163,12 @@ def parse_historical_assemblies(group, group_asms_historical_path):
         columns = line.strip().split('\t')
         asm = dict(zip(headers, columns))
 
-        level = asm['assembly_level']
-        release_type = asm['release_type']
-
-        if level != 'Chromosome' or release_type != 'Major': continue
+        if (
+            asm['assembly_level'] != 'Chromosome' or
+            asm['release_type'] != 'Major' or
+            asm['submitter'] != 'Genome Reference Consortium'
+        ):
+            continue
 
         asm['organism_group'] = group
 
@@ -177,12 +198,17 @@ def get_assemblies():
     asms = []
 
     for group in groups:
+        group_asms = []
         group_asms_path = f'{group}_{asms_path}'
         group_asms_historical_path = f'{group}_{asms_path_historical}'
         fetch_asm_summary(group, group_asms_path, group_asms_historical_path)
 
-        asms += parse_current_assemblies(group, group_asms_path)
-        asms += parse_current_assemblies(group, group_asms_historical_path)
+        group_asms += parse_current_assemblies(group, group_asms_path)
+        group_asms +=\
+            parse_historical_assemblies(group, group_asms_historical_path)
+
+        group_asms = sorted(group_asms, key=lambda asm: asm['organism_name'])
+        asms += group_asms
 
     asms = add_common_names(asms)
 
@@ -202,7 +228,13 @@ for asm in asms:
     asm_entry = [asm[header] for header in output_headers]
     asm_list.append('\t'.join(asm_entry))
 
-asm_list.insert(0, output_headers)
-print(asm_list[1])
-content = '\n'.join('\t'.join(asm_list))
-open('assemblies.txt', 'w').write(content)
+header = '# ' + '\t'.join(output_headers)
+asm_list.insert(0, header)
+
+content = '\n'.join(asm_list)
+
+output_file = output_dir + 'assemblies.tsv'
+
+open(output_file, 'w').write(content)
+
+print(f'Wrote list of {len(asm_list)} assemblies to {output_file}')
