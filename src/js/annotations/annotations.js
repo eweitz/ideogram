@@ -13,7 +13,7 @@ import {inflateThresholds} from './heatmap-lib';
 import {inflateHeatmaps} from './heatmap-collinear';
 import {
   onLoadAnnots, onDrawAnnots, startHideAnnotTooltipTimeout,
-  onWillShowAnnotTooltip, showAnnotTooltip
+  onWillShowAnnotTooltip, showAnnotTooltip, onClickAnnot
 } from './events';
 import {drawAnnots, drawProcessedAnnots} from './draw';
 import {getHistogramBars} from './histogram';
@@ -24,17 +24,7 @@ import {
 import {processAnnotData} from './process';
 import {ExpressionMatrixParser} from '../parsers/expression-matrix-parser';
 
-function initNumTracksHeightAndBarWidth(ideo, config) {
-  var annotHeight;
-
-  if (!config.annotationHeight) {
-    if (config.annotationsLayout === 'heatmap') {
-      annotHeight = config.chrWidth - 1;
-    } else {
-      annotHeight = Math.round(config.chrHeight / 100);
-    }
-    ideo.config.annotationHeight = annotHeight;
-  }
+function initNumTracksAndBarWidth(ideo, config) {
 
   if (config.annotationTracks) {
     ideo.config.numAnnotTracks = config.annotationTracks.length;
@@ -61,6 +51,22 @@ function initTooltip(ideo, config) {
   }
 }
 
+function initAnnotHeight(ideo) {
+  var config = ideo.config;
+  var annotHeight;
+
+  if (!config.annotationHeight) {
+    if (config.annotationsLayout === 'heatmap') {
+      annotHeight = config.chrWidth - 1;
+    } else {
+      annotHeight = Math.round(config.chrHeight / 100);
+      if (annotHeight < 3) annotHeight = 3;
+    }
+    ideo.config.annotationHeight = annotHeight;
+  }
+
+}
+
 /**
  * Initializes various annotation settings.  Constructor help function.
  */
@@ -68,11 +74,13 @@ function initAnnotSettings() {
   var ideo = this,
     config = ideo.config;
 
+  initAnnotHeight(ideo);
+
   if (
     config.annotationsPath || config.localAnnotationsPath ||
     ideo.annots || config.annotations
   ) {
-    initNumTracksHeightAndBarWidth(ideo, config);
+    initNumTracksAndBarWidth(ideo, config);
   } else {
     ideo.config.annotTracksHeight = 0;
     ideo.config.numAnnotTracks = 0;
@@ -80,6 +88,10 @@ function initAnnotSettings() {
 
   if (typeof config.annotationsColor === 'undefined') {
     ideo.config.annotationsColor = '#F00';
+  }
+
+  if (config.onClickAnnot) {
+    ideo.onClickAnnotCallback = config.onClickAnnot;
   }
 
   initTooltip(ideo, config);
@@ -211,5 +223,5 @@ export {
   getHistogramBars, drawHeatmaps, deserializeAnnotsForHeatmap, fillAnnots,
   drawProcessedAnnots, drawSynteny, startHideAnnotTooltipTimeout,
   showAnnotTooltip, onWillShowAnnotTooltip, setOriginalTrackIndexes,
-  afterRawAnnots
+  afterRawAnnots, onClickAnnot
 };

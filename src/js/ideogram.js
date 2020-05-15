@@ -20,7 +20,7 @@ import {
   getHistogramBars, drawHeatmaps, deserializeAnnotsForHeatmap, fillAnnots,
   drawProcessedAnnots, drawSynteny, startHideAnnotTooltipTimeout,
   showAnnotTooltip, onWillShowAnnotTooltip, setOriginalTrackIndexes,
-  afterRawAnnots
+  afterRawAnnots, onClickAnnot
 } from './annotations/annotations';
 
 import {
@@ -40,8 +40,8 @@ import {convertBpToPx, convertPxToBp} from './coordinate-converters';
 import {unpackAnnots, packAnnots, initCrossFilter, filterAnnots} from './filter';
 
 import {
-  assemblyIsAccession, getDataDir, round, onDidRotate, getSvg, fetch, d3,
-  getTaxid, getCommonName, getScientificName
+  assemblyIsAccession, getDataDir, round, onDidRotate, getSvg, d3,
+  getTaxid, getCommonName, getScientificName, fetch as _fetch
 } from './lib';
 
 import {
@@ -86,6 +86,7 @@ export default class Ideogram {
     this.startHideAnnotTooltipTimeout = startHideAnnotTooltipTimeout;
     this.showAnnotTooltip = showAnnotTooltip;
     this.onWillShowAnnotTooltip = onWillShowAnnotTooltip;
+    this.onClickAnnot = onClickAnnot;
     this.setOriginalTrackIndexes = setOriginalTrackIndexes;
     this.afterRawAnnots = afterRawAnnots;
 
@@ -130,7 +131,7 @@ export default class Ideogram {
     this.round = round;
     this.onDidRotate = onDidRotate;
     this.getSvg = getSvg;
-    this.fetch = fetch;
+    this.fetch = _fetch;
     this.getTaxid = getTaxid;
     this.getCommonName = getCommonName;
     this.getScientificName = getScientificName;
@@ -164,6 +165,25 @@ export default class Ideogram {
   */
   static get d3() {
     return d3;
+  }
+
+  /**
+   * Request data from Ensembl REST API
+   * Docs: https://rest.ensembl.org/
+   *
+   * @param {String} path URL path
+   * @param {Object} body POST body
+   * @param {String} method HTTP method; 'GET' (default) or 'POST'
+   */
+  static async fetchEnsembl(path, body = null, method = 'GET') {
+    let init = {
+      method: method,
+      headers: {'Content-Type': 'application/json'}
+    };
+    if (body !== null) init.body = JSON.stringify(body);
+    const response = await fetch(`https://rest.ensembl.org${path}`, init);
+    const json = await response.json();
+    return json;
   }
 
   /**

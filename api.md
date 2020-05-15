@@ -206,10 +206,12 @@ Number.  Optional.  Default: 1.  The ploidy, i.e. number of chromosomes to depic
 Array.  Optional.  Description of ploidy in each chromosome set in terms of ancestry composition.  Example in [Ploidy, recombination](https://eweitz.github.io/ideogram/ploidy-recombination).
 
 ## rangeSet
-Array.  Optional.  List of objects describing segments of recombination among chromosomes in a chromosome set.  Example in Example in [Ploidy, recombination](https://eweitz.github.io/ideogram/ploidy-recombination).
+Array.  Optional.  List of objects describing segments of recombination among chromosomes in a chromosome set.  Example in [Ploidy, recombination](https://eweitz.github.io/ideogram/ploidy-recombination).
 
 ## resolution
 Number.  Optional.  Default: highest resolution available for specified genome assembly.  The resolution of cytogenetic bands to show for each chromosome.  The quantity refers to approximate value in bands per haploid set (bphs).  One of 450, 550, or 850.  Example in [Layout, small](https://eweitz.github.io/ideogram/layout-small).
+
+See also: [showFullyBanded](#showfullybanded).
 
 ## rotatable
 Boolean.  Optional.  Default: true.  Whether chromosomes are rotatable upon clicking them.  Example in [Layout, small](https://eweitz.github.io/ideogram/layout-small).
@@ -231,6 +233,8 @@ Boolean.  Optional.  Default: true.  Whether to show a tooltip upon mousing over
 
 ## showFullyBanded
 Boolean.  Optional.  Default: true.  Whether to show fully banded chromosomes for genomes that have sufficient data.  Useful for showing simpler chromosomes of cytogenetically well-characterized organisms, e.g. human, beside chromosomes of less studied organisms, e.g. chimpanzee.  Example in [Multiple, primates](https://eweitz.github.io/ideogram/multiple-primates).
+
+See also: [resolution](#resolution).
 
 ## showNonNuclearChromosomes
 Boolean.  Optional.  Default: false.  Whether to show non-nuclear chromosomes, e.g. for mitochondrial (MT) and chloroplast (CP) DNA.  Example in [Eukaryotes: Sus scrofa](https://eweitz.github.io/ideogram/eukaryotes?org=sus-scrofa).
