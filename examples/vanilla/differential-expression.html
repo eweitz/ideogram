@@ -27,7 +27,7 @@
   </style>
   <style>
     select {font: 14px Arial;}
-    
+
     ul {
       list-style: none;
       padding-left: 10px;
@@ -109,7 +109,7 @@
 <body>
   <h1>Differential expression of genes | Ideogram</h1>
   <a href="../">Overview</a> |
-  <a href="annotations-heatmap">Previous</a> |
+  <a href="related-genes">Previous</a> |
   <a href="geometry-collinear">Next</a> |
   <a href="https://github.com/eweitz/ideogram/blob/gh-pages/differential-expression.html" target="_blank">Source</a>
   <br/><br/>
@@ -121,7 +121,7 @@
     <div id="ideogram-container"></div>
     <div id="table-container"></div>
   </div>
-  
+
 
   <script type="text/javascript">
 
@@ -134,7 +134,7 @@
 
   /**
   * Provides "noUiSlider" configuration object for the given metric
-  * 
+  *
   * noUiSlider docs: https://refreshless.com/nouislider/
   **/
   function getSliderConfig(metric) {
@@ -166,7 +166,7 @@
         density: 3
       }
     };
-  
+
     const pipDecimals = wNumb({ decimals: props[metric].pipDecimals });
 
     const sliderDecimals = wNumb({ decimals: props[metric].sliderDecimals });
@@ -202,7 +202,7 @@
     const metricId = metric.replace(/\./g, '');
     const sliderId = metricId + '-' + comparisonId;
     const metricLabel = metricLabels[metric];
-    document.querySelector(`#${comparisonId}`).innerHTML += 
+    document.querySelector(`#${comparisonId}`).innerHTML +=
       `<div style="margin-bottom: 115px; margin-left: 15px;">
         <div style="margin-left: -15px; z-index: 2;">
           <input type="checkbox" class="slider-checkbox" id="slider-checkbox-${sliderId}"/>
@@ -247,7 +247,7 @@
   function writeSliders(comparison, labels, metrics) {
     const comparisonLabel = labels[`log2fc-${comparison}`].replace('Log2fc_', '');
     const comparisonId = comparison.toLowerCase().replace(/[()\s]/g, '');
-    
+
     let prevDiv = document.querySelector('.comparison-dropdowns > div');
     if (prevDiv !== null) prevDiv.innerHTML = ''; // clear any previous content
 
@@ -262,13 +262,13 @@
   }
 
   function getSummary(metadata) {
-    
+
     const intro = `Genomic distribution of differentially expressed <span id="organismName" style="font-style: italic">${metadata.organism}</span> genes, viewed with <a href="https://github.com/eweitz/ideogram">Ideogram.js</a>.`;
     if ('annots-url' in urlParams) {
       return intro;
     } else {
       const acc = window.accession;
-      return `${intro} NASA GeneLab <a href="https://genelab-data.ndc.nasa.gov/genelab/accession/${acc}/" target="_blank">${acc}</a>, 
+      return `${intro} NASA GeneLab <a href="https://genelab-data.ndc.nasa.gov/genelab/accession/${acc}/" target="_blank">${acc}</a>,
       "${window.studyTitle}".`;
     }
   }
@@ -430,13 +430,13 @@
 
     for (i = 0; i < checkedFilters.length; i++) {
       filterDomId = checkedFilters[i].id;
-      tmp = filterDomId.split('_'); 
+      tmp = filterDomId.split('_');
       facet = tmp[1];
       checkedFilter = tmp.slice(2).join('_');
 
       labels = ideogram.rawAnnots.metadata.labels[facet];
       filterID = labels.indexOf(checkedFilter);
-      
+
       if (facet in selections === false) {
         selections[facet] = {};
       }
@@ -452,11 +452,11 @@
   function getRangeSelections() {
     var selections = {}
     document.querySelectorAll('.ideogramSlider').forEach(slider => {
-      
+
       // Don't apply range filter if this slider is unchecked
       var checkbox = document.querySelector(`#slider-checkbox-${slider.id}`);
       if (checkbox.checked === false) return;
-      
+
       var range = slider.noUiSlider.get().map(d => parseFloat(d));
 
       if (slider.id.includes('log2fc')) {
@@ -602,7 +602,7 @@
     selections = getCategorySelections();
 
     rangeSelections = getRangeSelections();
-    
+
     Object.assign(selections, rangeSelections);
 
     counts = ideogram.filterAnnots(selections);
@@ -613,7 +613,7 @@
 
   /**
   * Returns chromosome margin value that best fits overall ideogram width
-  * 
+  *
   * TODO: Merge this into Ideogram.js library
   **/
   function getChrMargin(ideoWidth, numChrs, chrWidth) {
@@ -689,7 +689,7 @@
     }
 
   window.basePath = 'https://www.googleapis.com/storage/v1/b/ideogram/o/nasa%2fannots%2f';
-  
+
   window.datasets = {
     'GLDS-21': {
       assay: 'array_differential_expression',
@@ -785,7 +785,7 @@
     'genomeorder-asc': function(a, b) {return orderByGenomicPosition(a, b);},
     'genomeorder-desc': function(a, b) {return -1 * orderByGenomicPosition(a, b)}
   });
-  
+
   </script>
 </body>
 </html>
