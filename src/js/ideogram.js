@@ -176,7 +176,7 @@ export default class Ideogram {
    * @param {String} method HTTP method; 'GET' (default) or 'POST'
    */
   static async fetchEnsembl(path, body = null, method = 'GET') {
-    let init = {
+    const init = {
       method: method,
       headers: {'Content-Type': 'application/json'}
     };

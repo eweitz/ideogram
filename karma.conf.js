@@ -41,6 +41,7 @@ module.exports = function(config) {
       performance: {
         hints: false
       },
+
       module: {
         rules: [
           // instrument only testing sources with Istanbul

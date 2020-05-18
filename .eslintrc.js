@@ -2,11 +2,15 @@ module.exports = {
   "extends": "google",
   "env": {"es6": true},
   "parserOptions": {
-    "ecmaVersion": 8
+    "ecmaVersion": 2018,
+    "sourceType": "module"
   },
   "rules": {
     "brace-style": ["error", "1tbs", { "allowSingleLine": true }],
+    "comma-dangle": ["error", "never"],
     "curly": ["error", "multi-line"],
+    "indent": ["warn", 2, { "SwitchCase": 1, "CallExpression": { "arguments": 1 } }],
+    "no-invalid-this": "off",
     "no-undef": "off",
     "require-jsdoc": "off",
     "valid-jsdoc": "off",
@@ -22,6 +26,7 @@ module.exports = {
     "no-else-return": "off",
     "no-var": "off",
     "padded-blocks": "off",
+    "prefer-rest-params": "off",
     "radix": "off"
   }
 }

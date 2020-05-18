@@ -42,7 +42,7 @@ class HorizontalLayout extends Layout {
 
     d3.select(chrElement.parentNode)
       .transition()
-      .attr("transform", transform)
+      .attr('transform', transform)
       .on('end', callback);
 
     // Append new chromosome labels
@@ -75,7 +75,7 @@ class HorizontalLayout extends Layout {
 
     d3.select(chrElement.parentNode)
       .transition()
-      .attr("transform", translate)
+      .attr('transform', translate)
       .on('end', callback);
 
     d3.selectAll(this._ideo.selector + ' g.tmp')

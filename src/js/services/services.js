@@ -215,13 +215,13 @@ function getAssemblyAndChromosomesFromEutils(taxid, callback) {
   // format the chromosome summaries and pass them into callback function.
   var asmSearchUrl = getAssemblySearchUrl(taxid, ideo);
   d3.json(asmSearchUrl)
-    .then(function(data) { return fetchAssemblySummary(data, ideo); })
+    .then(function(data) {return fetchAssemblySummary(data, ideo);})
     .then(function(data) {
       var asmUid = data.result.uids[0];
       assemblyAccession = data.result[asmUid];
       return getESearchUrlForChromosomes(asmUid, ideo);
-    }).then(function(esearchUrl) { return d3.json(esearchUrl); })
-    .then(function(data) { return fetchNucleotideSummary(data, ideo); })
+    }).then(function(esearchUrl) {return d3.json(esearchUrl);})
+    .then(function(data) {return fetchNucleotideSummary(data, ideo);})
     .then(function(data) {
       var chromosomes = parseChromosomes(data.result, taxid, ideo);
       return callback([assemblyAccession, chromosomes]);

@@ -58,7 +58,7 @@ class Layout {
     if (orientation === 'vertical') {
       x = tickSize;
       y = ideo.round(2 + band.px.start + band.px.width / 2);
-      translate = "rotate(-90)translate(" + x + "," + y + ")";
+      translate = 'rotate(-90)translate(' + x + ',' + y + ')';
     } else if (orientation === 'horizontal') {
       x = ideo.round(-tickSize + band.px.start + band.px.width / 2);
       y = -10;

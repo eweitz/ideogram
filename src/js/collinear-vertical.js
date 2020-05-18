@@ -54,7 +54,7 @@ function rearrangeChromosomes(chrSets, yOffsets, x, ideo) {
     }
 
     if (config.showChromosomeLabels) {
-      let labelSpan = chrSet.querySelector('.chrLabel > tspan');
+      const labelSpan = chrSet.querySelector('.chrLabel > tspan');
       labelSpan.setAttribute('x', chrLabelX);
       labelSpan.setAttribute('dy', chrLabelSize - 8);
       chrSet.querySelector('.chrLabel').setAttribute('text-anchor', 'start');

@@ -7,14 +7,14 @@ export function writeSyntenicRegion(syntenies, regionID, ideo) {
     .on('click', function() {
       var activeRegion = this;
       var others = d3.selectAll(ideo.selector + ' .syntenicRegion')
-        .filter(function() { return (this !== activeRegion); });
+        .filter(function() {return (this !== activeRegion);});
 
       others.classed('hidden', !others.classed('hidden'));
     })
     .on('mouseover', function() {
       var activeRegion = this;
       d3.selectAll(ideo.selector + ' .syntenicRegion')
-        .filter(function() { return (this !== activeRegion); })
+        .filter(function() {return (this !== activeRegion);})
         .classed('ghost', true);
     })
     .on('mouseout', function() {

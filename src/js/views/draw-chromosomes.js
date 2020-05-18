@@ -40,8 +40,8 @@ function appendHomolog(chrModel, chrIndex, homologIndex, container) {
     .data(shape)
     .enter()
     .append('path')
-    .attr('d', function(d) { return d.path; })
-    .attr('class', function(d) { return d.class; });
+    .attr('d', function(d) {return d.path;})
+    .attr('class', function(d) {return d.class;});
 }
 
 /**

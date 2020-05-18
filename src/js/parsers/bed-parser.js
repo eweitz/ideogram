@@ -12,12 +12,12 @@ export class BedParser {
   // http://stackoverflow.com/a/5624139
   static componentToHex(c) {
     var hex = parseInt(c, 10).toString(16);
-    return hex.length === 1 ? "0" + hex : hex;
+    return hex.length === 1 ? '0' + hex : hex;
   }
 
   static rgbToHex(r, g, b) {
     return (
-      "#" +
+      '#' +
       BedParser.componentToHex(r) +
       BedParser.componentToHex(g) +
       BedParser.componentToHex(b)
