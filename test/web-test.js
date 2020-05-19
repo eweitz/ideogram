@@ -82,7 +82,7 @@ describe('Ideogram', function() {
     // Tests use case from ../examples/vanilla/human.html
 
     function callback() {
-      var numChromosomes = Object.keys(ideogram.chromosomes["9606"]).length;
+      var numChromosomes = Object.keys(ideogram.chromosomes['9606']).length;
       assert.equal(numChromosomes, 24);
       done();
     }
@@ -94,7 +94,7 @@ describe('Ideogram', function() {
   it('should have 21 chromosomes for a mouse ideogram instance', function(done) {
     // Tests use case from ../examples/vanilla/mouse.html
     function callback() {
-      var numChromosomes = Object.keys(ideogram.chromosomes["10090"]).length;
+      var numChromosomes = Object.keys(ideogram.chromosomes['10090']).length;
       assert.equal(numChromosomes, 21);
       done();
     }
@@ -888,10 +888,10 @@ describe('Ideogram', function() {
     ];
 
     annots = {
-      keys: ["name", "start", "length", "trackIndex"],
-      annots: [{chr: "2", annots: [
-        ["rs1", 1, 0, 1], // track 1
-        ["rs25", 5974955, 0, 2] // track 2
+      keys: ['name', 'start', 'length', 'trackIndex'],
+      annots: [{chr: '2', annots: [
+        ['rs1', 1, 0, 1], // track 1
+        ['rs25', 5974955, 0, 2] // track 2
       ]}]};
 
     var config = {
@@ -1483,7 +1483,7 @@ describe('Ideogram', function() {
         inst = ter.attr('d').split(' '), // Path instructions in description ('d')
         terCurve = parseInt(inst[4].replace('Q', '').split(',')[0]),
         terCurveX = parseInt(inst[0].replace('M', '').split(',')[0]),
-        terStroke = parseFloat(ter.style("stroke-width").slice(0, -2));
+        terStroke = parseFloat(ter.style('stroke-width').slice(0, -2));
 
       if (arm === 'p') {
         terEnd = terCurve;
@@ -1498,10 +1498,10 @@ describe('Ideogram', function() {
 
     function onIdeogramLoadAnnots() {
 
-      var pterEnd = getTerEnd("p"),
-        firstAnnotEnd = d3.selectAll("#chr1-9606 .annot").nodes()[0].getBBox().x,
-        qterEnd = getTerEnd("q"),
-        pretmp = d3.selectAll("#chr1-9606 .annot").nodes(),
+      var pterEnd = getTerEnd('p'),
+        firstAnnotEnd = d3.selectAll('#chr1-9606 .annot').nodes()[0].getBBox().x,
+        qterEnd = getTerEnd('q'),
+        pretmp = d3.selectAll('#chr1-9606 .annot').nodes(),
         tmp = pretmp[pretmp.length - 1].getBBox(),
         lastAnnotEnd = tmp.x + tmp.width;
 
@@ -2237,7 +2237,7 @@ describe('Ideogram', function() {
 
     var config = {
       organism: 'human',
-      sex: "male",
+      sex: 'male',
       chrHeight: 300,
       chrWidth: 8,
       ploidy: 2,
@@ -2630,7 +2630,7 @@ describe('Ideogram', function() {
     var originalFetch = window.fetch;
     window.fetch = function() {
       if (arguments.length > 1 && /googleapis/.test(arguments[0])) {
-        var bearer = arguments[1].headers.get("authorization");
+        var bearer = arguments[1].headers.get('authorization');
         assert.equal(bearer, 'Bearer mockAccessToken');
         done();
         return; // Don't send request for remote resource, as test passed
