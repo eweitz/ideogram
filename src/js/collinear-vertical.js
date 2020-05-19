@@ -59,8 +59,12 @@ function rearrangeChromosomes(chrSets, yOffsets, x, ideo) {
       labelSpan.setAttribute('dy', chrLabelSize - 8);
       chrSet.querySelector('.chrLabel').setAttribute('text-anchor', 'start');
     }
-    chrSet.setAttribute('transform', 'rotate(90) translate(' + y + ',' + adjustedX + ')');
-    chrSet.querySelector('.chromosome').setAttribute('transform', 'translate(-13, 10)');
+    chrSet.setAttribute(
+      'transform', 'rotate(90) translate(' + y + ',' + adjustedX + ')'
+    );
+    chrSet.querySelector('.chromosome').setAttribute(
+      'transform', 'translate(-13, 10)'
+    );
   }
 
   labelGenomes(ideo);

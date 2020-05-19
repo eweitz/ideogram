@@ -131,7 +131,8 @@ function setOverflowScroll() {
       (config.chrWidth + config.chrMargin + ploidyPad);
   } else {
     return;
-    // chrOffset = ideoSvg.select('.chromosome').nodes()[0].getBoundingClientRect();
+    // chrOffset =
+    //  ideoSvg.select('.chromosome').nodes()[0].getBoundingClientRect();
     // ideoWidth = config.chrHeight + chrOffset.x + 1;
   }
 

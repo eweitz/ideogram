@@ -60,7 +60,9 @@ function rearrangeChromosomes(chrSets, xOffsets, y, ideo) {
       chrSet.querySelector('.chrLabel').setAttribute('text-anchor', 'middle');
     }
     chrSet.setAttribute('transform', 'translate(' + x + ',' + adjustedY + ')');
-    chrSet.querySelector('.chromosome').setAttribute('transform', 'translate(-13, 10)');
+    chrSet.querySelector('.chromosome').setAttribute(
+      'transform', 'translate(-13, 10)'
+    );
   }
 
   if (config.multiorganism) {

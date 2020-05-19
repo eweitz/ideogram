@@ -37,7 +37,9 @@ import {
 import {onBrushMove, createBrush} from './brush';
 import {drawSexChromosomes, setSexChromosomes} from './sex-chromosomes';
 import {convertBpToPx, convertPxToBp} from './coordinate-converters';
-import {unpackAnnots, packAnnots, initCrossFilter, filterAnnots} from './filter';
+import {
+  unpackAnnots, packAnnots, initCrossFilter, filterAnnots
+} from './filter';
 
 import {
   assemblyIsAccession, getDataDir, round, onDidRotate, getSvg, d3,
@@ -96,7 +98,8 @@ export default class Ideogram {
     this.elink = elink;
     this.getOrganismFromEutils = getOrganismFromEutils;
     this.getTaxids = getTaxids;
-    this.getAssemblyAndChromosomesFromEutils = getAssemblyAndChromosomesFromEutils;
+    this.getAssemblyAndChromosomesFromEutils =
+      getAssemblyAndChromosomesFromEutils;
 
     // Functions from bands.js
     this.drawBandLabels = drawBandLabels;
@@ -208,7 +211,8 @@ export default class Ideogram {
       bIsMT = b.type === 'mitochondrion',
       aIsAP = a.type === 'apicoplast',
       bIsAP = b.type === 'apicoplast';
-    // aIsPlastid = aIsMT && a.name !== 'MT', // e.g. B1 in rice genome GCF_001433935.1
+    // e.g. B1 in rice genome GCF_001433935.1
+    // aIsPlastid = aIsMT && a.name !== 'MT',
     // bIsPlastid = bIsMT && b.name !== 'MT';
 
     if (aIsNuclear && bIsNuclear) {

@@ -77,7 +77,7 @@ function writeContainerDom(ideo) {
     .attr('id', '_ideogramMiddleWrap') // needed for overflow and scrolling
     .style('position', 'relative')
     .style('overflow-x', 'auto')
-    .style('transform', 'translateZ(0)') // promote ideogram ele to own compositing layer
+    .style('transform', 'translateZ(0)') // add compositing layer for ideogram
     .append('div')
     .attr('id', '_ideogramInnerWrap') // needed for overflow and scrolling
     .append('svg')

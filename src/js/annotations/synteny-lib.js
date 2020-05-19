@@ -23,7 +23,9 @@ export function writeSyntenicRegion(syntenies, regionID, ideo) {
     });
 }
 
-export function writeSyntenicRegionPolygons(syntenicRegion, x1, x2, r1, r2, regions) {
+export function writeSyntenicRegionPolygons(
+  syntenicRegion, x1, x2, r1, r2, regions
+) {
   var color, opacity;
 
   color = ('color' in regions) ? regions.color : '#CFC';
@@ -40,7 +42,9 @@ export function writeSyntenicRegionPolygons(syntenicRegion, x1, x2, r1, r2, regi
     .style('fill-opacity', opacity);
 }
 
-export function writeSyntenicRegionPolygonsHorizontal(syntenicRegion, y1, y2, r1, r2, regions) {
+export function writeSyntenicRegionPolygonsHorizontal(
+  syntenicRegion, y1, y2, r1, r2, regions
+) {
   var color, opacity;
 
   color = ('color' in regions) ? regions.color : '#CFC';
