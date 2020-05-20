@@ -11,8 +11,6 @@
  *
  */
 
-import naturalSort from 'es6-natural-sort';
-
 import {
   drawBandLabels, getBandColorGradients, hideUnshownBandLabels, setBandsToShow,
   drawBandLabelText, drawBandLabelStalk
@@ -65,7 +63,7 @@ function setChrsByTaxidsWithBands(taxid, chrs, bandsArray, ideo) {
   bandsByChr = parseBands(taxid, chrs, ideo);
 
   chrs = Object.keys(bandsByChr).sort(function(a, b) {
-    return naturalSort(a, b);
+    return a.localeCompare(b, 'en', {numeric: true});
   });
 
   if (

@@ -5,8 +5,6 @@
  *
  */
 
-import naturalSort from 'es6-natural-sort';
-
 import version from './version';
 
 import {
@@ -216,7 +214,7 @@ export default class Ideogram {
     // bIsPlastid = bIsMT && b.name !== 'MT';
 
     if (aIsNuclear && bIsNuclear) {
-      return naturalSort(a.name, b.name);
+      return a.name.localeCompare(b.name, 'en', {numeric: true});
     } else if (!aIsNuclear && bIsNuclear) {
       return 1;
     } else if (aIsMT && bIsCP) {
