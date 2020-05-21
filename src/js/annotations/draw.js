@@ -47,8 +47,8 @@ function drawAnnots(friendlyAnnots) {
     chrs = ideo.chromosomes[ideo.config.taxid]; // TODO: multiorganism
 
   if (
-    'annots' in friendlyAnnots[0] || // Occurs when filtering
-    'values' in friendlyAnnots[0] // Occurs when drawing cached expression matrices
+    'annots' in friendlyAnnots[0] || // When filtering
+    'values' in friendlyAnnots[0] // When drawing cached expression matrices
   ) {
     return ideo.drawProcessedAnnots(friendlyAnnots);
   }
@@ -120,18 +120,18 @@ function writeTrackAnnots(chrAnnot, ideo) {
   shapes = getShapes(annotHeight);
 
   chrAnnot.append('g')
-    .attr('id', function(d) { return d.id; })
+    .attr('id', function(d) {return d.id;})
     .attr('class', 'annot')
     .attr('transform', function(d) {
       var y = ideo.config.chrWidth + (d.trackIndex * annotHeight * 2);
       return 'translate(' + d.px + ',' + y + ')';
     })
     .append('path')
-    .attr('d', function(d) { return determineShape(d, shapes); })
-    .attr('fill', function(d) { return d.color; })
-    .on('mouseover', function(d) { ideo.showAnnotTooltip(d, this); })
-    .on('mouseout', function() { ideo.startHideAnnotTooltipTimeout(); })
-    .on('click', function(d) { ideo.onClickAnnot(d); });
+    .attr('d', function(d) {return determineShape(d, shapes);})
+    .attr('fill', function(d) {return d.color;})
+    .on('mouseover', function(d) {ideo.showAnnotTooltip(d, this);})
+    .on('mouseout', function() {ideo.startHideAnnotTooltipTimeout();})
+    .on('click', function(d) {ideo.onClickAnnot(d);});
 }
 
 /**
@@ -139,7 +139,7 @@ function writeTrackAnnots(chrAnnot, ideo) {
  */
 function writeOverlayAnnots(chrAnnot, ideo) {
   chrAnnot.append('polygon')
-    .attr('id', function(d) { return d.id; })
+    .attr('id', function(d) {return d.id;})
     .attr('class', 'annot')
     .attr('points', function(d) {
       var x1, x2,
@@ -158,9 +158,9 @@ function writeOverlayAnnots(chrAnnot, ideo) {
         x2 + ',0 ' + x1 + ',0'
       );
     })
-    .attr('fill', function(d) { return d.color; })
-    .on('mouseover', function(d) { ideo.showAnnotTooltip(d, this); })
-    .on('mouseout', function() { ideo.startHideAnnotTooltipTimeout(); });
+    .attr('fill', function(d) {return d.color;})
+    .on('mouseover', function(d) {ideo.showAnnotTooltip(d, this);})
+    .on('mouseout', function() {ideo.startHideAnnotTooltipTimeout();});
 }
 
 function warnIfTooManyAnnots(layout, annots) {

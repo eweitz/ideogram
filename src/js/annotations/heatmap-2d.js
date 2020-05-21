@@ -70,7 +70,8 @@ function drawHeatmaps2d(annotContainers, ideo) {
 
   d3.selectAll(container + ' canvas').remove();
 
-  d3.select(container + ' #_ideogramInnerWrap').style('max-width', width + 'px');
+  d3.select(container + ' #_ideogramInnerWrap')
+    .style('max-width', width + 'px');
   d3.select(container + ' #_ideogram').attr('width', width);
 
   chr = ideo.chromosomesArray[0];

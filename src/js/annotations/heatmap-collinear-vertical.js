@@ -21,7 +21,9 @@ function writeCanvases(chr, chrLeft, ideo) {
     trackWidth = ideo.config.annotationHeight + annotLabelHeight + 4;
     id = chr.id + '-canvas-' + j; // e.g. chr1-9606-canvas-0
     trackLeft = chrLeft;
-    if (chr.chrIndex > 0) trackLeft += (ideo.config.chrMargin * chr.chrIndex) - 1;
+    if (chr.chrIndex > 0) {
+      trackLeft += (ideo.config.chrMargin * chr.chrIndex) - 1;
+    }
     canvas = d3.select(ideo.config.container + ' #_ideogramInnerWrap')
       .append('canvas')
       .attr('id', id)

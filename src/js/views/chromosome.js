@@ -52,7 +52,9 @@ export class Chromosome {
 
     container = container.append('g')
       .attr('class', 'bands')
-      .attr('clip-path', 'url(#' + this._model.id + '-chromosome-set-clippath)');
+      .attr('clip-path',
+        'url(#' + this._model.id + '-chromosome-set-clippath)'
+      );
 
     // Render chromosome arms
     isPArmRendered = this._renderArm(container, chrSetIndex, chrIndex, 'p');
@@ -69,7 +71,10 @@ export class Chromosome {
     opacity = '0';
     fill = '';
     isFullyBanded = this.isFullyBanded();
-    if ('ancestors' in this._ideo.config && !('rangeSet' in this._ideo.config)) {
+    if (
+      'ancestors' in this._ideo.config &&
+      !('rangeSet' in this._ideo.config)
+    ) {
       // E.g. diploid human genome (with translucent overlay)
       fill = self._color.getArmColor(chrSetIndex, chrIndex, 0);
       if (isFullyBanded) {

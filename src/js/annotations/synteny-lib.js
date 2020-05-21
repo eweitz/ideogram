@@ -7,14 +7,14 @@ export function writeSyntenicRegion(syntenies, regionID, ideo) {
     .on('click', function() {
       var activeRegion = this;
       var others = d3.selectAll(ideo.selector + ' .syntenicRegion')
-        .filter(function() { return (this !== activeRegion); });
+        .filter(function() {return (this !== activeRegion);});
 
       others.classed('hidden', !others.classed('hidden'));
     })
     .on('mouseover', function() {
       var activeRegion = this;
       d3.selectAll(ideo.selector + ' .syntenicRegion')
-        .filter(function() { return (this !== activeRegion); })
+        .filter(function() {return (this !== activeRegion);})
         .classed('ghost', true);
     })
     .on('mouseout', function() {
@@ -23,7 +23,9 @@ export function writeSyntenicRegion(syntenies, regionID, ideo) {
     });
 }
 
-export function writeSyntenicRegionPolygons(syntenicRegion, x1, x2, r1, r2, regions) {
+export function writeSyntenicRegionPolygons(
+  syntenicRegion, x1, x2, r1, r2, regions
+) {
   var color, opacity;
 
   color = ('color' in regions) ? regions.color : '#CFC';
@@ -40,7 +42,9 @@ export function writeSyntenicRegionPolygons(syntenicRegion, x1, x2, r1, r2, regi
     .style('fill-opacity', opacity);
 }
 
-export function writeSyntenicRegionPolygonsHorizontal(syntenicRegion, y1, y2, r1, r2, regions) {
+export function writeSyntenicRegionPolygonsHorizontal(
+  syntenicRegion, y1, y2, r1, r2, regions
+) {
   var color, opacity;
 
   color = ('color' in regions) ? regions.color : '#CFC';

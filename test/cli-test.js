@@ -1,3 +1,5 @@
+/* eslint-disable max-len */
+
 // var assert = require('chai').assert;
 // var exec = require('child_process').exec;
 // var fs = require('fs');

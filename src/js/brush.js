@@ -121,7 +121,7 @@ function setSelectedRegion(from, to, ideo) {
 /**
  * Creates a sliding window along a chromosome
  *
- * @param chr Chromosome name (e.g. '1') or range, e.g. 'chr1:104325484-119977655'
+ * @param chr Chromosome name (e.g. 1) or range, e.g. chr1:104325484-119977655
  * @param from Genomic start coordinate in base pairs, e.g. 104325484
  * @param to Genomic end coordinate in base pairs, e.g. 119977655
  */

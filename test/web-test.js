@@ -2,6 +2,8 @@
 /* eslint-disable spaced-comment */
 /* eslint-disable no-use-before-define */
 /* eslint-disable no-unused-vars */
+/* eslint-disable max-len */
+
 // Most of these tests use Mocha's async support.
 // Helpful:
 //  - http://martinfowler.com/articles/asyncJS.html
@@ -64,7 +66,7 @@ describe('Ideogram', function() {
     assert.equal(ideogram.config.container, '.small-ideogram');
   });
 
-  it('should write "svg" element to DOM', function(done) {
+  it('should write "svg" element to DOM', done => {
 
     function callback() {
       var svg = document.getElementsByTagName('svg').length;
@@ -78,11 +80,11 @@ describe('Ideogram', function() {
     // assert.equal(svg, 1);
   });
 
-  it('should have 24 chromosomes for a human ideogram instance', function(done) {
+  it('should have 24 chromosomes for a human ideogram instance', done => {
     // Tests use case from ../examples/vanilla/human.html
 
     function callback() {
-      var numChromosomes = Object.keys(ideogram.chromosomes["9606"]).length;
+      var numChromosomes = Object.keys(ideogram.chromosomes['9606']).length;
       assert.equal(numChromosomes, 24);
       done();
     }
@@ -91,10 +93,10 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  it('should have 21 chromosomes for a mouse ideogram instance', function(done) {
+  it('should have 21 chromosomes for a mouse ideogram instance', done => {
     // Tests use case from ../examples/vanilla/mouse.html
     function callback() {
-      var numChromosomes = Object.keys(ideogram.chromosomes["10090"]).length;
+      var numChromosomes = Object.keys(ideogram.chromosomes['10090']).length;
       assert.equal(numChromosomes, 21);
       done();
     }
@@ -110,7 +112,7 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  it('should have 4 syntenic regions for basic homology example', function(done) {
+  it('should have 4 syntenic regions for basic homology example', done => {
     // Tests use case from ../examples/vanilla/homology-basic.html
 
     function callback() {
@@ -197,7 +199,8 @@ describe('Ideogram', function() {
       var numChromosomes = Object.keys(ideogram.chromosomes['9606']).length;
       assert.equal(numChromosomes, 2);
 
-      var numSyntenicRegions = document.getElementsByClassName('syntenicRegion').length;
+      var numSyntenicRegions =
+        document.getElementsByClassName('syntenicRegion').length;
       assert.equal(numSyntenicRegions, 4);
 
       done();
@@ -212,7 +215,7 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  it('should have 25 syntenic regions for advanced example', function(done) {
+  it('should have 25 syntenic regions for advanced example', done => {
     // Tests use case from ../examples/vanilla/homology-advanced.html
 
     function callback() {
@@ -315,7 +318,7 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  it('should have 1 syntenic region between human and mouse chromosomes', function(done) {
+  it('should have 1 syntenic region between human and mouse chromosomes', done => {
     // Tests use case from ../examples/vanilla/homology-interspecies.html
 
     function callback() {
@@ -387,7 +390,7 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  it('should have 1 syntenic region between human and chimpanzee chromosomes', function(done) {
+  it('should have 1 syntenic region between human and chimpanzee chromosomes', done => {
     // Tests support for drawing features between a fully-banded genome and a
     // genome that only has centromere data, as is possible in "Orthologs"
     // example
@@ -440,7 +443,7 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  it('should have 1 syntenic region between a chimpanzee and gorilla chromosome', function(done) {
+  it('should have 1 syntenic region between a chimpanzee and gorilla chromosome', done => {
     // Tests support for drawing two genomes that have centromere data,
     // as is possible in "Orthologs" example
 
@@ -492,7 +495,7 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  it('should show 3 syntenic regions in collinear vertical genomes', function(done) {
+  it('should show 3 syntenic regions in collinear vertical genomes', done => {
     // Tests use case from ../examples/vanilla/compare-whole-genomes
     // Used for comparing multiple whole genomes
 
@@ -586,7 +589,7 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
-  it('should show 3 syntenic regions in collinear horizontal genomes', function(done) {
+  it('should show 3 syntenic regions in collinear horizontal genomes', done => {
     // Tests use case from ../examples/vanilla/compare-whole-genomes
     // Used for comparing multiple whole genomes
 
@@ -682,7 +685,7 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
-  it('should plot accurate synteny in relative collinear vertical genomes', function(done) {
+  it('should plot accurate synteny in relative collinear vertical genomes', done => {
     // Tests use case from ../examples/vanilla/compare-whole-genomes
     // Used for comparing multiple whole genomes
 
@@ -747,7 +750,7 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  it('should have 1000 annotations in basic annotations example', function(done) {
+  it('should have 1000 annotations in basic annotations example', done => {
     // Tests use case from ../examples/vanilla/annotations-basic.html
 
     function callback() {
@@ -763,7 +766,7 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  it('should have 1000 annotations in overlaid annotations example', function(done) {
+  it('should have 1000 annotations in overlaid annotations example', done => {
     // Tests use case from old ../examples/vanilla/annotations-overlaid.html
 
     function callback() {
@@ -788,7 +791,7 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
-  it('should have 10 spanning overlaid annotations in proper chromosomes', function(done) {
+  it('should have 10 spanning overlaid annotations in proper chromosomes', done => {
     // Tests:
     //  * https://github.com/eweitz/ideogram/issues/65
     //  * https://github.com/eweitz/ideogram/issues/66
@@ -823,7 +826,7 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
-  it('should have 1000 annotations and legend in annotations example', function(done) {
+  it('should have 1000 annotations and legend in annotations example', done => {
     // Tests use case from ../examples/vanilla/annotations-tracks.html
     // TODO: Add class to annots indicating track
 
@@ -869,7 +872,7 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
-  it('should support trackIndex in annotations option', function(done) {
+  it('should support trackIndex in annotations option', done => {
     // Tests use case from https://github.com/eweitz/ideogram/issues/137
 
     function callback() {
@@ -888,10 +891,10 @@ describe('Ideogram', function() {
     ];
 
     annots = {
-      keys: ["name", "start", "length", "trackIndex"],
-      annots: [{chr: "2", annots: [
-        ["rs1", 1, 0, 1], // track 1
-        ["rs25", 5974955, 0, 2] // track 2
+      keys: ['name', 'start', 'length', 'trackIndex'],
+      annots: [{chr: '2', annots: [
+        ['rs1', 1, 0, 1], // track 1
+        ['rs25', 5974955, 0, 2] // track 2
       ]}]};
 
     var config = {
@@ -908,7 +911,7 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
-  it('should have properly scaled annotations after rotating', function(done) {
+  it('should have properly scaled annotations after rotating', done => {
     // Tests use case from ../examples/vanilla/annotations-tracks.html
 
     function callback() {
@@ -965,7 +968,7 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
-  it('should have filterable annotations', function(done) {
+  it('should have filterable annotations', done => {
     // Tests use case from ../examples/vanilla/annotations-histogram.html
 
     var priorBody = document.querySelector('body').innerHTML;
@@ -1149,7 +1152,7 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
-  it('should have filterable tracks in track filters example', function(done) {
+  it('should have filterable tracks in track filters example', done => {
     // Tests use case from ../examples/vanilla/annotations-track-filters.html
 
     var firstRun = true;
@@ -1185,7 +1188,7 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
-  it('should filter heatmap tracks and show track labels', function(done) {
+  it('should filter heatmap tracks and show track labels', done => {
     // Tests use case from ../examples/vanilla/annotations-track-filters.html
 
     var firstRun = true;
@@ -1237,7 +1240,7 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
-  it('should have 2015 annotations in histogram annotations example', function(done) {
+  it('should have 2015 annotations in histogram annotations example', done => {
     // Tests use case from ../examples/vanilla/annotations-histogram.html
     // TODO: Add class to annots indicating track
 
@@ -1264,7 +1267,7 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
-  it('should have narrow rectangles as custom annotations shape', function(done) {
+  it('should have narrow rectangles as custom annotations shape', done => {
     // Tests use case from ../examples/vanilla/annotations-tracks.html
 
     function callback() {
@@ -1311,7 +1314,7 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
-  it('should have 114 annotations for BED file at remote URL', function(done) {
+  it('should have 114 annotations for BED file at remote URL', done => {
     // Tests use case from ../examples/vanilla/annotations-file-url.html
 
     function callback() {
@@ -1331,7 +1334,7 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
-  it('should have 10 annotations for native annots at remote URL', function(done) {
+  it('should have 10 annotations for native annots at remote URL', done => {
     // Tests use case from ../examples/vanilla/annotations-file-url.html
 
     function callback() {
@@ -1354,7 +1357,7 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
-  it('should have two heatmap tracks for each chromosome', function(done) {
+  it('should have two heatmap tracks for each chromosome', done => {
     // Tests use case from ../examples/vanilla/annotations-heatmap.html
 
     function callback() {
@@ -1398,7 +1401,7 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
-  it('should show tooltip upon hovering over annotation ', function(done) {
+  it('should show tooltip upon hovering over annotation ', done => {
     // Tests use case from ../examples/vanilla/annotations-basic.html
 
     function callback() {
@@ -1427,7 +1430,7 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
-  it('should show track label upon hovering over heatmap track', function(done) {
+  it('should show track label upon hovering over heatmap track', done => {
     // Tests use case from ../examples/vanilla/annotations-heatmap.html
 
     function callback() {
@@ -1470,7 +1473,7 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
-  it('should have histogram bars roughly flush with chromosome ends', function(done) {
+  it('should have histogram bars roughly flush with chromosome ends', done => {
     // Tests use case from ../examples/vanilla/annotations-histogram.html
     // TODO: Add class to annots indicating track
 
@@ -1483,7 +1486,7 @@ describe('Ideogram', function() {
         inst = ter.attr('d').split(' '), // Path instructions in description ('d')
         terCurve = parseInt(inst[4].replace('Q', '').split(',')[0]),
         terCurveX = parseInt(inst[0].replace('M', '').split(',')[0]),
-        terStroke = parseFloat(ter.style("stroke-width").slice(0, -2));
+        terStroke = parseFloat(ter.style('stroke-width').slice(0, -2));
 
       if (arm === 'p') {
         terEnd = terCurve;
@@ -1498,10 +1501,10 @@ describe('Ideogram', function() {
 
     function onIdeogramLoadAnnots() {
 
-      var pterEnd = getTerEnd("p"),
-        firstAnnotEnd = d3.selectAll("#chr1-9606 .annot").nodes()[0].getBBox().x,
-        qterEnd = getTerEnd("q"),
-        pretmp = d3.selectAll("#chr1-9606 .annot").nodes(),
+      var pterEnd = getTerEnd('p'),
+        firstAnnotEnd = d3.selectAll('#chr1-9606 .annot').nodes()[0].getBBox().x,
+        qterEnd = getTerEnd('q'),
+        pretmp = d3.selectAll('#chr1-9606 .annot').nodes(),
         tmp = pretmp[pretmp.length - 1].getBBox(),
         lastAnnotEnd = tmp.x + tmp.width;
 
@@ -1530,7 +1533,7 @@ describe('Ideogram', function() {
     ideogram = new Ideogram(config);
   });
 
-  it('should have annotations and brushes aligned with base pairs', function(done) {
+  it('should have annotations and brushes aligned with base pairs', done => {
     // Tests fix for https://github.com/eweitz/ideogram/issues/91
     // and related issues.
 
@@ -1618,7 +1621,7 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  it('should have 12 chromosomes per row in small layout example', function(done) {
+  it('should have 12 chromosomes per row in small layout example', done => {
     // Tests use case from ../examples/vanilla/layout-small.html
 
     function callback() {
@@ -1661,7 +1664,7 @@ describe('Ideogram', function() {
   // HTTP requests to NCBI E-Utilities (EUtils).
   //
   ////
-  it('should support mitochondrial and chloroplast chromosomes', function(done) {
+  it('should support mitochondrial and chloroplast chromosomes', done => {
     // Tests use case from ../examples/vanilla/eukaryotes.html
 
     function callback() {
@@ -1684,7 +1687,7 @@ describe('Ideogram', function() {
     }, 1500);
   });
 
-  it('should use GRCh37 when specified in "assembly" parameter', function(done) {
+  it('should use GRCh37 when specified in "assembly" parameter', done => {
     // Tests use case from ../examples/vanilla/human.html
     function callback() {
       var bands = ideogram.chromosomes['9606']['1'].bands;
@@ -1697,7 +1700,7 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  it('should use GCF_000001405.12 when specified in "assembly" parameter', function(done) {
+  it('should use GCF_000001405.12 when specified in "assembly" parameter', done => {
     // Tests use case from ../examples/vanilla/human.html with NCBI36 / hg18
 
     function callback() {
@@ -1712,7 +1715,7 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  it('should support RefSeq accessions in "assembly" parameter', function(done) {
+  it('should support RefSeq accessions in "assembly" parameter', done => {
     // Tests use case for non-default assemblies.
     // GCF_000306695.2 is commonly called CHM1_1.1
     // https://www.ncbi.nlm.nih.gov/assembly/GCF_000306695.2/
@@ -1730,7 +1733,7 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  it('should support using NCBI Taxonomy ID in "organism" option', function(done) {
+  it('should support using NCBI Taxonomy ID in "organism" option', done => {
 
     function callback() {
       var numChromosomes = Object.keys(ideogram.chromosomes[9606]).length;
@@ -1746,7 +1749,7 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  it('should show three unbanded, annotated primate genomes in one page', function(done) {
+  it('should show three unbanded, annotated primate genomes in one page', done => {
     // Tests use case from ../examples/vanilla/multiple-primates.html
 
     var config, containerIDs, id, i, container,
@@ -1837,7 +1840,7 @@ describe('Ideogram', function() {
   // These tests fail due to an upstream breaking change in NCBI E-Utils.
   // Specifically, the Entrez GenColl database was retired without notice.
   //
-  // it('should support GenBank accessions in "assembly" parameter', function(done) {
+  // it('should support GenBank accessions in "assembly" parameter', done => {
   //   // Tests use case for non-default assemblies.
   //   // GCA_000002125.2 is commonly called HuRef
   //   // https://www.ncbi.nlm.nih.gov/assembly/GCA_000002125.2
@@ -1857,7 +1860,7 @@ describe('Ideogram', function() {
   //   var ideogram = new Ideogram(config);
   // });
 
-  // it('should recover chromosomes when given scaffolds', function(done) {
+  // it('should recover chromosomes when given scaffolds', done => {
   //   // Tests use case from ../examples/vanilla/eukaryotes?org=sus-scrofa
 
   //   function callback() {
@@ -1877,7 +1880,7 @@ describe('Ideogram', function() {
 
   // });
 
-  // it('should not have race condition when init is quickly called multiple times', function(done) {
+  // it('should not have race condition when init is quickly called multiple times', done => {
   //   // Verifies handling for a Plotly use case.
   //   // See https://github.com/eweitz/ideogram/pull/154
 
@@ -1928,7 +1931,7 @@ describe('Ideogram', function() {
   // // as expected in https://eweitz.github.io/ideogram/eukaryotes?org=plasmodium-falciparum,
   // // but the test fails on Travis CI, e.g. https://travis-ci.org/eweitz/ideogram/builds/443002664
   // // Why?  It seems like a Travis-specific false positive.  Disabling for now.
-  // // it('should support apicoplast chromosomes of malaria parasite', function(done) {
+  // // it('should support apicoplast chromosomes of malaria parasite', done => {
   // //   // Tests use case from ../examples/vanilla/eukaryotes.html
 
   // //   function callback() {
@@ -1955,7 +1958,7 @@ describe('Ideogram', function() {
   // END NCBI INTEGRATION TESTS
   ////
 
-  it('should handle arrayed objects in "annotations" parameter', function(done) {
+  it('should handle arrayed objects in "annotations" parameter', done => {
     // Tests use case from ../examples/vanilla/human.html
 
     function callback() {
@@ -1974,7 +1977,7 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  it('should create a brush when specified', function(done) {
+  it('should create a brush when specified', done => {
     // Tests use case from ../examples/vanilla/brush.html
 
     function callback() {
@@ -2004,7 +2007,7 @@ describe('Ideogram', function() {
   //        if (window.callPhantom) {
   //        callPhantom({'screenshot': filename})
   //
-  // it('should align chr. label with thick horizontal chromosome', function(done) {
+  // it('should align chr. label with thick horizontal chromosome', done => {
   //   // Tests use case from ../examples/vanilla/annotations_basic.html
   //
   //   function callback() {
@@ -2041,7 +2044,7 @@ describe('Ideogram', function() {
   //   var ideogram = new Ideogram(config);
   // });
 
-  it('should align chr. label with vertical chromosome', function(done) {
+  it('should align chr. label with vertical chromosome', done => {
     // Tests use case from ../examples/vanilla/human.html
 
     function callback() {
@@ -2089,7 +2092,7 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  it('should show three human genomes in one page', function(done) {
+  it('should show three human genomes in one page', done => {
     // Tests use case from ../examples/vanilla/multiple-trio.html
 
     var config, containerIDs, id, i, container,
@@ -2129,7 +2132,7 @@ describe('Ideogram', function() {
 
   // This test is flaky in Travis CI.
   // Disabled until a way to detect Travis environment is found.
-  // it('should show border of band-labeled chromosome when multiple ideograms exist', function(done) {
+  // it('should show border of band-labeled chromosome when multiple ideograms exist', done => {
   //   // Tests fix for https://github.com/eweitz/ideogram/issues/96
   //
   //   var config1, ideogram1, config2, ideogram2, width;
@@ -2203,7 +2206,7 @@ describe('Ideogram', function() {
   //
   // });
 
-  it('should show XX chromosomes for a diploid human female', function(done) {
+  it('should show XX chromosomes for a diploid human female', done => {
     // Tests use case from ../examples/vanilla/ploidy-basic.html
 
     function callback() {
@@ -2225,7 +2228,7 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  it('should show XY chromosomes for a diploid human male', function(done) {
+  it('should show XY chromosomes for a diploid human male', done => {
     // Tests use case from ../examples/vanilla/ploidy-basic.html
 
     function callback() {
@@ -2237,7 +2240,7 @@ describe('Ideogram', function() {
 
     var config = {
       organism: 'human',
-      sex: "male",
+      sex: 'male',
       chrHeight: 300,
       chrWidth: 8,
       ploidy: 2,
@@ -2247,7 +2250,7 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  it('should omit Y chromosome in haploid human female', function(done) {
+  it('should omit Y chromosome in haploid human female', done => {
 
     function callback() {
       var hasChrY = d3.selectAll('#chrY-9606').nodes().length >= 1;
@@ -2264,7 +2267,7 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  it('should handle toggling single- and multi-chromosome view, in vertical orientation', function(done) {
+  it('should handle toggling single- and multi-chromosome view, in vertical orientation', done => {
 
     function callback() {
 
@@ -2294,7 +2297,7 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  it('should handle toggling single- and multi-chromosome view, in horizontal orientation', function(done) {
+  it('should handle toggling single- and multi-chromosome view, in horizontal orientation', done => {
 
     function callback() {
 
@@ -2322,7 +2325,7 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  it('should handle toggling single- and multi-chromosome view, in labeled vertical orientation', function(done) {
+  it('should handle toggling single- and multi-chromosome view, in labeled vertical orientation', done => {
     // Tests that band labels remain visible after rotating vertical chromosomes
 
     function callback() {
@@ -2364,7 +2367,7 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  it('should depict chromosomal rearrangements', function(done) {
+  it('should depict chromosomal rearrangements', done => {
     // Covers case in ../examples/vanilla/ploidy-rearrangements.html
     function callback() {
       // TODO: There shouldn't be multiple elements with the same id
@@ -2402,7 +2405,7 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  it('should depict chromosomal rangesets', function(done) {
+  it('should depict chromosomal rangesets', done => {
     // Covers case in ../examples/vanilla/ploidy-recombination.html
 
     function callback() {
@@ -2454,7 +2457,7 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  // it('should align chr. label with band-labeled vertical chromosome', function(done) {
+  // it('should align chr. label with band-labeled vertical chromosome', done => {
   //   // Tests use case from ../examples/vanilla/human.html
   //
   //   function callback() {
@@ -2483,7 +2486,7 @@ describe('Ideogram', function() {
   //   var ideogram = new Ideogram(config);
   // });
 
-  it('should support collinear chromosome geometry', function(done) {
+  it('should support collinear chromosome geometry', done => {
 
     function callback() {
       var chr2CanvasBox, chrLabel, labelX, labelY;
@@ -2544,7 +2547,7 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
-  it('should support demarcating collinear chromosome heatmaps', function(done) {
+  it('should support demarcating collinear chromosome heatmaps', done => {
 
     function callback() {
       var style = d3.select('#_ideogramTrackLabelContainer > div').node().style;
@@ -2586,7 +2589,7 @@ describe('Ideogram', function() {
     });
   });
 
-  it('should support 2D heatmaps', function(done) {
+  it('should support 2D heatmaps', done => {
 
     function callback() {
       var canvas = d3.select('#chr5-9606-canvas').node();
@@ -2622,7 +2625,7 @@ describe('Ideogram', function() {
     });
   });
 
-  it('should add "Authentication: Bearer" when access token is provided', function(done) {
+  it('should add "Authentication: Bearer" when access token is provided', done => {
     // Tests use case from ../examples/vanilla/auth.html
 
     // Monkey patch the fetch method to intercept request and inspect HTTP
@@ -2630,7 +2633,7 @@ describe('Ideogram', function() {
     var originalFetch = window.fetch;
     window.fetch = function() {
       if (arguments.length > 1 && /googleapis/.test(arguments[0])) {
-        var bearer = arguments[1].headers.get("authorization");
+        var bearer = arguments[1].headers.get('authorization');
         assert.equal(bearer, 'Bearer mockAccessToken');
         done();
         return; // Don't send request for remote resource, as test passed

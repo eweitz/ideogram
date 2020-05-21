@@ -4,7 +4,8 @@ node_js:
   - "12.13.1"
 addons:
   chrome: stable
-before_script:
-  - npm link
+# Uncomment after Ideogram CLI is restored
+# before_script:
+#   - npm link
 script: npm test
 after_script: cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js

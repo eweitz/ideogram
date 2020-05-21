@@ -39,7 +39,9 @@ function writeSyntenicRegions(syntenicRegions, syntenies, ideo) {
     y1 = chrWidth + 31;
     y2 = chrWidth + 191; // Genomes are spaced ~200 pixels apart
 
-    writeSyntenicRegionPolygonsHorizontal(syntenicRegion, y1, y2, r1, r2, regions);
+    writeSyntenicRegionPolygonsHorizontal(
+      syntenicRegion, y1, y2, r1, r2, regions
+    );
     writeSyntenicRegionLines(syntenicRegion, y1, y2, r1, r2);
   }
 }

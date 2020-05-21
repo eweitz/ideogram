@@ -22,7 +22,8 @@ class SmallLayout extends Layout {
   }
 
   // rotateForward(setIndex, chrIndex, chrElement, callback) {
-  //   var ideoBox = d3.select(this._ideo.selector).node().getBoundingClientRect();
+  //   var ideoBox =
+  //      d3.select(this._ideo.selector).node().getBoundingClientRect();
   //   var chrBox = chrElement.getBoundingClientRect();
   //
   //   var scaleX = (ideoBox.width / chrBox.height) * 0.97;

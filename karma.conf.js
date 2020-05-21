@@ -35,6 +35,13 @@ module.exports = function(config) {
     },
 
     webpack: {
+
+      mode: 'production',
+
+      performance: {
+        hints: false
+      },
+
       module: {
         rules: [
           // instrument only testing sources with Istanbul
@@ -51,6 +58,12 @@ module.exports = function(config) {
         ]
       }
     },
+
+    // webpackMiddleware: {
+    //   stats: {
+    //     maxModules: Infinity
+    //   }
+    // },
 
     // test results reporter to use
     // possible values: 'dots', 'progress'

@@ -40,8 +40,8 @@ function appendHomolog(chrModel, chrIndex, homologIndex, container) {
     .data(shape)
     .enter()
     .append('path')
-    .attr('d', function(d) { return d.path; })
-    .attr('class', function(d) { return d.class; });
+    .attr('d', function(d) {return d.path;})
+    .attr('class', function(d) {return d.class;});
 }
 
 /**
@@ -131,7 +131,8 @@ function setOverflowScroll() {
       (config.chrWidth + config.chrMargin + ploidyPad);
   } else {
     return;
-    // chrOffset = ideoSvg.select('.chromosome').nodes()[0].getBoundingClientRect();
+    // chrOffset =
+    //  ideoSvg.select('.chromosome').nodes()[0].getBoundingClientRect();
     // ideoWidth = config.chrHeight + chrOffset.x + 1;
   }
 
