@@ -200,6 +200,13 @@
       }
     }
 
+    function onClickAnnot(annot) {
+      document.querySelector('#search-genes').value = annot.name;
+      urlParams['q'] = annot.name;
+      updateUrl();
+      ideogram.plotRelatedGenes(annot.name);
+    }
+
     ////
     // End example-specific handling
     //
@@ -209,11 +216,11 @@
     config = {
       organism: organism,
       container: '#ideogram-container',
-      searchSelector: '#search-genes',
       chrWidth: 8,
       chrHeight: 90,
       chrLabelSize: 10,
-      annotationHeight: 5
+      annotationHeight: 5,
+      onClickAnnot: onClickAnnot
     }
 
     let ideogram = Ideogram.initRelatedGenes(config)

@@ -1,9 +1,4 @@
-function onClickAnnot(annot) {
-  document.querySelector('#search-genes').value = annot.name;
-  urlParams['q'] = annot.name;
-  updateUrl();
-  plotRelatedGenes(annot.name);
-}
+
 
 /**
  * Determines if interaction node might be a gene
@@ -322,7 +317,6 @@ function _initRelatedGenes(config) {
     showFullyBanded: false,
     rotatable: false,
     legend: legend,
-    onClickAnnot: onClickAnnot,
     onWillShowAnnotTooltip: decorateGene
   });
 

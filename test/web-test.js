@@ -1958,6 +1958,38 @@ describe('Ideogram', function() {
   // END NCBI INTEGRATION TESTS
   ////
 
+  ////
+  //  START NON-NCBI INTEGRATION TESTS
+  ///
+
+  it('should handle "Related genes" pack', done => {
+    // Tests use case from ../examples/vanilla/related-genes
+
+    // Account for latency in Ensembl, MyGene.info, and WikiPathways
+    this.timeout(25000);
+
+    async function callback() {
+      await ideogram.plotRelatedGenes('RAD51');
+      done();
+    }
+
+    var config = {
+      organism: 'human',
+      chrWidth: 8,
+      chrHeight: 90,
+      chrLabelSize: 10,
+      annotationHeight: 5,
+      onLoad: callback,
+      dataDir: '/dist/data/bands/native/'
+    };
+
+    const ideogram = Ideogram.initRelatedGenes(config);
+  });
+
+  ////
+  //  END NON-NCBI INTEGRATION TESTS
+  ///
+
   it('should handle arrayed objects in "annotations" parameter', done => {
     // Tests use case from ../examples/vanilla/human.html
 
@@ -2351,7 +2383,7 @@ describe('Ideogram', function() {
         var bandRect = band.nodes()[0].getBoundingClientRect();
 
         assert.isBelow(Math.abs(bandRect.x - 13), 2);
-        assert.isBelow(Math.abs(bandRect.y), 2);
+        assert.isBelow(Math.abs(bandRect.y), 3);
 
         done();
       }, 500);
