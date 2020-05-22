@@ -230,6 +230,11 @@ export default class Ideogram {
     }
   }
 
+  /**
+   * Wrapper for Ideogram constructor, with generic "Related genes" options
+   *
+   * @param {Object} config Ideogram configuration object
+   */
   static initRelatedGenes(config) {
     return _initRelatedGenes(config);
   }

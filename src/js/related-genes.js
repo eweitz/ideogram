@@ -1,4 +1,25 @@
-
+/**
+ * @fileoverview Tailored module used in "Related genes" example
+ *
+ * This file simplifies client code for reusing a "related genes" ideogram --
+ * which finds and displays related genes for a searched gene.
+ *
+ * Related genes here are either "interacting genes" or "paralogs".
+ * Interacting genes are genes that immediate upstream or downstream of the
+ * searched gene in a biochemical pathway. Paralogs are evolutionarily
+ * similar genes in the same species.
+ *
+ * Data sources:
+ *   - Interacting genes: WikiPathways
+ *   - Paralogs: Ensembl
+ *   - Genomic coordinates: Ensembl, via MyGene.info
+ *
+ * The functionality provided by this module helps users discover and explore
+ * genes related to their gene of interest.
+ *
+ * A reference implementation is available at:
+ * https://eweitz.github.io/ideogram/related-genes
+ */
 
 /**
  * Determines if interaction node might be a gene
@@ -311,6 +332,13 @@ const legend = [{
   ]
 }];
 
+/**
+ * Wrapper for Ideogram constructor, with generic "Related genes" options
+ *
+ * This function is made available as a static method on Ideogram.
+ *
+ * @param {Object} config Ideogram configuration object
+ */
 function _initRelatedGenes(config) {
 
   Object.assign(config, {

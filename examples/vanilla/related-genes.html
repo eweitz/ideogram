@@ -118,10 +118,6 @@
   <div id="ideogram-container"></div>
   <script type="text/javascript">
 
-    ////
-    // Start example-specific handling
-    ///
-
     const urlParams = parseUrlParams();
 
     const organism = 'org' in urlParams ? urlParams.org : 'homo-sapiens';
@@ -207,12 +203,6 @@
       ideogram.plotRelatedGenes(annot.name);
     }
 
-    ////
-    // End example-specific handling
-    //
-    // Start generic "Related genes" handling
-    ////
-
     config = {
       organism: organism,
       container: '#ideogram-container',
@@ -224,10 +214,6 @@
     }
 
     let ideogram = Ideogram.initRelatedGenes(config)
-
-    // config.onLoad = plotGeneFromUrl;
-
-    // let ideogram = new Ideogram(config);
   </script>
 </body>
 </html>
