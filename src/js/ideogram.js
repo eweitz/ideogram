@@ -56,7 +56,7 @@ import {
   drawChromosomeLabels, rotateChromosomeLabels
 } from './views/chromosome-labels.js';
 
-import {_initRelatedGenes, plotRelatedGenes} from './packs/related-genes';
+import {_initRelatedGenes, plotRelatedGenes} from './kit/related-genes';
 
 export default class Ideogram {
   constructor(config) {
