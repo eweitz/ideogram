@@ -12,7 +12,7 @@
 describe('Ideogram related genes kit', function() {
 
   // Account for latency in Ensembl, MyGene.info, and WikiPathways
-  this.timeout(15000);
+  this.timeout(25000);
 
   var config = {};
 
@@ -22,16 +22,6 @@ describe('Ideogram related genes kit', function() {
 
     delete window.chrBands;
     d3.selectAll('div').remove();
-
-    config = {
-      organism: 'human',
-      chrWidth: 10,
-      chrHeight: 150,
-      chrMargin: 10,
-      showChromosomeLabels: true,
-      orientation: 'vertical',
-      dataDir: '/dist/data/bands/native/'
-    };
   });
 
   it('should handle "Related genes" kit', done => {
@@ -43,7 +33,7 @@ describe('Ideogram related genes kit', function() {
     }
 
     var config = {
-      organism: 'human',
+      organism: 'homo-sapiens',
       chrWidth: 8,
       chrHeight: 90,
       chrLabelSize: 10,
