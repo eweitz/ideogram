@@ -1,5 +1,5 @@
 /**
- * @fileoverview Tailored module used in "Related genes" example
+ * @fileoverview Kit used in "Related genes" example
  *
  * This file simplifies client code for reusing a "related genes" ideogram --
  * which finds and displays related genes for a searched gene.
@@ -14,10 +14,10 @@
  *   - Paralogs: Ensembl
  *   - Genomic coordinates: Ensembl, via MyGene.info
  *
- * The functionality provided by this module helps users discover and explore
- * genes related to their gene of interest.
+ * Features provided by this module help users discover and explore genes
+ * related to their gene of interest.
  *
- * A reference implementation is available at:
+ * The reference implementation is available at:
  * https://eweitz.github.io/ideogram/related-genes
  */
 
