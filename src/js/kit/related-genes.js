@@ -269,12 +269,17 @@ async function plotRelatedGenes(geneSymbol) {
   document.querySelectorAll('.chromosome').forEach(chromosome => {
     chromosome.style.cursor = '';
   });
-  const lastChr =
-    [...document.querySelectorAll('.chromosome-set')].slice(-1)[0];
-  const left = lastChr.getBoundingClientRect().x + 10;
-  const topPx = ideo.config.chrHeight + 30;
+
+  const chrHeight = ideo.config.chrHeight;
+  const chrHeightPadded = chrHeight + 10;
+  let ideoLeft =
+    document.querySelector('#_ideogramInnerWrap').style['max-width'];
+  ideoLeft = parseInt(ideoLeft.slice(0, -2)) + chrHeightPadded;
+  var legendLeft = ideoLeft - chrHeightPadded - 40;
+
+  const topPx = chrHeight + 30;
   const style =
-    `float: left; position: relative; top: -${topPx}px; left: ${left}px;`;
+    `float: left; position: relative; top: -${topPx}px; left: ${legendLeft}px;`;
 
   // Fetch positon of searched gene
   const taxid = ideo.config.taxid;
