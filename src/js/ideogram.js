@@ -56,6 +56,8 @@ import {
   drawChromosomeLabels, rotateChromosomeLabels
 } from './views/chromosome-labels.js';
 
+import {_initRelatedGenes, plotRelatedGenes} from './kit/related-genes';
+
 export default class Ideogram {
   constructor(config) {
 
@@ -151,6 +153,8 @@ export default class Ideogram {
     this.rotateAndToggleDisplay = rotateAndToggleDisplay;
     this.setOverflowScroll = setOverflowScroll;
 
+    this.plotRelatedGenes = plotRelatedGenes;
+
     this.configure(config);
   }
 
@@ -224,5 +228,14 @@ export default class Ideogram {
     } else if (!aIsAP && !aIsMT && !aIsCP && (bIsMT || bIsCP || bIsAP)) {
       return -1;
     }
+  }
+
+  /**
+   * Wrapper for Ideogram constructor, with generic "Related genes" options
+   *
+   * @param {Object} config Ideogram configuration object
+   */
+  static initRelatedGenes(config) {
+    return _initRelatedGenes(config);
   }
 }
