@@ -40,7 +40,7 @@ describe('Ideogram', function() {
 
     function callback() {
       var svg = document.getElementsByTagName('svg').length;
-      assert.equal(svg, 1);
+      assert.equal(svg, 2); // one for ideogram, one for settings gear
       done();
     }
     config.onLoad = callback;
