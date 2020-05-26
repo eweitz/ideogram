@@ -1,6 +1,5 @@
 import {d3} from '../lib';
 import collinearizeChromosomes from '../collinear';
-import {initSettings} from './settings';
 
 function processLabels(config, ideo) {
   var i, chrID, t0C, t1C;
@@ -108,8 +107,6 @@ function finishInit(t0) {
       processAnnots(ideo);
     }
   }
-
-  initSettings(ideo);
 
   reportDebugTimings(config, t0, t0A);
 

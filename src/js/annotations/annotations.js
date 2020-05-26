@@ -63,7 +63,6 @@ function initAnnotHeight(ideo) {
     }
     ideo.config.annotationHeight = annotHeight;
   }
-
 }
 
 /**

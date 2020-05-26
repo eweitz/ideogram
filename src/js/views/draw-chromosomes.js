@@ -1,4 +1,5 @@
 import {d3} from '../lib';
+import {initSettings} from '../init/settings';
 import {ModelAdapter} from '../model-adapter';
 import {Chromosome} from './chromosome';
 
@@ -121,19 +122,21 @@ function setOverflowScroll() {
   ploidy = config.ploidy;
   ploidyPad = (ploidy - 1);
 
+  let annotHeight = 0;
+  if ('annotationsLayout' in config) {
+    annotHeight = config.annotationHeight * config.numAnnotTracks;
+  }
+
   if (
     config.orientation === 'vertical' &&
     config.perspective !== 'comparative' &&
     config.geometry !== 'collinear'
   ) {
     ideoWidth =
-      (ideo.numChromosomes + 2) *
-      (config.chrWidth + config.chrMargin + ploidyPad);
+      (ideo.numChromosomes) *
+      (config.chrWidth + config.chrMargin + ploidyPad + annotHeight);
   } else {
     return;
-    // chrOffset =
-    //  ideoSvg.select('.chromosome').nodes()[0].getBoundingClientRect();
-    // ideoWidth = config.chrHeight + chrOffset.x + 1;
   }
 
   if (config.annotationsLayout === 'heatmap-2d') {
@@ -153,6 +156,8 @@ function setOverflowScroll() {
     .style('position', 'absolute');
 
   ideoSvg.style('min-width', (ideoWidth - 5) + 'px');
+
+  initSettings(ideo);
 }
 
 export {
