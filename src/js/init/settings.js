@@ -1,5 +1,94 @@
 import {slug} from '../lib';
 
+const settings = [
+  {
+    name: 'Annotations',
+    type: 'array',
+    description: `
+      A list of annotation objects. Each annotation object has at least a
+      chromosome name (chr), start coordinate (start), and stop coordinate
+      (stop). Annotation objects can also have a name, color, shape, and
+      track index.
+
+      See also <i>annotationsPath</i>.
+      `,
+    example: 'annotations-basic'
+  },
+  {
+    name: 'Annotation height',
+    type: 'number',
+    description: 'The height of each annotation.',
+    example: 'annotations-tracks'
+  },
+  {
+    name: 'Annotations color',
+    type: 'string',
+    default: '#F00',
+    description: 'The color of each annotation.',
+    example: 'multiple-primates'
+  },
+  {
+    name: 'Annotations layout',
+    type: 'string',
+    default: 'tracks',
+    oneOf: ['tracks', 'heatmap', 'heatmap-2d', 'histogram', 'overlay'],
+    description: 'The layout of annotations in this ideogram.',
+    options: {
+      'tracks': `
+        Lay out annotations in tracks beside each chromosome. There can be
+        more than one track, which is useful for displaying annotations by
+        category (e.g. pathogenic, unknown significance, benign). Example in
+        <a href="https://eweitz.github.io/ideogram/annotations-tracks">
+        Annotations, tracks</a>.`,
+      'heatmap': `
+        Lay out annotations in heatmap beside each chromosome. Plot
+        individual annotations like <pre>annotationsLayout: 'tracks'</pre>,
+        with the scalability of <pre>annotationsLayout: 'histogram'</pre>.
+        Each chromosome can have one or more heatmap tracks. Use with the
+        <pre>heatmaps</pre> configuration option. Example in
+        <a href="https://eweitz.github.io/ideogram/annotations-heatmap">
+        Annotations, heatmap</a>.`,
+      'heatmap-2d': `
+        Lay out annotations in a two-dimensional zheatmap beside a single
+        chromosome. Enables visualizing raw data summarized in
+        <pre>annotationsLayout: 'heatmap'</pre>. Example in
+        <a href="https://eweitz.github.io/ideogram/geometry-collinear">
+        Geometry, collinear</a>.`,
+      'histogram': `
+        Lay out annotations in a histogram. This clusters annoatations by
+        location, such that each cluster or bin is shown as a bar. The height
+        of the bar represent the number of annotations in that genomic range.
+        This option is useful for summarizing the distribution of many (1000+)
+        features througout the genome. Example in
+        <a href="https://eweitz.github.io/ideogram/annotations-histogram">
+        Annotations, histogram
+        </a>.`,
+      'overlay': `
+        Lay out annotations directly over chromosomes. This is the most
+        space-efficient annotation layout option.  Example in
+        <a href="https://eweitz.github.io/ideogram/annotations-overlaid">
+        Annotations, overlaid
+        </a>.`
+    }
+  },
+  {
+    name: 'Chromosome height',
+    id: 'chr-height',
+    type: 'number'
+  },
+  {
+    name: 'Chromosome scaling',
+    id: 'chr-scaling',
+    type: 'radio',
+    options: ['Absolute', 'Relative']
+  },
+  {
+    name: 'Orientation',
+    type: 'radio',
+    options: ['Vertical', 'Horizontal']
+  }
+];
+
 const style = `
   <style>
     #settings-gear {
@@ -42,25 +131,6 @@ function handleSettingsToggle(ideo) {
       }
     });
 }
-
-const settings = [
-  {
-    name: 'Chromosome height',
-    id: 'chr-height',
-    type: 'number'
-  },
-  {
-    name: 'Chromosome scaling',
-    id: 'chr-scaling',
-    type: 'radio',
-    options: ['Absolute', 'Relative']
-  },
-  {
-    name: 'Orientation',
-    type: 'radio',
-    options: ['Vertical', 'Horizontal']
-  }
-];
 
 /** Get HTML for setting header */
 function getHeader(setting, name) {
