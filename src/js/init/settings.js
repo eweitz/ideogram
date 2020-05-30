@@ -72,9 +72,56 @@ const settings = [
     }
   },
   {
+    name: 'Annotations path',
+    type: 'string',
+    description: `
+      Absolute or relative URL to a JSON file containing
+      annotation objects.`,
+    example: 'annotations-overlaid'
+  },
+  {
+    name: 'Annotation tracks',
+    type: 'array',
+    description: `
+      List of objects with metadata for each track, e.g. DOM id, display
+      name, color, shape.`,
+    example: 'annotations-tracks'
+  },
+  {
+    name: 'Assembly',
+    type: 'string',
+    default: 'latest RefSeq assembly for specified organism',
+    description: `
+      Genome assembly to display. Takes assembly name (e.g. "GRCh37"),
+      RefSeq accession (e.g. "GCF_000306695.2"), or GenBank accession
+      (e.g. "GCA_000005005.5").`,
+    example: 'annotations-histogram'
+  },
+  {
+    name: 'Bar width',
+    type: 'number',
+    default: 3,
+    description: `
+      Pixel width of bars drawn when annotationsLayout: 'histogram'.`,
+    example: 'annotations-histogram'
+  },
+  {
+    name: 'Brush',
+    type: 'string',
+    default: null,
+    description: `
+      Genomic coordinate range (e.g. "chr1:104325484-119977655") for a brush
+      on a chromosome. Useful when ideogram consists of one chromosome and
+      you want to be able to focus on a region within that chromosome, and
+      create an interactive sliding window to other regions.)`,
+    example: 'bush'
+  },
+  {
     name: 'Chromosome height',
-    id: 'chr-height',
-    type: 'number'
+    type: 'number',
+    description: `
+      Pixel height of the tallest chromosome in the ideogram.`,
+    example: ['layout-small', 'annotations-basic']
   },
   {
     name: 'Chromosome scaling',
