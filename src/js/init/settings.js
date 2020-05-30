@@ -29,9 +29,9 @@ const settings = [
   },
   {
     name: 'Annotations layout',
-    type: 'string',
+    type: 'radio',
     default: 'tracks',
-    oneOf: ['tracks', 'heatmap', 'heatmap-2d', 'histogram', 'overlay'],
+    options: ['tracks', 'heatmap', 'heatmap-2d', 'histogram', 'overlay'],
     description: 'The layout of annotations in this ideogram.',
     options: {
       'tracks': `
@@ -118,21 +118,301 @@ const settings = [
   },
   {
     name: 'Chromosome height',
+    id: 'chrHeight',
     type: 'number',
+    default: 400,
     description: `
       Pixel height of the tallest chromosome in the ideogram.`,
     example: ['layout-small', 'annotations-basic']
   },
   {
-    name: 'Chromosome scaling',
-    id: 'chr-scaling',
+    name: 'Chromosome margin',
+    id: 'chrMargin',
+    type: 'number',
+    default: 10,
+    description: 'Pixels between each chromosome.',
+    example: 'multiple-primates'
+  },
+  {
+    name: 'Chromosome width',
+    id: 'chrWidth',
+    type: 'number',
+    default: 10,
+    description: 'Pixel width of each chromosome',
+    example: 'annotations-tracks'
+  },
+  {
+    name: 'Chromosome label size',
+    id: 'chrLabelSize',
+    type: 'number',
+    default: 9,
+    description: 'Pixel font size of chromosome labels',
+    example: 'differential-expression'
+  },
+  {
+    name: 'Chromosomes',
+    type: 'array',
+    default: 'all chromosomes in assembly',
+    description: `
+      List of the names of chromosomes to display. Useful for depicting
+      a subset of the chromosomes in the genome, e.g. a single chromosome.`,
+    example: 'annotations-basic'
+  },
+  {
+    name: 'Chromosome scale',
+    id: 'chrScale', // TODO: Update API from 'chromosomeScale' to 'chrScale'
     type: 'radio',
-    options: ['Absolute', 'Relative']
+    default: 'relative',
+    options: ['absolute', 'relative']
+  },
+  {
+    name: 'Container',
+    type: 'string',
+    default: 'body',
+    description: 'Selector of the element that will contain the ideogram',
+    example: 'layout-small'
+  },
+  {
+    name: 'Data directory',
+    id: 'dataDir',
+    type: 'string',
+    default: '../data/bands/native/',
+    example: 'https://ncbi-hackathons.github.io/GeneExpressionAging/ideogram'
+  },
+  {
+    name: 'Demarcate collinear chromosomes',
+    id: 'demarcateCollinearChromosomes',
+    type: 'boolean',
+    default: 'true',
+    description: `
+      Whether to demarcate colllinear chromosomes. Puts a dark border around
+      the perimeter of each track-chromosomes block in track sets for
+      chromosomes arranged in collinear geometry. `,
+    example: 'collinear-geometry'
+  },
+  {
+    name: 'Geometry',
+    type: 'radio',
+    options: ['parallel', 'collinear'],
+    description: `
+      Use "geometry: collinear" to arrange all chromosomes in one line,
+      unlike the usual parallel view`
+  },
+  {
+    name: 'Histogram scale',
+    type: 'radio',
+    oneOf: ['absolute', 'relative'],
+    description: `
+      Technique to use in scaling the height of histogram bars. The "absolute"
+      value sets bar height relative to tallest bar in all chromosomes, while
+      "relative" sets bar height relative to tallest bar in each chromosome.`
+  },
+  {
+    name: 'Heatmaps',
+    type: 'array',
+    description: `
+      Array of heatmap objects. Each heatmap object has a key string and a
+      thresholds array. The key property specifies the annotations key value
+      to depict in the heatmap. The thresholds property specifies a list of
+      two-element "threshold" lists, where the first element is the threshold
+      value and the second is the threshold color. The threshold values are a
+      list of ranges to use in coloring the heatmap. Threshold values are
+      specified in ascending order. Example in Annotations, heatmap.`,
+    example: 'annotations-heatmap'
+  },
+  {
+    name: 'filterable',
+    type: 'boolean',
+    description: 'Whether annotations should be filterable.',
+    example: 'annotations-histogram'
+  },
+  {
+    name: 'Full chromosome labels',
+    type: 'boolean',
+    description: `
+      Whether to include abbreviation species name in chromosome label.`,
+    example: 'homology-interspecies'
+  },
+  {
+    name: 'Legend',
+    type: 'array',
+    description: 'List of objects describing annotations.',
+    example: 'annotations-tracks'
+  },
+  {
+    name: 'onBrushMove',
+    type: 'function',
+    description: 'Callback function to invoke when brush moves',
+    example: 'brush'
+  },
+  {
+    name: 'onDidRotate',
+    type: 'function',
+    description: 'Callback function to invoke after chromosome has rotated.'
+  },
+  {
+    name: 'onDrawAnnots',
+    type: 'function',
+    description: `
+      Callback function to invoke when annotations are drawn. This is useful
+      for when loading and drawing large annotation datsets.`
+  },
+  {
+    name: 'onLoad',
+    type: 'function',
+    description: `
+      Callback function to invoke when chromosomes are loaded, i.e. rendered
+      on the page.`,
+    example: 'annotations-external-data'
+  },
+  {
+    name: 'onLoadAnnots',
+    type: 'function',
+    description: `
+      Callback function to invoke when annotations are downloaded and ready
+      for data transformation.`
+  },
+  {
+    name: 'onWillShowAnnotTooltip',
+    type: 'function',
+    description: `
+      Callback function to invoke immediately before annotation tooltip is
+      shown. The tooltip shows the genomic range and, if available, name of
+      the annotation. This option can be useful to e.g. enhance the displayed
+      annotation name, say by transforming a gene name into a hyperlink to a
+      gene record web page.`
+  },
+  {
+    name: 'Organism',
+    type: 'string or number or array',
+    description: `
+      Required.  Organism(s) to show chromosomes for. Supply name of organism
+      as a string (e.g. "human") or organism's NCBI Taxonomy ID (taxid, e.g.
+      9606) to display chromosomes from a single organism, or an array of
+      organisms' names or taxids to display chromosomes from multiple species
+      or other taxa.`,
+    example: 'human'
   },
   {
     name: 'Orientation',
     type: 'radio',
-    options: ['Vertical', 'Horizontal']
+    default: 'vertical',
+    options: ['vertical', 'horizontal'],
+    description: `
+      Orientation of chromosomes on the page`,
+    example: 'mouse'
+  },
+  {
+    name: 'Perspective',
+    type: 'string',
+    description: `
+      Use perspective: 'comparative' to enable annotations between two
+      chromosomes, either within the same organism or different organisms.`,
+    example: 'homology-basic'
+  },
+  {
+    name: 'Ploidy',
+    type: 'number',
+    default: 1,
+    description: `
+      Number of chromosome to depict for each chromosome set.`,
+    example: 'ploidy-basic'
+  },
+  {
+    name: 'Ploidy description',
+    id: 'ploidyDesc',
+    type: 'array',
+    description: `
+      Description of ploidy in each chromosome set in terms of ancestry
+      composition.`,
+    example: 'ploidy-recombination'
+  },
+  {
+    name: 'Range set',
+    type: 'array',
+    description: `
+      List of objects describing segments of recombination among chromosomes
+      in a chromosome set.`,
+    example: 'ploidy-recombination'
+  },
+  {
+    name: 'Resolution',
+    type: 'number',
+    default: 'highest resolution available for specified genome assembly.',
+    description: `
+      Resolution of cytogenetic bands to show for each chromosome. The
+      quantity refers to approximate value in bands per haploid set (bphs).
+      See also: <i>fullyBanded</i>.`,
+    example: 'layout-small'
+  },
+  {
+    name: 'Rotatable',
+    type: 'boolean',
+    default: 'true',
+    description: 'Whether chromosomes are rotatable upon clicking them',
+    example: 'layout-small'
+  },
+  {
+    name: 'Rows',
+    type: 'number',
+    default: 1,
+    description: `
+      Number of rows to arrange chromosomes into. Useful for putting
+      ideogram into a small container, or when dealing with genomes that have
+      many chromosomes.`,
+    example: 'layout-small'
+  },
+  {
+    name: 'Sex',
+    type: 'string',
+    default: 'male',
+    description: `
+      Biological sex of the organism.  Useful for omitting chromosome Y in
+      female mammals. Currently only supported for organisms that use XY
+      sex-determination.`,
+    example: 'ploidy-basic'
+  },
+  {
+    name: 'Show band labels',
+    type: 'boolean',
+    default: 'false',
+    description: 'Whether to show cytogenetic band labels, e.g. 1q21',
+    example: 'annotations-basic'
+  },
+  {
+    name: 'Show chromosome labels',
+    type: 'boolean',
+    default: 'true',
+    description: `
+      Whether to show chromosome labels, e.g. 1, 2, 3, X, Y.`,
+    example: 'annotations-basic'
+  },
+  {
+    name: 'showAnnotTooltip',
+    type: 'boolean',
+    default: 'true',
+    description: `
+      Whether to show a tooltip upon mousing over an annotation.`
+  },
+  {
+    name: 'showFullyBanded',
+    type: 'boolean',
+    default: 'true',
+    description: `
+      Whether to show fully banded chromosomes for genomes that have
+      sufficient data. Useful for showing simpler chromosomes of
+      cytogenetically well-characterized organisms, e.g. human, beside
+      chromosomes of less studied organisms, e.g. chimpanzee.  See also
+      <i>resolution</i>.`
+  },
+  {
+    name: 'showNonNuclearChromosomes',
+    type: 'boolean',
+    default: 'false',
+    description: `
+      Whether to show non-nuclear chromosomes, e.g. for mitochondrial (MT) and
+      chloroplast (CP) DNA.`,
+    example: 'eukaryotes?org=sus-scrofa'
   }
 ];
 
