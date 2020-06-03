@@ -3,6 +3,67 @@ import settings from './settings';
 
 const style = `
   <style>
+
+    .tab-panel ul {
+      width: 600px;
+      list-style: none;
+      border-bottom: 1px solid #CCC;
+      box-sizing: border-box;
+      margin-bottom: 0;
+      padding-left: 0;
+    }
+
+    .tab-panel .nav:before, .tab-panel .nav:after {
+      content: " ";
+      display: table;
+      clear: both;
+    }
+
+    .tab-panel li {
+      float: left;
+      margin-right: 2px;
+      display: block;
+      margin-bottom: -1px;
+    }
+
+    .tab-panel li > a {
+      padding: 10px 15px;
+      text-decoration: none;
+      border-radius: 4px 4px 0 0;
+      display: block;
+      position: relative;
+    }
+
+    .tab-panel li.active > a {
+      border: 1px solid #CCC;
+      border-bottom: none;
+      background-color: white;
+    }
+
+    .tab-panel {
+      margin-left: 15px;
+    }
+
+    .tab-panel .tab-content {
+      width: 600px;
+    }
+
+    .tab-panel .tab-content > div {
+      display: none;
+      padding-top: 20px;
+      clear: both;
+    }
+
+    .tab-panel .tab-content > div:first-child {
+      padding: 20px 10px 5px 10px;
+    }
+
+    .tab-panel .tab-content > div.active {
+      display: block;
+      border: 1px solid #CCC;
+      border-top: none;
+    }
+
     #settings-gear {
       position: absolute;
       right: 0;
@@ -42,6 +103,30 @@ function handleSettingsToggle(ideo) {
         options.style.display = 'none';
       }
     });
+
+  var links = document.querySelectorAll('li.ideo-settings-header > a');
+  links.forEach(function(link) {
+    link.addEventListener('click', function(event) {
+      var targetLink = event.target,
+        targetId;
+
+      // Don't scroll
+      event.preventDefault();
+
+      // Deactivate all tabs
+      links.forEach(function(link2) {
+        link2.parentElement.classList.remove('active');
+      });
+      document.querySelectorAll('.tab-content > div').forEach(function(div) {
+        div.classList.remove('active');
+      });
+
+      // Active selected tab
+      targetLink.parentElement.classList += ' active';
+      targetId = targetLink.href.split('#')[1];
+      document.getElementById(targetId).classList += ' active';
+    });
+  });
 }
 
 /** Get HTML for setting header */
@@ -91,26 +176,51 @@ function getOptions(setting, name) {
  * @param {Array} settings
  */
 function list(settingThemes) {
-  return settings
-    .map(themeObj => {
-      const themeHead = `<br/><br/><b>${themeObj.theme}</b><br/>`;
 
-      const themeList = themeObj.list
-        .filter(setting => {
-          return ['string', 'number', 'checkbox'].includes(setting.type);
-        })
-        .map(setting => {
-          const name =
-            ('id' in setting) ? setting.id : slug(setting.name);
+  const navHeaders = settingThemes.map((themeObj, i) => {
+    const activeClass = (i === 0) ? ' active"' : '';
+    const theme = themeObj.theme;
+    return `
+      <li class="ideo-settings-header ${activeClass}">
+        <a href="#${slug(theme)}-tab">${theme}</a>
+      </li>`;
+  }).join('');
 
-          const header = getHeader(setting, name);
-          const options = getOptions(setting, name);
+  const nav = `
+    <div class="tab-panel">
+    <ul class="nav">
+      ${navHeaders}
+    </ul>`;
 
-          return header + options;
-        }).join('<br/>');
+  const tabs = settings.map((themeObj, i) => {
 
-      return themeHead + themeList;
-    }).join('');
+    const themeList = themeObj.list
+      .filter(setting => {
+        return ['string', 'number', 'checkbox'].includes(setting.type);
+      })
+      .map(setting => {
+        const name =
+          ('id' in setting) ? setting.id : slug(setting.name);
+
+        const header = getHeader(setting, name);
+        const options = getOptions(setting, name);
+
+        return header + options;
+      }).join('<br/>');
+
+    const theme = themeObj.theme;
+    const activeClass = (i === 0) ? ' class="active"' : '';
+
+    const htmlId = `${slug(theme)}-tab`;
+    return `
+      <div id="${htmlId}"${activeClass}>
+        ${themeList}
+      </div>`;
+  }).join('');
+
+  const tabContent = `<div class="tab-content">${tabs}</div>`;
+
+  return nav + tabContent;
 }
 
 function initSettings(ideo) {

@@ -427,7 +427,7 @@ const otherSettings = [
   }
 ];
 
-const eventHandlers = [
+const eventHandlers = [ // eslint-disable-line no-unused-vars
   {
     name: 'onBrushMove',
     type: 'function',
@@ -479,8 +479,8 @@ const settings = [
   {theme: 'Annotations', list: annotationSettings},
   {theme: 'Histogram', list: histogramSettings},
   {theme: 'Ploidy', list: ploidySettings},
-  {theme: 'Other', list: otherSettings},
-  {theme: 'Event handlers', list: eventHandlers}
+  {theme: 'Other', list: otherSettings}
+  // {theme: 'Event handlers', list: eventHandlers}
 ];
 
 export default settings;
