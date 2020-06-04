@@ -138,22 +138,37 @@ function handleSettingsToggle(ideo) {
   });
 }
 
-/** Get HTML for setting header */
-function getHeader(setting) {
+function toAttr(value) {
+  if (typeof value !== 'undefined') {
+    return value
+      .trim()
+      .replace(/"/g, '&quot;')
+      .replace(/\n/g, '')
+      .replace(/\s{2,}/g, ' ');
+  }
+}
+
+function getIdAttr(setting) {
+  const id = 'id' in setting ? setting.id : slug(setting.name);
+  return `setting-label-${slug(id)}`;
+}
+
+/** Get HTML label for setting header */
+function getHeader(setting, option=null) {
   // Get a header for each setting
 
-  const name = 'shortName' in setting ? setting.shortName : setting.name;
-
-  let header;
-  if (setting.type === 'number') {
-    header = `<span class="setting">${name}</span>`;
+  let name;
+  if (option) {
+    name = option;
   } else {
-    header = `
-      <label class="setting">
-        ${name}
-      </label>`;
+    name = 'shortName' in setting ? setting.shortName : setting.name;
   }
-  return header;
+  const description = toAttr(setting.description);
+  const id = getIdAttr(setting);
+
+  const attrs = `class="setting" for="${id}" title="${description}"`;
+
+  return `<label ${attrs}>${name}</label>`;
 }
 
 /** Transform options to an array of list items (<li>'s) */
@@ -163,10 +178,13 @@ function getOptions(setting, name) {
 
   if ('options' in setting === false) {
     // type="number"
-    return `<input ${typeAttr}/><br/>`;
+    const id = getIdAttr(setting);
+    return `<input ${typeAttr} id="${id}"/><br/>`;
   }
 
   if (Array.isArray(setting.options) === false) return '';
+
+  const description = toAttr(description);
 
   return setting.options.map(option => {
     let item;
@@ -175,7 +193,7 @@ function getOptions(setting, name) {
     if (setting.type === 'radio') {
       // TODO: Handle 'checked'
       const input = `<input ${attrs} name="${name}" value="${id}"/>`;
-      const label = `<label for="${id}">${option}</label>`;
+      const label = getHeader(setting, option);
       item = input + label;
     }
     return `<li>${item}</li>`;
