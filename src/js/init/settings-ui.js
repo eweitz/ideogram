@@ -4,6 +4,37 @@ import settings from './settings';
 const style = `
   <style>
 
+    #settings-gear {
+      position: absolute;
+      right: 0;
+      cursor: pointer;
+      height: 18px;
+      width: 18px;
+    }
+
+    #settings {
+      position: absolute;
+      z-index: 9999;
+      background: white;
+      border: 1px solid #DDD;
+    }
+
+    #settings label {
+      display: inline;
+    }
+
+    #settings li {
+      list-style-type: none;
+    }
+
+    #settings .setting {
+      margin-right: 4px;
+    }
+
+    .tab-panel input[type="number"]{
+      width: 50px;
+    }
+
     .tab-panel ul {
       width: 600px;
       list-style: none;
@@ -54,7 +85,7 @@ const style = `
       clear: both;
     }
 
-    .tab-panel .tab-content > div:first-child {
+    .tab-panel .tab-content > div {
       padding: 20px 10px 5px 10px;
     }
 
@@ -62,28 +93,6 @@ const style = `
       display: block;
       border: 1px solid #CCC;
       border-top: none;
-    }
-
-    #settings-gear {
-      position: absolute;
-      right: 0;
-      cursor: pointer;
-      height: 18px;
-      width: 18px;
-    }
-
-    #settings {
-      z-index: 9999;
-      background: white;
-      border: 1px solid #DDD;
-    }
-
-    #settings label {
-      display: inline;
-    }
-
-    #settings li {
-      list-style-type: none;
     }
   </style>`;
 
@@ -130,15 +139,18 @@ function handleSettingsToggle(ideo) {
 }
 
 /** Get HTML for setting header */
-function getHeader(setting, name) {
+function getHeader(setting) {
   // Get a header for each setting
+
+  const name = 'shortName' in setting ? setting.shortName : setting.name;
+
   let header;
   if (setting.type === 'number') {
-    header = `<div class="setting">${setting.name}</div>`;
+    header = `<span class="setting">${name}</span>`;
   } else {
     header = `
       <label class="setting">
-        ${setting.name}
+        ${name}
       </label>`;
   }
   return header;
@@ -202,7 +214,7 @@ function list(settingThemes) {
         const name =
           ('id' in setting) ? setting.id : slug(setting.name);
 
-        const header = getHeader(setting, name);
+        const header = getHeader(setting);
         const options = getOptions(setting, name);
 
         return header + options;
