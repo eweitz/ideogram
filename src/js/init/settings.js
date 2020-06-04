@@ -1,5 +1,16 @@
 const basicSettings = [
   {
+    name: 'Organism',
+    type: 'string',
+    description: `
+      Required.  Organism(s) to show chromosomes for. Supply name of organism
+      as a string (e.g. "human") or organism's NCBI Taxonomy ID (taxid, e.g.
+      9606) to display chromosomes from a single organism, or an array of
+      organisms' names or taxids to display chromosomes from multiple species
+      or other taxa.`,
+    example: 'human'
+  },
+  {
     name: 'Assembly',
     type: 'string',
     default: 'latest RefSeq assembly for specified organism',
@@ -22,17 +33,6 @@ const basicSettings = [
     type: 'string',
     default: '../data/bands/native/',
     example: 'https://ncbi-hackathons.github.io/GeneExpressionAging/ideogram'
-  },
-  {
-    name: 'Organism',
-    type: 'string',
-    description: `
-      Required.  Organism(s) to show chromosomes for. Supply name of organism
-      as a string (e.g. "human") or organism's NCBI Taxonomy ID (taxid, e.g.
-      9606) to display chromosomes from a single organism, or an array of
-      organisms' names or taxids to display chromosomes from multiple species
-      or other taxa.`,
-    example: 'human'
   },
   {
     name: 'Orientation',
@@ -97,15 +97,6 @@ const chromosomeSettings = [
     example: ['layout-small', 'annotations-basic']
   },
   {
-    name: 'Chromosome margin',
-    shortName: 'Margin',
-    id: 'chrMargin',
-    type: 'number',
-    default: 10,
-    description: 'Pixels between each chromosome.',
-    example: 'multiple-primates'
-  },
-  {
     name: 'Chromosome width',
     shortName: 'Width',
     id: 'chrWidth',
@@ -113,6 +104,15 @@ const chromosomeSettings = [
     default: 10,
     description: 'Pixel width of each chromosome',
     example: 'annotations-tracks'
+  },
+  {
+    name: 'Chromosome margin',
+    shortName: 'Margin',
+    id: 'chrMargin',
+    type: 'number',
+    default: 10,
+    description: 'Pixels between each chromosome.',
+    example: 'multiple-primates'
   },
   {
     name: 'Chromosome label size',

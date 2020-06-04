@@ -21,6 +21,9 @@ const style = `
 
     #settings label {
       display: inline;
+      text-decoration: underline;
+      text-decoration-style: dotted;
+      cursor: help;
     }
 
     #settings li {
