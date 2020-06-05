@@ -42,46 +42,6 @@ const basicSettings = [
     description: `
       Orientation of chromosomes on the page`,
     example: 'mouse'
-  },
-  {
-    name: 'Organism',
-    type: 'string or number or array',
-    description: `
-      Required.  Organism(s) to show chromosomes for. Supply name of organism
-      as a string (e.g. "human") or organism's NCBI Taxonomy ID (taxid, e.g.
-      9606) to display chromosomes from a single organism, or an array of
-      organisms' names or taxids to display chromosomes from multiple species
-      or other taxa.`,
-    example: 'human'
-  },
-  {
-    name: 'Orientation',
-    type: 'radio',
-    default: 'vertical',
-    options: ['vertical', 'horizontal'],
-    description: `
-      Orientation of chromosomes on the page`,
-    example: 'mouse'
-  },
-  {
-    name: 'Organism',
-    type: 'string or number or array',
-    description: `
-      Required.  Organism(s) to show chromosomes for. Supply name of organism
-      as a string (e.g. "human") or organism's NCBI Taxonomy ID (taxid, e.g.
-      9606) to display chromosomes from a single organism, or an array of
-      organisms' names or taxids to display chromosomes from multiple species
-      or other taxa.`,
-    example: 'human'
-  },
-  {
-    name: 'Orientation',
-    type: 'radio',
-    default: 'vertical',
-    options: ['vertical', 'horizontal'],
-    description: `
-      Orientation of chromosomes on the page`,
-    example: 'mouse'
   }
 ];
 
@@ -134,21 +94,28 @@ const chromosomeSettings = [
   },
   {
     name: 'Chromosome scale',
-    id: 'chrScale', // TODO: Update API from 'chromosomeScale' to 'chrScale'
+    // TODO: Update API from 'chromosomeScale' to 'chrScale'
+    id: 'chromosomeScale',
     type: 'radio',
-    default: 'relative',
+    description:
+      `Used when comparing genomes. If absolute, chromosomes will be scaled
+      by base pairs in each genome. If relative, the first chromosme in each
+      genome will be of equal length, and subsequent chromosomes will be
+      scaled relative to the first chromosome.`,
+    default: 'absolute',
     options: ['absolute', 'relative']
   },
   {
     name: 'Full chromosome labels',
-    shortName: 'Full labels',
+    shortName: 'Species labels',
     type: 'checkbox',
     description: `
-      Whether to include abbreviation species name in chromosome label.`,
+      Whether to include abbreviated species name in chromosome label.`,
     example: 'homology-interspecies'
   },
   {
     name: 'Show chromosome labels',
+    shortName: 'Chromosome labels',
     type: 'checkbox',
     default: 'true',
     description: `
@@ -156,7 +123,18 @@ const chromosomeSettings = [
     example: 'annotations-basic'
   },
   {
+    name: 'Resolution',
+    type: 'number',
+    default: 'highest resolution available for specified genome assembly.',
+    description: `
+      Resolution of cytogenetic bands to show for each chromosome. The
+      quantity refers to approximate value in bands per haploid set (bphs).
+      See also: <i>fullyBanded</i>.`,
+    example: 'layout-small'
+  },
+  {
     name: 'Show fully banded',
+    shortName: 'Fully banded',
     type: 'checkbox',
     default: 'true',
     description: `
@@ -168,6 +146,7 @@ const chromosomeSettings = [
   },
   {
     name: 'Show non-nuclear chromosomes',
+    shortName: 'Non-nuclear chromosomes',
     type: 'checkbox',
     default: 'false',
     description: `
@@ -394,16 +373,6 @@ const otherSettings = [
       Use perspective: 'comparative' to enable annotations between two
       chromosomes, either within the same organism or different organisms.`,
     example: 'homology-basic'
-  },
-  {
-    name: 'Resolution',
-    type: 'number',
-    default: 'highest resolution available for specified genome assembly.',
-    description: `
-      Resolution of cytogenetic bands to show for each chromosome. The
-      quantity refers to approximate value in bands per haploid set (bphs).
-      See also: <i>fullyBanded</i>.`,
-    example: 'layout-small'
   },
   {
     name: 'Rows',

@@ -23,18 +23,27 @@ const style = `
       display: inline;
       text-decoration: underline;
       text-decoration-style: dotted;
-      cursor: help;
+      cursor: pointer;
     }
 
     #settings li {
       list-style-type: none;
     }
 
-    #settings .setting {
-      margin-right: 4px;
+    #settings .no-underline {
+      text-decoration: none;
     }
 
-    .tab-panel input[type="number"]{
+    #settings .setting {
+      margin-right: 8px;
+    }
+
+    #settings input[type="checkbox"], #settings input[type="radio"] {
+      position: relative;
+      top: 2px;
+    }
+
+    .tab-panel input[type="number"] {
       width: 50px;
     }
 
@@ -153,23 +162,30 @@ function toAttr(value) {
 
 function getIdAttr(setting) {
   const id = 'id' in setting ? setting.id : slug(setting.name);
-  return `setting-label-${slug(id)}`;
+  return `setting-${slug(id)}`;
 }
 
 /** Get HTML label for setting header */
-function getHeader(setting, option=null) {
+function getHeader(setting, option=null, optionId=null) {
   // Get a header for each setting
 
-  let name;
+  let name; let id; let title;
+
   if (option) {
     name = option;
+    id = optionId;
+    title = '';
   } else {
     name = 'shortName' in setting ? setting.shortName : setting.name;
+    id = getIdAttr(setting);
+    title = ` title="${toAttr(setting.description)}"`;
   }
-  const description = toAttr(setting.description);
-  const id = getIdAttr(setting);
 
-  const attrs = `class="setting" for="${id}" title="${description}"`;
+
+  const underline = option === null ? '' : ' no-underline';
+
+  const attrs =
+    `class="setting${underline}" for="${id}"${title}`;
 
   return `<label ${attrs}>${name}</label>`;
 }
@@ -187,20 +203,20 @@ function getOptions(setting, name) {
 
   if (Array.isArray(setting.options) === false) return '';
 
-  const description = toAttr(description);
+  const description = toAttr(setting.description);
 
-  return setting.options.map(option => {
-    let item;
-    const id = slug(option);
-    const attrs = `${typeAttr} id="${id}"`;
-    if (setting.type === 'radio') {
-      // TODO: Handle 'checked'
+  if (setting.type === 'radio') {
+    return setting.options.map(option => {
+
+      const id = 'setting-' + slug(option);
+      const attrs = `${typeAttr} id="${id}" title="${description}"`;
+
       const input = `<input ${attrs} name="${name}" value="${id}"/>`;
-      const label = getHeader(setting, option);
-      item = input + label;
-    }
-    return `<li>${item}</li>`;
-  }).join('');
+      const label = getHeader(setting, option, id);
+      const item = '<br/>' + input + label;
+      return item;
+    }).join('') + '<br/>';
+  }
 }
 
 /**
@@ -229,7 +245,8 @@ function list(settingThemes) {
 
     const themeList = themeObj.list
       .filter(setting => {
-        return ['string', 'number', 'checkbox'].includes(setting.type);
+        const displayedTypes = ['string', 'number', 'checkbox', 'radio'];
+        return displayedTypes.includes(setting.type);
       })
       .map(setting => {
         const name =
