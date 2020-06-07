@@ -142,7 +142,7 @@ function handleSettingsToggle(ideo) {
         div.classList.remove('active');
       });
 
-      // Active selected tab
+      // Activate selected tab
       targetLink.parentElement.classList += ' active';
       targetId = targetLink.href.split('#')[1];
       document.getElementById(targetId).classList += ' active';
@@ -150,7 +150,8 @@ function handleSettingsToggle(ideo) {
   });
 }
 
-function toAttr(value) {
+/** Ensure string value can be rendered as an HTML "title" attribute */
+function toTitle(value) {
   if (typeof value !== 'undefined') {
     return value
       .trim()
@@ -178,9 +179,8 @@ function getHeader(setting, option=null, optionId=null) {
   } else {
     name = 'shortName' in setting ? setting.shortName : setting.name;
     id = getIdAttr(setting);
-    title = ` title="${toAttr(setting.description)}"`;
+    title = ` title="${toTitle(setting.description)}"`;
   }
-
 
   const underline = option === null ? '' : ' no-underline';
 
@@ -203,7 +203,7 @@ function getOptions(setting, name) {
 
   if (Array.isArray(setting.options) === false) return '';
 
-  const description = toAttr(setting.description);
+  const description = toTitle(setting.description);
 
   if (setting.type === 'radio') {
     return setting.options.map(option => {
@@ -219,10 +219,51 @@ function getOptions(setting, name) {
   }
 }
 
+function listTabs(themeObj, i) {
+  const settingsList = themeObj.list
+    .map(area => {
+
+      const areaHeading = `<div class="area">${area.area}</div>`;
+
+      const settingsByArea = area.settings
+        .filter(setting => {
+          const displayedTypes = ['string', 'number', 'checkbox', 'radio'];
+          return displayedTypes.includes(setting.type);
+        })
+        .map(setting => {
+          const name =
+            ('id' in setting) ? setting.id : slug(setting.name);
+
+          const header = getHeader(setting);
+          const options = getOptions(setting, name);
+
+          return header + options;
+        }).join('<br/>');
+
+      return areaHeading + settingsByArea;
+    }).join('<br/>');
+
+  const theme = themeObj.theme;
+  const activeClass = (i === 0) ? ' class="active"' : '';
+
+  const htmlId = `${slug(theme)}-tab`;
+
+  return `
+    <div id="${htmlId}"${activeClass}>
+      ${settingsList}
+    </div>`;
+}
+
 /**
  * Get list of configurable Ideogram settings; each has a header and options
  *
- * @param {Array} settings
+ * Settings are grouped by theme and area.
+ *
+ * -> Theme (e.g. Basic, Chromosomes )
+ * |-> Area (e.g. Biology, Data)
+ *  |-> Setting (e.g. Organism, Height)
+ *
+ * @param {Array} settingThemes
  */
 function list(settingThemes) {
 
@@ -241,31 +282,8 @@ function list(settingThemes) {
       ${navHeaders}
     </ul>`;
 
-  const tabs = settings.map((themeObj, i) => {
-
-    const themeList = themeObj.list
-      .filter(setting => {
-        const displayedTypes = ['string', 'number', 'checkbox', 'radio'];
-        return displayedTypes.includes(setting.type);
-      })
-      .map(setting => {
-        const name =
-          ('id' in setting) ? setting.id : slug(setting.name);
-
-        const header = getHeader(setting);
-        const options = getOptions(setting, name);
-
-        return header + options;
-      }).join('<br/>');
-
-    const theme = themeObj.theme;
-    const activeClass = (i === 0) ? ' class="active"' : '';
-
-    const htmlId = `${slug(theme)}-tab`;
-    return `
-      <div id="${htmlId}"${activeClass}>
-        ${themeList}
-      </div>`;
+  const tabs = settingThemes.map((themeObj, i) => {
+    return listTabs(themeObj, i);
   }).join('');
 
   const tabContent = `<div class="tab-content">${tabs}</div>`;
