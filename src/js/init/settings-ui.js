@@ -43,6 +43,23 @@ const style = `
       top: 2px;
     }
 
+    .area-header {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      clear: both;
+    }
+
+    .area-content {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .area-content > div {
+      margin-right: 30px;
+      margin-bottom: 15px;
+    }
+
     .tab-panel input[type="number"] {
       width: 50px;
     }
@@ -223,7 +240,7 @@ function listTabs(themeObj, i) {
   const settingsList = themeObj.list
     .map(area => {
 
-      const areaHeading = `<div class="area">${area.area}</div>`;
+      const areaHeading = `<div class="area-header">${area.area}</div>`;
 
       const settingsByArea = area.settings
         .filter(setting => {
@@ -237,10 +254,13 @@ function listTabs(themeObj, i) {
           const header = getHeader(setting);
           const options = getOptions(setting, name);
 
-          return header + options;
-        }).join('<br/>');
+          return '<div>' + header + options + '</div>';
+        }).join('');
 
-      return areaHeading + settingsByArea;
+      return (
+        areaHeading +
+        '<div class="area-content">' + settingsByArea + '</div>'
+      );
     }).join('<br/>');
 
   const theme = themeObj.theme;

@@ -193,8 +193,8 @@ const chromosomeSettings = [
         type: 'checkbox',
         default: 'false',
         description: `
-          Whether to show non-nuclear chromosomes, e.g. for mitochondrial (MT) and
-          chloroplast (CP) DNA.`,
+          Whether to show non-nuclear chromosomes, e.g. for mitochondrial
+          (MT) and chloroplast (CP) DNA.`,
         example: 'eukaryotes?org=sus-scrofa',
         area: 'Cytogenetics'
       },
@@ -422,26 +422,6 @@ const otherSettings = [
         example: 'bush'
       },
       {
-        name: 'Geometry',
-        type: 'radio',
-        options: ['Parallel', 'Collinear'],
-        description: `
-          Use "geometry: collinear" to arrange all chromosomes in one line,
-          unlike the usual parallel view`
-      },
-      {
-        name: 'Demarcate collinear chromosomes',
-        shortName: 'Demarcate',
-        id: 'demarcateCollinearChromosomes',
-        type: 'checkbox',
-        default: 'true',
-        description: `
-          Whether to demarcate colllinear chromosomes. Puts a dark border around
-          the perimeter of each track-chromosomes block in track sets for
-          chromosomes arranged in collinear geometry. `,
-        example: 'collinear-geometry'
-      },
-      {
         name: 'Perspective',
         type: 'string',
         description: `
@@ -455,8 +435,8 @@ const otherSettings = [
         default: 1,
         description: `
           Number of rows to arrange chromosomes into. Useful for putting
-          ideogram into a small container, or when dealing with genomes that have
-          many chromosomes.`,
+          ideogram into a small container, or when dealing with genomes that
+          have many chromosomes.`,
         example: 'layout-small'
       },
       {
@@ -468,6 +448,31 @@ const otherSettings = [
           female mammals. Currently only supported for organisms that use XY
           sex-determination.`,
         example: 'ploidy-basic'
+      }
+    ]
+  },
+  {
+    area: 'Collinear',
+    settings: [
+      {
+        name: 'Geometry',
+        type: 'radio',
+        options: ['Parallel', 'Collinear'],
+        description: `
+          Use "geometry: collinear" to arrange all chromosomes in one line,
+          unlike the usual parallel view`
+      },
+      {
+        name: 'Demarcate collinear chromosomes',
+        shortName: 'Demarcate chromosomes',
+        id: 'demarcateCollinearChromosomes',
+        type: 'checkbox',
+        default: 'true',
+        description: `
+          Whether to demarcate colllinear chromosomes. Puts a dark border
+          around the perimeter of each track-chromosomes block in track sets
+          for chromosomes arranged in collinear geometry. `,
+        example: 'collinear-geometry'
       }
     ]
   }
