@@ -11,8 +11,7 @@ const basicSettings = [
           (taxid, e.g. 9606) to display chromosomes from a single organism, or
           an array of organisms' names or taxids to display chromosomes from
           multiple species or other taxa.`,
-        example: 'human',
-        area: 'Biology'
+        example: 'human'
       },
       {
         name: 'Assembly',
@@ -22,8 +21,7 @@ const basicSettings = [
           Genome assembly to display. Takes assembly name (e.g. "GRCh37"),
           RefSeq accession (e.g. "GCF_000306695.2"), or GenBank accession
           (e.g. "GCA_000005005.5").`,
-        example: 'annotations-histogram',
-        area: 'Biology'
+        example: 'annotations-histogram'
       }
     ]
   },
@@ -35,16 +33,17 @@ const basicSettings = [
         type: 'string',
         default: 'body',
         description: 'Selector of the element that will contain the ideogram',
-        example: 'layout-small',
-        area: 'Data'
+        example: 'layout-small'
       },
       {
         name: 'Data directory',
         id: 'dataDir',
         type: 'string',
         default: '../data/bands/native/',
-        example: 'https://ncbi-hackathons.github.io/GeneExpressionAging/ideogram',
-        area: 'Data'
+        description: `
+          Absolute or relative URL of the directory containing data needed to
+          draw banded chromosomes.`,
+        example: 'https://ncbi-hackathons.github.io/GeneExpressionAging/ideogram'
       }
     ]
   },
@@ -58,8 +57,7 @@ const basicSettings = [
         options: ['Vertical', 'Horizontal'],
         description: `
           Orientation of chromosomes on the page`,
-        example: 'mouse',
-        area: 'Layout'
+        example: 'mouse'
       }
     ]
   }
@@ -77,8 +75,7 @@ const chromosomeSettings = [
         default: 400,
         description: `
           Pixel height of the tallest chromosome in the ideogram.`,
-        example: ['layout-small', 'annotations-basic'],
-        area: 'Layout'
+        example: ['layout-small', 'annotations-basic']
       },
       {
         name: 'Chromosome width',
@@ -87,8 +84,7 @@ const chromosomeSettings = [
         type: 'number',
         default: 10,
         description: 'Pixel width of each chromosome',
-        example: 'annotations-tracks',
-        area: 'Layout'
+        example: 'annotations-tracks'
       },
       {
         name: 'Chromosome margin',
@@ -97,8 +93,7 @@ const chromosomeSettings = [
         type: 'number',
         default: 10,
         description: 'Pixels between each chromosome.',
-        example: 'multiple-primates',
-        area: 'Layout'
+        example: 'multiple-primates'
       },
       {
         name: 'Chromosomes',
@@ -136,8 +131,7 @@ const chromosomeSettings = [
         type: 'number',
         default: 9,
         description: 'Pixel font size of chromosome labels',
-        example: 'differential-expression',
-        area: 'Labels'
+        example: 'differential-expression'
       },
       {
         name: 'Full chromosome labels',
@@ -145,8 +139,7 @@ const chromosomeSettings = [
         type: 'checkbox',
         description: `
           Whether to include abbreviated species name in chromosome label.`,
-        example: 'homology-interspecies',
-        area: 'Labels'
+        example: 'homology-interspecies'
       },
       {
         name: 'Show chromosome labels',
@@ -155,8 +148,7 @@ const chromosomeSettings = [
         default: 'true',
         description: `
           Whether to show chromosome labels, e.g. 1, 2, 3, X, Y.`,
-        example: 'annotations-basic',
-        area: 'Labels'
+        example: 'annotations-basic'
       }
     ]
   },
@@ -171,8 +163,7 @@ const chromosomeSettings = [
           Resolution of cytogenetic bands to show for each chromosome. The
           quantity refers to approximate value in bands per haploid set (bphs).
           See also: <i>fullyBanded</i>.`,
-        example: 'layout-small',
-        area: 'Cytogenetics'
+        example: 'layout-small'
       },
       {
         name: 'Show fully banded',
@@ -184,8 +175,7 @@ const chromosomeSettings = [
           sufficient data. Useful for showing simpler chromosomes of
           cytogenetically well-characterized organisms, e.g. human, beside
           chromosomes of less studied organisms, e.g. chimpanzee.  See also
-          <i>resolution</i>.`,
-        area: 'Cytogenetics'
+          <i>resolution</i>.`
       },
       {
         name: 'Show non-nuclear chromosomes',
@@ -195,8 +185,7 @@ const chromosomeSettings = [
         description: `
           Whether to show non-nuclear chromosomes, e.g. for mitochondrial
           (MT) and chloroplast (CP) DNA.`,
-        example: 'eukaryotes?org=sus-scrofa',
-        area: 'Cytogenetics'
+        example: 'eukaryotes?org=sus-scrofa'
       },
       {
         name: 'Ploidy',
@@ -204,8 +193,7 @@ const chromosomeSettings = [
         default: 1,
         description: `
           Number of chromosome to depict for each chromosome set.`,
-        example: 'ploidy-basic',
-        area: 'Cytogenetics'
+        example: 'ploidy-basic'
       },
       {
         name: 'Ploidy description',
@@ -215,8 +203,7 @@ const chromosomeSettings = [
         description: `
           Description of ploidy in each chromosome set in terms of ancestry
           composition.`,
-        example: 'ploidy-recombination',
-        area: 'Cytogenetics'
+        example: 'ploidy-recombination'
       },
       {
         name: 'Range set',
@@ -224,8 +211,7 @@ const chromosomeSettings = [
         description: `
           List of objects describing segments of recombination among chromosomes
           in a chromosome set.`,
-        example: 'ploidy-recombination',
-        area: 'Cytogenetics'
+        example: 'ploidy-recombination'
       }
     ]
   }
@@ -256,8 +242,7 @@ const annotationSettings = [
         description: `
           Absolute or relative URL to a JSON file containing
           annotation objects.`,
-        example: 'annotations-overlaid',
-        area: 'Data'
+        example: 'annotations-overlaid'
       },
       {
         name: 'Annotation tracks',
@@ -266,15 +251,13 @@ const annotationSettings = [
         description: `
           List of objects with metadata for each track, e.g. DOM id, display
           name, color, shape.`,
-        example: 'annotations-tracks',
-        area: 'Data'
+        example: 'annotations-tracks'
       },
       {
         name: 'Legend',
         type: 'array',
         description: 'List of objects describing annotations.',
-        example: 'annotations-tracks',
-        area: 'Data'
+        example: 'annotations-tracks'
       }
     ]
   },
@@ -287,7 +270,6 @@ const annotationSettings = [
         type: 'radio',
         default: 'Tracks',
         description: 'Layout of annotations',
-        area: 'Layout',
         options: ['Tracks', 'Heatmap', 'Heatmap 2D', 'Histogram', 'Overlay'],
         optionsDescription: {
           'Tracks': `
@@ -332,8 +314,7 @@ const annotationSettings = [
         shortName: 'Height',
         type: 'number',
         description: 'Height of each annotation.',
-        example: 'annotations-tracks',
-        area: 'Layout'
+        example: 'annotations-tracks'
       },
       {
         name: 'Annotations color',
@@ -341,8 +322,7 @@ const annotationSettings = [
         type: 'string',
         default: '#F00',
         description: 'Color of annotations.',
-        example: 'multiple-primates',
-        area: 'Layout'
+        example: 'multiple-primates'
       }
     ]
   },
@@ -353,31 +333,29 @@ const annotationSettings = [
         name: 'Filterable',
         type: 'checkbox',
         description: 'Whether annotations should be filterable.',
-        example: 'annotations-histogram',
-        area: 'interaction'
+        example: 'annotations-histogram'
       }
     ]
   },
-  {
-    area: 'Heatmaps',
-    settings: [
-      {
-        name: 'Heatmaps',
-        type: 'array',
-        description: `
-          Array of heatmap objects. Each heatmap object has a key string and
-          a thresholds array. The key property specifies the annotations key
-          value to depict in the heatmap. The thresholds property specifies a
-          list of two-element "threshold" lists, where the first element is
-          the threshold value and the second is the threshold color. The
-          threshold values are a list of ranges to use in coloring the
-          heatmap. Threshold values are specified in ascending order.
-          Example in Annotations, heatmap.`,
-        example: 'annotations-heatmap',
-        area: 'Heatmaps'
-      }
-    ]
-  },
+  // {
+  //   area: 'Heatmaps',
+  //   settings: [
+  //     {
+  //       name: 'Heatmaps',
+  //       type: 'array',
+  //       description: `
+  //         Array of heatmap objects. Each heatmap object has a key string and
+  //         a thresholds array. The key property specifies the annotations key
+  //         value to depict in the heatmap. The thresholds property specifies a
+  //         list of two-element "threshold" lists, where the first element is
+  //         the threshold value and the second is the threshold color. The
+  //         threshold values are a list of ranges to use in coloring the
+  //         heatmap. Threshold values are specified in ascending order.
+  //         Example in Annotations, heatmap.`,
+  //       example: 'annotations-heatmap'
+  //     }
+  //   ]
+  // },
   {
     area: 'Histogram',
     settings: [
@@ -387,8 +365,7 @@ const annotationSettings = [
         default: 3,
         description: `
           Pixel width of bars drawn when annotationsLayout: 'histogram'.`,
-        example: 'annotations-histogram',
-        area: 'Histogram'
+        example: 'annotations-histogram'
       },
       {
         name: 'Histogram scale',
@@ -399,8 +376,7 @@ const annotationSettings = [
           Technique to use in scaling the height of histogram bars. The
           "absolute" value sets bar height relative to tallest bar in all
           chromosomes, while "relative" sets bar height relative to tallest
-          bar in each chromosome.`,
-        area: 'Histogram'
+          bar in each chromosome.`
       }
     ]
   }
