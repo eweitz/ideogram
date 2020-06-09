@@ -7,6 +7,7 @@ const style = `
     #settings-gear {
       position: absolute;
       right: 0;
+      top: 15px;
       z-index: 8001;
       cursor: pointer;
       height: 18px;
@@ -16,6 +17,7 @@ const style = `
     #settings {
       position: absolute;
       right: 0;
+      top: 15px;
       z-index: 8000;
       background: white;
       margin: 0;
@@ -101,10 +103,6 @@ const style = `
       border: 1px solid #CCC;
       border-bottom: none;
       background-color: white;
-    }
-
-    .tab-panel {
-      margin-left: 15px;
     }
 
     .tab-panel .tab-content {
