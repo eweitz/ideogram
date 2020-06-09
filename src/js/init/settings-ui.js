@@ -7,6 +7,7 @@ const style = `
     #settings-gear {
       position: absolute;
       right: 0;
+      z-index: 8001;
       cursor: pointer;
       height: 18px;
       width: 18px;
@@ -14,9 +15,11 @@ const style = `
 
     #settings {
       position: absolute;
-      z-index: 9999;
+      right: 0;
+      z-index: 8000;
       background: white;
-      border: 1px solid #DDD;
+      margin: 0;
+      padding-inline-start: 0;
     }
 
     #settings label {
@@ -318,11 +321,9 @@ function initSettings(ideo) {
   const settingsHtml = `
     ${style}
     <div id="settings-gear">${gearIcon}</div>
-    <div id="settings" style="display: none">
-      <ul>
+    <ul id="settings" style="display: none">
         ${settingsList}
-      </ul>
-    </div>`;
+    </ul>`;
 
   document.querySelector(ideo.selector)
     .insertAdjacentHTML('beforebegin', settingsHtml);
