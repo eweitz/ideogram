@@ -17,7 +17,7 @@ const style = `
     #settings {
       position: absolute;
       right: 8px;
-      top: 24px;
+      top: 16px;
       z-index: 8000;
       background: white;
       margin: 0;

@@ -40,12 +40,12 @@ describe('Ideogram toggling', function() {
       annot = document.getElementsByClassName('annot')[3];
       annotBox = annot.getBoundingClientRect();
 
-      assert.isBelow(Math.abs(annotBox.x - 75), 2);
+      assert.isBelow(Math.abs(annotBox.x - 73), 2);
       assert.isBelow(Math.abs(annotBox.y - 65), 2);
       assert.isBelow(Math.abs(annotBox.height - 14), 2);
-      assert.isBelow(Math.abs(annotBox.right - 89), 2);
+      assert.isBelow(Math.abs(annotBox.right - 87), 2);
       assert.isBelow(Math.abs(annotBox.bottom - 79), 2);
-      assert.isBelow(Math.abs(annotBox.left - 75), 2);
+      assert.isBelow(Math.abs(annotBox.left - 73), 2);
 
       done();
     }
