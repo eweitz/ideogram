@@ -318,7 +318,6 @@ function showSettingsOnIdeogramHover(ideo) {
   const panel = document.querySelector('#settings');
 
   container.addEventListener('mouseover', () => gear.style.display = '');
-  panel.addEventListener('mouseover', () => console.log('mouseover panel'));
   container.addEventListener('mouseout', () => {
     // Hide gear only if panel is not shown
     if (panel.style.display === 'none') {

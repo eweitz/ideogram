@@ -120,7 +120,11 @@ function setOverflowScroll() {
   ideoMiddleWrap = d3.select(config.container + ' #_ideogramMiddleWrap');
 
   ploidy = config.ploidy;
-  ploidyPad = (ploidy - 1);
+  if (ploidy === 1) {
+    ploidyPad = ploidy;
+  } else {
+    ploidyPad = ploidy * 1.12;
+  }
 
   let annotHeight = 0;
   if ('annotationsLayout' in config) {
@@ -134,7 +138,7 @@ function setOverflowScroll() {
   ) {
     ideoWidth =
       (ideo.numChromosomes) *
-      (config.chrWidth + config.chrMargin + ploidyPad + annotHeight);
+      (config.chrWidth + config.chrMargin + annotHeight);
   } else {
     return;
   }
@@ -143,7 +147,7 @@ function setOverflowScroll() {
     return;
   }
 
-  ideoWidth = Math.ceil(ideoWidth * ploidy / config.rows);
+  ideoWidth = Math.ceil(ideoWidth * ploidyPad / config.rows);
   if (ideo._layout._class === 'SmallLayout') ideoWidth += 100;
 
   ideoWidth += 35; // Account for settings gear
