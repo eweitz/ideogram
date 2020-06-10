@@ -7,7 +7,7 @@ const style = `
     #settings-gear {
       position: absolute;
       right: 8px;
-      top: 16px;
+      top: 24px;
       z-index: 8001;
       cursor: pointer;
       height: 18px;
@@ -17,7 +17,7 @@ const style = `
     #settings {
       position: absolute;
       right: 8px;
-      top: 16px;
+      top: 24px;
       z-index: 8000;
       background: white;
       margin: 0;
