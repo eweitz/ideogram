@@ -170,9 +170,11 @@ class Layout {
         ideo.config.chrWidthOriginal = ideo.config.chrWidth;
         ideo.config.annotationHeightOriginal = ideo.config.annotationHeight;
 
+        const settingsGearWidth = 20;
+
         if (ideo._layout._class === 'VerticalLayout') {
-          elementLength = ideoBounds.width;
-          windowLength = window.innerWidth;
+          elementLength = ideoBounds.width - settingsGearWidth;
+          windowLength = window.innerWidth - settingsGearWidth;
         } else {
           elementLength = ideoBounds.height - 10;
           windowLength = window.innerHeight - 10;
