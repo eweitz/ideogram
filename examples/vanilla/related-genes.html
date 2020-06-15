@@ -33,18 +33,18 @@
     }
 
     #search-button {
-      height: 21px;
+      height: 23px;
       width: 23px;
       font-size: 24px;
       background: #58F;
       color: #FFF;
       display: inline-block;
       position: relative;
-      top: 3px;
+      top: 2px;
       left: -25px;
       border-radius: 3px;
       text-align: center;
-      padding-top: 3px;
+      padding-top: 1px;
       cursor: pointer;
     }
 
@@ -111,7 +111,9 @@
   <div style="float: left; width: 350px;">
     <label for="search-genes" id="search-container">
       <input id="search-genes" autocomplete="off" placeholder="Search gene (e.g. RAD51)"/>
-      <span id="search-button">&#x2315;</span>
+      <span id="search-button">
+        <svg width="12" height="13"><g stroke-width="2" stroke="#FFF" fill="none"><path d="M11.29 11.71l-4-4"/><circle cx="5" cy="5" r="4"/></g></svg>
+      </span>
     </label>
   </div>
   <br/><br/><br/>
