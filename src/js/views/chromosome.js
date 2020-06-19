@@ -17,8 +17,11 @@ export class Chromosome {
    * Factory method
    */
   static getInstance(adapter, config, ideo) {
-    if (adapter.getModel().centromerePosition === 'telocentric') {
-      return new TelocentricChromosome(adapter, config, ideo);
+    const centromerePosition = adapter.getModel().centromerePosition;
+    if (centromerePosition === 'telocentric-p') {
+      return new TelocentricPChromosome(adapter, config, ideo);
+    } else if (centromerePosition === 'telocentric-q') {
+      return new TelocentricQChromosome(adapter, config, ideo);
     } else {
       return new MetacentricChromosome(adapter, config, ideo);
     }
@@ -327,11 +330,12 @@ export class MetacentricChromosome extends Chromosome {
   }
 }
 
-export class TelocentricChromosome extends Chromosome {
+export class TelocentricPChromosome extends Chromosome {
 
   constructor(model, config, ideo) {
+    // alert('p')
     super(model, config, ideo);
-    this._class = 'TelocentricChromosome';
+    this._class = 'TelocentricPChromosome';
     this._pArmOffset = 3;
   }
 
@@ -340,6 +344,12 @@ export class TelocentricChromosome extends Chromosome {
   }
 
   _getPArmShape() {
+    // Properties description:
+    // x1 - left terminal start position
+    // x2 - centromere position
+    // x3 - right terminal end position
+    // w - chromosome width
+    // b - bump size
     var d = this._getShapeData();
     d.o = this._pArmOffset;
 
@@ -360,6 +370,12 @@ export class TelocentricChromosome extends Chromosome {
   }
 
   _getQArmShape() {
+    // Properties description:
+    // x1 - left terminal start position
+    // x2 - centromere position
+    // x3 - right terminal end position
+    // w - chromosome width
+    // b - bump size
     var d = this._getShapeData(),
       x = d.x3 - d.b,
       o = this._pArmOffset + 3;
@@ -372,5 +388,77 @@ export class TelocentricChromosome extends Chromosome {
       'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + x + ',' + d.w + ' ' +
       'L' + (d.x2 + o) + ',' + d.w
     };
+  }
+}
+
+export class TelocentricQChromosome extends Chromosome {
+
+  constructor(model, config, ideo) {
+    // alert('q')
+    super(model, config, ideo);
+    this._class = 'TelocentricQChromosome';
+    this._qArmOffset = 3;
+  }
+
+  _getPArmShape() {
+    // Properties description:
+    // x1 - left terminal start position
+    // x2 - centromere position
+    // x3 - right terminal end position
+    // w - chromosome width
+    // b - bump size
+
+    var d = this._getShapeData(),
+      x = d.x3 - d.b,
+      o = this._qArmOffset + 3;
+
+    return {
+      class: '',
+      path:
+      // start at centromere position plus offset
+      'M1,0, ' +
+
+      // make a line to right terminal end position
+      'L' + (x + o) + ',0 ' +
+
+      // make a curve to middle
+      // 'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + x + ',' + d.w + ' ' +
+      'L' + (x + o) + ',' + d.w + ' ' +
+
+      'L' + d.b + ',' + d.w + ' ' +
+
+      // make a line to left terminal end position
+      'Q-' + d.b + ',' + (d.w / 2) + ',' + d.b + ',0'
+    };
+  }
+
+  _addQArmShape(clipPath) {
+    return clipPath.concat(this._getQArmShape());
+  }
+
+  _getQArmShape() {
+    // Properties description:
+    // x1 - left terminal start position
+    // x2 - centromere position
+    // x3 - right terminal end position
+    // w - chromosome width
+    // b - bump size
+    var d = this._getShapeData();
+    d.o = this._qArmOffset;
+
+    return [{
+      class: 'acen',
+      path: 'M' + (d.x2 + 2) + ',1' +
+      'L' + (d.x2 + d.o + 3.25) + ',1 ' +
+      'L' + (d.x2 + d.o + 3.25) + ',' + (d.w - 1) + ' ' +
+      'L' + (d.x2 + 2) + ',' + (d.w - 1)
+    }, {
+      class: 'gpos66',
+      path: 'M' + (d.x2 + d.o + 5) + ',0' +
+      'L' + (d.x2 + d.o + 3) + ',0 ' +
+      'L' + (d.x2 + d.o + 3) + ',' + d.w + ' ' +
+      'L' + (d.x2 + d.o + 5) + ',' + d.w,
+      strokeWidth: 0.5
+    }];
   }
 }

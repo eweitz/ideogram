@@ -143,9 +143,11 @@ function getCentromerePosition(hasBands, bands) {
     );
   }
 
-  if (hasTelocentricPArm || hasTelocentricQArm) {
+  if (hasTelocentricPArm) {
     // As with almost all mouse chromosome, chimpanzee chr22
-    return 'telocentric';
+    return 'telocentric-p';
+  } else if (hasTelocentricQArm) {
+    return 'telocentric-q';
   } else {
     return '';
   }
