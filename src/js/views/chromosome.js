@@ -410,24 +410,16 @@ export class TelocentricQChromosome extends Chromosome {
 
     var d = this._getShapeData(),
       x = d.x3 - d.b,
-      o = this._qArmOffset + 3;
+      o = this._qArmOffset;
 
     return {
       class: '',
       path:
-      // start at centromere position plus offset
-      'M1,0, ' +
-
-      // make a line to right terminal end position
+      // 'M1,0, ' +
+      'M' + (d.x2 + o) + ',0 ' +
       'L' + (x + o) + ',0 ' +
-
-      // make a curve to middle
-      // 'Q' + (d.x3 + d.b) + ',' + (d.w / 2) + ',' + x + ',' + d.w + ' ' +
       'L' + (x + o) + ',' + d.w + ' ' +
-
       'L' + d.b + ',' + d.w + ' ' +
-
-      // make a line to left terminal end position
       'Q-' + d.b + ',' + (d.w / 2) + ',' + d.b + ',0'
     };
   }
@@ -448,13 +440,13 @@ export class TelocentricQChromosome extends Chromosome {
 
     return [{
       class: 'acen',
-      path: 'M' + (d.x2 + 2) + ',1' +
+      path: 'M' + (d.x2 + 2) + ',1 ' +
       'L' + (d.x2 + d.o + 3.25) + ',1 ' +
       'L' + (d.x2 + d.o + 3.25) + ',' + (d.w - 1) + ' ' +
       'L' + (d.x2 + 2) + ',' + (d.w - 1)
     }, {
       class: 'gpos66',
-      path: 'M' + (d.x2 + d.o + 5) + ',0' +
+      path: 'M' + (d.x2 + d.o + 5) + ',0 ' +
       'L' + (d.x2 + d.o + 3) + ',0 ' +
       'L' + (d.x2 + d.o + 3) + ',' + d.w + ' ' +
       'L' + (d.x2 + d.o + 5) + ',' + d.w,
