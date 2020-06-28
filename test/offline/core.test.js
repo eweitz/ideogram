@@ -736,4 +736,33 @@ describe('Ideogram', function() {
 
     ideogram = new Ideogram(config);
   });
+
+  it('should properly render q-telocentric chromosomes', done => {
+    // Tests use case from ../examples/vanilla/eukaryotes?org=macaca-mulatta
+
+    function callback() {
+      var chrYParts =
+        document.querySelectorAll('#chrY-9544 .chromosome-border path');
+
+      var pArm = chrYParts[0].getBoundingClientRect();
+      assert.isBelow(Math.abs(23.6 - pArm.height), 1);
+
+      var centromere = chrYParts[1].getBoundingClientRect();
+      assert.isBelow(Math.abs(4.25 - centromere.height), 1);
+
+      var qArm = chrYParts[2].getBoundingClientRect();
+      assert.isBelow(Math.abs(2 - qArm.height), 1);
+
+      done();
+    }
+
+    var config = {
+      organism: 'macaca-mulatta', // Rhesus macaque
+      dataDir: '/dist/data/bands/native/',
+      onLoad: callback
+    };
+
+    var ideogram = new Ideogram(config);
+  });
+
 });
