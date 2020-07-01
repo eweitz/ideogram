@@ -6,7 +6,9 @@ export class Range {
   * @class
   * @param {Object} data - range data.
   * @param {Integer} data.chr - chromosome index.
-  * @param {Integer[]} [data.ploidy] - array which controls on which chromosomes range should appear in case of ploidy.
+  * @param {Integer[]} [data.ploidy] - array which controls on which
+  *                                    chromosomes range should appear in case
+  *                                    of ploidy.
   * @param {Integer} data.start - range start.
   * @param {Integer} data.stop - range end.
   * @param {String} data.color - range color.

@@ -12,7 +12,7 @@
   </style>
     <style>
 
-        ul {
+        .tab-panel ul {
             width: 600px;
             list-style: none;
             border-bottom: 1px solid #CCC;
@@ -21,20 +21,20 @@
             padding-left: 0;
         }
 
-        .nav:before, .nav:after {
+        .tab-panel .nav:before, .tab-panel .nav:after {
             content: " ";
             display: table;
             clear: both;
         }
 
-        li {
+        .tab-panel li {
             float: left;
             margin-right: 2px;
             display: block;
             margin-bottom: -1px;
         }
 
-        li > a {
+        .tab-panel li > a {
             padding: 10px 15px;
             text-decoration: none;
             border-radius: 4px 4px 0 0;
@@ -42,7 +42,7 @@
             position: relative;
         }
 
-        li.active > a {
+        .tab-panel li.active > a {
             border: 1px solid #CCC;
             border-bottom: none;
             background-color: white;
@@ -52,21 +52,21 @@
             margin-left: 15px;
         }
 
-        .tab-content {
+        .tab-panel .tab-content {
             width: 600px;
         }
 
-        .tab-content > div {
+        .tab-panel .tab-content > div {
             display: none;
             padding-top: 20px;
             clear: both;
         }
 
-        .tab-content > div:first-child {
+        .tab-panel .tab-content > div:first-child {
             padding: 20px 10px 5px 10px;
         }
 
-        .tab-content > div.active {
+        .tab-panel .tab-content > div.active {
             display: block;
             border: 1px solid #CCC;
             border-top: none;

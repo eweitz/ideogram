@@ -5,8 +5,6 @@
  *
  */
 
-import naturalSort from 'es6-natural-sort';
-
 import version from './version';
 
 import {
@@ -37,7 +35,9 @@ import {
 import {onBrushMove, createBrush} from './brush';
 import {drawSexChromosomes, setSexChromosomes} from './sex-chromosomes';
 import {convertBpToPx, convertPxToBp} from './coordinate-converters';
-import {unpackAnnots, packAnnots, initCrossFilter, filterAnnots} from './filter';
+import {
+  unpackAnnots, packAnnots, initCrossFilter, filterAnnots
+} from './filter';
 
 import {
   assemblyIsAccession, getDataDir, round, onDidRotate, getSvg, d3,
@@ -55,6 +55,8 @@ import {
 import {
   drawChromosomeLabels, rotateChromosomeLabels
 } from './views/chromosome-labels.js';
+
+import {_initRelatedGenes, plotRelatedGenes} from './kit/related-genes';
 
 export default class Ideogram {
   constructor(config) {
@@ -96,7 +98,8 @@ export default class Ideogram {
     this.elink = elink;
     this.getOrganismFromEutils = getOrganismFromEutils;
     this.getTaxids = getTaxids;
-    this.getAssemblyAndChromosomesFromEutils = getAssemblyAndChromosomesFromEutils;
+    this.getAssemblyAndChromosomesFromEutils =
+      getAssemblyAndChromosomesFromEutils;
 
     // Functions from bands.js
     this.drawBandLabels = drawBandLabels;
@@ -150,6 +153,8 @@ export default class Ideogram {
     this.rotateAndToggleDisplay = rotateAndToggleDisplay;
     this.setOverflowScroll = setOverflowScroll;
 
+    this.plotRelatedGenes = plotRelatedGenes;
+
     this.configure(config);
   }
 
@@ -176,7 +181,7 @@ export default class Ideogram {
    * @param {String} method HTTP method; 'GET' (default) or 'POST'
    */
   static async fetchEnsembl(path, body = null, method = 'GET') {
-    let init = {
+    const init = {
       method: method,
       headers: {'Content-Type': 'application/json'}
     };
@@ -208,11 +213,12 @@ export default class Ideogram {
       bIsMT = b.type === 'mitochondrion',
       aIsAP = a.type === 'apicoplast',
       bIsAP = b.type === 'apicoplast';
-    // aIsPlastid = aIsMT && a.name !== 'MT', // e.g. B1 in rice genome GCF_001433935.1
+    // e.g. B1 in rice genome GCF_001433935.1
+    // aIsPlastid = aIsMT && a.name !== 'MT',
     // bIsPlastid = bIsMT && b.name !== 'MT';
 
     if (aIsNuclear && bIsNuclear) {
-      return naturalSort(a.name, b.name);
+      return a.name.localeCompare(b.name, 'en', {numeric: true});
     } else if (!aIsNuclear && bIsNuclear) {
       return 1;
     } else if (aIsMT && bIsCP) {
@@ -222,5 +228,14 @@ export default class Ideogram {
     } else if (!aIsAP && !aIsMT && !aIsCP && (bIsMT || bIsCP || bIsAP)) {
       return -1;
     }
+  }
+
+  /**
+   * Wrapper for Ideogram constructor, with generic "Related genes" options
+   *
+   * @param {Object} config Ideogram configuration object
+   */
+  static initRelatedGenes(config) {
+    return _initRelatedGenes(config);
   }
 }

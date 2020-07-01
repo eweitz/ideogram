@@ -6,7 +6,6 @@
  * chromosomes.
  */
 
-import naturalSort from 'es6-natural-sort';
 import {BedParser} from '../parsers/bed-parser';
 import {drawHeatmaps, deserializeAnnotsForHeatmap} from './heatmap';
 import {inflateThresholds} from './heatmap-lib';
@@ -64,7 +63,6 @@ function initAnnotHeight(ideo) {
     }
     ideo.config.annotationHeight = annotHeight;
   }
-
 }
 
 /**
@@ -119,7 +117,7 @@ function afterRawAnnots() {
     config = ideo.config;
   // Ensure annots are ordered by chromosome
   ideo.rawAnnots.annots = ideo.rawAnnots.annots.sort(function(a, b) {
-    return naturalSort(a.chr, b.chr);
+    return a.chr.localeCompare(b.chr, 'en', {numeric: true});
   });
 
   if (ideo.onLoadAnnotsCallback) {

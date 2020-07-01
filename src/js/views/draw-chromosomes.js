@@ -1,4 +1,5 @@
 import {d3} from '../lib';
+// import {initSettings} from '../init/settings-ui';
 import {ModelAdapter} from '../model-adapter';
 import {Chromosome} from './chromosome';
 
@@ -40,8 +41,8 @@ function appendHomolog(chrModel, chrIndex, homologIndex, container) {
     .data(shape)
     .enter()
     .append('path')
-    .attr('d', function(d) { return d.path; })
-    .attr('class', function(d) { return d.class; });
+    .attr('d', function(d) {return d.path;})
+    .attr('class', function(d) {return d.class;});
 }
 
 /**
@@ -119,7 +120,16 @@ function setOverflowScroll() {
   ideoMiddleWrap = d3.select(config.container + ' #_ideogramMiddleWrap');
 
   ploidy = config.ploidy;
-  ploidyPad = (ploidy - 1);
+  if (ploidy === 1) {
+    ploidyPad = ploidy;
+  } else {
+    ploidyPad = ploidy * 1.12;
+  }
+
+  let annotHeight = 0;
+  if ('annotationsLayout' in config) {
+    annotHeight = config.annotationHeight * config.numAnnotTracks;
+  }
 
   if (
     config.orientation === 'vertical' &&
@@ -127,20 +137,20 @@ function setOverflowScroll() {
     config.geometry !== 'collinear'
   ) {
     ideoWidth =
-      (ideo.numChromosomes + 2) *
-      (config.chrWidth + config.chrMargin + ploidyPad);
+      (ideo.numChromosomes) *
+      (config.chrWidth + config.chrMargin + annotHeight);
   } else {
     return;
-    // chrOffset = ideoSvg.select('.chromosome').nodes()[0].getBoundingClientRect();
-    // ideoWidth = config.chrHeight + chrOffset.x + 1;
   }
 
   if (config.annotationsLayout === 'heatmap-2d') {
     return;
   }
 
-  ideoWidth = Math.ceil(ideoWidth * ploidy / config.rows);
+  ideoWidth = Math.ceil(ideoWidth * ploidyPad / config.rows);
   if (ideo._layout._class === 'SmallLayout') ideoWidth += 100;
+
+  ideoWidth += 35; // Account for settings gear
 
   // Ensures absolutely-positioned elements, e.g. heatmap overlaps, display
   // properly if ideogram container also has position: absolute
@@ -152,6 +162,8 @@ function setOverflowScroll() {
     .style('position', 'absolute');
 
   ideoSvg.style('min-width', (ideoWidth - 5) + 'px');
+
+  // initSettings(ideo);
 }
 
 export {

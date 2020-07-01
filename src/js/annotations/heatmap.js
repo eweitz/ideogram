@@ -98,8 +98,8 @@ function drawHeatmaps(annotContainers) {
   }
 
   d3.selectAll(ideo.config.container + ' canvas')
-    .on('mouseover', function() { showTrackLabel(this, ideo); })
-    .on('mouseout', function() { startHideTrackLabelTimeout(ideo); });
+    .on('mouseover', function() {showTrackLabel(this, ideo);})
+    .on('mouseout', function() {startHideTrackLabelTimeout(ideo);});
 
   if (ideo.onDrawAnnotsCallback) {
     ideo.onDrawAnnotsCallback();

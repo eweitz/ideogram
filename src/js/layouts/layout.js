@@ -58,7 +58,7 @@ class Layout {
     if (orientation === 'vertical') {
       x = tickSize;
       y = ideo.round(2 + band.px.start + band.px.width / 2);
-      translate = "rotate(-90)translate(" + x + "," + y + ")";
+      translate = 'rotate(-90)translate(' + x + ',' + y + ')';
     } else if (orientation === 'horizontal') {
       x = ideo.round(-tickSize + band.px.start + band.px.width / 2);
       y = -10;
@@ -170,9 +170,11 @@ class Layout {
         ideo.config.chrWidthOriginal = ideo.config.chrWidth;
         ideo.config.annotationHeightOriginal = ideo.config.annotationHeight;
 
+        const settingsGearWidth = 20;
+
         if (ideo._layout._class === 'VerticalLayout') {
-          elementLength = ideoBounds.width;
-          windowLength = window.innerWidth;
+          elementLength = ideoBounds.width - settingsGearWidth;
+          windowLength = window.innerWidth - settingsGearWidth;
         } else {
           elementLength = ideoBounds.height - 10;
           windowLength = window.innerHeight - 10;

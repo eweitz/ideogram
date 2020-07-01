@@ -191,7 +191,7 @@ function writeHistogramAnnots(chrAnnot, ideo) {
     .attr('points', function(d) {
       return getHistogramPoints(d, chrWidth, chrWidths, ideo);
     })
-    .attr('fill', function(d) { return d.color; });
+    .attr('fill', function(d) {return d.color;});
 }
 
 export {getHistogramBars, writeHistogramAnnots};

@@ -16,7 +16,9 @@ module.exports = function(config) {
     // list of files / patterns to load in the browser
     files: [
       'src/js/index.js',
-      'test/web-test.js',
+      'test/offline/**.test.js',
+      'test/online/**.test.js',
+      // 'test/online/related-genes.test.js',
       {pattern: 'dist/data/**', watched: false, included: false, served: true, nocache: false}
     ],
 
@@ -35,6 +37,13 @@ module.exports = function(config) {
     },
 
     webpack: {
+
+      mode: 'production',
+
+      performance: {
+        hints: false
+      },
+
       module: {
         rules: [
           // instrument only testing sources with Istanbul
@@ -51,6 +60,12 @@ module.exports = function(config) {
         ]
       }
     },
+
+    // webpackMiddleware: {
+    //   stats: {
+    //     maxModules: Infinity
+    //   }
+    // },
 
     // test results reporter to use
     // possible values: 'dots', 'progress'

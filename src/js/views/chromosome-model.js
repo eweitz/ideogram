@@ -124,12 +124,30 @@ function deleteExtraneousBands(chr, hasBands) {
 }
 
 function getCentromerePosition(hasBands, bands) {
-  if (
+
+  const hasTelocentricPArm = (
+    // As with almost all mouse chromosome, chimpanzee chr22
     hasBands && bands[0].name[0] === 'p' && bands[1].name[0] === 'q' &&
     bands[0].bp.stop - bands[0].bp.start < 2E6
-  ) {
+  );
+
+  let hasTelocentricQArm = false;
+  if (hasBands) {
+    // As with Macaca mulatta chromosome Y
+    const lastBand = bands.slice(-1)[0];
+    const penultimateBand = bands.slice(-2)[0];
+
+    hasTelocentricQArm = (
+      hasBands && penultimateBand.name[0] === 'p' && lastBand.name[0] === 'q' &&
+      lastBand.bp.stop - lastBand.bp.start < 2E6
+    );
+  }
+
+  if (hasTelocentricPArm) {
     // As with almost all mouse chromosome, chimpanzee chr22
-    return 'telocentric';
+    return 'telocentric-p';
+  } else if (hasTelocentricQArm) {
+    return 'telocentric-q';
   } else {
     return '';
   }

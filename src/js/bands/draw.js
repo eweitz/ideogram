@@ -36,7 +36,7 @@ function drawBandLabelText(chr, bandsToLabel, chrModel, textOffsets) {
     })
     .append('text')
     .attr('text-anchor', layout.getChromosomeBandLabelAnchor(chrIndex))
-    .text(function(d) { return d.name; });
+    .text(function(d) {return d.name;});
 
   return textOffsets;
 }
@@ -133,7 +133,7 @@ function getGradients(colors) {
     [stain, color1, color2, color3] = getStainAndColors(i, colors);
     gradients +=
       '<linearGradient id="' + stain + '" x1="0%" y1="0%" x2="0%" y2="100%">';
-    if (stain === "gneg") {
+    if (stain === 'gneg') {
       gradients +=
         '<stop offset="70%" stop-color="' + color2 + '" />' +
         '<stop offset="95%" stop-color="' + color3 + '" />' +
@@ -163,7 +163,7 @@ function getBandColorGradients() {
   css = `<style>${configuredCss}</style>`;
 
   gradients += staticGradients;
-  gradients = "<defs>" + gradients + "</defs>";
+  gradients = '<defs>' + gradients + '</defs>';
   gradients = css + gradients;
 
   return gradients;

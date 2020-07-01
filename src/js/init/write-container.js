@@ -58,7 +58,7 @@ function writeTooltipContainer(ideo) {
     .style('background', 'white')
     .style('border', '1px solid black')
     .style('border-radius', '5px')
-    .style('z-index', '100');
+    .style('z-index', '9000');
 }
 
 function writeContainerDom(ideo) {
@@ -77,7 +77,7 @@ function writeContainerDom(ideo) {
     .attr('id', '_ideogramMiddleWrap') // needed for overflow and scrolling
     .style('position', 'relative')
     .style('overflow-x', 'auto')
-    .style('transform', 'translateZ(0)') // promote ideogram ele to own compositing layer
+    .style('transform', 'translateZ(0)') // add compositing layer for ideogram
     .append('div')
     .attr('id', '_ideogramInnerWrap') // needed for overflow and scrolling
     .append('svg')
