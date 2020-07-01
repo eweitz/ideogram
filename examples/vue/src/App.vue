@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png"/>
+    <img src="src/assets/logo.png"/>
     <h1>Welcome to Ideogram in Vue</h1>
     <router-view/>
   </div>

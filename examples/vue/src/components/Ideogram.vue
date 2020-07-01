@@ -10,7 +10,8 @@
     mounted: function () {
       return new Ideogram({
         organism: 'human',
-        container: '#ideo-container'
+        container: '#ideo-container',
+        dataDir: 'https://cdn.jsdelivr.net/npm/ideogram@1.20.0/dist/data/bands/native/'
       })
     }
   }
@@ -20,5 +21,7 @@
 <style scoped>
   #ideo-container {
     height: 300px;
+    width: 50%;
+    margin: auto;
   }
 </style>
