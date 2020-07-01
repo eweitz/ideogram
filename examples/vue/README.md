@@ -6,7 +6,7 @@ More examples showing the breadth of Ideogram's functionality are at https://ewe
 # Install
 
 ``` bash
-git clone origin https://github.com/eweitz/ideogram
+git clone https://github.com/eweitz/ideogram
 cd ideogram/examples/vue
 npm install
 npm run dev
