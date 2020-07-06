@@ -312,4 +312,35 @@ describe('Ideogram filter support', function() {
 
     ideogram = new Ideogram(config);
   });
+
+  it('should have expected width with explicit `geometry: "parallel"`', done => {
+    // Tests use case from ../examples/vanilla/annotations-track-filters.html
+    // Similar to "should filter heatmap tracks and show track labels", except
+    // one (now explicit) configuration option.
+
+    function callback() {
+      track1 = document.querySelector('#chr2-9606-canvas-0').getBoundingClientRect();
+      track2 = document.querySelector('#chr2-9606-canvas-1').getBoundingClientRect();
+      track3 = document.querySelector('#chr2-9606-canvas-2').getBoundingClientRect();
+
+      assert.equal(track1.x, 95);
+      assert.equal(track2.x, 104);
+      assert.equal(track3.x, 113);
+
+      done();
+    }
+
+    var config = {
+      organism: 'human',
+      annotationsPath: '../dist/data/annotations/9_tracks_virtual_snvs.json',
+      dataDir: '/dist/data/bands/native/',
+      annotationsNumTracks: 3,
+      annotationsDisplayedTracks: [1, 5, 9],
+      onDrawAnnots: callback,
+      annotationsLayout: 'heatmap',
+      geometry: 'parallel'
+    };
+
+    ideogram = new Ideogram(config);
+  });
 });
