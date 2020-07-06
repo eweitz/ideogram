@@ -33,6 +33,10 @@ function getContainerSvgClass(ideo) {
     }
   }
 
+  if (ideo.config.rotatable === false) {
+    svgClass += 'no-rotate ';
+  }
+
   if (
     ideo.config.annotationsLayout &&
     ideo.config.annotationsLayout === 'overlay'

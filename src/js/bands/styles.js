@@ -21,6 +21,8 @@ staticCss =
   '#_ideogram text {font: 9px Tahoma; fill: #000;} ' +
   '#_ideogram .italic {font-style: italic;} ' +
   '#_ideogram .chromosome {cursor: pointer; fill: #AAA;}' +
+  '#_ideogram.no-rotate .chromosome {cursor: default;} ' +
+  '#_ideogram .annot {cursor: pointer;}' +
   '#_ideogram .chrSetLabel {font-weight: bolder;}' +
   '#_ideogram .ghost {opacity: 0.2;}' +
   '#_ideogram .hidden {display: none;}' +
