@@ -30,7 +30,9 @@ function setCursor(position, bpDomain, pxRange, xOffset, width, ideo) {
   var yTranslate = ideo._layout.getChromosomeSetYTranslate(0);
   var yOffset = yTranslate + (ideo.config.chrWidth - width) / 2;
 
-  window.cursorBrush = d3.select(ideo.selector).append('g')
+  // TODO: check if newPosition is valid value (in range)
+
+  var cursorBrush = d3.select(ideo.selector).append('g')
     .attr('class', 'brush')
     .attr('transform', 'translate(0, ' + yOffset + ')')
     .append('rect')
@@ -43,6 +45,15 @@ function setCursor(position, bpDomain, pxRange, xOffset, width, ideo) {
   // call the callback for the first time (onLoad)
   if (ideo.onCursorMove) {
     ideo.onCursorMoveCallback(position);
+  }
+
+  if (!ideo.setCursorPosition) {
+    ideo.setCursorPosition = function(newPosition) {
+      // TODO: check if newPosition is valid value (in range)
+      if (ideo.onCursorMove) {
+        ideo.onCursorMoveCallback(newPosition);
+      }
+    };
   }
 
   d3.selectAll(ideo.selector + ' .chromosome').on('click', function() {
@@ -104,7 +115,6 @@ function createClickCursor(position) {
     xOffset = ideo._layout.margin.left;
 
   if (typeof position === 'undefined') {
-    console.warn('clickCursor: position is undefined');
     return false;
   }
 
