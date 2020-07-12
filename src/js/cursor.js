@@ -50,6 +50,7 @@ function setCursor(position, bpDomain, pxRange, xOffset, width, ideo) {
   if (!ideo.setCursorPosition) {
     ideo.setCursorPosition = function(newPosition) {
       // TODO: check if newPosition is valid value (in range)
+      cursorBrush.attr('x', xScale(newPosition));
       if (ideo.onCursorMove) {
         ideo.onCursorMoveCallback(newPosition);
       }
