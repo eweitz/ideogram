@@ -102,11 +102,9 @@ function getChrModel(chr, ideo) {
 }
 
 /**
- * Creates a sliding window along a chromosome
+ * Creates a clickable cursor along a chromosome.
  *
- * @param chr Chromosome name (e.g. 1) or range, e.g. chr1:104325484-119977655
- * @param from Genomic start coordinate in base pairs, e.g. 104325484
- * @param to Genomic end coordinate in base pairs, e.g. 119977655
+ * @param position Genomic start coordinate in base pairs, e.g. 104325484
  */
 function createClickCursor(position) {
   var chrModel, bpDomain,
@@ -122,7 +120,7 @@ function createClickCursor(position) {
   chrModel = getChrModel(ideo.config.chromosome, ideo);
   [bpDomain, pxRange] = getBasePairDomainAndPixelRange(chrModel, xOffset);
 
-  // also binds the onclick handler
+  // call setCursor to complete the job.
   setCursor(position, bpDomain, pxRange, xOffset, width, ideo);
 }
 
