@@ -58,13 +58,16 @@ function setCursor(position, bpDomain, pxRange, xOffset, width, ideo) {
   }
 
   d3.selectAll(ideo.selector + ' .chromosome').on('click', function() {
-    var extent = currentEvent;
-    var x = extent.clientX - (xOffset*2);
-    var newPosition = Math.floor(xScale.invert(x));
+    var x = currentEvent.offsetX; // minimum value seems to be 25
+
+    // adjust for screen (6 is a magic number that seems to work)
+    x -=6;
 
     // move the cursor
     cursorBrush.attr('x', x);
 
+    // calculate the new position and perform callback
+    var newPosition = Math.floor(xScale.invert(x));
     if (ideo.onCursorMove) {
       ideo.onCursorMoveCallback(newPosition);
     }
