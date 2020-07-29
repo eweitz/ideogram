@@ -104,6 +104,7 @@ function finishInit(t0) {
       // like the wider variety of server-side-defined annotations.
       // Supports https://github.com/eweitz/ideogram/issues/137
       ideo.rawAnnots = confAnnots;
+      ideo.afterRawAnnots();
       processAnnots(ideo);
     }
   }
