@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Cursor | Ideogram</title>
+  <style>
+    body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
+    a, a:visited {text-decoration: none;}
+    a:hover {text-decoration: underline;}
+    a, a:hover, a:visited, a:active {color: #0366d6;}
+  </style>
+  <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
+<link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
+</head>
+<body>
+  <h1>Cursor | Ideogram</h1>
+  <a href="../">Overview</a> |
+  <a href="brush">Previous</a> |
+  <a href="ploidy-basic">Next</a> |
+  <a href="https://github.com/eweitz/ideogram/blob/gh-pages/click.html" target="_blank">Source</a>
+  <br/><br/>
+  <p>A way to get a cursor or click handler for your ideogram. If you set the `cursorPosition` parameter, the rotation will be handled via double click.</p>
+  <div>
+    Selected position on human chromosome 1:
+    <div>
+        <span id="position"></span>
+    </div>
+  </div>
+  <div class="ideogram-container">
+    <!-- The ideogram goes here. -->
+  </div>
+  <script type="text/javascript">
+  function writeCurrentPosition(position) {
+    console.log("pos", position);
+    document.getElementById('position').innerHTML = position.toLocaleString();
+  }
+
+  var config = {
+    container: '.ideogram-container',
+    organism: 'human',
+    chromosome: '1',
+    chrHeight: 900,
+    resolution: 550,
+    orientation: 'horizontal',
+
+    cursorPosition: 110673777, // set a default position
+    onCursorMove: writeCurrentPosition // event handler when position is clicked
+  };
+
+  window.ideogram = new Ideogram(config);
+  </script>
+
+
+<pre>
+  var config = {
+    container: '.ideogram-container',
+    organism: 'human',
+    chromosome: '1',
+    chrHeight: 900,
+    resolution: 550,
+    orientation: 'horizontal',
+
+    cursorPosition: 110673777; // set a default position
+    onCursorMove: writeCurrentPosition // event handler when position is clicked
+  };</pre>
+</body>
+</html>

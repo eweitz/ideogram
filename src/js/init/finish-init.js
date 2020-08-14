@@ -94,7 +94,9 @@ function finishInit(t0) {
 
   processLabels(config, ideo);
 
+  // Create a brush or a click cursor if specified
   if (config.brush) ideo.createBrush(config.brush);
+  else if (config.cursorPosition) ideo.createClickCursor(config.cursorPosition);
 
   if (confAnnots) {
     if (Array.isArray(confAnnots)) {

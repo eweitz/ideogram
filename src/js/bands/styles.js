@@ -28,6 +28,12 @@ staticCss =
   '#_ideogram .hidden {display: none;}' +
   '#_ideogram .bandLabelStalk line {stroke: #AAA; stroke-width: 1;}' +
   '#_ideogram .syntenyBorder {stroke:#AAA;stroke-width:1;}' +
+  '#_ideogram rect.cursor {' +
+  '  fill: #F00;' +
+  '  stroke: #F00;' +
+  '  fill-opacity: .3;' +
+  '  shape-rendering: crispEdges;' +
+  '}' +
   '#_ideogram .brush .selection {' +
   '  fill: #F00;' +
   '  stroke: #F00;' +
