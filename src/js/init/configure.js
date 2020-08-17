@@ -56,7 +56,7 @@ function configureWidth(ideo) {
 }
 
 function configureMargin(ideo) {
-  if (ideo.config.geometry) {
+  if (ideo.config.geometry && ideo.config.geometry === 'collinear') {
     if ('chrMargin' in ideo.config === false) {
       ideo.config.chrMargin = 0;
     }
@@ -102,6 +102,7 @@ function configureCallbacks(config, ideo) {
   if (config.onLoadAnnots) ideo.onLoadAnnotsCallback = config.onLoadAnnots;
   if (config.onDrawAnnots) ideo.onDrawAnnotsCallback = config.onDrawAnnots;
   if (config.onBrushMove) ideo.onBrushMoveCallback = config.onBrushMove;
+  if (config.onCursorMove) ideo.onCursorMoveCallback = config.onCursorMove;
   if (config.onDidRotate) ideo.onDidRotateCallback = config.onDidRotate;
   if (config.onWillShowAnnotTooltip) {
     ideo.onWillShowAnnotTooltipCallback = config.onWillShowAnnotTooltip;
@@ -166,7 +167,6 @@ function configureTextStyle(ideo) {
  * Docs: https://github.com/eweitz/ideogram/blob/master/api.md
  */
 function configure(config) {
-
   // Clone the config object, to allow multiple instantiations
   // without picking up prior ideogram's settings
   this.config = JSON.parse(JSON.stringify(config));
@@ -183,7 +183,7 @@ function configure(config) {
   configureSingleChromosome(config, this);
   configureTextStyle(this);
   this.initAnnotSettings();
-  if ('geometry' in this.config === false) {
+  if (!this.config.geometry || this.config.geometry === 'parallel') {
     this.config.chrMargin += this.config.chrWidth;
     if (this.config.annotationsLayout === 'heatmap') {
       this.config.chrMargin += this.config.annotTracksHeight;

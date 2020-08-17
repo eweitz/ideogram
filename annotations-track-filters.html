@@ -59,13 +59,14 @@
     organism: 'human',
     container: '#ideogram-container',
     chrHeight: 400,
-    chrMargin: 5,
+    chrMargin: 4,
     rotatable: false,
     annotationsLayout: 'heatmap',
     annotationsPath: '/ideogram/dist/data/annotations/9_tracks_virtual_snvs.json',
     onLoadAnnots: createTrackFilters,
     annotationsNumTracks: 3,
     annotationsDisplayedTracks: [1, 5, 9],
+    geometry: 'parallel'
     // annotationsPath: '../../data/annotations/all_human_genes.json',
     // annotationsNumTracks: 2,
     // annotationsDisplayedTracks: [1, 2],
@@ -127,7 +128,7 @@
         selectedTracks.push(trackIndex);
       }
     });
-    
+
     return selectedTracks;
   }
 
@@ -154,7 +155,7 @@
   }
 
   function updateIdeogram() {
-    
+
     var tracks = getSelectedTracks();
     var layout = document.querySelector('input[name=layout]:checked').id;
     var geometry = document.querySelector('input[name=geometry]:checked').id;
@@ -168,14 +169,14 @@
       return;
     }
     if (checkTracks() === false) return;
-    
+
     config.annotationsDisplayedTracks = tracks;
     config.annotationsLayout = layout;
     config.geometry = geometry;
 
     if (geometry === 'collinear') {
       config.orientation = 'horizontal';
-      config.chrHeight = 105;
+      config.chrHeight = 95;
       config.annotationHeight = 30;
       config.demarcateCollinearChromosomes = false;
     } else {

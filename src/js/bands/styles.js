@@ -21,11 +21,19 @@ staticCss =
   '#_ideogram text {font: 9px Tahoma; fill: #000;} ' +
   '#_ideogram .italic {font-style: italic;} ' +
   '#_ideogram .chromosome {cursor: pointer; fill: #AAA;}' +
+  '#_ideogram.no-rotate .chromosome {cursor: default;} ' +
+  '#_ideogram .annot {cursor: pointer;}' +
   '#_ideogram .chrSetLabel {font-weight: bolder;}' +
   '#_ideogram .ghost {opacity: 0.2;}' +
   '#_ideogram .hidden {display: none;}' +
   '#_ideogram .bandLabelStalk line {stroke: #AAA; stroke-width: 1;}' +
   '#_ideogram .syntenyBorder {stroke:#AAA;stroke-width:1;}' +
+  '#_ideogram rect.cursor {' +
+  '  fill: #F00;' +
+  '  stroke: #F00;' +
+  '  fill-opacity: .3;' +
+  '  shape-rendering: crispEdges;' +
+  '}' +
   '#_ideogram .brush .selection {' +
   '  fill: #F00;' +
   '  stroke: #F00;' +

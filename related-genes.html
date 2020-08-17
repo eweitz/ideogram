@@ -128,7 +128,7 @@
     document.querySelector('select').addEventListener('change', handleOrganism);
 
     if ('q' in urlParams) {
-      document.querySelector('#search-genes').value = urlParams['q']
+      document.querySelector('#search-genes').value = urlParams['q'];
     }
 
     document.querySelector('#search-button').addEventListener('click', handleSearch);
@@ -212,7 +212,8 @@
       chrHeight: 90,
       chrLabelSize: 10,
       annotationHeight: 5,
-      onClickAnnot: onClickAnnot
+      onClickAnnot: onClickAnnot,
+      onLoad: plotGeneFromUrl
     }
 
     let ideogram = Ideogram.initRelatedGenes(config)

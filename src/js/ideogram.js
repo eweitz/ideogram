@@ -33,6 +33,7 @@ import {
 } from './bands/bands';
 
 import {onBrushMove, createBrush} from './brush';
+import {onCursorMove, createClickCursor} from './cursor';
 import {drawSexChromosomes, setSexChromosomes} from './sex-chromosomes';
 import {convertBpToPx, convertPxToBp} from './coordinate-converters';
 import {
@@ -113,6 +114,10 @@ export default class Ideogram {
     // Functions from brush.js
     this.onBrushMove = onBrushMove;
     this.createBrush = createBrush;
+
+    // Functions from cursor.js
+    this.createClickCursor = createClickCursor;
+    this.onCursorMove = onCursorMove;
 
     // Functions from sex-chromosomes.js
     this.drawSexChromosomes = drawSexChromosomes;

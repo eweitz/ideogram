@@ -125,7 +125,7 @@ class SmallLayout extends Layout {
 
   getChromosomeSetYTranslate(setIndex) {
     // Get additional padding caused by annotation tracks
-    var additionalPadding = this._getAdditionalOffset();
+    var additionalPadding = this._getAdditionalOffset() * 0.3;
     // If no detailed description provided just use one formula for all cases
     return (
       this.margin.left * (setIndex) + this._config.chrWidth +

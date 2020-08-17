@@ -94,7 +94,9 @@ function finishInit(t0) {
 
   processLabels(config, ideo);
 
+  // Create a brush or a click cursor if specified
   if (config.brush) ideo.createBrush(config.brush);
+  else if (config.cursorPosition) ideo.createClickCursor(config.cursorPosition);
 
   if (confAnnots) {
     if (Array.isArray(confAnnots)) {
@@ -104,6 +106,7 @@ function finishInit(t0) {
       // like the wider variety of server-side-defined annotations.
       // Supports https://github.com/eweitz/ideogram/issues/137
       ideo.rawAnnots = confAnnots;
+      ideo.afterRawAnnots();
       processAnnots(ideo);
     }
   }
