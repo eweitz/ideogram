@@ -4,7 +4,7 @@ import settings from './settings';
 const style = `
   <style>
 
-    #settings-gear {
+    #gear {
       position: absolute;
       right: 8px;
       top: 24px;
@@ -12,6 +12,16 @@ const style = `
       cursor: pointer;
       height: 18px;
       width: 18px;
+    }
+
+    #download {
+      position: absolute;
+      right: 8px;
+      top: 16px;
+      z-index: 8000;
+      background: white;
+      margin: 0;
+      padding-inline-start: 0;
     }
 
     #settings {
@@ -133,7 +143,7 @@ const gearIcon = '<svg viewBox="0 0 512 512"><path fill="#AAA" d="M444.788 291.1
 
 
 function handleSettingsToggle(ideo) {
-  document.querySelector('#settings-gear')
+  document.querySelector('#gear')
     .addEventListener('click', event => {
       var options = document.querySelector('#settings');
       if (options.style.display === 'none') {
@@ -314,7 +324,7 @@ function list(settingThemes) {
 
 function showSettingsOnIdeogramHover(ideo) {
   const container = document.querySelector(ideo.selector);
-  const gear = document.querySelector('#settings-gear');
+  const gear = document.querySelector('#gear');
   const panel = document.querySelector('#settings');
 
   container.addEventListener('mouseover', () => gear.style.display = '');
@@ -328,16 +338,29 @@ function showSettingsOnIdeogramHover(ideo) {
   gear.addEventListener('mouseover', () => gear.style.display = '');
 }
 
-function initSettings(ideo) {
+function getDownload() {
+  return '<li>Download annotations</li>';
+}
 
+function getSettings() {
   const settingsList = list(settings);
-
-  const settingsHtml = `
-    ${style}
-    <div id="settings-gear" style="display: none">${gearIcon}</div>
+  return `
     <ul id="settings" style="display: none">
         ${settingsList}
     </ul>`;
+}
+
+function initSettings(ideo) {
+
+  const settingsHtml = `
+    ${style}
+    <div id="gear" style="display: none">${gearIcon}</div>
+    <ul id="tools">
+      <li>Settings</li>
+      <li>Download</li>
+      <li>About</li>
+    </ul>`;
+
 
   document.querySelector(ideo.selector)
     .insertAdjacentHTML('beforebegin', settingsHtml);
