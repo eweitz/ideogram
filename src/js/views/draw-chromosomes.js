@@ -1,5 +1,5 @@
 import {d3} from '../lib';
-// import {initSettings} from '../init/settings-ui';
+import {initSettings} from '../init/settings-ui';
 import {ModelAdapter} from '../model-adapter';
 import {Chromosome} from './chromosome';
 
@@ -163,7 +163,9 @@ function setOverflowScroll() {
 
   ideoSvg.style('min-width', (ideoWidth - 5) + 'px');
 
-  // initSettings(ideo);
+  if (ideo.config.showSettings) {
+    initSettings(ideo);
+  }
 }
 
 export {
