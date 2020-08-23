@@ -14,6 +14,33 @@ const style = `
       width: 18px;
     }
 
+    #tools {
+      position: absolute;
+      right: 32px;
+      top: 16px;
+      z-index: 8000;
+      background: white;
+      margin: 0;
+      border: 1px solid #CCC;
+      border-radius: 4px;
+      box-shadow: -2px 4px 6px #CCC;
+    }
+
+    #tools ul {
+      margin-block-start: 0;
+      margin-block-end: 0;
+      padding-inline-start: 0;
+    }
+
+    #tools li, #download li {
+      padding: 2px 12px 2px 12px;
+      cursor: pointer;
+    }
+
+    #tools li:hover, #download li:hover {
+      background: #DDD;
+    }
+
     #download {
       position: absolute;
       right: 8px;
@@ -41,7 +68,20 @@ const style = `
       cursor: pointer;
     }
 
-    #settings li {
+    #download {
+      position: absolute;
+      width: 150px;
+      top: -8px;
+      right: 111px;
+      z-index: 8000;
+      background: white;
+      margin: 0;
+      border: 1px solid #CCC;
+      border-radius: 4px;
+      box-shadow: -2px 4px 6px #CCC;
+    }
+
+    li {
       list-style-type: none;
     }
 
@@ -142,17 +182,7 @@ const gearIcon = '<svg viewBox="0 0 512 512"><path fill="#AAA" d="M444.788 291.1
 // License - https://fontawesome.com/license (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
 
 
-function handleSettingsToggle(ideo) {
-  document.querySelector('#gear')
-    .addEventListener('click', event => {
-      var options = document.querySelector('#settings');
-      if (options.style.display === 'none') {
-        options.style.display = '';
-      } else {
-        options.style.display = 'none';
-      }
-    });
-
+function handleSettingsHeaderClick(ideo) {
   var links = document.querySelectorAll('li.ideo-settings-header > a');
   links.forEach(function(link) {
     link.addEventListener('click', function(event) {
@@ -176,6 +206,38 @@ function handleSettingsToggle(ideo) {
       document.getElementById(targetId).classList += ' active';
     });
   });
+}
+
+function handleToolClick() {
+  const toolHeaders = document.querySelectorAll('#tools > ul > li');
+  toolHeaders.forEach(toolHeader => {
+    toolHeader.addEventListener('click', event => {
+      const tool = toolHeader.id.split('-')[0];
+      var panel;
+      if (tool === 'settings') panel = getSettings();
+      if (tool === 'download') panel = getDownload();
+      if (tool === 'about') panel = getAbout();
+
+      document.getElementById('gear')
+        .insertAdjacentHTML('beforeend', panel);
+    });
+  });
+}
+
+function handleGearClick(ideo) {
+  document.querySelector('#gear')
+    .addEventListener('click', event => {
+      var options = document.querySelector('#tools');
+      if (options.style.display === 'none') {
+        options.style.display = '';
+      } else {
+        options.style.display = 'none';
+      }
+    });
+
+  handleToolClick(ideo);
+
+  handleSettingsHeaderClick(ideo);
 }
 
 /** Ensure string value can be rendered as an HTML "title" attribute */
@@ -322,10 +384,10 @@ function list(settingThemes) {
   return nav + tabContent;
 }
 
-function showSettingsOnIdeogramHover(ideo) {
+function showGearOnIdeogramHover(ideo) {
   const container = document.querySelector(ideo.selector);
   const gear = document.querySelector('#gear');
-  const panel = document.querySelector('#settings');
+  const panel = document.querySelector('#tools');
 
   container.addEventListener('mouseover', () => gear.style.display = '');
   container.addEventListener('mouseout', () => {
@@ -339,13 +401,19 @@ function showSettingsOnIdeogramHover(ideo) {
 }
 
 function getDownload() {
-  return '<li>Download annotations</li>';
+
+  return `
+    <div id="download">
+      <li>Image</li>
+      <li>Annotation data</li>
+    </div>
+  `;
 }
 
 function getSettings() {
   const settingsList = list(settings);
   return `
-    <ul id="settings" style="display: none">
+    <ul id="settings">
         ${settingsList}
     </ul>`;
 }
@@ -355,18 +423,20 @@ function initSettings(ideo) {
   const settingsHtml = `
     ${style}
     <div id="gear" style="display: none">${gearIcon}</div>
-    <ul id="tools">
-      <li>Settings</li>
-      <li>Download</li>
-      <li>About</li>
-    </ul>`;
+    <div id="tools" style="display: none">
+      <ul>
+        <li id="download-tool">Download</li>
+        <li id="about-tool">About</li>
+      </ul>
+    </div>`;
 
 
   document.querySelector(ideo.selector)
     .insertAdjacentHTML('beforebegin', settingsHtml);
-  handleSettingsToggle(ideo);
 
-  showSettingsOnIdeogramHover(ideo);
+  handleGearClick(ideo);
+
+  showGearOnIdeogramHover(ideo);
 }
 
 export {initSettings};
