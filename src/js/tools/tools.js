@@ -1,5 +1,5 @@
 import {slug} from '../lib';
-import settings from './settings';
+import settings from '../tools/settings';
 
 const style = `
   <style>
@@ -418,7 +418,7 @@ function getSettings() {
     </ul>`;
 }
 
-function initSettings(ideo) {
+function initTools(ideo) {
 
   const settingsHtml = `
     ${style}
@@ -439,5 +439,5 @@ function initSettings(ideo) {
   showGearOnIdeogramHover(ideo);
 }
 
-export {initSettings};
+export {initTools};
 

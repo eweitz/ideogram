@@ -135,7 +135,7 @@ function configureMiscellaneous(ideo) {
   if (!ideo.config.chromosomeScale) {
     ideo.config.chromosomeScale = 'absolute';
   }
-  if (!ideo.config.showSettings) ideo.config.showSettings = false;
+  if (!ideo.config.showTools) ideo.config.showTools = false;
 }
 
 function configureBands(ideo) {
