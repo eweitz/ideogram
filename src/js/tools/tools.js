@@ -1,5 +1,6 @@
 import {slug} from '../lib';
 import settings from '../tools/settings';
+import version from '../version';
 
 const style = `
   <style>
@@ -37,7 +38,8 @@ const style = `
       cursor: pointer;
     }
 
-    #tools li:hover, #download li:hover {
+    #tools li:hover, #download li:hover,
+    #tools li.active {
       background: #DDD;
     }
 
@@ -59,6 +61,14 @@ const style = `
       background: white;
       margin: 0;
       padding-inline-start: 0;
+    }
+
+    #about {
+      position: absolute;
+      right: 50px;
+      top: 16px;
+      z-index: 8000;
+      background: white;
     }
 
     #settings label {
@@ -181,7 +191,6 @@ const gearIcon = '<svg viewBox="0 0 512 512"><path fill="#AAA" d="M444.788 291.1
 // Font Awesome Free 5.2.0 by @fontawesome - https://fontawesome.com
 // License - https://fontawesome.com/license (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
 
-
 function handleSettingsHeaderClick(ideo) {
   var links = document.querySelectorAll('li.ideo-settings-header > a');
   links.forEach(function(link) {
@@ -217,6 +226,12 @@ function handleToolClick() {
       if (tool === 'settings') panel = getSettings();
       if (tool === 'download') panel = getDownload();
       if (tool === 'about') panel = getAbout();
+
+      // Deactivate all tool headers
+      toolHeaders.forEach(th => {th.classList.remove('active');});
+
+      // Activate selected tool header
+      toolHeader.classList += ' active';
 
       document.getElementById('gear')
         .insertAdjacentHTML('beforeend', panel);
@@ -406,6 +421,15 @@ function getDownload() {
     <div id="download">
       <li>Image</li>
       <li>Annotation data</li>
+    </div>
+  `;
+}
+
+function getAbout() {
+  console.log('in getAbout')
+  return `
+    <div id="about">
+      <a href="https://github.com/eweitz/ideogram>Ideogram.js</a>
     </div>
   `;
 }
