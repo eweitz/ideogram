@@ -65,10 +65,26 @@ const style = `
 
     #about {
       position: absolute;
-      right: 50px;
-      top: 16px;
+      right: 24px;
+      top: -8px;
       z-index: 8000;
       background: white;
+      width: 300px;
+      border: 1px solid #CCC;
+      padding: 10px;
+      border-radius: 4px;
+      box-shadow: -2px 4px 6px #CCC;
+      cursor: default;
+    }
+
+    #close {
+      float: right;
+      border: 1px solid #DDD;
+      border-radius: 4px;
+      padding: 0 6px;
+      background: #EEE;
+      font-weight: bold;
+      cursor: pointer;
     }
 
     #settings label {
@@ -184,6 +200,10 @@ const style = `
       border: 1px solid #CCC;
       border-top: none;
     }
+
+    .ideo-disabled {
+      color: #CCC;
+    }
   </style>`;
 
 // eslint-disable-next-line max-len
@@ -217,25 +237,39 @@ function handleSettingsHeaderClick(ideo) {
   });
 }
 
-function handleToolClick() {
+function deactivate(items) {
+  items.forEach(item => {item.classList.remove('active');});
+}
+
+function closeTools() {
   const toolHeaders = document.querySelectorAll('#tools > ul > li');
+  deactivate(toolHeaders);
+  const itemsToClose =
+    document.querySelectorAll('.ideo-modal, .ideo-tool-panel');
+  itemsToClose.forEach(item => {item.remove();});
+}
+
+/** Shows clicked tool as active, displays resulting panel */
+function handleToolClick(ideo) {
+  const toolHeaders = document.querySelectorAll('#tools > ul > li');
+
   toolHeaders.forEach(toolHeader => {
     toolHeader.addEventListener('click', event => {
-      const tool = toolHeader.id.split('-')[0];
-      var panel;
-      if (tool === 'settings') panel = getSettings();
-      if (tool === 'download') panel = getDownload();
-      if (tool === 'about') panel = getAbout();
 
-      // Deactivate all tool headers
-      toolHeaders.forEach(th => {th.classList.remove('active');});
-
-      // Activate selected tool header
+      // Show only clicked tool header as active
+      deactivate(toolHeaders);
       toolHeader.classList += ' active';
 
-      document.getElementById('gear')
-        .insertAdjacentHTML('beforeend', panel);
+      const tool = toolHeader.id.split('-')[0];
+      const panel = getPanel(tool, ideo);
+
+      document.querySelector('#gear').insertAdjacentHTML('beforeend', panel);
     });
+  });
+
+  // Upon clicking "close" (x), remove tools UI
+  document.querySelectorAll('#close').forEach(closeButton => {
+    closeButton.addEventListener('click', () => {closeTools();});
   });
 }
 
@@ -247,6 +281,7 @@ function handleGearClick(ideo) {
         options.style.display = '';
       } else {
         options.style.display = 'none';
+        closeTools();
       }
     });
 
@@ -415,23 +450,37 @@ function showGearOnIdeogramHover(ideo) {
   gear.addEventListener('mouseover', () => gear.style.display = '');
 }
 
-function getDownload() {
+function getPanel(tool, ideo) {
+  var panel;
+  if (tool === 'settings') panel = getSettings();
+  if (tool === 'download') panel = getDownload(ideo);
+  if (tool === 'about') panel = getAbout();
+  return panel.trim();
+}
+
+function getDownload(ideo) {
+
+  const numAnnots = document.querySelectorAll('.annot').length;
+  const annotsClass = (numAnnots > 0) ? '' : 'ideo-disabled';
 
   return `
-    <div id="download">
+    <div id="download" class="ideo-tool-panel">
       <li>Image</li>
-      <li>Annotation data</li>
+      <li class="${annotsClass}">Annotation data</li>
     </div>
   `;
 }
 
 function getAbout() {
-  console.log('in getAbout')
+  const ideogramLink = `
+    <a href="https://github.com/eweitz/ideogram" target="_blank" rel="noopener">
+      Ideogram.js</a>`;
+  const closeButton = '<span id="close">x</span>';
   return `
-    <div id="about">
-      <a href="https://github.com/eweitz/ideogram>Ideogram.js</a>
-    </div>
-  `;
+    <div id="about" class="ideo-modal">
+      ${ideogramLink}, version ${version} ${closeButton}<br/>
+      <i>Chromosome visualization for the web</i>
+    </div>`;
 }
 
 function getSettings() {
@@ -444,7 +493,7 @@ function getSettings() {
 
 function initTools(ideo) {
 
-  const settingsHtml = `
+  const toolsHtml = `
     ${style}
     <div id="gear" style="display: none">${gearIcon}</div>
     <div id="tools" style="display: none">
@@ -456,7 +505,7 @@ function initTools(ideo) {
 
 
   document.querySelector(ideo.selector)
-    .insertAdjacentHTML('beforebegin', settingsHtml);
+    .insertAdjacentHTML('beforebegin', toolsHtml);
 
   handleGearClick(ideo);
 
