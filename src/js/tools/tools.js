@@ -247,6 +247,8 @@ function closeTools() {
   const itemsToClose =
     document.querySelectorAll('.ideo-modal, .ideo-tool-panel');
   itemsToClose.forEach(item => {item.remove();});
+
+  document.querySelector('#tools').style.display = 'none';
 }
 
 /** Shows clicked tool as active, displays resulting panel */
@@ -279,6 +281,7 @@ function handleGearClick(ideo) {
       var options = document.querySelector('#tools');
       if (options.style.display === 'none') {
         options.style.display = '';
+        hideOnClickOutside();
       } else {
         options.style.display = 'none';
         closeTools();
@@ -489,6 +492,28 @@ function getSettings() {
     <ul id="settings">
         ${settingsList}
     </ul>`;
+}
+
+function hideOnClickOutside(selector) {
+  const elements = document.querySelectorAll('#gear, #tools');
+  const outsideClickListener = event => {
+    let clickedOutsideCount = 0;
+    elements.forEach((element) => {
+      if (!element.contains(event.target)) {
+        clickedOutsideCount += 1;
+      }
+    });
+    if (clickedOutsideCount === elements.length) {
+      closeTools();
+      removeClickListener();
+    }
+  };
+
+  const removeClickListener = () => {
+    document.removeEventListener('click', outsideClickListener);
+  };
+
+  document.addEventListener('click', outsideClickListener);
 }
 
 function initTools(ideo) {
