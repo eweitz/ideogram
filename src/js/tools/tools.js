@@ -43,6 +43,12 @@ const style = `
       background: #DDD;
     }
 
+    #tools li.ideo-disabled:hover,
+    #download li.ideo-disabled:hover,
+    #tools li.active.ideo-disabled {
+      background: #FFF;
+    }
+
     #download {
       position: absolute;
       right: 8px;
@@ -201,8 +207,9 @@ const style = `
       border-top: none;
     }
 
-    .ideo-disabled {
+    #gear .ideo-disabled {
       color: #CCC;
+      cursor: default;
     }
   </style>`;
 
