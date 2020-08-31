@@ -1,5 +1,31 @@
 import {slug} from '../lib';
 
+function handleSettingsHeaderClick(ideo) {
+  var links = document.querySelectorAll('li.ideo-settings-header > a');
+  links.forEach(function(link) {
+    link.addEventListener('click', function(event) {
+      var targetLink = event.target,
+        targetId;
+
+      // Don't scroll
+      event.preventDefault();
+
+      // Deactivate all tabs
+      links.forEach(function(link2) {
+        link2.parentElement.classList.remove('active');
+      });
+      document.querySelectorAll('.tab-content > div').forEach(function(div) {
+        div.classList.remove('active');
+      });
+
+      // Activate selected tab
+      targetLink.parentElement.classList += ' active';
+      targetId = targetLink.href.split('#')[1];
+      document.getElementById(targetId).classList += ' active';
+    });
+  });
+}
+
 /** Ensure string value can be rendered as an HTML "title" attribute */
 function toTitle(value) {
   if (typeof value !== 'undefined') {
@@ -152,4 +178,4 @@ function getSettings() {
     </ul>`;
 }
 
-export {getSettings};
+export {handleSettingsHeaderClick, getSettings};
