@@ -180,7 +180,7 @@
       // Ignore non-"Enter" keyups
       if (event.type === 'keyup' && event.keyCode !== 13) return;
 
-      const searchInput = event.target.value.trim();
+      const searchInput = document.getElementById('search-genes').value.trim();
 
       // Handles e.g. "BRCA1,BRCA2", "BRCA1 BRCA2", and "BRCA1, BRCA2"
       const geneSymbols = searchInput.split(/[, ]/).filter(d => d !== '')
