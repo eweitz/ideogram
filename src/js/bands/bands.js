@@ -62,9 +62,7 @@ function setChrsByTaxidsWithBands(taxid, chrs, bandsArray, ideo) {
 
   bandsByChr = parseBands(taxid, chrs, ideo);
 
-  chrs = Object.keys(bandsByChr).sort(function(a, b) {
-    return a.localeCompare(b, 'en', {numeric: true});
-  });
+  chrs = Object.keys(bandsByChr).sort(Ideogram.sortChromosomes);
 
   if (
     'chromosomes' in ideo.config === false ||

@@ -192,7 +192,7 @@ var organismMetadata = {
       'default': 'GCA_000146045.2',
       'R64': 'GCA_000146045.2'
     }
-  },
+  }
 };
 
 export {organismMetadata};

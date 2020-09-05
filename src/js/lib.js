@@ -182,8 +182,24 @@ function slug(value) {
   return value.toLowerCase().replace(/ /g, '-');
 }
 
+// Determine if a string is a Roman numeral
+// From https://stackoverflow.com/a/48601418
+function isRoman(s) {
+  // http://stackoverflow.com/a/267405/1447675
+  return /^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/i.test(s);
+}
+
+// Convert Roman numeral to integer
+// From https://stackoverflow.com/a/48601418
+function parseRoman(s) {
+  var val = {M: 1000, D: 500, C: 100, L: 50, X: 10, V: 5, I: 1};
+  return s.toUpperCase().split('').reduce(function(r, a, i, aa) {
+    return val[a] < val[aa[i + 1]] ? r - val[a] : r + val[a];
+  }, 0);
+}
+
 export {
   assemblyIsAccession, hasNonGenBankAssembly, hasGenBankAssembly, getDataDir,
   round, onDidRotate, getSvg, fetch, d3, getTaxid, getCommonName,
-  getScientificName, slug
+  getScientificName, slug, isRoman, parseRoman
 };
