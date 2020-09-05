@@ -255,7 +255,7 @@ export default class Ideogram {
    */
   static sortChromosomes(a, b) {
 
-    const [chrAName, chrBName, chrTypes] =
+    let [chrAName, chrBName, chrTypes] =
       Ideogram.getChrSortNamesAndTypes(a, b);
 
     const {
@@ -263,6 +263,11 @@ export default class Ideogram {
     } = chrTypes;
 
     if (aIsNuclear && bIsNuclear) {
+
+      // As in yeast genome
+      if (isRoman(chrAName)) chrAName = parseRoman(chrAName).toString();
+      if (isRoman(chrBName)) chrBName = parseRoman(chrBName).toString();
+
       return chrAName.localeCompare(chrBName, 'en', {numeric: true});
     } else if (!aIsNuclear && bIsNuclear) {
       return 1;
