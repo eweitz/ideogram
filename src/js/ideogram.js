@@ -264,9 +264,11 @@ export default class Ideogram {
 
     if (aIsNuclear && bIsNuclear) {
 
-      // As in yeast genome
-      if (isRoman(chrAName)) chrAName = parseRoman(chrAName).toString();
-      if (isRoman(chrBName)) chrBName = parseRoman(chrBName).toString();
+      if (isRoman(chrAName) && isRoman(chrBName)) {
+        // As in yeast genome
+        chrAName = parseRoman(chrAName).toString();
+        chrBName = parseRoman(chrBName).toString();
+      }
 
       return chrAName.localeCompare(chrBName, 'en', {numeric: true});
     } else if (!aIsNuclear && bIsNuclear) {

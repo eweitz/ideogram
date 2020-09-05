@@ -765,4 +765,23 @@ describe('Ideogram', function() {
     var ideogram = new Ideogram(config);
   });
 
+  it('should sort chromosomes with Roman numeral names', done => {
+    // Tests use case from ../examples/vanilla/eukaryotes?org=saccharomyces-cerevisiae
+    // Verifies fix for https://github.com/eweitz/ideogram/issues/223
+
+    function callback() {
+      var chrs = document.querySelectorAll('.chromosome-set');
+      assert.equal(chrs[9].id, 'chrX-4932-chromosome-set');
+      done();
+    }
+
+    var config = {
+      organism: 'saccharomyces-cerevisiae', // Baker's yeast
+      dataDir: '/dist/data/bands/native/',
+      onLoad: callback
+    };
+
+    var ideogram = new Ideogram(config);
+  });
+
 });
