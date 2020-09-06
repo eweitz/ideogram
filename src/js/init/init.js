@@ -21,9 +21,12 @@ function isHeterogameticChromosome(chrModel, chrIndex, ideo) {
 }
 
 function prepareChromosomes(bandsArray, chrs, taxid, ideo) {
-  var j, bands, chromosome, chrModel, chrIndex;
+  var j, bands, chromosome, chrModel, chrIndex, selectedChrsLength;
 
-  for (j = 0; j < chrs.length; j++) {
+  selectedChrsLength = chrs.length;
+  if (!ideo.config.showNonNuclearChromosomes) selectedChrsLength -= 1;
+
+  for (j = 0; j < selectedChrsLength; j++) {
     chromosome = chrs[j];
     if (typeof bandsArray !== 'undefined') bands = bandsArray[j];
 
