@@ -25,6 +25,7 @@ function appendHomolog(chrModel, chrIndex, homologIndex, container) {
   // Append chromosome's container
   chromosome = container
     .append('g')
+    .style('opacity', chrModel.width < 1 ? '0' : '1')
     .attr('id', chrModel.id)
     .attr('class', 'chromosome ' + adapter.getCssClass())
     .attr('transform', 'translate(0, ' + homologOffset + ')');

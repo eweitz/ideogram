@@ -95,14 +95,21 @@ function initDrawChromosomes() {
  */
 function handleRotateOnClick() {
   var ideo = this;
+  var selector = `${ideo.selector} .chromosome, ${ideo.selector} .chrLabel`;
 
   if (!('rotatable' in ideo.config && ideo.config.rotatable === false)) {
-    d3.selectAll(ideo.selector + ' .chromosome').on('click', function() {
-      ideo.rotateAndToggleDisplay(this);
+    d3.selectAll(selector).on('click', function() {
+
+      // Handles click on chromosome label, needed to toggle e.g. human MT
+      let element = this;
+      if (element.tagName === 'text') {
+        element = element.nextElementSibling;
+      }
+
+      ideo.rotateAndToggleDisplay(element);
     });
   } else {
-    d3.selectAll(ideo.selector + ' .chromosome')
-      .style('cursor', 'default');
+    d3.selectAll(selector).style('cursor', 'default');
   }
 }
 
