@@ -21,12 +21,9 @@ function isHeterogameticChromosome(chrModel, chrIndex, ideo) {
 }
 
 function prepareChromosomes(bandsArray, chrs, taxid, ideo) {
-  var j, bands, chromosome, chrModel, chrIndex, selectedChrsLength;
+  var j, bands, chromosome, chrModel, chrIndex;
 
-  selectedChrsLength = chrs.length;
-  if (!ideo.config.showNonNuclearChromosomes) selectedChrsLength -= 1;
-
-  for (j = 0; j < selectedChrsLength; j++) {
+  for (j = 0; j < chrs.length; j++) {
     chromosome = chrs[j];
     if (typeof bandsArray !== 'undefined') bands = bandsArray[j];
 
@@ -68,6 +65,17 @@ function initDrawChromosomes() {
     chrs = ideo.config.chromosomes[taxid];
 
     bandsArray = ideo.bandsArray[taxid];
+
+    if (!ideo.config.showNonNuclearChromosomes) {
+      // Remove MT
+      // TODO: Handle other non-nuclear chromosomes, e.g. CP, AP
+      chrs = chrs.filter(chr => chr !== 'MT');
+      if (typeof bandsArray !== 'undefined') {
+        bandsArray = bandsArray.filter(bands => {
+          return bands[0].chr !== 'MT';
+        });
+      }
+    }
 
     setCoordinateSystem(chrs, ideo);
 
