@@ -101,8 +101,13 @@ function getChrModelScaffold(chr, bands, chrName, ideo) {
   var hasBands = (typeof bands !== 'undefined');
 
   if (hasBands) {
+    const lastBand = bands[bands.length - 1];
     chr.name = chrName;
-    chr.length = bands[bands.length - 1][ideo.coordinateSystem].stop;
+    chr.length = lastBand[ideo.coordinateSystem].stop;
+
+    // Accounts for case where this chromosome
+    chr.bpLength = lastBand.bp.stop;
+
     chr.type = 'nuclear';
   } else {
     chr = chrName;
