@@ -48,7 +48,7 @@ export class ModelNoBandsAdapter extends ModelAdapter {
         },
         bp: {
           start: 1,
-          stop: this._model.length
+          stop: this._model.bpLength
         },
         iscn: {
           start: 1,
