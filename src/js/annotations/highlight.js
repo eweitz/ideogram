@@ -23,11 +23,30 @@ function highlight(chrNames, color='red') {
 
     const left = chrDom.transform.baseVal[1].matrix.f - 7.5;
     const transform = `transform="rotate(90) translate(10, ${left})"`;
+    const id = `id="ideo-highlight-${chrId}"`;
 
-    return `<rect class="ideo-highlight" ${style} ${transform}/>`;
+    return `<rect class="ideo-highlight" ${id} ${style} ${transform}/>`;
   }).join();
 
   ideoDom.insertAdjacentHTML('afterBegin', highlightsHtml);
 }
 
-export {highlight};
+function unhighlight(chrNames) {
+  const ideo = this;
+
+  let highlightsSelector = `${ideo.selector} .ideo-highlight`;
+  if (typeof chrNames !== 'undefined') {
+    const taxid = ideo.config.taxid;
+    highlightsSelector = chrNames.map(chrName => {
+      const chrId = ideo.chromosomes[taxid][chrName].id;
+      return `${ideo.selector} #ideo-highlight-${chrId}`;
+    });
+  }
+
+  document.querySelectorAll(highlightsSelector).forEach((element) => {
+    element.remove();
+  });
+
+}
+
+export {highlight, unhighlight};

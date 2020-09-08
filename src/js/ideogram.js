@@ -21,7 +21,7 @@ import {
   afterRawAnnots, onClickAnnot
 } from './annotations/annotations';
 
-import {highlight} from './annotations/highlight';
+import {highlight, unhighlight} from './annotations/highlight';
 
 import {
   esearch, esummary, elink,
@@ -97,6 +97,7 @@ export default class Ideogram {
     this.afterRawAnnots = afterRawAnnots;
 
     this.highlight = highlight;
+    this.unhighlight = unhighlight;
 
     // Variables and functions from services.js
     this.esearch = esearch;

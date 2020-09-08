@@ -25,7 +25,6 @@ function appendHomolog(chrModel, chrIndex, homologIndex, container) {
   // Append chromosome's container
   chromosome = container
     .append('g')
-    .style('opacity', chrModel.width < 1 ? '0' : '1')
     .attr('id', chrModel.id)
     .attr('class', 'chromosome ' + adapter.getCssClass())
     .attr('transform', 'translate(0, ' + homologOffset + ')');
@@ -44,6 +43,11 @@ function appendHomolog(chrModel, chrIndex, homologIndex, container) {
     .append('path')
     .attr('d', function(d) {return d.path;})
     .attr('class', function(d) {return d.class;});
+
+
+  if (chrModel.width < 1) {
+    d3.select('#' + chrModel.id + ' .bands').style('opacity', 0);
+  }
 }
 
 /**
