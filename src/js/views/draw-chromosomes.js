@@ -102,6 +102,8 @@ function drawChromosome(chrModel) {
 function rotateAndToggleDisplay(chrElement) {
   var chrName, chrModel, chrIndex;
 
+  this.unhighlight();
+
   // Do nothing if taxid not defined. But it should be defined.
   // To fix that bug we should have a way to find chromosome set number.
   if (!this.config.taxid) return;
