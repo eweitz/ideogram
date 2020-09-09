@@ -1,7 +1,5 @@
 function highlight(chrNames, color='red') {
   const ideo = this;
-
-  const ideoDom = document.querySelector(ideo.selector);
   const taxid = ideo.config.taxid;
 
   const highlightsHtml = chrNames.map(chrName => {
@@ -28,6 +26,7 @@ function highlight(chrNames, color='red') {
     return `<rect class="ideo-highlight" ${id} ${style} ${transform}/>`;
   }).join();
 
+  const ideoDom = document.querySelector(ideo.selector);
   ideoDom.insertAdjacentHTML('afterBegin', highlightsHtml);
 }
 
