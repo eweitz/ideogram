@@ -1,3 +1,4 @@
+/** Adds boxes behind a list of chromosomes; can indicate selection, etc. */
 function highlight(chrNames, color='red') {
   const ideo = this;
   const taxid = ideo.config.taxid;
@@ -30,6 +31,7 @@ function highlight(chrNames, color='red') {
   ideoDom.insertAdjacentHTML('afterBegin', highlightsHtml);
 }
 
+/** Removes highlight from a list of chromosomes (or all chromosomes)  */
 function unhighlight(chrNames) {
   const ideo = this;
 
