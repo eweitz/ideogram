@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Highlights, basic | Ideogram</title>
+  <style>
+    body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
+    a, a:visited {text-decoration: none;}
+    a:hover {text-decoration: underline;}
+    a, a:hover, a:visited, a:active {color: #0366d6;}
+  </style>
+  <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
+<link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
+</head>
+<body>
+  <h1>Highlights, basic | Ideogram</h1>
+  <a href="../">Overview</a> |
+  <a href="cursor">Previous</a> |
+  <a href="highlights-groups">Next</a> |
+  <a href="https://github.com/eweitz/ideogram/blob/gh-pages/highlights-basic.html" target="_blank">Source</a>
+  <p>
+    The mitochondrial chromosome (MT) -- highlighted below -- is much smaller than the other chromosomes.
+  </p>
+  <script type="text/javascript">
+
+    function onIdeogramLoad() {
+      this.highlight(['MT']);
+    }
+
+    var ideogram = new Ideogram({
+      organism: 'human',
+      onLoad: onIdeogramLoad,
+      showNonNuclearChromosomes: true
+    });
+  </script>
+</body>
+</html>
