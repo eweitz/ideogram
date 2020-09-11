@@ -136,7 +136,7 @@ function getCentromerePosition(hasBands, bands) {
   const firstBand = bands[0];
   const lastBand = bands.slice(-1)[0];
   const chrLength = lastBand.bp.stop - firstBand.bp.start;
-  const smallLength = chrLength/10;
+  const smallLength = chrLength/20;
 
   if (
     // As with almost all mouse chromosome, chimpanzee chr22
