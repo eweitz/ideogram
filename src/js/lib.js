@@ -198,8 +198,58 @@ function parseRoman(s) {
   }, 0);
 }
 
+function downloadPng(ideo) {
+  var ideoSvg = document.querySelector(ideo.selector);
+  var width = ideoSvg.width.baseVal.value + 30;
+  document.body.innerHTML +=
+    '<canvas style="display: none" id="canvas" width="' + width + '"></canvas>';
+  var canvas = document.querySelector('canvas');
+
+  function triggerDownload(imgURI) {
+    var evt = new MouseEvent('click', {
+      view: window,
+      bubbles: false,
+      cancelable: true
+    });
+
+    var a = document.createElement('a');
+    a.setAttribute('download', 'ideogram.png');
+    a.setAttribute('href', imgURI);
+    a.setAttribute('target', '_blank');
+
+    a.dispatchEvent(evt);
+  }
+
+  // btn.addEventListener('click', function () {
+  var canvas = document.getElementById('canvas');
+  canvas.width *= 2;
+  canvas.height *= 2;
+  var ctx = canvas.getContext('2d');
+  ctx.setTransform(2, 0, 0, 2, 0, 0);
+  ctx.imageSmoothingEnabled = false;
+  var data = (new XMLSerializer()).serializeToString(ideoSvg);
+  var DOMURL = window.URL || window.webkitURL || window;
+
+  var img = new Image();
+  var svgBlob = new Blob([data], {type: 'image/svg+xml;charset=utf-8'});
+  var url = DOMURL.createObjectURL(svgBlob);
+
+  img.onload = function() {
+    ctx.drawImage(img, 0, 0);
+    DOMURL.revokeObjectURL(url);
+
+    var imgURI = canvas
+      .toDataURL('image/png')
+      .replace('image/png', 'image/octet-stream');
+
+    triggerDownload(imgURI);
+  };
+
+  img.src = url;
+}
+
 export {
   assemblyIsAccession, hasNonGenBankAssembly, hasGenBankAssembly, getDataDir,
   round, onDidRotate, getSvg, fetch, d3, getTaxid, getCommonName,
-  getScientificName, slug, isRoman, parseRoman
+  getScientificName, slug, isRoman, parseRoman, downloadPng
 };
