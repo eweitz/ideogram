@@ -274,10 +274,13 @@ async function plotRelatedGenes(geneSymbol) {
   const topPx = chrHeight + 30;
   const leftPx =
     Array.from(document.querySelectorAll('.chromosome-set'))
-      .slice(-1)[0].getBoundingClientRect().right;
-
-  const style =
-    `float: left; position: relative; top: -${topPx}px; left: ${leftPx}px;`;
+      .slice(-1)[0].getBoundingClientRect().right + 15;
+  const style = `
+    float: left; position: relative;
+    top: -${topPx}px; left: ${leftPx}px;
+    height: ${topPx - 10}px;
+    border-left: 1px solid #EEE;
+    padding-left: 15px;`;
 
   // Fetch positon of searched gene
   const taxid = ideo.config.taxid;
@@ -305,6 +308,7 @@ async function plotRelatedGenes(geneSymbol) {
   ideo.drawAnnots(annots);
 
   document.querySelector('#_ideogramLegend').style = style;
+
 }
 
 /**
