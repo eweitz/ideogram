@@ -21,7 +21,6 @@ describe('Ideogram should', function() {
   });
 
   it('hide gear by default, and show gear on ideogram hover', done => {
-    // Tests use case from ../examples/vanilla/human.html
 
     function callback() {
       const gear = document.getElementById('gear');
@@ -41,7 +40,6 @@ describe('Ideogram should', function() {
   });
 
   it('show tools on gear click, and hide tools on outside click', done => {
-    // Tests use case from ../examples/vanilla/human.html
 
     function callback() {
       // Hover over ideogram, then click gear
@@ -57,6 +55,33 @@ describe('Ideogram should', function() {
       document.getElementById('_ideogramOuterWrap').click();
 
       assert.equal(tools.style.display, 'none');
+
+      done();
+    }
+
+    config.showTools = true;
+    config.onLoad = callback;
+    ideogram = new Ideogram(config);
+  });
+
+  it('show Download and About tools', done => {
+
+    function callback() {
+      // Hover over ideogram, then click gear
+      d3.select('_ideogram').dispatch('mouseover');
+      const gear = document.getElementById('gear');
+      gear.click();
+
+      const downloadTool = document.getElementById('download-tool');
+      const mouseenterEvent = new Event('mouseenter');
+      downloadTool.dispatchEvent(mouseenterEvent);
+      const downloadPanel = document.getElementById('download');
+      assert.isDefined(downloadPanel);
+
+      const aboutTool = document.getElementById('about-tool');
+      aboutTool.click();
+      const aboutPanel = document.getElementById('about');
+      assert.isDefined(aboutPanel);
 
       done();
     }
