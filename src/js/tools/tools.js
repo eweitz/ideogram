@@ -1,4 +1,4 @@
-import {getSettings, handleSettingsHeaderClick} from './settings-ui';
+// import {getSettings, handleSettingsHeaderClick} from './settings-ui';
 import version from '../version';
 
 const style = `
@@ -311,7 +311,7 @@ function handleGearClick(ideo) {
 
   handleToolClick(ideo);
 
-  handleSettingsHeaderClick(ideo);
+  // handleSettingsHeaderClick(ideo);
 }
 
 function showGearOnIdeogramHover(ideo) {
@@ -332,7 +332,7 @@ function showGearOnIdeogramHover(ideo) {
 
 function getPanel(tool, ideo) {
   var panel;
-  if (tool === 'settings') panel = getSettings();
+  // if (tool === 'settings') panel = getSettings();
   if (tool === 'download') panel = getDownload(ideo);
   if (tool === 'about') panel = getAbout();
   return panel.trim();
