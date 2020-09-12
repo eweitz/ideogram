@@ -53,7 +53,7 @@ describe('Ideogram toggling', function() {
     // Click chromosome 1 after it's loaded and had time to draw annotations.
     function loadCallback() {
       setTimeout(function() {
-        d3.select('#chr1-9606').dispatch('click');
+        d3.select('#chr1-9606-chromosome-set').dispatch('click');
       }, 200);
     }
 
@@ -93,16 +93,17 @@ describe('Ideogram toggling', function() {
 
     function callback() {
 
-      d3.select('#chr1-9606').dispatch('click');
+      d3.select('#chr1-9606-chromosome-set').dispatch('click');
 
       var shownChrs = d3.selectAll('.chromosome').nodes().filter(function(d) {
         return d.style.display !== 'none';
       });
+
       var shownChrID = shownChrs[0].id;
       assert.equal(shownChrs.length, 1);
       assert.equal(shownChrID, 'chr1-9606');
 
-      d3.select('#chr1-9606').dispatch('click');
+      d3.select('#chr1-9606-chromosome-set').dispatch('click');
       setTimeout(function() {
 
         var shownChrs = d3.selectAll('.chromosome').nodes().filter(function(d) {
@@ -123,7 +124,7 @@ describe('Ideogram toggling', function() {
 
     function callback() {
 
-      d3.select('#chr1-9606').dispatch('click');
+      d3.select('#chr1-9606-chromosome-set').dispatch('click');
 
       var shownChrs = d3.selectAll('.chromosome').nodes().filter(function(d) {
         return d.style.display !== 'none';
@@ -131,7 +132,7 @@ describe('Ideogram toggling', function() {
       var shownChrID = shownChrs[0].id;
       assert.equal(shownChrs.length, 1);
       assert.equal(shownChrID, 'chr1-9606');
-      d3.select('#chr1-9606').dispatch('click');
+      d3.select('#chr1-9606-chromosome-set').dispatch('click');
       setTimeout(function() {
         var shownChrs = d3.selectAll('.chromosome').nodes().filter(function(d) {
           return d.style.display !== 'none';
@@ -152,7 +153,7 @@ describe('Ideogram toggling', function() {
 
     function callback() {
 
-      d3.select('#chr1-9606').dispatch('click');
+      d3.select('#chr1-9606-chromosome-set').dispatch('click');
 
       var shownChrs = d3.selectAll('.chromosome').nodes().filter(function(d) {
         return d.style.display !== 'none';
@@ -160,7 +161,7 @@ describe('Ideogram toggling', function() {
       var shownChrID = shownChrs[0].id;
       assert.equal(shownChrs.length, 1);
       assert.equal(shownChrID, 'chr1-9606');
-      d3.select('#chr1-9606').dispatch('click');
+      d3.select('#chr1-9606-chromosome-set').dispatch('click');
       setTimeout(function() {
 
         var shownChrs = d3.selectAll('.chromosome').nodes().filter(function(d) {

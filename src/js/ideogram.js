@@ -21,6 +21,8 @@ import {
   afterRawAnnots, onClickAnnot
 } from './annotations/annotations';
 
+import {highlight, unhighlight} from './annotations/highlight';
+
 import {
   esearch, esummary, elink,
   getOrganismFromEutils, getTaxids,
@@ -42,7 +44,8 @@ import {
 
 import {
   assemblyIsAccession, getDataDir, round, onDidRotate, getSvg, d3,
-  getTaxid, getCommonName, getScientificName, fetch as _fetch
+  getTaxid, getCommonName, getScientificName, fetch as _fetch,
+  isRoman, parseRoman
 } from './lib';
 
 import {
@@ -92,6 +95,9 @@ export default class Ideogram {
     this.onClickAnnot = onClickAnnot;
     this.setOriginalTrackIndexes = setOriginalTrackIndexes;
     this.afterRawAnnots = afterRawAnnots;
+
+    this.highlight = highlight;
+    this.unhighlight = unhighlight;
 
     // Variables and functions from services.js
     this.esearch = esearch;
@@ -197,6 +203,49 @@ export default class Ideogram {
   }
 
   /**
+   * Helper for sortChromosomes().
+   * Gets names and biological types for diverse chromosome variables
+   */
+  static getChrSortNamesAndTypes(a, b) {
+    var chrAName, chrBName,
+      aIsCP, bIsCP, aIsMT, bIsMT, aIsAP, bIsAP, aIsNuclear, bIsNuclear;
+
+    if (typeof a === 'string') {
+      // Chromosome data is from static file cache (e.g. homo-sapiens.json)
+      chrAName = a;
+      chrBName = b;
+
+      aIsCP = a === 'CP';
+      bIsCP = b === 'CP';
+      aIsMT = a === 'MT';
+      bIsMT = b === 'MT';
+      aIsAP = a === 'AP';
+      bIsAP = b === 'AP';
+      aIsNuclear = (!aIsCP && !aIsMT && !aIsAP);
+      bIsNuclear = (!bIsCP && !bIsMT && !bIsAP);
+    } else {
+      // Chromosome data is from NCBI E-Utils web API
+      chrAName = a.name;
+      chrBName = b.name;
+
+      aIsCP = a.type === 'chloroplast';
+      bIsCP = b.type === 'chloroplast';
+      aIsMT = a.type === 'mitochondrion';
+      bIsMT = b.type === 'mitochondrion';
+      aIsAP = a.type === 'apicoplast';
+      bIsAP = b.type === 'apicoplast';
+      aIsNuclear = a.type === 'nuclear';
+      bIsNuclear = b.type === 'nuclear';
+    }
+
+    const chrTypes = {
+      aIsNuclear, bIsNuclear, aIsCP, bIsCP, aIsMT, bIsMT, aIsAP, bIsAP
+    };
+
+    return [chrAName, chrBName, chrTypes];
+  }
+
+  /**
    * Sorts two chromosome objects by type and name
    * - Nuclear chromosomes come before non-nuclear chromosomes.
    * - Among nuclear chromosomes, use "natural sorting", e.g.
@@ -205,25 +254,28 @@ export default class Ideogram {
    *   "CP" (chromoplast DNA), MT comes first
    *
    *
-   * @param a Chromosome object "A"
-   * @param b Chromosome object "B"
+   * @param a Chromosome string or object "A"
+   * @param b Chromosome string or object "B"
    * @returns {Number} JavaScript sort order indicator
    */
   static sortChromosomes(a, b) {
-    var aIsNuclear = a.type === 'nuclear',
-      bIsNuclear = b.type === 'nuclear',
-      aIsCP = a.type === 'chloroplast',
-      bIsCP = b.type === 'chloroplast',
-      aIsMT = a.type === 'mitochondrion',
-      bIsMT = b.type === 'mitochondrion',
-      aIsAP = a.type === 'apicoplast',
-      bIsAP = b.type === 'apicoplast';
-    // e.g. B1 in rice genome GCF_001433935.1
-    // aIsPlastid = aIsMT && a.name !== 'MT',
-    // bIsPlastid = bIsMT && b.name !== 'MT';
+
+    let [chrAName, chrBName, chrTypes] =
+      Ideogram.getChrSortNamesAndTypes(a, b);
+
+    const {
+      aIsNuclear, bIsNuclear, aIsCP, bIsCP, aIsMT, bIsMT, aIsAP, bIsAP
+    } = chrTypes;
 
     if (aIsNuclear && bIsNuclear) {
-      return a.name.localeCompare(b.name, 'en', {numeric: true});
+
+      if (isRoman(chrAName) && isRoman(chrBName)) {
+        // As in yeast genome
+        chrAName = parseRoman(chrAName).toString();
+        chrBName = parseRoman(chrBName).toString();
+      }
+
+      return chrAName.localeCompare(chrBName, 'en', {numeric: true});
     } else if (!aIsNuclear && bIsNuclear) {
       return 1;
     } else if (aIsMT && bIsCP) {

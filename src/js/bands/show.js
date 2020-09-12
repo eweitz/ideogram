@@ -8,6 +8,10 @@ function hideUnshownBandLabels() {
   var ideo = this;
   var bandsToShow = ideo.bandsToShow.join(',');
 
+  // Handles edge-case when ideogram consists of one chromosome
+  // that lacks bands in a genome that has bands (e.g. MT in human)
+  if (ideo.bandsToShow.length === 0) return;
+
   // d3.selectAll resolves to querySelectorAll (QSA).
   // QSA takes a surprisingly long time to complete,
   // and scales with the number of selectors.
