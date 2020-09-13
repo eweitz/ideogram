@@ -11,11 +11,7 @@ describe('Ideogram should', function() {
 
     config = {
       organism: 'human',
-      chrWidth: 10,
-      chrHeight: 150,
-      chrMargin: 10,
-      showChromosomeLabels: true,
-      orientation: 'vertical',
+      showTools: true,
       dataDir: '/dist/data/bands/native/'
     };
   });
@@ -34,7 +30,6 @@ describe('Ideogram should', function() {
       done();
     }
 
-    config.showTools = true;
     config.onLoad = callback;
     ideogram = new Ideogram(config);
   });
@@ -59,7 +54,6 @@ describe('Ideogram should', function() {
       done();
     }
 
-    config.showTools = true;
     config.onLoad = callback;
     ideogram = new Ideogram(config);
   });
@@ -88,7 +82,6 @@ describe('Ideogram should', function() {
       done();
     }
 
-    config.showTools = true;
     config.onLoad = callback;
     ideogram = new Ideogram(config);
   });
