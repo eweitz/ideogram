@@ -9,6 +9,7 @@ import * as d3dispatch from 'd3-dispatch';
 import * as d3format from 'd3-format';
 import {scaleLinear} from 'd3-scale';
 import {max} from 'd3-array';
+import domtoimage from 'dom-to-image';
 
 var d3 = Object.assign(
   {}, d3fetch, d3brush, d3dispatch, d3format
@@ -199,55 +200,76 @@ function parseRoman(s) {
 }
 
 function downloadPng(ideo) {
-  var ideoSvg = document.querySelector(ideo.selector);
-  var width = ideoSvg.width.baseVal.value + 30;
-  var canvas = document.createElement('canvas');
-  canvas.setAttribute('style', 'display: none');
-  canvas.setAttribute('id', 'canvas');
-  canvas.setAttribute('width', width);
-  document.body.appendChild(canvas);
 
-  function triggerDownload(imgURI) {
-    var evt = new MouseEvent('click', {
-      view: window,
-      bubbles: false,
-      cancelable: true
+  var ideoDom = document.querySelector(ideo.config.container).cloneNode(true);
+  ideoDom.getElementsByClassName('gearIcon')[0].remove()
+  console.log(ideoDom)
+  domtoimage.toPng(ideoDom)
+    .then(function(dataUrl) {
+      console.log('dataUrl')
+      console.log(dataUrl)
+      var link = document.createElement('a');
+      link.download = 'ideogram.png';
+      link.href = dataUrl;
+      link.click();
     });
 
-    var a = document.createElement('a');
-    a.setAttribute('download', 'ideogram.png');
-    a.setAttribute('href', imgURI);
-    a.setAttribute('target', '_blank');
+  // // var ideoSvg = document.querySelector(ideo.config.container + ' #_ideogramMiddleWrap');
+  // var ideoSvg = document.querySelector(ideo.selector);
+  // var width = ideoSvg.offsetWidth;
+  // console.log('width')
+  // console.log(width)
+  // var canvas = document.createElement('canvas');
+  // canvas.setAttribute('style', 'display: none');
+  // canvas.setAttribute('id', 'canvas');
+  // canvas.setAttribute('width', width);
+  // document.body.appendChild(canvas);
 
-    a.dispatchEvent(evt);
-  }
+  // function triggerDownload(imgUrl) {
+  //   var evt = new MouseEvent('click', {
+  //     view: window,
+  //     bubbles: false,
+  //     cancelable: true
+  //   });
+  //   console.log('imgUrl')
+  //   console.log(imgUrl)
+  //   var a = document.createElement('a');
+  //   a.setAttribute('download', 'ideogram.png');
+  //   a.setAttribute('href', imgUrl);
+  //   a.setAttribute('target', '_blank');
 
-  // btn.addEventListener('click', function () {
-  var canvas = document.getElementById('canvas');
-  canvas.width *= 2;
-  canvas.height *= 2;
-  var ctx = canvas.getContext('2d');
-  ctx.setTransform(2, 0, 0, 2, 0, 0);
-  ctx.imageSmoothingEnabled = false;
-  var data = (new XMLSerializer()).serializeToString(ideoSvg);
-  var DOMURL = window.URL || window.webkitURL || window;
+  //   a.dispatchEvent(evt);
+  // }
 
-  var img = new Image();
-  var svgBlob = new Blob([data], {type: 'image/svg+xml;charset=utf-8'});
-  var url = DOMURL.createObjectURL(svgBlob);
+  // // btn.addEventListener('click', function () {
+  // var canvas = document.getElementById('canvas');
+  // canvas.width *= 2;
+  // canvas.height *= 2;
+  // var ctx = canvas.getContext('2d');
+  // ctx.setTransform(2, 0, 0, 2, 0, 0);
+  // ctx.imageSmoothingEnabled = false;
+  // var data = (new XMLSerializer()).serializeToString(ideoSvg);
+  // var DOMURL = window.URL || window.webkitURL || window;
 
-  img.onload = function() {
-    ctx.drawImage(img, 0, 0);
-    DOMURL.revokeObjectURL(url);
+  // var img = new Image();
+  // var svgBlob = new Blob([data], {type: 'image/svg+xml;charset=utf-8'});
+  // var url = DOMURL.createObjectURL(svgBlob);
 
-    var imgURI = canvas
-      .toDataURL('image/png')
-      .replace('image/png', 'image/octet-stream');
+  // console.log('url')
+  // console.log(url)
 
-    triggerDownload(imgURI);
-  };
+  // img.onload = function() {
+  //   ctx.drawImage(img, 0, 0);
+  //   DOMURL.revokeObjectURL(url);
 
-  img.src = url;
+  //   var imgURI = canvas
+  //     .toDataURL('image/png')
+  //     .replace('image/png', 'image/octet-stream');
+
+  //   triggerDownload(imgURI);
+  // };
+
+  // img.src = url;
 }
 
 export {

@@ -68,7 +68,7 @@ function writeLegend(ideo) {
   for (i = 0; i < legend.length; i++) {
     list = legend[i];
     if ('name' in list) labels = '<span>' + list.name + '</span>';
-    svg = '<svg width="' + lineHeight + '">';
+    svg = '<svg id="_ideogramLegendSvg" width="' + lineHeight + '">';
     [labels, svg] = getListItems(labels, svg, list);
     svg += '</svg>';
     content += svg + '<ul>' + labels + '</ul>';
