@@ -201,9 +201,11 @@ function parseRoman(s) {
 function downloadPng(ideo) {
   var ideoSvg = document.querySelector(ideo.selector);
   var width = ideoSvg.width.baseVal.value + 30;
-  document.body.innerHTML +=
-    '<canvas style="display: none" id="canvas" width="' + width + '"></canvas>';
-  var canvas = document.querySelector('canvas');
+  var canvas = document.createElement('canvas');
+  canvas.setAttribute('style', 'display: none');
+  canvas.setAttribute('id', 'canvas');
+  canvas.setAttribute('width', width);
+  document.body.appendChild(canvas);
 
   function triggerDownload(imgURI) {
     var evt = new MouseEvent('click', {
