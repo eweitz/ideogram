@@ -72,12 +72,14 @@ describe('Ideogram should', function() {
       const gear = document.getElementById('gear');
       gear.click();
 
+      // Hover over "Download" should show inner panel
       const downloadTool = document.getElementById('download-tool');
       const mouseenterEvent = new Event('mouseenter');
       downloadTool.dispatchEvent(mouseenterEvent);
       const downloadPanel = document.getElementById('download');
       assert.isDefined(downloadPanel);
 
+      // Click on "About" should show modal
       const aboutTool = document.getElementById('about-tool');
       aboutTool.click();
       const aboutPanel = document.getElementById('about');
