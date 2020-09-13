@@ -101,7 +101,7 @@ describe('Ideogram should', function() {
       const downloadImageItem = document.getElementById('download-image');
       downloadImageItem.click();
 
-      // Tick clock infinitesimally (1 ms), to account for trivial async
+      // Briefly wait (100 ms), to account for trivial async
       setTimeout(function() {
         const selector = '#_ideogram-undisplayed-download-link';
         const downloadedDataUrl = document.querySelector(selector).href.length;
@@ -109,7 +109,7 @@ describe('Ideogram should', function() {
         // Ensure the download link has a non-empty data URL
         // Implementation details are in downloadPng() in `lib.js`.
         assert.equal(downloadedDataUrl > 100 === true);
-      }, 1);
+      }, 100);
 
       done();
     }
