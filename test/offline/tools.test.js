@@ -85,4 +85,36 @@ describe('Ideogram should', function() {
     config.onLoad = callback;
     ideogram = new Ideogram(config);
   });
+
+  it('download image upon clicking "Download" -> "Image"', done => {
+
+    function callback() {
+      // Hover over ideogram, then click gear
+      d3.select('_ideogram').dispatch('mouseover');
+      const gear = document.getElementById('gear');
+      gear.click();
+
+      // Hover over "Download", then click "Image" in inner panel
+      const downloadTool = document.getElementById('download-tool');
+      const mouseenterEvent = new Event('mouseenter');
+      downloadTool.dispatchEvent(mouseenterEvent);
+      const downloadImageItem = document.getElementById('download-image');
+      downloadImageItem.click();
+
+      // Tick clock infinitesimally (1 ms), to account for trivial async
+      setTimeout(function() {
+        const selector = '#_ideogram-undisplayed-download-link';
+        const downloadedDataUrl = document.querySelector(selector).href.length;
+
+        // Ensure the download link has a non-empty data URL
+        // Implementation details are in downloadPng() in `lib.js`.
+        assert.equal(downloadedDataUrl > 100 === true);
+      }, 1);
+
+      done();
+    }
+
+    config.onLoad = callback;
+    ideogram = new Ideogram(config);
+  });
 });

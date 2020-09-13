@@ -198,16 +198,25 @@ function parseRoman(s) {
   }, 0);
 }
 
+/**
+* Download a PNG image of the ideogram
+*
+* Includes any annotations, but not legend.
+*/
 function downloadPng(ideo) {
   var ideoSvg = document.querySelector(ideo.selector);
-  var width = ideoSvg.width.baseVal.value + 30;
+
+  // Create a hidden canvas.  This will contain the raster image to download.
   var canvas = document.createElement('canvas');
+  var canvasId = '_ideogram-undisplayed-download-canvas';
   canvas.setAttribute('style', 'display: none');
-  canvas.setAttribute('id', 'canvas');
+  canvas.setAttribute('id', canvasId);
+  var width = ideoSvg.width.baseVal.value + 30;
   canvas.setAttribute('width', width);
   document.body.appendChild(canvas);
 
-  function triggerDownload(imgURI) {
+  // Called after PNG image is created from data URL
+  function triggerDownload(imgUrl) {
     var evt = new MouseEvent('click', {
       view: window,
       bubbles: false,
@@ -216,34 +225,42 @@ function downloadPng(ideo) {
 
     var a = document.createElement('a');
     a.setAttribute('download', 'ideogram.png');
-    a.setAttribute('href', imgURI);
+    a.setAttribute('href', imgUrl);
     a.setAttribute('target', '_blank');
+
+    // Enables easy testing
+    a.setAttribute('id', '_ideogram-undisplayed-download-link');
+    a.setAttribute('style', 'display: none;');
+    document.body.appendChild(a);
 
     a.dispatchEvent(evt);
   }
 
-  var canvas = document.getElementById('canvas');
+  var canvas = document.getElementById(canvasId);
+
+  // Enlarge canvas and disable smoothing, for higher resolution PNG
   canvas.width *= 2;
   canvas.height *= 2;
   var ctx = canvas.getContext('2d');
   ctx.setTransform(2, 0, 0, 2, 0, 0);
   ctx.imageSmoothingEnabled = false;
+
   var data = (new XMLSerializer()).serializeToString(ideoSvg);
-  var DOMURL = window.URL || window.webkitURL || window;
+  var domUrl = window.URL || window.webkitURL || window;
 
   var img = new Image();
   var svgBlob = new Blob([data], {type: 'image/svg+xml;charset=utf-8'});
-  var url = DOMURL.createObjectURL(svgBlob);
+  var url = domUrl.createObjectURL(svgBlob);
 
   img.onload = function() {
     ctx.drawImage(img, 0, 0);
-    DOMURL.revokeObjectURL(url);
+    domUrl.revokeObjectURL(url);
 
-    var imgURI = canvas
+    var imgUrl = canvas
       .toDataURL('image/png')
       .replace('image/png', 'image/octet-stream');
 
-    triggerDownload(imgURI);
+    triggerDownload(imgUrl);
   };
 
   img.src = url;
