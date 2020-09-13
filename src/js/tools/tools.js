@@ -400,7 +400,7 @@ function initTools(ideo) {
 
   const toolsHtml = `
     ${style}
-    <div id="gear" class="gearIcon" style="display: none">${gearIcon}</div>
+    <div id="gear" style="display: none">${gearIcon}</div>
     <div id="tools" style="display: none">
       <ul>
         <li id="download-tool" class="ideo-tool-hover">Download ${triangle}</li>
