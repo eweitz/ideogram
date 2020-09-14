@@ -108,10 +108,11 @@ describe('Ideogram should', function() {
 
         // Ensure the download link has a non-empty data URL
         // Implementation details are in downloadPng() in `lib.js`.
-        assert.equal(downloadedDataUrl > 100 === true);
-      }, 100);
+        assert.equal(downloadedDataUrl > 100, true);
 
-      done();
+        done();
+      }, 50);
+
     }
 
     config.onLoad = callback;
