@@ -1,5 +1,6 @@
 // import {getSettings, handleSettingsHeaderClick} from './settings-ui';
 import version from '../version';
+import {downloadPng} from '../lib';
 
 const style = `
   <style>
@@ -269,7 +270,6 @@ function handleToolClick(ideo) {
   const toolHeaders = document.querySelectorAll('#tools > ul > li');
 
   toolHeaders.forEach(toolHeader => {
-
     const trigger = getTrigger(toolHeader);
 
     toolHeader.addEventListener(trigger, event => {
@@ -284,6 +284,14 @@ function handleToolClick(ideo) {
       if (trigger === 'mouseenter') {
         toolHeader.insertAdjacentHTML('beforeend', panel);
         handleHideForHoverables(trigger, tool, toolHeader, toolHeaders);
+
+        if (tool === 'download') {
+          document.querySelector('#download-image')
+            .addEventListener('click', event => {
+              closeTools();
+              downloadPng(ideo);
+            });
+        }
       } else {
         document.querySelector('#gear').insertAdjacentHTML('beforeend', panel);
       }
@@ -294,6 +302,7 @@ function handleToolClick(ideo) {
   document.querySelectorAll('#close').forEach(closeButton => {
     closeButton.addEventListener('click', () => {closeTools();});
   });
+
 }
 
 function handleGearClick(ideo) {
@@ -345,7 +354,7 @@ function getDownload(ideo) {
 
   return `
     <div id="download" class="ideo-tool-panel">
-      <li>Image</li>
+      <li id="download-image">Image</li>
       <li class="${annotsClass}">Annotation data</li>
     </div>
   `;

@@ -11,11 +11,7 @@ describe('Ideogram should', function() {
 
     config = {
       organism: 'human',
-      chrWidth: 10,
-      chrHeight: 150,
-      chrMargin: 10,
-      showChromosomeLabels: true,
-      orientation: 'vertical',
+      showTools: true,
       dataDir: '/dist/data/bands/native/'
     };
   });
@@ -34,7 +30,6 @@ describe('Ideogram should', function() {
       done();
     }
 
-    config.showTools = true;
     config.onLoad = callback;
     ideogram = new Ideogram(config);
   });
@@ -59,7 +54,6 @@ describe('Ideogram should', function() {
       done();
     }
 
-    config.showTools = true;
     config.onLoad = callback;
     ideogram = new Ideogram(config);
   });
@@ -72,12 +66,14 @@ describe('Ideogram should', function() {
       const gear = document.getElementById('gear');
       gear.click();
 
+      // Hover over "Download" should show inner panel
       const downloadTool = document.getElementById('download-tool');
       const mouseenterEvent = new Event('mouseenter');
       downloadTool.dispatchEvent(mouseenterEvent);
       const downloadPanel = document.getElementById('download');
       assert.isDefined(downloadPanel);
 
+      // Click on "About" should show modal
       const aboutTool = document.getElementById('about-tool');
       aboutTool.click();
       const aboutPanel = document.getElementById('about');
@@ -86,7 +82,39 @@ describe('Ideogram should', function() {
       done();
     }
 
-    config.showTools = true;
+    config.onLoad = callback;
+    ideogram = new Ideogram(config);
+  });
+
+  it('download image upon clicking "Download" -> "Image"', done => {
+
+    function callback() {
+      // Hover over ideogram, then click gear
+      d3.select('_ideogram').dispatch('mouseover');
+      const gear = document.getElementById('gear');
+      gear.click();
+
+      // Hover over "Download", then click "Image" in inner panel
+      const downloadTool = document.getElementById('download-tool');
+      const mouseenterEvent = new Event('mouseenter');
+      downloadTool.dispatchEvent(mouseenterEvent);
+      const downloadImageItem = document.getElementById('download-image');
+      downloadImageItem.click();
+
+      // Briefly wait (100 ms), to account for trivial async
+      setTimeout(function() {
+        const selector = '#_ideogram-undisplayed-download-link';
+        const downloadedDataUrl = document.querySelector(selector).href.length;
+
+        // Ensure the download link has a non-empty data URL
+        // Implementation details are in downloadPng() in `lib.js`.
+        assert.equal(downloadedDataUrl > 100, true);
+
+        done();
+      }, 50);
+
+    }
+
     config.onLoad = callback;
     ideogram = new Ideogram(config);
   });
