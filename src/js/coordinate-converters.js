@@ -53,7 +53,7 @@ function getPx(chr, bp) {
 function convertBpToPx(chr, bp) {
   var band, px;
 
-  if (chr.bands.length > 1) {
+  if (chr.bands.length > 1 || chr.name === 'MT') {
     [px, band] = getPx(chr, bp);
     if (px !== null) return px;
   } else if (bp >= 1 && bp <= chr.length) {

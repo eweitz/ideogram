@@ -66,6 +66,17 @@ function initDrawChromosomes() {
 
     bandsArray = ideo.bandsArray[taxid];
 
+    if (!ideo.config.showNonNuclearChromosomes) {
+      // Remove MT
+      // TODO: Handle other non-nuclear chromosomes, e.g. CP, AP
+      chrs = chrs.filter(chr => chr !== 'MT');
+      if (typeof bandsArray !== 'undefined') {
+        bandsArray = bandsArray.filter(bands => {
+          return bands[0].chr !== 'MT';
+        });
+      }
+    }
+
     setCoordinateSystem(chrs, ideo);
 
     ideo.chromosomes[taxid] = {};
@@ -86,12 +97,15 @@ function handleRotateOnClick() {
   var ideo = this;
 
   if (!('rotatable' in ideo.config && ideo.config.rotatable === false)) {
-    d3.selectAll(ideo.selector + ' .chromosome').on('click', function() {
-      ideo.rotateAndToggleDisplay(this);
+    d3.selectAll(ideo.selector + ' .chromosome-set').on('click', function() {
+      // Handles click on chromosome graphic or label.
+      // Label click needed to toggle e.g. human MT
+      const element = this.children[1];
+
+      ideo.rotateAndToggleDisplay(element);
     });
   } else {
-    d3.selectAll(ideo.selector + ' .chromosome')
-      .style('cursor', 'default');
+    d3.selectAll(ideo.selector).style('cursor', 'default');
   }
 }
 

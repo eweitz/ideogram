@@ -189,8 +189,16 @@ var organismMetadata = {
     commonName: 'Yeast',
     scientificName: 'Saccharomyces cerevisiae',
     assemblies: {
-      'default': 'GCA_000146045.2',
-      'R64': 'GCA_000146045.2'
+      default: 'GCA_000146045.2',
+      R64: 'GCA_000146045.2'
+    }
+  },
+  5833: {
+    commonName: 'malaria parasite',
+    scientificName: 'Plasmodium falciparum',
+    assemblies: {
+      default: 'GCA_000002765.3',
+      GCA_000002765: 'GCA_000002765.3'
     }
   }
 };

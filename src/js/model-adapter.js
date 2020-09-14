@@ -34,16 +34,23 @@ export class ModelNoBandsAdapter extends ModelAdapter {
   getModel() {
     this._model.bands = [];
 
-    // If chromosome width more than 1, add single band to bands array
-    if (this._model.width > 1) {
+    const isMT = this._model.name === 'MT'; // Is mitochondrial chromosome
+    const width = this._model.width;
+
+    if (width > 1 || isMT) {
+      // Add single band to bands array
       this._model.bands.push({
         name: 'q',
         px: {
           start: 0,
-          stop: this._model.width,
-          width: this._model.width
+          stop: width,
+          width: width
         },
         bp: {
+          start: 1,
+          stop: this._model.bpLength
+        },
+        iscn: {
           start: 1,
           stop: this._model.length
         }
