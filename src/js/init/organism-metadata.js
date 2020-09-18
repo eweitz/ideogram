@@ -200,6 +200,14 @@ var organismMetadata = {
       default: 'GCA_000002765.3',
       GCA_000002765: 'GCA_000002765.3'
     }
+  },
+  6239: {
+    commonName: 'worm',
+    scientificName: 'Caenorhabditis elegans',
+    assemblies: {
+      default: 'GCF_000002985.6',
+      GCA_000002765: 'GCF_000002985.6'
+    }
   }
 };
 
