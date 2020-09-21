@@ -103,7 +103,7 @@ describe('Ideogram should', function() {
 
       // Briefly wait (100 ms), to account for trivial async
       setTimeout(function() {
-        const selector = '#_ideogram-undisplayed-download-link';
+        const selector = '#_ideo-undisplayed-dl-image-link';
         const downloadedDataUrl = document.querySelector(selector).href.length;
 
         // Ensure the download link has a non-empty data URL
@@ -116,6 +116,57 @@ describe('Ideogram should', function() {
     }
 
     config.onLoad = callback;
+    ideogram = new Ideogram(config);
+  });
+
+
+  it('download image upon clicking "Download" -> "Annotations"', done => {
+
+    function callback() {
+
+      // Set up some mock data
+      this.annotDescriptions = {
+        headers: ['# Test header row 1', 'Test header row 2'],
+        annots: {
+          BRCA1: {
+            ensemblId: 'ENSG00000012048',
+            type: 'mock'
+          }
+        }
+      };
+
+      // Hover over ideogram, then click gear
+      d3.select('_ideogram').dispatch('mouseover');
+      const gear = document.getElementById('gear');
+      gear.click();
+
+      // Hover over "Download", then click "Annotations" in inner panel
+      const downloadTool = document.getElementById('download-tool');
+      const mouseenterEvent = new Event('mouseenter');
+      downloadTool.dispatchEvent(mouseenterEvent);
+      const downloadAnnotsItem = document.getElementById('download-annots');
+      downloadAnnotsItem.click();
+
+      // Briefly wait (100 ms), to account for trivial async
+      setTimeout(function() {
+        const selector = '#_ideo-undisplayed-dl-annots-link';
+        const downloadedDataUrl = document.querySelector(selector).href.length;
+        // Ensure the download link has a non-empty data URL
+        // Implementation details are in downloadPng() in `lib.js`.
+        assert.equal(downloadedDataUrl > 100, true);
+
+        done();
+      }, 50);
+
+    }
+
+    config.onLoad = callback;
+    config.annotations = [{
+      name: 'BRCA1',
+      chr: '17',
+      start: 43044294,
+      stop: 43125482
+    }];
     ideogram = new Ideogram(config);
   });
 });

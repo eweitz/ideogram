@@ -1,4 +1,5 @@
 function downloadAnnotations() {
+
   const ideo = this;
   const annots = {};
 
@@ -37,7 +38,7 @@ function downloadAnnotations() {
   a.setAttribute('target', '_blank');
 
   // Enables easy testing
-  a.setAttribute('id', '_ideogram-undisplayed-download-link');
+  a.setAttribute('id', '_ideo-undisplayed-dl-annots-link');
   a.setAttribute('style', 'display: none;');
   document.body.appendChild(a);
 

@@ -208,7 +208,7 @@ function downloadPng(ideo) {
 
   // Create a hidden canvas.  This will contain the raster image to download.
   var canvas = document.createElement('canvas');
-  var canvasId = '_ideogram-undisplayed-download-canvas';
+  var canvasId = '_ideo-undisplayed-dl-canvas';
   canvas.setAttribute('style', 'display: none');
   canvas.setAttribute('id', canvasId);
   var width = ideoSvg.width.baseVal.value + 30;
@@ -229,7 +229,7 @@ function downloadPng(ideo) {
     a.setAttribute('target', '_blank');
 
     // Enables easy testing
-    a.setAttribute('id', '_ideogram-undisplayed-download-link');
+    a.setAttribute('id', '_ideo-undisplayed-dl-image-link');
     a.setAttribute('style', 'display: none;');
     document.body.appendChild(a);
 

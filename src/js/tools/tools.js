@@ -291,9 +291,10 @@ function handleToolClick(ideo) {
               closeTools();
               downloadPng(ideo);
             });
-          document.querySelector('#download-annotations')
+
+          document.querySelector('#download-annots')
             .addEventListener('click', event => {
-              const element = document.querySelector('#download-annotations');
+              const element = document.querySelector('#download-annots');
               const classes = Array.from(element.classList);
               if (classes.includes('ideo-disabled') === false) {
                 closeTools();
@@ -364,7 +365,7 @@ function getDownload(ideo) {
   return `
     <div id="download" class="ideo-tool-panel">
       <li id="download-image">Image</li>
-      <li id="download-annotations" class="${annotsClass}">Annotations</li>
+      <li id="download-annots" class="${annotsClass}">Annotations</li>
     </div>
   `;
 }
