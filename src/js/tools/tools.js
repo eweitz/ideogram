@@ -291,6 +291,16 @@ function handleToolClick(ideo) {
               closeTools();
               downloadPng(ideo);
             });
+
+          document.querySelector('#download-annots')
+            .addEventListener('click', event => {
+              const element = document.querySelector('#download-annots');
+              const classes = Array.from(element.classList);
+              if (classes.includes('ideo-disabled') === false) {
+                closeTools();
+                ideo.downloadAnnotations();
+              }
+            });
         }
       } else {
         document.querySelector('#gear').insertAdjacentHTML('beforeend', panel);
@@ -355,7 +365,7 @@ function getDownload(ideo) {
   return `
     <div id="download" class="ideo-tool-panel">
       <li id="download-image">Image</li>
-      <li class="${annotsClass}">Annotation data</li>
+      <li id="download-annots" class="${annotsClass}">Annotations</li>
     </div>
   `;
 }

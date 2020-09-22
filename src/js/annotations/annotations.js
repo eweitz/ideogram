@@ -22,6 +22,7 @@ import {
 } from './filter';
 import {processAnnotData} from './process';
 import {ExpressionMatrixParser} from '../parsers/expression-matrix-parser';
+  import {downloadAnnotations} from './download';
 
 function initNumTracksAndBarWidth(ideo, config) {
 
@@ -221,5 +222,5 @@ export {
   getHistogramBars, drawHeatmaps, deserializeAnnotsForHeatmap, fillAnnots,
   drawProcessedAnnots, drawSynteny, startHideAnnotTooltipTimeout,
   showAnnotTooltip, onWillShowAnnotTooltip, setOriginalTrackIndexes,
-  afterRawAnnots, onClickAnnot
+  afterRawAnnots, onClickAnnot, downloadAnnotations
 };
