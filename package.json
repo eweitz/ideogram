@@ -45,14 +45,12 @@
   "homepage": "https://eweitz.github.io/ideogram",
   "dependencies": {
     "crossfilter2": "1.5.2",
-    "d3-array": "^2.4.0",
-    "d3-brush": "^1.1.5",
-    "d3-dispatch": "^1.0.5",
-    "d3-fetch": "^1.1.2",
-    "d3-format": "^1.4.4",
-    "d3-scale": "^3.2.1",
-    "d3-selection": "^1.4.1",
-    "d3-transition": "^1.3.2"
+    "d3-array": "^2.8.0",
+    "d3-brush": "^2.1.0",
+    "d3-dispatch": "^2.0.0",
+    "d3-fetch": "^2.0.0",
+    "d3-format": "^2.0.0",
+    "d3-scale": "^3.2.3"
   },
   "devDependencies": {
     "@babel/core": "^7.9.6",

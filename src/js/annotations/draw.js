@@ -129,9 +129,9 @@ function writeTrackAnnots(chrAnnot, ideo) {
     .append('path')
     .attr('d', function(d) {return determineShape(d, shapes);})
     .attr('fill', function(d) {return d.color;})
-    .on('mouseover', function(d) {ideo.showAnnotTooltip(d, this);})
+    .on('mouseover', function(event, d) {ideo.showAnnotTooltip(d, this);})
     .on('mouseout', function() {ideo.startHideAnnotTooltipTimeout();})
-    .on('click', function(d) {ideo.onClickAnnot(d);});
+    .on('click', function(event, d) {ideo.onClickAnnot(d);});
 }
 
 /**
@@ -159,7 +159,7 @@ function writeOverlayAnnots(chrAnnot, ideo) {
       );
     })
     .attr('fill', function(d) {return d.color;})
-    .on('mouseover', function(d) {ideo.showAnnotTooltip(d, this);})
+    .on('mouseover', function(event, d) {ideo.showAnnotTooltip(d, this);})
     .on('mouseout', function() {ideo.startHideAnnotTooltipTimeout();});
 }
 
