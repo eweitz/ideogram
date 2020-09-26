@@ -303,15 +303,13 @@ async function plotRelatedGenes(geneSymbol) {
 
   const chrHeight = ideo.config.chrHeight;
   const topPx = chrHeight + 30;
-  const leftPx =
-    Array.from(document.querySelectorAll('.chromosome-set'))
-      .slice(-1)[0].getBoundingClientRect().right + 15;
   const style = `
     float: left; position: relative;
-    top: -${topPx}px; left: ${leftPx}px;
+    top: -${topPx}px;
     height: ${topPx - 10}px;
-    border-left: 1px solid #EEE;
-    padding-left: 15px;`;
+    border-right: 1px solid #EEE;`;
+
+  document.querySelector('#_ideogramMiddleWrap').style.left = '160px';
 
   // Fetch positon of searched gene
   const taxid = ideo.config.taxid;
@@ -382,10 +380,12 @@ const shape = 'triangle';
 
 const legend = [{
   name: `
-    <div style="font-size: 16px; font-weight: bold;">Related genes</div>
-    <i>Click gene to search</i>
+    <div style="position: relative; left: -15px; padding-bottom: 10px;">
+      <div style="font-size: 16px; font-weight: bold;">Related genes</div>
+      <i>Click gene to search</i>
+    </div>
   `,
-  nameHeight: 20,
+  nameHeight: 30,
   rows: [
     {name: 'Interacting gene', color: 'purple', shape: shape},
     {name: 'Paralogous gene', color: 'pink', shape: shape},
