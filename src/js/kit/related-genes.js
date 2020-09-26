@@ -381,7 +381,11 @@ function decorateGene(annot) {
 const shape = 'triangle';
 
 const legend = [{
-  name: '<b>Click gene to search</b>',
+  name: `
+    <div style="font-size: 16px; font-weight: bold;">Related genes</div>
+    <i>Click gene to search</i>
+  `,
+  nameHeight: 20,
   rows: [
     {name: 'Interacting gene', color: 'purple', shape: shape},
     {name: 'Paralogous gene', color: 'pink', shape: shape},
