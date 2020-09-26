@@ -336,12 +336,14 @@ async function plotRelatedGenes(geneSymbol) {
     await fetchInteractingGeneAnnots(interactions, ideo);
   annots = annots.concat(interactingAnnots);
 
+  annots.sort((a, b) => {return b.name.length - a.name.length;});
+  ideo.drawAnnots(annots);
+  document.querySelector('#_ideogramLegend').style = style;
+
   await fetchParalogPositions(annot, annots, ideo);
 
   annots.sort((a, b) => {return b.name.length - a.name.length;});
-
   ideo.drawAnnots(annots);
-
   document.querySelector('#_ideogramLegend').style = style;
 
 }
