@@ -336,12 +336,14 @@ async function plotRelatedGenes(geneSymbol) {
     await fetchInteractingGeneAnnots(interactions, ideo);
   annots = annots.concat(interactingAnnots);
 
+  // Draw interacting genes immediately
   annots.sort((a, b) => {return b.name.length - a.name.length;});
   ideo.drawAnnots(annots);
   document.querySelector('#_ideogramLegend').style = style;
 
   await fetchParalogPositions(annot, annots, ideo);
 
+  // Add paralogs to related genes, and draw all related genes
   annots.sort((a, b) => {return b.name.length - a.name.length;});
   ideo.drawAnnots(annots);
   document.querySelector('#_ideogramLegend').style = style;
@@ -353,16 +355,26 @@ async function plotRelatedGenes(geneSymbol) {
  */
 function decorateGene(annot) {
   const ideo = this;
-  const org = ideo.getScientificName(ideo.config.taxid);
-  const term = `(${annot.name}[gene])+AND+(${org}[orgn])`;
-  const url = `https://ncbi.nlm.nih.gov/gene/?term=${term}`;
   const description =
     ideo.annotDescriptions.annots[annot.name].description.split(' [')[0];
+  const style = 'style="color: #0366d6; cursor: pointer;"';
+
   annot.displayName =
-    `<a target="_blank" href="${url}">${annot.name}</a>
+    `<span class="ideo-related-gene" ${style}>${annot.name}</span>
     <br/>
     ${description}
     <br/>`;
+
+  document.querySelector('._ideogramTooltip')
+    .addEventListener('click', event => {
+      const target = event.target;
+      const classes = Array.from(target.classList);
+      if (classes.includes('ideo-related-gene')) {
+        const gene = target.textContent;
+        ideo.plotRelatedGenes(gene);
+      }
+    });
+
   return annot;
 }
 
