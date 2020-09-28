@@ -301,15 +301,14 @@ async function plotRelatedGenes(geneSymbol) {
     chromosome.style.cursor = '';
   });
 
-  const chrHeight = ideo.config.chrHeight;
-  const topPx = chrHeight + 30;
-  const style = `
-    float: left; position: relative;
-    top: -${topPx}px;
-    height: ${topPx - 10}px;
-    border-right: 1px solid #EEE;`;
+  var ideoContainerDom = document.querySelector(ideo.config.container);
 
-  document.querySelector('#_ideogramMiddleWrap').style.left = '160px';
+  ideoContainerDom.style.position = 'absolute';
+  ideoContainerDom.style.width = '100%';
+  var ideoInnerDom = document.querySelector('#_ideogramInnerWrap');
+  ideoInnerDom.style.position = 'relative';
+  ideoInnerDom.style.marginLeft = 'auto';
+  ideoInnerDom.style.marginRight = 'auto';
 
   // Fetch positon of searched gene
   const taxid = ideo.config.taxid;
@@ -334,17 +333,28 @@ async function plotRelatedGenes(geneSymbol) {
     await fetchInteractingGeneAnnots(interactions, ideo);
   annots = annots.concat(interactingAnnots);
 
+  const chrHeight = ideo.config.chrHeight;
+  const topPx = chrHeight + 30;
+  const leftPx = document.querySelector('#_ideogram')
+    .getBoundingClientRect().left - 160;
+  const legendStyle = `
+    position: relative;
+    top: -${topPx}px;
+    height: ${topPx - 10}px;
+    left: ${leftPx}px;
+    width: 140px;`;
+
   // Draw interacting genes immediately
   annots.sort((a, b) => {return b.name.length - a.name.length;});
   ideo.drawAnnots(annots);
-  document.querySelector('#_ideogramLegend').style = style;
+  document.querySelector('#_ideogramLegend').style = legendStyle;
 
   await fetchParalogPositions(annot, annots, ideo);
 
   // Add paralogs to related genes, and draw all related genes
   annots.sort((a, b) => {return b.name.length - a.name.length;});
   ideo.drawAnnots(annots);
-  document.querySelector('#_ideogramLegend').style = style;
+  document.querySelector('#_ideogramLegend').style = legendStyle;
 
 }
 
