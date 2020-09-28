@@ -272,6 +272,20 @@ function parseAnnotFromMgiGene(gene, ideo, color='red') {
   return annot;
 }
 
+/** Filter annotations to only include those in configured list */
+function applyAnnotsIncludeList(annots, ideo) {
+
+  if (ideo.config.annotsInList === 'all') return annots;
+
+  const includedAnnots = [];
+  annots.forEach(annot => {
+    if (ideo.config.annotsInList.includes(annot.name.toLowerCase())) {
+      includedAnnots.push(annot);
+    }
+  });
+  return includedAnnots;
+}
+
 /**
  * For given gene, finds and draws interacting genes and paralogs
  *
@@ -345,6 +359,7 @@ async function plotRelatedGenes(geneSymbol) {
     width: 140px;`;
 
   // Draw interacting genes immediately
+  annots = applyAnnotsIncludeList(annots, ideo);
   annots.sort((a, b) => {return b.name.length - a.name.length;});
   ideo.drawAnnots(annots);
   document.querySelector('#_ideogramLegend').style = legendStyle;
@@ -352,6 +367,7 @@ async function plotRelatedGenes(geneSymbol) {
   await fetchParalogPositions(annot, annots, ideo);
 
   // Add paralogs to related genes, and draw all related genes
+  annots = applyAnnotsIncludeList(annots, ideo);
   annots.sort((a, b) => {return b.name.length - a.name.length;});
   ideo.drawAnnots(annots);
   document.querySelector('#_ideogramLegend').style = legendStyle;
@@ -410,13 +426,18 @@ const legend = [{
  *
  * @param {Object} config Ideogram configuration object
  */
-function _initRelatedGenes(config) {
+function _initRelatedGenes(config, annotsInList) {
+
+  if (annotsInList !== 'all') {
+    annotsInList = annotsInList.map(name => name.toLowerCase());
+  }
 
   Object.assign(config, {
     showFullyBanded: false,
     rotatable: false,
     legend: legend,
-    onWillShowAnnotTooltip: decorateGene
+    onWillShowAnnotTooltip: decorateGene,
+    annotsInList: annotsInList
   });
 
   const ideogram = new Ideogram(config);
