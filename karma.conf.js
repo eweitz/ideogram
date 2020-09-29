@@ -18,7 +18,7 @@ module.exports = function(config) {
       'src/js/index.js',
       'test/offline/**.test.js',
       'test/online/**.test.js',
-      // 'test/offline/tools.test.js',
+      // 'test/online/related-genes.test.js',
       {pattern: 'dist/data/**', watched: false, included: false, served: true, nocache: false}
     ],
 

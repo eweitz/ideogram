@@ -29,7 +29,22 @@ describe('Ideogram related genes kit', function() {
 
     async function callback() {
       await ideogram.plotRelatedGenes('RAD51');
+
+      const brca2Annot = document.querySelector('#chr13-9606 .annot path');
+      brca2Annot.dispatchEvent(new Event('mouseover'));
+
+      const relatedGene = document.querySelector('#ideo-related-gene');
+
+      assert.equal(relatedGene.textContent, 'BRCA2');
+
+      const click = new MouseEvent('click', {view: window, bubbles: true});
+      relatedGene.dispatchEvent(click);
+
       done();
+    }
+
+    function onClickAnnot(annot) {
+      ideogram.plotRelatedGenes(annot.name);
     }
 
     var config = {
@@ -39,7 +54,8 @@ describe('Ideogram related genes kit', function() {
       chrLabelSize: 10,
       annotationHeight: 5,
       onLoad: callback,
-      dataDir: '/dist/data/bands/native/'
+      dataDir: '/dist/data/bands/native/',
+      onClickAnnot: onClickAnnot
     };
 
     const ideogram = Ideogram.initRelatedGenes(config);
