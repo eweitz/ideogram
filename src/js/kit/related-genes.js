@@ -374,6 +374,39 @@ async function plotRelatedGenes(geneSymbol) {
 
 }
 
+function getAnnotByName(annotName, ideo) {
+  var annotByName;
+  ideo.annots.forEach(annotsByChr => {
+    annotsByChr.annots.forEach(annot => {
+      if (annotName === annot.name) {
+        annotByName = annot;
+      }
+    });
+  });
+  return annotByName;
+}
+
+/**
+ * Handles click within annotation tooltip
+ *
+ * Makes clicking link in tooltip behave same as clicking annotation
+ */
+function handleTooltipClick(ideo) {
+  const tooltip = document.querySelector('._ideogramTooltip');
+  if (!ideo.addedTooltipClickHandler) {
+    tooltip.addEventListener('click', () => {
+      const geneDom = document.querySelector('#ideo-related-gene');
+      const annotName = geneDom.textContent;
+      const annot = getAnnotByName(annotName, ideo);
+      ideo.onClickAnnot(annot);
+    });
+
+    // Ensures handler isn't added redundantly.  This is used because
+    // addEventListener options like {once: true} don't suffice
+    ideo.addedTooltipClickHandler = true;
+  }
+}
+
 /**
  * Enhance tooltip shown on hovering over gene annotation
  */
@@ -384,20 +417,12 @@ function decorateGene(annot) {
   const style = 'style="color: #0366d6; cursor: pointer;"';
 
   annot.displayName =
-    `<span class="ideo-related-gene" ${style}>${annot.name}</span>
+    `<span id="ideo-related-gene" ${style}>${annot.name}</span>
     <br/>
     ${description}
     <br/>`;
 
-  document.querySelector('._ideogramTooltip')
-    .addEventListener('click', event => {
-      const target = event.target;
-      const classes = Array.from(target.classList);
-      if (classes.includes('ideo-related-gene')) {
-        const gene = target.textContent;
-        ideo.plotRelatedGenes(gene);
-      }
-    });
+  handleTooltipClick(ideo);
 
   return annot;
 }
