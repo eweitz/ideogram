@@ -293,7 +293,7 @@ export default class Ideogram {
    *
    * @param {Object} config Ideogram configuration object
    */
-  static initRelatedGenes(config) {
-    return _initRelatedGenes(config);
+  static initRelatedGenes(config, annotsInList='all') {
+    return _initRelatedGenes(config, annotsInList);
   }
 }

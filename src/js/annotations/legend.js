@@ -40,12 +40,12 @@ function getIcon(row) {
   return icon;
 }
 
-function getListItems(labels, svg, list) {
+function getListItems(labels, svg, list, nameHeight) {
   var i, icon, y, row;
   for (i = 0; i < list.rows.length; i++) {
     row = list.rows[i];
     labels += '<li>' + row.name + '</li>';
-    y = lineHeight * i;
+    y = lineHeight * i + nameHeight;
     if ('name' in list) y += lineHeight;
     icon = getIcon(row);
     svg += '<g transform="translate(0, ' + y + ')">' + icon + '</g>';
@@ -67,9 +67,12 @@ function writeLegend(ideo) {
 
   for (i = 0; i < legend.length; i++) {
     list = legend[i];
-    if ('name' in list) labels = '<span>' + list.name + '</span>';
+    const nameHeight = list.nameHeight ? list.nameHeight : 0;
+    if ('name' in list) {
+      labels = '<div>' + list.name + '</div>';
+    }
     svg = '<svg id="_ideogramLegendSvg" width="' + lineHeight + '">';
-    [labels, svg] = getListItems(labels, svg, list);
+    [labels, svg] = getListItems(labels, svg, list, nameHeight);
     svg += '</svg>';
     content += svg + '<ul>' + labels + '</ul>';
   }
