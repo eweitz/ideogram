@@ -7,8 +7,6 @@
  */
 
 import {d3} from './lib';
-// See https://github.com/d3/d3/issues/2733
-import {event as currentEvent} from 'd3-selection';
 
 /**
  * Custom event handler, fired upon clicks on the chromosome (to change
@@ -57,8 +55,8 @@ function setCursor(position, bpDomain, pxRange, xOffset, width, ideo) {
     };
   }
 
-  d3.selectAll(ideo.selector + ' .chromosome').on('click', function() {
-    var x = currentEvent.offsetX; // minimum value seems to be 25
+  d3.selectAll(ideo.selector + ' .chromosome').on('click', function(event) {
+    var x = event.offsetX; // minimum value seems to be 25
 
     // adjust for screen (6 is a magic number that seems to work)
     x -=6;

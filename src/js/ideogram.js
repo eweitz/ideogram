@@ -18,7 +18,7 @@ import {
   getHistogramBars, drawHeatmaps, deserializeAnnotsForHeatmap, fillAnnots,
   drawProcessedAnnots, drawSynteny, startHideAnnotTooltipTimeout,
   showAnnotTooltip, onWillShowAnnotTooltip, setOriginalTrackIndexes,
-  afterRawAnnots, onClickAnnot
+  afterRawAnnots, onClickAnnot, downloadAnnotations
 } from './annotations/annotations';
 
 import {highlight, unhighlight} from './annotations/highlight';
@@ -95,6 +95,7 @@ export default class Ideogram {
     this.onClickAnnot = onClickAnnot;
     this.setOriginalTrackIndexes = setOriginalTrackIndexes;
     this.afterRawAnnots = afterRawAnnots;
+    this.downloadAnnotations = downloadAnnotations;
 
     this.highlight = highlight;
     this.unhighlight = unhighlight;
@@ -292,7 +293,7 @@ export default class Ideogram {
    *
    * @param {Object} config Ideogram configuration object
    */
-  static initRelatedGenes(config) {
-    return _initRelatedGenes(config);
+  static initRelatedGenes(config, annotsInList='all') {
+    return _initRelatedGenes(config, annotsInList);
   }
 }

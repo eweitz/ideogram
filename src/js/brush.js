@@ -10,8 +10,6 @@
  */
 
 import {d3} from './lib';
-// See https://github.com/d3/d3/issues/2733
-import {event as currentEvent} from 'd3-selection';
 
 /**
  * Custom event handler, fired upon dragging sliding window on chromosome
@@ -28,10 +26,10 @@ function setBrush(bpDomain, pxRange, xOffset, width, ideo) {
 
   ideo.brush = d3.brushX()
     .extent([[xOffset, 0], [length + xOffset, width]])
-    .on('brush', onBrushMove);
+    .on('brush', _onBrushMove);
 
-  function onBrushMove() {
-    var extent = currentEvent.selection.map(xScale.invert),
+  function _onBrushMove({selection}) {
+    var extent = selection.map(xScale.invert),
       from = Math.floor(extent[0]),
       to = Math.ceil(extent[1]);
 
