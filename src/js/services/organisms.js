@@ -357,6 +357,9 @@ function getTaxids(callback) {
   if (ideo.config.multiorganism) ideo.coordinateSystem = 'bp';
 
   if ('organism' in ideo.config) {
+    // Canonicalize e.g. "Homo sapiens" to "homo-sapiens"
+    ideo.config.organism = slug(ideo.config.organism.toLowerCase());
+
     getTaxidsForOrganismsInConfig(callback, ideo);
   } else {
     getTaxidsForOrganismsNotInConfig(taxidInit, callback, ideo);
