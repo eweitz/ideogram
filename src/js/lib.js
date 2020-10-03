@@ -59,19 +59,17 @@ function hasGenBankAssembly(ideo) {
  * Returns directory used to fetch data for bands and annotations
  *
  * This simplifies ideogram configuration.  By default, the dataDir is
- * set to an external CDN unless we're serving from the local host, in
- * which case dataDir is deduced from the "src" attribute of the ideogram
- * script loaded in the document.
+ * set to an external CDN unless we're serving from the local Ideogram
+ * working directory
  *
  * @returns {String}
  */
 function getDataDir() {
   var script, tmp, protocol, dataDir, ideogramInLeaf,
     scripts = document.scripts,
-    host = location.host.split(':')[0],
     version = Ideogram.version;
 
-  if (host !== 'localhost' && host !== '127.0.0.1') {
+  if (location.pathname.includes('/examples/vanilla/') === false) {
     return (
       'https://cdn.jsdelivr.net/npm/ideogram@' + version + '/dist/data/bands/native/'
     );
