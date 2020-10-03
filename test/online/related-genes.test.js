@@ -42,7 +42,7 @@ describe('Ideogram related genes kit', function() {
     }
 
     var config = {
-      organism: 'homo-sapiens',
+      organism: 'Homo sapiens', // Also tests standard, non-slugged name
       chrWidth: 8,
       chrHeight: 90,
       chrLabelSize: 10,
