@@ -1,9 +1,5 @@
 
 /* eslint-disable no-new */
-/* eslint-disable spaced-comment */
-/* eslint-disable no-use-before-define */
-/* eslint-disable no-unused-vars */
-/* eslint-disable max-len */
 
 // For tests that use Mocha's async support, see:
 //  - http://martinfowler.com/articles/asyncJS.html
@@ -13,8 +9,6 @@ describe('Ideogram related genes kit', function() {
 
   // Account for latency in Ensembl, MyGene.info, and WikiPathways
   this.timeout(25000);
-
-  var config = {};
 
   d3 = Ideogram.d3;
 
@@ -48,7 +42,7 @@ describe('Ideogram related genes kit', function() {
     }
 
     var config = {
-      organism: 'homo-sapiens',
+      organism: 'Homo sapiens', // Also tests standard, non-slugged name
       chrWidth: 8,
       chrHeight: 90,
       chrLabelSize: 10,

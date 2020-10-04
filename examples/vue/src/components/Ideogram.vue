@@ -10,8 +10,7 @@
     mounted: function () {
       return new Ideogram({
         organism: 'human',
-        container: '#ideo-container',
-        dataDir: 'https://cdn.jsdelivr.net/npm/ideogram@1.20.0/dist/data/bands/native/'
+        container: '#ideo-container'
       })
     }
   }
