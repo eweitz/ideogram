@@ -60,7 +60,9 @@ import {
   drawChromosomeLabels, rotateChromosomeLabels
 } from './views/chromosome-labels.js';
 
-import {_initRelatedGenes, plotRelatedGenes} from './kit/related-genes';
+import {
+  _initRelatedGenes, plotRelatedGenes, moveLegend
+} from './kit/related-genes';
 
 export default class Ideogram {
   constructor(config) {
@@ -166,6 +168,7 @@ export default class Ideogram {
     this.setOverflowScroll = setOverflowScroll;
 
     this.plotRelatedGenes = plotRelatedGenes;
+    this.moveLegend = moveLegend;
 
     this.configure(config);
   }

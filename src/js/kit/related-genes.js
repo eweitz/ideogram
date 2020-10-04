@@ -487,4 +487,4 @@ function _initRelatedGenes(config, annotsInList) {
   return ideogram;
 }
 
-export {_initRelatedGenes, plotRelatedGenes};
+export {_initRelatedGenes, plotRelatedGenes, moveLegend};
