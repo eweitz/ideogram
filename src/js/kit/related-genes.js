@@ -366,7 +366,6 @@ async function plotRelatedGenes(geneSymbol) {
   ideo.drawAnnots(annots);
   document.querySelector('#_ideogramLegend').style = legendStyle;
   moveLegend();
-  ideoContainerDom.style.visibility = 'visible';
 
   await fetchParalogPositions(annot, annots, ideo);
 
