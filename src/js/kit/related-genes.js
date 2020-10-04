@@ -438,7 +438,7 @@ const shape = 'triangle';
 const legend = [{
   name: `
     <div style="position: relative; left: -15px; padding-bottom: 10px;">
-      <div style="font-size: 16px; font-weight: bold;">Related genes</div>
+      <div style="font-size: 14px; font-weight: bold;">Related genes</div>
       <i>Click gene to search</i>
     </div>
   `,
