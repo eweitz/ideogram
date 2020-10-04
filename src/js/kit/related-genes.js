@@ -364,6 +364,8 @@ async function plotRelatedGenes(geneSymbol) {
   annots.sort((a, b) => {return b.name.length - a.name.length;});
   ideo.drawAnnots(annots);
   document.querySelector('#_ideogramLegend').style = legendStyle;
+  moveLegend();
+  ideoContainerDom.style.visibility = 'visible';
 
   await fetchParalogPositions(annot, annots, ideo);
 
@@ -373,6 +375,8 @@ async function plotRelatedGenes(geneSymbol) {
   ideo.drawAnnots(annots);
   document.querySelector('#_ideogramLegend').style = legendStyle;
 
+  // Ensure legend is appropriately placed beside ideogram
+  moveLegend();
 }
 
 function getAnnotByName(annotName, ideo) {
@@ -445,6 +449,16 @@ const legend = [{
   ]
 }];
 
+/** Move legend beside ideogram; accounts for ideogram move or window resize */
+function moveLegend() {
+  const legend = document.getElementById('_ideogramLegend');
+  const legendWidth = legend.getBoundingClientRect().width;
+  const ideoLeft =
+    document.getElementById('_ideogram').getBoundingClientRect().x;
+
+  legend.style.left = `${ideoLeft - legendWidth - 20}px`;
+}
+
 /**
  * Wrapper for Ideogram constructor, with generic "Related genes" options
  *
@@ -467,6 +481,8 @@ function _initRelatedGenes(config, annotsInList) {
   });
 
   const ideogram = new Ideogram(config);
+
+  window.addEventListener('resize', () => moveLegend());
 
   return ideogram;
 }
