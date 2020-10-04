@@ -357,7 +357,8 @@ async function plotRelatedGenes(geneSymbol) {
     top: -${topPx}px;
     height: ${topPx - 10}px;
     left: ${leftPx}px;
-    width: 140px;`;
+    width: 140px;
+    overflow-y: hidden;`;
 
   // Draw interacting genes immediately
   annots = applyAnnotsIncludeList(annots, ideo);
