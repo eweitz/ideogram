@@ -330,7 +330,7 @@ async function plotRelatedGenes(geneSymbol) {
   ideoInnerDom.style.position = 'relative';
   ideoInnerDom.style.marginLeft = 'auto';
   ideoInnerDom.style.marginRight = 'auto';
-  if (typeof window.didAdjustIdeogramLegend === 'undefined') {
+  if (typeof ideo.didAdjustIdeogramLegend === 'undefined') {
     var ideoDom = document.querySelector('#_ideogram');
     const legendWidth = 140;
     ideoInnerDom.style.maxWidth =
@@ -340,7 +340,7 @@ async function plotRelatedGenes(geneSymbol) {
     ideoDom.style.position = 'relative';
     ideoDom.style.left = legendWidth + 'px';
 
-    window.didAdjustIdeogramLegend = true;
+    ideo.didAdjustIdeogramLegend = true;
   }
 
   // Fetch positon of searched gene
