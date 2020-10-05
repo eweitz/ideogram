@@ -330,14 +330,18 @@ async function plotRelatedGenes(geneSymbol) {
   ideoInnerDom.style.position = 'relative';
   ideoInnerDom.style.marginLeft = 'auto';
   ideoInnerDom.style.marginRight = 'auto';
-  var ideoDom = document.querySelector('#_ideogram');
-  const legendWidth = 140;
-  ideoInnerDom.style.maxWidth =
-    (parseInt(ideoInnerDom.style.maxWidth) + legendWidth) + 'px';
-  ideoDom.style.minWidth =
-    (parseInt(ideoDom.style.minWidth) + legendWidth) + 'px';
-  ideoDom.style.position = 'relative';
-  ideoDom.style.left = legendWidth + 'px';
+  if (typeof window.didAdjustIdeogramLegend === 'undefined') {
+    var ideoDom = document.querySelector('#_ideogram');
+    const legendWidth = 140;
+    ideoInnerDom.style.maxWidth =
+      (parseInt(ideoInnerDom.style.maxWidth) + legendWidth) + 'px';
+    ideoDom.style.minWidth =
+      (parseInt(ideoDom.style.minWidth) + legendWidth) + 'px';
+    ideoDom.style.position = 'relative';
+    ideoDom.style.left = legendWidth + 'px';
+
+    window.didAdjustIdeogramLegend = true;
+  }
 
   // Fetch positon of searched gene
   const taxid = ideo.config.taxid;
