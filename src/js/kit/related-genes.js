@@ -272,6 +272,12 @@ function parseAnnotFromMgiGene(gene, ideo, color='red') {
   return annot;
 }
 
+function moveLegend(legendStyle, ideoInnerDom) {
+  const legend = document.querySelector('#_ideogramLegend');
+  ideoInnerDom.prepend(legend);
+  legend.style = legendStyle;
+}
+
 /** Filter annotations to only include those in configured list */
 function applyAnnotsIncludeList(annots, ideo) {
 
@@ -324,6 +330,14 @@ async function plotRelatedGenes(geneSymbol) {
   ideoInnerDom.style.position = 'relative';
   ideoInnerDom.style.marginLeft = 'auto';
   ideoInnerDom.style.marginRight = 'auto';
+  var ideoDom = document.querySelector('#_ideogram');
+  const legendWidth = 140;
+  ideoInnerDom.style.maxWidth =
+    (parseInt(ideoInnerDom.style.maxWidth) + legendWidth) + 'px';
+  ideoDom.style.minWidth =
+    (parseInt(ideoDom.style.minWidth) + legendWidth) + 'px';
+  ideoDom.style.position = 'relative';
+  ideoDom.style.left = legendWidth + 'px';
 
   // Fetch positon of searched gene
   const taxid = ideo.config.taxid;
@@ -348,24 +362,13 @@ async function plotRelatedGenes(geneSymbol) {
     await fetchInteractingGeneAnnots(interactions, ideo);
   annots = annots.concat(interactingAnnots);
 
-  const chrHeight = ideo.config.chrHeight;
-  const topPx = chrHeight + 30;
-  const leftPx = document.querySelector('#_ideogram')
-    .getBoundingClientRect().left - 160;
-  const legendStyle = `
-    position: relative;
-    top: -${topPx}px;
-    height: ${topPx - 10}px;
-    left: ${leftPx}px;
-    width: 140px;
-    overflow-y: hidden;`;
+  const legendStyle = 'position: absolute; top: 15px';
 
   // Draw interacting genes immediately
   annots = applyAnnotsIncludeList(annots, ideo);
   annots.sort((a, b) => {return b.name.length - a.name.length;});
   ideo.drawAnnots(annots);
-  document.querySelector('#_ideogramLegend').style = legendStyle;
-  moveLegend();
+  moveLegend(legendStyle, ideoInnerDom);
 
   await fetchParalogPositions(annot, annots, ideo);
 
@@ -373,10 +376,7 @@ async function plotRelatedGenes(geneSymbol) {
   annots = applyAnnotsIncludeList(annots, ideo);
   annots.sort((a, b) => {return b.name.length - a.name.length;});
   ideo.drawAnnots(annots);
-  document.querySelector('#_ideogramLegend').style = legendStyle;
-
-  // Ensure legend is appropriately placed beside ideogram
-  moveLegend();
+  moveLegend(legendStyle, ideoInnerDom);
 }
 
 function getAnnotByName(annotName, ideo) {
@@ -449,16 +449,6 @@ const legend = [{
   ]
 }];
 
-/** Move legend beside ideogram; accounts for ideogram move or window resize */
-function moveLegend() {
-  const legend = document.getElementById('_ideogramLegend');
-  const legendWidth = legend.getBoundingClientRect().width;
-  const ideoLeft =
-    document.getElementById('_ideogram').getBoundingClientRect().x;
-
-  legend.style.left = `${ideoLeft - legendWidth - 20}px`;
-}
-
 /**
  * Wrapper for Ideogram constructor, with generic "Related genes" options
  *
@@ -482,9 +472,7 @@ function _initRelatedGenes(config, annotsInList) {
 
   const ideogram = new Ideogram(config);
 
-  window.addEventListener('resize', () => moveLegend());
-
   return ideogram;
 }
 
-export {_initRelatedGenes, plotRelatedGenes, moveLegend};
+export {_initRelatedGenes, plotRelatedGenes};
