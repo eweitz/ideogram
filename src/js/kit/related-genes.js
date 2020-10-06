@@ -330,7 +330,11 @@ async function plotRelatedGenes(geneSymbol) {
   ideoInnerDom.style.position = 'relative';
   ideoInnerDom.style.marginLeft = 'auto';
   ideoInnerDom.style.marginRight = 'auto';
+  ideoInnerDom.style.overflowY = 'hidden';
+
   if (typeof ideo.didAdjustIdeogramLegend === 'undefined') {
+    // Accounts for moving legend when external content at left or right
+    // is variable upon first rendering plotted genes
     var ideoDom = document.querySelector('#_ideogram');
     const legendWidth = 140;
     ideoInnerDom.style.maxWidth =
