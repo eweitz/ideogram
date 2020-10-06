@@ -117,7 +117,7 @@
     </label>
   </div>
   <br/><br/><br/>
-  <div id="ideogram-container"></div>
+  <div id="ideogram-container" style="visibility: hidden;"></div>
   <script type="text/javascript">
 
     const urlParams = parseUrlParams();
@@ -176,7 +176,7 @@
     }
 
     // Process text input for the "Search" field.
-    function handleSearch(event) {
+    async function handleSearch(event) {
       // Ignore non-"Enter" keyups
       if (event.type === 'keyup' && event.keyCode !== 13) return;
 
@@ -189,12 +189,15 @@
       urlParams['q'] = geneSymbol;
       updateUrl();
 
-      ideogram.plotRelatedGenes(geneSymbol);
+      await ideogram.plotRelatedGenes(geneSymbol);
+
+      document.querySelector('#ideogram-container').style.visibility = '';
     }
 
-    function plotGeneFromUrl() {
+    async function plotGeneFromUrl() {
       if ('q' in urlParams) {
         ideogram.plotRelatedGenes(urlParams['q']);
+        document.querySelector('#ideogram-container').style.visibility = '';
       }
     }
 

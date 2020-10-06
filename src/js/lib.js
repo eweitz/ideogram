@@ -209,7 +209,9 @@ function downloadPng(ideo) {
   var canvasId = '_ideo-undisplayed-dl-canvas';
   canvas.setAttribute('style', 'display: none');
   canvas.setAttribute('id', canvasId);
-  var width = ideoSvg.width.baseVal.value + 30;
+  var width = ideoSvg.width.baseVal.value - 110;
+  var ideoSvgClone = ideoSvg.cloneNode(true);
+  ideoSvgClone.style.left = '';
   canvas.setAttribute('width', width);
   document.body.appendChild(canvas);
 
@@ -243,7 +245,7 @@ function downloadPng(ideo) {
   ctx.setTransform(2, 0, 0, 2, 0, 0);
   ctx.imageSmoothingEnabled = false;
 
-  var data = (new XMLSerializer()).serializeToString(ideoSvg);
+  var data = (new XMLSerializer()).serializeToString(ideoSvgClone);
   var domUrl = window.URL || window.webkitURL || window;
 
   var img = new Image();
