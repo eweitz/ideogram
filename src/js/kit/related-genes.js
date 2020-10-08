@@ -195,10 +195,12 @@ async function fetchInteractingGeneAnnots(interactions, ideo) {
 /**
  * Fetch paralogs of searched gene
  */
-async function fetchParalogPositions(annot, annots, ideo) {
+async function fetchParalogPositions(annot, ideo) {
+  const annots = [];
   const taxid = ideo.config.taxid;
   const orgUnderscored = ideo.config.organism.replace(/[ -]/g, '_');
 
+  // Fetch paralogs
   const params = `&format=condensed&type=paralogues&target_taxon=${taxid}`;
   let path = `/homology/id/${annot.id}?${params}`;
   const ensemblHomologs = await Ideogram.fetchEnsembl(path);
@@ -229,8 +231,7 @@ async function fetchParalogPositions(annot, annots, ideo) {
       color: 'pink'
     };
 
-    // Add to start of array, so searched gene gets top z-index
-    annots.unshift(annot);
+    annots.push(annot);
     const description = gene.description;
     const ensemblId = gene.id;
     const name = gene.description.split(' [')[0];
@@ -272,7 +273,8 @@ function parseAnnotFromMgiGene(gene, ideo, color='red') {
   return annot;
 }
 
-function moveLegend(legendStyle, ideoInnerDom) {
+function moveLegend(ideoInnerDom) {
+  const legendStyle = 'position: absolute; top: 15px';
   const legend = document.querySelector('#_ideogramLegend');
   ideoInnerDom.prepend(legend);
   legend.style = legendStyle;
@@ -290,6 +292,35 @@ function applyAnnotsIncludeList(annots, ideo) {
     }
   });
   return includedAnnots;
+}
+
+/** Fetch and draw interacting genes, return Promise for annots */
+function processInteractions(annot, ideoInnerDom, ideo) {
+  return new Promise(async (resolve) => {
+    const interactions = await fetchInteractingGenes(annot, ideo);
+    const annots = await fetchInteractingGeneAnnots(interactions, ideo);
+    ideo.relatedAnnots.push(...annots);
+    finishPlotRelatedGenes(ideoInnerDom, ideo);
+    resolve();
+  });
+}
+
+function processParalogs(annot, ideoInnerDom, ideo) {
+  return new Promise(async (resolve) => {
+    const annots = await fetchParalogPositions(annot, ideo);
+    ideo.relatedAnnots.push(...annots);
+    finishPlotRelatedGenes(ideoInnerDom, ideo);
+    resolve();
+  });
+}
+
+/** Filter, sort, draw annots.  Move legend. */
+function finishPlotRelatedGenes(ideoInnerDom, ideo) {
+  let annots = ideo.relatedAnnots.slice();
+  annots = applyAnnotsIncludeList(annots, ideo);
+  annots.sort((a, b) => {return b.name.length - a.name.length;});
+  ideo.drawAnnots(annots);
+  moveLegend(ideoInnerDom);
 }
 
 /**
@@ -360,31 +391,15 @@ async function plotRelatedGenes(geneSymbol) {
     description: name, ensemblId, name, type: 'searched gene'
   };
 
-  let annots = [];
+  ideo.relatedAnnots = [];
 
   const annot = parseAnnotFromMgiGene(gene, ideo);
-  annots.push(annot);
+  ideo.relatedAnnots.push(annot);
 
-  const interactions = await fetchInteractingGenes(annot, ideo);
-  const interactingAnnots =
-    await fetchInteractingGeneAnnots(interactions, ideo);
-  annots = annots.concat(interactingAnnots);
-
-  const legendStyle = 'position: absolute; top: 15px';
-
-  // Draw interacting genes immediately
-  annots = applyAnnotsIncludeList(annots, ideo);
-  annots.sort((a, b) => {return b.name.length - a.name.length;});
-  ideo.drawAnnots(annots);
-  moveLegend(legendStyle, ideoInnerDom);
-
-  await fetchParalogPositions(annot, annots, ideo);
-
-  // Add paralogs to related genes, and draw all related genes
-  annots = applyAnnotsIncludeList(annots, ideo);
-  annots.sort((a, b) => {return b.name.length - a.name.length;});
-  ideo.drawAnnots(annots);
-  moveLegend(legendStyle, ideoInnerDom);
+  await Promise.all([
+    processInteractions(annot, ideoInnerDom, ideo),
+    processParalogs(annot, ideoInnerDom, ideo)
+  ]);
 }
 
 function getAnnotByName(annotName, ideo) {
