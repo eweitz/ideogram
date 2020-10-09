@@ -496,6 +496,7 @@ function _initRelatedGenes(config, annotsInList) {
     rotatable: false,
     legend: legend,
     chrBorderColor: '#333',
+    chrLabelColor: '#333',
     onWillShowAnnotTooltip: decorateGene,
     annotsInList: annotsInList
   });

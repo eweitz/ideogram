@@ -151,13 +151,13 @@ function configureBands(ideo) {
 
 let configuredCss = staticCss;
 function configureTextStyle(ideo) {
-  if (!ideo.config.chrLabelSize) {
-    ideo.config.chrLabelSize = 9;
-    return;
-  }
+  const config = ideo.config;
+  if (!config.chrLabelSize) ideo.config.chrLabelSize = 9;
+  if (!config.chrLabelColor) ideo.config.chrLabelColor = '#000';
 
-  const size = ideo.config.chrLabelSize;
-  configuredCss += `#_ideogram text {font-size: ${size}px}`;
+  const size = `font-size: ${config.chrLabelSize}px`;
+  const color = `fill: ${config.chrLabelColor}`;
+  configuredCss += `#_ideogram text {${size}; ${color};}`;
 }
 
 /**
