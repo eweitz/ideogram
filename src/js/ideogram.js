@@ -196,10 +196,17 @@ export default class Ideogram {
    */
   static async fetchEnsembl(path, body = null, method = 'GET') {
     const init = {
-      method: method,
-      headers: {'Content-Type': 'application/json'}
+      method: method
     };
     if (body !== null) init.body = JSON.stringify(body);
+    if (method === 'GET') {
+      // Use HTTP parameter, not header, to avoid needless OPTIONS request
+      const delimiter = path.includes('&') ? '&' : '?';
+      path += delimiter + 'content-type=application/json';
+    } else {
+      // Method is POST, so content-type must be defined in header
+      init.headers = {'Content-Type': 'application/json'};
+    }
     const response = await fetch(`https://rest.ensembl.org${path}`, init);
     const json = await response.json();
     return json;
