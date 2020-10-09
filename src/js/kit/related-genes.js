@@ -318,7 +318,11 @@ function processParalogs(annot, ideoInnerDom, ideo) {
 function finishPlotRelatedGenes(ideoInnerDom, ideo) {
   let annots = ideo.relatedAnnots.slice();
   annots = applyAnnotsIncludeList(annots, ideo);
-  annots.sort((a, b) => {return b.name.length - a.name.length;});
+  annots.sort((a, b) => {
+    if (b.color === 'red') return -1;
+    if (b.color === 'purple' && a.color === 'pink') return -1;
+    return b.name.length - a.name.length;
+  });
   ideo.drawAnnots(annots);
   moveLegend(ideoInnerDom);
 }
