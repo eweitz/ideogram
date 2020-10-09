@@ -19,10 +19,12 @@ export class Color {
   }
 
   getBorderColor(chrSetIndex, chrIndex, armIndex) {
-    if (chrIndex < this._config.ploidy) {
-      return '#000';
+    const config = this._config;
+    const color = config.chrBorderColor ? config.chrBorderColor : '#000';
+    if (chrIndex < config.ploidy) {
+      return color;
     } else if (this._ploidy.exists(chrSetIndex, chrIndex, armIndex)) {
-      return '#000';
+      return color;
     } else {
       return '#fff';
     }

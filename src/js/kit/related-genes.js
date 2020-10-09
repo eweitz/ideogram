@@ -461,10 +461,12 @@ function decorateGene(annot) {
 
 const shape = 'triangle';
 
+const legendHeaderStyle =
+  'font-size: 14px; font-weight: bold; font-color: #333';
 const legend = [{
   name: `
     <div style="position: relative; left: -15px; padding-bottom: 10px;">
-      <div style="font-size: 14px; font-weight: bold;">Related genes</div>
+      <div style="${legendHeaderStyle}">Related genes</div>
       <i>Click gene to search</i>
     </div>
   `,
@@ -493,6 +495,7 @@ function _initRelatedGenes(config, annotsInList) {
     showFullyBanded: false,
     rotatable: false,
     legend: legend,
+    chrBorderColor: '#333',
     onWillShowAnnotTooltip: decorateGene,
     annotsInList: annotsInList
   });
