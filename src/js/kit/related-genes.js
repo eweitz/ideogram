@@ -418,6 +418,7 @@ async function plotRelatedGenes(geneSymbol) {
   ideoInnerDom.style.marginLeft = 'auto';
   ideoInnerDom.style.marginRight = 'auto';
   ideoInnerDom.style.overflowY = 'hidden';
+  document.querySelector('#_ideogramMiddleWrap').style.overflowY = 'hidden';
 
   if (typeof ideo.didAdjustIdeogramLegend === 'undefined') {
     // Accounts for moving legend when external content at left or right
