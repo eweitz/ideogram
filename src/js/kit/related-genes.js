@@ -107,6 +107,21 @@ async function fetchMyGeneInfo(queryString) {
   return data;
 }
 
+function parseNameAndEnsemblIdFromMgiGene(gene) {
+  const name = gene.name;
+  const id = gene.genomic_pos.ensemblgene;
+  let ensemblId = id;
+  if (typeof id === 'undefined') {
+    // Encountered in AKT3, when querying related genes for MTOR
+    // A 'chr'omosome value containing _ indicates an alt loci scaffold,
+    // so ignore that and take the Ensembl ID associated with the
+    // first position of a primary chromosome.
+    ensemblId =
+      gene.genomic_pos.filter(pos => !pos.chr.includes('_'))[0].ensemblgene;
+  }
+  return {name, ensemblId};
+}
+
 /**
  * Summarizes interactions for a gene
  *
@@ -137,17 +152,7 @@ function describeInteractions(gene, ixns) {
       ${links}`;
   }
 
-  const name = gene.name;
-  const id = gene.genomic_pos.ensemblgene;
-  let ensemblId = id;
-  if (typeof id === 'undefined') {
-    // Encountered in AKT3, when querying related genes for MTOR
-    // A 'chr'omosome value containing _ indicates an alt loci scaffold,
-    // so ignore that and take the Ensembl ID associated with the
-    // first position of a primary chromosome.
-    ensemblId =
-      gene.genomic_pos.filter(pos => !pos.chr.includes('_'))[0].ensemblgene;
-  }
+  const {name, ensemblId} = parseNameAndEnsemblIdFromMgiGene(gene);
   const type = 'interacting gene';
   const descriptionObj = {
     description, ensemblId, name, type, pathwayIds, pathwayNames
@@ -192,53 +197,99 @@ async function fetchInteractingGeneAnnots(interactions, ideo) {
   return annots;
 }
 
-/**
- * Fetch paralogs of searched gene
- */
-async function fetchParalogPositions(annot, ideo) {
+// Commented out because call to Ensembl threw false-positive 400 error
+// Also had historically been slow, and included an extraneous OPTIONS
+// request that would often double effective response time.
+//
+// See alternative in fetchParalogPositionsFromMyGeneInfo
+//
+// /** Fetch positions of paralogs from Ensembl REST API */
+// async function fetchParalogPositionsFromEnsembl(homologs, ideo) {
+//   const annots = [];
+//   const orgUnderscored = ideo.config.organism.replace(/[ -]/g, '_');
+
+//   const homologIds = homologs.map(homolog => homolog.id);
+//   const path = '/lookup/id/' + orgUnderscored;
+//   const body = {
+//     ids: homologIds,
+//     species: orgUnderscored,
+//     object_type: 'gene'
+//   };
+//   const ensemblHomologGenes =
+//     await Ideogram.fetchEnsembl(path, body, 'POST');
+
+//   Object.entries(ensemblHomologGenes).map((idGene, i) => {
+//     const gene = idGene[1];
+
+//     // Seen in related genes for SIRT2 in Pan troglodytes
+//     if ('display_name' in gene === false) return;
+
+//     const annot = {
+//       name: gene.display_name,
+//       chr: gene.seq_region_name,
+//       start: gene.start,
+//       stop: gene.end,
+//       id: gene.id,
+//       color: 'pink'
+//     };
+
+//     annots.push(annot);
+//     const description = gene.description;
+//     const ensemblId = gene.id;
+//     const name = gene.description.split(' [')[0];
+//     const type = 'paralogous gene';
+//     const descriptionObj = {description, ensemblId, name, type};
+//     ideo.annotDescriptions.annots[annot.name] = descriptionObj;
+//   });
+
+//   return annots;
+// }
+
+/** Fetch paralog positions from MyGeneInfo */
+async function fetchParalogPositionsFromMyGeneInfo(homologs, ideo) {
   const annots = [];
+  const qParam = homologs.map(homolog => {
+    return `ensemblgene:${homolog.id}`;
+  }).join(' OR ');
+
   const taxid = ideo.config.taxid;
-  const orgUnderscored = ideo.config.organism.replace(/[ -]/g, '_');
+  const queryString =
+    `?q=${qParam}&species=${taxid}&fields=symbol,genomic_pos,name`;
+  const data = await fetchMyGeneInfo(queryString);
 
-  // Fetch paralogs
-  const params = `&format=condensed&type=paralogues&target_taxon=${taxid}`;
-  let path = `/homology/id/${annot.id}?${params}`;
-  const ensemblHomologs = await Ideogram.fetchEnsembl(path);
-  const homologs = ensemblHomologs.data[0].homologies;
+  data.hits.forEach(gene => {
 
-  // Fetch positions of paralogs
-  const homologIds = homologs.map(homolog => homolog.id);
-  path = '/lookup/id/' + orgUnderscored;
-  const body = {
-    ids: homologIds,
-    species: orgUnderscored,
-    object_type: 'gene'
-  };
-  const ensemblHomologGenes = await Ideogram.fetchEnsembl(path, body, 'POST');
+    // If hit lacks position, skip processing
+    if ('genomic_pos' in gene === false) return;
+    if ('name' in gene === false) return;
 
-  Object.entries(ensemblHomologGenes).map((idGene, i) => {
-    const gene = idGene[1];
-
-    // Seen in related genes for SIRT2 in Pan troglodytes
-    if ('display_name' in gene === false) return;
-
-    const annot = {
-      name: gene.display_name,
-      chr: gene.seq_region_name,
-      start: gene.start,
-      stop: gene.end,
-      id: gene.id,
-      color: 'pink'
-    };
-
+    const annot = parseAnnotFromMgiGene(gene, ideo, 'pink');
     annots.push(annot);
-    const description = gene.description;
-    const ensemblId = gene.id;
-    const name = gene.description.split(' [')[0];
+
+    const description = gene.name;
+    const {name, ensemblId} = parseNameAndEnsemblIdFromMgiGene(gene);
     const type = 'paralogous gene';
     const descriptionObj = {description, ensemblId, name, type};
     ideo.annotDescriptions.annots[annot.name] = descriptionObj;
   });
+
+  return annots;
+}
+
+/**
+ * Fetch paralogs of searched gene
+ */
+async function fetchParalogs(annot, ideo) {
+  const taxid = ideo.config.taxid;
+
+  // Fetch paralogs
+  const params = `&format=condensed&type=paralogues&target_taxon=${taxid}`;
+  const path = `/homology/id/${annot.id}?${params}`;
+  const ensemblHomologs = await Ideogram.fetchEnsembl(path);
+  const homologs = ensemblHomologs.data[0].homologies;
+
+  // Fetch positions of paralogs
+  const annots = await fetchParalogPositionsFromMyGeneInfo(homologs, ideo);
 
   return annots;
 }
@@ -305,9 +356,10 @@ function processInteractions(annot, ideoInnerDom, ideo) {
   });
 }
 
+/** Find and draw paralogs, return Promise for annots */
 function processParalogs(annot, ideoInnerDom, ideo) {
   return new Promise(async (resolve) => {
-    const annots = await fetchParalogPositions(annot, ideo);
+    const annots = await fetchParalogs(annot, ideo);
     ideo.relatedAnnots.push(...annots);
     finishPlotRelatedGenes(ideoInnerDom, ideo);
     resolve();
@@ -318,7 +370,11 @@ function processParalogs(annot, ideoInnerDom, ideo) {
 function finishPlotRelatedGenes(ideoInnerDom, ideo) {
   let annots = ideo.relatedAnnots.slice();
   annots = applyAnnotsIncludeList(annots, ideo);
-  annots.sort((a, b) => {return b.name.length - a.name.length;});
+  annots.sort((a, b) => {
+    if (b.color === 'red') return -1;
+    if (b.color === 'purple' && a.color === 'pink') return -1;
+    return b.name.length - a.name.length;
+  });
   ideo.drawAnnots(annots);
   moveLegend(ideoInnerDom);
 }
@@ -362,6 +418,7 @@ async function plotRelatedGenes(geneSymbol) {
   ideoInnerDom.style.marginLeft = 'auto';
   ideoInnerDom.style.marginRight = 'auto';
   ideoInnerDom.style.overflowY = 'hidden';
+  document.querySelector('#_ideogramMiddleWrap').style.overflowY = 'hidden';
 
   if (typeof ideo.didAdjustIdeogramLegend === 'undefined') {
     // Accounts for moving legend when external content at left or right
@@ -370,8 +427,8 @@ async function plotRelatedGenes(geneSymbol) {
     const legendWidth = 140;
     ideoInnerDom.style.maxWidth =
       (parseInt(ideoInnerDom.style.maxWidth) + legendWidth) + 'px';
-    ideoDom.style.minWidth =
-      (parseInt(ideoDom.style.minWidth) + legendWidth) + 'px';
+    ideoDom.style.maxWidth =
+      (parseInt(ideoDom.style.minWidth)) + 'px';
     ideoDom.style.position = 'relative';
     ideoDom.style.left = legendWidth + 'px';
 
@@ -457,11 +514,13 @@ function decorateGene(annot) {
 
 const shape = 'triangle';
 
+const legendHeaderStyle =
+  'font-size: 14px; font-weight: bold; font-color: #333';
 const legend = [{
   name: `
     <div style="position: relative; left: -15px; padding-bottom: 10px;">
-      <div style="font-size: 14px; font-weight: bold;">Related genes</div>
-      <i>Click gene to search</i>
+      <div style="${legendHeaderStyle}">Related genes</div>
+      <i>Click gene to explore</i>
     </div>
   `,
   nameHeight: 30,
@@ -489,6 +548,8 @@ function _initRelatedGenes(config, annotsInList) {
     showFullyBanded: false,
     rotatable: false,
     legend: legend,
+    chrBorderColor: '#333',
+    chrLabelColor: '#333',
     onWillShowAnnotTooltip: decorateGene,
     annotsInList: annotsInList
   });

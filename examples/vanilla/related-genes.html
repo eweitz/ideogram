@@ -62,7 +62,7 @@
   <a href="differential-expression">Next</a> |
   <a href="https://github.com/eweitz/ideogram/blob/gh-pages/related-genes.html" target="_blank">Source</a>
   <p>
-    Find interacting pathway genes and paralogs.  Uses data from
+    Search a gene and find interacting pathway genes and paralogs.  Uses data from
     <a href="https://rest.ensembl.org">Ensembl</a>,
     <a href="https://www.wikipathways.org">WikiPathways</a>, and
     <a href="https://mygene.info">MyGene.info</a>.
@@ -110,10 +110,16 @@
   </div>
   <div style="float: left; width: 350px;">
     <label for="search-genes" id="search-container">
-      <input id="search-genes" autocomplete="off" placeholder="Search gene (e.g. RAD51)"/>
+      <input id="search-genes" autocomplete="off" placeholder="Search gene"/>
       <span id="search-button">
         <svg width="12" height="13"><g stroke-width="2" stroke="#FFF" fill="none"><path d="M11.29 11.71l-4-4"/><circle cx="5" cy="5" r="4"/></g></svg>
       </span>
+      <div style="font-size: 12px">
+        Examples:
+        <a href="?q=RAD51">RAD51</a>,
+        <a href="?q=CD4">CD4</a>,
+        <a href="?q=APOE">APOE</a>
+      </div>
     </label>
   </div>
   <br/><br/><br/>
