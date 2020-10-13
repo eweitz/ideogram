@@ -552,7 +552,7 @@ const legend = [{
   name: `
     <div style="position: relative; left: -15px; padding-bottom: 10px;">
       <div style="${legendHeaderStyle}">Related genes</div>
-      <i>Click gene to explore</i>
+      <i>Click gene to search</i>
     </div>
   `,
   nameHeight: 30,
