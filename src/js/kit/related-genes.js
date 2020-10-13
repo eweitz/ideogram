@@ -74,10 +74,14 @@ async function fetchInteractingGenes(gene, ideo) {
       const id = interaction.id;
 
       rawIxns.forEach(rawIxn => {
+
+        // Prevent overwriting searched gene.  Occurs with e.g. human CD4
+        if (rawIxn.includes(gene.name)) return;
+
         const nameId = name + id;
         if (maybeGeneSymbol(rawIxn, gene) && !(nameId in seenNameIds)) {
           seenNameIds[nameId] = 1;
-          const ixn = {name: name, pathwayId: id};
+          const ixn = {name, pathwayId: id};
           if (rawIxn in ixns) {
             ixns[rawIxn].push(ixn);
           } else {
@@ -387,6 +391,7 @@ function finishPlotRelatedGenes(ideoInnerDom, ideo) {
 async function plotRelatedGenes(geneSymbol) {
 
   const ideo = this;
+  const t0 = performance.now();
 
   const organism = ideo.getScientificName(ideo.config.taxid);
   const version = Ideogram.version;
@@ -457,6 +462,33 @@ async function plotRelatedGenes(geneSymbol) {
     processInteractions(annot, ideoInnerDom, ideo),
     processParalogs(annot, ideoInnerDom, ideo)
   ]);
+
+  ideo.timeRelatedGenes = Math.round(performance.now() - t0);
+
+  analyzeRelatedGenes(ideo);
+
+  if (ideo.onPlotRelatedGenesCallback) ideo.onPlotRelatedGenesCallback();
+
+}
+
+/** Summarizes number and kind of related genes, performance, etc. */
+function analyzeRelatedGenes(ideo) {
+  const relatedGenes = ideo.annotDescriptions.annots;
+  const numRelatedGenes = Object.keys(relatedGenes).length;
+  const values = Object.values(relatedGenes);
+  const numParalogs =
+    values.filter(v => v.type === 'paralogous gene').length;
+  const numInteractingGenes =
+    values.filter(v => v.type === 'interacting gene').length;
+  const searchedGene = Object.entries(relatedGenes)
+    .filter((entry) => entry[1].type === 'searched gene')[0][0];
+  const time = ideo.timeRelatedGenes;
+
+  ideo.relatedGenesAnalytics = {
+    searchedGene,
+    numRelatedGenes, numParalogs, numInteractingGenes,
+    time
+  };
 }
 
 function getAnnotByName(annotName, ideo) {
@@ -520,7 +552,7 @@ const legend = [{
   name: `
     <div style="position: relative; left: -15px; padding-bottom: 10px;">
       <div style="${legendHeaderStyle}">Related genes</div>
-      <i>Click gene to explore</i>
+      <i>Click gene to search</i>
     </div>
   `,
   nameHeight: 30,
@@ -544,17 +576,25 @@ function _initRelatedGenes(config, annotsInList) {
     annotsInList = annotsInList.map(name => name.toLowerCase());
   }
 
-  Object.assign(config, {
+  const kitDefaults = {
     showFullyBanded: false,
     rotatable: false,
     legend: legend,
     chrBorderColor: '#333',
     chrLabelColor: '#333',
     onWillShowAnnotTooltip: decorateGene,
-    annotsInList: annotsInList
-  });
+    annotsInList: annotsInList,
+    showTools: true
+  };
 
-  const ideogram = new Ideogram(config);
+  // Override kit defaults if client specifies otherwise
+  const kitConfig = Object.assign(kitDefaults, config);
+
+  const ideogram = new Ideogram(kitConfig);
+
+  if (config.onPlotRelatedGenes) {
+    ideogram.onPlotRelatedGenesCallback = config.onPlotRelatedGenes;
+  }
 
   return ideogram;
 }
