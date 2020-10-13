@@ -544,7 +544,7 @@ function _initRelatedGenes(config, annotsInList) {
     annotsInList = annotsInList.map(name => name.toLowerCase());
   }
 
-  Object.assign(config, {
+  const kitDefaults = {
     showFullyBanded: false,
     rotatable: false,
     legend: legend,
@@ -552,9 +552,12 @@ function _initRelatedGenes(config, annotsInList) {
     chrLabelColor: '#333',
     onWillShowAnnotTooltip: decorateGene,
     annotsInList: annotsInList
-  });
+  };
 
-  const ideogram = new Ideogram(config);
+  // Override kit defaults if client specifies otherwise
+  const kitConfig = Object.assign(kitDefaults, config);
+
+  const ideogram = new Ideogram(kitConfig);
 
   return ideogram;
 }
