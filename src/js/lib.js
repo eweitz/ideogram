@@ -209,7 +209,7 @@ function downloadPng(ideo) {
   var canvasId = '_ideo-undisplayed-dl-canvas';
   canvas.setAttribute('style', 'display: none');
   canvas.setAttribute('id', canvasId);
-  var width = ideoSvg.width.baseVal.value - 110;
+  var width = ideoSvg.width.baseVal.value + 30;
   var ideoSvgClone = ideoSvg.cloneNode(true);
   ideoSvgClone.style.left = '';
   canvas.setAttribute('width', width);
@@ -234,6 +234,7 @@ function downloadPng(ideo) {
     document.body.appendChild(a);
 
     a.dispatchEvent(evt);
+    canvas.remove();
   }
 
   var canvas = document.getElementById(canvasId);
