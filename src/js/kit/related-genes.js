@@ -74,10 +74,14 @@ async function fetchInteractingGenes(gene, ideo) {
       const id = interaction.id;
 
       rawIxns.forEach(rawIxn => {
+
+        // Prevent overwriting searched gene.  Occurs with e.g. human CD4
+        if (rawIxn.includes(gene.name)) return;
+
         const nameId = name + id;
         if (maybeGeneSymbol(rawIxn, gene) && !(nameId in seenNameIds)) {
           seenNameIds[nameId] = 1;
-          const ixn = {name: name, pathwayId: id};
+          const ixn = {name, pathwayId: id};
           if (rawIxn in ixns) {
             ixns[rawIxn].push(ixn);
           } else {
