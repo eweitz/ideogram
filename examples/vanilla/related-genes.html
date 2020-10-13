@@ -207,6 +207,10 @@
       }
     }
 
+    function reportRelatedGenes() {
+      console.log(this.relatedGenesAnalytics)
+    }
+
     function onClickAnnot(annot) {
       document.querySelector('#search-genes').value = annot.name;
       urlParams['q'] = annot.name;
@@ -223,7 +227,7 @@
       annotationHeight: 7,
       onClickAnnot: onClickAnnot,
       onLoad: plotGeneFromUrl,
-      showTools: true
+      onPlotRelatedGenes: reportRelatedGenes
     }
 
     // annotsInList = ['CDK9', 'CDK19', 'CDK1'];

@@ -387,6 +387,7 @@ function finishPlotRelatedGenes(ideoInnerDom, ideo) {
 async function plotRelatedGenes(geneSymbol) {
 
   const ideo = this;
+  const t0 = performance.now();
 
   const organism = ideo.getScientificName(ideo.config.taxid);
   const version = Ideogram.version;
@@ -457,6 +458,33 @@ async function plotRelatedGenes(geneSymbol) {
     processInteractions(annot, ideoInnerDom, ideo),
     processParalogs(annot, ideoInnerDom, ideo)
   ]);
+
+  ideo.timeRelatedGenes = Math.round(performance.now() - t0);
+
+  analyzeRelatedGenes(ideo);
+
+  if (ideo.onPlotRelatedGenesCallback) ideo.onPlotRelatedGenesCallback();
+
+}
+
+/** Summarizes number and kind of related genes, performance, etc. */
+function analyzeRelatedGenes(ideo) {
+  const relatedGenes = ideo.annotDescriptions.annots;
+  const numRelatedGenes = Object.keys(relatedGenes).length;
+  const values = Object.values(relatedGenes);
+  const numParalogs =
+    values.filter(v => v.type === 'paralogous gene').length;
+  const numInteractingGenes =
+    values.filter(v => v.type === 'interacting gene').length;
+  const searchedGene = Object.entries(relatedGenes)
+    .filter((entry) => entry[1].type === 'searched gene')[0][0];
+  const time = ideo.timeRelatedGenes;
+
+  ideo.relatedGenesAnalytics = {
+    searchedGene,
+    numRelatedGenes, numParalogs, numInteractingGenes,
+    time
+  };
 }
 
 function getAnnotByName(annotName, ideo) {
@@ -551,13 +579,18 @@ function _initRelatedGenes(config, annotsInList) {
     chrBorderColor: '#333',
     chrLabelColor: '#333',
     onWillShowAnnotTooltip: decorateGene,
-    annotsInList: annotsInList
+    annotsInList: annotsInList,
+    showTools: true
   };
 
   // Override kit defaults if client specifies otherwise
   const kitConfig = Object.assign(kitDefaults, config);
 
   const ideogram = new Ideogram(kitConfig);
+
+  if (config.onPlotRelatedGenes) {
+    ideogram.onPlotRelatedGenesCallback = config.onPlotRelatedGenes;
+  }
 
   return ideogram;
 }
