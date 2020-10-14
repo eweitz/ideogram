@@ -106,7 +106,7 @@ const style = `
 
     #download {
       position: absolute;
-      width: 150px;
+      width: 120px;
       top: -2px;
       right: 120px;
       z-index: 8000;

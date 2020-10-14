@@ -18,7 +18,7 @@ var legendStyle =
   '#_ideogramLegend li {float: none; margin: 0;}' +
   '#_ideogramLegend ul span {position: relative; left: -15px;} ';
 
-function getIcon(row) {
+function getIcon(row, ideo) {
   var icon, triangleAttrs, circleAttrs, rectAttrs,
     fill = 'fill="' + row.color + '" style="stroke: #AAA;"',
     shape = row.shape;
@@ -31,7 +31,12 @@ function getIcon(row) {
     if (shape === 'circle') {
       icon = '<path ' + circleAttrs + ' ' + fill + '></path>';
     } else if (shape === 'triangle') {
-      icon = '<path ' + triangleAttrs + ' ' + fill + '></path>';
+      var transform = '';
+      if (ideo.config.orientation === 'vertical') {
+        // Orient arrows in legend as they are in annotations
+        transform = ' transform="rotate(90, 7, 7)"';
+      }
+      icon = '<path ' + triangleAttrs + transform + ' ' + fill + '></path>';
     }
   } else {
     icon = '<rect ' + rectAttrs + ' ' + fill + '/>';
@@ -40,15 +45,17 @@ function getIcon(row) {
   return icon;
 }
 
-function getListItems(labels, svg, list, nameHeight) {
+function getListItems(labels, svg, list, nameHeight, ideo) {
   var i, icon, y, row;
+
   for (i = 0; i < list.rows.length; i++) {
     row = list.rows[i];
     labels += '<li>' + row.name + '</li>';
     y = lineHeight * i + nameHeight;
     if ('name' in list) y += lineHeight;
-    icon = getIcon(row);
-    svg += '<g transform="translate(0, ' + y + ')">' + icon + '</g>';
+    icon = getIcon(row, ideo);
+    const transform = 'translate(0, ' + y + ')';
+    svg += '<g transform="' + transform + '">' + icon + '</g>';
   }
 
   return [labels, svg];
@@ -72,7 +79,7 @@ function writeLegend(ideo) {
       labels = '<div>' + list.name + '</div>';
     }
     svg = '<svg id="_ideogramLegendSvg" width="' + lineHeight + '">';
-    [labels, svg] = getListItems(labels, svg, list, nameHeight);
+    [labels, svg] = getListItems(labels, svg, list, nameHeight, ideo);
     svg += '</svg>';
     content += svg + '<ul>' + labels + '</ul>';
   }

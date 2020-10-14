@@ -59,19 +59,17 @@ function hasGenBankAssembly(ideo) {
  * Returns directory used to fetch data for bands and annotations
  *
  * This simplifies ideogram configuration.  By default, the dataDir is
- * set to an external CDN unless we're serving from the local host, in
- * which case dataDir is deduced from the "src" attribute of the ideogram
- * script loaded in the document.
+ * set to an external CDN unless we're serving from the local Ideogram
+ * working directory
  *
  * @returns {String}
  */
 function getDataDir() {
   var script, tmp, protocol, dataDir, ideogramInLeaf,
     scripts = document.scripts,
-    host = location.host.split(':')[0],
     version = Ideogram.version;
 
-  if (host !== 'localhost' && host !== '127.0.0.1') {
+  if (location.pathname.includes('/examples/vanilla/') === false) {
     return (
       'https://cdn.jsdelivr.net/npm/ideogram@' + version + '/dist/data/bands/native/'
     );
@@ -212,6 +210,8 @@ function downloadPng(ideo) {
   canvas.setAttribute('style', 'display: none');
   canvas.setAttribute('id', canvasId);
   var width = ideoSvg.width.baseVal.value + 30;
+  var ideoSvgClone = ideoSvg.cloneNode(true);
+  ideoSvgClone.style.left = '';
   canvas.setAttribute('width', width);
   document.body.appendChild(canvas);
 
@@ -234,6 +234,7 @@ function downloadPng(ideo) {
     document.body.appendChild(a);
 
     a.dispatchEvent(evt);
+    canvas.remove();
   }
 
   var canvas = document.getElementById(canvasId);
@@ -245,7 +246,7 @@ function downloadPng(ideo) {
   ctx.setTransform(2, 0, 0, 2, 0, 0);
   ctx.imageSmoothingEnabled = false;
 
-  var data = (new XMLSerializer()).serializeToString(ideoSvg);
+  var data = (new XMLSerializer()).serializeToString(ideoSvgClone);
   var domUrl = window.URL || window.webkitURL || window;
 
   var img = new Image();

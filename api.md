@@ -34,9 +34,11 @@ var ideogram = new Ideogram({
 * [assembly](#assembly)
 * [barWidth](#barwidth)
 * [brush](#brush)
+* [chrBorderColor](#chrbordercolor)
 * [chrHeight](#chrheight)
 * [chrMargin](#chrmargin)
 * [chrWidth](#chrwidth)
+* [chrLabelColor](#chrlabelcolor)
 * [chrLabelSize](#chrlabelsize)
 * [chromosomes](#chromosomes)
 * [chromosomeScale](#chromosomescale)
@@ -126,6 +128,9 @@ Number.  Optional.  Default: 3.  The pixel width of bars drawn when `annotations
 ## brush
 String.  Optional.  Default: null.  Genomic coordinate range (e.g. "chr1:104325484-119977655") for a [brush](https://github.com/d3/d3-brush) on a chromosome.  Useful when ideogram consists of one chromosome and you want to be able to focus on a region within that chromosome, and create an interactive sliding window to other regions.  Example in [Brush](https://eweitz.github.io/ideogram/brush).
 
+## chrBorderColor
+String.  Optional.  Default: "#000".  The color of the border for each chromosome.
+
 ## chrHeight
 Number.  Optional.  Default: 400.  The pixel height of the tallest chromosome in the ideogram.  Examples in [Layout, small](https://eweitz.github.io/ideogram/layout_small) and [Annotations, basic](https://eweitz.github.io/ideogram/annotations-basic).
 
@@ -134,6 +139,9 @@ Number.  Optional.  Default: 10.  The pixel space of the margin between each chr
 
 ## chrWidth
 Number.  Optional.  Default: 10.  The pixel width of each chromosome.  Example in [Annotations, tracks](https://eweitz.github.io/ideogram/annotations-tracks).
+
+## chrLabelColor
+String. Optional.  Default: "#000".  The color of the label for each chromosome.
 
 ## chrLabelSize
 Number.  Optional.  Default: 9.  The pixel font size of chromosome labels.  Example in [Differential expression of genes](https://eweitz.github.io/ideogram/differential-expression).

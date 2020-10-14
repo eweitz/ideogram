@@ -62,7 +62,7 @@ function writeTooltipContainer(ideo) {
     .style('background', 'white')
     .style('border', '1px solid black')
     .style('border-radius', '5px')
-    .style('z-index', '9000');
+    .style('z-index', '1000');
 }
 
 function writeContainerDom(ideo) {
