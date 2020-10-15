@@ -207,9 +207,20 @@ export default class Ideogram {
       // Method is POST, so content-type must be defined in header
       init.headers = {'Content-Type': 'application/json'};
     }
+
+    // const random = Math.random();
+    // console.log(random)
+    // if (random < 0.5) {
     const response = await fetch(`https://rest.ensembl.org${path}`, init);
     const json = await response.json();
     return json;
+    // } else {
+    //   // Mock error
+    //   init.headers = {'Content-Type': 'application/json'};
+    //   const response = await fetch('https://httpstat.us/500/cors', init);
+    //   const json = await response.json();
+    //   return json;
+    // }
   }
 
   /**
