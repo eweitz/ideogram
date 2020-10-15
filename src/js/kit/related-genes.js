@@ -379,6 +379,9 @@ function finishPlotRelatedGenes(ideoInnerDom, ideo) {
     if (b.color === 'purple' && a.color === 'pink') return -1;
     return b.name.length - a.name.length;
   });
+  if (annots.length > 1 && ideo.onFindRelatedGenesCallback) {
+    ideo.onFindRelatedGenesCallback();
+  }
   ideo.drawAnnots(annots);
   moveLegend(ideoInnerDom);
 }
@@ -594,6 +597,10 @@ function _initRelatedGenes(config, annotsInList) {
 
   if (config.onPlotRelatedGenes) {
     ideogram.onPlotRelatedGenesCallback = config.onPlotRelatedGenes;
+  }
+
+  if (config.onFindRelatedGenes) {
+    ideogram.onFindRelatedGenesCallback = config.onFindRelatedGenes;
   }
 
   return ideogram;
