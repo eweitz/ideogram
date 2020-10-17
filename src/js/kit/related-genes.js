@@ -352,10 +352,15 @@ function applyAnnotsIncludeList(annots, ideo) {
 /** Fetch and draw interacting genes, return Promise for annots */
 function processInteractions(annot, ideoInnerDom, ideo) {
   return new Promise(async (resolve) => {
+    const t0 = performance.now();
+
     const interactions = await fetchInteractingGenes(annot, ideo);
     const annots = await fetchInteractingGeneAnnots(interactions, ideo);
     ideo.relatedAnnots.push(...annots);
-    finishPlotRelatedGenes(ideoInnerDom, ideo);
+    finishPlotRelatedGenes(ideoInnerDom, ideo, 'interacting');
+
+    ideo.time.rg.interactions = timeDiff(t0);
+
     resolve();
   });
 }
@@ -363,15 +368,33 @@ function processInteractions(annot, ideoInnerDom, ideo) {
 /** Find and draw paralogs, return Promise for annots */
 function processParalogs(annot, ideoInnerDom, ideo) {
   return new Promise(async (resolve) => {
+    const t0 = performance.now();
+
     const annots = await fetchParalogs(annot, ideo);
     ideo.relatedAnnots.push(...annots);
-    finishPlotRelatedGenes(ideoInnerDom, ideo);
+    finishPlotRelatedGenes(ideoInnerDom, ideo, 'paralogous');
+
+    ideo.time.rg.paralogs = timeDiff(t0);
+
     resolve();
   });
 }
 
+function analyzePlotTimes(annots, relatedType, ideo) {
+
+  if (!ideo._didRelatedGenesFirstPlot) {
+    ideo.time.rg.timestampFirstPlot = performance.now();
+    ideo.time.rg.totalFirstPlot = timeDiff(ideo.time.rg.t0);
+    ideo._relatedGenesFirstPlotType = relatedType;
+    ideo._didRelatedGenesFirstPlot = true;
+  } else {
+    const timestampFirstPlot = ideo.time.rg.timestampFirstPlot;
+    ideo.time.rg.totalLastPlotDiff = timeDiff(timestampFirstPlot);
+  }
+}
+
 /** Filter, sort, draw annots.  Move legend. */
-function finishPlotRelatedGenes(ideoInnerDom, ideo) {
+function finishPlotRelatedGenes(ideoInnerDom, ideo, relatedType) {
   let annots = ideo.relatedAnnots.slice();
   annots = applyAnnotsIncludeList(annots, ideo);
   annots.sort((a, b) => {
@@ -384,6 +407,51 @@ function finishPlotRelatedGenes(ideoInnerDom, ideo) {
   }
   ideo.drawAnnots(annots);
   moveLegend(ideoInnerDom);
+
+  analyzePlotTimes(annots, relatedType, ideo);
+}
+
+/** Get time in milliseconds between a start time (t0) and now */
+function timeDiff(t0) {
+  return Math.round(performance.now() - t0);
+}
+
+/** Fetch position of searched gene, return corresponding annotation */
+async function processSearchedGene(geneSymbol, ideo) {
+  const t0 = performance.now();
+
+  // Fetch positon of searched gene
+  const taxid = ideo.config.taxid;
+  const queryString =
+    `?q=symbol:${geneSymbol}&species=${taxid}&fields=symbol,genomic_pos,name`;
+  const data = await fetchMyGeneInfo(queryString);
+
+  const gene = data.hits[0];
+  const name = gene.name;
+  const ensemblId = gene.genomic_pos.ensemblgene;
+  ideo.annotDescriptions.annots[gene.symbol] = {
+    description: name, ensemblId, name, type: 'searched gene'
+  };
+
+  const annot = parseAnnotFromMgiGene(gene, ideo);
+
+  ideo.relatedAnnots.push(annot);
+
+  ideo.time.rg.searchedGene = timeDiff(t0);
+
+  return annot;
+}
+
+// Initialize performance analysis settings
+function initAnalyzeRelatedGenes(ideo) {
+  ideo.time = {
+    rg: { // times for related genes
+      t0: performance.now()
+    }
+  };
+  if ('_didRelatedGenesFirstPlot' in ideo) {
+    delete ideo._didRelatedGenesFirstPlot;
+  }
 }
 
 /**
@@ -394,7 +462,8 @@ function finishPlotRelatedGenes(ideoInnerDom, ideo) {
 async function plotRelatedGenes(geneSymbol) {
 
   const ideo = this;
-  const t0 = performance.now();
+
+  initAnalyzeRelatedGenes(ideo);
 
   const organism = ideo.getScientificName(ideo.config.taxid);
   const version = Ideogram.version;
@@ -443,30 +512,17 @@ async function plotRelatedGenes(geneSymbol) {
     ideo.didAdjustIdeogramLegend = true;
   }
 
-  // Fetch positon of searched gene
-  const taxid = ideo.config.taxid;
-  const queryString =
-    `?q=symbol:${geneSymbol}&species=${taxid}&fields=symbol,genomic_pos,name`;
-  const data = await fetchMyGeneInfo(queryString);
-
-  const gene = data.hits[0];
-  const name = gene.name;
-  const ensemblId = gene.genomic_pos.ensemblgene;
-  ideo.annotDescriptions.annots[gene.symbol] = {
-    description: name, ensemblId, name, type: 'searched gene'
-  };
-
   ideo.relatedAnnots = [];
 
-  const annot = parseAnnotFromMgiGene(gene, ideo);
-  ideo.relatedAnnots.push(annot);
+  // Fetch positon of searched gene
+  const annot = await processSearchedGene(geneSymbol, ideo);
 
   await Promise.all([
     processInteractions(annot, ideoInnerDom, ideo),
     processParalogs(annot, ideoInnerDom, ideo)
   ]);
 
-  ideo.timeRelatedGenes = Math.round(performance.now() - t0);
+  ideo.time.rg.total = timeDiff(ideo.time.rg.t0);
 
   analyzeRelatedGenes(ideo);
 
@@ -477,6 +533,7 @@ async function plotRelatedGenes(geneSymbol) {
 /** Summarizes number and kind of related genes, performance, etc. */
 function analyzeRelatedGenes(ideo) {
   const relatedGenes = ideo.annotDescriptions.annots;
+
   const numRelatedGenes = Object.keys(relatedGenes).length;
   const values = Object.values(relatedGenes);
   const numParalogs =
@@ -485,12 +542,21 @@ function analyzeRelatedGenes(ideo) {
     values.filter(v => v.type === 'interacting gene').length;
   const searchedGene = Object.entries(relatedGenes)
     .filter((entry) => entry[1].type === 'searched gene')[0][0];
-  const time = ideo.timeRelatedGenes;
+
+  const timeTotal = ideo.time.rg.total;
+  const timeTotalFirstPlot = ideo.time.rg.totalFirstPlot;
+  const timeTotalLastPlotDiff = ideo.time.rg.totalLastPlotDiff;
+  const timeParalogs = ideo.time.rg.paralogs;
+  const timeInteractingGenes = ideo.time.rg.interactions;
+  const timeSearchedGene = ideo.time.rg.searchedGene;
+  const firstPlotType = ideo._relatedGenesFirstPlotType;
 
   ideo.relatedGenesAnalytics = {
     searchedGene,
+    firstPlotType,
     numRelatedGenes, numParalogs, numInteractingGenes,
-    time
+    timeTotal, timeTotalFirstPlot, timeTotalLastPlotDiff,
+    timeSearchedGene, timeInteractingGenes, timeParalogs
   };
 }
 
@@ -595,10 +661,12 @@ function _initRelatedGenes(config, annotsInList) {
 
   const ideogram = new Ideogram(kitConfig);
 
+  // Called upon completing last plot, including all related genes
   if (config.onPlotRelatedGenes) {
     ideogram.onPlotRelatedGenesCallback = config.onPlotRelatedGenes;
   }
 
+  // Called upon 1) finding paralogs, and 2) finding interacting genes
   if (config.onFindRelatedGenes) {
     ideogram.onFindRelatedGenesCallback = config.onFindRelatedGenes;
   }
