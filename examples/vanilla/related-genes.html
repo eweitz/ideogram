@@ -52,9 +52,6 @@
       cursor: pointer;
     }
 
-    #ideogram-container #_ideogramInnerWrap {
-      visibility: hidden;
-    }
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
 <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
@@ -221,13 +218,7 @@
       updateUrl();
 
       const selector = '#ideogram-container #_ideogramInnerWrap'
-      document.querySelector(selector).style.visibility = 'hidden';
       ideogram.plotRelatedGenes(annot.name);
-    }
-
-    function showIdeogram() {
-      const selector = '#ideogram-container #_ideogramInnerWrap'
-      document.querySelector(selector).style.visibility = 'visible';
     }
 
     config = {
@@ -239,7 +230,6 @@
       annotationHeight: 7,
       onClickAnnot: onClickAnnot,
       onLoad: plotGeneFromUrl,
-      onFindRelatedGenes: showIdeogram,
       onPlotRelatedGenes: reportRelatedGenes
     }
 

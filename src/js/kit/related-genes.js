@@ -21,6 +21,10 @@
  * https://eweitz.github.io/ideogram/related-genes
  */
 
+import {
+  initAnalyzeRelatedGenes, analyzePlotTimes, analyzeRelatedGenes, timeDiff
+} from './analyze-related-genes';
+
 /**
  * Determines if interaction node might be a gene
  *
@@ -380,21 +384,8 @@ function processParalogs(annot, ideoInnerDom, ideo) {
   });
 }
 
-function analyzePlotTimes(annots, relatedType, ideo) {
-
-  if (!ideo._didRelatedGenesFirstPlot) {
-    ideo.time.rg.timestampFirstPlot = performance.now();
-    ideo.time.rg.totalFirstPlot = timeDiff(ideo.time.rg.t0);
-    ideo._relatedGenesFirstPlotType = relatedType;
-    ideo._didRelatedGenesFirstPlot = true;
-  } else {
-    const timestampFirstPlot = ideo.time.rg.timestampFirstPlot;
-    ideo.time.rg.totalLastPlotDiff = timeDiff(timestampFirstPlot);
-  }
-}
-
 /** Filter, sort, draw annots.  Move legend. */
-function finishPlotRelatedGenes(ideoInnerDom, ideo, relatedType) {
+function finishPlotRelatedGenes(ideoInnerDom, ideo, type) {
   let annots = ideo.relatedAnnots.slice();
   annots = applyAnnotsIncludeList(annots, ideo);
   annots.sort((a, b) => {
@@ -408,12 +399,7 @@ function finishPlotRelatedGenes(ideoInnerDom, ideo, relatedType) {
   ideo.drawAnnots(annots);
   moveLegend(ideoInnerDom);
 
-  analyzePlotTimes(annots, relatedType, ideo);
-}
-
-/** Get time in milliseconds between a start time (t0) and now */
-function timeDiff(t0) {
-  return Math.round(performance.now() - t0);
+  analyzePlotTimes(type, ideo);
 }
 
 /** Fetch position of searched gene, return corresponding annotation */
@@ -440,18 +426,6 @@ async function processSearchedGene(geneSymbol, ideo) {
   ideo.time.rg.searchedGene = timeDiff(t0);
 
   return annot;
-}
-
-// Initialize performance analysis settings
-function initAnalyzeRelatedGenes(ideo) {
-  ideo.time = {
-    rg: { // times for related genes
-      t0: performance.now()
-    }
-  };
-  if ('_didRelatedGenesFirstPlot' in ideo) {
-    delete ideo._didRelatedGenesFirstPlot;
-  }
 }
 
 /**
@@ -528,36 +502,6 @@ async function plotRelatedGenes(geneSymbol) {
 
   if (ideo.onPlotRelatedGenesCallback) ideo.onPlotRelatedGenesCallback();
 
-}
-
-/** Summarizes number and kind of related genes, performance, etc. */
-function analyzeRelatedGenes(ideo) {
-  const relatedGenes = ideo.annotDescriptions.annots;
-
-  const numRelatedGenes = Object.keys(relatedGenes).length;
-  const values = Object.values(relatedGenes);
-  const numParalogs =
-    values.filter(v => v.type === 'paralogous gene').length;
-  const numInteractingGenes =
-    values.filter(v => v.type === 'interacting gene').length;
-  const searchedGene = Object.entries(relatedGenes)
-    .filter((entry) => entry[1].type === 'searched gene')[0][0];
-
-  const timeTotal = ideo.time.rg.total;
-  const timeTotalFirstPlot = ideo.time.rg.totalFirstPlot;
-  const timeTotalLastPlotDiff = ideo.time.rg.totalLastPlotDiff;
-  const timeParalogs = ideo.time.rg.paralogs;
-  const timeInteractingGenes = ideo.time.rg.interactions;
-  const timeSearchedGene = ideo.time.rg.searchedGene;
-  const firstPlotType = ideo._relatedGenesFirstPlotType;
-
-  ideo.relatedGenesAnalytics = {
-    searchedGene,
-    firstPlotType,
-    numRelatedGenes, numParalogs, numInteractingGenes,
-    timeTotal, timeTotalFirstPlot, timeTotalLastPlotDiff,
-    timeSearchedGene, timeInteractingGenes, timeParalogs
-  };
 }
 
 function getAnnotByName(annotName, ideo) {
