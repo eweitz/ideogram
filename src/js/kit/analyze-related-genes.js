@@ -15,7 +15,8 @@ function initAnalyzeRelatedGenes(ideo) {
   }
 }
 
-function getRelatedGenesByType(ideo) {
+function getRelatedGenesByType() {
+  const ideo = this;
   const relatedGenes = ideo.annotDescriptions.annots;
 
   const related = Object.values(relatedGenes);
@@ -46,7 +47,7 @@ function analyzePlotTimes(type, ideo) {
     paralogous: 'interacting',
     interacting: 'paralogous'
   };
-  const related = getRelatedGenesByType(ideo);
+  const related = ideo.getRelatedGenesByType();
   const otherType = otherTypes[type];
   const numThisRelated = related[type].length;
   const numOtherRelated = related[otherType] ? related[otherType].length : 0;
@@ -90,7 +91,7 @@ function analyzePlotTimes(type, ideo) {
 
 /** Summarizes number and kind of related genes, performance, etc. */
 function analyzeRelatedGenes(ideo) {
-  const related = getRelatedGenesByType(ideo);
+  const related = ideo.getRelatedGenesByType();
 
   const numRelatedGenes = related['related'].length;
   const numParalogs = related['paralogous'].length;
@@ -115,5 +116,6 @@ function analyzeRelatedGenes(ideo) {
 }
 
 export {
-  initAnalyzeRelatedGenes, analyzePlotTimes, analyzeRelatedGenes, timeDiff
+  initAnalyzeRelatedGenes, analyzePlotTimes, analyzeRelatedGenes, timeDiff,
+  getRelatedGenesByType
 };

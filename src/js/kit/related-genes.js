@@ -22,7 +22,8 @@
  */
 
 import {
-  initAnalyzeRelatedGenes, analyzePlotTimes, analyzeRelatedGenes, timeDiff
+  initAnalyzeRelatedGenes, analyzePlotTimes, analyzeRelatedGenes, timeDiff,
+  getRelatedGenesByType
 } from './analyze-related-genes';
 
 /**
@@ -618,4 +619,4 @@ function _initRelatedGenes(config, annotsInList) {
   return ideogram;
 }
 
-export {_initRelatedGenes, plotRelatedGenes};
+export {_initRelatedGenes, plotRelatedGenes, getRelatedGenesByType};
