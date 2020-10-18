@@ -61,7 +61,7 @@ import {
 } from './views/chromosome-labels.js';
 
 import {
-  _initRelatedGenes, plotRelatedGenes
+  _initRelatedGenes, plotRelatedGenes, getRelatedGenesByType
 } from './kit/related-genes';
 
 export default class Ideogram {
@@ -168,6 +168,7 @@ export default class Ideogram {
     this.setOverflowScroll = setOverflowScroll;
 
     this.plotRelatedGenes = plotRelatedGenes;
+    this.getRelatedGenesByType = getRelatedGenesByType;
 
     this.configure(config);
   }

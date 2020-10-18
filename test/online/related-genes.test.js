@@ -18,7 +18,7 @@ describe('Ideogram related genes kit', function() {
     d3.selectAll('div').remove();
   });
 
-  it('should handle "Related genes" kit', done => {
+  it('handles searched gene and annotation click', done => {
     // Tests use case from ../examples/vanilla/related-genes
 
     async function callback() {
@@ -41,6 +41,17 @@ describe('Ideogram related genes kit', function() {
       ideogram.plotRelatedGenes(annot.name);
     }
 
+    function onPlotRelatedGenes() {
+      // pass through
+    }
+
+    function onWillShowAnnotTooltip(annot) {
+      const ideo = this;
+      const analytics = ideo.getTooltipAnalytics(annot, ideo);
+      assert.equal(analytics.tooltipRelatedType, 'interacting');
+      return annot;
+    }
+
     var config = {
       organism: 'Homo sapiens', // Also tests standard, non-slugged name
       chrWidth: 8,
@@ -49,9 +60,123 @@ describe('Ideogram related genes kit', function() {
       annotationHeight: 5,
       onLoad: callback,
       dataDir: '/dist/data/bands/native/',
-      onClickAnnot: onClickAnnot
+      onClickAnnot,
+      onPlotRelatedGenes,
+      onWillShowAnnotTooltip
     };
 
     const ideogram = Ideogram.initRelatedGenes(config);
   });
+
+  it('handles gene with interacting genes but no paralogs', done => {
+    // Tests use case from ../examples/vanilla/related-genes
+
+    async function callback() {
+      const ideo = this;
+
+      await ideogram.plotRelatedGenes('BRCA2');
+
+      const related = ideo.getRelatedGenesByType();
+
+      const numParalogs = related.paralogous.length;
+      const numInteractingGenes = related.interacting.length;
+
+      assert.isAtLeast(numInteractingGenes, 1);
+      assert.equal(numParalogs, 0);
+
+      done();
+    }
+
+    function onClickAnnot(annot) {
+      ideogram.plotRelatedGenes(annot.name);
+    }
+
+    var config = {
+      organism: 'Homo sapiens', // Also tests standard, non-slugged name
+      chrWidth: 8,
+      chrHeight: 90,
+      chrLabelSize: 10,
+      annotationHeight: 5,
+      onLoad: callback,
+      dataDir: '/dist/data/bands/native/',
+      onClickAnnot
+    };
+
+    const ideogram = Ideogram.initRelatedGenes(config);
+  });
+
+  it('handles gene with paralogs but no interacting genes', done => {
+    // Tests use case from ../examples/vanilla/related-genes
+
+    async function callback() {
+      const ideo = this;
+
+      await ideogram.plotRelatedGenes('DMC1');
+
+      const related = ideo.getRelatedGenesByType();
+
+      const numParalogs = related.paralogous.length;
+      const numInteractingGenes = related.interacting.length;
+
+      assert.equal(numInteractingGenes, 0);
+      assert.isAtLeast(numParalogs, 1);
+
+      done();
+    }
+
+    function onClickAnnot(annot) {
+      ideogram.plotRelatedGenes(annot.name);
+    }
+
+    var config = {
+      organism: 'Homo sapiens', // Also tests standard, non-slugged name
+      chrWidth: 8,
+      chrHeight: 90,
+      chrLabelSize: 10,
+      annotationHeight: 5,
+      onLoad: callback,
+      dataDir: '/dist/data/bands/native/',
+      onClickAnnot
+    };
+
+    const ideogram = Ideogram.initRelatedGenes(config);
+  });
+
+  it('handles gene with no interacting genes and no paralogs', done => {
+    // Tests use case from ../examples/vanilla/related-genes
+
+    async function callback() {
+      const ideo = this;
+
+      await ideogram.plotRelatedGenes('BRCA1');
+
+      const related = ideo.getRelatedGenesByType();
+
+      const numParalogs = related.paralogous.length;
+      const numInteractingGenes = related.interacting.length;
+
+      assert.equal(numInteractingGenes, 0);
+      assert.equal(numParalogs, 0);
+
+      done();
+    }
+
+    function onClickAnnot(annot) {
+      ideogram.plotRelatedGenes(annot.name);
+    }
+
+    var config = {
+      organism: 'Macaca mulatta', // Also tests standard, non-slugged name
+      chrWidth: 8,
+      chrHeight: 90,
+      chrLabelSize: 10,
+      annotationHeight: 5,
+      onLoad: callback,
+      dataDir: '/dist/data/bands/native/',
+      onClickAnnot
+    };
+
+    const ideogram = Ideogram.initRelatedGenes(config);
+  });
+
 });

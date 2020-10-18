@@ -52,9 +52,6 @@
       cursor: pointer;
     }
 
-    #ideogram-container #_ideogramInnerWrap {
-      visibility: hidden;
-    }
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
 <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
@@ -181,7 +178,7 @@
       // const banded = !['homo sapiens', 'mus musculus'].includes(selectedOrg);
       // config.showFullyBanded = banded;
       delete ideogram;
-      ideogram = new Ideogram(config);
+      ideogram = Ideogram.initRelatedGenes(config);
 
     }
 
@@ -221,13 +218,14 @@
       updateUrl();
 
       const selector = '#ideogram-container #_ideogramInnerWrap'
-      document.querySelector(selector).style.visibility = 'hidden';
       ideogram.plotRelatedGenes(annot.name);
     }
 
-    function showIdeogram() {
-      const selector = '#ideogram-container #_ideogramInnerWrap'
-      document.querySelector(selector).style.visibility = 'visible';
+    function onWillShowAnnotTooltip(annot) {
+      const ideo = this;
+      const tooltipAnalytics = ideo.getTooltipAnalytics(annot);
+      console.log(tooltipAnalytics);
+      return annot
     }
 
     config = {
@@ -237,16 +235,16 @@
       chrHeight: 100,
       chrLabelSize: 12,
       annotationHeight: 7,
-      onClickAnnot: onClickAnnot,
       onLoad: plotGeneFromUrl,
-      onFindRelatedGenes: showIdeogram,
-      onPlotRelatedGenes: reportRelatedGenes
+      onPlotRelatedGenes: reportRelatedGenes,
+      onWillShowAnnotTooltip,
+      onClickAnnot
     }
 
     // annotsInList = ['CDK9', 'CDK19', 'CDK1'];
     // let ideogram = Ideogram.initRelatedGenes(config, annotsInList)
 
-    let ideogram = Ideogram.initRelatedGenes(config)
+    let ideogram = Ideogram.initRelatedGenes(config);
   </script>
 </body>
 </html>

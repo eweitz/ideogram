@@ -21,6 +21,11 @@
  * https://eweitz.github.io/ideogram/related-genes
  */
 
+import {
+  initAnalyzeRelatedGenes, analyzePlotTimes, analyzeRelatedGenes, timeDiff,
+  getRelatedGenesByType, getRelatedGenesTooltipAnalytics
+} from './analyze-related-genes';
+
 /**
  * Determines if interaction node might be a gene
  *
@@ -352,10 +357,15 @@ function applyAnnotsIncludeList(annots, ideo) {
 /** Fetch and draw interacting genes, return Promise for annots */
 function processInteractions(annot, ideoInnerDom, ideo) {
   return new Promise(async (resolve) => {
+    const t0 = performance.now();
+
     const interactions = await fetchInteractingGenes(annot, ideo);
     const annots = await fetchInteractingGeneAnnots(interactions, ideo);
     ideo.relatedAnnots.push(...annots);
-    finishPlotRelatedGenes(ideoInnerDom, ideo);
+    finishPlotRelatedGenes(ideoInnerDom, ideo, 'interacting');
+
+    ideo.time.rg.interactions = timeDiff(t0);
+
     resolve();
   });
 }
@@ -363,15 +373,20 @@ function processInteractions(annot, ideoInnerDom, ideo) {
 /** Find and draw paralogs, return Promise for annots */
 function processParalogs(annot, ideoInnerDom, ideo) {
   return new Promise(async (resolve) => {
+    const t0 = performance.now();
+
     const annots = await fetchParalogs(annot, ideo);
     ideo.relatedAnnots.push(...annots);
-    finishPlotRelatedGenes(ideoInnerDom, ideo);
+    finishPlotRelatedGenes(ideoInnerDom, ideo, 'paralogous');
+
+    ideo.time.rg.paralogs = timeDiff(t0);
+
     resolve();
   });
 }
 
 /** Filter, sort, draw annots.  Move legend. */
-function finishPlotRelatedGenes(ideoInnerDom, ideo) {
+function finishPlotRelatedGenes(ideoInnerDom, ideo, type) {
   let annots = ideo.relatedAnnots.slice();
   annots = applyAnnotsIncludeList(annots, ideo);
   annots.sort((a, b) => {
@@ -384,6 +399,34 @@ function finishPlotRelatedGenes(ideoInnerDom, ideo) {
   }
   ideo.drawAnnots(annots);
   moveLegend(ideoInnerDom);
+
+  analyzePlotTimes(type, ideo);
+}
+
+/** Fetch position of searched gene, return corresponding annotation */
+async function processSearchedGene(geneSymbol, ideo) {
+  const t0 = performance.now();
+
+  // Fetch positon of searched gene
+  const taxid = ideo.config.taxid;
+  const queryString =
+    `?q=symbol:${geneSymbol}&species=${taxid}&fields=symbol,genomic_pos,name`;
+  const data = await fetchMyGeneInfo(queryString);
+
+  const gene = data.hits[0];
+  const name = gene.name;
+  const ensemblId = gene.genomic_pos.ensemblgene;
+  ideo.annotDescriptions.annots[gene.symbol] = {
+    description: name, ensemblId, name, type: 'searched gene'
+  };
+
+  const annot = parseAnnotFromMgiGene(gene, ideo);
+
+  ideo.relatedAnnots.push(annot);
+
+  ideo.time.rg.searchedGene = timeDiff(t0);
+
+  return annot;
 }
 
 /**
@@ -394,7 +437,8 @@ function finishPlotRelatedGenes(ideoInnerDom, ideo) {
 async function plotRelatedGenes(geneSymbol) {
 
   const ideo = this;
-  const t0 = performance.now();
+
+  initAnalyzeRelatedGenes(ideo);
 
   const organism = ideo.getScientificName(ideo.config.taxid);
   const version = Ideogram.version;
@@ -443,55 +487,22 @@ async function plotRelatedGenes(geneSymbol) {
     ideo.didAdjustIdeogramLegend = true;
   }
 
-  // Fetch positon of searched gene
-  const taxid = ideo.config.taxid;
-  const queryString =
-    `?q=symbol:${geneSymbol}&species=${taxid}&fields=symbol,genomic_pos,name`;
-  const data = await fetchMyGeneInfo(queryString);
-
-  const gene = data.hits[0];
-  const name = gene.name;
-  const ensemblId = gene.genomic_pos.ensemblgene;
-  ideo.annotDescriptions.annots[gene.symbol] = {
-    description: name, ensemblId, name, type: 'searched gene'
-  };
-
   ideo.relatedAnnots = [];
 
-  const annot = parseAnnotFromMgiGene(gene, ideo);
-  ideo.relatedAnnots.push(annot);
+  // Fetch positon of searched gene
+  const annot = await processSearchedGene(geneSymbol, ideo);
 
   await Promise.all([
     processInteractions(annot, ideoInnerDom, ideo),
     processParalogs(annot, ideoInnerDom, ideo)
   ]);
 
-  ideo.timeRelatedGenes = Math.round(performance.now() - t0);
+  ideo.time.rg.total = timeDiff(ideo.time.rg.t0);
 
   analyzeRelatedGenes(ideo);
 
   if (ideo.onPlotRelatedGenesCallback) ideo.onPlotRelatedGenesCallback();
 
-}
-
-/** Summarizes number and kind of related genes, performance, etc. */
-function analyzeRelatedGenes(ideo) {
-  const relatedGenes = ideo.annotDescriptions.annots;
-  const numRelatedGenes = Object.keys(relatedGenes).length;
-  const values = Object.values(relatedGenes);
-  const numParalogs =
-    values.filter(v => v.type === 'paralogous gene').length;
-  const numInteractingGenes =
-    values.filter(v => v.type === 'interacting gene').length;
-  const searchedGene = Object.entries(relatedGenes)
-    .filter((entry) => entry[1].type === 'searched gene')[0][0];
-  const time = ideo.timeRelatedGenes;
-
-  ideo.relatedGenesAnalytics = {
-    searchedGene,
-    numRelatedGenes, numParalogs, numInteractingGenes,
-    time
-  };
 }
 
 function getAnnotByName(annotName, ideo) {
@@ -590,20 +601,37 @@ function _initRelatedGenes(config, annotsInList) {
     showTools: true
   };
 
+  if ('onWillShowAnnotTooltip' in config) {
+    const key = 'onWillShowAnnotTooltip';
+    const clientFn = config[key];
+    const defaultFunction = kitDefaults[key];
+    const newFunction = function(annot) {
+      annot = defaultFunction.bind(this)(annot);
+      annot = clientFn.bind(this)(annot);
+      return annot;
+    };
+    kitDefaults[key] = newFunction;
+    delete config[key];
+  }
+
   // Override kit defaults if client specifies otherwise
   const kitConfig = Object.assign(kitDefaults, config);
 
   const ideogram = new Ideogram(kitConfig);
 
+  // Called upon completing last plot, including all related genes
   if (config.onPlotRelatedGenes) {
     ideogram.onPlotRelatedGenesCallback = config.onPlotRelatedGenes;
   }
 
+  // Called upon 1) finding paralogs, and 2) finding interacting genes
   if (config.onFindRelatedGenes) {
     ideogram.onFindRelatedGenesCallback = config.onFindRelatedGenes;
   }
 
+  ideogram.getTooltipAnalytics = getRelatedGenesTooltipAnalytics;
+
   return ideogram;
 }
 
-export {_initRelatedGenes, plotRelatedGenes};
+export {_initRelatedGenes, plotRelatedGenes, getRelatedGenesByType};
