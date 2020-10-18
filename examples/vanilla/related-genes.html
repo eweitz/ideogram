@@ -178,7 +178,7 @@
       // const banded = !['homo sapiens', 'mus musculus'].includes(selectedOrg);
       // config.showFullyBanded = banded;
       delete ideogram;
-      ideogram = new Ideogram(config);
+      ideogram = Ideogram.initRelatedGenes(config);
 
     }
 
@@ -244,7 +244,7 @@
     // annotsInList = ['CDK9', 'CDK19', 'CDK1'];
     // let ideogram = Ideogram.initRelatedGenes(config, annotsInList)
 
-    let ideogram = Ideogram.initRelatedGenes(config)
+    let ideogram = Ideogram.initRelatedGenes(config);
   </script>
 </body>
 </html>
