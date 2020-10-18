@@ -23,7 +23,7 @@
 
 import {
   initAnalyzeRelatedGenes, analyzePlotTimes, analyzeRelatedGenes, timeDiff,
-  getRelatedGenesByType
+  getRelatedGenesByType, getRelatedGenesTooltipAnalytics
 } from './analyze-related-genes';
 
 /**
@@ -601,6 +601,19 @@ function _initRelatedGenes(config, annotsInList) {
     showTools: true
   };
 
+  if ('onWillShowAnnotTooltip' in config) {
+    const key = 'onWillShowAnnotTooltip';
+    const clientFn = config[key];
+    const defaultFunction = kitDefaults[key];
+    const newFunction = function(annot) {
+      annot = defaultFunction.bind(this)(annot);
+      annot = clientFn.bind(this)(annot);
+      return annot;
+    };
+    kitDefaults[key] = newFunction;
+    delete config[key];
+  }
+
   // Override kit defaults if client specifies otherwise
   const kitConfig = Object.assign(kitDefaults, config);
 
@@ -615,6 +628,8 @@ function _initRelatedGenes(config, annotsInList) {
   if (config.onFindRelatedGenes) {
     ideogram.onFindRelatedGenesCallback = config.onFindRelatedGenes;
   }
+
+  ideogram.getTooltipAnalytics = getRelatedGenesTooltipAnalytics;
 
   return ideogram;
 }

@@ -28,6 +28,23 @@ function getRelatedGenesByType() {
   return {related, paralogous, interacting, searched};
 }
 
+function getRelatedGenesTooltipAnalytics(annot, ideo) {
+
+  const tooltipGene = annot.name;
+
+  // e.g. "interacting gene" -> "interacting"
+  const tooltipRelatedType =
+    ideo.annotDescriptions.annots[annot.name].type.split(' ')[0];
+
+  const countsByType = getCountsByType(ideo);
+
+  const analytics = Object.assign(
+    {tooltipGene, tooltipRelatedType}, countsByType
+  );
+
+  return analytics;
+}
+
 /** Compute granular related genes plotting analytics */
 function analyzePlotTimes(type, ideo) {
   // Paralogs and interacting genes:
@@ -89,14 +106,23 @@ function analyzePlotTimes(type, ideo) {
   }
 }
 
-/** Summarizes number and kind of related genes, performance, etc. */
-function analyzeRelatedGenes(ideo) {
+function getCountsByType(ideo) {
   const related = ideo.getRelatedGenesByType();
 
   const numRelatedGenes = related['related'].length;
   const numParalogs = related['paralogous'].length;
   const numInteractingGenes = related['interacting'].length;
   const searchedGene = related['searched'];
+
+  return {
+    numRelatedGenes, numParalogs, numInteractingGenes, searchedGene
+  };
+}
+
+/** Summarizes number and kind of related genes, performance, etc. */
+function analyzeRelatedGenes(ideo) {
+
+  const countsByType = getCountsByType(ideo);
 
   const timeTotal = ideo.time.rg.total;
   const timeTotalFirstPlot = ideo.time.rg.totalFirstPlot;
@@ -106,16 +132,16 @@ function analyzeRelatedGenes(ideo) {
   const timeSearchedGene = ideo.time.rg.searchedGene;
   const firstPlotType = ideo._relatedGenesFirstPlotType;
 
-  ideo.relatedGenesAnalytics = {
-    searchedGene,
+  const analytics = Object.assign({
     firstPlotType,
-    numRelatedGenes, numParalogs, numInteractingGenes,
     timeTotal, timeTotalFirstPlot, timeTotalLastPlotDiff,
     timeSearchedGene, timeInteractingGenes, timeParalogs
-  };
+  }, countsByType);
+
+  ideo.relatedGenesAnalytics = analytics;
 }
 
 export {
   initAnalyzeRelatedGenes, analyzePlotTimes, analyzeRelatedGenes, timeDiff,
-  getRelatedGenesByType
+  getRelatedGenesByType, getRelatedGenesTooltipAnalytics
 };

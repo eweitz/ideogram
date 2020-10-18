@@ -221,6 +221,13 @@
       ideogram.plotRelatedGenes(annot.name);
     }
 
+    function onWillShowAnnotTooltip(annot) {
+      const ideo = this;
+      const tooltipAnalytics = ideo.getTooltipAnalytics(annot, ideo);
+      console.log(tooltipAnalytics);
+      return annot
+    }
+
     config = {
       organism: organism,
       container: '#ideogram-container',
@@ -228,9 +235,10 @@
       chrHeight: 100,
       chrLabelSize: 12,
       annotationHeight: 7,
-      onClickAnnot: onClickAnnot,
       onLoad: plotGeneFromUrl,
-      onPlotRelatedGenes: reportRelatedGenes
+      onPlotRelatedGenes: reportRelatedGenes,
+      onWillShowAnnotTooltip,
+      onClickAnnot
     }
 
     // annotsInList = ['CDK9', 'CDK19', 'CDK1'];
