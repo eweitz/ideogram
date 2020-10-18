@@ -45,6 +45,13 @@ describe('Ideogram related genes kit', function() {
       // pass through
     }
 
+    function onWillShowAnnotTooltip(annot) {
+      const ideo = this;
+      const analytics = ideo.getTooltipAnalytics(annot, ideo);
+      assert.equal(analytics.tooltipRelatedType, 'interacting');
+      return annot;
+    }
+
     var config = {
       organism: 'Homo sapiens', // Also tests standard, non-slugged name
       chrWidth: 8,
@@ -54,7 +61,8 @@ describe('Ideogram related genes kit', function() {
       onLoad: callback,
       dataDir: '/dist/data/bands/native/',
       onClickAnnot,
-      onPlotRelatedGenes
+      onPlotRelatedGenes,
+      onWillShowAnnotTooltip
     };
 
     const ideogram = Ideogram.initRelatedGenes(config);

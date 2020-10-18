@@ -28,7 +28,8 @@ function getRelatedGenesByType() {
   return {related, paralogous, interacting, searched};
 }
 
-function getRelatedGenesTooltipAnalytics(annot, ideo) {
+function getRelatedGenesTooltipAnalytics(annot) {
+  const ideo = this;
 
   const tooltipGene = annot.name;
 
