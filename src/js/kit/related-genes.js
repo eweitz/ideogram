@@ -355,14 +355,14 @@ function applyAnnotsIncludeList(annots, ideo) {
 }
 
 /** Fetch and draw interacting genes, return Promise for annots */
-function processInteractions(annot, ideoInnerDom, ideo) {
+function processInteractions(annot, ideo) {
   return new Promise(async (resolve) => {
     const t0 = performance.now();
 
     const interactions = await fetchInteractingGenes(annot, ideo);
     const annots = await fetchInteractingGeneAnnots(interactions, ideo);
     ideo.relatedAnnots.push(...annots);
-    finishPlotRelatedGenes(ideoInnerDom, ideo, 'interacting');
+    finishPlotRelatedGenes('interacting', ideo);
 
     ideo.time.rg.interactions = timeDiff(t0);
 
@@ -371,13 +371,13 @@ function processInteractions(annot, ideoInnerDom, ideo) {
 }
 
 /** Find and draw paralogs, return Promise for annots */
-function processParalogs(annot, ideoInnerDom, ideo) {
+function processParalogs(annot, ideo) {
   return new Promise(async (resolve) => {
     const t0 = performance.now();
 
     const annots = await fetchParalogs(annot, ideo);
     ideo.relatedAnnots.push(...annots);
-    finishPlotRelatedGenes(ideoInnerDom, ideo, 'paralogous');
+    finishPlotRelatedGenes('paralogous', ideo);
 
     ideo.time.rg.paralogs = timeDiff(t0);
 
@@ -386,7 +386,7 @@ function processParalogs(annot, ideoInnerDom, ideo) {
 }
 
 /** Filter, sort, draw annots.  Move legend. */
-function finishPlotRelatedGenes(ideoInnerDom, ideo, type) {
+function finishPlotRelatedGenes(type, ideo) {
   let annots = ideo.relatedAnnots.slice();
   annots = applyAnnotsIncludeList(annots, ideo);
   annots.sort((a, b) => {
@@ -398,6 +398,7 @@ function finishPlotRelatedGenes(ideoInnerDom, ideo, type) {
     ideo.onFindRelatedGenesCallback();
   }
   ideo.drawAnnots(annots);
+  const ideoInnerDom = document.querySelector('#_ideogramInnerWrap');
   moveLegend(ideoInnerDom);
 
   analyzePlotTimes(type, ideo);
@@ -427,6 +428,34 @@ async function processSearchedGene(geneSymbol, ideo) {
   ideo.time.rg.searchedGene = timeDiff(t0);
 
   return annot;
+}
+
+function adjustPlaceAndVisibility(ideo) {
+  var ideoContainerDom = document.querySelector(ideo.config.container);
+  ideoContainerDom.style.position = 'absolute';
+  ideoContainerDom.style.width = '100%';
+
+  var ideoInnerDom = document.querySelector('#_ideogramInnerWrap');
+  ideoInnerDom.style.position = 'relative';
+  ideoInnerDom.style.marginLeft = 'auto';
+  ideoInnerDom.style.marginRight = 'auto';
+  ideoInnerDom.style.overflowY = 'hidden';
+  document.querySelector('#_ideogramMiddleWrap').style.overflowY = 'hidden';
+
+  if (typeof ideo.didAdjustIdeogramLegend === 'undefined') {
+    // Accounts for moving legend when external content at left or right
+    // is variable upon first rendering plotted genes
+    var ideoDom = document.querySelector('#_ideogram');
+    const legendWidth = 140;
+    ideoInnerDom.style.maxWidth =
+      (parseInt(ideoInnerDom.style.maxWidth) + legendWidth) + 'px';
+    ideoDom.style.maxWidth =
+      (parseInt(ideoDom.style.minWidth)) + 'px';
+    ideoDom.style.position = 'relative';
+    ideoDom.style.left = legendWidth + 'px';
+
+    ideo.didAdjustIdeogramLegend = true;
+  }
 }
 
 /**
@@ -461,31 +490,7 @@ async function plotRelatedGenes(geneSymbol) {
     chromosome.style.cursor = '';
   });
 
-  var ideoContainerDom = document.querySelector(ideo.config.container);
-
-  ideoContainerDom.style.position = 'absolute';
-  ideoContainerDom.style.width = '100%';
-  var ideoInnerDom = document.querySelector('#_ideogramInnerWrap');
-  ideoInnerDom.style.position = 'relative';
-  ideoInnerDom.style.marginLeft = 'auto';
-  ideoInnerDom.style.marginRight = 'auto';
-  ideoInnerDom.style.overflowY = 'hidden';
-  document.querySelector('#_ideogramMiddleWrap').style.overflowY = 'hidden';
-
-  if (typeof ideo.didAdjustIdeogramLegend === 'undefined') {
-    // Accounts for moving legend when external content at left or right
-    // is variable upon first rendering plotted genes
-    var ideoDom = document.querySelector('#_ideogram');
-    const legendWidth = 140;
-    ideoInnerDom.style.maxWidth =
-      (parseInt(ideoInnerDom.style.maxWidth) + legendWidth) + 'px';
-    ideoDom.style.maxWidth =
-      (parseInt(ideoDom.style.minWidth)) + 'px';
-    ideoDom.style.position = 'relative';
-    ideoDom.style.left = legendWidth + 'px';
-
-    ideo.didAdjustIdeogramLegend = true;
-  }
+  adjustPlaceAndVisibility(ideo);
 
   ideo.relatedAnnots = [];
 
@@ -493,8 +498,8 @@ async function plotRelatedGenes(geneSymbol) {
   const annot = await processSearchedGene(geneSymbol, ideo);
 
   await Promise.all([
-    processInteractions(annot, ideoInnerDom, ideo),
-    processParalogs(annot, ideoInnerDom, ideo)
+    processInteractions(annot, ideo),
+    processParalogs(annot, ideo)
   ]);
 
   ideo.time.rg.total = timeDiff(ideo.time.rg.t0);
