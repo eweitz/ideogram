@@ -227,4 +227,4 @@ function drawProcessedAnnots(annots) {
   if (ideo.onDrawAnnotsCallback) ideo.onDrawAnnotsCallback();
 }
 
-export {drawAnnots, drawProcessedAnnots};
+export {drawAnnots, drawProcessedAnnots, getShapes};

@@ -9,6 +9,7 @@ import * as d3dispatch from 'd3-dispatch';
 import * as d3format from 'd3-format';
 import {scaleLinear} from 'd3-scale';
 import {max} from 'd3-array';
+import {easeExpIn} from 'd3-ease';
 
 var d3 = Object.assign(
   {}, d3fetch, d3brush, d3dispatch, d3format
@@ -18,6 +19,7 @@ d3.select = select;
 d3.selectAll = selectAll;
 d3.scaleLinear = scaleLinear;
 d3.max = max;
+d3.easeExpIn = easeExpIn;
 
 /**
  * Is the assembly in this.config an NCBI Assembly accession?

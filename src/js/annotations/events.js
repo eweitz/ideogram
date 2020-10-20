@@ -1,4 +1,5 @@
 import {d3} from '../lib';
+import {getShapes} from './draw';
 
 /**
  * Optional callback, invoked when annotations are drawn
@@ -31,7 +32,7 @@ function startHideAnnotTooltipTimeout() {
 
   this.hideAnnotTooltipTimeout = window.setTimeout(function() {
     d3.select('._ideogramTooltip').transition()
-      .duration(500)
+      .duration(500) // fade out for half second
       .style('opacity', 0)
       .style('pointer-events', 'none');
   }, 250);
@@ -51,11 +52,16 @@ function renderTooltip(tooltip, content, matrix, yOffset, ideo) {
     });
 }
 
+/** Return DOM ID of annotation object */
+function getAnnotDomLabelId(annot) {
+  return (
+    'ideogramLabel_' + annot.chr + '_' + annot.start + '_' + annot.length
+  );
+}
+
 function renderLabel(annot, style, ideo) {
 
-  const id =
-    'ideogramLabel_' + annot.chr + '_' + annot.start + '_' + annot.length;
-
+  const id = getAnnotDomLabelId(annot);
   const background = style.backgroundColor ? style.backgroundColor : '#FFF';
   const borderColor = style.borderColor ? style.borderColor : 'black';
 
@@ -130,17 +136,9 @@ function getTextWidth(text, font) {
   return metrics.width;
 }
 
-
-/**
- * Shows a label for the given annotation.
- *
- * @param annot {Object} Processed annotation object
- * @param context {Object} "This" of the caller -- an SVG path DOM object
- */
-function showAnnotLabel(annotName, backgroundColor, borderColor) {
-  var annot, found, annotRect, labelLength,
-    ideo = this;
-
+/** Get annotation object by name, e.g. "BRCA1" */
+function getAnnotByName(annotName, ideo) {
+  var annot;
   var found = false;
   ideo.annots.forEach((annotsByChr) => {
     if (found) return;
@@ -153,6 +151,27 @@ function showAnnotLabel(annotName, backgroundColor, borderColor) {
     });
   });
 
+  return annot;
+}
+
+/** Get list annotation objects by list of names, e.g. ["BRCA1", "APOE"] */
+function getAnnotsByName(annotNames, ideo) {
+  return annotNames.map(name => getAnnotByName(name, ideo));
+}
+
+/**
+ * Label an annotation.
+ *
+ * @param annotName {String} Name of annotation, e.g. "BRCA1"
+ * @param backgroundColor {String} Background color.  Default: white.
+ * * @param backgroundColor {String} Border color.  Default: black.
+ */
+function addAnnotLabel(annotName, backgroundColor, borderColor) {
+  var annot, annotRect, labelLength,
+    ideo = this;
+
+  annot = getAnnotByName(annotName, ideo);
+
   annotRect = document.querySelector('#' + annot.id).getBoundingClientRect();
   const font = '11px sans-serif';
   labelLength = getTextWidth(annot.name, font);
@@ -164,6 +183,59 @@ function showAnnotLabel(annotName, backgroundColor, borderColor) {
   const style = {left, top, font, backgroundColor, borderColor};
 
   renderLabel(annot, style, ideo);
+}
+
+function removeAnnotLabel(annotName) {
+  const ideo = this;
+  const annot = getAnnotByName(annotName, ideo);
+  const id = getAnnotDomLabelId(annot);
+  document.querySelector('#' + id).remove();
+}
+
+/** Briefly show a circle around specified annotations */
+function pulseAnnots(annotNames, ideo, duration=2000) {
+  const annots = getAnnotsByName(annotNames, ideo);
+  const circle = getShapes(ideo.config.annotationHeight + 2).circle;
+  const ids = annots.map(annot => annot.id);
+
+  d3.selectAll(ids).each(function() {
+    d3.select('#' + this)
+      .insert('path', ':first-child')
+      .attr('class', '_ideogramAnnotPulse')
+      .attr('d', circle)
+      .attr('fill-opacity', 0.5)
+      .attr('fill', 'yellow')
+      .attr('stroke', 'orange');
+  });
+
+  const annotPulses = d3.selectAll('._ideogramAnnotPulse');
+  annotPulses.transition()
+    .duration(duration) // fade out for 5 seconds
+    .style('opacity', 0)
+    .style('pointer-events', 'none')
+    .on('end', function(d, i) {
+      if (i === annotPulses.size() - 1) {
+        annotPulses.remove();
+      }
+    });
+}
+
+/** Taper hiding of all annotation labels */
+function fadeOutAnnotLabels() {
+  const ideo = this;
+  const annotLabels = d3.selectAll('._ideogramLabel');
+  const names = Array.from(annotLabels.nodes()).map(d => d.innerText);
+  annotLabels.transition()
+    .duration(2000) // fade out for a second
+    .style('opacity', 0)
+    .ease(d3.easeExpIn, 4)
+    .style('pointer-events', 'none')
+    .on('end', function(d, i) {
+      if (i === names.length - 1) {
+        annotLabels.remove();
+        pulseAnnots(names, ideo);
+      }
+    });
 }
 
 /**
@@ -201,5 +273,5 @@ function showAnnotTooltip(annot, context) {
 export {
   onLoadAnnots, onDrawAnnots, startHideAnnotTooltipTimeout,
   onWillShowAnnotTooltip, showAnnotTooltip, onClickAnnot,
-  showAnnotLabel
+  addAnnotLabel, removeAnnotLabel, fadeOutAnnotLabels
 };
