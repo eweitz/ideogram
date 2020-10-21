@@ -154,7 +154,7 @@ function getAnnotByName(annotName, ideo) {
   return annot;
 }
 
-/** Get list annotation objects by list of names, e.g. ["BRCA1", "APOE"] */
+/** Get list of annotation objects by names, e.g. ["BRCA1", "APOE"] */
 function getAnnotsByName(annotNames, ideo) {
   return annotNames.map(name => getAnnotByName(name, ideo));
 }
@@ -164,7 +164,7 @@ function getAnnotsByName(annotNames, ideo) {
  *
  * @param annotName {String} Name of annotation, e.g. "BRCA1"
  * @param backgroundColor {String} Background color.  Default: white.
- * * @param backgroundColor {String} Border color.  Default: black.
+ * @param backgroundColor {String} Border color.  Default: black.
  */
 function addAnnotLabel(annotName, backgroundColor, borderColor) {
   var annot, annotRect, labelLength,
@@ -210,7 +210,7 @@ function pulseAnnots(annotNames, ideo, duration=2000) {
 
   const annotPulses = d3.selectAll('._ideogramAnnotPulse');
   annotPulses.transition()
-    .duration(duration) // fade out for 5 seconds
+    .duration(duration) // fade out for `duration` milliseconds
     .style('opacity', 0)
     .style('pointer-events', 'none')
     .on('end', function(d, i) {
