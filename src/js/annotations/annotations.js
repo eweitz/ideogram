@@ -12,7 +12,8 @@ import {inflateThresholds} from './heatmap-lib';
 import {inflateHeatmaps} from './heatmap-collinear';
 import {
   onLoadAnnots, onDrawAnnots, startHideAnnotTooltipTimeout,
-  onWillShowAnnotTooltip, showAnnotTooltip, onClickAnnot
+  onWillShowAnnotTooltip, showAnnotTooltip, onClickAnnot,
+  addAnnotLabel, removeAnnotLabel, fadeOutAnnotLabels
 } from './events';
 import {drawAnnots, drawProcessedAnnots} from './draw';
 import {getHistogramBars} from './histogram';
@@ -22,7 +23,7 @@ import {
 } from './filter';
 import {processAnnotData} from './process';
 import {ExpressionMatrixParser} from '../parsers/expression-matrix-parser';
-  import {downloadAnnotations} from './download';
+import {downloadAnnotations} from './download';
 
 function initNumTracksAndBarWidth(ideo, config) {
 
@@ -48,6 +49,16 @@ function initTooltip(ideo, config) {
 
   if (config.onWillShowAnnotTooltip) {
     ideo.onWillShowAnnotTooltipCallback = config.onWillShowAnnotTooltip;
+  }
+}
+
+function initAnnotLabel(ideo, config) {
+  if (config.addAnnotLabel !== false) {
+    ideo.config.addAnnotLabel = true;
+  }
+
+  if (config.onWillAddAnnotLabel) {
+    ideo.onWillAddAnnotLabelCallback = config.onWillAddAnnotLabel;
   }
 }
 
@@ -94,6 +105,7 @@ function initAnnotSettings() {
   }
 
   initTooltip(ideo, config);
+  initAnnotLabel(ideo, config);
 }
 
 function validateAnnotsUrl(annotsUrl) {
@@ -222,5 +234,6 @@ export {
   getHistogramBars, drawHeatmaps, deserializeAnnotsForHeatmap, fillAnnots,
   drawProcessedAnnots, drawSynteny, startHideAnnotTooltipTimeout,
   showAnnotTooltip, onWillShowAnnotTooltip, setOriginalTrackIndexes,
-  afterRawAnnots, onClickAnnot, downloadAnnotations
+  afterRawAnnots, onClickAnnot, downloadAnnotations, addAnnotLabel,
+  removeAnnotLabel, fadeOutAnnotLabels
 };

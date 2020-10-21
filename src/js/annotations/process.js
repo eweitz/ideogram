@@ -136,6 +136,7 @@ function addAnnotsForChr(annots, omittedAnnots, annotsByChr, chrModel,
     annot.startPx = ideo.convertBpToPx(chrModel, annot.start);
     annot.stopPx = ideo.convertBpToPx(chrModel, annot.stop);
     annot.px = Math.round((annot.startPx + annot.stopPx) / 2);
+    annot.id = '_c' + m + '_a' + j;
 
     [annots, omittedAnnots] =
       addAnnot(annot, keys, ra, omittedAnnots, annots, m, ideo);
