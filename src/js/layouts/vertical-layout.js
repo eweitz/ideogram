@@ -157,7 +157,8 @@ class VerticalLayout extends Layout {
         var barWidth = this._ideo.config.barWidth;
         return margin + setIndex * (margin + width + 3) + barWidth * 2;
       } else {
-        translate = width + setIndex * (margin + width) + pad * 2;
+        const pulsePad = 5; // Prevents shaving in chr1 annot pulses
+        translate = width + setIndex * (margin + width) + pad * 2 + pulsePad;
         if (pad > 0) {
           return translate;
         } else {

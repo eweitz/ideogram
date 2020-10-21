@@ -446,7 +446,7 @@ function adjustPlaceAndVisibility(ideo) {
     // Accounts for moving legend when external content at left or right
     // is variable upon first rendering plotted genes
     var ideoDom = document.querySelector('#_ideogram');
-    const legendWidth = 140;
+    const legendWidth = 150;
     ideoInnerDom.style.maxWidth =
       (parseInt(ideoInnerDom.style.maxWidth) + legendWidth) + 'px';
     ideoDom.style.maxWidth =
