@@ -52,37 +52,6 @@ function renderTooltip(tooltip, content, matrix, yOffset, ideo) {
     });
 }
 
-/** Return DOM ID of annotation object */
-function getAnnotDomLabelId(annot) {
-  return (
-    'ideogramLabel_' + annot.chr + '_' + annot.start + '_' + annot.length
-  );
-}
-
-function renderLabel(annot, style, ideo) {
-
-  const id = getAnnotDomLabelId(annot);
-  const background = style.backgroundColor ? style.backgroundColor : '#FFF';
-  const borderColor = style.borderColor ? style.borderColor : 'black';
-
-  d3.select(ideo.config.container + ' #_ideogramOuterWrap').append('div')
-    .attr('class', '_ideogramLabel')
-    .attr('id', id)
-    .style('opacity', 1) // Make label visible
-    .style('left', style.left + 'px')
-    .style('top', style.top + 'px')
-    .style('position', 'fixed')
-    .style('text-align', 'center')
-    .style('padding', '3px')
-    .style('font', style.font)
-    .style('background', background)
-    .style('border', '1px solid ' + borderColor)
-    .style('border-radius', '5px')
-    .style('z-index', '900')
-    .style('pointer-events', null) // Prevent bug in clicking chromosome
-    .html(annot.name);
-}
-
 function getContentAndYOffset(annot) {
   var content, yOffset, range, displayName;
 
@@ -117,79 +86,9 @@ function onClickAnnot(annot) {
   this.onClickAnnotCallback(annot);
 }
 
-/**
- * Compute and return the width of the given text of given font in pixels.
- *
- * @param {String} text The text to be rendered.
- * @param {String} font The CSS font (e.g. "bold 14px verdana").
- *
- * @see https://stackoverflow.com/questions/118241/calculate-text-width-with-javascript/21015393#21015393
- */
-function getTextWidth(text, font) {
-  // re-use canvas object for better performance
-  var canvas =
-    getTextWidth.canvas ||
-    (getTextWidth.canvas = document.createElement('canvas'));
-  var context = canvas.getContext('2d');
-  context.font = font;
-  var metrics = context.measureText(text);
-  return metrics.width;
-}
-
-/** Get annotation object by name, e.g. "BRCA1" */
-function getAnnotByName(annotName, ideo) {
-  var annot;
-  var found = false;
-  ideo.annots.forEach((annotsByChr) => {
-    if (found) return;
-    annotsByChr.annots.forEach((thisAnnot) => {
-      if (found) return;
-      if (thisAnnot.name === annotName) {
-        annot = thisAnnot;
-        found = true;
-      }
-    });
-  });
-
-  return annot;
-}
-
 /** Get list of annotation objects by names, e.g. ["BRCA1", "APOE"] */
 function getAnnotsByName(annotNames, ideo) {
   return annotNames.map(name => getAnnotByName(name, ideo));
-}
-
-/**
- * Label an annotation.
- *
- * @param annotName {String} Name of annotation, e.g. "BRCA1"
- * @param backgroundColor {String} Background color.  Default: white.
- * @param backgroundColor {String} Border color.  Default: black.
- */
-function addAnnotLabel(annotName, backgroundColor, borderColor) {
-  var annot, annotRect, labelLength,
-    ideo = this;
-
-  annot = getAnnotByName(annotName, ideo);
-
-  annotRect = document.querySelector('#' + annot.id).getBoundingClientRect();
-  const font = '11px sans-serif';
-  labelLength = getTextWidth(annot.name, font);
-
-  const annotHeight = ideo.config.annotationHeight;
-  const left = annotRect.left - annotHeight*2 - labelLength + 5;
-  const top = annotRect.top - annotHeight/2;
-
-  const style = {left, top, font, backgroundColor, borderColor};
-
-  renderLabel(annot, style, ideo);
-}
-
-function removeAnnotLabel(annotName) {
-  const ideo = this;
-  const annot = getAnnotByName(annotName, ideo);
-  const id = getAnnotDomLabelId(annot);
-  document.querySelector('#' + id).remove();
 }
 
 /** Briefly show a circle around specified annotations */
@@ -272,6 +171,5 @@ function showAnnotTooltip(annot, context) {
 
 export {
   onLoadAnnots, onDrawAnnots, startHideAnnotTooltipTimeout,
-  onWillShowAnnotTooltip, showAnnotTooltip, onClickAnnot,
-  addAnnotLabel, removeAnnotLabel, fadeOutAnnotLabels
+  onWillShowAnnotTooltip, showAnnotTooltip, onClickAnnot
 };

@@ -12,9 +12,14 @@ import {inflateThresholds} from './heatmap-lib';
 import {inflateHeatmaps} from './heatmap-collinear';
 import {
   onLoadAnnots, onDrawAnnots, startHideAnnotTooltipTimeout,
-  onWillShowAnnotTooltip, showAnnotTooltip, onClickAnnot,
-  addAnnotLabel, removeAnnotLabel, fadeOutAnnotLabels
+  onWillShowAnnotTooltip, showAnnotTooltip, onClickAnnot
 } from './events';
+
+import {
+  addAnnotLabel, removeAnnotLabel, fadeOutAnnotLabels, fillAnnotLabels,
+  clearAnnotLabels
+} from './labels';
+
 import {drawAnnots, drawProcessedAnnots} from './draw';
 import {getHistogramBars} from './histogram';
 import {drawSynteny} from './synteny';
@@ -235,5 +240,5 @@ export {
   drawProcessedAnnots, drawSynteny, startHideAnnotTooltipTimeout,
   showAnnotTooltip, onWillShowAnnotTooltip, setOriginalTrackIndexes,
   afterRawAnnots, onClickAnnot, downloadAnnotations, addAnnotLabel,
-  removeAnnotLabel, fadeOutAnnotLabels
+  removeAnnotLabel, fadeOutAnnotLabels, fillAnnotLabels, clearAnnotLabels
 };

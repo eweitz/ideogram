@@ -466,6 +466,7 @@ function adjustPlaceAndVisibility(ideo) {
 async function plotRelatedGenes(geneSymbol) {
 
   const ideo = this;
+  ideo.clearAnnotLabels();
 
   initAnalyzeRelatedGenes(ideo);
 
@@ -505,6 +506,8 @@ async function plotRelatedGenes(geneSymbol) {
   ideo.time.rg.total = timeDiff(ideo.time.rg.t0);
 
   analyzeRelatedGenes(ideo);
+
+  ideo.fillAnnotLabels();
 
   if (ideo.onPlotRelatedGenesCallback) ideo.onPlotRelatedGenesCallback();
 
