@@ -1,5 +1,5 @@
 import {d3} from '../lib';
-import {getShapes} from './draw';
+// import {getShapes} from './draw';
 
 /**
  * Optional callback, invoked when annotations are drawn
@@ -86,56 +86,56 @@ function onClickAnnot(annot) {
   this.onClickAnnotCallback(annot);
 }
 
-/** Get list of annotation objects by names, e.g. ["BRCA1", "APOE"] */
-function getAnnotsByName(annotNames, ideo) {
-  return annotNames.map(name => getAnnotByName(name, ideo));
-}
+// /** Get list of annotation objects by names, e.g. ["BRCA1", "APOE"] */
+// function getAnnotsByName(annotNames, ideo) {
+//   return annotNames.map(name => getAnnotByName(name, ideo));
+// }
 
-/** Briefly show a circle around specified annotations */
-function pulseAnnots(annotNames, ideo, duration=2000) {
-  const annots = getAnnotsByName(annotNames, ideo);
-  const circle = getShapes(ideo.config.annotationHeight + 2).circle;
-  const ids = annots.map(annot => annot.id);
+// /** Briefly show a circle around specified annotations */
+// function pulseAnnots(annotNames, ideo, duration=2000) {
+//   const annots = getAnnotsByName(annotNames, ideo);
+//   const circle = getShapes(ideo.config.annotationHeight + 2).circle;
+//   const ids = annots.map(annot => annot.domId);
 
-  d3.selectAll(ids).each(function() {
-    d3.select('#' + this)
-      .insert('path', ':first-child')
-      .attr('class', '_ideogramAnnotPulse')
-      .attr('d', circle)
-      .attr('fill-opacity', 0.5)
-      .attr('fill', 'yellow')
-      .attr('stroke', 'orange');
-  });
+//   d3.selectAll(ids).each(function() {
+//     d3.select('#' + this)
+//       .insert('path', ':first-child')
+//       .attr('class', '_ideogramAnnotPulse')
+//       .attr('d', circle)
+//       .attr('fill-opacity', 0.5)
+//       .attr('fill', 'yellow')
+//       .attr('stroke', 'orange');
+//   });
 
-  const annotPulses = d3.selectAll('._ideogramAnnotPulse');
-  annotPulses.transition()
-    .duration(duration) // fade out for `duration` milliseconds
-    .style('opacity', 0)
-    .style('pointer-events', 'none')
-    .on('end', function(d, i) {
-      if (i === annotPulses.size() - 1) {
-        annotPulses.remove();
-      }
-    });
-}
+//   const annotPulses = d3.selectAll('._ideogramAnnotPulse');
+//   annotPulses.transition()
+//     .duration(duration) // fade out for `duration` milliseconds
+//     .style('opacity', 0)
+//     .style('pointer-events', 'none')
+//     .on('end', function(d, i) {
+//       if (i === annotPulses.size() - 1) {
+//         annotPulses.remove();
+//       }
+//     });
+// }
 
-/** Taper hiding of all annotation labels */
-function fadeOutAnnotLabels() {
-  const ideo = this;
-  const annotLabels = d3.selectAll('._ideogramLabel');
-  const names = Array.from(annotLabels.nodes()).map(d => d.innerText);
-  annotLabels.transition()
-    .duration(2000) // fade out for a second
-    .style('opacity', 0)
-    .ease(d3.easeExpIn, 4)
-    .style('pointer-events', 'none')
-    .on('end', function(d, i) {
-      if (i === names.length - 1) {
-        annotLabels.remove();
-        pulseAnnots(names, ideo);
-      }
-    });
-}
+// /** Taper hiding of all annotation labels */
+// function fadeOutAnnotLabels() {
+//   const ideo = this;
+//   const annotLabels = d3.selectAll('._ideogramLabel');
+//   const names = Array.from(annotLabels.nodes()).map(d => d.innerText);
+//   annotLabels.transition()
+//     .duration(2000) // fade out for a second
+//     .style('opacity', 0)
+//     .ease(d3.easeExpIn, 4)
+//     .style('pointer-events', 'none')
+//     .on('end', function(d, i) {
+//       if (i === names.length - 1) {
+//         annotLabels.remove();
+//         pulseAnnots(names, ideo);
+//       }
+//     });
+// }
 
 /**
  * Shows a tooltip for the given annotation.

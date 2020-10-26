@@ -13,22 +13,19 @@ function renderLabel(annot, style, ideo) {
   const background = style.backgroundColor ? style.backgroundColor : '#FFF';
   const borderColor = style.borderColor ? style.borderColor : '#CCC';
 
-  // TODO: De-duplicate with code in getTextWidth,
+  // TODO: De-duplicate with code in getTextWidth and elsewhere
   // perhaps set config.annotLabelSize and config.annotLabelFont upstream.
-  const size = config.annotLabelSize ? config.annotLabelSize : 12;
-  const font = size + 'px sans-serif';
+  const labelSize = config.annotLabelSize ? config.annotLabelSize : 12;
+  const font = labelSize + 'px sans-serif';
 
-  const radius = 1.5;
-  const offset = 0;
-  const color = '#FFFF';
-  const textShadow =
-    `-${radius}px -${radius}px ${offset}px ${color}, ` +
-    `${radius}px -${radius}px ${offset}px ${color}, ` +
-    `-${radius}px ${radius}px ${offset}px ${color}, ` +
-    `${radius}px ${radius}px ${offset}px ${color}`;
-
-  // const textShadow = `10px 0 ${r}px #F00`;
-  console.log(textShadow);
+  // const radius = 1.5;
+  // const offset = 0;
+  // const color = '#FFFF';
+  // const textShadow =
+  //   `-${radius}px -${radius}px ${offset}px ${color}, ` +
+  //   `${radius}px -${radius}px ${offset}px ${color}, ` +
+  //   `-${radius}px ${radius}px ${offset}px ${color}, ` +
+  //   `${radius}px ${radius}px ${offset}px ${color}`;
 
   d3.select(ideo.config.container + ' #_ideogramOuterWrap').append('div')
     .attr('class', '_ideogramLabel')
@@ -43,7 +40,7 @@ function renderLabel(annot, style, ideo) {
     .style('pointer-events', null) // Prevent bug in clicking chromosome
 
     // Box the text
-    .style('padding', '0 0 0 1px')
+    .style('padding', '0 1px')
     .style('background', background)
     .style('border', '1px solid ' + borderColor)
     .style('border-radius', '5px')
@@ -67,9 +64,9 @@ function renderLabel(annot, style, ideo) {
  */
 function getTextWidth(text, ideo) {
   var config = ideo.config;
-  var size = config.annotLabelSize ? config.annotLabelSize : 12;
+  var labelSize = config.annotLabelSize ? config.annotLabelSize : 12;
 
-  var font = size + 'px sans-serif';
+  var font = labelSize + 'px sans-serif';
 
   // re-use canvas object for better performance
   var canvas =
@@ -101,17 +98,29 @@ function getAnnotByName(annotName, ideo) {
 
 /** Get label's top and left offsets relative to chromosome, and width */
 function getAnnotLabelLayout(annot, ideo) {
-  var annotRect, width;
+  var annotRect, width, height, top, bottom, left, right;
 
-  annotRect = document.querySelector('#' + annot.id).getBoundingClientRect();
-  width = getTextWidth(annot.name, ideo) - 10;
+  annotRect =
+    document.querySelector('#' + annot.domId).getBoundingClientRect();
 
-  const height = ideo.config.annotationHeight;
+  width = getTextWidth(annot.name, ideo);
 
-  const top = annotRect.top - height/2 + 3;
-  const left = annotRect.left - height*2 - width;
+  // Accounts for:
+  // 1px left pad, 1px right pad, 1px right border, 1px left border
+  //  as set in renderLabel
+  width = width + 4;
 
-  return {top, left, width, height};
+  const labelSize = config.annotLabelSize ? config.annotLabelSize : 12;
+
+  // Accounts for 1px top border, 1px bottom border as set in renderLabel
+  height = labelSize + 2;
+
+  top = annotRect.top - 1;
+  bottom = top + height;
+  left = annotRect.left - width - 1; // Put 1 px between label and annot
+  right = left + width;
+
+  return {top, bottom, right, left, width, height};
 }
 
 /**
@@ -135,35 +144,46 @@ function addAnnotLabel(annotName, backgroundColor, borderColor) {
 }
 
 /** Label as many annotations as possible, without overlap */
-function fillAnnotLabels() {
+function fillAnnotLabels(sortedAnnots=[]) {
   const ideo = this;
 
-  const spacedAnnots = [];
+  sortedAnnots = sortedAnnots.slice(); // copy by value
 
-  // TODO: Make this config default, also use in addAnnotLabel
-  const annotLabelSize = 12;
+  // Remove any pre-existing annotation labels, to avoid duplicates
+  ideo.clearAnnotLabels();
 
-  // Vertical space (when orientation: vertical)
-  const ySpace = annotLabelSize + 3;
+  if (sortedAnnots.length === 0) {
+    ideo.annots.forEach((annotsByChr) => {
 
-  ideo.annots.forEach((annotsByChr) => {
-    let prevAnnotPx = 0;
+      const sortedAnnotsThisChr =
+        annotsByChr.annots.sort((a, b) => a.start - b.start);
 
-    const sortedAnnots =
-      annotsByChr.annots.sort((a, b) => a.start - b.start);
-
-    sortedAnnots.forEach((annot) => {
-      const margin = annot.px - prevAnnotPx - ySpace;
-      if (prevAnnotPx === 0 || margin > 0) {
-        spacedAnnots.push(annot);
-      }
-
-      // console.log(annot.name)
-      // console.log('annot.px: ' + annot.px + ', prevAnnotPx: ' + prevAnnotPx + ', margin: ' + margin)
-      // console.log('')
-
-      prevAnnotPx = annot.px;
+      sortedAnnots = sortedAnnots.concat(sortedAnnotsThisChr);
     });
+  }
+
+  const spacedAnnots = [];
+  const spacedLayouts = [];
+
+  sortedAnnots.forEach((annot, i) => {
+    const layout = getAnnotLabelLayout(annot, ideo);
+
+    const hasOverlap =
+      spacedLayouts.length > 1 && spacedLayouts.some((sl, j) => {
+        const xOverlap = sl.left <= layout.right && sl.right >= layout.left;
+        const yOverlap =
+          (
+            sl.top < layout.bottom && sl.bottom > layout.top ||
+            layout.top < sl.bottom && layout.bottom > sl.bottom
+          );
+
+        return xOverlap && yOverlap;
+      });
+
+    if (hasOverlap) return;
+
+    spacedAnnots.push(annot);
+    spacedLayouts.push(layout);
   });
 
   spacedAnnots.forEach((annot) => {

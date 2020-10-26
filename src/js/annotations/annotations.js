@@ -16,8 +16,8 @@ import {
 } from './events';
 
 import {
-  addAnnotLabel, removeAnnotLabel, fadeOutAnnotLabels, fillAnnotLabels,
-  clearAnnotLabels
+  addAnnotLabel, removeAnnotLabel, fillAnnotLabels, clearAnnotLabels
+  // fadeOutAnnotLabels
 } from './labels';
 
 import {drawAnnots, drawProcessedAnnots} from './draw';
@@ -240,5 +240,6 @@ export {
   drawProcessedAnnots, drawSynteny, startHideAnnotTooltipTimeout,
   showAnnotTooltip, onWillShowAnnotTooltip, setOriginalTrackIndexes,
   afterRawAnnots, onClickAnnot, downloadAnnotations, addAnnotLabel,
-  removeAnnotLabel, fadeOutAnnotLabels, fillAnnotLabels, clearAnnotLabels
+  removeAnnotLabel, fillAnnotLabels, clearAnnotLabels
+  // fadeOutAnnotLabels
 };
