@@ -8,6 +8,7 @@ function getAnnotDomLabelId(annot) {
 }
 
 function renderLabel(annot, style, ideo) {
+  const config = ideo.config;
 
   const id = getAnnotDomLabelId(annot);
   const background = style.backgroundColor ? style.backgroundColor : '#FFF';
@@ -98,7 +99,8 @@ function getAnnotByName(annotName, ideo) {
 
 /** Get label's top and left offsets relative to chromosome, and width */
 function getAnnotLabelLayout(annot, ideo) {
-  var annotRect, width, height, top, bottom, left, right;
+  var annotRect, width, height, top, bottom, left, right,
+    config = ideo.config;
 
   annotRect =
     document.querySelector('#' + annot.domId).getBoundingClientRect();
