@@ -26,6 +26,49 @@ import {
   getRelatedGenesByType, getRelatedGenesTooltipAnalytics
 } from './analyze-related-genes';
 
+import {getAnnotDomId} from '../annotations/process';
+
+function setRelatedAnnotDomIds(ideo) {
+  const updated = [];
+
+  const sortedChrNames = ideo.chromosomesArray.map((chr) => {
+    return chr.name;
+  });
+
+  // Arrange related annots by chromosome
+  const annotsByChr = {};
+  ideo.relatedAnnots.forEach((annot) => {
+    if (annot.chr in annotsByChr) {
+      annotsByChr[annot.chr].push(annot);
+    } else {
+      annotsByChr[annot.chr] = [annot];
+    }
+  });
+
+  // Sort related annots by position, relative to others in same chromosome
+  const positionSortedAnnotsNamesByChr = {};
+  Object.entries(annotsByChr).map(([chr, annots]) => {
+    annots.sort((a, b) => a.start - b.start);
+    const annotNames = annots.map((annot) => annot.name);
+    positionSortedAnnotsNamesByChr[chr] = annotNames;
+  });
+
+  ideo.relatedAnnots.forEach((annot) => {
+    const chr = annot.chr;
+
+    // Annots have DOM IDs keyed by chromosome index and annotation index.
+    // We reconstruct those here using structures built in two blocks above.
+    const chrIndex = sortedChrNames.indexOf(chr);
+    const annotIndex =
+      positionSortedAnnotsNamesByChr[chr].indexOf(annot.name);
+
+    annot.domId = getAnnotDomId(chrIndex, annotIndex);
+    updated.push(annot);
+  });
+
+  ideo.relatedAnnots = updated;
+}
+
 /**
  * Determines if interaction node might be a gene
  *
@@ -111,7 +154,7 @@ async function fetchInteractingGenes(gene, ideo) {
  */
 async function fetchMyGeneInfo(queryString) {
   const myGeneBase = 'https://mygene.info/v3/query';
-  const response = await fetch(myGeneBase + queryString);
+  const response = await fetch(myGeneBase + queryString + '&size=25');
   const data = await response.json();
   return data;
 }
@@ -398,6 +441,10 @@ function finishPlotRelatedGenes(type, ideo) {
     ideo.onFindRelatedGenesCallback();
   }
   ideo.drawAnnots(annots);
+
+  setRelatedAnnotDomIds(ideo);
+  ideo.fillAnnotLabels(ideo.relatedAnnots);
+
   const ideoInnerDom = document.querySelector('#_ideogramInnerWrap');
   moveLegend(ideoInnerDom);
 
@@ -468,6 +515,8 @@ async function plotRelatedGenes(geneSymbol) {
   const ideo = this;
 
   initAnalyzeRelatedGenes(ideo);
+
+  ideo.clearAnnotLabels();
 
   const organism = ideo.getScientificName(ideo.config.taxid);
   const version = Ideogram.version;
