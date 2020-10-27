@@ -12,7 +12,7 @@ function renderLabel(annot, style, ideo) {
 
   const id = getAnnotDomLabelId(annot);
   const background = style.backgroundColor ? style.backgroundColor : '#FFF';
-  const borderColor = style.borderColor ? style.borderColor : '#CCC';
+  const borderColor = style.borderColor ? style.borderColor : annot.color;
 
   // TODO: De-duplicate with code in getTextWidth and elsewhere
   // perhaps set config.annotLabelSize and config.annotLabelFont upstream.
