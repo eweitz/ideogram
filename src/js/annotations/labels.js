@@ -11,49 +11,25 @@ function renderLabel(annot, style, ideo) {
   const config = ideo.config;
 
   const id = getAnnotDomLabelId(annot);
-  const background = style.backgroundColor ? style.backgroundColor : '#FFF';
-  const borderColor = style.borderColor ? style.borderColor : annot.color;
 
   // TODO: De-duplicate with code in getTextWidth and elsewhere
   // perhaps set config.annotLabelSize and config.annotLabelFont upstream.
   const labelSize = config.annotLabelSize ? config.annotLabelSize : 12;
   const font = labelSize + 'px sans-serif';
 
-  // const radius = 1.5;
-  // const offset = 0;
-  // const color = '#FFFF';
-  // const textShadow =
-  //   `-${radius}px -${radius}px ${offset}px ${color}, ` +
-  //   `${radius}px -${radius}px ${offset}px ${color}, ` +
-  //   `-${radius}px ${radius}px ${offset}px ${color}, ` +
-  //   `${radius}px ${radius}px ${offset}px ${color}`;
-
-  d3.select(ideo.config.container + ' #_ideogramOuterWrap').append('div')
-    .attr('class', '_ideogramLabel')
+  d3.select('#_ideogram').append('text')
     .attr('id', id)
-    .style('opacity', 1) // Make label visible
-    .style('left', style.left + 'px')
-    .style('top', style.top + 'px')
-    .style('position', 'fixed')
+    .attr('class', '_ideogramLabel')
+    .attr('x', style.left)
+    .attr('y', style.top)
     .style('text-align', 'center')
     .style('font', font)
-    .style('z-index', '900')
     .style('pointer-events', null) // Prevent bug in clicking chromosome
-
-    // Box the text
-    .style('padding', '0 1px')
-    .style('background', background)
-    .style('border', '1px solid ' + borderColor)
-    .style('border-radius', '5px')
-
-    // Alternatively, like Google Maps.  Enables increasing font size by 1px.
-    // .style('text-shadow', textShadow)
-
-    // A more experimental approach with text-stroke
-    // .style('font-weight', 900)
-    // .style('-webkit-text-stroke', '0.5px white')
-    // .style('-webkit-text-fill-color', '#000')
-    // .style('paint-order', 'stroke fill')
+    .style('fill', annot.color)
+    .style('stroke', 'white')
+    .style('stroke-width', '5px')
+    .style('stroke-linejoin', 'round')
+    .style('paint-order', 'stroke fill')
 
     .html(annot.name);
 }
@@ -65,7 +41,7 @@ function renderLabel(annot, style, ideo) {
  */
 function getTextWidth(text, ideo) {
   var config = ideo.config;
-  var labelSize = config.annotLabelSize ? config.annotLabelSize : 12;
+  var labelSize = config.annotLabelSize ? config.annotLabelSize : 13;
 
   var font = labelSize + 'px sans-serif';
 
@@ -99,9 +75,12 @@ function getAnnotByName(annotName, ideo) {
 
 /** Get label's top and left offsets relative to chromosome, and width */
 function getAnnotLabelLayout(annot, ideo) {
-  var annotRect, width, height, top, bottom, left, right,
+  var annotRect, ideoRect, width, height, top, bottom, left, right,
     config = ideo.config;
 
+
+  ideoRect =
+    document.querySelector('#_ideogram').getBoundingClientRect();
   annotRect =
     document.querySelector('#' + annot.domId).getBoundingClientRect();
 
@@ -112,14 +91,14 @@ function getAnnotLabelLayout(annot, ideo) {
   //  as set in renderLabel
   width = width + 4;
 
-  const labelSize = config.annotLabelSize ? config.annotLabelSize : 12;
+  const labelSize = config.annotLabelSize ? config.annotLabelSize : 13;
 
   // Accounts for 1px top border, 1px bottom border as set in renderLabel
-  height = labelSize + 2;
+  height = labelSize;
 
-  top = annotRect.top - 1;
+  top = annotRect.top - ideoRect.top + height - 2;
   bottom = top + height;
-  left = annotRect.left - width - 1; // Put 1 px between label and annot
+  left = annotRect.left - ideoRect.left - width;
   right = left + width;
 
   return {top, bottom, right, left, width, height};
@@ -138,9 +117,9 @@ function addAnnotLabel(annotName, backgroundColor, borderColor) {
 
   annot = getAnnotByName(annotName, ideo);
 
-  const {top, left} = getAnnotLabelLayout(annot, ideo);
+  const layout = getAnnotLabelLayout(annot, ideo);
 
-  const style = {left, top, backgroundColor, borderColor};
+  const style = Object.assign(layout, {backgroundColor, borderColor});
 
   renderLabel(annot, style, ideo);
 }
