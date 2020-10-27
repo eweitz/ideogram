@@ -17,7 +17,7 @@ function renderLabel(annot, style, ideo) {
   const labelSize = config.annotLabelSize ? config.annotLabelSize : 13;
   const font = labelSize + 'px sans-serif';
 
-  const fill = annot.color === 'pink' ? '#DF708B' : annot.color;
+  const fill = annot.color === 'pink' ? '#CF406B' : annot.color;
 
   d3.select('#_ideogram').append('text')
     .attr('id', id)
