@@ -370,14 +370,14 @@ function parseAnnotFromMgiGene(gene, ideo, color='red') {
     start: genomicPos.start,
     stop: genomicPos.end,
     id: genomicPos.ensemblgene,
-    color: color
+    color
   };
 
   return annot;
 }
 
 function moveLegend(ideoInnerDom) {
-  const legendStyle = 'position: absolute; top: 15px';
+  const legendStyle = 'position: absolute; top: 15px; left: 50px';
   const legend = document.querySelector('#_ideogramLegend');
   ideoInnerDom.prepend(legend);
   legend.style = legendStyle;
@@ -489,15 +489,23 @@ function adjustPlaceAndVisibility(ideo) {
   ideoInnerDom.style.overflowY = 'hidden';
   document.querySelector('#_ideogramMiddleWrap').style.overflowY = 'hidden';
 
+  const annotDecorPad = ideo.config.annotDecorPad;
+
   if (typeof ideo.didAdjustIdeogramLegend === 'undefined') {
     // Accounts for moving legend when external content at left or right
     // is variable upon first rendering plotted genes
     var ideoDom = document.querySelector('#_ideogram');
     const legendWidth = 150;
     ideoInnerDom.style.maxWidth =
-      (parseInt(ideoInnerDom.style.maxWidth) + legendWidth) + 'px';
+      (
+        parseInt(ideoInnerDom.style.maxWidth) +
+        legendWidth +
+        annotDecorPad
+      ) + 'px';
+    ideoDom.style.minWidth =
+      (parseInt(ideoDom.style.minWidth) + annotDecorPad) + 'px';
     ideoDom.style.maxWidth =
-      (parseInt(ideoDom.style.minWidth)) + 'px';
+      (parseInt(ideoDom.style.minWidth) + annotDecorPad) + 'px';
     ideoDom.style.position = 'relative';
     ideoDom.style.left = legendWidth + 'px';
 
@@ -650,6 +658,7 @@ function _initRelatedGenes(config, annotsInList) {
     legend: legend,
     chrBorderColor: '#333',
     chrLabelColor: '#333',
+    annotDecorPad: 60,
     onWillShowAnnotTooltip: decorateGene,
     annotsInList: annotsInList,
     showTools: true

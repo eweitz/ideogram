@@ -138,12 +138,13 @@ class VerticalLayout extends Layout {
   getChromosomeSetYTranslate(setIndex) {
     // Get additional padding caused by annotation/histogram tracks
     var pad = this._getAdditionalOffset(),
-      margin = this._config.chrMargin,
-      width = this._config.chrWidth,
+      config = this._config,
+      margin = config.chrMargin,
+      width = config.chrWidth,
       translate;
 
     // If no detailed description provided just use one formula for all cases
-    if (!this._config.ploidyDesc) {
+    if (!config.ploidyDesc) {
       // TODO:
       // This part of code contains a lot magic numbers and if
       // statements for exactly corresponing to original ideogram examples.
@@ -153,12 +154,13 @@ class VerticalLayout extends Layout {
       // not meet for cases when no annotation, when annotation exists and
       // when histogram used
 
-      if (this._config.annotationsLayout === 'histogram') {
-        var barWidth = this._ideo.config.barWidth;
+      if (config.annotationsLayout === 'histogram') {
+        var barWidth = config.barWidth;
         return margin + setIndex * (margin + width + 3) + barWidth * 2;
       } else {
-        const pulsePad = 5; // Prevents shaving in chr1 annot pulses
-        translate = width + setIndex * (margin + width) + pad * 2 + pulsePad;
+        const decorPad =
+          'annotDecorPad' in config ? config.annotDecorPad : 0;
+        translate = width + setIndex * (margin + width) + pad * 2 + decorPad;
         if (pad > 0) {
           return translate;
         } else {

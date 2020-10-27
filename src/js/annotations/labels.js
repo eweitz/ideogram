@@ -14,8 +14,10 @@ function renderLabel(annot, style, ideo) {
 
   // TODO: De-duplicate with code in getTextWidth and elsewhere
   // perhaps set config.annotLabelSize and config.annotLabelFont upstream.
-  const labelSize = config.annotLabelSize ? config.annotLabelSize : 12;
+  const labelSize = config.annotLabelSize ? config.annotLabelSize : 13;
   const font = labelSize + 'px sans-serif';
+
+  const fill = annot.color === 'pink' ? '#DF708B' : annot.color;
 
   d3.select('#_ideogram').append('text')
     .attr('id', id)
@@ -24,8 +26,8 @@ function renderLabel(annot, style, ideo) {
     .attr('y', style.top)
     .style('text-align', 'center')
     .style('font', font)
+    .style('fill', fill)
     .style('pointer-events', null) // Prevent bug in clicking chromosome
-    .style('fill', annot.color)
     .style('stroke', 'white')
     .style('stroke-width', '5px')
     .style('stroke-linejoin', 'round')
@@ -89,14 +91,14 @@ function getAnnotLabelLayout(annot, ideo) {
   // Accounts for:
   // 1px left pad, 1px right pad, 1px right border, 1px left border
   //  as set in renderLabel
-  width = width + 4;
+  width = width + 7;
 
   const labelSize = config.annotLabelSize ? config.annotLabelSize : 13;
 
   // Accounts for 1px top border, 1px bottom border as set in renderLabel
   height = labelSize;
 
-  top = annotRect.top - ideoRect.top + height - 2;
+  top = annotRect.top - ideoRect.top + height - 1;
   bottom = top + height;
   left = annotRect.left - ideoRect.left - width;
   right = left + width;
