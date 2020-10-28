@@ -259,7 +259,7 @@ describe('Ideogram', function() {
       // Ensure distal track of chromosome 1 is visible
       annot2 = document.querySelector('#chr1-9606-chromosome-set');
       transform = annot2.getAttribute('transform');
-      assert.equal(transform, 'rotate(90) translate(30, -34)');
+      assert.equal(transform, 'rotate(90) translate(30, -29)');
 
       done();
     }

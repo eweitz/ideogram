@@ -48,8 +48,13 @@
       cursor: pointer;
     }
 
-    #ideogram .annot path {
+    #_ideogram .annot path, ._ideogramLabel {
       cursor: pointer;
+    }
+
+    #_ideogram ._ideogramLabel._ideoActive {
+      fill: #77F !important;
+      stroke: #F0F0FF !important;
     }
 
   </style>
@@ -224,7 +229,12 @@
     function onWillShowAnnotTooltip(annot) {
       const ideo = this;
       const tooltipAnalytics = ideo.getTooltipAnalytics(annot);
-      console.log(tooltipAnalytics);
+
+      // Reduces analytics noise.  Accounts for quick moves from label to
+      // annot, which flickers tooltip and represents an technical artifact
+      // that is not worth analyzing.
+      if (tooltipAnalytics) console.log(tooltipAnalytics);
+
       return annot
     }
 
@@ -238,6 +248,7 @@
       onLoad: plotGeneFromUrl,
       onPlotRelatedGenes: reportRelatedGenes,
       onWillShowAnnotTooltip,
+      showAnnotLabels: true,
       onClickAnnot
     }
 

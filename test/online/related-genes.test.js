@@ -24,10 +24,16 @@ describe('Ideogram related genes kit', function() {
     async function callback() {
       await ideogram.plotRelatedGenes('RAD51');
 
+      const rad54lLabel = document.querySelector('#ideogramLabel__c0_a0');
+      rad54lLabel.dispatchEvent(new Event('mouseover'));
+      let relatedGene = document.querySelector('#ideo-related-gene');
+      assert.equal(relatedGene.textContent, 'RAD54L');
+      rad54lLabel.dispatchEvent(new Event('mouseout'));
+
       const brca2Annot = document.querySelector('#chr13-9606 .annot path');
       brca2Annot.dispatchEvent(new Event('mouseover'));
 
-      const relatedGene = document.querySelector('#ideo-related-gene');
+      relatedGene = document.querySelector('#ideo-related-gene');
 
       assert.equal(relatedGene.textContent, 'BRCA2');
 

@@ -284,9 +284,9 @@ describe('Ideogram filter support', function() {
       track2 = document.querySelector('#chr2-9606-canvas-1').getBoundingClientRect();
       track3 = document.querySelector('#chr2-9606-canvas-2').getBoundingClientRect();
 
-      assert.equal(track1.x, 100);
-      assert.equal(track2.x, 109);
-      assert.equal(track3.x, 118);
+      assert.equal(track1.x, 95);
+      assert.equal(track2.x, 104);
+      assert.equal(track3.x, 113);
 
       // Filters tracks to show only 4th and 5th track (of 9)
       ideogram.updateDisplayedTracks([4, 5]);
@@ -294,8 +294,8 @@ describe('Ideogram filter support', function() {
       track1 = document.querySelector('#chr2-9606-canvas-0').getBoundingClientRect();
       track2 = document.querySelector('#chr2-9606-canvas-1').getBoundingClientRect();
 
-      assert.equal(track1.x, 109);
-      assert.equal(track2.x, 118);
+      assert.equal(track1.x, 104);
+      assert.equal(track2.x, 113);
 
       done();
     }
@@ -323,9 +323,9 @@ describe('Ideogram filter support', function() {
       track2 = document.querySelector('#chr2-9606-canvas-1').getBoundingClientRect();
       track3 = document.querySelector('#chr2-9606-canvas-2').getBoundingClientRect();
 
-      assert.equal(track1.x, 100);
-      assert.equal(track2.x, 109);
-      assert.equal(track3.x, 118);
+      assert.equal(track1.x, 95);
+      assert.equal(track2.x, 104);
+      assert.equal(track3.x, 113);
 
       done();
     }

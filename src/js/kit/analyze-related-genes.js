@@ -31,6 +31,13 @@ function getRelatedGenesByType() {
 function getRelatedGenesTooltipAnalytics(annot) {
   const ideo = this;
 
+  const timeSincePrevTooltip = performance.now() - ideo.time.prevTooltipOff;
+  const prevAnnotDomId = ideo.time.prevTooltipAnnotDomId;
+
+  if (timeSincePrevTooltip < 300 && annot.domId === prevAnnotDomId) {
+    return null;
+  }
+
   const tooltipGene = annot.name;
 
   // e.g. "interacting gene" -> "interacting"
