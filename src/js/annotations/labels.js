@@ -5,7 +5,7 @@ function getAnnotDomLabelId(annot) {
   return 'ideogramLabel_' + annot.domId;
 }
 
-function triggerAnnotEvent(event) {
+function triggerAnnotEvent(event, ideo) {
   let labelId, annotId;
   const target = event.target;
   const type = event.type;
@@ -19,6 +19,11 @@ function triggerAnnotEvent(event) {
     const annotElement = target.parentElement;
     labelId = 'ideogramLabel_' + annotElement.id;
     annotId = annotElement.id;
+  }
+
+  if (type === 'mouseout') {
+    ideo.time.prevTooltipOff = performance.now();
+    ideo.time.prevTooltipAnnotDomId = annotId;
   }
 
   const state = (type === 'mouseover') ? ' _ideoActive' : '';
@@ -54,7 +59,7 @@ function renderLabel(annot, style, ideo) {
 
   d3.selectAll('#' + id + ', #' + annot.domId)
     .on('mouseover', (event) => triggerAnnotEvent(event))
-    .on('mouseout', (event) => triggerAnnotEvent(event))
+    .on('mouseout', (event) => triggerAnnotEvent(event, ideo))
     .on('click', (event) => triggerAnnotEvent(event));
 }
 

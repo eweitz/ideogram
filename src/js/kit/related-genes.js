@@ -443,8 +443,10 @@ function finishPlotRelatedGenes(type, ideo) {
   }
   ideo.drawAnnots(annots);
 
-  setRelatedAnnotDomIds(ideo);
-  ideo.fillAnnotLabels(ideo.relatedAnnots);
+  if (ideo.config.showAnnotLabels) {
+    setRelatedAnnotDomIds(ideo);
+    ideo.fillAnnotLabels(ideo.relatedAnnots);
+  }
 
   const ideoInnerDom = document.querySelector('#_ideogramInnerWrap');
   moveLegend(ideoInnerDom);
@@ -659,10 +661,10 @@ function _initRelatedGenes(config, annotsInList) {
     legend: legend,
     chrBorderColor: '#333',
     chrLabelColor: '#333',
-    annotDecorPad: 60,
     onWillShowAnnotTooltip: decorateGene,
     annotsInList: annotsInList,
-    showTools: true
+    showTools: true,
+    showAnnotLabels: true
   };
 
   if ('onWillShowAnnotTooltip' in config) {
@@ -680,6 +682,12 @@ function _initRelatedGenes(config, annotsInList) {
 
   // Override kit defaults if client specifies otherwise
   const kitConfig = Object.assign(kitDefaults, config);
+
+  if (kitConfig.showAnnotLabels) {
+    kitConfig.annotDecorPad = 60;
+  } else {
+    kitConfig.annotDecorPad = 30;
+  }
 
   const ideogram = new Ideogram(kitConfig);
 

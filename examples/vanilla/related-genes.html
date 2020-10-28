@@ -229,7 +229,12 @@
     function onWillShowAnnotTooltip(annot) {
       const ideo = this;
       const tooltipAnalytics = ideo.getTooltipAnalytics(annot);
-      console.log(tooltipAnalytics);
+
+      // Reduces analytics noise.  Accounts for quick moves from label to
+      // annot, which flickers tooltip and represents an technical artifact
+      // that is not worth analyzing.
+      if (tooltipAnalytics) console.log(tooltipAnalytics);
+
       return annot
     }
 
@@ -243,6 +248,7 @@
       onLoad: plotGeneFromUrl,
       onPlotRelatedGenes: reportRelatedGenes,
       onWillShowAnnotTooltip,
+      showAnnotLabels: true,
       onClickAnnot
     }
 
