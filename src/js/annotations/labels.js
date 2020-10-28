@@ -2,9 +2,27 @@ import {d3} from '../lib';
 
 /** Return DOM ID of annotation object */
 function getAnnotDomLabelId(annot) {
-  return (
-    'ideogramLabel_' + annot.chr + '_' + annot.start + '_' + annot.length
-  );
+  return 'ideogramLabel_' + annot.domId;
+}
+
+function triggerAnnotEvent(event) {
+  let labelId, annotId;
+  const target = event.target;
+  const type = event.type;
+
+  const targetClasses = Array.from(target.classList);
+  if (targetClasses.includes('_ideogramLabel')) {
+    labelId = target.id;
+    annotId = target.id.split('ideogramLabel_')[1];
+    d3.select('#' + annotId + ' path').dispatch(type);
+  } else {
+    const annotElement = target.parentElement;
+    labelId = 'ideogramLabel_' + annotElement.id;
+    annotId = annotElement.id;
+  }
+
+  const state = (type === 'mouseover') ? ' _ideoActive' : '';
+  d3.select('#' + labelId).attr('class', '_ideogramLabel ' + state);
 }
 
 function renderLabel(annot, style, ideo) {
@@ -32,8 +50,12 @@ function renderLabel(annot, style, ideo) {
     .style('stroke-width', '5px')
     .style('stroke-linejoin', 'round')
     .style('paint-order', 'stroke fill')
-
     .html(annot.name);
+
+  d3.selectAll('#' + id + ', #' + annot.domId)
+    .on('mouseover', (event) => triggerAnnotEvent(event))
+    .on('mouseout', (event) => triggerAnnotEvent(event))
+    .on('click', (event) => triggerAnnotEvent(event));
 }
 
 /**

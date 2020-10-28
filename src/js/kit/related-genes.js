@@ -28,6 +28,7 @@ import {
 
 import {getAnnotDomId} from '../annotations/process';
 
+/** Sets DOM IDs for ideo.relatedAnnots; needed to associate labels */
 function setRelatedAnnotDomIds(ideo) {
   const updated = [];
 
