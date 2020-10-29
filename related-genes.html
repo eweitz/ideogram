@@ -48,9 +48,15 @@
       cursor: pointer;
     }
 
-    #ideogram .annot path {
+    #_ideogram .annot path, ._ideogramLabel {
       cursor: pointer;
     }
+
+    #_ideogram ._ideogramLabel._ideoActive {
+      fill: #77F !important;
+      stroke: #F0F0FF !important;
+    }
+
   </style>
   <script type="text/javascript" src="dist/js/ideogram.min.js"></script>
 <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
@@ -177,7 +183,7 @@
       // const banded = !['homo sapiens', 'mus musculus'].includes(selectedOrg);
       // config.showFullyBanded = banded;
       delete ideogram;
-      ideogram = new Ideogram(config);
+      ideogram = Ideogram.initRelatedGenes(config);
 
     }
 
@@ -215,7 +221,21 @@
       document.querySelector('#search-genes').value = annot.name;
       urlParams['q'] = annot.name;
       updateUrl();
+
+      const selector = '#ideogram-container #_ideogramInnerWrap'
       ideogram.plotRelatedGenes(annot.name);
+    }
+
+    function onWillShowAnnotTooltip(annot) {
+      const ideo = this;
+      const tooltipAnalytics = ideo.getTooltipAnalytics(annot);
+
+      // Reduces analytics noise.  Accounts for quick moves from label to
+      // annot, which flickers tooltip and represents an technical artifact
+      // that is not worth analyzing.
+      if (tooltipAnalytics) console.log(tooltipAnalytics);
+
+      return annot
     }
 
     config = {
@@ -225,15 +245,17 @@
       chrHeight: 100,
       chrLabelSize: 12,
       annotationHeight: 7,
-      onClickAnnot: onClickAnnot,
       onLoad: plotGeneFromUrl,
-      onPlotRelatedGenes: reportRelatedGenes
+      onPlotRelatedGenes: reportRelatedGenes,
+      onWillShowAnnotTooltip,
+      showAnnotLabels: true,
+      onClickAnnot
     }
 
     // annotsInList = ['CDK9', 'CDK19', 'CDK1'];
     // let ideogram = Ideogram.initRelatedGenes(config, annotsInList)
 
-    let ideogram = Ideogram.initRelatedGenes(config)
+    let ideogram = Ideogram.initRelatedGenes(config);
   </script>
 </body>
 </html>

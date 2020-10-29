@@ -7,7 +7,7 @@ const style = `
 
     #gear {
       position: absolute;
-      right: 8px;
+      right: 3px;
       top: 24px;
       z-index: 8001;
       cursor: pointer;
@@ -18,7 +18,7 @@ const style = `
     #tools {
       position: absolute;
       width: 120px;
-      right: 32px;
+      right: 27px;
       top: 16px;
       z-index: 8000;
       background: white;
@@ -55,7 +55,7 @@ const style = `
 
     #download {
       position: absolute;
-      right: 8px;
+      right: 3px;
       top: 16px;
       z-index: 8000;
       background: white;
@@ -65,7 +65,7 @@ const style = `
 
     #settings {
       position: absolute;
-      right: 8px;
+      right: 3px;
       top: 16px;
       z-index: 8000;
       background: white;

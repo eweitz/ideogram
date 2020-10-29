@@ -263,6 +263,9 @@ function init(ideo) {
         ideo.config.taxid = taxid;
         ideo.config.taxids = taxids;
 
+        ideo.organismScientificName =
+          ideo.getScientificName(ideo.config.taxid);
+
         var t0 = new Date().getTime();
         getBandsAndPrepareContainer(taxids, t0, ideo);
 

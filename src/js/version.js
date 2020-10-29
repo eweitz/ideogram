@@ -1,2 +1,2 @@
-var version = '1.26.0';
+var version = '1.28.0';
 export default version;

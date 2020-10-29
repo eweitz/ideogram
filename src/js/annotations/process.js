@@ -117,9 +117,23 @@ function addAnnot(annot, keys, ra, omittedAnnots, annots, m, ideo) {
   return [annots, omittedAnnots];
 }
 
+function getAnnotDomId(chrIndex, annotIndex) {
+  return '_c' + chrIndex + '_a' + annotIndex;
+}
+
 function addAnnotsForChr(annots, omittedAnnots, annotsByChr, chrModel,
   m, keys, ideo) {
   var j, k, annot, ra;
+
+  // Assign DOM ID if annots are rendered as individual DOM elements
+  const shouldAssignDomId = (
+    !ideo.config.annotationsLayout ||
+    ideo.config.annotationsLayout === 'tracks'
+  );
+
+  if (shouldAssignDomId) {
+    annotsByChr.annots = annotsByChr.annots.sort((a, b) => a[1] - b[1]);
+  }
 
   for (j = 0; j < annotsByChr.annots.length; j++) {
     ra = annotsByChr.annots[j];
@@ -136,6 +150,7 @@ function addAnnotsForChr(annots, omittedAnnots, annotsByChr, chrModel,
     annot.startPx = ideo.convertBpToPx(chrModel, annot.start);
     annot.stopPx = ideo.convertBpToPx(chrModel, annot.stop);
     annot.px = Math.round((annot.startPx + annot.stopPx) / 2);
+    if (shouldAssignDomId) annot.domId = getAnnotDomId(m, j);
 
     [annots, omittedAnnots] =
       addAnnot(annot, keys, ra, omittedAnnots, annots, m, ideo);
@@ -227,4 +242,4 @@ function processAnnotData(rawAnnots) {
   return annots;
 }
 
-export {processAnnotData};
+export {processAnnotData, getAnnotDomId};

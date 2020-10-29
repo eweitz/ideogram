@@ -21,6 +21,55 @@
  * https://eweitz.github.io/ideogram/related-genes
  */
 
+import {
+  initAnalyzeRelatedGenes, analyzePlotTimes, analyzeRelatedGenes, timeDiff,
+  getRelatedGenesByType, getRelatedGenesTooltipAnalytics
+} from './analyze-related-genes';
+
+import {getAnnotDomId} from '../annotations/process';
+
+/** Sets DOM IDs for ideo.relatedAnnots; needed to associate labels */
+function setRelatedAnnotDomIds(ideo) {
+  const updated = [];
+
+  const sortedChrNames = ideo.chromosomesArray.map((chr) => {
+    return chr.name;
+  });
+
+  // Arrange related annots by chromosome
+  const annotsByChr = {};
+  ideo.relatedAnnots.forEach((annot) => {
+    if (annot.chr in annotsByChr) {
+      annotsByChr[annot.chr].push(annot);
+    } else {
+      annotsByChr[annot.chr] = [annot];
+    }
+  });
+
+  // Sort related annots by position, relative to others in same chromosome
+  const positionSortedAnnotsNamesByChr = {};
+  Object.entries(annotsByChr).map(([chr, annots]) => {
+    annots.sort((a, b) => a.start - b.start);
+    const annotNames = annots.map((annot) => annot.name);
+    positionSortedAnnotsNamesByChr[chr] = annotNames;
+  });
+
+  ideo.relatedAnnots.forEach((annot) => {
+    const chr = annot.chr;
+
+    // Annots have DOM IDs keyed by chromosome index and annotation index.
+    // We reconstruct those here using structures built in two blocks above.
+    const chrIndex = sortedChrNames.indexOf(chr);
+    const annotIndex =
+      positionSortedAnnotsNamesByChr[chr].indexOf(annot.name);
+
+    annot.domId = getAnnotDomId(chrIndex, annotIndex);
+    updated.push(annot);
+  });
+
+  ideo.relatedAnnots = updated;
+}
+
 /**
  * Determines if interaction node might be a gene
  *
@@ -106,7 +155,7 @@ async function fetchInteractingGenes(gene, ideo) {
  */
 async function fetchMyGeneInfo(queryString) {
   const myGeneBase = 'https://mygene.info/v3/query';
-  const response = await fetch(myGeneBase + queryString);
+  const response = await fetch(myGeneBase + queryString + '&size=25');
   const data = await response.json();
   return data;
 }
@@ -322,14 +371,14 @@ function parseAnnotFromMgiGene(gene, ideo, color='red') {
     start: genomicPos.start,
     stop: genomicPos.end,
     id: genomicPos.ensemblgene,
-    color: color
+    color
   };
 
   return annot;
 }
 
 function moveLegend(ideoInnerDom) {
-  const legendStyle = 'position: absolute; top: 15px';
+  const legendStyle = 'position: absolute; top: 15px; left: 50px';
   const legend = document.querySelector('#_ideogramLegend');
   ideoInnerDom.prepend(legend);
   legend.style = legendStyle;
@@ -350,28 +399,38 @@ function applyAnnotsIncludeList(annots, ideo) {
 }
 
 /** Fetch and draw interacting genes, return Promise for annots */
-function processInteractions(annot, ideoInnerDom, ideo) {
+function processInteractions(annot, ideo) {
   return new Promise(async (resolve) => {
+    const t0 = performance.now();
+
     const interactions = await fetchInteractingGenes(annot, ideo);
     const annots = await fetchInteractingGeneAnnots(interactions, ideo);
     ideo.relatedAnnots.push(...annots);
-    finishPlotRelatedGenes(ideoInnerDom, ideo);
+    finishPlotRelatedGenes('interacting', ideo);
+
+    ideo.time.rg.interactions = timeDiff(t0);
+
     resolve();
   });
 }
 
 /** Find and draw paralogs, return Promise for annots */
-function processParalogs(annot, ideoInnerDom, ideo) {
+function processParalogs(annot, ideo) {
   return new Promise(async (resolve) => {
+    const t0 = performance.now();
+
     const annots = await fetchParalogs(annot, ideo);
     ideo.relatedAnnots.push(...annots);
-    finishPlotRelatedGenes(ideoInnerDom, ideo);
+    finishPlotRelatedGenes('paralogous', ideo);
+
+    ideo.time.rg.paralogs = timeDiff(t0);
+
     resolve();
   });
 }
 
 /** Filter, sort, draw annots.  Move legend. */
-function finishPlotRelatedGenes(ideoInnerDom, ideo) {
+function finishPlotRelatedGenes(type, ideo) {
   let annots = ideo.relatedAnnots.slice();
   annots = applyAnnotsIncludeList(annots, ideo);
   annots.sort((a, b) => {
@@ -379,8 +438,82 @@ function finishPlotRelatedGenes(ideoInnerDom, ideo) {
     if (b.color === 'purple' && a.color === 'pink') return -1;
     return b.name.length - a.name.length;
   });
+  if (annots.length > 1 && ideo.onFindRelatedGenesCallback) {
+    ideo.onFindRelatedGenesCallback();
+  }
   ideo.drawAnnots(annots);
+
+  if (ideo.config.showAnnotLabels) {
+    setRelatedAnnotDomIds(ideo);
+    ideo.fillAnnotLabels(ideo.relatedAnnots);
+  }
+
+  const ideoInnerDom = document.querySelector('#_ideogramInnerWrap');
   moveLegend(ideoInnerDom);
+
+  analyzePlotTimes(type, ideo);
+}
+
+/** Fetch position of searched gene, return corresponding annotation */
+async function processSearchedGene(geneSymbol, ideo) {
+  const t0 = performance.now();
+
+  // Fetch positon of searched gene
+  const taxid = ideo.config.taxid;
+  const queryString =
+    `?q=symbol:${geneSymbol}&species=${taxid}&fields=symbol,genomic_pos,name`;
+  const data = await fetchMyGeneInfo(queryString);
+
+  const gene = data.hits[0];
+  const name = gene.name;
+  const ensemblId = gene.genomic_pos.ensemblgene;
+  ideo.annotDescriptions.annots[gene.symbol] = {
+    description: name, ensemblId, name, type: 'searched gene'
+  };
+
+  const annot = parseAnnotFromMgiGene(gene, ideo);
+
+  ideo.relatedAnnots.push(annot);
+
+  ideo.time.rg.searchedGene = timeDiff(t0);
+
+  return annot;
+}
+
+function adjustPlaceAndVisibility(ideo) {
+  var ideoContainerDom = document.querySelector(ideo.config.container);
+  ideoContainerDom.style.position = 'absolute';
+  ideoContainerDom.style.width = '100%';
+
+  var ideoInnerDom = document.querySelector('#_ideogramInnerWrap');
+  ideoInnerDom.style.position = 'relative';
+  ideoInnerDom.style.marginLeft = 'auto';
+  ideoInnerDom.style.marginRight = 'auto';
+  ideoInnerDom.style.overflowY = 'hidden';
+  document.querySelector('#_ideogramMiddleWrap').style.overflowY = 'hidden';
+
+  const annotDecorPad = ideo.config.annotDecorPad;
+
+  if (typeof ideo.didAdjustIdeogramLegend === 'undefined') {
+    // Accounts for moving legend when external content at left or right
+    // is variable upon first rendering plotted genes
+    var ideoDom = document.querySelector('#_ideogram');
+    const legendWidth = 150;
+    ideoInnerDom.style.maxWidth =
+      (
+        parseInt(ideoInnerDom.style.maxWidth) +
+        legendWidth +
+        annotDecorPad
+      ) + 'px';
+    ideoDom.style.minWidth =
+      (parseInt(ideoDom.style.minWidth) + annotDecorPad) + 'px';
+    ideoDom.style.maxWidth =
+      (parseInt(ideoDom.style.minWidth) + annotDecorPad) + 'px';
+    ideoDom.style.position = 'relative';
+    ideoDom.style.left = legendWidth + 'px';
+
+    ideo.didAdjustIdeogramLegend = true;
+  }
 }
 
 /**
@@ -391,7 +524,10 @@ function finishPlotRelatedGenes(ideoInnerDom, ideo) {
 async function plotRelatedGenes(geneSymbol) {
 
   const ideo = this;
-  const t0 = performance.now();
+
+  initAnalyzeRelatedGenes(ideo);
+
+  ideo.clearAnnotLabels();
 
   const organism = ideo.getScientificName(ideo.config.taxid);
   const version = Ideogram.version;
@@ -414,81 +550,24 @@ async function plotRelatedGenes(geneSymbol) {
     chromosome.style.cursor = '';
   });
 
-  var ideoContainerDom = document.querySelector(ideo.config.container);
-
-  ideoContainerDom.style.position = 'absolute';
-  ideoContainerDom.style.width = '100%';
-  var ideoInnerDom = document.querySelector('#_ideogramInnerWrap');
-  ideoInnerDom.style.position = 'relative';
-  ideoInnerDom.style.marginLeft = 'auto';
-  ideoInnerDom.style.marginRight = 'auto';
-  ideoInnerDom.style.overflowY = 'hidden';
-  document.querySelector('#_ideogramMiddleWrap').style.overflowY = 'hidden';
-
-  if (typeof ideo.didAdjustIdeogramLegend === 'undefined') {
-    // Accounts for moving legend when external content at left or right
-    // is variable upon first rendering plotted genes
-    var ideoDom = document.querySelector('#_ideogram');
-    const legendWidth = 140;
-    ideoInnerDom.style.maxWidth =
-      (parseInt(ideoInnerDom.style.maxWidth) + legendWidth) + 'px';
-    ideoDom.style.maxWidth =
-      (parseInt(ideoDom.style.minWidth)) + 'px';
-    ideoDom.style.position = 'relative';
-    ideoDom.style.left = legendWidth + 'px';
-
-    ideo.didAdjustIdeogramLegend = true;
-  }
-
-  // Fetch positon of searched gene
-  const taxid = ideo.config.taxid;
-  const queryString =
-    `?q=symbol:${geneSymbol}&species=${taxid}&fields=symbol,genomic_pos,name`;
-  const data = await fetchMyGeneInfo(queryString);
-
-  const gene = data.hits[0];
-  const name = gene.name;
-  const ensemblId = gene.genomic_pos.ensemblgene;
-  ideo.annotDescriptions.annots[gene.symbol] = {
-    description: name, ensemblId, name, type: 'searched gene'
-  };
+  adjustPlaceAndVisibility(ideo);
 
   ideo.relatedAnnots = [];
 
-  const annot = parseAnnotFromMgiGene(gene, ideo);
-  ideo.relatedAnnots.push(annot);
+  // Fetch positon of searched gene
+  const annot = await processSearchedGene(geneSymbol, ideo);
 
   await Promise.all([
-    processInteractions(annot, ideoInnerDom, ideo),
-    processParalogs(annot, ideoInnerDom, ideo)
+    processInteractions(annot, ideo),
+    processParalogs(annot, ideo)
   ]);
 
-  ideo.timeRelatedGenes = Math.round(performance.now() - t0);
+  ideo.time.rg.total = timeDiff(ideo.time.rg.t0);
 
   analyzeRelatedGenes(ideo);
 
   if (ideo.onPlotRelatedGenesCallback) ideo.onPlotRelatedGenesCallback();
 
-}
-
-/** Summarizes number and kind of related genes, performance, etc. */
-function analyzeRelatedGenes(ideo) {
-  const relatedGenes = ideo.annotDescriptions.annots;
-  const numRelatedGenes = Object.keys(relatedGenes).length;
-  const values = Object.values(relatedGenes);
-  const numParalogs =
-    values.filter(v => v.type === 'paralogous gene').length;
-  const numInteractingGenes =
-    values.filter(v => v.type === 'interacting gene').length;
-  const searchedGene = Object.entries(relatedGenes)
-    .filter((entry) => entry[1].type === 'searched gene')[0][0];
-  const time = ideo.timeRelatedGenes;
-
-  ideo.relatedGenesAnalytics = {
-    searchedGene,
-    numRelatedGenes, numParalogs, numInteractingGenes,
-    time
-  };
 }
 
 function getAnnotByName(annotName, ideo) {
@@ -584,19 +663,47 @@ function _initRelatedGenes(config, annotsInList) {
     chrLabelColor: '#333',
     onWillShowAnnotTooltip: decorateGene,
     annotsInList: annotsInList,
-    showTools: true
+    showTools: true,
+    showAnnotLabels: true
   };
+
+  if ('onWillShowAnnotTooltip' in config) {
+    const key = 'onWillShowAnnotTooltip';
+    const clientFn = config[key];
+    const defaultFunction = kitDefaults[key];
+    const newFunction = function(annot) {
+      annot = defaultFunction.bind(this)(annot);
+      annot = clientFn.bind(this)(annot);
+      return annot;
+    };
+    kitDefaults[key] = newFunction;
+    delete config[key];
+  }
 
   // Override kit defaults if client specifies otherwise
   const kitConfig = Object.assign(kitDefaults, config);
 
+  if (kitConfig.showAnnotLabels) {
+    kitConfig.annotDecorPad = 60;
+  } else {
+    kitConfig.annotDecorPad = 30;
+  }
+
   const ideogram = new Ideogram(kitConfig);
 
+  // Called upon completing last plot, including all related genes
   if (config.onPlotRelatedGenes) {
     ideogram.onPlotRelatedGenesCallback = config.onPlotRelatedGenes;
   }
 
+  // Called upon 1) finding paralogs, and 2) finding interacting genes
+  if (config.onFindRelatedGenes) {
+    ideogram.onFindRelatedGenesCallback = config.onFindRelatedGenes;
+  }
+
+  ideogram.getTooltipAnalytics = getRelatedGenesTooltipAnalytics;
+
   return ideogram;
 }
 
-export {_initRelatedGenes, plotRelatedGenes};
+export {_initRelatedGenes, plotRelatedGenes, getRelatedGenesByType};

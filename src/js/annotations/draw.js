@@ -120,7 +120,7 @@ function writeTrackAnnots(chrAnnot, ideo) {
   shapes = getShapes(annotHeight);
 
   chrAnnot.append('g')
-    .attr('id', function(d) {return d.id;})
+    .attr('id', function(d) {return d.domId;})
     .attr('class', 'annot')
     .attr('transform', function(d) {
       var y = ideo.config.chrWidth + (d.trackIndex * annotHeight * 2);
@@ -227,4 +227,4 @@ function drawProcessedAnnots(annots) {
   if (ideo.onDrawAnnotsCallback) ideo.onDrawAnnotsCallback();
 }
 
-export {drawAnnots, drawProcessedAnnots};
+export {drawAnnots, drawProcessedAnnots, getShapes};
