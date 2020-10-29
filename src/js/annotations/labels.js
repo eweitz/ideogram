@@ -6,6 +6,12 @@ const allLabelStyle = `
       cursor: pointer;
     }
 
+    #_ideogram .annot path {
+      stroke-width: 1px;
+      stroke: white;
+      stroke-linejoin: bevel;
+    }
+
     #_ideogram ._ideogramLabel._ideoActive {
       fill: #77F !important;
       stroke: #F0F0FF !important;
