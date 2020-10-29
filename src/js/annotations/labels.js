@@ -1,5 +1,18 @@
 import {d3} from '../lib';
 
+const allLabelStyle = `
+  <style>
+    #_ideogram .annot path, ._ideogramLabel {
+      cursor: pointer;
+    }
+
+    #_ideogram ._ideogramLabel._ideoActive {
+      fill: #77F !important;
+      stroke: #F0F0FF !important;
+    }
+  </style>
+  `;
+
 /** Return DOM ID of annotation object */
 function getAnnotDomLabelId(annot) {
   return 'ideogramLabel_' + annot.domId;
@@ -32,6 +45,12 @@ function triggerAnnotEvent(event, ideo) {
 
 function renderLabel(annot, style, ideo) {
   const config = ideo.config;
+
+  if (!ideo.didSetLabelStyle) {
+    document.querySelector('#_ideogramInnerWrap')
+      .insertAdjacentHTML('afterbegin', allLabelStyle);
+    ideo.didSetLabelStyle = true;
+  }
 
   const id = getAnnotDomLabelId(annot);
 
