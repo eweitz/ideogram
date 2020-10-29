@@ -104,14 +104,18 @@ function getAnnotByName(annotName, ideo) {
 
 /** Get label's top and left offsets relative to chromosome, and width */
 function getAnnotLabelLayout(annot, ideo) {
-  var annotRect, ideoRect, width, height, top, bottom, left, right,
+  var annotDom, annotRect, ideoRect, width, height, top, bottom, left, right,
     config = ideo.config;
 
+  annotDom = document.querySelector('#' + annot.domId);
+
+  // Handles cases when annotation is not yet in DOM
+  if (annotDom === null) return null;
+
+  annotRect = annotDom.getBoundingClientRect();
 
   ideoRect =
     document.querySelector('#_ideogram').getBoundingClientRect();
-  annotRect =
-    document.querySelector('#' + annot.domId).getBoundingClientRect();
 
   width = getTextWidth(annot.name, ideo);
 
@@ -147,6 +151,7 @@ function addAnnotLabel(annotName, backgroundColor, borderColor) {
   annot = getAnnotByName(annotName, ideo);
 
   const layout = getAnnotLabelLayout(annot, ideo);
+  if (layout === null) return;
 
   const style = Object.assign(layout, {backgroundColor, borderColor});
 
@@ -177,6 +182,7 @@ function fillAnnotLabels(sortedAnnots=[]) {
 
   sortedAnnots.forEach((annot, i) => {
     const layout = getAnnotLabelLayout(annot, ideo);
+    if (layout === null) return;
 
     const hasOverlap =
       spacedLayouts.length > 1 && spacedLayouts.some((sl, j) => {
