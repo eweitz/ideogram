@@ -59,10 +59,7 @@
   <a href="differential-expression">Next</a> |
   <a href="https://github.com/eweitz/ideogram/blob/gh-pages/related-genes.html" target="_blank">Source</a>
   <p>
-    Search a gene and find interacting pathway genes and paralogs.  Uses data from
-    <a href="https://rest.ensembl.org">Ensembl</a>,
-    <a href="https://www.wikipathways.org">WikiPathways</a>, and
-    <a href="https://mygene.info">MyGene.info</a>.
+    Find interacting pathway genes and paralogs.
     See also <a href="orthologs">Orthologs</a>.
   </p>
   <div>
@@ -160,7 +157,6 @@
       }).join('&');
       history.pushState(null, null, '?' + params);
     }
-
 
     function getOrganism() {
       const selectedOrg =
