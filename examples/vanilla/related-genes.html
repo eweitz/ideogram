@@ -161,21 +161,34 @@
       history.pushState(null, null, '?' + params);
     }
 
-    function handleOrganism() {
+
+    function getOrganism() {
       const selectedOrg =
         document.querySelector('option:checked').text
           .split('(')[1].split(')')[0]
           .replace(/ /g, '-').toLowerCase();
 
-      urlParams['org'] = selectedOrg;
+      return selectedOrg;
+    }
+    async function handleOrganism() {
+      urlParams.org = getOrganism();
+      urlParams.q = getGene();
       updateUrl();
 
-      config.organism = selectedOrg;
+      config.organism = urlParams.org;
       // const banded = !['homo sapiens', 'mus musculus'].includes(selectedOrg);
       // config.showFullyBanded = banded;
       delete ideogram;
       ideogram = Ideogram.initRelatedGenes(config);
+    }
 
+    function getGene() {
+      const searchInput = document.getElementById('search-genes').value.trim();
+
+      // Handles e.g. "BRCA1,BRCA2", "BRCA1 BRCA2", and "BRCA1, BRCA2"
+      const geneSymbols = searchInput.split(/[, ]/).filter(d => d !== '')
+      const geneSymbol = geneSymbols[0];
+      return geneSymbol;
     }
 
     // Process text input for the "Search" field.
@@ -183,16 +196,11 @@
       // Ignore non-"Enter" keyups
       if (event.type === 'keyup' && event.keyCode !== 13) return;
 
-      const searchInput = document.getElementById('search-genes').value.trim();
-
-      // Handles e.g. "BRCA1,BRCA2", "BRCA1 BRCA2", and "BRCA1, BRCA2"
-      const geneSymbols = searchInput.split(/[, ]/).filter(d => d !== '')
-      const geneSymbol = geneSymbols[0];
-
-      urlParams['q'] = geneSymbol;
+      urlParams.org = getOrganism();
+      urlParams.q = getGene();
       updateUrl();
 
-      await ideogram.plotRelatedGenes(geneSymbol);
+      await ideogram.plotRelatedGenes(urlParams.q);
 
       document.querySelector('#ideogram-container').style.visibility = '';
     }
@@ -200,8 +208,11 @@
     async function plotGeneFromUrl() {
       if ('q' in urlParams) {
         ideogram.plotRelatedGenes(urlParams['q']);
-        document.querySelector('#ideogram-container').style.visibility = '';
+      } else {
+        ideogram.plotRelatedGenes('RAD51');
       }
+
+      document.querySelector('#ideogram-container').style.visibility = '';
     }
 
     function reportRelatedGenes() {
