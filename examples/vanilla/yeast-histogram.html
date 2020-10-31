@@ -1,0 +1,213 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Yeast | Ideogram</title>
+  <meta charset="UTF-8">
+  <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
+  <style>
+    body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
+    a, a:visited {text-decoration: none;}
+    a:hover {text-decoration: underline;}
+    a, a:hover, a:visited, a:active {color: #0366d6;}
+  </style>
+  <style>
+    li {padding: 2px 0;}
+    input {margin-right: 5px;}
+    #gene-type {padding-left: 50px; float:left}
+    #expression-level {float:left}
+    .note {
+      font-style: italic;
+      padding-top:50px;
+      padding-left: 10px;
+      clear: left;
+    }
+  </style>
+</head>
+<body>
+  <h1>Yeast Ideogram</h1>
+  <div id="container"></div>
+  <ul id="expression-level">
+    <h3>Expression level</h3>
+    <li>
+      <label for="filter_expression-level_extremely-high">
+        <input type="checkbox" id="filter_expression-level_extremely-high">Extremely high</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_expression-level_very-high">
+        <input type="checkbox" id="filter_expression-level_very-high">Very high</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_expression-level_high">
+        <input type="checkbox" id="filter_expression-level_high">High</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_expression-level_moderately-high">
+        <input type="checkbox" id="filter_expression-level_moderately-high">Moderately high</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_expression-level_moderate">
+        <input type="checkbox" id="filter_expression-level_moderate">Moderate</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_expression-level_low">
+        <input type="checkbox" id="filter_expression-level_low">Low</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_expression-level_very-low">
+        <input type="checkbox" id="filter_expression-level_very-low">Very low</input>
+      <span class="count"></span>
+      </label>
+    </li>
+  </ul>
+  <ul id="gene-type">
+    <h3>Gene type</h3>
+    <li>
+      <label for="filter_gene-type_ncRNA-gene">
+        <input type="checkbox" id="filter_gene-type_ncRNA-gene">ncRNA</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_gene-type_pseudogene">
+        <input type="checkbox" id="filter_gene-type_pseudogene">pseudogene</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_gene-type_rRNA-gene">
+        <input type="checkbox" id="filter_gene-type_rRNA-gene">rRNA</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_gene-type_snRNA-gene">
+        <input type="checkbox" id="filter_gene-type_snRNA-gene">snRNA</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_gene-type_snoRNA-gene">
+        <input type="checkbox" id="filter_gene-type_snoRNA-gene">snoRNA</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_gene-type_tRNA-gene">
+        <input type="checkbox" id="filter_gene-type_tRNA-gene">tRNA</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_gene-type_telomerase-RNA-gene">
+        <input type="checkbox" id="filter_gene-type_telomerase-RNA-gene">telomerase RNA gene</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_gene-type_transposable-element-gene">
+        <input type="checkbox" id="filter_gene-type_transposable-element-gene">transposable element gene</input>
+      <span class="count"></span>
+      </label>
+    </li>
+    <li>
+      <label for="filter_gene-type_other-type">
+        <input type="checkbox" id="filter_gene-type_other-type">other types</input>
+      <span class="count"></span>
+      </label>
+    </li>
+  </ul>
+
+  <div class="note">
+    This ideogram is created with randomly assigned expression values, and is under development. The height of the histogram bars represent the number of annotations.
+  </div>
+  <script type="text/javascript">
+
+  var filterMap = {
+    'expression-level': {
+        "extremely-high": 7,
+        "very-high": 6,
+        "high": 5,
+        "moderately-high": 4,
+        "moderate": 3,
+        "low": 2,
+        "very-low": 1,
+        "none": 0
+    },
+    'gene-type': {
+        "ncRNA-gene": 1,
+        "pseudogene": 2,
+        "rRNA-gene": 3,
+        "snRNA-gene": 4,
+        "snoRNA-gene": 5,
+        "tRNA-gene": 6,
+        "telomerase-RNA-gene": 7,
+        "transposable-element-gene": 8,
+        "other-types": 9
+    }
+  };
+
+  var d3 = Ideogram.d3;
+
+  d3.selectAll('input').on('click', function() {
+    var tmp, checkedFilter, checkedFilters,  i, facet, counts, count,
+      filterID, key,
+      selections = {};
+
+    checkedFilters = d3.selectAll('input:checked').nodes();
+
+    for (i = 0; i < checkedFilters.length; i++) {
+      tmp = checkedFilters[i].id.split('_');
+      facet = tmp[1];
+      checkedFilter = tmp[2];
+
+      filterID = filterMap[facet][checkedFilter];
+      if (facet in selections === false) {
+        selections[facet] = {};
+      }
+      selections[facet][filterID] = 1;
+    }
+
+    counts = ideogram.filterAnnots(selections);
+
+    for (facet in counts) {
+      for (i = 0; i < counts[facet].length; i++) {
+        count = counts[facet][i];
+        key = count.key - 1;
+        value = '(' + count.value + ')';
+
+        // document.querySelectorAll('#' + facet + ' .count')[key].innerHTML = value;
+      }
+    }
+  });
+
+  var config = {
+    container: '#container',
+    orientation: 'vertical',
+    organism: 'saccharomyces-cerevisiae',
+//    assembly: 'GRCh37',
+    chrHeight: 390,
+    chrWidth: 20,
+    showNonNuclearChromosomes: true,
+    annotationsPath: '../../data/annotations/yeast-annots-random.json',
+    annotationsLayout: 'histogram',
+    barWidth: 3,
+    filterable: true
+  };
+
+  var ideogram = new Ideogram(config);
+  </script>
+</body>
+</html>
