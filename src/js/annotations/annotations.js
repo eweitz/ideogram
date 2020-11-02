@@ -133,10 +133,9 @@ function validateAnnotsUrl(annotsUrl) {
 function afterRawAnnots() {
   var ideo = this,
     config = ideo.config;
+
   // Ensure annots are ordered by chromosome
-  ideo.rawAnnots.annots = ideo.rawAnnots.annots.sort(function(a, b) {
-    return a.chr.localeCompare(b.chr, 'en', {numeric: true});
-  });
+  ideo.rawAnnots.annots = ideo.rawAnnots.annots.sort(Ideogram.sortChromosomes);
 
   if (ideo.onLoadAnnotsCallback) {
     ideo.onLoadAnnotsCallback();
