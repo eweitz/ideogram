@@ -155,8 +155,6 @@ function afterRawAnnots() {
   var ideo = this,
     config = ideo.config;
 
-  detectDuplicateChrsInRawAnnots(ideo);
-
   // Ensure annots are ordered by chromosome
   ideo.rawAnnots.annots = ideo.rawAnnots.annots.sort(Ideogram.sortChromosomes);
 
@@ -179,6 +177,8 @@ function afterRawAnnots() {
   if (config.heatmaps) {
     ideo.deserializeAnnotsForHeatmap(ideo.rawAnnots);
   }
+
+  detectDuplicateChrsInRawAnnots(ideo);
 }
 
 /**
