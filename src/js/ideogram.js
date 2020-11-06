@@ -239,17 +239,19 @@ export default class Ideogram {
     var chrAName, chrBName,
       aIsCP, bIsCP, aIsMT, bIsMT, aIsAP, bIsAP, aIsNuclear, bIsNuclear;
 
-    if (typeof a === 'string') {
-      // Chromosome data is from static file cache (e.g. homo-sapiens.json)
-      chrAName = a;
-      chrBName = b;
+    if (typeof a === 'string' || 'chr' in a && 'annots' in a) {
+      // Chromosome data is from either:
+      //    - Ideogram static file cache (e.g. homo-sapiens.json)
+      //    - Ideogram raw annotations
+      chrAName = (typeof a === 'string') ? a : a.chr;
+      chrBName = (typeof b === 'string') ? b : b.chr;
 
-      aIsCP = a === 'CP';
-      bIsCP = b === 'CP';
-      aIsMT = a === 'MT';
-      bIsMT = b === 'MT';
-      aIsAP = a === 'AP';
-      bIsAP = b === 'AP';
+      aIsCP = chrAName === 'CP';
+      bIsCP = chrBName === 'CP';
+      aIsMT = chrAName === 'MT';
+      bIsMT = chrBName === 'MT';
+      aIsAP = chrAName === 'AP';
+      bIsAP = chrBName === 'AP';
       aIsNuclear = (!aIsCP && !aIsMT && !aIsAP);
       bIsNuclear = (!bIsCP && !bIsMT && !bIsAP);
     } else {

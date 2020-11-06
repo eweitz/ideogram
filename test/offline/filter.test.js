@@ -343,4 +343,63 @@ describe('Ideogram filter support', function() {
 
     ideogram = new Ideogram(config);
   });
+
+  it('should sort yeast annotations, and preserve clearing filters', done => {
+    // Tests use case from ../examples/vanilla/annotations-basic.html
+
+    let numTimesDrawn = 0;
+
+    function getNumAnnots(annotsContainer) {
+      return annotsContainer
+        .map((annots) => annots.annots.length)
+        .reduce((totalAnnots, numAnnots) => totalAnnots + numAnnots);
+    }
+
+    function callback() {
+      numTimesDrawn += 1;
+
+      var numAnnotsByChr = this.annots.length;
+
+      // yeast_issue_239.json has known duplicate chromosomes.
+      // This accounts for them.  Yeast should have 17 chromosomes (I-XVI, MT)
+      // but the annotations used in
+      // https://github.com/eweitz/ideogram/issues/239 had a redundant
+      // chromosome XIV in its raw annotations JSON.  Because of the
+      // duplicate chromosome, we expect 18 in this particular dataset.
+      assert.equal(numAnnotsByChr, 18);
+
+      const filteredAnnots = ideogram.filteredAnnots;
+      const numFilteredAnnotsChrVI = filteredAnnots[5].annots.length;
+      const numFilteredAnnots = getNumAnnots(filteredAnnots);
+
+      if (numTimesDrawn === 1) {
+        assert.equal(numFilteredAnnots, 21);
+        assert.equal(numFilteredAnnotsChrVI, 3);
+        var selections = {'expression-level': {4: 1}};
+        ideogram.filterAnnots(selections);
+      } else if (numTimesDrawn === 2) {
+        assert.equal(numFilteredAnnotsChrVI, 0);
+        assert.equal(numFilteredAnnots, 0);
+        var selections = {};
+        ideogram.filterAnnots(selections);
+      } else if (numTimesDrawn === 3) {
+        // Prevent regression in an issue 239 bug; this had shown MT annots
+        assert.equal(numFilteredAnnotsChrVI, 3);
+        assert.equal(numFilteredAnnots, 21);
+        done();
+      }
+    }
+
+    var config = {
+      organism: 'Saccharomyces cerevisiae',
+      annotationsPath: '../dist/data/annotations/yeast_issue_239.json',
+      annotationsLayout: 'histogram',
+      annotationsNumTracks: 3,
+      showNonNuclearChromosomes: true,
+      onDrawAnnots: callback,
+      filterable: true
+    };
+
+    var ideogram = new Ideogram(config);
+  });
 });
