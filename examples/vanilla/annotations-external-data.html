@@ -35,7 +35,10 @@
   function getAndDrawAcmgGenes() {
 
     var acmgGenes, i, annots, geneClause, geneID, geneIDs, topWeight,
-        eutils, esearch, esummary, url, defaultParams;
+        eutils, esearch, esummary, url, defaultParams,
+        ideo = this;
+
+    ideo.annotDescriptions = {annots: {}}
 
     geneIDs = [];
     annots = [];
@@ -108,6 +111,22 @@
             weight: weight // optional
           });
 
+          var clinvarText = 'Pathogenic variants';
+          var clinvarBase = 'https://www.ncbi.nlm.nih.gov/clinvar';
+
+          var clinvarUrl =
+            'https://www.ncbi.nlm.nih.gov/clinvar' +
+            '?term=' + gene + '%5Bgene%5D%20AND%20%22clinsig%20pathogenic%22%5BProperties%5D';
+          var clinvarLink =
+            'ClinVar: <a target="_blank" href="' + clinvarUrl + '">' + clinvarText + '</a>';
+          var fullName = result.description
+
+          // Add properties like fullName or clinvarLink for later use in hyperlinkGene
+          ideo.annotDescriptions.annots[gene] = {
+            fullName,
+            clinvarLink
+          }
+
         }
 
         // NCBI assigns each gene a weight based on how well it is characterized.
@@ -137,11 +156,16 @@
     });
   }
 
-  function hyperlinkGene(annot) {
+  function enhanceTooltipContent(annot) {
     var term = '(' + annot.name + '[gene])+AND+(Homo+sapiens[orgn])';
     var url = 'https://ncbi.nlm.nih.gov/gene/?term=' + term;
+    var description = this.annotDescriptions.annots[annot.name];
+
     annot.displayName =
-      '<a target="_blank" href="' + url + '">' + annot.name + '</a>';
+      '<a target="_blank" href="' + url + '">' + annot.name + '</a><br/>' +
+      description.fullName + '<br/><br/>' +
+      description.clinvarLink + '<br/>';
+
     return annot
   }
 
@@ -153,7 +177,7 @@
     chrHeight: 300,
     annotationHeight: 4,
     onLoad: getAndDrawAcmgGenes,
-    onWillShowAnnotTooltip: hyperlinkGene
+    onWillShowAnnotTooltip: enhanceTooltipContent
   };
 
   var ideogram = new Ideogram(config);
