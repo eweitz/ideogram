@@ -130,13 +130,33 @@ function validateAnnotsUrl(annotsUrl) {
   return extension;
 }
 
+/** Find redundant chromosomes in raw annotations */
+function detectDuplicateChrsInRawAnnots(ideo) {
+  const seen = {};
+  const duplicates = [];
+  const chrs = ideo.rawAnnots.annots.map(annot => annot.chr);
+
+  chrs.forEach((chr) => {
+    if (chr in seen) duplicates.push(chr);
+    seen[chr] = 1;
+  });
+
+  if (duplicates.length > 0) {
+    const message =
+      `Duplicate chromosomes detected.\n` +
+      `Chromosome list: ${chrs}.  Duplicates: ${duplicates}.\n` +
+      `To fix this, edit your raw annotations JSON data to remove redundant ` +
+      `chromosomes.`;
+    throw Error(message);
+  }
+}
+
 function afterRawAnnots() {
   var ideo = this,
     config = ideo.config;
+
   // Ensure annots are ordered by chromosome
-  ideo.rawAnnots.annots = ideo.rawAnnots.annots.sort(function(a, b) {
-    return a.chr.localeCompare(b.chr, 'en', {numeric: true});
-  });
+  ideo.rawAnnots.annots = ideo.rawAnnots.annots.sort(Ideogram.sortChromosomes);
 
   if (ideo.onLoadAnnotsCallback) {
     ideo.onLoadAnnotsCallback();
@@ -157,6 +177,8 @@ function afterRawAnnots() {
   if (config.heatmaps) {
     ideo.deserializeAnnotsForHeatmap(ideo.rawAnnots);
   }
+
+  detectDuplicateChrsInRawAnnots(ideo);
 }
 
 /**

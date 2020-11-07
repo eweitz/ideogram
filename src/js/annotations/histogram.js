@@ -3,15 +3,17 @@
  * annotations.
  */
 function getRawBars(chrModels, ideo) {
-  var chr, chrModel, lastBand, numBins, bar, i, px,
+  var chr, chrModel, lastBand, numBins, bar, h, i, px,
     barWidth = ideo.config.barWidth,
     bars = [];
 
-  for (chr in chrModels) {
+  for (h = 0; h < ideo.chromosomesArray.length; h++) {
+    chr = ideo.chromosomesArray[h].name;
     chrModel = chrModels[chr];
     lastBand = chrModel.bands[chrModel.bands.length - 1];
     numBins = Math.round(lastBand.px.stop / barWidth); // chrPxStop / barWidth
     bar = {chr: chr, annots: []};
+
     for (i = 0; i < numBins; i++) {
       px = i * barWidth - ideo.bump;
       bar.annots.push({
@@ -33,12 +35,12 @@ function getRawBars(chrModels, ideo) {
  * Assign how many, and which annotations each histogram bar contains
  */
 function assignAnnotsToBars(annots, bars, chrModels, ideo) {
-  var chr, chrAnnots, chrModel, barAnnots, i, annot, px, j, barPx, nextBarPx,
+  var chrAnnots, chrModel, barAnnots, h, i, annot, px, j, barPx, nextBarPx,
     barWidth = ideo.config.barWidth;
 
-  for (chr in annots) {
-    chrAnnots = annots[chr].annots;
-    chrModel = chrModels[annots[chr].chr]; // get chr by name
+  for (h = 0; h < annots.length; h++) {
+    chrAnnots = annots[h].annots;
+    chrModel = chrModels[annots[h].chr]; // get chr by name
     barAnnots = bars[chrModel.chrIndex].annots;
     for (i = 0; i < chrAnnots.length; i++) {
       annot = chrAnnots[i];
@@ -145,6 +147,7 @@ function getHistogramBars(annots) {
 
   bars = getRawBars(chrModels, ideo);
   bars = assignAnnotsToBars(annots, bars, chrModels, ideo);
+
   setIdeoMaxAnnotsPerBar(bars, isFirstGet, ideo);
   bars = setProportionalBarHeight(bars, ideo);
 
