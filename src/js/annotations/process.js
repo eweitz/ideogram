@@ -132,7 +132,12 @@ function addAnnotsForChr(annots, omittedAnnots, annotsByChr, chrModel,
   );
 
   if (shouldAssignDomId) {
-    annotsByChr.annots = annotsByChr.annots.sort((a, b) => a[1] - b[1]);
+    if (ideo.annotSortFunction) {
+      annotsByChr.annots.sort(ideo.annotSortFunction);
+    } else {
+      // Sort by genomic position, in ascending order
+      annotsByChr.annots.sort((a, b) => a[1] - b[1]);
+    }
   }
 
   for (j = 0; j < annotsByChr.annots.length; j++) {

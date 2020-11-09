@@ -46,12 +46,20 @@ function setRelatedAnnotDomIds(ideo) {
     }
   });
 
-  // Sort related annots by position, relative to others in same chromosome
-  const positionSortedAnnotsNamesByChr = {};
+  // Sort related annots by relevance within each chromosome
+  const relevanceSortedAnnotsNamesByChr = {};
   Object.entries(annotsByChr).map(([chr, annots]) => {
-    annots.sort((a, b) => a.start - b.start);
+    if (chr === '12') {
+      console.log('in setRelatedAnnotDomIds, chr12 annots before:')
+      console.log(annots)
+    }
+    annots.sort(ideo.annotSortFunction);
     const annotNames = annots.map((annot) => annot.name);
-    positionSortedAnnotsNamesByChr[chr] = annotNames;
+    if (chr === '12') {
+      console.log('in setRelatedAnnotDomIds, chr12 annots after:')
+      console.log(annots)
+    }
+    relevanceSortedAnnotsNamesByChr[chr] = annotNames;
   });
 
   ideo.relatedAnnots.forEach((annot) => {
@@ -61,7 +69,7 @@ function setRelatedAnnotDomIds(ideo) {
     // We reconstruct those here using structures built in two blocks above.
     const chrIndex = sortedChrNames.indexOf(chr);
     const annotIndex =
-      positionSortedAnnotsNamesByChr[chr].indexOf(annot.name);
+      relevanceSortedAnnotsNamesByChr[chr].indexOf(annot.name);
 
     annot.domId = getAnnotDomId(chrIndex, annotIndex);
     updated.push(annot);
@@ -429,18 +437,33 @@ function processParalogs(annot, ideo) {
   });
 }
 
+/** Sorts by relevance of related status */
+function sortAnnotsByRelatedStatus(a, b) {
+  if ('name' in a) {
+    if (b.color === 'red') return -1;
+    if (b.color === 'purple' && a.color === 'pink') return -1;
+    if (a.color === 'purple' && b.color === 'pink') return 1;
+    return b.name.length - a.name.length;
+  } else {
+    // console.log(a)
+    const [aName, aStart, aStop, aColor] = a;
+    const [bName, bStart, bStop, bColor] = b;
+    if (bColor === 'red') return -1;
+    if (bColor === 'purple' && aColor === 'pink') return -1;
+    if (aColor === 'purple' && bColor === 'pink') return 1;
+    return bName.length - aName.length;
+  }
+}
+
 /** Filter, sort, draw annots.  Move legend. */
 function finishPlotRelatedGenes(type, ideo) {
   let annots = ideo.relatedAnnots.slice();
   annots = applyAnnotsIncludeList(annots, ideo);
-  annots.sort((a, b) => {
-    if (b.color === 'red') return -1;
-    if (b.color === 'purple' && a.color === 'pink') return -1;
-    return b.name.length - a.name.length;
-  });
+  annots.sort(sortAnnotsByRelatedStatus);
   if (annots.length > 1 && ideo.onFindRelatedGenesCallback) {
     ideo.onFindRelatedGenesCallback();
   }
+
   ideo.drawAnnots(annots);
 
   if (ideo.config.showAnnotLabels) {
@@ -702,6 +725,8 @@ function _initRelatedGenes(config, annotsInList) {
   }
 
   ideogram.getTooltipAnalytics = getRelatedGenesTooltipAnalytics;
+
+  ideogram.annotSortFunction = sortAnnotsByRelatedStatus;
 
   return ideogram;
 }
