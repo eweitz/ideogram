@@ -205,11 +205,6 @@ function fillAnnotLabels(sortedAnnots=[]) {
   const spacedAnnots = [];
   const spacedLayouts = [];
 
-  const annotHeight = ideo.annotationHeight;
-
-  console.log('sortedAnnots')
-  console.log(sortedAnnots)
-
   sortedAnnots.forEach((annot, i) => {
     const layout = getAnnotLabelLayout(annot, ideo);
     if (layout === null) return;
@@ -217,26 +212,12 @@ function fillAnnotLabels(sortedAnnots=[]) {
     const hasOverlap =
       spacedLayouts.length > 1 && spacedLayouts.some((sl, j) => {
 
-        const xOverlap = (
-          sl.left <= layout.right &&
-          sl.right >= layout.left
-          // sl.left - annotHeight <= layout.right &&
-          // sl.right - annotHeight >= layout.left
-          // sl.left <= layout.right - annotHeight &&
-          // sl.right >= layout.left - annotHeight
-        );
+        const xOverlap = sl.left <= layout.right && sl.right >= layout.left;
         const yOverlap =
           (
             sl.top < layout.bottom && sl.bottom > layout.top ||
             layout.top < sl.bottom && layout.bottom > sl.bottom
           );
-
-
-        if (annot.name === 'LRP1' && spacedAnnots[j].name === 'LRP4') {
-          console.log('layout, i, sl, j, sa, xOverlap, yOverlap');
-          console.log(layout, i, sl, j, spacedAnnots[j].name, xOverlap, yOverlap)
-        }
-
 
         return xOverlap && yOverlap;
       });

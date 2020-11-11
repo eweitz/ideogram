@@ -133,7 +133,10 @@ function addAnnotsForChr(annots, omittedAnnots, annotsByChr, chrModel,
 
   if (shouldAssignDomId) {
     if (ideo.annotSortFunction) {
-      annotsByChr.annots.sort(ideo.annotSortFunction);
+      annotsByChr.annots.sort((a, b) => {
+        // Reverse-sort, so first annots are drawn last, and thus at top layer
+        return -ideo.annotSortFunction(a, b);
+      });
     } else {
       // Sort by genomic position, in ascending order
       annotsByChr.annots.sort((a, b) => a[1] - b[1]);
