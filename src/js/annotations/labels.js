@@ -192,22 +192,13 @@ function fillAnnotLabels(sortedAnnots=[]) {
   // Remove any pre-existing annotation labels, to avoid duplicates
   ideo.clearAnnotLabels();
 
-  if (sortedAnnots.length === 0) {
-    ideo.annots.forEach((annotsByChr) => {
-
-      const sortedAnnotsThisChr =
-        annotsByChr.annots.sort(ideo.annotSortFunction);
-
-      sortedAnnots = sortedAnnots.concat(sortedAnnotsThisChr);
-    });
-  }
-
   const spacedAnnots = [];
   const spacedLayouts = [];
 
   sortedAnnots.forEach((annot, i) => {
     const layout = getAnnotLabelLayout(annot, ideo);
     if (layout === null) return;
+
 
     const hasOverlap =
       spacedLayouts.length > 1 && spacedLayouts.some((sl, j) => {
@@ -218,6 +209,16 @@ function fillAnnotLabels(sortedAnnots=[]) {
             sl.top < layout.bottom && sl.bottom > layout.top ||
             layout.top < sl.bottom && layout.bottom > sl.bottom
           );
+
+        // if (annot.name === 'TP73') {
+        //   const spacedAnnot = spacedAnnots[j].name;
+        //   console.log(
+        //     'xOverlap, yOverlap, annot.name, layout, spacedAnnot, sl'
+        //   );
+        //   console.log(
+        //     xOverlap, yOverlap, annot.name, layout, spacedAnnot, sl
+        //   );
+        // }
 
         return xOverlap && yOverlap;
       });

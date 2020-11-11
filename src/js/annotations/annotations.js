@@ -187,7 +187,7 @@ function afterRawAnnots() {
 function flattenAnnots() {
   const ideo = this;
   return ideo.annots.reduce((accumulator, annots) => {
-    return [...accumulator, ...annots.annots] ;
+    return [...accumulator, ...annots.annots];
   }, []);
 }
 

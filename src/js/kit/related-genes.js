@@ -49,15 +49,13 @@ function setRelatedAnnotDomIds(ideo) {
   // Sort related annots by relevance within each chromosome
   const relevanceSortedAnnotsNamesByChr = {};
   Object.entries(annotsByChr).map(([chr, annots]) => {
-    annots.sort(ideo.annotSortFunction);
-    const annotNames = annots.map((annot) => annot.name);
+
+    // Reverse-sort, so first annots are drawn last, and thus at top layer
+    annots.sort((a, b) => ideo.annotSortFunction(a, b));
+
+    const annotNames = annots.map((annot) => annot.name).reverse();
     relevanceSortedAnnotsNamesByChr[chr] = annotNames;
   });
-
-  console.log("relevanceSortedAnnotsNamesByChr['12']")
-  console.log(relevanceSortedAnnotsNamesByChr['12'])
-
-  // ideo.relatedAnnots = mergeAnnots(ideo.relatedAnnots)
 
   ideo.relatedAnnots.forEach((annot) => {
     const chr = annot.chr;
@@ -67,10 +65,6 @@ function setRelatedAnnotDomIds(ideo) {
     const chrIndex = sortedChrNames.indexOf(chr);
     const annotIndex =
       relevanceSortedAnnotsNamesByChr[chr].indexOf(annot.name);
-
-    if (chr === '12') {
-      console.log(annotIndex, annot)
-    }
 
     annot.domId = getAnnotDomId(chrIndex, annotIndex);
     updated.push(annot);
@@ -97,6 +91,11 @@ function maybeGeneSymbol(ixn, gene) {
   );
 }
 
+// /** Helpful for debugging race conditions caused by concurrency */
+// const sleep = (delay) => {
+//  new Promise((resolve) => setTimeout(resolve, delay));
+// }
+
 /**
  * Retrieves interacting genes from WikiPathways API
  *
@@ -115,6 +114,8 @@ async function fetchInteractions(gene, ideo) {
   const queryString = `?query=${gene.name}&format=json`;
   const url =
     `https://webservice.wikipathways.org/findInteractions${queryString}`;
+
+  // await sleep(3000);
 
   const response = await fetch(url);
   const data = await response.json();
@@ -358,7 +359,8 @@ async function fetchParalogs(annot, ideo) {
   const homologs = ensemblHomologs.data[0].homologies;
 
   // Fetch positions of paralogs
-  const annots = await fetchParalogPositionsFromMyGeneInfo(homologs, annot, ideo);
+  const annots =
+    await fetchParalogPositionsFromMyGeneInfo(homologs, annot, ideo);
 
   return annots;
 }
@@ -447,21 +449,32 @@ function processParalogs(annot, ideo) {
 
 /** Sorts by relevance of related status */
 function sortAnnotsByRelatedStatus(a, b) {
+  var aName, bName, aColor, bColor;
   if ('name' in a) {
-    if (a.color === 'red') return -1;
-    if (b.color === 'red') return 1;
-    if (a.color === 'purple' && b.color === 'pink') return -1;
-    if (b.color === 'purple' && a.color === 'pink') return 1;
-    return b.name.length - a.name.length;
+    // Locally processed annotations
+    aName = a.name;
+    bName = b.name;
+    aColor = a.color;
+    bColor = b.color;
   } else {
-    const [aName, aStart, aStop, aColor] = a;
-    const [bName, bStart, bStop, bColor] = b;
-    if (aColor === 'red') return -1;
-    if (bColor === 'red') return 1;
-    if (aColor === 'purple' && bColor === 'pink') return -1;
-    if (bColor === 'purple' && aColor === 'pink') return 1;
-    return bName.length - aName.length;
+    // Raw annotations
+    [aName, aColor] = [a[0], a[3]];
+    [bName, bColor] = [b[0], b[3]];
   }
+
+  // Rank red (searched gene) highest
+  if (aColor === 'red') return -1;
+  if (bColor === 'red') return 1;
+
+  // Rank purple (interacting gene) above red (paralogous gene)
+  if (aColor === 'purple' && bColor === 'pink') return -1;
+  if (bColor === 'purple' && aColor === 'pink') return 1;
+
+  // Rank shorter names above longer names
+  if (bName.length !== aName.length) return bName.length - aName.length;
+
+  // Rank names of equal length alphabetically
+  return [aName, bName].sort().indexOf(aName) === 0 ? 1 : -1;
 }
 
 function mergeDescriptions(annot, desc, ideo) {
@@ -471,8 +484,6 @@ function mergeDescriptions(annot, desc, ideo) {
     mergedDesc = descriptions[annot.name];
     mergedDesc.type += ', ' + desc.type;
     mergedDesc.description += `<br/><br/>${desc.description}`;
-    // console.log('mergeDescriptions, in, mergedDesc, desc:')
-    // console.log(mergedDesc, desc);
   } else {
     mergedDesc = desc;
   }
@@ -497,24 +508,18 @@ function mergeAnnots(unmergedAnnots) {
     }
   });
 
-  console.log('seenAnnots:')
-  console.log(seenAnnots)
-  console.log('mergedAnnots.length')
-  console.log(mergedAnnots.length)
   return mergedAnnots;
 }
 
 /** Filter, sort, draw annots.  Move legend. */
 function finishPlotRelatedGenes(type, ideo) {
-
-  // ideo.relatedAnnots.sort(sortAnnotsByRelatedStatus);
-  // ideo.relatedAnnots = mergeAnnots(ideo.relatedAnnots);
-
   let annots = ideo.relatedAnnots.slice();
 
   annots = applyAnnotsIncludeList(annots, ideo);
   annots = mergeAnnots(annots);
+  ideo.relatedAnnots = mergeAnnots(annots);
   annots.sort(sortAnnotsByRelatedStatus);
+  ideo.relatedAnnots.sort(sortAnnotsByRelatedStatus);
 
   if (annots.length > 1 && ideo.onFindRelatedGenesCallback) {
     ideo.onFindRelatedGenesCallback();
