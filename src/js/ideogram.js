@@ -19,7 +19,7 @@ import {
   drawProcessedAnnots, drawSynteny, startHideAnnotTooltipTimeout,
   showAnnotTooltip, onWillShowAnnotTooltip, setOriginalTrackIndexes,
   afterRawAnnots, onClickAnnot, downloadAnnotations, addAnnotLabel,
-  removeAnnotLabel, fillAnnotLabels, clearAnnotLabels
+  removeAnnotLabel, fillAnnotLabels, clearAnnotLabels, flattenAnnots
   // fadeOutAnnotLabels
 } from './annotations/annotations';
 
@@ -105,6 +105,7 @@ export default class Ideogram {
     // this.fadeOutAnnotLabels = fadeOutAnnotLabels;
     this.fillAnnotLabels = fillAnnotLabels;
     this.clearAnnotLabels = clearAnnotLabels;
+    this.flattenAnnots = flattenAnnots;
 
     this.highlight = highlight;
     this.unhighlight = unhighlight;

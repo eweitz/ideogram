@@ -46,12 +46,15 @@ function setRelatedAnnotDomIds(ideo) {
     }
   });
 
-  // Sort related annots by position, relative to others in same chromosome
-  const positionSortedAnnotsNamesByChr = {};
+  // Sort related annots by relevance within each chromosome
+  const relevanceSortedAnnotsNamesByChr = {};
   Object.entries(annotsByChr).map(([chr, annots]) => {
-    annots.sort((a, b) => a.start - b.start);
-    const annotNames = annots.map((annot) => annot.name);
-    positionSortedAnnotsNamesByChr[chr] = annotNames;
+
+    // Reverse-sort, so first annots are drawn last, and thus at top layer
+    annots.sort((a, b) => ideo.annotSortFunction(a, b));
+
+    const annotNames = annots.map((annot) => annot.name).reverse();
+    relevanceSortedAnnotsNamesByChr[chr] = annotNames;
   });
 
   ideo.relatedAnnots.forEach((annot) => {
@@ -61,7 +64,7 @@ function setRelatedAnnotDomIds(ideo) {
     // We reconstruct those here using structures built in two blocks above.
     const chrIndex = sortedChrNames.indexOf(chr);
     const annotIndex =
-      positionSortedAnnotsNamesByChr[chr].indexOf(annot.name);
+      relevanceSortedAnnotsNamesByChr[chr].indexOf(annot.name);
 
     annot.domId = getAnnotDomId(chrIndex, annotIndex);
     updated.push(annot);
@@ -88,6 +91,11 @@ function maybeGeneSymbol(ixn, gene) {
   );
 }
 
+// /** Helpful for debugging race conditions caused by concurrency */
+// const sleep = (delay) => {
+//  new Promise((resolve) => setTimeout(resolve, delay));
+// }
+
 /**
  * Retrieves interacting genes from WikiPathways API
  *
@@ -99,13 +107,15 @@ function maybeGeneSymbol(ixn, gene) {
  * https://webservice.wikipathways.org/findInteractions?query=ACE2&format=json
  * https://webservice.wikipathways.org/findInteractions?query=RAD51&format=json
  */
-async function fetchInteractingGenes(gene, ideo) {
+async function fetchInteractions(gene, ideo) {
   const ixns = {};
   const seenNameIds = {};
   const orgNameSimple = ideo.config.organism.replace(/-/g, ' ');
   const queryString = `?query=${gene.name}&format=json`;
   const url =
     `https://webservice.wikipathways.org/findInteractions${queryString}`;
+
+  // await sleep(3000);
 
   const response = await fetch(url);
   const data = await response.json();
@@ -155,7 +165,7 @@ async function fetchInteractingGenes(gene, ideo) {
  */
 async function fetchMyGeneInfo(queryString) {
   const myGeneBase = 'https://mygene.info/v3/query';
-  const response = await fetch(myGeneBase + queryString + '&size=25');
+  const response = await fetch(myGeneBase + queryString + '&size=20');
   const data = await response.json();
   return data;
 }
@@ -180,11 +190,11 @@ function parseNameAndEnsemblIdFromMgiGene(gene) {
  *
  * This comprises most of the content for tooltips for interacting genes.
  */
-function describeInteractions(gene, ixns) {
+function describeInteractions(gene, ixns, searchedGene) {
 
-  let description = gene.name;
   const pathwayIds = [];
   const pathwayNames = [];
+  let ixnsDescription = '';
 
   if (typeof ixns !== 'undefined') {
     // ixns is undefined when querying e.g. CDKN1B in human
@@ -199,16 +209,15 @@ function describeInteractions(gene, ixns) {
     let pathwayText = 'pathway';
     if (ixns.length > 1) pathwayText += 's';
 
-    description += `
-      <br/><br/>
-      Interacts in ${pathwayText}:<br/>
-      ${links}`;
+    ixnsDescription =
+      `Interacts with ${searchedGene.name} in ${pathwayText}:<br/>${links}`;
   }
 
   const {name, ensemblId} = parseNameAndEnsemblIdFromMgiGene(gene);
   const type = 'interacting gene';
   const descriptionObj = {
-    description, ensemblId, name, type, pathwayIds, pathwayNames
+    description: ixnsDescription,
+    ixnsDescription, ensemblId, name, type, pathwayIds, pathwayNames
   };
   return descriptionObj;
 }
@@ -216,7 +225,7 @@ function describeInteractions(gene, ixns) {
 /**
  * Retrieves position and other data on interacting genes from MyGene.info
  */
-async function fetchInteractingGeneAnnots(interactions, ideo) {
+async function fetchInteractionAnnots(interactions, searchedGene, ideo) {
 
   const annots = [];
   const geneList = Object.keys(interactions);
@@ -233,18 +242,24 @@ async function fetchInteractingGeneAnnots(interactions, ideo) {
   const data = await fetchMyGeneInfo(queryString);
 
   data.hits.forEach(gene => {
-
-    // If hit lacks position, skip processing
-    if ('genomic_pos' in gene === false) return;
+    // If hit lacks position
+    // or is same as searched gene (e.g. search for human SRC),
+    // then skip processing
+    if (
+      'genomic_pos' in gene === false ||
+      gene.symbol === searchedGene.name
+    ) {
+      return;
+    }
 
     const annot = parseAnnotFromMgiGene(gene, ideo, 'purple');
     annots.push(annot);
 
     const ixns = interactions[gene.symbol];
 
-    const descriptionObj = describeInteractions(gene, ixns);
+    const descriptionObj = describeInteractions(gene, ixns, searchedGene);
 
-    ideo.annotDescriptions.annots[gene.symbol] = descriptionObj;
+    mergeDescriptions(annot, descriptionObj, ideo);
   });
 
   return annots;
@@ -299,7 +314,9 @@ async function fetchInteractingGeneAnnots(interactions, ideo) {
 // }
 
 /** Fetch paralog positions from MyGeneInfo */
-async function fetchParalogPositionsFromMyGeneInfo(homologs, ideo) {
+async function fetchParalogPositionsFromMyGeneInfo(
+  homologs, searchedGene, ideo
+) {
   const annots = [];
   const qParam = homologs.map(homolog => {
     return `ensemblgene:${homolog.id}`;
@@ -319,11 +336,11 @@ async function fetchParalogPositionsFromMyGeneInfo(homologs, ideo) {
     const annot = parseAnnotFromMgiGene(gene, ideo, 'pink');
     annots.push(annot);
 
-    const description = gene.name;
+    const description = `Paralog of ${searchedGene.name}`;
     const {name, ensemblId} = parseNameAndEnsemblIdFromMgiGene(gene);
     const type = 'paralogous gene';
     const descriptionObj = {description, ensemblId, name, type};
-    ideo.annotDescriptions.annots[annot.name] = descriptionObj;
+    mergeDescriptions(annot, descriptionObj, ideo);
   });
 
   return annots;
@@ -342,7 +359,8 @@ async function fetchParalogs(annot, ideo) {
   const homologs = ensemblHomologs.data[0].homologies;
 
   // Fetch positions of paralogs
-  const annots = await fetchParalogPositionsFromMyGeneInfo(homologs, ideo);
+  const annots =
+    await fetchParalogPositionsFromMyGeneInfo(homologs, annot, ideo);
 
   return annots;
 }
@@ -403,8 +421,8 @@ function processInteractions(annot, ideo) {
   return new Promise(async (resolve) => {
     const t0 = performance.now();
 
-    const interactions = await fetchInteractingGenes(annot, ideo);
-    const annots = await fetchInteractingGeneAnnots(interactions, ideo);
+    const interactions = await fetchInteractions(annot, ideo);
+    const annots = await fetchInteractionAnnots(interactions, annot, ideo);
     ideo.relatedAnnots.push(...annots);
     finishPlotRelatedGenes('interacting', ideo);
 
@@ -429,18 +447,84 @@ function processParalogs(annot, ideo) {
   });
 }
 
+/** Sorts by relevance of related status */
+function sortAnnotsByRelatedStatus(a, b) {
+  var aName, bName, aColor, bColor;
+  if ('name' in a) {
+    // Locally processed annotations
+    aName = a.name;
+    bName = b.name;
+    aColor = a.color;
+    bColor = b.color;
+  } else {
+    // Raw annotations
+    [aName, aColor] = [a[0], a[3]];
+    [bName, bColor] = [b[0], b[3]];
+  }
+
+  // Rank red (searched gene) highest
+  if (aColor === 'red') return -1;
+  if (bColor === 'red') return 1;
+
+  // Rank purple (interacting gene) above red (paralogous gene)
+  if (aColor === 'purple' && bColor === 'pink') return -1;
+  if (bColor === 'purple' && aColor === 'pink') return 1;
+
+  // Rank shorter names above longer names
+  if (bName.length !== aName.length) return bName.length - aName.length;
+
+  // Rank names of equal length alphabetically
+  return [aName, bName].sort().indexOf(aName) === 0 ? 1 : -1;
+}
+
+function mergeDescriptions(annot, desc, ideo) {
+  let mergedDesc;
+  const descriptions = ideo.annotDescriptions.annots;
+  if (annot.name in descriptions) {
+    mergedDesc = descriptions[annot.name];
+    mergedDesc.type += ', ' + desc.type;
+    mergedDesc.description += `<br/><br/>${desc.description}`;
+  } else {
+    mergedDesc = desc;
+  }
+  ideo.annotDescriptions.annots[annot.name] = mergedDesc;
+}
+
+function mergeAnnots(unmergedAnnots) {
+
+  const seenAnnots = {};
+  let mergedAnnots = [];
+
+  unmergedAnnots.forEach((annot) => {
+    if (annot.name in seenAnnots === false) {
+      mergedAnnots.push(annot);
+      seenAnnots[annot.name] = 1;
+    } else {
+      if (annot.color === 'purple') {
+        mergedAnnots = mergedAnnots.map((mergedAnnot) => {
+          return (annot.name === mergedAnnot.name) ? annot : mergedAnnot;
+        });
+      }
+    }
+  });
+
+  return mergedAnnots;
+}
+
 /** Filter, sort, draw annots.  Move legend. */
 function finishPlotRelatedGenes(type, ideo) {
   let annots = ideo.relatedAnnots.slice();
+
   annots = applyAnnotsIncludeList(annots, ideo);
-  annots.sort((a, b) => {
-    if (b.color === 'red') return -1;
-    if (b.color === 'purple' && a.color === 'pink') return -1;
-    return b.name.length - a.name.length;
-  });
+  annots = mergeAnnots(annots);
+  ideo.relatedAnnots = mergeAnnots(annots);
+  annots.sort(sortAnnotsByRelatedStatus);
+  ideo.relatedAnnots.sort(sortAnnotsByRelatedStatus);
+
   if (annots.length > 1 && ideo.onFindRelatedGenesCallback) {
     ideo.onFindRelatedGenesCallback();
   }
+
   ideo.drawAnnots(annots);
 
   if (ideo.config.showAnnotLabels) {
@@ -468,7 +552,7 @@ async function processSearchedGene(geneSymbol, ideo) {
   const name = gene.name;
   const ensemblId = gene.genomic_pos.ensemblgene;
   ideo.annotDescriptions.annots[gene.symbol] = {
-    description: name, ensemblId, name, type: 'searched gene'
+    description: '', ensemblId, name, type: 'searched gene'
   };
 
   const annot = parseAnnotFromMgiGene(gene, ideo);
@@ -608,15 +692,17 @@ function handleTooltipClick(ideo) {
  */
 function decorateGene(annot) {
   const ideo = this;
+  const descObj = ideo.annotDescriptions.annots[annot.name];
   const description =
-    ideo.annotDescriptions.annots[annot.name].description.split(' [')[0];
+    descObj.description.length > 0 ? `<br/>${descObj.description}` : '';
+  const fullName = descObj.name;
   const style = 'style="color: #0366d6; cursor: pointer;"';
 
   annot.displayName =
-    `<span id="ideo-related-gene" ${style}>${annot.name}</span>
-    <br/>
-    ${description}
-    <br/>`;
+    `<span id="ideo-related-gene" ${style}>${annot.name}</span><br/>` +
+    `${fullName}<br/>` +
+    `${description}` +
+    `<br/>`;
 
   handleTooltipClick(ideo);
 
@@ -702,6 +788,8 @@ function _initRelatedGenes(config, annotsInList) {
   }
 
   ideogram.getTooltipAnalytics = getRelatedGenesTooltipAnalytics;
+
+  ideogram.annotSortFunction = sortAnnotsByRelatedStatus;
 
   return ideogram;
 }

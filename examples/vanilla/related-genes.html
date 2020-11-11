@@ -48,15 +48,6 @@
       cursor: pointer;
     }
 
-    #_ideogram .annot path, ._ideogramLabel {
-      cursor: pointer;
-    }
-
-    #_ideogram ._ideogramLabel._ideoActive {
-      fill: #77F !important;
-      stroke: #F0F0FF !important;
-    }
-
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
 <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
@@ -68,10 +59,7 @@
   <a href="differential-expression">Next</a> |
   <a href="https://github.com/eweitz/ideogram/blob/gh-pages/related-genes.html" target="_blank">Source</a>
   <p>
-    Search a gene and find interacting pathway genes and paralogs.  Uses data from
-    <a href="https://rest.ensembl.org">Ensembl</a>,
-    <a href="https://www.wikipathways.org">WikiPathways</a>, and
-    <a href="https://mygene.info">MyGene.info</a>.
+    Find interacting pathway genes and paralogs.
     See also <a href="orthologs">Orthologs</a>.
   </p>
   <div>
@@ -170,21 +158,33 @@
       history.pushState(null, null, '?' + params);
     }
 
-    function handleOrganism() {
+    function getOrganism() {
       const selectedOrg =
         document.querySelector('option:checked').text
           .split('(')[1].split(')')[0]
           .replace(/ /g, '-').toLowerCase();
 
-      urlParams['org'] = selectedOrg;
+      return selectedOrg;
+    }
+    async function handleOrganism() {
+      urlParams.org = getOrganism();
+      urlParams.q = getGene();
       updateUrl();
 
-      config.organism = selectedOrg;
+      config.organism = urlParams.org;
       // const banded = !['homo sapiens', 'mus musculus'].includes(selectedOrg);
       // config.showFullyBanded = banded;
       delete ideogram;
       ideogram = Ideogram.initRelatedGenes(config);
+    }
 
+    function getGene() {
+      const searchInput = document.getElementById('search-genes').value.trim();
+
+      // Handles e.g. "BRCA1,BRCA2", "BRCA1 BRCA2", and "BRCA1, BRCA2"
+      const geneSymbols = searchInput.split(/[, ]/).filter(d => d !== '')
+      const geneSymbol = geneSymbols[0];
+      return geneSymbol;
     }
 
     // Process text input for the "Search" field.
@@ -192,16 +192,11 @@
       // Ignore non-"Enter" keyups
       if (event.type === 'keyup' && event.keyCode !== 13) return;
 
-      const searchInput = document.getElementById('search-genes').value.trim();
-
-      // Handles e.g. "BRCA1,BRCA2", "BRCA1 BRCA2", and "BRCA1, BRCA2"
-      const geneSymbols = searchInput.split(/[, ]/).filter(d => d !== '')
-      const geneSymbol = geneSymbols[0];
-
-      urlParams['q'] = geneSymbol;
+      urlParams.org = getOrganism();
+      urlParams.q = getGene();
       updateUrl();
 
-      await ideogram.plotRelatedGenes(geneSymbol);
+      await ideogram.plotRelatedGenes(urlParams.q);
 
       document.querySelector('#ideogram-container').style.visibility = '';
     }
@@ -209,8 +204,11 @@
     async function plotGeneFromUrl() {
       if ('q' in urlParams) {
         ideogram.plotRelatedGenes(urlParams['q']);
-        document.querySelector('#ideogram-container').style.visibility = '';
+      } else {
+        ideogram.plotRelatedGenes('RAD51');
       }
+
+      document.querySelector('#ideogram-container').style.visibility = '';
     }
 
     function reportRelatedGenes() {

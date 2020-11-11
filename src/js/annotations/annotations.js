@@ -182,6 +182,16 @@ function afterRawAnnots() {
 }
 
 /**
+ * Converts list of annotation-by-chromosome objects to list of annot objects
+ */
+function flattenAnnots() {
+  const ideo = this;
+  return ideo.annots.reduce((accumulator, annots) => {
+    return [...accumulator, ...annots.annots];
+  }, []);
+}
+
+/**
  * Requests annotations URL via HTTP, sets ideo.rawAnnots for downstream
  * processing.
  *
@@ -262,6 +272,6 @@ export {
   drawProcessedAnnots, drawSynteny, startHideAnnotTooltipTimeout,
   showAnnotTooltip, onWillShowAnnotTooltip, setOriginalTrackIndexes,
   afterRawAnnots, onClickAnnot, downloadAnnotations, addAnnotLabel,
-  removeAnnotLabel, fillAnnotLabels, clearAnnotLabels
+  removeAnnotLabel, fillAnnotLabels, clearAnnotLabels, flattenAnnots
   // fadeOutAnnotLabels
 };
