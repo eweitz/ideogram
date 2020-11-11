@@ -165,7 +165,7 @@ async function fetchInteractions(gene, ideo) {
  */
 async function fetchMyGeneInfo(queryString) {
   const myGeneBase = 'https://mygene.info/v3/query';
-  const response = await fetch(myGeneBase + queryString + '&size=30');
+  const response = await fetch(myGeneBase + queryString + '&size=20');
   const data = await response.json();
   return data;
 }
