@@ -16,6 +16,11 @@ const allLabelStyle = `
       fill: #77F !important;
       stroke: #F0F0FF !important;
     }
+
+    #_ideogram .annot > ._ideoActive {
+      stroke: #D0D0DD !important;
+      stroke-width: 1.5px;
+    }
   </style>
   `;
 
@@ -45,8 +50,9 @@ function triggerAnnotEvent(event, ideo) {
     ideo.time.prevTooltipAnnotDomId = annotId;
   }
 
-  const state = (type === 'mouseover') ? ' _ideoActive' : '';
+  const state = (type === 'mouseover') ? '_ideoActive' : '';
   d3.select('#' + labelId).attr('class', '_ideogramLabel ' + state);
+  d3.select('#' + annotId + ' > path').attr('class', state);
 }
 
 function renderLabel(annot, style, ideo) {
@@ -81,11 +87,6 @@ function renderLabel(annot, style, ideo) {
     .style('stroke-linejoin', 'round')
     .style('paint-order', 'stroke fill')
     .html(annot.name);
-
-  d3.selectAll('#' + id + ', #' + annot.domId)
-    .on('mouseover', (event) => triggerAnnotEvent(event))
-    .on('mouseout', (event) => triggerAnnotEvent(event, ideo))
-    .on('click', (event) => triggerAnnotEvent(event));
 }
 
 /**
@@ -232,6 +233,11 @@ function fillAnnotLabels(sortedAnnots=[]) {
   spacedAnnots.forEach((annot) => {
     ideo.addAnnotLabel(annot.name);
   });
+
+  d3.selectAll('._ideogramLabel, .annot')
+    .on('mouseover', (event) => triggerAnnotEvent(event))
+    .on('mouseout', (event) => triggerAnnotEvent(event, ideo))
+    .on('click', (event) => triggerAnnotEvent(event));
 }
 
 function removeAnnotLabel(annotName) {
