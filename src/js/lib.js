@@ -57,23 +57,14 @@ function hasGenBankAssembly(ideo) {
   );
 }
 
-/**
- * Returns directory used to fetch data for bands and annotations
- *
- * This simplifies ideogram configuration.  By default, the dataDir is
- * set to an external CDN unless we're serving from the local Ideogram
- * working directory
- *
- * @returns {String}
- */
-function getDataDir() {
+function getDir(dir) {
   var script, tmp, protocol, dataDir, ideogramInLeaf,
     scripts = document.scripts,
     version = Ideogram.version;
 
   if (location.pathname.includes('/examples/vanilla/') === false) {
     return (
-      'https://cdn.jsdelivr.net/npm/ideogram@' + version + '/dist/data/bands/native/'
+      `https://cdn.jsdelivr.net/npm/ideogram@${version}/dist/data/${dir}`
     );
   }
 
@@ -84,11 +75,24 @@ function getDataDir() {
       tmp = script.src.split('//');
       protocol = tmp[0];
       tmp = '/' + tmp[1].split('/').slice(0, -2).join('/');
-      dataDir = protocol + '//' + tmp + '/data/bands/native/';
+      dataDir = protocol + '//' + tmp + '/data/' + dir;
       return dataDir;
     }
   }
-  return '../data/bands/native/';
+  return '../data/' + dir;
+}
+
+/**
+ * Returns directory used to fetch data for bands and annotations
+ *
+ * This simplifies ideogram configuration.  By default, the dataDir is
+ * set to an external CDN unless we're serving from the local Ideogram
+ * working directory
+ *
+ * @returns {String}
+ */
+function getDataDir() {
+  return getDir('bands/native/');
 }
 
 /**
@@ -271,6 +275,6 @@ function downloadPng(ideo) {
 
 export {
   assemblyIsAccession, hasNonGenBankAssembly, hasGenBankAssembly, getDataDir,
-  round, onDidRotate, getSvg, fetch, d3, getTaxid, getCommonName,
+  getDir, round, onDidRotate, getSvg, fetch, d3, getTaxid, getCommonName,
   getScientificName, slug, isRoman, parseRoman, downloadPng
 };

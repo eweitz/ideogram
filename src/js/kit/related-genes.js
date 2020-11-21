@@ -27,6 +27,7 @@ import {
 } from './analyze-related-genes';
 
 import {getAnnotDomId} from '../annotations/process';
+import {getDir} from '../lib'
 
 /** Sets DOM IDs for ideo.relatedAnnots; needed to associate labels */
 function setRelatedAnnotDomIds(ideo) {
@@ -690,7 +691,7 @@ function handleTooltipClick(ideo) {
 /**
  * Enhance tooltip shown on hovering over gene annotation
  */
-function decorateGene(annot) {
+function decorateRelatedGene(annot) {
   const ideo = this;
   const descObj = ideo.annotDescriptions.annots[annot.name];
   const description =
@@ -747,7 +748,7 @@ function _initRelatedGenes(config, annotsInList) {
     legend: legend,
     chrBorderColor: '#333',
     chrLabelColor: '#333',
-    onWillShowAnnotTooltip: decorateGene,
+    onWillShowAnnotTooltip: decorateRelatedGene,
     annotsInList: annotsInList,
     showTools: true,
     showAnnotLabels: true
@@ -794,4 +795,87 @@ function _initRelatedGenes(config, annotsInList) {
   return ideogram;
 }
 
-export {_initRelatedGenes, plotRelatedGenes, getRelatedGenesByType};
+function plotGeneHints() {
+  const ideo = this;
+  const topGenes = ideo.rawAnnots;
+  console.log('topGenes')
+  console.log(topGenes)
+  ideo.processAnnots(ideo)
+  ideogram.drawAnnots(topGenes);
+  ideogram.fillAnnotLabels();
+}
+
+/**
+ * Wrapper for Ideogram constructor, with generic "Related genes" options
+ *
+ * This function is made available as a static method on Ideogram.
+ *
+ * @param {Object} config Ideogram configuration object
+ */
+function _initGeneHints(config, annotsInList) {
+
+  delete config.onPlotRelatedGenes;
+
+  if (annotsInList !== 'all') {
+    annotsInList = annotsInList.map(name => name.toLowerCase());
+  }
+
+  const annotsPath = getDir('annotations/gene-cache/homo-sapiens-top-genes.tsv');
+
+  const kitDefaults = {
+    showFullyBanded: false,
+    rotatable: false,
+    legend: legend,
+    chrBorderColor: '#333',
+    chrLabelColor: '#333',
+    annotsInList: annotsInList,
+    showTools: true,
+    showAnnotLabels: true,
+    annotationsPath: annotsPath,
+    onLoad: plotGeneHints
+  };
+
+  if ('onWillShowAnnotTooltip' in config) {
+    const key = 'onWillShowAnnotTooltip';
+    const clientFn = config[key];
+    const defaultFunction = kitDefaults[key];
+    const newFunction = function(annot) {
+      annot = defaultFunction.bind(this)(annot);
+      annot = clientFn.bind(this)(annot);
+      return annot;
+    };
+    kitDefaults[key] = newFunction;
+    delete config[key];
+  }
+
+  // Override kit defaults if client specifies otherwise
+  const kitConfig = Object.assign(kitDefaults, config);
+
+  if (kitConfig.showAnnotLabels) {
+    kitConfig.annotDecorPad = 60;
+  } else {
+    kitConfig.annotDecorPad = 30;
+  }
+
+  const ideogram = new Ideogram(kitConfig);
+
+  // Called upon completing last plot, including all related genes
+  if (config.onPlotRelatedGenes) {
+    ideogram.onPlotRelatedGenesCallback = config.onPlotRelatedGenes;
+  }
+
+  // Called upon 1) finding paralogs, and 2) finding interacting genes
+  if (config.onFindRelatedGenes) {
+    ideogram.onFindRelatedGenesCallback = config.onFindRelatedGenes;
+  }
+
+  ideogram.getTooltipAnalytics = getRelatedGenesTooltipAnalytics;
+
+  ideogram.annotSortFunction = sortAnnotsByRelatedStatus;
+
+  return ideogram;
+}
+
+export {
+  _initGeneHints, _initRelatedGenes, plotRelatedGenes, getRelatedGenesByType
+};

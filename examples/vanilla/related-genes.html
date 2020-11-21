@@ -120,24 +120,6 @@
   <div id="ideogram-container" style="visibility: hidden;"></div>
   <script type="text/javascript">
 
-    const defaultGenes = [
-      {name: 'TP53', chr: '17', start: 7571719, stop: 7590868, color: '#502a69'},
-      {name: 'TNF', chr: '6', start: 31543343, stop: 31546112, color: '#67b021'},
-      {name: 'UBC', chr: '12', start: 125396190, stop: 125399587, color: '#e72fc2'},
-      {name: 'APOE', chr: '19', start: 45409005, stop: 45412652, color: '#1e6c3c'},
-      {name: 'EGFR', chr: '7', start: 55086724, stop: 55275031, color: '#1932bf'},
-      {name: 'VEGFA', chr: '6', start: 43737945, stop: 43754223, color: '#fd2c3b'},
-      {name: 'IL6', chr: '7', start: 22766760, stop: 22771621, color: '#29b28a'},
-      {name: 'TGFB1', chr: '19', start: 41836227, stop: 41859788, color: '#8a1b07'},
-      {name: 'MTHFR', chr: '1', start: 11845786, stop: 11866160, color: '#2499d7'},
-      {name: 'ESR1', chr: '6', start: 152128813, stop: 152424408, color: '#e679ba'},
-      {name: 'HLA-DRB1', chr: '6', start: 32546546, stop: 32557613, color: '#442a1b'},
-      {name: 'NFKB1', chr: '4', start: 103422485, stop: 103538459, color: '#6975fe'},
-      {name: 'IL10', chr: '1', start: 206940947, stop: 206945839, color: '#d57a2c'},
-      {name: 'ACE', chr: '17', start: 61554421, stop: 61575741, color: '#8c2efc'},
-      {name: 'BRCA1', chr: '17', start: 41196311, stop: 41277500, color: '#96a467'}
-    ]
-
     const urlParams = parseUrlParams();
 
     const organism = 'org' in urlParams ? urlParams.org : 'homo-sapiens';
@@ -222,11 +204,7 @@
     async function plotGeneFromUrl() {
       if ('q' in urlParams) {
         ideogram.plotRelatedGenes(urlParams['q']);
-      } else {
-        ideogram.drawAnnots(defaultGenes);
-        ideogram.fillAnnotLabels();
       }
-
       document.querySelector('#ideogram-container').style.visibility = '';
     }
 
@@ -255,7 +233,7 @@
       return annot
     }
 
-    relatedConfig = {
+    config = {
       organism: organism,
       container: '#ideogram-container',
       chrWidth: 9,
@@ -264,7 +242,6 @@
       annotationHeight: 7,
       onLoad: plotGeneFromUrl,
       onPlotRelatedGenes: reportRelatedGenes,
-      onWillShowAnnotTooltip,
       showAnnotLabels: true,
       onClickAnnot
     }
@@ -272,20 +249,8 @@
     // annotsInList = ['CDK9', 'CDK19', 'CDK1'];
     // let ideogram = Ideogram.initRelatedGenes(config, annotsInList)
 
-    config = Object.assign(relatedConfig, {
-      showFullyBanded: false,
-      rotatable: false,
-      // legend: legend,
-      chrBorderColor: '#333',
-      chrLabelColor: '#333',
-      // annotsInList: annotsInList,
-      annotDecorPad: 60,
-      showTools: true,
-      showAnnotLabels: true
-    });
-
     // let ideogram = Ideogram.initRelatedGenes(relatedConfig);
-    let ideogram = new Ideogram(config);
+    let ideogram = Ideogram.initGeneHints(config);
   </script>
 </body>
 </html>
