@@ -123,7 +123,8 @@ function validateAnnotsUrl(annotsUrl) {
   if (['bed', 'json', 'tsv'].includes(extension) === false) {
     extension = extension.toUpperCase();
     alert(
-      'Ideogram.js only supports BED and Ideogram JSON and TSV at the moment.  ' +
+      'Ideogram.js only supports BED and Ideogram JSON and TSV ' +
+      'at the moment.  ' +
       'Sorry, check back soon for ' + extension + ' support!'
     );
     return;

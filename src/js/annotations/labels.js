@@ -203,8 +203,6 @@ function fillAnnotLabels(sortedAnnots=[]) {
   sortedAnnots.forEach((annot, i) => {
     const layout = getAnnotLabelLayout(annot, ideo);
 
-    console.log('layout:')
-    console.log(layout)
     if (layout === null) return;
 
     const hasOverlap =

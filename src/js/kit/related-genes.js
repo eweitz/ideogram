@@ -27,7 +27,7 @@ import {
 } from './analyze-related-genes';
 
 import {getAnnotDomId} from '../annotations/process';
-import {getDir} from '../lib'
+import {getDir} from '../lib';
 
 /** Sets DOM IDs for ideo.relatedAnnots; needed to associate labels */
 function setRelatedAnnotDomIds(ideo) {
@@ -396,7 +396,8 @@ function parseAnnotFromMgiGene(gene, ideo, color='red') {
   return annot;
 }
 
-function moveLegend(ideoInnerDom) {
+function moveLegend() {
+  const ideoInnerDom = document.querySelector('#_ideogramInnerWrap');
   const legendStyle = 'position: absolute; top: 15px; left: 50px';
   const legend = document.querySelector('#_ideogramLegend');
   ideoInnerDom.prepend(legend);
@@ -533,8 +534,7 @@ function finishPlotRelatedGenes(type, ideo) {
     ideo.fillAnnotLabels(ideo.relatedAnnots);
   }
 
-  const ideoInnerDom = document.querySelector('#_ideogramInnerWrap');
-  moveLegend(ideoInnerDom);
+  moveLegend();
 
   analyzePlotTimes(type, ideo);
 }
@@ -606,13 +606,15 @@ function adjustPlaceAndVisibility(ideo) {
  *
  * @param geneSymbol {String} Gene symbol, e.g. RAD51
  */
-async function plotRelatedGenes(geneSymbol) {
+async function plotRelatedGenes(geneSymbol=null) {
 
   const ideo = this;
 
-  initAnalyzeRelatedGenes(ideo);
-
   ideo.clearAnnotLabels();
+
+  if (!geneSymbol) {
+    return plotGeneHints(ideo);
+  }
 
   const organism = ideo.getScientificName(ideo.config.taxid);
   const version = Ideogram.version;
@@ -714,7 +716,7 @@ const shape = 'triangle';
 
 const legendHeaderStyle =
   'font-size: 14px; font-weight: bold; font-color: #333';
-const legend = [{
+const relatedLegend = [{
   name: `
     <div style="position: relative; left: -15px; padding-bottom: 10px;">
       <div style="${legendHeaderStyle}">Related genes</div>
@@ -727,6 +729,17 @@ const legend = [{
     {name: 'Paralogous gene', color: 'pink', shape: shape},
     {name: 'Searched gene', color: 'red', shape: shape}
   ]
+}];
+
+const citedLegend = [{
+  name: `
+    <div style="position: relative; left: -15px; padding-bottom: 10px;">
+      <div style="${legendHeaderStyle}">Highly cited genes</div>
+      <i>Click gene to search</i>
+    </div>
+  `,
+  nameHeight: 30,
+  rows: []
 }];
 
 /**
@@ -745,7 +758,7 @@ function _initRelatedGenes(config, annotsInList) {
   const kitDefaults = {
     showFullyBanded: false,
     rotatable: false,
-    legend: legend,
+    legend: relatedLegend,
     chrBorderColor: '#333',
     chrLabelColor: '#333',
     onWillShowAnnotTooltip: decorateRelatedGene,
@@ -792,17 +805,26 @@ function _initRelatedGenes(config, annotsInList) {
 
   ideogram.annotSortFunction = sortAnnotsByRelatedStatus;
 
+  initAnalyzeRelatedGenes(ideogram);
+
   return ideogram;
 }
 
 function plotGeneHints() {
   const ideo = this;
-  const topGenes = ideo.rawAnnots;
-  console.log('topGenes')
-  console.log(topGenes)
-  ideo.processAnnots(ideo)
-  ideogram.drawAnnots(topGenes);
-  ideogram.fillAnnotLabels();
+
+  ideo.annotDescriptions = {annots: {}};
+
+  ideo.flattenAnnots().map((annot) => {
+    ideo.annotDescriptions.annots[annot.name] = {
+      description: '',
+      name: annot.name
+    };
+  });
+
+  adjustPlaceAndVisibility(ideo);
+  moveLegend();
+  ideo.fillAnnotLabels();
 }
 
 /**
@@ -820,19 +842,22 @@ function _initGeneHints(config, annotsInList) {
     annotsInList = annotsInList.map(name => name.toLowerCase());
   }
 
-  const annotsPath = getDir('annotations/gene-cache/homo-sapiens-top-genes.tsv');
+  const annotsPath =
+    getDir('annotations/gene-cache/homo-sapiens-top-genes.tsv');
 
   const kitDefaults = {
     showFullyBanded: false,
     rotatable: false,
-    legend: legend,
+    legend: citedLegend,
+    chrMargin: -4,
     chrBorderColor: '#333',
     chrLabelColor: '#333',
+    onWillShowAnnotTooltip: decorateRelatedGene,
     annotsInList: annotsInList,
     showTools: true,
     showAnnotLabels: true,
-    annotationsPath: annotsPath,
-    onLoad: plotGeneHints
+    onDrawAnnots: plotGeneHints,
+    annotationsPath: annotsPath
   };
 
   if ('onWillShowAnnotTooltip' in config) {
@@ -852,7 +877,7 @@ function _initGeneHints(config, annotsInList) {
   const kitConfig = Object.assign(kitDefaults, config);
 
   if (kitConfig.showAnnotLabels) {
-    kitConfig.annotDecorPad = 60;
+    kitConfig.annotDecorPad = 80;
   } else {
     kitConfig.annotDecorPad = 30;
   }
@@ -872,6 +897,8 @@ function _initGeneHints(config, annotsInList) {
   ideogram.getTooltipAnalytics = getRelatedGenesTooltipAnalytics;
 
   ideogram.annotSortFunction = sortAnnotsByRelatedStatus;
+
+  initAnalyzeRelatedGenes(ideogram);
 
   return ideogram;
 }
