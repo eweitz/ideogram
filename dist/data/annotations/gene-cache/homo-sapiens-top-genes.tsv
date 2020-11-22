@@ -1,4 +1,4 @@
-#name	chromosome	start	length	color	description
+#name	chromosome	start	length	color	full_name
 TP53	17	7571719	19149	#34a853	tumor protein p53
 UBC	12	125396190	3397	#4285f4	ubiquitin C
 APOE	19	45409005	3647	#4285f4	apolipoprotein E

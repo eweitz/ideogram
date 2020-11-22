@@ -25,7 +25,7 @@ export class TsvParser {
    * Parses an annotation from a tab-separated line of a TSV file
    */
   parseAnnotFromTsvLine(tsvLine, chrs) {
-    var annot, chrIndex, chr, start, color, description, name,
+    var annot, chrIndex, chr, start, color, fullName, name,
       columns = tsvLine.split(/\t/g);
 
     [chr, start, stop, length] =
@@ -41,8 +41,8 @@ export class TsvParser {
       annot.push(color);
     }
     if (columns.length >= 5) {
-      description = columns[5];
-      annot.push(description);
+      fullName = columns[5];
+      annot.push(fullName);
     }
 
     return [chrIndex, annot];
@@ -60,7 +60,7 @@ export class TsvParser {
 
     keys = ['name', 'start', 'length', 'trackIndex'];
     if (tsvLines[tsvStartIndex].length >= 4) keys.push('color');
-    if (tsvLines[tsvStartIndex].length >= 5) keys.push('description');
+    if (tsvLines[tsvStartIndex].length >= 5) keys.push('fullName');
 
     rawAnnots = {keys: keys, annots: annots};
 

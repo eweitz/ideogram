@@ -204,8 +204,8 @@
     async function plotGeneFromUrl() {
       if ('q' in urlParams) {
         await ideogram.plotRelatedGenes(urlParams['q']);
+        document.querySelector('#ideogram-container').style.visibility = '';
       }
-      document.querySelector('#ideogram-container').style.visibility = '';
     }
 
     function reportRelatedGenes() {

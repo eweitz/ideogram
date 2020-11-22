@@ -567,6 +567,8 @@ async function processSearchedGene(geneSymbol, ideo) {
 
 function adjustPlaceAndVisibility(ideo) {
   var ideoContainerDom = document.querySelector(ideo.config.container);
+
+  ideoContainerDom.style.visibility = '';
   ideoContainerDom.style.position = 'absolute';
   ideoContainerDom.style.width = '100%';
 
@@ -611,6 +613,8 @@ async function plotRelatedGenes(geneSymbol=null) {
   const ideo = this;
 
   ideo.clearAnnotLabels();
+  const legend = document.querySelector('#_ideogramLegend');
+  if (legend) legend.remove();
 
   if (!geneSymbol) {
     return plotGeneHints(ideo);
@@ -624,6 +628,7 @@ async function plotRelatedGenes(geneSymbol=null) {
     `# Generated at ${window.location.href}`
   ].join('\n');
 
+  delete ideo.annotDescriptions;
   ideo.annotDescriptions = {headers, annots: {}};
 
   const ideoSel = ideo.selector;
@@ -813,12 +818,14 @@ function _initRelatedGenes(config, annotsInList) {
 function plotGeneHints() {
   const ideo = this;
 
+  if ('annotDescriptions' in ideo) return;
+
   ideo.annotDescriptions = {annots: {}};
 
   ideo.flattenAnnots().map((annot) => {
     ideo.annotDescriptions.annots[annot.name] = {
       description: '',
-      name: annot.description
+      name: annot.fullName
     };
   });
 
