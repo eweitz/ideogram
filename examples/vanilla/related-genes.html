@@ -205,6 +205,8 @@
       if ('q' in urlParams) {
         await ideogram.plotRelatedGenes(urlParams['q']);
         document.querySelector('#ideogram-container').style.visibility = '';
+      } else {
+        await ideogram.plotRelatedGenes();
       }
     }
 
@@ -248,9 +250,13 @@
 
     // annotsInList = ['CDK9', 'CDK19', 'CDK1'];
     // let ideogram = Ideogram.initRelatedGenes(config, annotsInList)
-
+    let ideogram;
     // let ideogram = Ideogram.initRelatedGenes(relatedConfig);
-    let ideogram = Ideogram.initGeneHints(config);
+    if ('q' in urlParams) {
+      ideogram = Ideogram.initRelatedGenes(config);
+    } else {
+      ideogram = Ideogram.initGeneHints(config);
+    }
   </script>
 </body>
 </html>

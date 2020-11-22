@@ -26,6 +26,8 @@ import {
   getRelatedGenesByType, getRelatedGenesTooltipAnalytics
 } from './analyze-related-genes';
 
+
+import {writeLegend} from '../annotations/legend';
 import {getAnnotDomId} from '../annotations/process';
 import {getDir} from '../lib';
 
@@ -649,6 +651,10 @@ async function plotRelatedGenes(geneSymbol=null) {
   // Fetch positon of searched gene
   const annot = await processSearchedGene(geneSymbol, ideo);
 
+  ideo.config.legend = relatedLegend;
+  writeLegend(ideo);
+  moveLegend();
+
   await Promise.all([
     processInteractions(annot, ideo),
     processParalogs(annot, ideo)
@@ -818,7 +824,7 @@ function _initRelatedGenes(config, annotsInList) {
 function plotGeneHints() {
   const ideo = this;
 
-  if ('annotDescriptions' in ideo) return;
+  if (!ideo || 'annotDescriptions' in ideo) return;
 
   ideo.annotDescriptions = {annots: {}};
 
@@ -832,6 +838,8 @@ function plotGeneHints() {
   adjustPlaceAndVisibility(ideo);
   moveLegend();
   ideo.fillAnnotLabels();
+
+  document.querySelector('#ideogram-container').style.visibility = '';
 }
 
 /**
