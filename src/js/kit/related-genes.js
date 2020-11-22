@@ -818,7 +818,7 @@ function plotGeneHints() {
   ideo.flattenAnnots().map((annot) => {
     ideo.annotDescriptions.annots[annot.name] = {
       description: '',
-      name: annot.name
+      name: annot.description
     };
   });
 

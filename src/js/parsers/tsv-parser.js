@@ -25,8 +25,8 @@ export class TsvParser {
    * Parses an annotation from a tab-separated line of a TSV file
    */
   parseAnnotFromTsvLine(tsvLine, chrs) {
-    var annot, chrIndex, chr, start, color, name,
-      columns = tsvLine.split(/\s/g);
+    var annot, chrIndex, chr, start, color, description, name,
+      columns = tsvLine.split(/\t/g);
 
     [chr, start, stop, length] =
       this.parseGenomicCoordinates(columns);
@@ -39,6 +39,10 @@ export class TsvParser {
     if (columns.length >= 4) {
       color = columns[4];
       annot.push(color);
+    }
+    if (columns.length >= 5) {
+      description = columns[5];
+      annot.push(description);
     }
 
     return [chrIndex, annot];
@@ -56,6 +60,7 @@ export class TsvParser {
 
     keys = ['name', 'start', 'length', 'trackIndex'];
     if (tsvLines[tsvStartIndex].length >= 4) keys.push('color');
+    if (tsvLines[tsvStartIndex].length >= 5) keys.push('description');
 
     rawAnnots = {keys: keys, annots: annots};
 
