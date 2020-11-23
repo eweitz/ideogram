@@ -228,8 +228,6 @@ describe('Ideogram related genes kit', function() {
     async function callback() {
       const ideo = this;
 
-      await ideo.plotRelatedGenes();
-
       const annots = ideo.flattenAnnots();
 
       assert.equal(annots.length, 16);

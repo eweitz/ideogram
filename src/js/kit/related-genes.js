@@ -588,6 +588,7 @@ function adjustPlaceAndVisibility(ideo) {
   if (typeof ideo.didAdjustIdeogramLegend === 'undefined') {
     // Accounts for moving legend when external content at left or right
     // is variable upon first rendering plotted genes
+
     var ideoDom = document.querySelector('#_ideogram');
     const legendWidth = 150;
     ideoInnerDom.style.maxWidth =
@@ -596,6 +597,7 @@ function adjustPlaceAndVisibility(ideo) {
         legendWidth +
         annotDecorPad
       ) + 'px';
+
     ideoDom.style.minWidth =
       (parseInt(ideoDom.style.minWidth) + annotDecorPad) + 'px';
     ideoDom.style.maxWidth =
@@ -848,8 +850,8 @@ function plotGeneHints() {
   adjustPlaceAndVisibility(ideo);
   moveLegend();
   ideo.fillAnnotLabels();
-
-  document.querySelector('#ideogram-container').style.visibility = '';
+  const container = ideo.config.container;
+  document.querySelector(container).style.visibility = '';
 }
 
 /**
@@ -893,6 +895,18 @@ function _initGeneHints(config, annotsInList) {
       annot = defaultFunction.bind(this)(annot);
       annot = clientFn.bind(this)(annot);
       return annot;
+    };
+    kitDefaults[key] = newFunction;
+    delete config[key];
+  }
+
+  if ('onDrawAnnots' in config) {
+    const key = 'onDrawAnnots';
+    const clientFn = config[key];
+    const defaultFunction = kitDefaults[key];
+    const newFunction = function() {
+      defaultFunction.bind(this)();
+      clientFn.bind(this)();
     };
     kitDefaults[key] = newFunction;
     delete config[key];
