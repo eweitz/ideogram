@@ -79,6 +79,7 @@ function getDir(dir) {
       return dataDir;
     }
   }
+
   return '../data/' + dir;
 }
 

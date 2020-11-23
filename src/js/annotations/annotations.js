@@ -206,7 +206,9 @@ function fetchAnnots(annotsUrl) {
 
   is2dHeatmap = config.annotationsLayout === 'heatmap-2d';
 
-  if (annotsUrl.slice(0, 4) !== 'http' && !is2dHeatmap) {
+  var extension = validateAnnotsUrl(annotsUrl);
+
+  if (annotsUrl.slice(0, 4) !== 'http' && !is2dHeatmap && extension !== 'tsv') {
     ideo.fetch(annotsUrl)
       .then(function(data) {
         ideo.rawAnnotsResponse = data; // Preserve truly raw response content
@@ -216,7 +218,7 @@ function fetchAnnots(annotsUrl) {
     return;
   }
 
-  extension = (is2dHeatmap ? '' : validateAnnotsUrl(annotsUrl));
+  extension = (is2dHeatmap ? '' : extension);
 
   ideo.fetch(annotsUrl, 'text')
     .then(function(text) {
