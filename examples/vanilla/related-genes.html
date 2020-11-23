@@ -203,12 +203,11 @@
 
     async function plotGeneFromUrl() {
       if ('q' in urlParams) {
-        ideogram.plotRelatedGenes(urlParams['q']);
+        await ideogram.plotRelatedGenes(urlParams['q']);
+        document.querySelector('#ideogram-container').style.visibility = '';
       } else {
-        ideogram.plotRelatedGenes('RAD51');
+        await ideogram.plotRelatedGenes();
       }
-
-      document.querySelector('#ideogram-container').style.visibility = '';
     }
 
     function reportRelatedGenes() {
@@ -245,15 +244,18 @@
       annotationHeight: 7,
       onLoad: plotGeneFromUrl,
       onPlotRelatedGenes: reportRelatedGenes,
-      onWillShowAnnotTooltip,
       showAnnotLabels: true,
       onClickAnnot
     }
 
     // annotsInList = ['CDK9', 'CDK19', 'CDK1'];
     // let ideogram = Ideogram.initRelatedGenes(config, annotsInList)
-
-    let ideogram = Ideogram.initRelatedGenes(config);
+    let ideogram;
+    if ('q' in urlParams) {
+      ideogram = Ideogram.initRelatedGenes(config);
+    } else {
+      ideogram = Ideogram.initGeneHints(config);
+    }
   </script>
 </body>
 </html>

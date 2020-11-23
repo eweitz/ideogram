@@ -185,4 +185,77 @@ describe('Ideogram related genes kit', function() {
     const ideogram = Ideogram.initRelatedGenes(config);
   });
 
+  it('handles gene with no interacting genes and no paralogs', done => {
+    // Tests use case from ../examples/vanilla/related-genes
+
+    async function callback() {
+      const ideo = this;
+
+      await ideogram.plotRelatedGenes('BRCA1');
+
+      const related = ideo.getRelatedGenesByType();
+
+      const numParalogs = related.paralogous.length;
+      const numInteractingGenes = related.interacting.length;
+
+      assert.equal(numInteractingGenes, 0);
+      assert.equal(numParalogs, 0);
+
+      done();
+    }
+
+    function onClickAnnot(annot) {
+      ideogram.plotRelatedGenes(annot.name);
+    }
+
+    var config = {
+      organism: 'Macaca mulatta', // Also tests standard, non-slugged name
+      chrWidth: 8,
+      chrHeight: 90,
+      chrLabelSize: 10,
+      annotationHeight: 5,
+      onLoad: callback,
+      dataDir: '/dist/data/bands/native/',
+      onClickAnnot
+    };
+
+    const ideogram = Ideogram.initRelatedGenes(config);
+  });
+
+  it('handles default display of highly cited genes', done => {
+    // Tests use case from ../examples/vanilla/related-genes
+
+    async function callback() {
+      const ideo = this;
+
+      const annots = ideo.flattenAnnots();
+
+      assert.equal(annots.length, 16);
+      assert.equal(annots[0].name, 'IL10');
+
+      done();
+    }
+
+    function onClickAnnot(annot) {
+      ideogram.plotRelatedGenes(annot.name);
+    }
+
+    const annotsPath =
+      '/dist/data/annotations/gene-cache/homo-sapiens-top-genes.tsv';
+
+    var config = {
+      organism: 'Homo sapiens', // Also tests standard, non-slugged name
+      chrWidth: 8,
+      chrHeight: 90,
+      chrLabelSize: 10,
+      annotationHeight: 5,
+      onDrawAnnots: callback,
+      dataDir: '/dist/data/bands/native/',
+      annotationsPath: annotsPath,
+      onClickAnnot
+    };
+
+    const ideogram = Ideogram.initGeneHints(config);
+  });
+
 });

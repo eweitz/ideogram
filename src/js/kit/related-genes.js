@@ -26,7 +26,10 @@ import {
   getRelatedGenesByType, getRelatedGenesTooltipAnalytics
 } from './analyze-related-genes';
 
+
+import {writeLegend} from '../annotations/legend';
 import {getAnnotDomId} from '../annotations/process';
+import {getDir} from '../lib';
 
 /** Sets DOM IDs for ideo.relatedAnnots; needed to associate labels */
 function setRelatedAnnotDomIds(ideo) {
@@ -395,8 +398,11 @@ function parseAnnotFromMgiGene(gene, ideo, color='red') {
   return annot;
 }
 
-function moveLegend(ideoInnerDom) {
-  const legendStyle = 'position: absolute; top: 15px; left: 50px';
+function moveLegend() {
+  const ideoInnerDom = document.querySelector('#_ideogramInnerWrap');
+  const decorPad = setRelatedDecorPad({}).annotDecorPad;
+  const left = decorPad + 20;
+  const legendStyle = `position: absolute; top: 15px; left: ${left}px`;
   const legend = document.querySelector('#_ideogramLegend');
   ideoInnerDom.prepend(legend);
   legend.style = legendStyle;
@@ -532,8 +538,7 @@ function finishPlotRelatedGenes(type, ideo) {
     ideo.fillAnnotLabels(ideo.relatedAnnots);
   }
 
-  const ideoInnerDom = document.querySelector('#_ideogramInnerWrap');
-  moveLegend(ideoInnerDom);
+  moveLegend();
 
   analyzePlotTimes(type, ideo);
 }
@@ -566,6 +571,8 @@ async function processSearchedGene(geneSymbol, ideo) {
 
 function adjustPlaceAndVisibility(ideo) {
   var ideoContainerDom = document.querySelector(ideo.config.container);
+
+  ideoContainerDom.style.visibility = '';
   ideoContainerDom.style.position = 'absolute';
   ideoContainerDom.style.width = '100%';
 
@@ -581,6 +588,7 @@ function adjustPlaceAndVisibility(ideo) {
   if (typeof ideo.didAdjustIdeogramLegend === 'undefined') {
     // Accounts for moving legend when external content at left or right
     // is variable upon first rendering plotted genes
+
     var ideoDom = document.querySelector('#_ideogram');
     const legendWidth = 150;
     ideoInnerDom.style.maxWidth =
@@ -589,6 +597,7 @@ function adjustPlaceAndVisibility(ideo) {
         legendWidth +
         annotDecorPad
       ) + 'px';
+
     ideoDom.style.minWidth =
       (parseInt(ideoDom.style.minWidth) + annotDecorPad) + 'px';
     ideoDom.style.maxWidth =
@@ -605,13 +614,19 @@ function adjustPlaceAndVisibility(ideo) {
  *
  * @param geneSymbol {String} Gene symbol, e.g. RAD51
  */
-async function plotRelatedGenes(geneSymbol) {
+async function plotRelatedGenes(geneSymbol=null) {
 
   const ideo = this;
 
-  initAnalyzeRelatedGenes(ideo);
-
   ideo.clearAnnotLabels();
+  const legend = document.querySelector('#_ideogramLegend');
+  if (legend) legend.remove();
+
+  if (!geneSymbol) {
+    return plotGeneHints(ideo);
+  }
+
+  ideo.config = setRelatedDecorPad(ideo.config);
 
   const organism = ideo.getScientificName(ideo.config.taxid);
   const version = Ideogram.version;
@@ -621,6 +636,7 @@ async function plotRelatedGenes(geneSymbol) {
     `# Generated at ${window.location.href}`
   ].join('\n');
 
+  delete ideo.annotDescriptions;
   ideo.annotDescriptions = {headers, annots: {}};
 
   const ideoSel = ideo.selector;
@@ -640,6 +656,10 @@ async function plotRelatedGenes(geneSymbol) {
 
   // Fetch positon of searched gene
   const annot = await processSearchedGene(geneSymbol, ideo);
+
+  ideo.config.legend = relatedLegend;
+  writeLegend(ideo);
+  moveLegend();
 
   await Promise.all([
     processInteractions(annot, ideo),
@@ -690,7 +710,7 @@ function handleTooltipClick(ideo) {
 /**
  * Enhance tooltip shown on hovering over gene annotation
  */
-function decorateGene(annot) {
+function decorateRelatedGene(annot) {
   const ideo = this;
   const descObj = ideo.annotDescriptions.annots[annot.name];
   const description =
@@ -713,7 +733,7 @@ const shape = 'triangle';
 
 const legendHeaderStyle =
   'font-size: 14px; font-weight: bold; font-color: #333';
-const legend = [{
+const relatedLegend = [{
   name: `
     <div style="position: relative; left: -15px; padding-bottom: 10px;">
       <div style="${legendHeaderStyle}">Related genes</div>
@@ -727,6 +747,27 @@ const legend = [{
     {name: 'Searched gene', color: 'red', shape: shape}
   ]
 }];
+
+const citedLegend = [{
+  name: `
+    <div style="position: relative; left: -15px; padding-bottom: 10px;">
+      <div style="${legendHeaderStyle}">Highly cited genes</div>
+      <i>Click gene to search</i>
+    </div>
+  `,
+  nameHeight: 30,
+  rows: []
+}];
+
+/** Sets annotDecorPad for related genes view */
+function setRelatedDecorPad(kitConfig) {
+  if (kitConfig.showAnnotLabels) {
+    kitConfig.annotDecorPad = 60;
+  } else {
+    kitConfig.annotDecorPad = 30;
+  }
+  return kitConfig;
+}
 
 /**
  * Wrapper for Ideogram constructor, with generic "Related genes" options
@@ -744,10 +785,10 @@ function _initRelatedGenes(config, annotsInList) {
   const kitDefaults = {
     showFullyBanded: false,
     rotatable: false,
-    legend: legend,
+    legend: relatedLegend,
     chrBorderColor: '#333',
     chrLabelColor: '#333',
-    onWillShowAnnotTooltip: decorateGene,
+    onWillShowAnnotTooltip: decorateRelatedGene,
     annotsInList: annotsInList,
     showTools: true,
     showAnnotLabels: true
@@ -767,10 +808,115 @@ function _initRelatedGenes(config, annotsInList) {
   }
 
   // Override kit defaults if client specifies otherwise
+  let kitConfig = Object.assign(kitDefaults, config);
+
+  kitConfig = setRelatedDecorPad(kitConfig);
+
+  const ideogram = new Ideogram(kitConfig);
+
+  // Called upon completing last plot, including all related genes
+  if (config.onPlotRelatedGenes) {
+    ideogram.onPlotRelatedGenesCallback = config.onPlotRelatedGenes;
+  }
+
+  // Called upon 1) finding paralogs, and 2) finding interacting genes
+  if (config.onFindRelatedGenes) {
+    ideogram.onFindRelatedGenesCallback = config.onFindRelatedGenes;
+  }
+
+  ideogram.getTooltipAnalytics = getRelatedGenesTooltipAnalytics;
+
+  ideogram.annotSortFunction = sortAnnotsByRelatedStatus;
+
+  initAnalyzeRelatedGenes(ideogram);
+
+  return ideogram;
+}
+
+function plotGeneHints() {
+  const ideo = this;
+
+  if (!ideo || 'annotDescriptions' in ideo) return;
+
+  ideo.annotDescriptions = {annots: {}};
+
+  ideo.flattenAnnots().map((annot) => {
+    ideo.annotDescriptions.annots[annot.name] = {
+      description: '',
+      name: annot.fullName
+    };
+  });
+
+  adjustPlaceAndVisibility(ideo);
+  moveLegend();
+  ideo.fillAnnotLabels();
+  const container = ideo.config.container;
+  document.querySelector(container).style.visibility = '';
+}
+
+/**
+ * Wrapper for Ideogram constructor, with generic "Related genes" options
+ *
+ * This function is made available as a static method on Ideogram.
+ *
+ * @param {Object} config Ideogram configuration object
+ */
+function _initGeneHints(config, annotsInList) {
+
+  delete config.onPlotRelatedGenes;
+
+  if (annotsInList !== 'all') {
+    annotsInList = annotsInList.map(name => name.toLowerCase());
+  }
+
+  const annotsPath =
+    getDir('annotations/gene-cache/homo-sapiens-top-genes.tsv');
+
+  const kitDefaults = {
+    showFullyBanded: false,
+    rotatable: false,
+    legend: citedLegend,
+    chrMargin: -4,
+    chrBorderColor: '#333',
+    chrLabelColor: '#333',
+    onWillShowAnnotTooltip: decorateRelatedGene,
+    annotsInList: annotsInList,
+    showTools: true,
+    showAnnotLabels: true,
+    onDrawAnnots: plotGeneHints,
+    annotationsPath: annotsPath
+  };
+
+  if ('onWillShowAnnotTooltip' in config) {
+    const key = 'onWillShowAnnotTooltip';
+    const clientFn = config[key];
+    const defaultFunction = kitDefaults[key];
+    const newFunction = function(annot) {
+      annot = defaultFunction.bind(this)(annot);
+      annot = clientFn.bind(this)(annot);
+      return annot;
+    };
+    kitDefaults[key] = newFunction;
+    delete config[key];
+  }
+
+  if ('onDrawAnnots' in config) {
+    const key = 'onDrawAnnots';
+    const clientFn = config[key];
+    const defaultFunction = kitDefaults[key];
+    const newFunction = function() {
+      defaultFunction.bind(this)();
+      clientFn.bind(this)();
+    };
+    kitDefaults[key] = newFunction;
+    delete config[key];
+  }
+
+  // Override kit defaults if client specifies otherwise
   const kitConfig = Object.assign(kitDefaults, config);
 
   if (kitConfig.showAnnotLabels) {
-    kitConfig.annotDecorPad = 60;
+    kitConfig.annotDecorPad = 80;
   } else {
     kitConfig.annotDecorPad = 30;
   }
@@ -791,7 +937,11 @@ function _initRelatedGenes(config, annotsInList) {
 
   ideogram.annotSortFunction = sortAnnotsByRelatedStatus;
 
+  initAnalyzeRelatedGenes(ideogram);
+
   return ideogram;
 }
 
-export {_initRelatedGenes, plotRelatedGenes, getRelatedGenesByType};
+export {
+  _initGeneHints, _initRelatedGenes, plotRelatedGenes, getRelatedGenesByType
+};

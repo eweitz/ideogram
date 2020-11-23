@@ -7,6 +7,7 @@
  */
 
 import {BedParser} from '../parsers/bed-parser';
+import {TsvParser} from '../parsers/tsv-parser';
 import {drawHeatmaps, deserializeAnnotsForHeatmap} from './heatmap';
 import {inflateThresholds} from './heatmap-lib';
 import {inflateHeatmaps} from './heatmap-collinear';
@@ -119,10 +120,11 @@ function validateAnnotsUrl(annotsUrl) {
   tmp = annotsUrl.split('?')[0].split('.');
   extension = tmp[tmp.length - 1];
 
-  if (extension !== 'bed' && extension !== 'json') {
+  if (['bed', 'json', 'tsv'].includes(extension) === false) {
     extension = extension.toUpperCase();
     alert(
-      'Ideogram.js only supports BED and Ideogram JSON at the moment.  ' +
+      'Ideogram.js only supports BED and Ideogram JSON and TSV ' +
+      'at the moment.  ' +
       'Sorry, check back soon for ' + extension + ' support!'
     );
     return;
@@ -204,7 +206,9 @@ function fetchAnnots(annotsUrl) {
 
   is2dHeatmap = config.annotationsLayout === 'heatmap-2d';
 
-  if (annotsUrl.slice(0, 4) !== 'http' && !is2dHeatmap) {
+  var extension = validateAnnotsUrl(annotsUrl);
+
+  if (annotsUrl.slice(0, 4) !== 'http' && !is2dHeatmap && extension !== 'tsv') {
     ideo.fetch(annotsUrl)
       .then(function(data) {
         ideo.rawAnnotsResponse = data; // Preserve truly raw response content
@@ -214,7 +218,7 @@ function fetchAnnots(annotsUrl) {
     return;
   }
 
-  extension = (is2dHeatmap ? '' : validateAnnotsUrl(annotsUrl));
+  extension = (is2dHeatmap ? '' : extension);
 
   ideo.fetch(annotsUrl, 'text')
     .then(function(text) {
@@ -226,7 +230,9 @@ function fetchAnnots(annotsUrl) {
           ideo.afterRawAnnots();
         });
       } else {
-        if (extension === 'bed') {
+        if (extension === 'tsv') {
+          ideo.rawAnnots = new TsvParser(text, ideo).rawAnnots;
+        } else if (extension === 'bed') {
           ideo.rawAnnots = new BedParser(text, ideo).rawAnnots;
         } else {
           ideo.rawAnnots = JSON.parse(text);

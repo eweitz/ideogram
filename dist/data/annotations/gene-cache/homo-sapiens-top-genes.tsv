@@ -1,0 +1,17 @@
+#name	chromosome	start	length	color	full_name
+TP53	17	7571719	19149	#34a853	tumor protein p53
+UBC	12	125396190	3397	#4285f4	ubiquitin C
+APOE	19	45409005	3647	#4285f4	apolipoprotein E
+IL6	7	22766760	4861	#f06a00	interleukin 6
+MTHFR	1	11845786	20374	#4285f4	methylenetetrahydrofolate reductase (NAD(P)H)
+ESR1	6	152128813	295595	#34a853	estrogen receptor 1
+PTEN	10	89623194	108493	#34a853	phosphatase and tensin homolog
+NFKB1	4	103422485	115974	#f06a00	nuclear factor of kappa light polypeptide gene enhancer in B-cells
+IL10	1	206940947	4892	#f06a00	interleukin 10
+ACE	17	61554421	21320	#ee0000	angiotensin I converting enzyme
+LPL	9	19901717	1	#ee0000	lipoprotein lipase
+APP	21	27252860	290278	#4285f4	amyloid beta (A4) precursor protein
+ACE2	X	15579155	41037	#ee0000	angiotensin I converting enzyme 2
+GLA	X	101407924	0	#ee0000	galactosidase, alpha
+AKT1	14	105235686	0	#34a853	v-akt murine thymoma viral oncogene homolog 1
+HTR2A	13	47405676	0	#4285f4	5-hydroxytryptamine (serotonin) receptor 2A, G protein-coupled
