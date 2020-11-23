@@ -400,7 +400,9 @@ function parseAnnotFromMgiGene(gene, ideo, color='red') {
 
 function moveLegend() {
   const ideoInnerDom = document.querySelector('#_ideogramInnerWrap');
-  const legendStyle = 'position: absolute; top: 15px; left: 50px';
+  const decorPad = setRelatedDecorPad({}).annotDecorPad;
+  const left = decorPad + 20;
+  const legendStyle = `position: absolute; top: 15px; left: ${left}px`;
   const legend = document.querySelector('#_ideogramLegend');
   ideoInnerDom.prepend(legend);
   legend.style = legendStyle;
@@ -622,6 +624,8 @@ async function plotRelatedGenes(geneSymbol=null) {
     return plotGeneHints(ideo);
   }
 
+  ideo.config = setRelatedDecorPad(ideo.config);
+
   const organism = ideo.getScientificName(ideo.config.taxid);
   const version = Ideogram.version;
   const headers = [
@@ -753,6 +757,16 @@ const citedLegend = [{
   rows: []
 }];
 
+/** Sets annotDecorPad for related genes view */
+function setRelatedDecorPad(kitConfig) {
+  if (kitConfig.showAnnotLabels) {
+    kitConfig.annotDecorPad = 60;
+  } else {
+    kitConfig.annotDecorPad = 30;
+  }
+  return kitConfig;
+}
+
 /**
  * Wrapper for Ideogram constructor, with generic "Related genes" options
  *
@@ -792,13 +806,9 @@ function _initRelatedGenes(config, annotsInList) {
   }
 
   // Override kit defaults if client specifies otherwise
-  const kitConfig = Object.assign(kitDefaults, config);
+  let kitConfig = Object.assign(kitDefaults, config);
 
-  if (kitConfig.showAnnotLabels) {
-    kitConfig.annotDecorPad = 60;
-  } else {
-    kitConfig.annotDecorPad = 30;
-  }
+  kitConfig = setRelatedDecorPad(kitConfig);
 
   const ideogram = new Ideogram(kitConfig);
 
