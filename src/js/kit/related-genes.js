@@ -841,8 +841,16 @@ function plotGeneHints() {
   ideo.annotDescriptions = {annots: {}};
 
   ideo.flattenAnnots().map((annot) => {
+    let description = [];
+    if ('significance' in annot && annot.significance !== 'n/a') {
+      description.push(annot.significance);
+    }
+    if ('citations' in annot && annot.citations !== undefined) {
+      description.push(annot.citations);
+    }
+    description = description.join('<br/><br/>');
     ideo.annotDescriptions.annots[annot.name] = {
-      description: annot.significance,
+      description,
       name: annot.fullName
     };
   });
