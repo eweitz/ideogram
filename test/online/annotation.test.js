@@ -8,7 +8,7 @@
 //  - http://martinfowler.com/articles/asyncJS.html
 //  - https://mochajs.org/#asynchronous-code
 
-describe('Ideogram remote annotations', function() {
+describe('Ideogram annotations', function() {
 
   var config = {};
 
@@ -43,6 +43,25 @@ describe('Ideogram remote annotations', function() {
       organism: 'human',
       assembly: 'GRCh37',
       annotationsPath: 'https://raw.githubusercontent.com/NCBI-Hackathons/Scan2CNV/master/files/201113910010_R08C02.PennCnvOut.bed',
+      dataDir: '/dist/data/bands/native/',
+      onDrawAnnots: callback
+    };
+
+    ideogram = new Ideogram(config);
+  });
+
+  it('should have 16 annotations for TSV file', done => {
+    // Tests use case from ../examples/vanilla/related-genes
+
+    function callback() {
+      var numAnnots = document.getElementsByClassName('annot').length;
+      assert.equal(numAnnots, 16);
+      done();
+    }
+
+    var config = {
+      organism: 'human',
+      annotationsPath: '/dist/data/annotations/gene-cache/homo-sapiens-top-genes.tsv',
       dataDir: '/dist/data/bands/native/',
       onDrawAnnots: callback
     };
