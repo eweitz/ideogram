@@ -254,6 +254,9 @@
     if ('q' in urlParams) {
       ideogram = Ideogram.initRelatedGenes(config);
     } else {
+      if ('default-hints' in urlParams) {
+        config.annotationsPath = urlParams['default-hints'];
+      }
       ideogram = Ideogram.initGeneHints(config);
     }
   </script>
