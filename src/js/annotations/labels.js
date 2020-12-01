@@ -1,5 +1,29 @@
 import {d3} from '../lib';
 
+const allLabelStyle = `
+  <style>
+    #_ideogram .annot path, ._ideogramLabel {
+      cursor: pointer;
+    }
+
+    #_ideogram .annot path {
+      stroke-width: 1px;
+      stroke: white;
+      stroke-linejoin: bevel;
+    }
+
+    #_ideogram ._ideogramLabel._ideoActive {
+      fill: #77F !important;
+      stroke: #F0F0FF !important;
+    }
+
+    #_ideogram .annot > ._ideoActive {
+      stroke: #D0D0DD !important;
+      stroke-width: 1.5px;
+    }
+  </style>
+  `;
+
 /** Return DOM ID of annotation object */
 function getAnnotDomLabelId(annot) {
   return 'ideogramLabel_' + annot.domId;
@@ -26,12 +50,19 @@ function triggerAnnotEvent(event, ideo) {
     ideo.time.prevTooltipAnnotDomId = annotId;
   }
 
-  const state = (type === 'mouseover') ? ' _ideoActive' : '';
+  const state = (type === 'mouseover') ? '_ideoActive' : '';
   d3.select('#' + labelId).attr('class', '_ideogramLabel ' + state);
+  d3.select('#' + annotId + ' > path').attr('class', state);
 }
 
 function renderLabel(annot, style, ideo) {
   const config = ideo.config;
+
+  if (!ideo.didSetLabelStyle) {
+    document.querySelector('#_ideogramInnerWrap')
+      .insertAdjacentHTML('afterbegin', allLabelStyle);
+    ideo.didSetLabelStyle = true;
+  }
 
   const id = getAnnotDomLabelId(annot);
 
@@ -56,11 +87,6 @@ function renderLabel(annot, style, ideo) {
     .style('stroke-linejoin', 'round')
     .style('paint-order', 'stroke fill')
     .html(annot.name);
-
-  d3.selectAll('#' + id + ', #' + annot.domId)
-    .on('mouseover', (event) => triggerAnnotEvent(event))
-    .on('mouseout', (event) => triggerAnnotEvent(event, ideo))
-    .on('click', (event) => triggerAnnotEvent(event));
 }
 
 /**
@@ -104,14 +130,18 @@ function getAnnotByName(annotName, ideo) {
 
 /** Get label's top and left offsets relative to chromosome, and width */
 function getAnnotLabelLayout(annot, ideo) {
-  var annotRect, ideoRect, width, height, top, bottom, left, right,
+  var annotDom, annotRect, ideoRect, width, height, top, bottom, left, right,
     config = ideo.config;
 
+  annotDom = document.querySelector('#' + annot.domId);
+
+  // Handles cases when annotation is not yet in DOM
+  if (annotDom === null) return null;
+
+  annotRect = annotDom.getBoundingClientRect();
 
   ideoRect =
     document.querySelector('#_ideogram').getBoundingClientRect();
-  annotRect =
-    document.querySelector('#' + annot.domId).getBoundingClientRect();
 
   width = getTextWidth(annot.name, ideo);
 
@@ -147,6 +177,7 @@ function addAnnotLabel(annotName, backgroundColor, borderColor) {
   annot = getAnnotByName(annotName, ideo);
 
   const layout = getAnnotLabelLayout(annot, ideo);
+  if (layout === null) return;
 
   const style = Object.assign(layout, {backgroundColor, borderColor});
 
@@ -162,30 +193,37 @@ function fillAnnotLabels(sortedAnnots=[]) {
   // Remove any pre-existing annotation labels, to avoid duplicates
   ideo.clearAnnotLabels();
 
-  if (sortedAnnots.length === 0) {
-    ideo.annots.forEach((annotsByChr) => {
-
-      const sortedAnnotsThisChr =
-        annotsByChr.annots.sort((a, b) => a.start - b.start);
-
-      sortedAnnots = sortedAnnots.concat(sortedAnnotsThisChr);
-    });
-  }
-
   const spacedAnnots = [];
   const spacedLayouts = [];
+
+  if (sortedAnnots.length === 0) {
+    sortedAnnots = ideo.flattenAnnots();
+  }
 
   sortedAnnots.forEach((annot, i) => {
     const layout = getAnnotLabelLayout(annot, ideo);
 
+    if (layout === null) return;
+
     const hasOverlap =
       spacedLayouts.length > 1 && spacedLayouts.some((sl, j) => {
+
         const xOverlap = sl.left <= layout.right && sl.right >= layout.left;
         const yOverlap =
           (
             sl.top < layout.bottom && sl.bottom > layout.top ||
             layout.top < sl.bottom && layout.bottom > sl.bottom
           );
+
+        // if (annot.name === 'TP73') {
+        //   const spacedAnnot = spacedAnnots[j].name;
+        //   console.log(
+        //     'xOverlap, yOverlap, annot.name, layout, spacedAnnot, sl'
+        //   );
+        //   console.log(
+        //     xOverlap, yOverlap, annot.name, layout, spacedAnnot, sl
+        //   );
+        // }
 
         return xOverlap && yOverlap;
       });
@@ -199,6 +237,11 @@ function fillAnnotLabels(sortedAnnots=[]) {
   spacedAnnots.forEach((annot) => {
     ideo.addAnnotLabel(annot.name);
   });
+
+  d3.selectAll('._ideogramLabel, .annot')
+    .on('mouseover', (event) => triggerAnnotEvent(event))
+    .on('mouseout', (event) => triggerAnnotEvent(event, ideo))
+    .on('click', (event) => triggerAnnotEvent(event));
 }
 
 function removeAnnotLabel(annotName) {
