@@ -36,7 +36,7 @@ import {
   setBandsToShow, hideUnshownBandLabels, drawBandLabelText, drawBandLabelStalk
 } from './bands/bands';
 
-import {onBrushMove, createBrush} from './brush';
+import {onBrushMove, onBrushEnd, createBrush} from './brush';
 import {onCursorMove, createClickCursor} from './cursor';
 import {drawSexChromosomes, setSexChromosomes} from './sex-chromosomes';
 import {convertBpToPx, convertPxToBp} from './coordinate-converters';
@@ -130,6 +130,7 @@ export default class Ideogram {
 
     // Functions from brush.js
     this.onBrushMove = onBrushMove;
+    this.onBrushEnd = onBrushEnd;
     this.createBrush = createBrush;
 
     // Functions from cursor.js
