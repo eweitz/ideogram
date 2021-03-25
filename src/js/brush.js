@@ -31,7 +31,7 @@ function setBrush(bpDomain, pxRange, xOffset, width, ideo) {
   ideo.brush = d3.brushX()
     .extent([[xOffset, 0], [length + xOffset, width]])
     .on('brush', _onBrushMove)
-    .on("end", _onBrushEnd);
+    .on('end', _onBrushEnd);
 
   function _onBrushMove({selection}) {
     var extent = selection.map(xScale.invert),
@@ -40,13 +40,13 @@ function setBrush(bpDomain, pxRange, xOffset, width, ideo) {
 
     ideo.selectedRegion = {from: from, to: to, extent: (to - from)};
 
-    if (ideo.onBrushMove) {
+    if (ideo.onBrushMoveCallback) {
       ideo.onBrushMoveCallback();
     }
   }
 
   function _onBrushEnd({selection}) {
-    if (ideo.onBrushEnd) {
+    if (ideo.onBrushEndCallback) {
       ideo.onBrushEndCallback();
     }
   }
