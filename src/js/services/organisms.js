@@ -9,8 +9,18 @@ function getTaxidFromEutils(orgName, ideo) {
   taxonomySearch = ideo.esearch + '&db=taxonomy&term=' + orgName;
 
   return d3.json(taxonomySearch).then(function(data) {
-    taxid = data.esearchresult.idlist[0];
-    return [orgName, taxid];
+    var idlist = data.esearchresult.idlist;
+    if (idlist.length === 0) {
+      throw Error(
+        'Organism "' + orgName + '" is generally unknown; it was not found ' +
+        'in the NCBI Taxonomy database.  If you did not intend to specify a ' +
+        'novel or custom taxon, then try using the organism\'s ' +
+        'scientific name, e.g. Homo sapiens or Arabidopsis thaliana.'
+      );
+    } else {
+      taxid = data.esearchresult.idlist[0];
+      return [orgName, taxid];
+    }
   });
 }
 
@@ -201,6 +211,16 @@ function populateNonNativeOrg(orgs, ideo) {
           };
 
           Object.assign(ideo.organisms, augmentedOrganismMetadata);
+        }, function(errorMessage) {
+          console.info(errorMessage);
+          var customMetadata = {
+            scientificName: org,
+            commonName: org,
+            assemblies: {default: ''}
+          };
+
+          ideo.organisms['-1'] = customMetadata;
+          augmentedOrganismMetadata['-1'] = customMetadata;
         });
     } else {
       promise = new Promise(function(resolve) {
