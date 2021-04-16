@@ -219,6 +219,11 @@ function populateNonNativeOrg(orgs, ideo) {
             assemblies: {default: ''}
           };
 
+          // Use a negative number as unofficial taxid for custom organism.
+          // Use case: https://github.com/eweitz/ideogram/issues/265
+          //
+          // If support for *multiple* custom specifies is ever
+          // needed, we can decrement from -1.
           ideo.organisms['-1'] = customMetadata;
           augmentedOrganismMetadata['-1'] = customMetadata;
         });
