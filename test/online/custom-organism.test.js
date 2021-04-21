@@ -40,7 +40,7 @@ describe('Ideogram custom organism support', function() {
     }
 
     const ideogram = new Ideogram({
-      organism: 'custom',
+      organism: 'customjsonnoextension',
       dataDir: 'https://raw.githubusercontent.com/eweitz/ideogram/aff3866b022b55e76b8ad7d45ba216361019a186/data/bands/native/',
       onLoad: callback
     });
