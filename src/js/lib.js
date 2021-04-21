@@ -137,6 +137,7 @@ function getSvg() {
 
 /** Request data with Ideogram's authorization bearer token */
 function fetchWithAuth(url, contentType) {
+  var ideo = this,
     config = ideo.config,
     headers = new Headers();
 

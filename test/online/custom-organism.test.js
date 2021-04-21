@@ -25,7 +25,23 @@ describe('Ideogram custom organism support', function() {
 
     const ideogram = new Ideogram({
       organism: 'custom',
-      dataDir: 'https://raw.githubusercontent.com/eweitz/ideogram/05849a37242695d0d3dfb52059c4d0230842cda8/data/bands/native/',
+      dataDir: 'https://raw.githubusercontent.com/eweitz/ideogram/aff3866b022b55e76b8ad7d45ba216361019a186/data/bands/native/',
+      onLoad: callback
+    });
+  });
+
+  it('fetches chromosome data from remote URL lacking file extension', done => {
+    // Tests use case from ../examples/vanilla/custom-organism
+
+    function callback() {
+      const numChrs = Object.keys(ideogram.chromosomes['-1']).length;
+      assert.equal(numChrs, 13);
+      done();
+    }
+
+    const ideogram = new Ideogram({
+      organism: 'custom',
+      dataDir: 'https://raw.githubusercontent.com/eweitz/ideogram/aff3866b022b55e76b8ad7d45ba216361019a186/data/bands/native/',
       onLoad: callback
     });
   });
