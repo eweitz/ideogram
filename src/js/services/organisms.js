@@ -1,4 +1,4 @@
-import {d3, slug} from '../lib';
+import {d3, slug, fetchWithRetry} from '../lib';
 
 /**
  *  Returns NCBI Taxonomy identifier (taxid) for organism name
@@ -67,16 +67,16 @@ function setTaxidData(taxid, ideo) {
   }
   var chromosomesUrl = dataDir + urlOrg + '.json';
 
-  var promise2 = new Promise(function(resolve, reject) {
-    fetch(chromosomesUrl).then(function(response) {
-      if (response.ok === false) {
-        reject(Error('Fetch failed for ' + chromosomesUrl));
-      } else {
+  var promise2 = new Promise((resolve, reject) => {
+    return fetchWithRetry(chromosomesUrl)
+      .then(response => {
         return response.json().then(function(json) {
           resolve(json.chrBands);
         });
-      }
-    });
+      })
+      .catch((errorMessage) => {
+        reject(errorMessage);
+      });
   });
 
   return promise2

@@ -1,4 +1,4 @@
-import {hasNonGenBankAssembly} from '../lib';
+import {hasNonGenBankAssembly, fetchWithRetry} from '../lib';
 
 var lastBandDataUrl = '';
 
@@ -37,7 +37,7 @@ function fetchBands(bandDataFileNames, taxid, t0, ideo) {
 
   if (!ideo.numBandDataResponses) ideo.numBandDataResponses = 0;
 
-  return fetch(bandDataUrl)
+  return fetchWithRetry(bandDataUrl)
     .then(function(response) {
       return response.json().then(function(rawBands) {
         lastBandDataUrl = bandDataUrl;
