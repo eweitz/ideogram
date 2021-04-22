@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Custom organism | Ideogram</title>
+  <style>
+    body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
+    a, a:visited {text-decoration: none;}
+    a:hover {text-decoration: underline;}
+    a, a:hover, a:visited, a:active {color: #0366d6;}
+  </style>
+  <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
+<link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
+</head>
+<body>
+  <h1>Custom organism | Ideogram</h1>
+  <a href="../">Overview</a> |
+  <a href="multiple-primates">Previous</a> |
+  <a href="mouse">Next</a> |
+  <a href="https://github.com/eweitz/ideogram/blob/gh-pages/custom.html" target="_blank">Source</a>
+  <p>
+    A custom genome is depicted below.  The grey and black bands in each chromosome
+    represent
+    <a href="https://en.wikipedia.org/wiki/Heterochromatin">heterochromatin</a>.
+    The pink region is the area around the
+    <a href="https://en.wikipedia.org/wiki/Centromere">centromere</a>, and the blue represents variable regions.
+  </p>
+  <p>
+    This ideogram shows most chromosomes in a
+    <a href="https://en.wikipedia.org/wiki/Ploidy">haploid</a> state for
+    simplicity.  For more accurate, diploid representation of custom genomes,
+    see <a href="ploidy-basic">Ploidy, basic</a> and
+    <a href="multiple-trio">Multiple, trio</a>.
+  </p>
+  <script type="text/javascript">
+
+    var ideogram = new Ideogram({
+      organism: 'customjsonnoextension',
+      dataDir: 'https://raw.githubusercontent.com/eweitz/ideogram/aff3866b022b55e76b8ad7d45ba216361019a186/data/bands/native/'
+    });
+  </script>
+</body>
+</html>

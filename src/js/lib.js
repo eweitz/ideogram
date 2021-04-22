@@ -83,6 +83,23 @@ function getDir(dir) {
   return '../data/' + dir;
 }
 
+/** Try request, and if failed then retry with URL lacking extension */
+function fetchWithRetry(url, isRetry=false) {
+  return fetch(url)
+    .then((response) => {
+      if (response.ok) {
+        return response;
+      } else {
+        if (isRetry === false) {
+          var urlWithoutExtension = url.replace('.json', '');
+          return fetchWithRetry(urlWithoutExtension, true);
+        } else {
+          throw Error('Fetch failed for ' + url);
+        }
+      }
+    });
+}
+
 /**
  * Returns directory used to fetch data for bands and annotations
  *
@@ -118,7 +135,8 @@ function getSvg() {
   return d3.select(this.selector).node();
 }
 
-function fetch(url, contentType) {
+/** Request data with Ideogram's authorization bearer token */
+function fetchWithAuth(url, contentType) {
   var ideo = this,
     config = ideo.config,
     headers = new Headers();
@@ -276,6 +294,8 @@ function downloadPng(ideo) {
 
 export {
   assemblyIsAccession, hasNonGenBankAssembly, hasGenBankAssembly, getDataDir,
-  getDir, round, onDidRotate, getSvg, fetch, d3, getTaxid, getCommonName,
-  getScientificName, slug, isRoman, parseRoman, downloadPng
+  getDir, round, onDidRotate, getSvg, d3, getTaxid, getCommonName,
+  getScientificName, slug, isRoman, parseRoman, downloadPng,
+  fetchWithRetry,
+  fetchWithAuth as fetch
 };
