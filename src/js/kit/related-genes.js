@@ -209,11 +209,8 @@ function describeInteractions(gene, ixns, searchedGene) {
       return `<a href="${url}" target="_blank">${ixn.name}</a>`;
     }).join('<br/>');
 
-    let pathwayText = 'pathway';
-    if (ixns.length > 1) pathwayText += 's';
-
     ixnsDescription =
-      `Interacts with ${searchedGene.name} in ${pathwayText}:<br/>${links}`;
+      `Interacts with ${searchedGene.name} in:<br/>${links}`;
   }
 
   const {name, ensemblId} = parseNameAndEnsemblIdFromMgiGene(gene);
