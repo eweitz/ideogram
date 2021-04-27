@@ -222,6 +222,40 @@ describe('Ideogram related genes kit', function() {
     const ideogram = Ideogram.initRelatedGenes(config);
   });
 
+
+  it('handles gene that is unknown', done => {
+    // Tests use case from ../examples/vanilla/related-genes
+
+    async function callback() {
+      try {
+        await ideogram.plotRelatedGenes('Foo');
+      } catch (error) {
+        assert.equal(
+          error.message,
+          '"Foo" is not a known gene in Homo sapiens'
+        );
+        done();
+      }
+    }
+
+    function onClickAnnot(annot) {
+      ideogram.plotRelatedGenes(annot.name);
+    }
+
+    var config = {
+      organism: 'Homo sapiens', // Also tests standard, non-slugged name
+      chrWidth: 8,
+      chrHeight: 90,
+      chrLabelSize: 10,
+      annotationHeight: 5,
+      onLoad: callback,
+      dataDir: '/dist/data/bands/native/',
+      onClickAnnot
+    };
+
+    const ideogram = Ideogram.initRelatedGenes(config);
+  });
+
   it('handles default display of highly cited genes', done => {
     // Tests use case from ../examples/vanilla/related-genes
 
