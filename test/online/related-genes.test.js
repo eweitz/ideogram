@@ -1,9 +1,7 @@
 
 /* eslint-disable no-new */
 
-// For tests that use Mocha's async support, see:
-//  - http://martinfowler.com/articles/asyncJS.html
-//  - https://mochajs.org/#asynchronous-code
+// Tests use cases from ../examples/vanilla/related-genes
 
 describe('Ideogram related genes kit', function() {
 
@@ -19,7 +17,6 @@ describe('Ideogram related genes kit', function() {
   });
 
   it('handles searched gene and annotation click', done => {
-    // Tests use case from ../examples/vanilla/related-genes
 
     async function callback() {
       await ideogram.plotRelatedGenes('RAD51');
@@ -75,7 +72,6 @@ describe('Ideogram related genes kit', function() {
   });
 
   it('handles gene with interacting genes but no paralogs', done => {
-    // Tests use case from ../examples/vanilla/related-genes
 
     async function callback() {
       const ideo = this;
@@ -98,11 +94,7 @@ describe('Ideogram related genes kit', function() {
     }
 
     var config = {
-      organism: 'Homo sapiens', // Also tests standard, non-slugged name
-      chrWidth: 8,
-      chrHeight: 90,
-      chrLabelSize: 10,
-      annotationHeight: 5,
+      organism: 'Homo sapiens',
       onLoad: callback,
       dataDir: '/dist/data/bands/native/',
       onClickAnnot
@@ -112,7 +104,6 @@ describe('Ideogram related genes kit', function() {
   });
 
   it('handles gene with paralogs but no interacting genes', done => {
-    // Tests use case from ../examples/vanilla/related-genes
 
     async function callback() {
       const ideo = this;
@@ -135,11 +126,7 @@ describe('Ideogram related genes kit', function() {
     }
 
     var config = {
-      organism: 'Homo sapiens', // Also tests standard, non-slugged name
-      chrWidth: 8,
-      chrHeight: 90,
-      chrLabelSize: 10,
-      annotationHeight: 5,
+      organism: 'Homo sapiens',
       onLoad: callback,
       dataDir: '/dist/data/bands/native/',
       onClickAnnot
@@ -149,7 +136,6 @@ describe('Ideogram related genes kit', function() {
   });
 
   it('handles gene with no interacting genes and no paralogs', done => {
-    // Tests use case from ../examples/vanilla/related-genes
 
     async function callback() {
       const ideo = this;
@@ -173,10 +159,6 @@ describe('Ideogram related genes kit', function() {
 
     var config = {
       organism: 'Macaca mulatta', // Also tests standard, non-slugged name
-      chrWidth: 8,
-      chrHeight: 90,
-      chrLabelSize: 10,
-      annotationHeight: 5,
       onLoad: callback,
       dataDir: '/dist/data/bands/native/',
       onClickAnnot
@@ -186,8 +168,6 @@ describe('Ideogram related genes kit', function() {
   });
 
   it('handles gene with no interacting genes and no paralogs', done => {
-    // Tests use case from ../examples/vanilla/related-genes
-
     async function callback() {
       const ideo = this;
 
@@ -209,21 +189,40 @@ describe('Ideogram related genes kit', function() {
     }
 
     var config = {
-      organism: 'Macaca mulatta', // Also tests standard, non-slugged name
-      chrWidth: 8,
-      chrHeight: 90,
-      chrLabelSize: 10,
-      annotationHeight: 5,
+      organism: 'Macaca mulatta',
       onLoad: callback,
       dataDir: '/dist/data/bands/native/',
       onClickAnnot
+    };
+
+    const ideogram = Ideogram.initRelatedGenes(config);
+  });
+
+
+  it('handles gene that is unknown', done => {
+
+    async function callback() {
+      try {
+        await ideogram.plotRelatedGenes('Foo');
+      } catch (error) {
+        assert.equal(
+          error.message,
+          '"Foo" is not a known gene in Homo sapiens'
+        );
+        done();
+      }
+    }
+
+    var config = {
+      organism: 'Homo sapiens',
+      onLoad: callback,
+      dataDir: '/dist/data/bands/native/'
     };
 
     const ideogram = Ideogram.initRelatedGenes(config);
   });
 
   it('handles default display of highly cited genes', done => {
-    // Tests use case from ../examples/vanilla/related-genes
 
     async function callback() {
       const ideo = this;
@@ -244,7 +243,7 @@ describe('Ideogram related genes kit', function() {
       '/dist/data/annotations/gene-cache/homo-sapiens-top-genes.tsv';
 
     var config = {
-      organism: 'Homo sapiens', // Also tests standard, non-slugged name
+      organism: 'Homo sapiens',
       chrWidth: 8,
       chrHeight: 90,
       chrLabelSize: 10,

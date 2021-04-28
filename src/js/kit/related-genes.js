@@ -209,11 +209,8 @@ function describeInteractions(gene, ixns, searchedGene) {
       return `<a href="${url}" target="_blank">${ixn.name}</a>`;
     }).join('<br/>');
 
-    let pathwayText = 'pathway';
-    if (ixns.length > 1) pathwayText += 's';
-
     ixnsDescription =
-      `Interacts with ${searchedGene.name} in ${pathwayText}:<br/>${links}`;
+      `Interacts with ${searchedGene.name} in:<br/>${links}`;
   }
 
   const {name, ensemblId} = parseNameAndEnsemblIdFromMgiGene(gene);
@@ -553,6 +550,9 @@ async function processSearchedGene(geneSymbol, ideo) {
     `?q=symbol:${geneSymbol}&species=${taxid}&fields=symbol,genomic_pos,name`;
   const data = await fetchMyGeneInfo(queryString);
 
+  if (data.hits.length === 0) {
+    return;
+  }
   const gene = data.hits[0];
   const name = gene.name;
   const ensemblId = gene.genomic_pos.ensemblgene;
@@ -656,6 +656,12 @@ async function plotRelatedGenes(geneSymbol=null) {
 
   // Fetch positon of searched gene
   const annot = await processSearchedGene(geneSymbol, ideo);
+
+  if (typeof annot === 'undefined') {
+    // E.g. when searched gene is "Foo"
+    const organism = ideo.organismScientificName;
+    throw Error(`"${geneSymbol}" is not a known gene in ${organism}`);
+  }
 
   ideo.config.legend = relatedLegend;
   writeLegend(ideo);
