@@ -11,12 +11,12 @@ function getTaxidFromEutils(orgName, ideo) {
   return d3.json(taxonomySearch).then(function(data) {
     var idlist = data.esearchresult.idlist;
     if (idlist.length === 0) {
-      throw Error(
+      var warning =
         'Organism "' + orgName + '" is generally unknown; it was not found ' +
         'in the NCBI Taxonomy database.  If you did not intend to specify a ' +
         'novel or custom taxon, then try using the organism\'s ' +
-        'scientific name, e.g. Homo sapiens or Arabidopsis thaliana.'
-      );
+        'scientific name, e.g. Homo sapiens or Arabidopsis thaliana.';
+      throw warning;
     } else {
       taxid = data.esearchresult.idlist[0];
       return [orgName, taxid];
@@ -211,8 +211,8 @@ function populateNonNativeOrg(orgs, ideo) {
           };
 
           Object.assign(ideo.organisms, augmentedOrganismMetadata);
-        }, function(errorMessage) {
-          console.info(errorMessage);
+        }, function(warning) {
+          console.warn(warning);
           var customMetadata = {
             scientificName: org,
             commonName: org,
