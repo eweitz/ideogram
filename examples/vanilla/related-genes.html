@@ -3,7 +3,9 @@
 <head>
   <title>Related genes | Ideogram</title>
   <style>
-    body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
+    body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;
+    /* font-family: 'Montserrat', sans-serif; */
+    }
     a, a:visited {text-decoration: none;}
     a:hover {text-decoration: underline;}
     a, a:hover, a:visited, a:active {color: #0366d6;}
@@ -50,7 +52,9 @@
 
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
-<link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
 </head>
 <body>
   <h1>Related genes | Ideogram</h1>
@@ -242,6 +246,7 @@
       chrHeight: 100,
       chrLabelSize: 12,
       annotationHeight: 7,
+      // font: "'Montserrat', sans-serif",
       onLoad: plotGeneFromUrl,
       onPlotRelatedGenes: reportRelatedGenes,
       showAnnotLabels: true,

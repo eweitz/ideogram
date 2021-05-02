@@ -21,6 +21,14 @@ const allLabelStyle = `
       stroke: #D0D0DD !important;
       stroke-width: 1.5px;
     }
+
+    #_ideogram ._ideogramLabel {
+      stroke: white;
+      stroke-width: 5px;
+      stroke-linejoin: round;
+      paint-order: stroke fill;
+      text-align: center;
+    }
   </style>
   `;
 
@@ -78,14 +86,9 @@ function renderLabel(annot, style, ideo) {
     .attr('class', '_ideogramLabel')
     .attr('x', style.left)
     .attr('y', style.top)
-    .style('text-align', 'center')
     .style('font', font)
     .style('fill', fill)
     .style('pointer-events', null) // Prevent bug in clicking chromosome
-    .style('stroke', 'white')
-    .style('stroke-width', '5px')
-    .style('stroke-linejoin', 'round')
-    .style('paint-order', 'stroke fill')
     .html(annot.name);
 }
 
