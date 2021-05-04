@@ -74,10 +74,7 @@ function renderLabel(annot, style, ideo) {
 
   const id = getAnnotDomLabelId(annot);
 
-  // TODO: De-duplicate with code in getTextWidth and elsewhere
-  // perhaps set config.annotLabelSize and config.annotLabelFont upstream.
-  const labelSize = config.annotLabelSize ? config.annotLabelSize : 13;
-  const font = labelSize + 'px sans-serif';
+  const font = getFont(ideo);
 
   const fill = annot.color === 'pink' ? '#CF406B' : annot.color;
 
@@ -92,16 +89,24 @@ function renderLabel(annot, style, ideo) {
     .html(annot.name);
 }
 
+function getFont(ideo) {
+  const config = ideo.config;
+
+  // TODO: De-duplicate with code in getTextWidth and elsewhere
+  // perhaps set config.annotLabelSize and config.annotLabelFont upstream.
+  const labelSize = config.annotLabelSize ? config.annotLabelSize : 13;
+  const font = labelSize + 'px sans-serif';
+
+  return font;
+}
+
 /**
  * Compute and return the width of the given text of given font in pixels.
  *
  * @see https://stackoverflow.com/questions/118241/calculate-text-width-with-javascript/21015393#21015393
  */
 function getTextWidth(text, ideo) {
-  var config = ideo.config;
-  var labelSize = config.annotLabelSize ? config.annotLabelSize : 13;
-
-  var font = labelSize + 'px sans-serif';
+  var font = getFont(ideo);
 
   // re-use canvas object for better performance
   var canvas =
