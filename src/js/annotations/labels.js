@@ -92,10 +92,15 @@ function renderLabel(annot, style, ideo) {
 function getFont(ideo) {
   const config = ideo.config;
 
+  let family = 'sans-serif';
+  if (config.fontFamily) {
+    family = config.fontFamily;
+  }
+
   // TODO: De-duplicate with code in getTextWidth and elsewhere
   // perhaps set config.annotLabelSize and config.annotLabelFont upstream.
   const labelSize = config.annotLabelSize ? config.annotLabelSize : 13;
-  const font = labelSize + 'px sans-serif';
+  const font = '500 ' + labelSize + 'px ' + family;
 
   return font;
 }

@@ -159,9 +159,9 @@ function configureTextStyle(ideo) {
 
   const size = `font-size: ${config.chrLabelSize}px`;
   const color = `fill: ${config.chrLabelColor}`;
-  const font = `font-family: ${config.font}`;
-  configuredCss += `#_ideogram text {${font}; ${size}; ${color};}`;
-  configuredCss += `#_ideogramLabel text {${font};}`;
+  const fontFamily = `font-family: ${config.fontFamily}`;
+  configuredCss += `#_ideogram text {${fontFamily}; ${size}; ${color};}`;
+  configuredCss += `#_ideogramLabel text {${fontFamily};}`;
 }
 
 /**
