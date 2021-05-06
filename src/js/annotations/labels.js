@@ -64,7 +64,6 @@ function triggerAnnotEvent(event, ideo) {
 }
 
 function renderLabel(annot, style, ideo) {
-  const config = ideo.config;
 
   if (!ideo.didSetLabelStyle) {
     document.querySelector('#_ideogramInnerWrap')
@@ -97,10 +96,8 @@ function getFont(ideo) {
     family = config.fontFamily;
   }
 
-  // TODO: De-duplicate with code in getTextWidth and elsewhere
-  // perhaps set config.annotLabelSize and config.annotLabelFont upstream.
   const labelSize = config.annotLabelSize ? config.annotLabelSize : 13;
-  const font = '500 ' + labelSize + 'px ' + family;
+  const font = '600 ' + labelSize + 'px ' + family;
 
   return font;
 }
@@ -110,17 +107,20 @@ function getFont(ideo) {
  *
  * @see https://stackoverflow.com/questions/118241/calculate-text-width-with-javascript/21015393#21015393
  */
-function getTextWidth(text, ideo) {
+function getTextRight(text, ideo) {
   var font = getFont(ideo);
 
   // re-use canvas object for better performance
   var canvas =
-    getTextWidth.canvas ||
-    (getTextWidth.canvas = document.createElement('canvas'));
+    getTextRight.canvas ||
+    (getTextRight.canvas = document.createElement('canvas'));
   var context = canvas.getContext('2d');
   context.font = font;
   var metrics = context.measureText(text);
-  return metrics.width;
+  var right = metrics.actualBoundingBoxRight;
+  var left = metrics.actualBoundingBoxLeft;
+  var width = Math.abs(left) + Math.abs(right);
+  return width;
 }
 
 /** Get annotation object by name, e.g. "BRCA1" */
@@ -156,12 +156,13 @@ function getAnnotLabelLayout(annot, ideo) {
   ideoRect =
     document.querySelector('#_ideogram').getBoundingClientRect();
 
-  width = getTextWidth(annot.name, ideo);
+  right = getTextRight(annot.name, ideo);
 
-  // Accounts for:
+  // `pad` is a heuristic that accounts for:
   // 1px left pad, 1px right pad, 1px right border, 1px left border
-  //  as set in renderLabel
-  width = width + 7;
+  // as set in renderLabel
+  const pad = (config.fontFamily) ? 9 : 7;
+  width = right + pad;
 
   const labelSize = config.annotLabelSize ? config.annotLabelSize : 13;
 

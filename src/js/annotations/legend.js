@@ -65,11 +65,12 @@ function getListItems(labels, svg, list, nameHeight, ideo) {
  * Display a legend for genome annotations, using `legend` configuration option
  */
 function writeLegend(ideo) {
-  var i, legend, svg, labels, list, content;
+  var i, legend, svg, labels, list, content,
+    config = ideo.config;
 
-  d3.select(ideo.config.container + ' #_ideogramLegend').remove();
+  d3.select(config.container + ' #_ideogramLegend').remove();
 
-  legend = ideo.config.legend;
+  legend = config.legend;
   content = '';
 
   for (i = 0; i < legend.length; i++) {
@@ -84,7 +85,12 @@ function writeLegend(ideo) {
     content += svg + '<ul>' + labels + '</ul>';
   }
 
-  var target = d3.select(ideo.config.container + ' #_ideogramOuterWrap');
+  if (config.fontFamily) {
+    legendStyle +=
+      `#_ideogramLegend {font-family: ${config.fontFamily}}`;
+  }
+
+  var target = d3.select(config.container + ' #_ideogramOuterWrap');
   target.append('style').html(legendStyle);
   target.append('div').attr('id', '_ideogramLegend').html(content);
 }

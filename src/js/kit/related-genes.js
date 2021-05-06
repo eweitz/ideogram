@@ -590,7 +590,7 @@ function adjustPlaceAndVisibility(ideo) {
     // is variable upon first rendering plotted genes
 
     var ideoDom = document.querySelector('#_ideogram');
-    const legendWidth = 150;
+    const legendWidth = 160;
     ideoInnerDom.style.maxWidth =
       (
         parseInt(ideoInnerDom.style.maxWidth) +
@@ -737,8 +737,10 @@ function decorateRelatedGene(annot) {
 
 const shape = 'triangle';
 
+let fontFamily;
+
 const legendHeaderStyle =
-  'font-size: 14px; font-weight: bold; font-color: #333';
+  `font-size: 14px; font-weight: bold; font-color: #333; ${fontFamily}`;
 const relatedLegend = [{
   name: `
     <div style="position: relative; left: -15px; padding-bottom: 10px;">
@@ -768,7 +770,7 @@ const citedLegend = [{
 /** Sets annotDecorPad for related genes view */
 function setRelatedDecorPad(kitConfig) {
   if (kitConfig.showAnnotLabels) {
-    kitConfig.annotDecorPad = 60;
+    kitConfig.annotDecorPad = 70;
   } else {
     kitConfig.annotDecorPad = 30;
   }
@@ -787,6 +789,8 @@ function _initRelatedGenes(config, annotsInList) {
   if (annotsInList !== 'all') {
     annotsInList = annotsInList.map(name => name.toLowerCase());
   }
+
+  fontFamily = (config.fontFamily) ? config.fontFamily : '';
 
   const kitDefaults = {
     showFullyBanded: false,
@@ -882,6 +886,8 @@ function _initGeneHints(config, annotsInList) {
   if (annotsInList !== 'all') {
     annotsInList = annotsInList.map(name => name.toLowerCase());
   }
+
+  fontFamily = (config.fontFamily) ? config.fontFamily : '';
 
   const annotsPath =
     getDir('annotations/gene-cache/homo-sapiens-top-genes.tsv');
