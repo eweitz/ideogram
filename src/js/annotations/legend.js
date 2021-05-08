@@ -61,11 +61,7 @@ function getListItems(labels, svg, list, nameHeight, ideo) {
 }
 
 function getLineHeight(ideo) {
-  const lineHeight = getTextSize('I', ideo).height + 10.5;
-  // const lineHeight = 19
-  console.log(lineHeight)
-
-  return lineHeight;
+  return getTextSize('I', ideo).height + 10.5;
 }
 
 /**
@@ -94,7 +90,6 @@ function writeLegend(ideo) {
   }
 
   if (config.fontFamily) {
-    console.log('ok')
     var fontFamily = `font-family: ${config.fontFamily};`;
     var lineHeightCss = `line-height: ${getLineHeight(ideo)}px;`;
     legendStyle +=

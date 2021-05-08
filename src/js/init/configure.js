@@ -155,7 +155,7 @@ function configureTextStyle(ideo) {
   const config = ideo.config;
   if (!config.chrLabelSize) ideo.config.chrLabelSize = 9;
   if (!config.chrLabelColor) ideo.config.chrLabelColor = '#000';
-  if (!config.font) ideo.config.font = '';
+  if (!config.fontFamily) ideo.config.fontFamily = '';
 
   const size = `font-size: ${config.chrLabelSize}px`;
   const color = `fill: ${config.chrLabelColor}`;
