@@ -397,7 +397,7 @@ function parseAnnotFromMgiGene(gene, ideo, color='red') {
 
 function moveLegend() {
   const ideoInnerDom = document.querySelector('#_ideogramInnerWrap');
-  const decorPad = setRelatedDecorPad({}).annotDecorPad;
+  const decorPad = setRelatedDecorPad({}).legendPad;
   const left = decorPad + 20;
   const legendStyle = `position: absolute; top: 15px; left: ${left}px`;
   const legend = document.querySelector('#_ideogramLegend');
@@ -583,7 +583,7 @@ function adjustPlaceAndVisibility(ideo) {
   ideoInnerDom.style.overflowY = 'hidden';
   document.querySelector('#_ideogramMiddleWrap').style.overflowY = 'hidden';
 
-  const annotDecorPad = ideo.config.annotDecorPad;
+  const legendPad = ideo.config.legendPad;
 
   if (typeof ideo.didAdjustIdeogramLegend === 'undefined') {
     // Accounts for moving legend when external content at left or right
@@ -595,13 +595,13 @@ function adjustPlaceAndVisibility(ideo) {
       (
         parseInt(ideoInnerDom.style.maxWidth) +
         legendWidth +
-        annotDecorPad
+        legendPad
       ) + 'px';
 
     ideoDom.style.minWidth =
-      (parseInt(ideoDom.style.minWidth) + annotDecorPad) + 'px';
+      (parseInt(ideoDom.style.minWidth) + legendPad) + 'px';
     ideoDom.style.maxWidth =
-      (parseInt(ideoDom.style.minWidth) + annotDecorPad) + 'px';
+      (parseInt(ideoDom.style.minWidth) + legendPad) + 'px';
     ideoDom.style.position = 'relative';
     ideoDom.style.left = legendWidth + 'px';
 
@@ -767,12 +767,12 @@ const citedLegend = [{
   rows: []
 }];
 
-/** Sets annotDecorPad for related genes view */
+/** Sets legendPad for related genes view */
 function setRelatedDecorPad(kitConfig) {
   if (kitConfig.showAnnotLabels) {
-    kitConfig.annotDecorPad = 70;
+    kitConfig.legendPad = 70;
   } else {
-    kitConfig.annotDecorPad = 30;
+    kitConfig.legendPad = 30;
   }
   return kitConfig;
 }
@@ -936,9 +936,9 @@ function _initGeneHints(config, annotsInList) {
   const kitConfig = Object.assign(kitDefaults, config);
 
   if (kitConfig.showAnnotLabels) {
-    kitConfig.annotDecorPad = 80;
+    kitConfig.legendPad = 80;
   } else {
-    kitConfig.annotDecorPad = 30;
+    kitConfig.legendPad = 30;
   }
 
   const ideogram = new Ideogram(kitConfig);

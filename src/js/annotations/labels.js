@@ -1,4 +1,4 @@
-import {d3} from '../lib';
+import {d3, getFont, getTextSize} from '../lib';
 
 const allLabelStyle = `
   <style>
@@ -37,6 +37,12 @@ function getAnnotDomLabelId(annot) {
   return 'ideogramLabel_' + annot.domId;
 }
 
+function changeAnnotState(state, labelId, annotId) {
+  d3.selectAll('._ideoActive').classed('_ideoActive', false);
+  d3.select('#' + labelId).attr('class', '_ideogramLabel ' + state);
+  d3.select('#' + annotId + ' > path').attr('class', state);
+}
+
 function triggerAnnotEvent(event, ideo) {
   let labelId, annotId;
   const target = event.target;
@@ -58,9 +64,18 @@ function triggerAnnotEvent(event, ideo) {
     ideo.time.prevTooltipAnnotDomId = annotId;
   }
 
-  const state = (type === 'mouseover') ? '_ideoActive' : '';
-  d3.select('#' + labelId).attr('class', '_ideogramLabel ' + state);
-  d3.select('#' + annotId + ' > path').attr('class', state);
+  // On mouseover, activate immediately
+  // Otherwise, wait a moment (250 ms), then deactivate.
+  // Delayed deactivation mitigates flicker when moving from
+  // annot label to annot triangle.
+  if (type === 'mouseover') {
+    clearTimeout(window._ideoActiveTimeout);
+    changeAnnotState('_ideoActive', labelId, annotId);
+  } else {
+    window._ideoActiveTimeout = window.setTimeout(function() {
+      changeAnnotState('', labelId, annotId);
+    }, 250);
+  }
 }
 
 function renderLabel(annot, style, ideo) {
@@ -86,41 +101,6 @@ function renderLabel(annot, style, ideo) {
     .style('fill', fill)
     .style('pointer-events', null) // Prevent bug in clicking chromosome
     .html(annot.name);
-}
-
-function getFont(ideo) {
-  const config = ideo.config;
-
-  let family = 'sans-serif';
-  if (config.fontFamily) {
-    family = config.fontFamily;
-  }
-
-  const labelSize = config.annotLabelSize ? config.annotLabelSize : 13;
-  const font = '600 ' + labelSize + 'px ' + family;
-
-  return font;
-}
-
-/**
- * Compute and return the width of the given text of given font in pixels.
- *
- * @see https://stackoverflow.com/questions/118241/calculate-text-width-with-javascript/21015393#21015393
- */
-function getTextRight(text, ideo) {
-  var font = getFont(ideo);
-
-  // re-use canvas object for better performance
-  var canvas =
-    getTextRight.canvas ||
-    (getTextRight.canvas = document.createElement('canvas'));
-  var context = canvas.getContext('2d');
-  context.font = font;
-  var metrics = context.measureText(text);
-  var right = metrics.actualBoundingBoxRight;
-  var left = metrics.actualBoundingBoxLeft;
-  var width = Math.abs(left) + Math.abs(right);
-  return width;
 }
 
 /** Get annotation object by name, e.g. "BRCA1" */
@@ -156,15 +136,17 @@ function getAnnotLabelLayout(annot, ideo) {
   ideoRect =
     document.querySelector('#_ideogram').getBoundingClientRect();
 
-  right = getTextRight(annot.name, ideo);
+  const textSize = getTextSize(annot.name, ideo);
+  width = textSize.width;
 
   // `pad` is a heuristic that accounts for:
   // 1px left pad, 1px right pad, 1px right border, 1px left border
   // as set in renderLabel
   const pad = (config.fontFamily) ? 9 : 7;
-  width = right + pad;
+  width += pad;
 
   const labelSize = config.annotLabelSize ? config.annotLabelSize : 13;
+  // console.log('height, labelSize', height, labelSize);
 
   // Accounts for 1px top border, 1px bottom border as set in renderLabel
   height = labelSize;
