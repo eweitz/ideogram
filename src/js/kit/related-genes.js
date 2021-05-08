@@ -737,10 +737,8 @@ function decorateRelatedGene(annot) {
 
 const shape = 'triangle';
 
-let fontFamily;
-
 const legendHeaderStyle =
-  `font-size: 14px; font-weight: bold; font-color: #333; ${fontFamily}`;
+  `font-size: 14px; font-weight: bold; font-color: #333;`;
 const relatedLegend = [{
   name: `
     <div style="position: relative; left: -15px; padding-bottom: 10px;">
@@ -789,8 +787,6 @@ function _initRelatedGenes(config, annotsInList) {
   if (annotsInList !== 'all') {
     annotsInList = annotsInList.map(name => name.toLowerCase());
   }
-
-  fontFamily = (config.fontFamily) ? config.fontFamily : '';
 
   const kitDefaults = {
     showFullyBanded: false,
@@ -886,8 +882,6 @@ function _initGeneHints(config, annotsInList) {
   if (annotsInList !== 'all') {
     annotsInList = annotsInList.map(name => name.toLowerCase());
   }
-
-  fontFamily = (config.fontFamily) ? config.fontFamily : '';
 
   const annotsPath =
     getDir('annotations/gene-cache/homo-sapiens-top-genes.tsv');

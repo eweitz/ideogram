@@ -16,7 +16,12 @@ describe('Ideogram related genes kit', function() {
     d3.selectAll('div').remove();
   });
 
-  it('handles searched gene and annotation click', done => {
+  function getFontFamily(selector) {
+    const element = document.querySelector(selector);
+    return window.getComputedStyle(element).getPropertyValue('font-family');
+  }
+
+  it('handles searched gene, annotation click, and font', done => {
 
     async function callback() {
       await ideogram.plotRelatedGenes('RAD51');
@@ -45,7 +50,9 @@ describe('Ideogram related genes kit', function() {
     }
 
     function onPlotRelatedGenes() {
-      // pass through
+      const legendFontFamily = getFontFamily('#_ideogramLegend');
+      assert.equal(legendFontFamily, 'serif');
+      assert.equal(getFontFamily('.chrLabel'), 'serif');
     }
 
     function onWillShowAnnotTooltip(annot) {
@@ -65,7 +72,8 @@ describe('Ideogram related genes kit', function() {
       dataDir: '/dist/data/bands/native/',
       onClickAnnot,
       onPlotRelatedGenes,
-      onWillShowAnnotTooltip
+      onWillShowAnnotTooltip,
+      fontFamily: 'serif'
     };
 
     const ideogram = Ideogram.initRelatedGenes(config);
