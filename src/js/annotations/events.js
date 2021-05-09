@@ -43,6 +43,7 @@ function renderTooltip(tooltip, content, matrix, yOffset, ideo) {
     .style('opacity', 1) // Make tooltip visible
     .style('left', matrix.e + 'px')
     .style('top', (matrix.f - yOffset) + 'px')
+    .style('font-family', ideo.config.fontFamily)
     .style('pointer-events', null) // Prevent bug in clicking chromosome
     .on('mouseover', function() {
       clearTimeout(ideo.hideAnnotTooltipTimeout);

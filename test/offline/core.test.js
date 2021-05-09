@@ -783,5 +783,4 @@ describe('Ideogram', function() {
 
     var ideogram = new Ideogram(config);
   });
-
 });

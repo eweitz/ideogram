@@ -49,6 +49,7 @@ var ideogram = new Ideogram({
 * [histogramScaling](#histogramscaling)
 * [heatmaps](#heatmaps)
 * [filterable](#filterable)
+* [fontFamily](#fontfamily)
 * [fullChromosomeLabels](#fullchromosomelabels)
 * [legend](#legend)
 * [onBrushMove](#onbrushmove)
@@ -173,6 +174,9 @@ the heatmap.  Threshold values are specified in ascending order.  Example in [An
 
 ## filterable
 Boolean.  Optional.  Whether annotations should be filterable.  Example in [Annotations, histogram](https://eweitz.github.io/ideogram/annotations-histogram).
+
+## fontFamily
+String.  Optional.  The font family to use for text in the ideogram, e.g. `fontFamily: "'Montserrat', sans-serif"`.
 
 ## fullChromosomeLabels
 Boolean.  Optional.  Whether to include abbreviation species name in chromosome label.  Example in [Homology, interspecies](https://eweitz.github.io/ideogram/homology-interspecies).

@@ -4,9 +4,7 @@
  * Icons may have different shapes.  A legend may also have a name.
  */
 
-import {d3} from '../lib';
-
-var lineHeight = 19;
+import {d3, getTextSize} from '../lib';
 
 var legendStyle =
   '#_ideogramLegend {font: 12px Arial; line-height: 19px; overflow: auto;} ' +
@@ -46,7 +44,8 @@ function getIcon(row, ideo) {
 }
 
 function getListItems(labels, svg, list, nameHeight, ideo) {
-  var i, icon, y, row;
+  var i, icon, y, row,
+    lineHeight = getLineHeight(ideo);
 
   for (i = 0; i < list.rows.length; i++) {
     row = list.rows[i];
@@ -61,15 +60,21 @@ function getListItems(labels, svg, list, nameHeight, ideo) {
   return [labels, svg];
 }
 
+function getLineHeight(ideo) {
+  return getTextSize('I', ideo).height + 10.5;
+}
+
 /**
  * Display a legend for genome annotations, using `legend` configuration option
  */
 function writeLegend(ideo) {
-  var i, legend, svg, labels, list, content;
+  var i, legend, svg, labels, list, content,
+    config = ideo.config,
+    lineHeight = getLineHeight(ideo);
 
-  d3.select(ideo.config.container + ' #_ideogramLegend').remove();
+  d3.select(config.container + ' #_ideogramLegend').remove();
 
-  legend = ideo.config.legend;
+  legend = config.legend;
   content = '';
 
   for (i = 0; i < legend.length; i++) {
@@ -84,7 +89,14 @@ function writeLegend(ideo) {
     content += svg + '<ul>' + labels + '</ul>';
   }
 
-  var target = d3.select(ideo.config.container + ' #_ideogramOuterWrap');
+  if (config.fontFamily) {
+    var fontFamily = `font-family: ${config.fontFamily};`;
+    var lineHeightCss = `line-height: ${getLineHeight(ideo)}px;`;
+    legendStyle +=
+      `#_ideogramLegend {${fontFamily}} ${lineHeightCss}}`;
+  }
+
+  var target = d3.select(config.container + ' #_ideogramOuterWrap');
   target.append('style').html(legendStyle);
   target.append('div').attr('id', '_ideogramLegend').html(content);
 }

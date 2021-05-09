@@ -155,10 +155,13 @@ function configureTextStyle(ideo) {
   const config = ideo.config;
   if (!config.chrLabelSize) ideo.config.chrLabelSize = 9;
   if (!config.chrLabelColor) ideo.config.chrLabelColor = '#000';
+  if (!config.fontFamily) ideo.config.fontFamily = '';
 
   const size = `font-size: ${config.chrLabelSize}px`;
   const color = `fill: ${config.chrLabelColor}`;
-  configuredCss += `#_ideogram text {${size}; ${color};}`;
+  const fontFamily = `font-family: ${config.fontFamily}`;
+  configuredCss += `#_ideogram text {${fontFamily}; ${size}; ${color};}`;
+  configuredCss += `#_ideogramLabel text {${fontFamily};}`;
 }
 
 /**
