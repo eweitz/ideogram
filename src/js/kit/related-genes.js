@@ -741,12 +741,12 @@ const legendHeaderStyle =
   `font-size: 14px; font-weight: bold; font-color: #333;`;
 const relatedLegend = [{
   name: `
-    <div style="position: relative; left: -15px; padding-bottom: 10px;">
+    <div style="position: relative; left: -15px;">
       <div style="${legendHeaderStyle}">Related genes</div>
       <i>Click gene to search</i>
     </div>
   `,
-  nameHeight: 30,
+  nameHeight: 50,
   rows: [
     {name: 'Interacting gene', color: 'purple', shape: shape},
     {name: 'Paralogous gene', color: 'pink', shape: shape},
@@ -756,7 +756,7 @@ const relatedLegend = [{
 
 const citedLegend = [{
   name: `
-    <div style="position: relative; left: -15px; padding-bottom: 10px;">
+    <div style="position: relative; left: -15px;">
       <div style="${legendHeaderStyle}">Highly cited genes</div>
       <i>Click gene to search</i>
     </div>

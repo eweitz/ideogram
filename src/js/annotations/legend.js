@@ -4,10 +4,10 @@
  * Icons may have different shapes.  A legend may also have a name.
  */
 
-import {d3, getTextSize} from '../lib';
+import {d3, getTextSize, round} from '../lib';
 
 var legendStyle =
-  '#_ideogramLegend {font: 12px Arial; line-height: 19px; overflow: auto;} ' +
+  '#_ideogramLegend {font: 12px Arial; overflow: auto;} ' +
   '#_ideogramLegend svg {float: left;} ' +
   '#_ideogramLegend ul {' +
     'position: relative; left: -14px; list-style: none; float: left; ' +
@@ -50,7 +50,7 @@ function getListItems(labels, svg, list, nameHeight, ideo) {
   for (i = 0; i < list.rows.length; i++) {
     row = list.rows[i];
     labels += '<li>' + row.name + '</li>';
-    y = lineHeight * i + nameHeight;
+    y = lineHeight * (i - 1) + nameHeight + 1;
     if ('name' in list) y += lineHeight;
     icon = getIcon(row, ideo);
     const transform = 'translate(0, ' + y + ')';
@@ -61,7 +61,7 @@ function getListItems(labels, svg, list, nameHeight, ideo) {
 }
 
 function getLineHeight(ideo) {
-  return getTextSize('I', ideo).height + 10.5;
+  return round(getTextSize('A', ideo).height) * 2 + 0.5;
 }
 
 /**
@@ -80,8 +80,9 @@ function writeLegend(ideo) {
   for (i = 0; i < legend.length; i++) {
     list = legend[i];
     const nameHeight = list.nameHeight ? list.nameHeight : 0;
+    const heightCss = (nameHeight) ? ` style="height: ${nameHeight}px;"` : '';
     if ('name' in list) {
-      labels = '<div>' + list.name + '</div>';
+      labels = `<div${heightCss}>` + list.name + `</div>`;
     }
     svg = '<svg id="_ideogramLegendSvg" width="' + lineHeight + '">';
     [labels, svg] = getListItems(labels, svg, list, nameHeight, ideo);
@@ -89,12 +90,10 @@ function writeLegend(ideo) {
     content += svg + '<ul>' + labels + '</ul>';
   }
 
-  if (config.fontFamily) {
-    var fontFamily = `font-family: ${config.fontFamily};`;
-    var lineHeightCss = `line-height: ${getLineHeight(ideo)}px;`;
-    legendStyle +=
-      `#_ideogramLegend {${fontFamily}} ${lineHeightCss}}`;
-  }
+  var fontFamily = `font-family: ${config.fontFamily};`;
+  var lineHeightCss = `line-height: ${getLineHeight(ideo)}px;`;
+  legendStyle +=
+    `#_ideogramLegend {${fontFamily} ${lineHeightCss}}`;
 
   var target = d3.select(config.container + ' #_ideogramOuterWrap');
   target.append('style').html(legendStyle);

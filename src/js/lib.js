@@ -114,9 +114,9 @@ function getDataDir() {
 }
 
 /**
- * Rounds an SVG coordinates to two decimal places
+ * Rounds a float (e.g. SVG coordinate) to two decimal places
  *
- * @param coord SVG coordinate, e.g. 42.1234567890
+ * @param coord Floating-point number, e.g. 42.1234567890
  * @returns {number} Rounded value, e.g. 42.12
  */
 function round(coord) {
