@@ -1,4 +1,4 @@
-import {d3} from '../lib';
+import {d3, getFont, getTextSize} from '../lib';
 
 const allLabelStyle = `
   <style>
@@ -21,12 +21,26 @@ const allLabelStyle = `
       stroke: #D0D0DD !important;
       stroke-width: 1.5px;
     }
+
+    #_ideogram ._ideogramLabel {
+      stroke: white;
+      stroke-width: 5px;
+      stroke-linejoin: round;
+      paint-order: stroke fill;
+      text-align: center;
+    }
   </style>
   `;
 
 /** Return DOM ID of annotation object */
 function getAnnotDomLabelId(annot) {
   return 'ideogramLabel_' + annot.domId;
+}
+
+function changeAnnotState(state, labelId, annotId) {
+  d3.selectAll('._ideoActive').classed('_ideoActive', false);
+  d3.select('#' + labelId).attr('class', '_ideogramLabel ' + state);
+  d3.select('#' + annotId + ' > path').attr('class', state);
 }
 
 function triggerAnnotEvent(event, ideo) {
@@ -50,13 +64,21 @@ function triggerAnnotEvent(event, ideo) {
     ideo.time.prevTooltipAnnotDomId = annotId;
   }
 
-  const state = (type === 'mouseover') ? '_ideoActive' : '';
-  d3.select('#' + labelId).attr('class', '_ideogramLabel ' + state);
-  d3.select('#' + annotId + ' > path').attr('class', state);
+  // On mouseover, activate immediately
+  // Otherwise, wait a moment (250 ms), then deactivate.
+  // Delayed deactivation mitigates flicker when moving from
+  // annot label to annot triangle.
+  if (type === 'mouseover') {
+    clearTimeout(window._ideoActiveTimeout);
+    changeAnnotState('_ideoActive', labelId, annotId);
+  } else {
+    window._ideoActiveTimeout = window.setTimeout(function() {
+      changeAnnotState('', labelId, annotId);
+    }, 250);
+  }
 }
 
 function renderLabel(annot, style, ideo) {
-  const config = ideo.config;
 
   if (!ideo.didSetLabelStyle) {
     document.querySelector('#_ideogramInnerWrap')
@@ -66,10 +88,7 @@ function renderLabel(annot, style, ideo) {
 
   const id = getAnnotDomLabelId(annot);
 
-  // TODO: De-duplicate with code in getTextWidth and elsewhere
-  // perhaps set config.annotLabelSize and config.annotLabelFont upstream.
-  const labelSize = config.annotLabelSize ? config.annotLabelSize : 13;
-  const font = labelSize + 'px sans-serif';
+  const font = getFont(ideo);
 
   const fill = annot.color === 'pink' ? '#CF406B' : annot.color;
 
@@ -78,36 +97,10 @@ function renderLabel(annot, style, ideo) {
     .attr('class', '_ideogramLabel')
     .attr('x', style.left)
     .attr('y', style.top)
-    .style('text-align', 'center')
     .style('font', font)
     .style('fill', fill)
     .style('pointer-events', null) // Prevent bug in clicking chromosome
-    .style('stroke', 'white')
-    .style('stroke-width', '5px')
-    .style('stroke-linejoin', 'round')
-    .style('paint-order', 'stroke fill')
     .html(annot.name);
-}
-
-/**
- * Compute and return the width of the given text of given font in pixels.
- *
- * @see https://stackoverflow.com/questions/118241/calculate-text-width-with-javascript/21015393#21015393
- */
-function getTextWidth(text, ideo) {
-  var config = ideo.config;
-  var labelSize = config.annotLabelSize ? config.annotLabelSize : 13;
-
-  var font = labelSize + 'px sans-serif';
-
-  // re-use canvas object for better performance
-  var canvas =
-    getTextWidth.canvas ||
-    (getTextWidth.canvas = document.createElement('canvas'));
-  var context = canvas.getContext('2d');
-  context.font = font;
-  var metrics = context.measureText(text);
-  return metrics.width;
 }
 
 /** Get annotation object by name, e.g. "BRCA1" */
@@ -143,14 +136,17 @@ function getAnnotLabelLayout(annot, ideo) {
   ideoRect =
     document.querySelector('#_ideogram').getBoundingClientRect();
 
-  width = getTextWidth(annot.name, ideo);
+  const textSize = getTextSize(annot.name, ideo);
+  width = textSize.width;
 
-  // Accounts for:
+  // `pad` is a heuristic that accounts for:
   // 1px left pad, 1px right pad, 1px right border, 1px left border
-  //  as set in renderLabel
-  width = width + 7;
+  // as set in renderLabel
+  const pad = (config.fontFamily) ? 9 : 7;
+  width += pad;
 
   const labelSize = config.annotLabelSize ? config.annotLabelSize : 13;
+  // console.log('height, labelSize', height, labelSize);
 
   // Accounts for 1px top border, 1px bottom border as set in renderLabel
   height = labelSize;
@@ -233,6 +229,11 @@ function fillAnnotLabels(sortedAnnots=[]) {
     spacedAnnots.push(annot);
     spacedLayouts.push(layout);
   });
+
+  // Ensure highest-ranked annots are ordered last in SVG,
+  // to ensure the are written before lower-ranked annots
+  // (which, due to SVG z-index being tied to layering)
+  spacedAnnots.reverse();
 
   spacedAnnots.forEach((annot) => {
     ideo.addAnnotLabel(annot.name);

@@ -159,7 +159,7 @@ class VerticalLayout extends Layout {
         return margin + setIndex * (margin + width + 3) + barWidth * 2;
       } else {
         const decorPad =
-          'annotDecorPad' in config ? config.annotDecorPad : 0;
+          'legendPad' in config ? config.legendPad : 0;
         translate = width + setIndex * (margin + width) + pad * 2 + decorPad;
         if (pad > 0) {
           return translate;

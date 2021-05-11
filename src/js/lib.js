@@ -83,6 +83,23 @@ function getDir(dir) {
   return '../data/' + dir;
 }
 
+/** Try request, and if failed then retry with URL lacking extension */
+function fetchWithRetry(url, isRetry=false) {
+  return fetch(url)
+    .then((response) => {
+      if (response.ok) {
+        return response;
+      } else {
+        if (isRetry === false) {
+          var urlWithoutExtension = url.replace('.json', '');
+          return fetchWithRetry(urlWithoutExtension, true);
+        } else {
+          throw Error('Fetch failed for ' + url);
+        }
+      }
+    });
+}
+
 /**
  * Returns directory used to fetch data for bands and annotations
  *
@@ -97,9 +114,9 @@ function getDataDir() {
 }
 
 /**
- * Rounds an SVG coordinates to two decimal places
+ * Rounds a float (e.g. SVG coordinate) to two decimal places
  *
- * @param coord SVG coordinate, e.g. 42.1234567890
+ * @param coord Floating-point number, e.g. 42.1234567890
  * @returns {number} Rounded value, e.g. 42.12
  */
 function round(coord) {
@@ -118,7 +135,8 @@ function getSvg() {
   return d3.select(this.selector).node();
 }
 
-function fetch(url, contentType) {
+/** Request data with Ideogram's authorization bearer token */
+function fetchWithAuth(url, contentType) {
   var ideo = this,
     config = ideo.config,
     headers = new Headers();
@@ -274,8 +292,53 @@ function downloadPng(ideo) {
   img.src = url;
 }
 
+
+function getFont(ideo) {
+  const config = ideo.config;
+
+  let family = 'sans-serif';
+  if (config.fontFamily) {
+    family = config.fontFamily;
+  }
+
+  const labelSize = config.annotLabelSize ? config.annotLabelSize : 13;
+  const font = '600 ' + labelSize + 'px ' + family;
+
+  return font;
+}
+
+/**
+ * Get width and height of given text in pixels.
+ *
+ * Background: https://erikonarheim.com/posts/canvas-text-metrics/
+ */
+function getTextSize(text, ideo) {
+  var font = getFont(ideo);
+
+  // re-use canvas object for better performance
+  var canvas =
+    getTextSize.canvas ||
+    (getTextSize.canvas = document.createElement('canvas'));
+  var context = canvas.getContext('2d');
+  context.font = font;
+  var metrics = context.measureText(text);
+
+  // metrics.width is less precise than technique below
+  var right = metrics.actualBoundingBoxRight;
+  var left = metrics.actualBoundingBoxLeft;
+  var width = Math.abs(left) + Math.abs(right);
+
+  const height =
+    Math.abs(metrics.actualBoundingBoxAscent) +
+    Math.abs(metrics.actualBoundingBoxDescent);
+
+  return {width, height};
+}
+
 export {
   assemblyIsAccession, hasNonGenBankAssembly, hasGenBankAssembly, getDataDir,
-  getDir, round, onDidRotate, getSvg, fetch, d3, getTaxid, getCommonName,
-  getScientificName, slug, isRoman, parseRoman, downloadPng
+  getDir, round, onDidRotate, getSvg, d3, getTaxid, getCommonName,
+  getScientificName, slug, isRoman, parseRoman, downloadPng,
+  fetchWithRetry, getTextSize, getFont,
+  fetchWithAuth as fetch
 };

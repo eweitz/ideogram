@@ -209,11 +209,8 @@ function describeInteractions(gene, ixns, searchedGene) {
       return `<a href="${url}" target="_blank">${ixn.name}</a>`;
     }).join('<br/>');
 
-    let pathwayText = 'pathway';
-    if (ixns.length > 1) pathwayText += 's';
-
     ixnsDescription =
-      `Interacts with ${searchedGene.name} in ${pathwayText}:<br/>${links}`;
+      `Interacts with ${searchedGene.name} in:<br/>${links}`;
   }
 
   const {name, ensemblId} = parseNameAndEnsemblIdFromMgiGene(gene);
@@ -400,7 +397,7 @@ function parseAnnotFromMgiGene(gene, ideo, color='red') {
 
 function moveLegend() {
   const ideoInnerDom = document.querySelector('#_ideogramInnerWrap');
-  const decorPad = setRelatedDecorPad({}).annotDecorPad;
+  const decorPad = setRelatedDecorPad({}).legendPad;
   const left = decorPad + 20;
   const legendStyle = `position: absolute; top: 15px; left: ${left}px`;
   const legend = document.querySelector('#_ideogramLegend');
@@ -553,6 +550,9 @@ async function processSearchedGene(geneSymbol, ideo) {
     `?q=symbol:${geneSymbol}&species=${taxid}&fields=symbol,genomic_pos,name`;
   const data = await fetchMyGeneInfo(queryString);
 
+  if (data.hits.length === 0) {
+    return;
+  }
   const gene = data.hits[0];
   const name = gene.name;
   const ensemblId = gene.genomic_pos.ensemblgene;
@@ -583,25 +583,25 @@ function adjustPlaceAndVisibility(ideo) {
   ideoInnerDom.style.overflowY = 'hidden';
   document.querySelector('#_ideogramMiddleWrap').style.overflowY = 'hidden';
 
-  const annotDecorPad = ideo.config.annotDecorPad;
+  const legendPad = ideo.config.legendPad;
 
   if (typeof ideo.didAdjustIdeogramLegend === 'undefined') {
     // Accounts for moving legend when external content at left or right
     // is variable upon first rendering plotted genes
 
     var ideoDom = document.querySelector('#_ideogram');
-    const legendWidth = 150;
+    const legendWidth = 160;
     ideoInnerDom.style.maxWidth =
       (
         parseInt(ideoInnerDom.style.maxWidth) +
         legendWidth +
-        annotDecorPad
+        legendPad
       ) + 'px';
 
     ideoDom.style.minWidth =
-      (parseInt(ideoDom.style.minWidth) + annotDecorPad) + 'px';
+      (parseInt(ideoDom.style.minWidth) + legendPad) + 'px';
     ideoDom.style.maxWidth =
-      (parseInt(ideoDom.style.minWidth) + annotDecorPad) + 'px';
+      (parseInt(ideoDom.style.minWidth) + legendPad) + 'px';
     ideoDom.style.position = 'relative';
     ideoDom.style.left = legendWidth + 'px';
 
@@ -656,6 +656,12 @@ async function plotRelatedGenes(geneSymbol=null) {
 
   // Fetch positon of searched gene
   const annot = await processSearchedGene(geneSymbol, ideo);
+
+  if (typeof annot === 'undefined') {
+    // E.g. when searched gene is "Foo"
+    const organism = ideo.organismScientificName;
+    throw Error(`"${geneSymbol}" is not a known gene in ${organism}`);
+  }
 
   ideo.config.legend = relatedLegend;
   writeLegend(ideo);
@@ -732,15 +738,15 @@ function decorateRelatedGene(annot) {
 const shape = 'triangle';
 
 const legendHeaderStyle =
-  'font-size: 14px; font-weight: bold; font-color: #333';
+  `font-size: 14px; font-weight: bold; font-color: #333;`;
 const relatedLegend = [{
   name: `
-    <div style="position: relative; left: -15px; padding-bottom: 10px;">
+    <div style="position: relative; left: -15px;">
       <div style="${legendHeaderStyle}">Related genes</div>
       <i>Click gene to search</i>
     </div>
   `,
-  nameHeight: 30,
+  nameHeight: 50,
   rows: [
     {name: 'Interacting gene', color: 'purple', shape: shape},
     {name: 'Paralogous gene', color: 'pink', shape: shape},
@@ -750,7 +756,7 @@ const relatedLegend = [{
 
 const citedLegend = [{
   name: `
-    <div style="position: relative; left: -15px; padding-bottom: 10px;">
+    <div style="position: relative; left: -15px;">
       <div style="${legendHeaderStyle}">Highly cited genes</div>
       <i>Click gene to search</i>
     </div>
@@ -759,12 +765,12 @@ const citedLegend = [{
   rows: []
 }];
 
-/** Sets annotDecorPad for related genes view */
+/** Sets legendPad for related genes view */
 function setRelatedDecorPad(kitConfig) {
   if (kitConfig.showAnnotLabels) {
-    kitConfig.annotDecorPad = 60;
+    kitConfig.legendPad = 70;
   } else {
-    kitConfig.annotDecorPad = 30;
+    kitConfig.legendPad = 30;
   }
   return kitConfig;
 }
@@ -924,9 +930,9 @@ function _initGeneHints(config, annotsInList) {
   const kitConfig = Object.assign(kitDefaults, config);
 
   if (kitConfig.showAnnotLabels) {
-    kitConfig.annotDecorPad = 80;
+    kitConfig.legendPad = 80;
   } else {
-    kitConfig.annotDecorPad = 30;
+    kitConfig.legendPad = 30;
   }
 
   const ideogram = new Ideogram(kitConfig);

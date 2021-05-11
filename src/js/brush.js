@@ -18,6 +18,10 @@ function onBrushMove() {
   call(this.onBrushMoveCallback);
 }
 
+function onBrushEnd() {
+  call(this.onBrushEndCallback);
+}
+
 function setBrush(bpDomain, pxRange, xOffset, width, ideo) {
   var xScale,
     length = ideo.config.chrHeight;
@@ -26,7 +30,8 @@ function setBrush(bpDomain, pxRange, xOffset, width, ideo) {
 
   ideo.brush = d3.brushX()
     .extent([[xOffset, 0], [length + xOffset, width]])
-    .on('brush', _onBrushMove);
+    .on('brush', _onBrushMove)
+    .on('end', _onBrushEnd);
 
   function _onBrushMove({selection}) {
     var extent = selection.map(xScale.invert),
@@ -35,8 +40,14 @@ function setBrush(bpDomain, pxRange, xOffset, width, ideo) {
 
     ideo.selectedRegion = {from: from, to: to, extent: (to - from)};
 
-    if (ideo.onBrushMove) {
+    if (ideo.onBrushMoveCallback) {
       ideo.onBrushMoveCallback();
+    }
+  }
+
+  function _onBrushEnd({selection}) {
+    if (ideo.onBrushEndCallback) {
+      ideo.onBrushEndCallback();
     }
   }
 }
@@ -147,4 +158,4 @@ function createBrush(chr, from, to) {
   writeBrush(chrModel, from, to, xOffset, width, ideo);
 }
 
-export {onBrushMove, createBrush};
+export {onBrushMove, onBrushEnd, createBrush};

@@ -165,8 +165,9 @@ function getBandFileNames(taxid, bandFileNames, ideo) {
   }
 
   bandFileName = getBandFileName(taxid, accession, ideo);
+  var isCustomOrganism = taxid === '-1';
 
-  if (taxid in ideo.organismsWithBands) {
+  if (taxid in ideo.organismsWithBands || isCustomOrganism) {
     bandFileNames[taxid] = bandFileName;
   }
   return bandFileNames;
@@ -188,10 +189,10 @@ function prepareContainer(taxid, bandFileNames, t0, ideo) {
 
 function initializeTaxids(ideo) {
   return new Promise(function(resolve) {
-    if (typeof ideo.config.organism === 'number') {
+    var organism = ideo.config.organism;
+    if (typeof organism === 'number') {
       // 'organism' is a taxid, e.g. 9606
-      var taxid = ideo.config.organism;
-      ideo.getOrganismFromEutils(taxid, function() {
+      ideo.getOrganismFromEutils(organism, function() {
         ideo.getTaxids(resolve);
       });
     } else {

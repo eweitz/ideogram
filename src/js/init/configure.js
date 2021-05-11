@@ -102,6 +102,7 @@ function configureCallbacks(config, ideo) {
   if (config.onLoadAnnots) ideo.onLoadAnnotsCallback = config.onLoadAnnots;
   if (config.onDrawAnnots) ideo.onDrawAnnotsCallback = config.onDrawAnnots;
   if (config.onBrushMove) ideo.onBrushMoveCallback = config.onBrushMove;
+  if (config.onBrushEnd) ideo.onBrushEndCallback = config.onBrushEnd;
   if (config.onCursorMove) ideo.onCursorMoveCallback = config.onCursorMove;
   if (config.onDidRotate) ideo.onDidRotateCallback = config.onDidRotate;
   if (config.onWillShowAnnotTooltip) {
@@ -154,10 +155,13 @@ function configureTextStyle(ideo) {
   const config = ideo.config;
   if (!config.chrLabelSize) ideo.config.chrLabelSize = 9;
   if (!config.chrLabelColor) ideo.config.chrLabelColor = '#000';
+  if (!config.fontFamily) ideo.config.fontFamily = '';
 
   const size = `font-size: ${config.chrLabelSize}px`;
   const color = `fill: ${config.chrLabelColor}`;
-  configuredCss += `#_ideogram text {${size}; ${color};}`;
+  const fontFamily = `font-family: ${config.fontFamily}`;
+  configuredCss += `#_ideogram text {${fontFamily}; ${size}; ${color};}`;
+  configuredCss += `#_ideogramLabel text {${fontFamily};}`;
 }
 
 /**

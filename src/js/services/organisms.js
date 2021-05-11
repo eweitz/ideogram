@@ -1,4 +1,4 @@
-import {d3, slug} from '../lib';
+import {d3, slug, fetchWithRetry} from '../lib';
 
 /**
  *  Returns NCBI Taxonomy identifier (taxid) for organism name
@@ -9,8 +9,18 @@ function getTaxidFromEutils(orgName, ideo) {
   taxonomySearch = ideo.esearch + '&db=taxonomy&term=' + orgName;
 
   return d3.json(taxonomySearch).then(function(data) {
-    taxid = data.esearchresult.idlist[0];
-    return [orgName, taxid];
+    var idlist = data.esearchresult.idlist;
+    if (idlist.length === 0) {
+      var warning =
+        'Organism "' + orgName + '" is generally unknown; it was not found ' +
+        'in the NCBI Taxonomy database.  If you did not intend to specify a ' +
+        'novel or custom taxon, then try using the organism\'s ' +
+        'scientific name, e.g. Homo sapiens or Arabidopsis thaliana.';
+      throw warning;
+    } else {
+      taxid = data.esearchresult.idlist[0];
+      return [orgName, taxid];
+    }
   });
 }
 
@@ -57,16 +67,16 @@ function setTaxidData(taxid, ideo) {
   }
   var chromosomesUrl = dataDir + urlOrg + '.json';
 
-  var promise2 = new Promise(function(resolve, reject) {
-    fetch(chromosomesUrl).then(function(response) {
-      if (response.ok === false) {
-        reject(Error('Fetch failed for ' + chromosomesUrl));
-      } else {
+  var promise2 = new Promise((resolve, reject) => {
+    return fetchWithRetry(chromosomesUrl)
+      .then(response => {
         return response.json().then(function(json) {
           resolve(json.chrBands);
         });
-      }
-    });
+      })
+      .catch((errorMessage) => {
+        reject(errorMessage);
+      });
   });
 
   return promise2
@@ -201,6 +211,21 @@ function populateNonNativeOrg(orgs, ideo) {
           };
 
           Object.assign(ideo.organisms, augmentedOrganismMetadata);
+        }, function(warning) {
+          console.warn(warning);
+          var customMetadata = {
+            scientificName: org,
+            commonName: org,
+            assemblies: {default: ''}
+          };
+
+          // Use a negative number as unofficial taxid for custom organism.
+          // Use case: https://github.com/eweitz/ideogram/issues/265
+          //
+          // If support for *multiple* custom specifies is ever
+          // needed, we can decrement from -1.
+          ideo.organisms['-1'] = customMetadata;
+          augmentedOrganismMetadata['-1'] = customMetadata;
         });
     } else {
       promise = new Promise(function(resolve) {

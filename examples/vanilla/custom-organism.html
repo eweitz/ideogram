@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Custom organism | Ideogram</title>
+  <style>
+    body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
+    a, a:visited {text-decoration: none;}
+    a:hover {text-decoration: underline;}
+    a, a:hover, a:visited, a:active {color: #0366d6;}
+  </style>
+  <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
+<link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
+</head>
+<body>
+  <h1>Custom organism | Ideogram</h1>
+  <a href="../">Overview</a> |
+  <a href="multiple-primates">Previous</a> |
+  <a href="mouse">Next</a> |
+  <a href="https://github.com/eweitz/ideogram/blob/gh-pages/custom.html" target="_blank">Source</a>
+  <p>
+    A custom genome is depicted below.  This example shows how you can fetch chromosome data via API and plot it with Ideogram.</a>.
+  </p>
+  <script type="text/javascript">
+
+    var ideogram = new Ideogram({
+      organism: 'customjsonnoextension',
+      dataDir: 'https://raw.githubusercontent.com/eweitz/ideogram/aff3866b022b55e76b8ad7d45ba216361019a186/data/bands/native/'
+    });
+  </script>
+</body>
+</html>
