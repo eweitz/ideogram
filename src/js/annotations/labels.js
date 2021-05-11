@@ -230,6 +230,11 @@ function fillAnnotLabels(sortedAnnots=[]) {
     spacedLayouts.push(layout);
   });
 
+  // Ensure highest-ranked annots are ordered last in SVG,
+  // to ensure the are written before lower-ranked annots
+  // (which, due to SVG z-index being tied to layering)
+  spacedAnnots.reverse();
+
   spacedAnnots.forEach((annot) => {
     ideo.addAnnotLabel(annot.name);
   });
