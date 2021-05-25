@@ -30,6 +30,7 @@ import {
 import {writeLegend} from '../annotations/legend';
 import {getAnnotDomId} from '../annotations/process';
 import {getDir} from '../lib';
+import initGeneCache from '../gene-cache';
 
 /** Sets DOM IDs for ideo.relatedAnnots; needed to associate labels */
 function setRelatedAnnotDomIds(ideo) {
@@ -835,6 +836,8 @@ function _initRelatedGenes(config, annotsInList) {
   ideogram.annotSortFunction = sortAnnotsByRelatedStatus;
 
   initAnalyzeRelatedGenes(ideogram);
+
+  initGeneCache(ideogram.config.organism, ideogram);
 
   return ideogram;
 }

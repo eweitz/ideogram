@@ -286,7 +286,6 @@ export default class Ideogram {
    * - Among non-nuclear chromosomes, i.e. "MT" (mitochondrial DNA) and
    *   "CP" (chromoplast DNA), MT comes first
    *
-   *
    * @param a Chromosome string or object "A"
    * @param b Chromosome string or object "B"
    * @returns {Number} JavaScript sort order indicator
