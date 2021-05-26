@@ -55,6 +55,7 @@ function parseAnnots(chrStartGenes) {
   return annotsSortedByPosition;
 }
 
+/** Parse a gene cache TSV file, return array of useful transforms */
 function parseCache(rawTsv) {
   const citedNames = [];
   const lociByName = {};
@@ -85,8 +86,6 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
 
   const response = await fetch(cacheUrl);
   const data = await response.text();
-
-  console.log('data', data)
 
   const [citedNames, lociByName, sortedAnnots] = parseCache(data);
 

@@ -5,7 +5,7 @@
  * which finds and displays related genes for a searched gene.
  *
  * Related genes here are either "interacting genes" or "paralogs".
- * Interacting genes are genes that immediate upstream or downstream of the
+ * Interacting genes are genes immediately upstream or downstream of the
  * searched gene in a biochemical pathway. Paralogs are evolutionarily
  * similar genes in the same species.
  *
