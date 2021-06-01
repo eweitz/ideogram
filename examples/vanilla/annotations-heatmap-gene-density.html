@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Annotations, gene density heatmap | Ideogram</title>
+  <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
+<link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
+  <style>
+    body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
+    a, a:visited {text-decoration: none;}
+    a:hover {text-decoration: underline;}
+    a, a:hover, a:visited, a:active {color: #0366d6;}
+  </style>
+</head>
+<body>
+<h1>Annotations, heatmap overlay | Ideogram</h1>
+<a href="../">Overview</a> |
+<a href="annotations-animated">Previous</a> |
+<a href="related-genes">Next</a> |
+  <a href="https://github.com/eweitz/ideogram/blob/gh-pages/annotations-heatmap.html" target="_blank">Source</a>
+<p>
+    Density of all human genes, annotated in heatmaps overlaid on chromosomes.
+</p>
+<div id="container"></div>
+
+<script type="text/javascript">
+
+  var annotationTracks = [
+    {id: 'densityTrack', displayName: 'Gene density'},
+  ];
+
+  var legend = [
+    {
+      name: 'Gene density',
+      rows: [
+        {color: '#88F', name: 'Low'},
+        {color: '#CCC', name: 'Medium'},
+        {color: '#F33', name: 'High'}
+      ]
+    }
+  ]
+
+  var heatmaps = [
+      {
+        key: 'expression-level',
+        thresholds: [
+          ['2', '#88F'],
+          ['4', '#CCC'],
+          ['+', '#F33']
+        ],
+
+      },
+      {
+        key: 'gene-type',
+        thresholds: [
+          ['0', '#00F'],
+          ['1', '#0AF'],
+          ['2', '#AAA'],
+          ['3', '#FA0'],
+          ['4', '#F00']
+        ]
+      }
+    ]
+
+  var config = {
+    container: '#container',
+    organism: 'human',
+    assembly: 'GRCh37',
+    chrHeight: 275,
+    annotationsDPath: '../../data/annotations/SRR562646.json',
+    annotationsLayout: 'heatmap-density-overlay',
+    legend: legend,
+    heatmaps: heatmaps,
+    annotationTracks: annotationTracks,
+    rotatable: false // Support for rotatable heatmaps is planned
+  };
+
+  var ideogram = new Ideogram(config);
+</script>
+</body>
+</html>
