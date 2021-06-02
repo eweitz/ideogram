@@ -70,13 +70,14 @@
     <select>
       <optgroup label="Model organisms">
         <option value="homo-sapiens" selected>Human (Homo sapiens)</option>
+        <!-- <option value="tupaia-belangeri" selected>Tree shrew (Tupaia belangeri)</option> -->
         <option value="mus-musculus">Mouse (Mus musculus)</option>
         <option value="rattus-norvegicus">Rat (Rattus norvegicus)</option>
         <!-- <option value="drosophila-melanogaster">Fly (Drosophila melanogaster)</option> -->
-        <!-- <option value="caenorhabditis-elegans">Worm (Caenorhabditis elegans)</option> -->
+        <option value="caenorhabditis-elegans">Worm (Caenorhabditis elegans)</option>
         <option value="danio-rerio">Zebrafish (Danio rerio)</option>
-        <!-- <option value="arabidopsis-thaliana">Thale cress (Arabidopsis thaliana)</option> -->
-        <!-- <option value="saccharomyces-cerevisiae">Yeast (Saccharomyces cerevisiae)</option> -->
+        <option value="arabidopsis-thaliana">Thale cress (Arabidopsis thaliana)</option>
+        <option value="saccharomyces-cerevisiae">Yeast (Saccharomyces cerevisiae)</option>
       </optgroup>
       <optgroup label="Vertebrates">
         <option value="pan-troglodytes">Chimpanzee (Pan troglodytes)</option>
@@ -89,7 +90,8 @@
         <option value="sus-scrofa">Pig (Sus scrofa)</option>
         <!-- <option value="petromyzon-marinus">Lamprey (Petromyzon marinus)</option> -->
       </optgroup>
-      <!-- <optgroup label="Plants">
+      <!--
+      <optgroup label="Plants">
         <option value="zea-mays">Maize (Zea mays)</option>
         <option value="oryza-sativa">Rice (Oryza sativa)</option>
         <option value="solanum-lycopersicum">Tomato (Solanum lycopersicum)</option>
@@ -101,9 +103,10 @@
         <option value="anopheles-gambiae">Mosquito (Anopheles gambiae)</option>
       </optgroup>
       <optgroup label="Protozoa">
-        <option value="plasmodium falciparum">Malaria parasite (Plasmodium falciparum)</option>
-        <option value="leishmania donovani">Leishmania parasite (Leishmania donovani)</option>
-      </optgroup> -->
+        <option value="plasmodium-falciparum">Malaria parasite (Plasmodium falciparum)</option>
+        <option value="leishmania-donovani">Leishmania parasite (Leishmania donovani)</option>
+      </optgroup>
+      -->
     </select>
   </div>
   <div style="float: left; width: 350px;">
@@ -112,17 +115,35 @@
       <span id="search-button">
         <svg width="12" height="13"><g stroke-width="2" stroke="#FFF" fill="none"><path d="M11.29 11.71l-4-4"/><circle cx="5" cy="5" r="4"/></g></svg>
       </span>
-      <div style="font-size: 12px">
-        Examples:
-        <a href="?q=RAD51">RAD51</a>,
-        <a href="?q=CD4">CD4</a>,
-        <a href="?q=APOE">APOE</a>
-      </div>
+      <div id="examples" style="font-size: 12px"></div>
     </label>
   </div>
   <br/><br/><br/>
   <div id="ideogram-container" style="visibility: hidden;"></div>
   <script type="text/javascript">
+
+    const examplesByOrganism = {
+      'homo-sapiens': ['RAD51', 'CD4', 'APOE'],
+      'tupaia-belangeri': ['RAD51', 'CD4', 'APOE'],
+      'mus-musculus': ['Rad51', 'Pten', 'Apoe'],
+      'rattus-norvegicus': ['Rad51', 'Pten', 'Apoe'],
+      'drosophila-melanogaster': ['dpp', 'N', 'Ubx'],
+      'caenorhabditis-elegans': ['rad-51', 'daf-16', 'hsf-1'],
+      'arabidopsis-thaliana': ['PHYA', 'FLC', 'FT'],
+      'danio-rerio': ['myod1', 'cyp1a', 'bmp4'],
+      'macaca-mulatta': ['RAD51', 'CD4', 'APOE'],
+      'macaca-fascicularis': ['RAD51', 'CD4', 'APOE'],
+      'felis-catus': ['RAD51', 'CD4', 'APOE'],
+      'canis-lupus-familiaris': ['RAD51', 'CD4', 'APOE'],
+      'equus-caballus': ['RAD51', 'CD4', 'APOE'],
+      'bos-taurus': ['RAD51', 'CD4', 'APOE'],
+      'sus-scrofa': ['RAD51', 'CD4', 'APOE'],
+      'petromyzon-marinus': ['FGB', 'SDS-1', 'CCK'],
+      'zea-mays': ['aprl6', 'pdi6', 'adh1'],
+      'oryza-sativa': ['psbA', 'ndhE', 'rps19'],
+      'anopheles-gambiae': ['ND1', 'CYTB', 'ATP6'],
+      'plasmodium-falciparum': ['coxIII', 'PFBI', 'PFFE1']
+    }
 
     const urlParams = parseUrlParams();
 
@@ -170,17 +191,6 @@
 
       return selectedOrg;
     }
-    async function handleOrganism() {
-      urlParams.org = getOrganism();
-      urlParams.q = getGene();
-      updateUrl();
-
-      config.organism = urlParams.org;
-      // const banded = !['homo sapiens', 'mus musculus'].includes(selectedOrg);
-      // config.showFullyBanded = banded;
-      delete ideogram;
-      ideogram = Ideogram.initRelatedGenes(config);
-    }
 
     function getGene() {
       const searchInput = document.getElementById('search-genes').value.trim();
@@ -189,6 +199,42 @@
       const geneSymbols = searchInput.split(/[, ]/).filter(d => d !== '')
       const geneSymbol = geneSymbols[0];
       return geneSymbol;
+    }
+
+    function updateExamples(organism) {
+      const rawExamples = examplesByOrganism[organism];
+
+      const examples = rawExamples.map(example => {
+        return `<a href="?q=${example}&org=${organism}">${example}</a>`;
+      });
+
+      const formattedExamples = examples.join(', ');
+
+      document.querySelector('#examples').innerHTML =
+        `Examples: ${formattedExamples}`;
+    }
+
+    async function handleOrganism() {
+
+      const newOrganism = getOrganism();
+      const newGene = getGene();
+
+      urlParams.org = newOrganism;
+      console.log('newGene', newGene)
+      if (typeof newGene === 'undefined') {
+        document.querySelector('#ideogram-container').style.visibility = 'hidden';
+        delete urlParams.q;
+      } else {
+        urlParams.q = newGene;
+      }
+      updateUrl();
+      updateExamples(newOrganism);
+
+      config.organism = urlParams.org;
+      // const banded = !['homo sapiens', 'mus musculus'].includes(selectedOrg);
+      // config.showFullyBanded = banded;
+      delete ideogram;
+      ideogram = Ideogram.initRelatedGenes(config);
     }
 
     // Process text input for the "Search" field.
@@ -239,6 +285,8 @@
       return annot
     }
 
+    updateExamples(organism);
+
     config = {
       organism: organism,
       container: '#ideogram-container',
@@ -262,7 +310,15 @@
       if ('default-hints' in urlParams) {
         config.annotationsPath = urlParams['default-hints'];
       }
-      ideogram = Ideogram.initGeneHints(config);
+      if ('org' in urlParams) {
+        if (urlParams.org === 'homo-sapiens') {
+          ideogram = Ideogram.initGeneHints(config);
+        } else {
+          ideogram = Ideogram.initRelatedGenes(config);
+        }
+      } else {
+        ideogram = Ideogram.initGeneHints(config);
+      }
     }
   </script>
 </body>
