@@ -130,7 +130,7 @@
       'drosophila-melanogaster': ['dpp', 'N', 'Ubx'],
       'caenorhabditis-elegans': ['rad-51', 'daf-16', 'hsf-1'],
       'arabidopsis-thaliana': ['PHYA', 'FLC', 'FT'],
-      'danio-rerio': ['myod1', 'cyp1a', 'bmp4'],
+      'danio-rerio': ['bmp4', 'myod1', 'cyp1a'],
       'macaca-mulatta': ['RAD51', 'CD4', 'APOE'],
       'macaca-fascicularis': ['RAD51', 'CD4', 'APOE'],
       'felis-catus': ['RAD51', 'CD4', 'APOE'],
@@ -237,6 +237,11 @@
       ideogram = Ideogram.initRelatedGenes(config);
     }
 
+    function displayError(error) {
+      document.querySelector('#ideogram-container').innerHTML =
+          `<div style="color:red; text-align: center;">${error}</div>`;
+    }
+
     // Process text input for the "Search" field.
     async function handleSearch(event) {
       // Ignore non-"Enter" keyups
@@ -246,17 +251,24 @@
       urlParams.q = getGene();
       updateUrl();
 
-      await ideogram.plotRelatedGenes(urlParams.q);
-
-      document.querySelector('#ideogram-container').style.visibility = '';
+      try {
+        await ideogram.plotRelatedGenes(urlParams.q);
+        document.querySelector('#ideogram-container').style.visibility = '';
+      } catch(error) {
+        displayError(error);
+      }
     }
 
     async function plotGeneFromUrl() {
-      if ('q' in urlParams) {
-        await ideogram.plotRelatedGenes(urlParams['q']);
-        document.querySelector('#ideogram-container').style.visibility = '';
-      } else {
-        await ideogram.plotRelatedGenes();
+      try {
+        if ('q' in urlParams) {
+          await ideogram.plotRelatedGenes(urlParams['q']);
+          document.querySelector('#ideogram-container').style.visibility = '';
+        } else {
+          await ideogram.plotRelatedGenes();
+        }
+      } catch(error) {
+        displayError(error);
       }
     }
 
