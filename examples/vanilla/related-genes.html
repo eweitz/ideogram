@@ -221,7 +221,6 @@
       const newGene = getGene();
 
       urlParams.org = newOrganism;
-      console.log('newGene', newGene)
       if (typeof newGene === 'undefined') {
         document.querySelector('#ideogram-container').style.visibility = 'hidden';
         delete urlParams.q;
