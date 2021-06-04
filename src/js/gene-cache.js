@@ -10,7 +10,8 @@
  *
  */
 
-import {slug} from './lib';
+import {slug, getEarlyTaxid} from './lib';
+import {organismMetadata} from './init/organism-metadata';
 
 /** Get URL for gene cache file */
 function getCacheUrl(orgName, cacheDir, ideo) {
@@ -78,10 +79,22 @@ function parseCache(rawTsv) {
   return [citedNames, lociByName, sortedAnnots];
 }
 
+/** Reports if current organism has a gene cache */
+function hasGeneCache(orgName) {
+  const taxid = getEarlyTaxid(orgName);
+  const metadata = organismMetadata[taxid];
+  return ('hasGeneCache' in metadata && metadata.hasGeneCache === true);
+}
+
 /**
  * Fetch cached gene data, transform it usefully, and set it as ideo prop
  */
 export default async function initGeneCache(orgName, ideo, cacheDir=null) {
+
+  if (!hasGeneCache(orgName)) {
+    return; // Skip initialization if cache doesn't exist
+  }
+
   const cacheUrl = getCacheUrl(orgName, cacheDir, ideo);
 
   const response = await fetch(cacheUrl);
