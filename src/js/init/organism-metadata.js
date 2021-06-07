@@ -7,7 +7,8 @@ var organismMetadata = {
       GRCh38: 'GCF_000001405.26',
       GRCh37: 'GCF_000001405.13',
       NCBI36: 'GCF_000001405.12'
-    }
+    },
+    hasGeneCache: true
   },
   10090: {
     commonName: 'Mouse',

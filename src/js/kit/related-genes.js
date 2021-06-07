@@ -5,7 +5,7 @@
  * which finds and displays related genes for a searched gene.
  *
  * Related genes here are either "interacting genes" or "paralogs".
- * Interacting genes are genes that immediate upstream or downstream of the
+ * Interacting genes are genes immediately upstream or downstream of the
  * searched gene in a biochemical pathway. Paralogs are evolutionarily
  * similar genes in the same species.
  *
@@ -30,6 +30,7 @@ import {
 import {writeLegend} from '../annotations/legend';
 import {getAnnotDomId} from '../annotations/process';
 import {getDir} from '../lib';
+import initGeneCache from '../gene-cache';
 
 /** Sets DOM IDs for ideo.relatedAnnots; needed to associate labels */
 function setRelatedAnnotDomIds(ideo) {
@@ -99,6 +100,18 @@ function maybeGeneSymbol(ixn, gene) {
 //  new Promise((resolve) => setTimeout(resolve, delay));
 // }
 
+/** Reports if interaction node is a gene and not previously seen */
+function isInteractionRelevant(rawIxn, gene, nameId, seenNameIds, ideo) {
+  let isGeneSymbol;
+  if ('geneCache' in ideo && gene.name) {
+    isGeneSymbol = rawIxn in ideo.geneCache.lociByName;
+  } else {
+    isGeneSymbol = maybeGeneSymbol(rawIxn, gene);
+  }
+
+  return isGeneSymbol && !(nameId in seenNameIds);
+}
+
 /**
  * Retrieves interacting genes from WikiPathways API
  *
@@ -131,6 +144,12 @@ async function fetchInteractions(gene, ideo) {
     if (interaction.species.toLowerCase() === orgNameSimple) {
       const right = interaction.fields.right.values;
       const left = interaction.fields.left.values;
+      // let mediator = [];
+      // if ('mediator' in interaction.fields) {
+      //   mediator = interaction.fields.mediator.values;
+      //   console.log('mediator', mediator)
+      // }
+      // const rawIxns = right.concat(left, mediator);
       const rawIxns = right.concat(left);
       const name = interaction.name;
       const id = interaction.id;
@@ -141,7 +160,11 @@ async function fetchInteractions(gene, ideo) {
         if (rawIxn.includes(gene.name)) return;
 
         const nameId = name + id;
-        if (maybeGeneSymbol(rawIxn, gene) && !(nameId in seenNameIds)) {
+
+        const isRelevant =
+          isInteractionRelevant(rawIxn, gene, nameId, seenNameIds, ideo);
+
+        if (isRelevant) {
           seenNameIds[nameId] = 1;
           const ixn = {name, pathwayId: id};
           if (rawIxn in ixns) {
@@ -426,6 +449,7 @@ function processInteractions(annot, ideo) {
 
     const interactions = await fetchInteractions(annot, ideo);
     const annots = await fetchInteractionAnnots(interactions, annot, ideo);
+
     ideo.relatedAnnots.push(...annots);
     finishPlotRelatedGenes('interacting', ideo);
 
@@ -490,6 +514,7 @@ function mergeDescriptions(annot, desc, ideo) {
   } else {
     mergedDesc = desc;
   }
+
   ideo.annotDescriptions.annots[annot.name] = mergedDesc;
 }
 
@@ -835,6 +860,8 @@ function _initRelatedGenes(config, annotsInList) {
   ideogram.annotSortFunction = sortAnnotsByRelatedStatus;
 
   initAnalyzeRelatedGenes(ideogram);
+
+  initGeneCache(ideogram.config.organism, ideogram);
 
   return ideogram;
 }

@@ -1,6 +1,6 @@
 {
   "name": "ideogram",
-  "version": "1.30.0",
+  "version": "1.31.0",
   "description": "Chromosome visualization for the web",
   "main": "src/js/index.js",
   "directories": {
@@ -63,7 +63,7 @@
     "eslint-plugin-promise": "^3.3.0",
     "husky": "^3.0.3",
     "istanbul-instrumenter-loader": "^3.0.1",
-    "karma": "^5.0.2",
+    "karma": "^6.3.3",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^3.1.0",
     "karma-coverage": "^2.0.2",
