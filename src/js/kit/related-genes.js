@@ -514,7 +514,6 @@ async function mergeDescriptions(annot, desc, ideo) {
     mergedDesc.description += `<br/><br/>${desc.description}`;
     mergedDesc.description += `<br/><br/>${diseaseDesc}`;
   } else {
-    console.log("Description:" + desc);
     desc.description += `<br/><br/>${diseaseDesc}`;
     mergedDesc = desc;
   }
@@ -531,11 +530,13 @@ async function getDiseaseLabel(annot) {
 
 async function parseDiseaseLabel(data) {
   // no associated diseases
-  if (data == null || data.hits == null || data.hits.length === 0 || data.hits[0].clingen == null) {
+  if (data == null || data.hits == null ||
+    data.hits.length === 0 || data.hits[0].clingen == null) {
     return '';
   }
   let diseases = data.hits[0].clingen.clinical_validity;
-  // if there is only one associated disease, it is not in an array, so create an array for consistency in parsing
+  // if there is only one associated disease, it is not in an array
+  // so create an array for consistency in parsing
   if (!Array.isArray(diseases)) {
     diseases = [diseases];
   }
@@ -548,7 +549,7 @@ async function parseDiseaseLabel(data) {
       const translated = await translateDiseases(dis);
       simplifiedDescription.push(translated);
     })
-  )
+  );
    // delete terms that appear more than once or that are the empty string
    simplifiedDescription = simplifiedDescription.filter((dis, i) => {
      return simplifiedDescription.indexOf(dis) === i;
@@ -560,41 +561,43 @@ async function parseDiseaseLabel(data) {
 
  async function translateDiseases(disease) {
    const diseaseCategories = [
-    {key: "neoplastic disease or syndrome", value: "cancer"}, 
-    {key: "injury", value: "injury"},
-    {key: "nutritional disorder", value: "nutritional disorders"}, 
-    {key: "congenital abnormality", value: "birth defects"},
-    {key: "infectious disease or post-infectious disorder", value: "infectious diseases disorders"}, 
-    {key: "perinatal disease", value: "prenatal or newborn diseases"}, 
-    {key: "pregnancy disorder", value: "pregnancy complications"}, 
-    {key: "puerperal disorder", value: "postpartum disorders"},
-    {key: "radiation or chemically induced disorder", value: "radiation or chemically induced disorders"}, 
-    {key: "auditory system disease", value: "auditory diseases"}, 
-    {key: "hematologic disease", value: "blood disorders"},
-    {key: "cardiovascular disease", value: "heart and blood diseases"},
-    {key: "digestive system disease", value: "digestive diseases"},
-    {key: "disease of genitourinary system", value: "genital organ diseases"}, 
-    {key: "disease of visual system", value: "visual diseases"},
-    {key: "integumentary system disease", value: "skin diseases"},
-    {key: "musculoskeletal system disease", value: "bone and muscle diseases"},
-    {key: "respiratory system disease", value: "respiratory disease"},
-    {key: "urinary system disease", value: "urinary disease"},
-    {key: "systemic or rheumatic disease", value: "autoimmune disorders"}, 
-    {key: "immune system disease", value: "immune diseases"},
-    {key: "nervous system disorder", value: "nervous system disease"},
-    {key: "connective tissue disease", value: "connective tissue diseases"}, 
-    {key: "endocrine system disease", value: "hormone diseases"},
-    {key: "disorder of development or morphogensis", value: "disorders of development"},
-    {key: "inflammatory disease", value: "inflammatory diseases"},
-    {key: "syndromic disease", value: "syndromes"}
+    {key: 'neoplastic disease or syndrome', value: 'cancer'},
+    {key: 'injury', value: 'injury'},
+    {key: 'nutritional disorder', value: 'nutritional disorders'},
+    {key: 'congenital abnormality', value: 'birth defects'},
+    {key: 'infectious disease or post-infectious disorder',
+      value: 'infectious diseases disorders'},
+    {key: 'perinatal disease', value: 'prenatal or newborn diseases'},
+    {key: 'pregnancy disorder', value: 'pregnancy complications'},
+    {key: 'puerperal disorder', value: 'postpartum disorders'},
+    {key: 'radiation or chemically induced disorder',
+      value: 'radiation or chemically induced disorders'},
+    {key: 'auditory system disease', value: 'auditory diseases'},
+    {key: 'hematologic disease', value: 'blood disorders'},
+    {key: 'cardiovascular disease', value: 'heart and blood diseases'},
+    {key: 'digestive system disease', value: 'digestive diseases'},
+    {key: 'disease of genitourinary system', value: 'genital organ diseases'},
+    {key: 'disease of visual system', value: 'visual diseases'},
+    {key: 'integumentary system disease', value: 'skin diseases'},
+    {key: 'musculoskeletal system disease', value: 'bone and muscle diseases'},
+    {key: 'respiratory system disease', value: 'respiratory disease'},
+    {key: 'urinary system disease', value: 'urinary disease'},
+    {key: 'systemic or rheumatic disease', value: 'autoimmune disorders'},
+    {key: 'immune system disease', value: 'immune diseases'},
+    {key: 'nervous system disorder', value: 'nervous system disease'},
+    {key: 'connective tissue disease', value: 'connective tissue diseases'},
+    {key: 'endocrine system disease', value: 'hormone diseases'},
+    {key: 'disorder of development or morphogensis',
+      value: 'disorders of development'},
+    {key: 'inflammatory disease', value: 'inflammatory diseases'}
   ];
-   const mondoID = (disease.mondo).replace(":", "_");
-   const response = await fetch(`https://www.ebi.ac.uk/ols/api/ontologies/mondo/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${mondoID}/hierarchicalAncestors`)
+   const mondoID = (disease.mondo).replace(':', '_');
+   const response = await fetch(`https://www.ebi.ac.uk/ols/api/ontologies/mondo/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${mondoID}/hierarchicalAncestors`);
    const data = await response.json();
    // if translation in map cannot be found return original disease name
    let translated = disease.disease_label;
-   for (let term of data._embedded.terms) {
-     for (let category of diseaseCategories) {
+   for (const term of data._embedded.terms) {
+     for (const category of diseaseCategories) {
       if (term.label === category.key) {
         translated = category.value;
         break;
@@ -676,7 +679,7 @@ async function processSearchedGene(geneSymbol, ideo) {
 
   const annot = parseAnnotFromMgiGene(gene, ideo);
 
-  //Fetch and parse disease label for description
+  // Fetch and parse disease label for description
   const diseaseDesc = await getDiseaseLabel(annot);
   ideo.annotDescriptions.annots[gene.symbol] = {
     description: diseaseDesc, ensemblId, name, type: 'searched gene'
