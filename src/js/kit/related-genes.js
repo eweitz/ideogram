@@ -506,7 +506,7 @@ function sortAnnotsByRelatedStatus(a, b) {
 
 async function mergeDescriptions(annot, desc, ideo) {
   let mergedDesc;
-  let diseaseDesc = await getDiseaseLabel(annot);
+  const diseaseDesc = await getDiseaseLabel(annot);
   const descriptions = ideo.annotDescriptions.annots;
   if (annot.name in descriptions) {
     mergedDesc = descriptions[annot.name];
@@ -514,7 +514,8 @@ async function mergeDescriptions(annot, desc, ideo) {
     mergedDesc.description += `<br/><br/>${desc.description}`;
     mergedDesc.description += `<br/><br/>${diseaseDesc}`;
   } else {
-    desc.description += `<br/><br/>${diseaseDesc}`
+    console.log("Description:" + desc);
+    desc.description += `<br/><br/>${diseaseDesc}`;
     mergedDesc = desc;
   }
 
@@ -522,25 +523,25 @@ async function mergeDescriptions(annot, desc, ideo) {
 }
 
 async function getDiseaseLabel(annot) {
-  const response = await fetch(`https://mygene.info/v3/query?q=symbol:${annot.name}&fields=clingen.clinical_validity`)
+  const response = await fetch(`https://mygene.info/v3/query?q=symbol:${annot.name}&fields=clingen.clinical_validity`);
   const data = await response.json();
   const diseaseDesc = await parseDiseaseLabel(data);
   return diseaseDesc;
 }
 
 async function parseDiseaseLabel(data) {
-  //no associated diseases
+  // no associated diseases
   if (data == null || data.hits == null || data.hits.length === 0 || data.hits[0].clingen == null) {
-    return "";
+    return '';
   }
   let diseases = data.hits[0].clingen.clinical_validity;
-  //if there is only one associated disease, it is not in an array, so create an array for consistency in parsing
+  // if there is only one associated disease, it is not in an array, so create an array for consistency in parsing
   if (!Array.isArray(diseases)) {
-    diseases = [diseases]
+    diseases = [diseases];
   }
 
-  //replace specific diseases with broader disease categories
-  let simplifiedDescription = []
+  // replace specific diseases with broader disease categories
+  let simplifiedDescription = [];
   await Promise.all(
     Object.values(diseases).map(
     async (dis, i) => {
@@ -548,12 +549,12 @@ async function parseDiseaseLabel(data) {
       simplifiedDescription.push(translated);
     })
   )
-   //delete terms that appear more than once or that are the empty string
+   // delete terms that appear more than once or that are the empty string
    simplifiedDescription = simplifiedDescription.filter((dis, i) => {
      return simplifiedDescription.indexOf(dis) === i;
    });
-   let parsed = simplifiedDescription.join(", ");
-   parsed = "Involved in " + parsed;
+   let parsed = simplifiedDescription.join(', ');
+   parsed = 'Involved in ' + parsed;
    return parsed;
  }
 
@@ -590,7 +591,7 @@ async function parseDiseaseLabel(data) {
    const mondoID = (disease.mondo).replace(":", "_");
    const response = await fetch(`https://www.ebi.ac.uk/ols/api/ontologies/mondo/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${mondoID}/hierarchicalAncestors`)
    const data = await response.json();
-   //if translation in map cannot be found return original disease name
+   // if translation in map cannot be found return original disease name
    let translated = disease.disease_label;
    for (let term of data._embedded.terms) {
      for (let category of diseaseCategories) {
