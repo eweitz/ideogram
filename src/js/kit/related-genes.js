@@ -512,9 +512,13 @@ async function mergeDescriptions(annot, desc, ideo) {
     mergedDesc = descriptions[annot.name];
     mergedDesc.type += ', ' + desc.type;
     mergedDesc.description += `<br/><br/>${desc.description}`;
-    mergedDesc.description += `<br/><br/>${diseaseDesc}`;
+    if (diseaseDesc !== '') { 
+      mergedDesc.description += `<br/><br/>${diseaseDesc}`;
+    }
   } else {
-    desc.description += `<br/><br/>${diseaseDesc}`;
+    if (diseaseDesc !== '') {
+      desc.description += `<br/><br/>${diseaseDesc}`;
+    }
     mergedDesc = desc;
   }
 
