@@ -264,7 +264,7 @@ async function fetchInteractionAnnots(interactions, searchedGene, ideo) {
     `?q=${ixnParam}&species=${taxid}&fields=symbol,genomic_pos,name`;
   const data = await fetchMyGeneInfo(queryString);
 
-  data.hits.forEach(gene => {
+  data.hits.forEach(async (gene) => {
     // If hit lacks position
     // or is same as searched gene (e.g. search for human SRC),
     // then skip processing
@@ -282,7 +282,7 @@ async function fetchInteractionAnnots(interactions, searchedGene, ideo) {
 
     const descriptionObj = describeInteractions(gene, ixns, searchedGene);
 
-    mergeDescriptions(annot, descriptionObj, ideo);
+    await mergeDescriptions(annot, descriptionObj, ideo);
   });
 
   return annots;
@@ -350,7 +350,7 @@ async function fetchParalogPositionsFromMyGeneInfo(
     `?q=${qParam}&species=${taxid}&fields=symbol,genomic_pos,name`;
   const data = await fetchMyGeneInfo(queryString);
 
-  data.hits.forEach(gene => {
+  data.hits.forEach(async (gene) => {
 
     // If hit lacks position, skip processing
     if ('genomic_pos' in gene === false) return;
@@ -363,7 +363,7 @@ async function fetchParalogPositionsFromMyGeneInfo(
     const {name, ensemblId} = parseNameAndEnsemblIdFromMgiGene(gene);
     const type = 'paralogous gene';
     const descriptionObj = {description, ensemblId, name, type};
-    mergeDescriptions(annot, descriptionObj, ideo);
+    await mergeDescriptions(annot, descriptionObj, ideo);
   });
 
   return annots;
@@ -504,19 +504,115 @@ function sortAnnotsByRelatedStatus(a, b) {
   return [aName, bName].sort().indexOf(aName) === 0 ? 1 : -1;
 }
 
-function mergeDescriptions(annot, desc, ideo) {
+async function mergeDescriptions(annot, desc, ideo) {
   let mergedDesc;
+  const diseaseDesc = await getDiseaseLabel(annot);
   const descriptions = ideo.annotDescriptions.annots;
   if (annot.name in descriptions) {
     mergedDesc = descriptions[annot.name];
     mergedDesc.type += ', ' + desc.type;
     mergedDesc.description += `<br/><br/>${desc.description}`;
+    if (!mergedDesc.description.includes("Involved in") && diseaseDesc !== '') {
+      mergedDesc.description += `<br/><br/>${diseaseDesc}`;
+    }
   } else {
+    if (diseaseDesc !== '') {
+      desc.description += `<br/><br/>${diseaseDesc}`;
+    }
     mergedDesc = desc;
   }
 
   ideo.annotDescriptions.annots[annot.name] = mergedDesc;
 }
+
+async function getDiseaseLabel(annot) {
+  const response = await fetch(`https://mygene.info/v3/query?q=symbol:${annot.name}&fields=clingen.clinical_validity`);
+  const data = await response.json();
+  const diseaseDesc = await parseDiseaseLabel(data);
+  return diseaseDesc;
+}
+
+async function parseDiseaseLabel(data) {
+  // no associated diseases
+  if (data == null || data.hits == null ||
+    data.hits.length === 0 || data.hits[0].clingen == null) {
+    return '';
+  }
+  let diseases = data.hits[0].clingen.clinical_validity;
+  // if there is only one associated disease, it is not in an array
+  // so create an array for consistency in parsing
+  if (!Array.isArray(diseases)) {
+    diseases = [diseases];
+  }
+
+  // replace specific diseases with broader disease categories
+  let simplifiedDescription = [];
+  await Promise.all(
+    Object.values(diseases).map(
+    async (dis, i) => {
+      const translated = await translateDiseases(dis);
+      simplifiedDescription.push(translated);
+    })
+  );
+   // delete terms that appear more than once or that are the empty string
+   simplifiedDescription = simplifiedDescription.filter((dis, i) => {
+     return simplifiedDescription.indexOf(dis) === i;
+   });
+   let parsed = simplifiedDescription.join(', ');
+   parsed = 'Involved in ' + parsed;
+   return parsed;
+ }
+
+ async function translateDiseases(disease) {
+   const diseaseCategories = [
+    {key: 'neoplastic disease or syndrome', value: 'cancer'},
+    {key: 'injury', value: 'injury'},
+    {key: 'nutritional disorder', value: 'nutritional disorders'},
+    {key: 'congenital abnormality', value: 'birth defects'},
+    {key: 'infectious disease or post-infectious disorder',
+      value: 'infectious diseases disorders'},
+    {key: 'perinatal disease', value: 'prenatal or newborn diseases'},
+    {key: 'pregnancy disorder', value: 'pregnancy complications'},
+    {key: 'puerperal disorder', value: 'postpartum disorders'},
+    {key: 'radiation or chemically induced disorder',
+      value: 'radiation or chemically induced disorders'},
+    {key: 'auditory system disease', value: 'auditory diseases'},
+    {key: 'hematologic disease', value: 'blood disorders'},
+    {key: 'cardiovascular disease', value: 'heart and blood diseases'},
+    {key: 'digestive system disease', value: 'digestive diseases'},
+    {key: 'disease of genitourinary system', value: 'genital organ diseases'},
+    {key: 'disease of visual system', value: 'visual diseases'},
+    {key: 'integumentary system disease', value: 'skin diseases'},
+    {key: 'musculoskeletal system disease', value: 'bone and muscle diseases'},
+    {key: 'respiratory system disease', value: 'respiratory disease'},
+    {key: 'urinary system disease', value: 'urinary disease'},
+    {key: 'systemic or rheumatic disease', value: 'autoimmune disorders'},
+    {key: 'immune system disease', value: 'immune diseases'},
+    {key: 'nervous system disorder', value: 'nervous system disease'},
+    {key: 'connective tissue disease', value: 'connective tissue diseases'},
+    {key: 'endocrine system disease', value: 'hormone diseases'},
+    {key: 'disorder of development or morphogensis',
+      value: 'disorders of development'},
+    {key: 'inflammatory disease', value: 'inflammatory diseases'}
+  ];
+   const mondoID = (disease.mondo).replace(':', '_');
+   const response = await fetch(`https://www.ebi.ac.uk/ols/api/ontologies/mondo/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${mondoID}/hierarchicalAncestors`);
+   const data = await response.json();
+   // if translation in map cannot be found return original disease name
+   let translated = disease.disease_label;
+   for (const term of data._embedded.terms) {
+     for (const category of diseaseCategories) {
+      if (term.label === category.key) {
+        translated = category.value;
+        break;
+      }
+     }
+     if (translated !== disease.disease_label) {
+       break;
+     }
+    }
+   return translated;
+ }
 
 function mergeAnnots(unmergedAnnots) {
 
@@ -586,6 +682,12 @@ async function processSearchedGene(geneSymbol, ideo) {
   };
 
   const annot = parseAnnotFromMgiGene(gene, ideo);
+
+  // Fetch and parse disease label for description
+  const diseaseDesc = await getDiseaseLabel(annot);
+  ideo.annotDescriptions.annots[gene.symbol] = {
+    description: diseaseDesc, ensemblId, name, type: 'searched gene'
+  };
 
   ideo.relatedAnnots.push(annot);
 
