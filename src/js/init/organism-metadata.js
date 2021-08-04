@@ -206,8 +206,21 @@ var organismMetadata = {
     commonName: 'worm',
     scientificName: 'Caenorhabditis elegans',
     assemblies: {
-      default: 'GCF_000002985.6',
-      GCA_000002765: 'GCF_000002985.6'
+      default: 'GCF_000002985.6'
+    }
+  },
+  4081: {
+    commonName: 'tomato',
+    scientificName: 'Solanum lycopersicum',
+    assemblies: {
+      default: 'GCF_000188115.4'
+    }
+  },
+  4072: {
+    commonName: 'pepper',
+    scientificName: 'Capsicum annuum',
+    assemblies: {
+      default: 'GCF_000710875.1'
     }
   }
 };

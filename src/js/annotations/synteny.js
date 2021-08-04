@@ -103,6 +103,9 @@ function drawSynteny(syntenicRegions) {
     ideo = this,
     config = ideo.config;
 
+  // Make synteny / orthologs readable from client apps
+  ideo.syntenicRegions = syntenicRegions;
+
   if (
     config.multiorganism &&
     config.geometry === 'collinear'
