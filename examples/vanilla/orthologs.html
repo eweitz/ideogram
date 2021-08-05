@@ -58,9 +58,9 @@
     ul li {list-style-type: none;}
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/homology@0.5.0/dist/homology.min.js"></script>
+  <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/homology@0.5.0/dist/homology.min.js"></script> -->
   <!-- <script type="text/javascript" src="https://eweitz.github.io/homology/dist/homology.min.js"></script> -->
-  <!-- <script type="text/javascript" src="http://localhost/homology/dist/homology.min.js"></script> -->
+  <script type="text/javascript" src="http://localhost/homology/dist/homology.min.js"></script>
 <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
 </head>
 <body>
@@ -102,6 +102,9 @@
       <option>Thale cress (Arabidopsis thaliana)</option>
       <option>Corn (Zea mays)</option>
       <option>Rice (Oryza sativa)</option>
+      <option>Tomato (Solanum lycopersicum)</option>
+      <option>Pepper (Capsicum annuum)</option>
+      <!-- <option>Yeast (Saccharomyces cerevisiae)</option> -->
     </select>
   </label>
   <label for="org2">
@@ -121,7 +124,10 @@
       <option>Thale cress (Arabidopsis thaliana)</option>
       <option>Corn (Zea mays)</option>
       <option>Rice (Oryza sativa)</option>
-      </select>
+      <option>Tomato (Solanum lycopersicum)</option>
+      <option>Pepper (Capsicum annuum)</option>
+      <!-- <option>Yeast (Saccharomyces cerevisiae)</option> -->
+    </select>
   </label>
     <a id="options-toggle">Options</a>
     <div id="options" style="display: none">
@@ -469,7 +475,14 @@
       if (shouldUpdateState()) {
         try {
           if (hasGenes) {
+            const t0 = performance.now()
             rawOrthologs = await fetchOrthologs(geneList, org1, [org2], backend);
+            const t1 = performance.now()
+            const ms = Math.round(t1 - t0)
+            console.log(
+              `Orthologs fetched for ${geneList.length} genes ` +
+              `in ${ms} ms`
+            )
             orthologs = rawOrthologs.map((rawOrtholog, i) => {
               if (genePropList.length === 0) return rawOrtholog
 
@@ -600,7 +613,7 @@
         chrHeight = 95;
       } else {
         // vertical
-        chrHeight = 48;
+        chrHeight = 44;
       }
 
       return chrHeight;
