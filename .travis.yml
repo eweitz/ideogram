@@ -1,7 +1,7 @@
 language: node_js
 dist: bionic
 node_js:
-  - "12.13.1"
+  - "16"
 addons:
   chrome: stable
 # Uncomment after Ideogram CLI is restored
