@@ -480,12 +480,13 @@ describe('Ideogram synteny support', function() {
       line1 = document.querySelector(selector1 + ' .syntenyBorder');
       line3 = document.querySelector(selector3 + ' .syntenyBorder');
 
-      assert.equal(Math.round(line1.getAttribute('x1')), 56);
-      assert.equal(Math.round(line1.getAttribute('x2')), 250);
+      assert.equal(Math.round(line1.getAttribute('x1')), 61);
+      assert.equal(Math.round(line1.getAttribute('x2')), 255);
       assert.equal(Math.round(line1.getAttribute('y1')), 24);
 
       assert.equal(Math.round(line3.getAttribute('y1')), 322);
       assert.equal(Math.round(line3.getAttribute('y2')), 60);
+
       done();
     }
 
@@ -641,8 +642,8 @@ describe('Ideogram synteny support', function() {
       line1 = document.querySelectorAll('.syntenyBorder')[0];
       line2 = document.querySelectorAll('.syntenyBorder')[3];
 
-      assert.equal(Math.round(line1.getAttribute('x1')), 56);
-      assert.equal(Math.round(line1.getAttribute('x2')), 250);
+      assert.equal(Math.round(line1.getAttribute('x1')), 61);
+      assert.equal(Math.round(line1.getAttribute('x2')), 255);
       assert.equal(Math.round(line1.getAttribute('y2')), 22);
       assert.equal(Math.round(line2.getAttribute('y2')), 58);
 
