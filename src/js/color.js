@@ -30,6 +30,11 @@ export class Color {
     }
   }
 
+  getFillColor() {
+    const config = this._config;
+    return config.chrFillColor ? config.chrFillColor : '#AAA';
+  }
+
   _getPolyploidArmColor(chrSetIndex, chrIndex, armIndex) {
     if (!this._ploidy.exists(chrSetIndex, chrIndex, armIndex)) {
       return 'transparent';

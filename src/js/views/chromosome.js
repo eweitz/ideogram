@@ -92,6 +92,10 @@ export class Chromosome {
       opacity = '1';
     }
 
+    if (this._ideo.config.chrFillColor) {
+      fill = self._color.getFillColor();
+    }
+
     // Render chromosome border
     container.append('g')
       .attr('class', 'chromosome-border')
