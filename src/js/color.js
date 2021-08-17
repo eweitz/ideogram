@@ -32,7 +32,13 @@ export class Color {
 
   getFillColor() {
     const config = this._config;
-    return config.chrFillColor ? config.chrFillColor : '#AAA';
+    if (!config.chrFillColor) return '#AAA';
+    const color = config.chrFillColor;
+    if (typeof color === 'string') {
+      return {arm: color, centromere: ''};
+    } else {
+      return color;
+    };
   }
 
   _getPolyploidArmColor(chrSetIndex, chrIndex, armIndex) {
