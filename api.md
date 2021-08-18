@@ -6,7 +6,7 @@ Ideogram.js is a JavaScript library for chromosome visualization.  Ideogram supp
 See the main [README](https://github.com/eweitz/ideogram#installation) for installation instructions.
 
 # Configuration
-To start, you need to instantiate the `Ideogram` class.  Configuration options -- which organism's genome to display, in what orientation, with which annotation data, etc. -- are passed into the `Ideogram` constructor as a JavaScript object.  
+To start, you need to instantiate the `Ideogram` class.  Configuration options -- which organism's genome to display, in what orientation, with which annotation data, etc. -- are passed into the `Ideogram` constructor as a JavaScript object.
 
 For example:
 
@@ -35,6 +35,7 @@ var ideogram = new Ideogram({
 * [barWidth](#barwidth)
 * [brush](#brush)
 * [chrBorderColor](#chrbordercolor)
+* [chrFillColor](#chrfillcolor)
 * [chrHeight](#chrheight)
 * [chrMargin](#chrmargin)
 * [chrWidth](#chrwidth)
@@ -78,10 +79,10 @@ var ideogram = new Ideogram({
 String.  Optional.  OAuth 2.0 access token.  Enables authentication and authorization. This can be useful for controlling access to private annotation data.
 
 ## ancestors
-Object.  Optional.  A map associating ancestor labels to colors.  Used to color chromosomes from different ancestors in polyploid genomes.  Example in [Ploidy, recombination](https://eweitz.github.io/ideogram/ploidy_recombination).
+Object.  Optional.  A map associating ancestor labels to colors.  Used to color chromosomes from different ancestors in polyploid genomes.  Example in [Ploidy, recombination](https://eweitz.github.io/ideogram/ploidy-recombination).
 
 ## annotations
-Array.  Optional.  A list of annotation objects.  Each annotation object has at least a chromosome name (chr), start coordinate (start), and stop coordinate (stop).  Annotation objects can also have a name, color, shape, and track index.  Example in [Annotations, basic](https://eweitz.github.io/ideogram/annotations_basic).
+Array.  Optional.  A list of annotation objects.  Each annotation object has at least a chromosome name (chr), start coordinate (start), and stop coordinate (stop).  Annotation objects can also have a name, color, shape, and track index.  Example in [Annotations, basic](https://eweitz.github.io/ideogram/annotations-basic).
 
 See also [annotationsPath](#annotationspath).
 
@@ -92,7 +93,7 @@ Number.  Optional.  The height of each annotation. Example in [Annotations, trac
 String.  Optional.  Default: "#F00" (i.e., red).  The color of each annotation.  Example in [Multiple, primates](https://eweitz.github.io/ideogram/multiple-primates).
 
 ## annotationsLayout
-String.  Optional.  Default: "tracks".  
+String.  Optional.  Default: "tracks".
 
 The layout of this ideogram's annotations.  One of "tracks", "heatmap", "histogram", or "overlay".
 
@@ -132,8 +133,11 @@ String.  Optional.  Default: null.  Genomic coordinate range (e.g. "chr1:1043254
 ## chrBorderColor
 String.  Optional.  Default: "#000".  The color of the border for each chromosome.
 
+## chrFillColor
+String or Object.  Optional.  Default: "#AAA".  The color with which the chromosome is filled; its interior color.  Customizes chromosome arm color if specified as string, e.g. `chrFillColor: 'green'`.  Customizes chromosome arm and centromere colors if specified as object, e.g. `chrFillColor: {arm: '#AEA', centromere: '#EEA '}`.  Example in [Color, chromosomes](https://eweitz.github.io/ideogram/color-chromosomes).
+
 ## chrHeight
-Number.  Optional.  Default: 400.  The pixel height of the tallest chromosome in the ideogram.  Examples in [Layout, small](https://eweitz.github.io/ideogram/layout_small) and [Annotations, basic](https://eweitz.github.io/ideogram/annotations-basic).
+Number.  Optional.  Default: 400.  The pixel height of the tallest chromosome in the ideogram.  Examples in [Layout, small](https://eweitz.github.io/ideogram/layout-small) and [Annotations, basic](https://eweitz.github.io/ideogram/annotations-basic).
 
 ## chrMargin
 Number.  Optional.  Default: 10.  The pixel space of the margin between each chromosome.  Example in [Multiple, primates](https://eweitz.github.io/ideogram/multiple-primates).
