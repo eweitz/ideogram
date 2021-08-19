@@ -17,6 +17,7 @@ describe('Color support includes', function() {
   });
 
   it('chrFillColor as string', done => {
+    // Tests use case from ../examples/vanilla/color-chromosomes.html
 
     function callback() {
       const arm =
@@ -30,6 +31,7 @@ describe('Color support includes', function() {
   });
 
   it('chrFillColor as object', done => {
+    // Tests use case from ../examples/vanilla/color-chromosomes.html
 
     function callback() {
       // Get last centromere
