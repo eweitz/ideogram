@@ -1,5 +1,6 @@
 var staticColors, staticCss, staticGradients;
 
+// Gradient colors for each class, for polished rendering
 staticColors = [
   ['gneg', '#FFF', '#FFF', '#DDD'],
   ['gpos25', '#C8C8C8', '#DDD', '#BBB'],
