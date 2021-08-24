@@ -17,7 +17,8 @@ var organismMetadata = {
       default: 'GCF_000001635.20', // GRCm38
       GRCm38: 'GCF_000001635.20',
       MGSCv37: 'GCF_000001635.18'
-    }
+    },
+    hasGeneCache: true
   },
   9598: {
     commonName: 'Chimpanzee',
