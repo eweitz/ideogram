@@ -24,7 +24,7 @@ function getCacheUrl(orgName, cacheDir, ideo) {
     cacheDir = baseDir + 'annotations/gene-cache/';
   }
 
-  const cacheUrl = cacheDir + organism + '.tsv';
+  const cacheUrl = cacheDir + organism + '-big.tsv';
 
   return cacheUrl;
 }
@@ -56,33 +56,50 @@ function parseAnnots(chrStartGenes) {
   return annotsSortedByPosition;
 }
 
+function parseEnsemblId(rawEnsemblId, orgName) {
+  const metadata = parseOrgMetadata(orgName);
+  return metadata.ensemblPrefix + rawEnsemblId;
+}
+
 /** Parse a gene cache TSV file, return array of useful transforms */
-function parseCache(rawTsv) {
+function parseCache(rawTsv, orgName) {
   const citedNames = [];
   const lociByName = {};
-  const chrStartGenes = [];
+  const lociById = {};
+  const preAnnots = [];
 
   const lines = rawTsv.split(/\r\n|\n/);
 
   lines.forEach((line) => {
     if (line[0] === '#' || line === '') return; // Skip headers, empty lines
-    const [chromosome, rawStart, gene] = line.split(/\t/);
+    const [
+      chromosome, rawStart, rawStop, rawEnsemblId, gene
+    ] = line.trim().split(/\t/);
     const start = parseInt(rawStart);
-    chrStartGenes.push([chromosome, start, gene]);
+    const stop = parseInt(rawStop);
+    const ensemblId = parseEnsemblId(rawEnsemblId, orgName);
+    preAnnots.push([chromosome, start, stop, ensemblId, gene]);
+    const locus = [chromosome, start, stop];
 
     citedNames.push(gene);
-    lociByName[gene] = [chromosome, start];
+    lociByName[gene] = locus;
+    lociById[gene] = locus;
   });
 
-  const sortedAnnots = parseAnnots(chrStartGenes);
+  const sortedAnnots = parseAnnots(preAnnots);
 
-  return [citedNames, lociByName, sortedAnnots];
+  return [citedNames, lociByName, lociById, sortedAnnots];
+}
+
+/** Get organism's metadata fields */
+function parseOrgMetadata(orgName) {
+  const taxid = getEarlyTaxid(orgName);
+  return organismMetadata[taxid];
 }
 
 /** Reports if current organism has a gene cache */
 function hasGeneCache(orgName) {
-  const taxid = getEarlyTaxid(orgName);
-  const metadata = organismMetadata[taxid];
+  const metadata = parseOrgMetadata(orgName);
   return ('hasGeneCache' in metadata && metadata.hasGeneCache === true);
 }
 
@@ -100,11 +117,14 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
   const response = await fetch(cacheUrl);
   const data = await response.text();
 
-  const [citedNames, lociByName, sortedAnnots] = parseCache(data);
+  const [
+    citedNames, lociByName, lociById, sortedAnnots
+  ] = parseCache(data, orgName);
 
   ideo.geneCache = {
     citedNames, // Array of gene names, ordered by citation count
     lociByName, // Object of gene positions, keyed by gene name
+    lociById,
     sortedAnnots // Ideogram annotations sorted by genomic position
   };
 }

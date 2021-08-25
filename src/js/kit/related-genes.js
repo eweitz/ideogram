@@ -245,24 +245,28 @@ function describeInteractions(gene, ixns, searchedGene) {
   return descriptionObj;
 }
 
+async function fetchGenes(names, type, ideo) {
+  const qParam = names.map(name => `${type}:${name.trim()}`).join(' OR ');
+
+  const taxid = ideo.config.taxid;
+  const queryString =
+    `?q=${qParam}&species=${taxid}&fields=symbol,genomic_pos,name`;
+  const data = await fetchMyGeneInfo(queryString);
+
+  return data;
+}
+
 /**
  * Retrieves position and other data on interacting genes from MyGene.info
  */
 async function fetchInteractionAnnots(interactions, searchedGene, ideo) {
 
   const annots = [];
-  const geneList = Object.keys(interactions);
+  const symbols = Object.keys(interactions);
 
-  if (geneList.length === 0) return annots;
+  if (symbols.length === 0) return annots;
 
-  const ixnParam = geneList.map(ixn => {
-    return `symbol:${ixn.trim()}`;
-  }).join(' OR ');
-
-  const taxid = ideo.config.taxid;
-  const queryString =
-    `?q=${ixnParam}&species=${taxid}&fields=symbol,genomic_pos,name`;
-  const data = await fetchMyGeneInfo(queryString);
+  const data = await fetchGenes(symbols, 'symbol', ideo);
 
   data.hits.forEach(gene => {
     // If hit lacks position
@@ -341,14 +345,9 @@ async function fetchParalogPositionsFromMyGeneInfo(
   homologs, searchedGene, ideo
 ) {
   const annots = [];
-  const qParam = homologs.map(homolog => {
-    return `ensemblgene:${homolog.id}`;
-  }).join(' OR ');
+  const ensemblIds = homologs.map(homolog => homolog.id);
 
-  const taxid = ideo.config.taxid;
-  const queryString =
-    `?q=${qParam}&species=${taxid}&fields=symbol,genomic_pos,name`;
-  const data = await fetchMyGeneInfo(queryString);
+  const data = await fetchGenes(ensemblIds, 'ensemblgene', ideo);
 
   data.hits.forEach(gene => {
 
