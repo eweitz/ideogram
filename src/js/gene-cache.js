@@ -1,13 +1,14 @@
 /**
  * @fileoverview Fetch cached gene data: name, position, etc.
  *
- * Gene cache eliminates needing to fetch names and positions of genes.
+ * Gene cache eliminates needing to fetch names and positions of genes from
+ * third-party APIs at runtime.  It achieves this by fetching a static file
+ * containing gene data upon initializing Ideogram.
  *
  * Use cases:
  *
  * - test if a given string is a gene name, e.g. for gene search
  * - find genomic position of a given gene (or all genes)
- *
  */
 
 import {slug, getEarlyTaxid} from './lib';
@@ -30,17 +31,18 @@ function getCacheUrl(orgName, cacheDir, ideo) {
 }
 
 /**
- * Convert array of [chr, start, gene] arrays to Ideogram annotations
+ * Convert pre-annotation arrays to annotation objects
  * sorted by genomic position.
  */
-function parseAnnots(chrStartGenes) {
+function parseAnnots(preAnnots) {
   const chromosomes = {};
 
-  chrStartGenes.forEach(([chromosome, start, gene]) => {
+  preAnnots.forEach(([chromosome, start, stop, ensemblId, gene]) => {
     if (!(chromosome in chromosomes)) {
       chromosomes[chromosome] = {chr: chromosome, annots: []};
     } else {
-      chromosomes[chromosome].annots.push({name: gene, start})
+      const annot = {name: gene, start, stop, ensemblId};
+      chromosomes[chromosome].annots.push(annot);
     }
   });
 
@@ -56,14 +58,17 @@ function parseAnnots(chrStartGenes) {
   return annotsSortedByPosition;
 }
 
-function parseEnsemblId(rawEnsemblId, orgName) {
+/** Fill out slim Ensembl ID to complete Ensembl gene ID */
+function fillEnsemblId(slimEnsemblId, orgName) {
   const metadata = parseOrgMetadata(orgName);
-  return metadata.ensemblPrefix + rawEnsemblId;
+  return metadata.ensemblPrefix + slimEnsemblId;
 }
 
 /** Parse a gene cache TSV file, return array of useful transforms */
 function parseCache(rawTsv, orgName) {
-  const citedNames = [];
+  const names = [];
+  const namesById = {};
+  const idsByName = {};
   const lociByName = {};
   const lociById = {};
   const preAnnots = [];
@@ -73,22 +78,24 @@ function parseCache(rawTsv, orgName) {
   lines.forEach((line) => {
     if (line[0] === '#' || line === '') return; // Skip headers, empty lines
     const [
-      chromosome, rawStart, rawStop, rawEnsemblId, gene
+      chromosome, rawStart, rawStop, slimEnsemblId, gene
     ] = line.trim().split(/\t/);
     const start = parseInt(rawStart);
     const stop = parseInt(rawStop);
-    const ensemblId = parseEnsemblId(rawEnsemblId, orgName);
+    const ensemblId = fillEnsemblId(slimEnsemblId, orgName);
     preAnnots.push([chromosome, start, stop, ensemblId, gene]);
     const locus = [chromosome, start, stop];
 
-    citedNames.push(gene);
+    names.push(gene);
+    namesById[ensemblId] = gene;
+    idsByName[gene] = ensemblId;
     lociByName[gene] = locus;
-    lociById[gene] = locus;
+    lociById[ensemblId] = locus;
   });
 
   const sortedAnnots = parseAnnots(preAnnots);
 
-  return [citedNames, lociByName, lociById, sortedAnnots];
+  return [names, namesById, idsByName, lociByName, lociById, sortedAnnots];
 }
 
 /** Get organism's metadata fields */
@@ -118,11 +125,13 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
   const data = await response.text();
 
   const [
-    citedNames, lociByName, lociById, sortedAnnots
+    citedNames, namesById, idsByName, lociByName, lociById, sortedAnnots
   ] = parseCache(data, orgName);
 
   ideo.geneCache = {
     citedNames, // Array of gene names, ordered by citation count
+    namesById,
+    idsByName,
     lociByName, // Object of gene positions, keyed by gene name
     lociById,
     sortedAnnots // Ideogram annotations sorted by genomic position

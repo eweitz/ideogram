@@ -245,13 +245,49 @@ function describeInteractions(gene, ixns, searchedGene) {
   return descriptionObj;
 }
 
+/** Fetch genes from cache, or, if needed, from MyGene.info API */
 async function fetchGenes(names, type, ideo) {
-  const qParam = names.map(name => `${type}:${name.trim()}`).join(' OR ');
 
-  const taxid = ideo.config.taxid;
-  const queryString =
-    `?q=${qParam}&species=${taxid}&fields=symbol,genomic_pos,name`;
-  const data = await fetchMyGeneInfo(queryString);
+  let data;
+
+  if (ideo.geneCache) {
+    // Fetch genes from cache
+    // Construct objects that match format of MyGene.info API response
+    const cache = ideo.geneCache;
+    const isSymbol = (type === 'symbol');
+    const locusMap = isSymbol ? cache.lociByName : cache.lociById;
+    const nameMap = isSymbol ? cache.idsByName : cache.namesById;
+
+    const hits = names.map(name => {
+      const locus = locusMap[name];
+      const symbol = isSymbol ? name : nameMap[name];
+      const ensemblId = isSymbol ? nameMap[name] : name;
+
+      const hit = {
+        symbol,
+        name: '',
+        source: 'cache',
+        genomic_pos: [{
+          chr: locus[0],
+          start: locus[1],
+          end: locus[2],
+          ensemblgene: ensemblId
+        }]
+      };
+
+      return hit;
+    });
+
+    data = {hits};
+  } else {
+    // Fetch gene data from MyGene.info
+    const qParam = names.map(name => `${type}:${name.trim()}`).join(' OR ');
+
+    const taxid = ideo.config.taxid;
+    const queryString =
+      `?q=${qParam}&species=${taxid}&fields=symbol,genomic_pos,name`;
+    data = await fetchMyGeneInfo(queryString);
+  }
 
   return data;
 }
