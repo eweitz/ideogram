@@ -14,6 +14,8 @@
 import {slug, getEarlyTaxid} from './lib';
 import {organismMetadata} from './init/organism-metadata';
 
+let perfTimes;
+
 /** Get URL for gene cache file */
 function getCacheUrl(orgName, cacheDir, ideo) {
   const organism = slug(orgName);
@@ -37,14 +39,16 @@ function getCacheUrl(orgName, cacheDir, ideo) {
 function parseAnnots(preAnnots) {
   const chromosomes = {};
 
-  preAnnots.forEach(([chromosome, start, stop, ensemblId, gene]) => {
+  for (let i = 0; i < preAnnots.length; i++) {
+    const [chromosome, start, stop, ensemblId, gene] = preAnnots[i];
+
     if (!(chromosome in chromosomes)) {
       chromosomes[chromosome] = {chr: chromosome, annots: []};
     } else {
       const annot = {name: gene, start, stop, ensemblId};
       chromosomes[chromosome].annots.push(annot);
     }
-  });
+  }
 
   const annotsSortedByPosition = {};
 
@@ -58,12 +62,6 @@ function parseAnnots(preAnnots) {
   return annotsSortedByPosition;
 }
 
-/** Fill out slim Ensembl ID to complete Ensembl gene ID */
-function fillEnsemblId(slimEnsemblId, orgName) {
-  const metadata = parseOrgMetadata(orgName);
-  return metadata.ensemblPrefix + slimEnsemblId;
-}
-
 /** Parse a gene cache TSV file, return array of useful transforms */
 function parseCache(rawTsv, orgName) {
   const names = [];
@@ -73,16 +71,23 @@ function parseCache(rawTsv, orgName) {
   const lociById = {};
   const preAnnots = [];
 
+  let t0 = performance.now();
   const lines = rawTsv.split(/\r\n|\n/);
+  perfTimes.rawTsvSplit = Math.round(performance.now() - t0);
 
-  lines.forEach((line) => {
-    if (line[0] === '#' || line === '') return; // Skip headers, empty lines
+  const metadata = parseOrgMetadata(orgName);
+  const ensemblPrefix = metadata.ensemblPrefix;
+
+  t0 = performance.now();
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line[0] === '#' || line === '') continue; // Skip headers, empty lines
     const [
       chromosome, rawStart, rawStop, slimEnsemblId, gene
     ] = line.trim().split(/\t/);
     const start = parseInt(rawStart);
     const stop = parseInt(rawStop);
-    const ensemblId = fillEnsemblId(slimEnsemblId, orgName);
+    const ensemblId = ensemblPrefix + slimEnsemblId;
     preAnnots.push([chromosome, start, stop, ensemblId, gene]);
     const locus = [chromosome, start, stop];
 
@@ -91,9 +96,12 @@ function parseCache(rawTsv, orgName) {
     idsByName[gene] = ensemblId;
     lociByName[gene] = locus;
     lociById[ensemblId] = locus;
-  });
+  };
+  const t1 = performance.now();
+  perfTimes.parseCacheLoop = Math.round(t1 - t0);
 
   const sortedAnnots = parseAnnots(preAnnots);
+  perfTimes.parseAnnots = Math.round(performance.now() - t1);
 
   return [names, namesById, idsByName, lociByName, lociById, sortedAnnots];
 }
@@ -115,18 +123,38 @@ function hasGeneCache(orgName) {
  */
 export default async function initGeneCache(orgName, ideo, cacheDir=null) {
 
-  if (!hasGeneCache(orgName)) {
-    return; // Skip initialization if cache doesn't exist
+  perfTimes = {};
+
+  // Skip initialization if cache doesn't exist
+  if (!hasGeneCache(orgName)) return;
+
+  // Skip initialization if cache is already populated
+  if (Ideogram.geneCache && Ideogram.geneCache[orgName]) {
+    // Simplify chief use case, i.e. for single organism
+    ideo.geneCache = Ideogram.geneCache[orgName];
+    return;
+  }
+
+  if (!Ideogram.geneCache) {
+    Ideogram.geneCache = {};
   }
 
   const cacheUrl = getCacheUrl(orgName, cacheDir, ideo);
 
+  const fetchStartTime = performance.now();
   const response = await fetch(cacheUrl);
   const data = await response.text();
+  const fetchEndTime = performance.now();
+  perfTimes.fetch = Math.round(fetchEndTime - fetchStartTime);
 
   const [
     citedNames, namesById, idsByName, lociByName, lociById, sortedAnnots
   ] = parseCache(data, orgName);
+  perfTimes.parseCache = Math.round(performance.now() - fetchEndTime);
+
+  if (ideo.config.debug) {
+    console.log('perfTimes in initGeneCache:', perfTimes);
+  }
 
   ideo.geneCache = {
     citedNames, // Array of gene names, ordered by citation count
@@ -136,4 +164,5 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
     lociById,
     sortedAnnots // Ideogram annotations sorted by genomic position
   };
+  Ideogram.geneCache[orgName] = ideo.geneCache;
 }

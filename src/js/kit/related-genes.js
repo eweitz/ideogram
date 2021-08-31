@@ -217,7 +217,6 @@ function parseNameAndEnsemblIdFromMgiGene(gene) {
  * This comprises most of the content for tooltips for interacting genes.
  */
 function describeInteractions(gene, ixns, searchedGene) {
-
   const pathwayIds = [];
   const pathwayNames = [];
   let ixnsDescription = '';
