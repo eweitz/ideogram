@@ -327,54 +327,6 @@ async function fetchInteractionAnnots(interactions, searchedGene, ideo) {
   return annots;
 }
 
-// Commented out because call to Ensembl threw false-positive 400 error
-// Also had historically been slow, and included an extraneous OPTIONS
-// request that would often double effective response time.
-//
-// See alternative in fetchParalogPositionsFromMyGeneInfo
-//
-// /** Fetch positions of paralogs from Ensembl REST API */
-// async function fetchParalogPositionsFromEnsembl(homologs, ideo) {
-//   const annots = [];
-//   const orgUnderscored = ideo.config.organism.replace(/[ -]/g, '_');
-
-//   const homologIds = homologs.map(homolog => homolog.id);
-//   const path = '/lookup/id/' + orgUnderscored;
-//   const body = {
-//     ids: homologIds,
-//     species: orgUnderscored,
-//     object_type: 'gene'
-//   };
-//   const ensemblHomologGenes =
-//     await Ideogram.fetchEnsembl(path, body, 'POST');
-
-//   Object.entries(ensemblHomologGenes).map((idGene, i) => {
-//     const gene = idGene[1];
-
-//     // Seen in related genes for SIRT2 in Pan troglodytes
-//     if ('display_name' in gene === false) return;
-
-//     const annot = {
-//       name: gene.display_name,
-//       chr: gene.seq_region_name,
-//       start: gene.start,
-//       stop: gene.end,
-//       id: gene.id,
-//       color: 'pink'
-//     };
-
-//     annots.push(annot);
-//     const description = gene.description;
-//     const ensemblId = gene.id;
-//     const name = gene.description.split(' [')[0];
-//     const type = 'paralogous gene';
-//     const descriptionObj = {description, ensemblId, name, type};
-//     ideo.annotDescriptions.annots[annot.name] = descriptionObj;
-//   });
-
-//   return annots;
-// }
-
 /** Fetch paralog positions from MyGeneInfo */
 async function fetchParalogPositionsFromMyGeneInfo(
   homologs, searchedGene, ideo
