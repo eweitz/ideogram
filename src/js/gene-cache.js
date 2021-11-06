@@ -27,7 +27,7 @@ function getCacheUrl(orgName, cacheDir, ideo) {
     cacheDir = baseDir + 'annotations/gene-cache/';
   }
 
-  const cacheUrl = cacheDir + organism + '-big.tsv';
+  const cacheUrl = cacheDir + organism + '-genes-big.tsv';
 
   return cacheUrl;
 }

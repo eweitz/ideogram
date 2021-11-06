@@ -244,47 +244,72 @@ function describeInteractions(gene, ixns, searchedGene) {
   return descriptionObj;
 }
 
+/**
+ * Fetch genes from cache
+ * Construct objects that match format of MyGene.info API response
+ */
+function fetchGenesFromCache(names, type, ideo) {
+  const cache = ideo.geneCache;
+  const isSymbol = (type === 'symbol');
+  const locusMap = isSymbol ? cache.lociByName : cache.lociById;
+  const nameMap = isSymbol ? cache.idsByName : cache.namesById;
+
+  const hits = names.map(name => {
+    const locus = locusMap[name];
+    const symbol = isSymbol ? name : nameMap[name];
+    const ensemblId = isSymbol ? nameMap[name] : name;
+
+    const hit = {
+      symbol,
+      name: '',
+      source: 'cache',
+      genomic_pos: [{
+        chr: locus[0],
+        start: locus[1],
+        end: locus[2],
+        ensemblgene: ensemblId
+      }]
+    };
+
+    return hit;
+  });
+
+  return hits;
+}
+
 /** Fetch genes from cache, or, if needed, from MyGene.info API */
 async function fetchGenes(names, type, ideo) {
 
   let data;
 
+  // Query parameter for MyGeneInfo.api
+  const qParam = names.map(name => `${type}:${name.trim()}`).join(' OR ');
+  const taxid = ideo.config.taxid;
+
+  const queryStringBase = `?q=${qParam}&species=${taxid}&fields=`;
+
   if (ideo.geneCache) {
-    // Fetch genes from cache
-    // Construct objects that match format of MyGene.info API response
-    const cache = ideo.geneCache;
-    const isSymbol = (type === 'symbol');
-    const locusMap = isSymbol ? cache.lociByName : cache.lociById;
-    const nameMap = isSymbol ? cache.idsByName : cache.namesById;
+    const hits = fetchGenesFromCache(names, type, ideo);
 
-    const hits = names.map(name => {
-      const locus = locusMap[name];
-      const symbol = isSymbol ? name : nameMap[name];
-      const ensemblId = isSymbol ? nameMap[name] : name;
-
-      const hit = {
-        symbol,
-        name: '',
-        source: 'cache',
-        genomic_pos: [{
-          chr: locus[0],
-          start: locus[1],
-          end: locus[2],
-          ensemblgene: ensemblId
-        }]
-      };
-
-      return hit;
+    // Asynchronously fetch full name, but don't await the response, because
+    // full names are only shown upon hovering over an annotation.
+    const queryString = `${queryStringBase}symbol,name`;
+    data = fetchMyGeneInfo(queryString).then(data => {
+      data.hits.forEach((hit) => {
+        const symbol = hit.symbol;
+        const fullName = hit.name;
+        if (symbol in ideo.annotDescriptions.annots) {
+          ideo.annotDescriptions.annots[symbol].name = fullName;
+        } else {
+          ideo.annotDescriptions.annots[symbol] = {name: fullName};
+        }
+      });
     });
 
-    data = {hits};
+    data = {hits, fromGeneCache: true};
   } else {
     // Fetch gene data from MyGene.info
-    const qParam = names.map(name => `${type}:${name.trim()}`).join(' OR ');
-
-    const taxid = ideo.config.taxid;
-    const queryString =
-      `?q=${qParam}&species=${taxid}&fields=symbol,genomic_pos,name`;
+    const queryString = `${queryStringBase}symbol,genomic_pos,name`;
     data = await fetchMyGeneInfo(queryString);
   }
 
