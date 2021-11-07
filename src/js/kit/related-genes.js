@@ -282,7 +282,7 @@ async function fetchGenes(names, type, ideo) {
 
   let data;
 
-  // Query parameter for MyGeneInfo.api
+  // Query parameter for MyGene.info API
   const qParam = names.map(name => `${type}:${name.trim()}`).join(' OR ');
   const taxid = ideo.config.taxid;
 

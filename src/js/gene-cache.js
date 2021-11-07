@@ -27,7 +27,7 @@ function getCacheUrl(orgName, cacheDir, ideo) {
     cacheDir = baseDir + 'annotations/gene-cache/';
   }
 
-  const cacheUrl = cacheDir + organism + '-genes-big.tsv';
+  const cacheUrl = cacheDir + organism + '-genes-big-2.tsv';
 
   return cacheUrl;
 }
@@ -62,6 +62,19 @@ function parseAnnots(preAnnots) {
   return annotsSortedByPosition;
 }
 
+/**
+ * Build full Ensembl ID from prefix (e.g. ENSG) and slim ID (e.g. 223972)
+ *
+ * Example output ID: ENSG00000223972
+ * */
+function getEnsemblId(ensemblPrefix, slimEnsemblId) {
+
+  // Zero-pad the slim ID, e.g. 223972 -> 00000223972
+  const zeroPaddedId = slimEnsemblId.padStart(11, '0');
+
+  return ensemblPrefix + zeroPaddedId;
+}
+
 /** Parse a gene cache TSV file, return array of useful transforms */
 function parseCache(rawTsv, orgName) {
   const names = [];
@@ -83,11 +96,11 @@ function parseCache(rawTsv, orgName) {
     const line = lines[i];
     if (line[0] === '#' || line === '') continue; // Skip headers, empty lines
     const [
-      chromosome, rawStart, rawStop, slimEnsemblId, gene
+      chromosome, rawStart, rawLength, slimEnsemblId, gene
     ] = line.trim().split(/\t/);
     const start = parseInt(rawStart);
-    const stop = parseInt(rawStop);
-    const ensemblId = ensemblPrefix + slimEnsemblId;
+    const stop = start + parseInt(rawLength);
+    const ensemblId = getEnsemblId(ensemblPrefix, slimEnsemblId);
     preAnnots.push([chromosome, start, stop, ensemblId, gene]);
     const locus = [chromosome, start, stop];
 
