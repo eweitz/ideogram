@@ -13,6 +13,7 @@
 
 import {slug, getEarlyTaxid} from './lib';
 import {organismMetadata} from './init/organism-metadata';
+import version from './version';
 
 let perfTimes;
 
@@ -23,11 +24,12 @@ function getCacheUrl(orgName, cacheDir, ideo) {
   if (!cacheDir) {
     const splitDataDir = ideo.config.dataDir.split('/');
     const dataIndex = splitDataDir.indexOf('data');
+    console.log("splitDataDir.slice(0, dataIndex).join('/')", splitDataDir.slice(0, dataIndex).join('/'))
     const baseDir = splitDataDir.slice(0, dataIndex).join('/') + '/data/';
     cacheDir = baseDir + 'annotations/gene-cache/';
   }
 
-  const cacheUrl = cacheDir + organism + '-genes-big-2.tsv';
+  const cacheUrl = cacheDir + organism + '-genes-big.tsv';
 
   return cacheUrl;
 }
@@ -131,6 +133,11 @@ function hasGeneCache(orgName) {
   return ('hasGeneCache' in metadata && metadata.hasGeneCache === true);
 }
 
+async function cacheFetch(url) {
+  await Ideogram.cache.add(url);
+  return await Ideogram.cache.match(url);
+}
+
 /**
  * Fetch cached gene data, transform it usefully, and set it as ideo prop
  */
@@ -152,10 +159,15 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
     Ideogram.geneCache = {};
   }
 
+  Ideogram.cache = await caches.open(`ideogram-${version}`);
+  console.log('ideo.cache', ideo.cache);
+
   const cacheUrl = getCacheUrl(orgName, cacheDir, ideo);
 
   const fetchStartTime = performance.now();
-  const response = await fetch(cacheUrl);
+  const response = await cacheFetch(cacheUrl);
+  console.log('cacheUrl', cacheUrl);
+  console.log('response', response);
   const data = await response.text();
   const fetchEndTime = performance.now();
   perfTimes.fetch = Math.round(fetchEndTime - fetchStartTime);
