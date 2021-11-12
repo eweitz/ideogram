@@ -24,7 +24,6 @@ function getCacheUrl(orgName, cacheDir, ideo) {
   if (!cacheDir) {
     const splitDataDir = ideo.config.dataDir.split('/');
     const dataIndex = splitDataDir.indexOf('data');
-    console.log("splitDataDir.slice(0, dataIndex).join('/')", splitDataDir.slice(0, dataIndex).join('/'))
     const baseDir = splitDataDir.slice(0, dataIndex).join('/') + '/data/';
     cacheDir = baseDir + 'annotations/gene-cache/';
   }
@@ -134,7 +133,11 @@ function hasGeneCache(orgName) {
 }
 
 async function cacheFetch(url) {
-  await Ideogram.cache.add(url);
+  const response = await Ideogram.cache.match(url);
+  if (typeof response === 'undefined') {
+    // If cache miss, then fetch and add response to cache
+    await Ideogram.cache.add(url);
+  }
   return await Ideogram.cache.match(url);
 }
 
@@ -160,14 +163,11 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
   }
 
   Ideogram.cache = await caches.open(`ideogram-${version}`);
-  console.log('ideo.cache', ideo.cache);
 
   const cacheUrl = getCacheUrl(orgName, cacheDir, ideo);
 
   const fetchStartTime = performance.now();
   const response = await cacheFetch(cacheUrl);
-  console.log('cacheUrl', cacheUrl);
-  console.log('response', response);
   const data = await response.text();
   const fetchEndTime = performance.now();
   perfTimes.fetch = Math.round(fetchEndTime - fetchStartTime);

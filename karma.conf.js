@@ -50,9 +50,9 @@ module.exports = function(config) {
           {
             test: /\.js$/,
             use: {
-              loader: 'istanbul-instrumenter-loader',
+              loader: 'babel-loader',
               options: {
-                esModules: true
+                plugins: ['babel-plugin-istanbul']
               }
             },
             include: path.resolve('src/js/')
