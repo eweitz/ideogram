@@ -14,6 +14,8 @@ describe('Ideogram annotations', function() {
 
   d3 = Ideogram.d3;
 
+  this.timeout(10000);
+
   beforeEach(function() {
 
     delete window.chrBands;
