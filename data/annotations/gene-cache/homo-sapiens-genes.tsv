@@ -1,4 +1,5 @@
-﻿#Chromosome	Start	Name
+﻿# Derived from Homo_sapiens.GRCh38.102.chr.gtf.gz in http://ftp.ensembl.org/pub/release-102/gtf/homo_sapiens/
+# Chromosome	Start	Name
 17	7571719	TP53
 6	31543343	TNF
 12	125396190	UBC

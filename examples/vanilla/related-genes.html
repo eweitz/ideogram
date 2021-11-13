@@ -316,6 +316,8 @@
     // annotsInList = ['CDK9', 'CDK19', 'CDK1'];
     // let ideogram = Ideogram.initRelatedGenes(config, annotsInList)
     let ideogram;
+
+    if ('debug' in urlParams) config.debug = true;
     if ('q' in urlParams) {
       ideogram = Ideogram.initRelatedGenes(config);
     } else {

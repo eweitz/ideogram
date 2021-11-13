@@ -8,7 +8,8 @@ var organismMetadata = {
       GRCh37: 'GCF_000001405.13',
       NCBI36: 'GCF_000001405.12'
     },
-    hasGeneCache: true
+    hasGeneCache: true,
+    ensemblPrefix: 'ENSG'
   },
   10090: {
     commonName: 'Mouse',
@@ -17,7 +18,9 @@ var organismMetadata = {
       default: 'GCF_000001635.20', // GRCm38
       GRCm38: 'GCF_000001635.20',
       MGSCv37: 'GCF_000001635.18'
-    }
+    },
+    hasGeneCache: true,
+    ensemblPrefix: 'ENSMUSG'
   },
   9598: {
     commonName: 'Chimpanzee',

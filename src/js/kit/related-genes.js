@@ -217,7 +217,6 @@ function parseNameAndEnsemblIdFromMgiGene(gene) {
  * This comprises most of the content for tooltips for interacting genes.
  */
 function describeInteractions(gene, ixns, searchedGene) {
-
   const pathwayIds = [];
   const pathwayNames = [];
   let ixnsDescription = '';
@@ -246,23 +245,88 @@ function describeInteractions(gene, ixns, searchedGene) {
 }
 
 /**
+ * Fetch genes from cache
+ * Construct objects that match format of MyGene.info API response
+ */
+function fetchGenesFromCache(names, type, ideo) {
+  const cache = ideo.geneCache;
+  const isSymbol = (type === 'symbol');
+  const locusMap = isSymbol ? cache.lociByName : cache.lociById;
+  const nameMap = isSymbol ? cache.idsByName : cache.namesById;
+
+  const hits = names.map(name => {
+    const locus = locusMap[name];
+    const symbol = isSymbol ? name : nameMap[name];
+    const ensemblId = isSymbol ? nameMap[name] : name;
+
+    const hit = {
+      symbol,
+      name: '',
+      source: 'cache',
+      genomic_pos: [{
+        chr: locus[0],
+        start: locus[1],
+        end: locus[2],
+        ensemblgene: ensemblId
+      }]
+    };
+
+    return hit;
+  });
+
+  return hits;
+}
+
+/** Fetch genes from cache, or, if needed, from MyGene.info API */
+async function fetchGenes(names, type, ideo) {
+
+  let data;
+
+  // Query parameter for MyGene.info API
+  const qParam = names.map(name => `${type}:${name.trim()}`).join(' OR ');
+  const taxid = ideo.config.taxid;
+
+  const queryStringBase = `?q=${qParam}&species=${taxid}&fields=`;
+
+  if (ideo.geneCache) {
+    const hits = fetchGenesFromCache(names, type, ideo);
+
+    // Asynchronously fetch full name, but don't await the response, because
+    // full names are only shown upon hovering over an annotation.
+    const queryString = `${queryStringBase}symbol,name`;
+    data = fetchMyGeneInfo(queryString).then(data => {
+      data.hits.forEach((hit) => {
+        const symbol = hit.symbol;
+        const fullName = hit.name;
+        if (symbol in ideo.annotDescriptions.annots) {
+          ideo.annotDescriptions.annots[symbol].name = fullName;
+        } else {
+          ideo.annotDescriptions.annots[symbol] = {name: fullName};
+        }
+      });
+    });
+
+    data = {hits, fromGeneCache: true};
+  } else {
+    // Fetch gene data from MyGene.info
+    const queryString = `${queryStringBase}symbol,genomic_pos,name`;
+    data = await fetchMyGeneInfo(queryString);
+  }
+
+  return data;
+}
+
+/**
  * Retrieves position and other data on interacting genes from MyGene.info
  */
 async function fetchInteractionAnnots(interactions, searchedGene, ideo) {
 
   const annots = [];
-  const geneList = Object.keys(interactions);
+  const symbols = Object.keys(interactions);
 
-  if (geneList.length === 0) return annots;
+  if (symbols.length === 0) return annots;
 
-  const ixnParam = geneList.map(ixn => {
-    return `symbol:${ixn.trim()}`;
-  }).join(' OR ');
-
-  const taxid = ideo.config.taxid;
-  const queryString =
-    `?q=${ixnParam}&species=${taxid}&fields=symbol,genomic_pos,name`;
-  const data = await fetchMyGeneInfo(queryString);
+  const data = await fetchGenes(symbols, 'symbol', ideo);
 
   data.hits.forEach(gene => {
     // If hit lacks position
@@ -288,67 +352,14 @@ async function fetchInteractionAnnots(interactions, searchedGene, ideo) {
   return annots;
 }
 
-// Commented out because call to Ensembl threw false-positive 400 error
-// Also had historically been slow, and included an extraneous OPTIONS
-// request that would often double effective response time.
-//
-// See alternative in fetchParalogPositionsFromMyGeneInfo
-//
-// /** Fetch positions of paralogs from Ensembl REST API */
-// async function fetchParalogPositionsFromEnsembl(homologs, ideo) {
-//   const annots = [];
-//   const orgUnderscored = ideo.config.organism.replace(/[ -]/g, '_');
-
-//   const homologIds = homologs.map(homolog => homolog.id);
-//   const path = '/lookup/id/' + orgUnderscored;
-//   const body = {
-//     ids: homologIds,
-//     species: orgUnderscored,
-//     object_type: 'gene'
-//   };
-//   const ensemblHomologGenes =
-//     await Ideogram.fetchEnsembl(path, body, 'POST');
-
-//   Object.entries(ensemblHomologGenes).map((idGene, i) => {
-//     const gene = idGene[1];
-
-//     // Seen in related genes for SIRT2 in Pan troglodytes
-//     if ('display_name' in gene === false) return;
-
-//     const annot = {
-//       name: gene.display_name,
-//       chr: gene.seq_region_name,
-//       start: gene.start,
-//       stop: gene.end,
-//       id: gene.id,
-//       color: 'pink'
-//     };
-
-//     annots.push(annot);
-//     const description = gene.description;
-//     const ensemblId = gene.id;
-//     const name = gene.description.split(' [')[0];
-//     const type = 'paralogous gene';
-//     const descriptionObj = {description, ensemblId, name, type};
-//     ideo.annotDescriptions.annots[annot.name] = descriptionObj;
-//   });
-
-//   return annots;
-// }
-
 /** Fetch paralog positions from MyGeneInfo */
 async function fetchParalogPositionsFromMyGeneInfo(
   homologs, searchedGene, ideo
 ) {
   const annots = [];
-  const qParam = homologs.map(homolog => {
-    return `ensemblgene:${homolog.id}`;
-  }).join(' OR ');
+  const ensemblIds = homologs.map(homolog => homolog.id);
 
-  const taxid = ideo.config.taxid;
-  const queryString =
-    `?q=${qParam}&species=${taxid}&fields=symbol,genomic_pos,name`;
-  const data = await fetchMyGeneInfo(queryString);
+  const data = await fetchGenes(ensemblIds, 'ensemblgene', ideo);
 
   data.hits.forEach(gene => {
 
