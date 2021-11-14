@@ -282,6 +282,9 @@ async function fetchGenes(names, type, ideo) {
 
   let data;
 
+  // Account for single-gene fetch
+  if (typeof names === 'string') names = [names];
+
   // Query parameter for MyGene.info API
   const qParam = names.map(name => `${type}:${name.trim()}`).join(' OR ');
   const taxid = ideo.config.taxid;
@@ -580,21 +583,31 @@ function finishPlotRelatedGenes(type, ideo) {
 async function processSearchedGene(geneSymbol, ideo) {
   const t0 = performance.now();
 
-  // Fetch positon of searched gene
-  const taxid = ideo.config.taxid;
-  const queryString =
-    `?q=symbol:${geneSymbol}&species=${taxid}&fields=symbol,genomic_pos,name`;
-  const data = await fetchMyGeneInfo(queryString);
+  const data = await fetchGenes(geneSymbol, 'symbol', ideo);
 
   if (data.hits.length === 0) {
     return;
   }
   const gene = data.hits[0];
-  const name = gene.name;
   const ensemblId = gene.genomic_pos.ensemblgene;
-  ideo.annotDescriptions.annots[gene.symbol] = {
-    description: '', ensemblId, name, type: 'searched gene'
-  };
+
+  // Assign tooltip content.  Much of the content is often retrieved from
+  // the gene cache.  In that case, all fields except `name` are fetched
+  // from cache.  Occasionally, e.g. often upon the very first search, no
+  // content is yet available from cache.
+  let desc = {description: '', ensemblId, type: 'searched gene'};
+  if (gene.symbol in ideo.annotDescriptions.annots) {
+    // Most content already set via cache.
+    // `name` will be set via non-blocking part of `fetchGenes`.
+    const oldDesc = ideo.annotDescriptions.annots[gene.symbol];
+    desc = Object.assign(oldDesc, desc);
+  } else {
+    // No content has been set yet via cache.  In this case, `gene` already
+    // has all the data needed for the searched gene's tooltip content.
+    desc.name = gene.name;
+  }
+
+  ideo.annotDescriptions.annots[gene.symbol] = desc;
 
   const annot = parseAnnotFromMgiGene(gene, ideo);
 
