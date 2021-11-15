@@ -148,7 +148,7 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
 
   perfTimes = {};
 
-  // Skip initialization if cache doesn't exist
+  // Skip initialization if files needed to make cache don't exist
   if (!hasGeneCache(orgName)) return;
 
   // Skip initialization if cache is already populated
