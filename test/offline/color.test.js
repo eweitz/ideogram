@@ -27,7 +27,7 @@ describe('Color support includes', function() {
     }
     config.chrFillColor = 'green';
     config.onLoad = callback;
-    const ideogram = new Ideogram(config);
+    new Ideogram(config);
   });
 
   it('chrFillColor as object', done => {
@@ -42,6 +42,6 @@ describe('Color support includes', function() {
     }
     config.chrFillColor = {arm: '#AEA', centromere: '#EEA'};
     config.onLoad = callback;
-    const ideogram = new Ideogram(config);
+    new Ideogram(config);
   });
 });
