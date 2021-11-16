@@ -11,6 +11,8 @@
  * - find genomic position of a given gene (or all genes)
  */
 
+import { get, set } from 'idb-keyval';
+
 import {slug, getEarlyTaxid} from './lib';
 import {organismMetadata} from './init/organism-metadata';
 import version from './version';
@@ -146,6 +148,7 @@ async function cacheFetch(url) {
  */
 export default async function initGeneCache(orgName, ideo, cacheDir=null) {
 
+  const startTime = performance.now();
   perfTimes = {};
 
   // Skip initialization if files needed to make cache don't exist
@@ -162,32 +165,46 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
     Ideogram.geneCache = {};
   }
 
-  Ideogram.cache = await caches.open(`ideogram-${version}`);
+  const storeKey = `ideogram-${version}`
+  Ideogram.cache = await caches.open(storeKey);
 
   const cacheUrl = getCacheUrl(orgName, cacheDir, ideo);
 
-  const fetchStartTime = performance.now();
-  const response = await cacheFetch(cacheUrl);
-  const data = await response.text();
-  const fetchEndTime = performance.now();
-  perfTimes.fetch = Math.round(fetchEndTime - fetchStartTime);
+  const idbKey = `${storeKey}__${cacheUrl}`;
+  const idbGetStartTime = performance.now();
+  const idbVal = await get(idbKey);
+  perfTimes.idbGet = Math.round(performance.now() - idbGetStartTime);
 
-  const [
-    citedNames, namesById, idsByName, lociByName, lociById, sortedAnnots
-  ] = parseCache(data, orgName);
-  perfTimes.parseCache = Math.round(performance.now() - fetchEndTime);
+  if (idbVal) {
+    ideo.geneCache = idbVal;
+  } else {
 
-  if (ideo.config.debug) {
-    console.log('perfTimes in initGeneCache:', perfTimes);
+    const fetchStartTime = performance.now();
+    const response = await cacheFetch(cacheUrl);
+    const data = await response.text();
+    const fetchEndTime = performance.now();
+    perfTimes.fetch = Math.round(fetchEndTime - fetchStartTime);
+
+    const [
+      citedNames, namesById, idsByName, lociByName, lociById, sortedAnnots
+    ] = parseCache(data, orgName);
+    perfTimes.parseCache = Math.round(performance.now() - fetchEndTime);
+
+    ideo.geneCache = {
+      citedNames, // Array of gene names, ordered by citation count
+      namesById,
+      idsByName,
+      lociByName, // Object of gene positions, keyed by gene name
+      lociById,
+      sortedAnnots // Ideogram annotations sorted by genomic position
+    };
+    set(idbKey, ideo.geneCache);
+
+    Ideogram.geneCache[orgName] = ideo.geneCache;
   }
 
-  ideo.geneCache = {
-    citedNames, // Array of gene names, ordered by citation count
-    namesById,
-    idsByName,
-    lociByName, // Object of gene positions, keyed by gene name
-    lociById,
-    sortedAnnots // Ideogram annotations sorted by genomic position
-  };
-  Ideogram.geneCache[orgName] = ideo.geneCache;
+  if (ideo.config.debug) {
+    perfTimes.total = Math.round(performance.now() - startTime)
+    console.log('perfTimes in initGeneCache:', perfTimes);
+  }
 }
