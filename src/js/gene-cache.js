@@ -11,8 +11,6 @@
  * - find genomic position of a given gene (or all genes)
  */
 
-import { get, set } from 'idb-keyval';
-
 import {slug, getEarlyTaxid} from './lib';
 import {organismMetadata} from './init/organism-metadata';
 import version from './version';
@@ -165,46 +163,34 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
     Ideogram.geneCache = {};
   }
 
-  const storeKey = `ideogram-${version}`
-  Ideogram.cache = await caches.open(storeKey);
+  Ideogram.cache = await caches.open(`ideogram-${version}`);
 
   const cacheUrl = getCacheUrl(orgName, cacheDir, ideo);
 
-  const idbKey = `${storeKey}__${cacheUrl}`;
-  const idbGetStartTime = performance.now();
-  const idbVal = await get(idbKey);
-  perfTimes.idbGet = Math.round(performance.now() - idbGetStartTime);
+  const fetchStartTime = performance.now();
+  const response = await cacheFetch(cacheUrl);
+  const data = await response.text();
+  const fetchEndTime = performance.now();
+  perfTimes.fetch = Math.round(fetchEndTime - fetchStartTime);
 
-  if (idbVal) {
-    ideo.geneCache = idbVal;
-  } else {
+  const [
+    citedNames, namesById, idsByName, lociByName, lociById, sortedAnnots
+  ] = parseCache(data, orgName);
+  perfTimes.parseCache = Math.round(performance.now() - fetchEndTime);
 
-    const fetchStartTime = performance.now();
-    const response = await cacheFetch(cacheUrl);
-    const data = await response.text();
-    const fetchEndTime = performance.now();
-    perfTimes.fetch = Math.round(fetchEndTime - fetchStartTime);
+  ideo.geneCache = {
+    citedNames, // Array of gene names, ordered by citation count
+    namesById,
+    idsByName,
+    lociByName, // Object of gene positions, keyed by gene name
+    lociById,
+    sortedAnnots // Ideogram annotations sorted by genomic position
+  };
+  Ideogram.geneCache[orgName] = ideo.geneCache;
 
-    const [
-      citedNames, namesById, idsByName, lociByName, lociById, sortedAnnots
-    ] = parseCache(data, orgName);
-    perfTimes.parseCache = Math.round(performance.now() - fetchEndTime);
-
-    ideo.geneCache = {
-      citedNames, // Array of gene names, ordered by citation count
-      namesById,
-      idsByName,
-      lociByName, // Object of gene positions, keyed by gene name
-      lociById,
-      sortedAnnots // Ideogram annotations sorted by genomic position
-    };
-    set(idbKey, ideo.geneCache);
-
-    Ideogram.geneCache[orgName] = ideo.geneCache;
-  }
 
   if (ideo.config.debug) {
-    perfTimes.total = Math.round(performance.now() - startTime)
+    perfTimes.total = Math.round(performance.now() - startTime);
     console.log('perfTimes in initGeneCache:', perfTimes);
   }
 }

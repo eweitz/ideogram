@@ -50,8 +50,7 @@
     "d3-dispatch": "^2.0.0",
     "d3-fetch": "^2.0.0",
     "d3-format": "^2.0.0",
-    "d3-scale": "^3.2.3",
-    "idb-keyval": "^6.0.3"
+    "d3-scale": "^3.2.3"
   },
   "devDependencies": {
     "@babel/core": "^7.16.0",
