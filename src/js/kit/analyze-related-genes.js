@@ -22,9 +22,9 @@ function getRelatedGenesByType() {
   const related = Object.values(relatedGenes).slice();
 
   const paralogous = related.filter(r => r.type?.includes('paralogous'));
-  const interacting = related.filter(r => r.type.includes('interacting gene'));
+  const interacting = related.filter(r => r.type?.includes('interacting gene'));
   const searched = Object.entries(relatedGenes)
-    .filter((entry) => entry[1].type.includes('searched gene'))[0][0];
+    .filter((entry) => entry[1].type?.includes('searched gene'))[0][0];
 
   return {related, paralogous, interacting, searched};
 }

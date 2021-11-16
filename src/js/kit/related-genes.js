@@ -244,6 +244,12 @@ function describeInteractions(gene, ixns, searchedGene) {
   return descriptionObj;
 }
 
+/** Throw error when searched gene (e.g. "Foo") isn't found */
+function throwGeneNotFound(geneSymbol, ideo) {
+    const organism = ideo.organismScientificName;
+    throw Error(`"${geneSymbol}" is not a known gene in ${organism}`);
+}
+
 /**
  * Fetch genes from cache
  * Construct objects that match format of MyGene.info API response
@@ -255,6 +261,9 @@ function fetchGenesFromCache(names, type, ideo) {
   const nameMap = isSymbol ? cache.idsByName : cache.namesById;
 
   const hits = names.map(name => {
+
+    if (!locusMap[name]) throwGeneNotFound(name, ideo);
+
     const locus = locusMap[name];
     const symbol = isSymbol ? name : nameMap[name];
     const ensemblId = isSymbol ? nameMap[name] : name;
@@ -706,11 +715,7 @@ async function plotRelatedGenes(geneSymbol=null) {
   // Fetch positon of searched gene
   const annot = await processSearchedGene(geneSymbol, ideo);
 
-  if (typeof annot === 'undefined') {
-    // E.g. when searched gene is "Foo"
-    const organism = ideo.organismScientificName;
-    throw Error(`"${geneSymbol}" is not a known gene in ${organism}`);
-  }
+  if (typeof annot === 'undefined') throwGeneNotFound(geneSymbol, ideo);
 
   ideo.config.legend = relatedLegend;
   writeLegend(ideo);
