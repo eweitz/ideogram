@@ -272,12 +272,12 @@ function fetchGenesFromCache(names, type, ideo) {
       symbol,
       name: '',
       source: 'cache',
-      genomic_pos: [{
+      genomic_pos: {
         chr: locus[0],
         start: locus[1],
         end: locus[2],
         ensemblgene: ensemblId
-      }]
+      }
     };
 
     return hit;
