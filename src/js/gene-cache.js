@@ -129,7 +129,7 @@ function parseOrgMetadata(orgName) {
 /** Reports if current organism has a gene cache */
 function hasGeneCache(orgName) {
   const metadata = parseOrgMetadata(orgName);
-  return ('hasGeneCache' in metadata && metadata.hasGeneCache === true);
+  return (metadata?.hasGeneCache === true);
 }
 
 async function cacheFetch(url) {

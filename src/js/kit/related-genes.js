@@ -597,7 +597,7 @@ async function processSearchedGene(geneSymbol, ideo) {
   if (data.hits.length === 0) {
     return;
   }
-  const gene = data.hits[0];
+  const gene = data.hits.find(hit => hit.genomic_pos?.ensemblgene);
   const ensemblId = gene.genomic_pos.ensemblgene;
 
   // Assign tooltip content.  Much of the content is often retrieved from
