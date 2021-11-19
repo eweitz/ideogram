@@ -244,6 +244,12 @@ function describeInteractions(gene, ixns, searchedGene) {
   return descriptionObj;
 }
 
+/** Throw error when searched gene (e.g. "Foo") isn't found */
+function throwGeneNotFound(geneSymbol, ideo) {
+    const organism = ideo.organismScientificName;
+    throw Error(`"${geneSymbol}" is not a known gene in ${organism}`);
+}
+
 /**
  * Fetch genes from cache
  * Construct objects that match format of MyGene.info API response
@@ -255,6 +261,9 @@ function fetchGenesFromCache(names, type, ideo) {
   const nameMap = isSymbol ? cache.idsByName : cache.namesById;
 
   const hits = names.map(name => {
+
+    if (!locusMap[name]) throwGeneNotFound(name, ideo);
+
     const locus = locusMap[name];
     const symbol = isSymbol ? name : nameMap[name];
     const ensemblId = isSymbol ? nameMap[name] : name;
@@ -263,12 +272,12 @@ function fetchGenesFromCache(names, type, ideo) {
       symbol,
       name: '',
       source: 'cache',
-      genomic_pos: [{
+      genomic_pos: {
         chr: locus[0],
         start: locus[1],
         end: locus[2],
         ensemblgene: ensemblId
-      }]
+      }
     };
 
     return hit;
@@ -281,6 +290,9 @@ function fetchGenesFromCache(names, type, ideo) {
 async function fetchGenes(names, type, ideo) {
 
   let data;
+
+  // Account for single-gene fetch
+  if (typeof names === 'string') names = [names];
 
   // Query parameter for MyGene.info API
   const qParam = names.map(name => `${type}:${name.trim()}`).join(' OR ');
@@ -580,21 +592,31 @@ function finishPlotRelatedGenes(type, ideo) {
 async function processSearchedGene(geneSymbol, ideo) {
   const t0 = performance.now();
 
-  // Fetch positon of searched gene
-  const taxid = ideo.config.taxid;
-  const queryString =
-    `?q=symbol:${geneSymbol}&species=${taxid}&fields=symbol,genomic_pos,name`;
-  const data = await fetchMyGeneInfo(queryString);
+  const data = await fetchGenes(geneSymbol, 'symbol', ideo);
 
   if (data.hits.length === 0) {
     return;
   }
-  const gene = data.hits[0];
-  const name = gene.name;
+  const gene = data.hits.find(hit => hit.genomic_pos?.ensemblgene);
   const ensemblId = gene.genomic_pos.ensemblgene;
-  ideo.annotDescriptions.annots[gene.symbol] = {
-    description: '', ensemblId, name, type: 'searched gene'
-  };
+
+  // Assign tooltip content.  Much of the content is often retrieved from
+  // the gene cache.  In that case, all fields except `name` are fetched
+  // from cache.  Occasionally, e.g. often upon the very first search, no
+  // content is yet available from cache.
+  let desc = {description: '', ensemblId, type: 'searched gene'};
+  if (gene.symbol in ideo.annotDescriptions.annots) {
+    // Most content already set via cache.
+    // `name` will be set via non-blocking part of `fetchGenes`.
+    const oldDesc = ideo.annotDescriptions.annots[gene.symbol];
+    desc = Object.assign(oldDesc, desc);
+  } else {
+    // No content has been set yet via cache.  In this case, `gene` already
+    // has all the data needed for the searched gene's tooltip content.
+    desc.name = gene.name;
+  }
+
+  ideo.annotDescriptions.annots[gene.symbol] = desc;
 
   const annot = parseAnnotFromMgiGene(gene, ideo);
 
@@ -693,11 +715,7 @@ async function plotRelatedGenes(geneSymbol=null) {
   // Fetch positon of searched gene
   const annot = await processSearchedGene(geneSymbol, ideo);
 
-  if (typeof annot === 'undefined') {
-    // E.g. when searched gene is "Foo"
-    const organism = ideo.organismScientificName;
-    throw Error(`"${geneSymbol}" is not a known gene in ${organism}`);
-  }
+  if (typeof annot === 'undefined') throwGeneNotFound(geneSymbol, ideo);
 
   ideo.config.legend = relatedLegend;
   writeLegend(ideo);

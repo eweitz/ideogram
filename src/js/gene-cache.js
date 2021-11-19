@@ -129,7 +129,7 @@ function parseOrgMetadata(orgName) {
 /** Reports if current organism has a gene cache */
 function hasGeneCache(orgName) {
   const metadata = parseOrgMetadata(orgName);
-  return ('hasGeneCache' in metadata && metadata.hasGeneCache === true);
+  return (metadata?.hasGeneCache === true);
 }
 
 async function cacheFetch(url) {
@@ -146,9 +146,10 @@ async function cacheFetch(url) {
  */
 export default async function initGeneCache(orgName, ideo, cacheDir=null) {
 
+  const startTime = performance.now();
   perfTimes = {};
 
-  // Skip initialization if cache doesn't exist
+  // Skip initialization if files needed to make cache don't exist
   if (!hasGeneCache(orgName)) return;
 
   // Skip initialization if cache is already populated
@@ -177,10 +178,6 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
   ] = parseCache(data, orgName);
   perfTimes.parseCache = Math.round(performance.now() - fetchEndTime);
 
-  if (ideo.config.debug) {
-    console.log('perfTimes in initGeneCache:', perfTimes);
-  }
-
   ideo.geneCache = {
     citedNames, // Array of gene names, ordered by citation count
     namesById,
@@ -190,4 +187,10 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
     sortedAnnots // Ideogram annotations sorted by genomic position
   };
   Ideogram.geneCache[orgName] = ideo.geneCache;
+
+
+  if (ideo.config.debug) {
+    perfTimes.total = Math.round(performance.now() - startTime);
+    console.log('perfTimes in initGeneCache:', perfTimes);
+  }
 }
