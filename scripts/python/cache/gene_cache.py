@@ -1,4 +1,7 @@
 """Convert Ensembl GTF files to minimal TSVs for Ideogram.js gene caches
+
+Ideogram uses cached gene data to drastically simplify and speed up rendering.
+
 """
 
 import argparse
@@ -87,6 +90,10 @@ def get_gtf_url(organism):
     return url
 
 def parse_gtf_info_field(info):
+    """Parse a GTF "INFO" field into a dictionary
+    Example INFO field:
+    gene_id "ENSMUSG00000102628"; gene_version "2"; gene_name "Gm37671"; gene_source "havana"; gene_biotype "TEC";
+    """
     fields = [f.strip() for f in info.split(';')][:-1]
     kvs = [f.split(" ") for f in fields]
     info_dict = {}
@@ -167,20 +174,27 @@ def trim_gtf(gtf_path):
 
     return [slim_genes, prefix]
 
+
 class GeneCache():
     """Convert Ensembl GTF files to minimal TSVs for Ideogram.js gene caches
     """
 
-    def __init__(self, reuse_gtf=False, output_dir="data/"):
-        self.reuse_gtf = reuse_gtf
+    def __init__(self, output_dir="data/", reuse_gtf=False):
         self.output_dir = output_dir
+        self.tmp_dir = "data/"
+        self.reuse_gtf = reuse_gtf
+
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
+        if not os.path.exists(self.tmp_dir):
+            os.makedirs(self.tmp_dir)
 
     def fetch_ensembl_gtf(self, organism):
         """Download and decompress an organism's GTF file from Ensembl
         """
         print(f"Fetching Ensembl GTF for {organism}")
         url = get_gtf_url(organism)
-        gtf_dir = self.output_dir + "gtf/"
+        gtf_dir = self.tmp_dir + "gtf/"
         if not os.path.exists(gtf_dir):
             os.makedirs(gtf_dir)
         gtf_path = gtf_dir + url.split("/")[-1]
@@ -213,9 +227,6 @@ class GeneCache():
     def populate_by_org(self, organism):
         """Fill gene caches for a configured organism
         """
-        if not os.path.exists(self.output_dir):
-            os.makedirs(self.output_dir)
-
         [gtf_path, gtf_url] = self.fetch_ensembl_gtf(organism)
         [slim_genes, prefix] = trim_gtf(gtf_path)
         self.write(slim_genes, organism, prefix, gtf_url)
@@ -235,6 +246,13 @@ if __name__ == "__main__":
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument(
+        "--output-dir",
+        help=(
+            "Directory to put outcome data.  (default: %(default))"
+        ),
+        default="data/"
+    )
+    parser.add_argument(
         "--reuse-gtf",
         help=(
             "Whether to use previously-downloaded raw GTFs"
@@ -242,6 +260,7 @@ if __name__ == "__main__":
         action="store_true"
     )
     args = parser.parse_args()
+    output_dir = args.output_dir
     reuse_gtf = args.reuse_gtf
 
-    GeneCache(reuse_gtf).populate()
+    GeneCache(output_dir, reuse_gtf).populate()
