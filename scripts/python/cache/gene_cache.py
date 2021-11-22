@@ -9,6 +9,7 @@ import re
 import ssl
 import urllib.request
 
+# Organisms configured for gene caching, and their genome assembly names
 assemblies_by_org = {
     "Homo sapiens": "GRCh38",
     "Mus musculus": "GRCm38",
@@ -93,7 +94,6 @@ def parse_gtf_info_field(info):
         info_dict[kv[0]] = kv[1].strip('"')
     return info_dict
 
-
 def detect_prefix(id):
     """Find the prefix of a feature ID
 
@@ -168,12 +168,16 @@ def trim_gtf(gtf_path):
     return [slim_genes, prefix]
 
 class GeneCache():
+    """Convert Ensembl GTF files to minimal TSVs for Ideogram.js gene caches
+    """
 
     def __init__(self, reuse_gtf=False, output_dir="data/"):
         self.reuse_gtf = reuse_gtf
         self.output_dir = output_dir
 
     def fetch_ensembl_gtf(self, organism):
+        """Download and decompress an organism's GTF file from Ensembl
+        """
         print(f"Fetching Ensembl GTF for {organism}")
         url = get_gtf_url(organism)
         gtf_dir = self.output_dir + "gtf/"
@@ -188,12 +192,14 @@ class GeneCache():
             download_gzip(url, gtf_path, cache=self.reuse_gtf)
         return [gtf_path, url]
 
-    def write_gene_cache(self, genes, organism, prefix, gtf_url):
+    def write(self, genes, organism, prefix, gtf_url):
+        """Save fetched and transformed gene data to cache file
+        """
         headers = (
             f"## Ideogram.js gene cache for {organism}\n" +
             f"## Derived from {gtf_url}\n"
             f"## prefix: {prefix}\n"
-            f"# chr\tstart\tlength\tslim_id\nsymbol"
+            f"# chr\tstart\tlength\tslim_id\tsymbol\n"
         )
         gene_lines = "\n".join(["\t".join(g) for g in genes])
         content = headers + gene_lines
@@ -205,14 +211,20 @@ class GeneCache():
         print(f"Wrote gene cache: {output_path}")
 
     def populate_by_org(self, organism):
+        """Fill gene caches for a configured organism
+        """
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
 
         [gtf_path, gtf_url] = self.fetch_ensembl_gtf(organism)
         [slim_genes, prefix] = trim_gtf(gtf_path)
-        self.write_gene_cache(slim_genes, organism, prefix, gtf_url)
+        self.write(slim_genes, organism, prefix, gtf_url)
 
     def populate(self):
+        """Fill gene caches for all configured organisms
+
+        Consider parallelizing this.
+        """
         for organism in assemblies_by_org:
             self.populate_by_org(organism)
 
