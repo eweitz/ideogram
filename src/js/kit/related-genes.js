@@ -262,7 +262,13 @@ function fetchGenesFromCache(names, type, ideo) {
 
   const hits = names.map(name => {
 
-    if (!locusMap[name]) throwGeneNotFound(name, ideo);
+    if (!locusMap[name]) {
+      if (isSymbol) {
+        throwGeneNotFound(name, ideo);
+      } else {
+        return;
+      }
+    }
 
     const locus = locusMap[name];
     const symbol = isSymbol ? name : nameMap[name];
@@ -283,7 +289,9 @@ function fetchGenesFromCache(names, type, ideo) {
     return hit;
   });
 
-  return hits;
+  const hitsWithGenomicPos = hits.filter(hit => hit !== undefined);
+
+  return hitsWithGenomicPos;
 }
 
 /** Fetch genes from cache, or, if needed, from MyGene.info API */
