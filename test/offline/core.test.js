@@ -168,6 +168,12 @@ describe('Ideogram', function() {
       assert.equal(numAnnots, 1000);
       var numLegendRows = document.querySelectorAll('#_ideogramLegend li').length;
       assert.equal(numLegendRows, 3);
+
+      var legendNameDom = document.querySelector('#_ideogramLegend div');
+      assert.equal(
+        legendNameDom.style.height, '19.12px',
+        'Broke fix for https://github.com/eweitz/ideogram/issues/283'
+      );
       done();
     }
 
