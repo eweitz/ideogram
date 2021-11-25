@@ -248,7 +248,7 @@ describe('Ideogram related genes kit', function() {
     }
 
     const annotsPath =
-      '/dist/data/annotations/gene-cache/homo-sapiens-top-genes.tsv';
+      '/dist/data/cache/homo-sapiens-top-genes.tsv';
 
     var config = {
       organism: 'Homo sapiens',

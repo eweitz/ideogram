@@ -63,7 +63,7 @@ describe('Ideogram annotations', function() {
 
     var config = {
       organism: 'human',
-      annotationsPath: '/dist/data/annotations/gene-cache/homo-sapiens-top-genes.tsv',
+      annotationsPath: '/dist/data/cache/homo-sapiens-top-genes.tsv',
       dataDir: '/dist/data/bands/native/',
       onDrawAnnots: callback
     };
