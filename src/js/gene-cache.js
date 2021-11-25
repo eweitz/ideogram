@@ -25,10 +25,10 @@ function getCacheUrl(orgName, cacheDir, ideo) {
     const splitDataDir = ideo.config.dataDir.split('/');
     const dataIndex = splitDataDir.indexOf('data');
     const baseDir = splitDataDir.slice(0, dataIndex).join('/') + '/data/';
-    cacheDir = baseDir + 'annotations/gene-cache/';
+    cacheDir = baseDir + 'cache/';
   }
 
-  const cacheUrl = cacheDir + organism + '-genes-big.tsv';
+  const cacheUrl = cacheDir + organism + '-genes.tsv';
 
   return cacheUrl;
 }
@@ -70,8 +70,11 @@ function parseAnnots(preAnnots) {
  * */
 function getEnsemblId(ensemblPrefix, slimEnsemblId) {
 
+  // C. elegans (prefix: WBGene) has special IDs, e.g. WBGene00197333
+  const padLength = ensemblPrefix === 'WBGene' ? 8 : 11;
+
   // Zero-pad the slim ID, e.g. 223972 -> 00000223972
-  const zeroPaddedId = slimEnsemblId.padStart(11, '0');
+  const zeroPaddedId = slimEnsemblId.padStart(padLength, '0');
 
   return ensemblPrefix + zeroPaddedId;
 }
@@ -84,18 +87,22 @@ function parseCache(rawTsv, orgName) {
   const lociByName = {};
   const lociById = {};
   const preAnnots = [];
+  let ensemblPrefix;
 
   let t0 = performance.now();
   const lines = rawTsv.split(/\r\n|\n/);
   perfTimes.rawTsvSplit = Math.round(performance.now() - t0);
 
-  const metadata = parseOrgMetadata(orgName);
-  const ensemblPrefix = metadata.ensemblPrefix;
-
   t0 = performance.now();
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    if (line[0] === '#' || line === '') continue; // Skip headers, empty lines
+    if (line === '') continue; // Skip empty lines
+    if (line[0] === '#') {
+      if (line.slice(0, 9) === '## prefix') {
+        ensemblPrefix = line.split('prefix: ')[1];
+      }
+      continue;
+    }
     const [
       chromosome, rawStart, rawLength, slimEnsemblId, gene
     ] = line.trim().split(/\t/);
@@ -187,7 +194,6 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
     sortedAnnots // Ideogram annotations sorted by genomic position
   };
   Ideogram.geneCache[orgName] = ideo.geneCache;
-
 
   if (ideo.config.debug) {
     perfTimes.total = Math.round(performance.now() - startTime);

@@ -246,8 +246,8 @@ function describeInteractions(gene, ixns, searchedGene) {
 
 /** Throw error when searched gene (e.g. "Foo") isn't found */
 function throwGeneNotFound(geneSymbol, ideo) {
-    const organism = ideo.organismScientificName;
-    throw Error(`"${geneSymbol}" is not a known gene in ${organism}`);
+  const organism = ideo.organismScientificName;
+  throw Error(`"${geneSymbol}" is not a known gene in ${organism}`);
 }
 
 /**
@@ -262,7 +262,13 @@ function fetchGenesFromCache(names, type, ideo) {
 
   const hits = names.map(name => {
 
-    if (!locusMap[name]) throwGeneNotFound(name, ideo);
+    if (!locusMap[name]) {
+      if (isSymbol) {
+        throwGeneNotFound(name, ideo);
+      } else {
+        return;
+      }
+    }
 
     const locus = locusMap[name];
     const symbol = isSymbol ? name : nameMap[name];
@@ -283,7 +289,9 @@ function fetchGenesFromCache(names, type, ideo) {
     return hit;
   });
 
-  return hits;
+  const hitsWithGenomicPos = hits.filter(hit => hit !== undefined);
+
+  return hitsWithGenomicPos;
 }
 
 /** Fetch genes from cache, or, if needed, from MyGene.info API */
@@ -412,14 +420,13 @@ async function fetchParalogs(annot, ideo) {
 }
 
 /**
- * Transforms MyGene.info (MGI) gene into Ideogram annotation
+ * Filters out placements on alternative loci scaffolds, an advanced
+ * genome assembly feature we are not concerned with in ideograms.
+ *
+ * Example:
+ * https://mygene.info/v3/query?q=symbol:PTPRC&species=9606&fields=symbol,genomic_pos,name
  */
-function parseAnnotFromMgiGene(gene, ideo, color='red') {
-  // Filters out placements on alternative loci scaffolds, an advanced
-  // genome assembly feature we are not concerned with in ideograms.
-  //
-  // Example:
-  // https://mygene.info/v3/query?q=symbol:PTPRC&species=9606&fields=symbol,genomic_pos,name
+function getGenomicPos(gene, ideo) {
   let genomicPos = null;
   if (Array.isArray(gene.genomic_pos)) {
     genomicPos = gene.genomic_pos.filter(pos => {
@@ -428,6 +435,14 @@ function parseAnnotFromMgiGene(gene, ideo, color='red') {
   } else {
     genomicPos = gene.genomic_pos;
   }
+  return genomicPos;
+}
+
+/**
+ * Transforms MyGene.info (MGI) gene into Ideogram annotation
+ */
+function parseAnnotFromMgiGene(gene, ideo, color='red') {
+  const genomicPos = getGenomicPos(gene, ideo);
 
   const annot = {
     name: gene.symbol,
@@ -597,7 +612,10 @@ async function processSearchedGene(geneSymbol, ideo) {
   if (data.hits.length === 0) {
     return;
   }
-  const gene = data.hits.find(hit => hit.genomic_pos?.ensemblgene);
+  const gene = data.hits.find(hit => {
+    const genomicPos = getGenomicPos(hit, ideo); // omits alt loci
+    return genomicPos?.ensemblgene;
+  });
   const ensemblId = gene.genomic_pos.ensemblgene;
 
   // Assign tooltip content.  Much of the content is often retrieved from
@@ -940,7 +958,7 @@ function _initGeneHints(config, annotsInList) {
   }
 
   const annotsPath =
-    getDir('annotations/gene-cache/homo-sapiens-top-genes.tsv');
+    getDir('cache/homo-sapiens-top-genes.tsv');
 
   const kitDefaults = {
     showFullyBanded: false,

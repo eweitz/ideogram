@@ -8,8 +8,7 @@ var organismMetadata = {
       GRCh37: 'GCF_000001405.13',
       NCBI36: 'GCF_000001405.12'
     },
-    hasGeneCache: true,
-    ensemblPrefix: 'ENSG'
+    hasGeneCache: true
   },
   10090: {
     commonName: 'Mouse',
@@ -19,8 +18,7 @@ var organismMetadata = {
       GRCm38: 'GCF_000001635.20',
       MGSCv37: 'GCF_000001635.18'
     },
-    hasGeneCache: true,
-    ensemblPrefix: 'ENSMUSG'
+    hasGeneCache: true
   },
   9598: {
     commonName: 'Chimpanzee',
@@ -28,7 +26,8 @@ var organismMetadata = {
     assemblies: {
       'default': 'GCF_000001515.7',
       'Pan_tro 3.0': 'GCF_000001515.7'
-    }
+    },
+    hasGeneCache: true
   },
   10116: {
     commonName: 'Rat',
@@ -36,7 +35,8 @@ var organismMetadata = {
     assemblies: {
       'default': 'GCF_000001895.5',
       'Rnor_6.0': 'GCF_000001895.5'
-    }
+    },
+    hasGeneCache: true
   },
   3702: {
     commonName: 'Thale cress',
@@ -137,14 +137,16 @@ var organismMetadata = {
     scientificName: 'Felis catus',
     assemblies: {
       default: 'GCF_000181335.3'
-    }
+    },
+    hasGeneCache: true
   },
   9031: {
     commonName: 'Chicken',
     scientificName: 'Gallus gallus',
     assemblies: {
       default: 'GCF_000002315.6'
-    }
+    },
+    hasGeneCache: true
   },
   9593: {
     commonName: 'Gorilla',
@@ -165,14 +167,16 @@ var organismMetadata = {
     scientificName: 'Macaca fascicularis',
     assemblies: {
       default: 'GCF_000364345.1'
-    }
+    },
+    hasGeneCache: true
   },
   9544: {
     commonName: 'Rhesus macaque',
     scientificName: 'Macaca mulatta',
     assemblies: {
       default: 'GCF_003339765.1'
-    }
+    },
+    hasGeneCache: true
   },
   9597: {
     commonName: 'Bonobo',
@@ -186,7 +190,8 @@ var organismMetadata = {
     scientificName: 'Canis lupus familiaris',
     assemblies: {
       default: 'GCF_014441545.1'
-    }
+    },
+    hasGeneCache: true
   },
   4932: {
     commonName: 'Yeast',
@@ -209,7 +214,8 @@ var organismMetadata = {
     scientificName: 'Caenorhabditis elegans',
     assemblies: {
       default: 'GCF_000002985.6'
-    }
+    },
+    hasGeneCache: true
   },
   4081: {
     commonName: 'tomato',
