@@ -958,7 +958,7 @@ function _initGeneHints(config, annotsInList) {
   }
 
   const annotsPath =
-    getDir('annotations/gene-cache/homo-sapiens-top-genes.tsv');
+    getDir('cache/homo-sapiens-top-genes.tsv');
 
   const kitDefaults = {
     showFullyBanded: false,

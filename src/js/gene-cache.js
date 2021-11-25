@@ -25,7 +25,7 @@ function getCacheUrl(orgName, cacheDir, ideo) {
     const splitDataDir = ideo.config.dataDir.split('/');
     const dataIndex = splitDataDir.indexOf('data');
     const baseDir = splitDataDir.slice(0, dataIndex).join('/') + '/data/';
-    cacheDir = baseDir + 'annotations/gene-cache/';
+    cacheDir = baseDir + 'cache/';
   }
 
   const cacheUrl = cacheDir + organism + '-genes.tsv';
