@@ -813,7 +813,7 @@ const legendHeaderStyle =
   `font-size: 14px; font-weight: bold; font-color: #333;`;
 const relatedLegend = [{
   name: `
-    <div style="position: relative; left: -15px;">
+    <div style="position: relative; left: 30px;">
       <div style="${legendHeaderStyle}">Related genes</div>
       <i>Click gene to search</i>
     </div>
@@ -828,7 +828,7 @@ const relatedLegend = [{
 
 const citedLegend = [{
   name: `
-    <div style="position: relative; left: -15px;">
+    <div style="position: relative; left: 30px;">
       <div style="${legendHeaderStyle}">Highly cited genes</div>
       <i>Click gene to search</i>
     </div>

@@ -168,6 +168,17 @@ describe('Ideogram', function() {
       assert.equal(numAnnots, 1000);
       var numLegendRows = document.querySelectorAll('#_ideogramLegend li').length;
       assert.equal(numLegendRows, 3);
+
+      var legendNameDom = document.querySelector('#_ideogramLegend div');
+      const height = parseFloat(legendNameDom.style.height.replace('px', ''));
+      const expectedHeight = 19.12;
+      const heightDiff = Math.abs(expectedHeight - height);
+
+      // Account for differences between local and CI environments
+      assert.isAtMost(
+        heightDiff, 2,
+        'Broke fix for https://github.com/eweitz/ideogram/issues/283'
+      );
       done();
     }
 
