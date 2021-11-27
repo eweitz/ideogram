@@ -6,11 +6,17 @@ Ideogram uses cached gene data to drastically simplify and speed up rendering.
 
 import argparse
 import csv
-import gzip
 import os
 import re
-import ssl
+import sys
 import urllib.request
+
+# Enable importing local modules when directly calling as script
+if __name__ == "__main__":
+    cur_dir = os.path.join(os.path.dirname(__file__))
+    sys.path.append(cur_dir + "/..")
+
+from lib import download_gzip
 
 # Organisms configured for gene caching, and their genome assembly names
 assemblies_by_org = {
@@ -34,47 +40,6 @@ assemblies_by_org = {
 # metazoa = {
 #     "Anopheles gambiae".AgamP4.51.chr.gtf.gz  "
 # }
-
-ctx = ssl.create_default_context()
-ctx.check_hostname = False
-ctx.verify_mode = ssl.CERT_NONE
-
-def is_cached(path, cache, threshold):
-    """Determine if file path is already available, per cache and threshold.
-    `cache` level is set by pipeline user; `threshold` by the calling function.
-    See `--help` CLI output for description of `cache` levels.
-    """
-
-    if cache >= threshold:
-        if threshold == 1:
-            action = "download"
-        elif threshold == 2:
-            action = "comput"
-
-        if os.path.exists(path):
-            print(f"Using cached copy of {action}ed file {path}")
-            return True
-        else:
-            print(f"No cached copy exists, so {action}ing {path}")
-            return False
-    return False
-
-def download_gzip(url, output_path, cache=0):
-    """Download gzip file, decompress, write to output path; use optional cache
-    Cached files can help speed development iterations by > 2x, and some
-    development scenarios (e.g. on a train or otherwise without an Internet
-    connection) can be impossible without it.
-    """
-
-    if is_cached(output_path, cache, 1):
-        return
-    headers={"Accept-Encoding": "gzip"}
-    request = urllib.request.Request(url, headers=headers)
-    response = urllib.request.urlopen(request, context=ctx)
-    content = gzip.decompress(response.read()).decode()
-
-    with open(output_path, "w") as f:
-        f.write(content)
 
 def get_gtf_url(organism):
     """Get URL to GTF file
@@ -122,7 +87,6 @@ def trim_id(id, prefix):
     insignificant = re.search(prefix + r"0+", id).group()
     slim_id = id.replace(insignificant, "")
     return slim_id
-
 
 def parse_gene(gtf_row):
     """Parse gene from CSV-reader-split row of GTF file"""
