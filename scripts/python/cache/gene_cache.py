@@ -5,6 +5,7 @@ Ideogram uses cached gene data to drastically simplify and speed up rendering.
 """
 
 import argparse
+import codecs
 import csv
 import os
 import re
@@ -35,6 +36,14 @@ assemblies_by_org = {
     "Sus scrofa": "Sscrofa11.1",
     # "Anopheles gambiae": "AgamP4.51",
     "Caenorhabditis elegans": "WBcel235"
+}
+
+interesting_genes_by_organism = {
+    "Homo sapiens": "gene-hints.tsv",
+    "Mus musculus": "pubmed-citations.tsv",
+    "Rattus norvegicus": "pubmed-citations.tsv",
+    "Canis lupus familiaris": "pubmed-citations.tsv",
+    "Felis catus": "pubmed-citations.tsv",
 }
 
 # metazoa = {
@@ -138,6 +147,55 @@ def trim_gtf(gtf_path):
 
     return [slim_genes, prefix]
 
+def fetch_interesting_genes(organism):
+    """Request interest-ranked gene data from Gene Hints"""
+    interesting_genes = []
+
+    if organism not in interesting_genes_by_organism:
+        return None
+    base_url = \
+        "https://raw.githubusercontent.com/" +\
+        "broadinstitute/gene-hints/main/data/"
+    org_lch = organism.replace(" ", "-").lower()
+    interesting_file = interesting_genes_by_organism[organism]
+    url = f"{base_url}{org_lch}-{interesting_file}"
+    print('url', url)
+    response = urllib.request.urlopen(url)
+
+    # Stream process the response instead of loading it entirely in memory.
+    # This is faster than that naive approach.
+    # Adapted from https://stackoverflow.com/a/18897408/10564415
+    reader = csv.reader(codecs.iterdecode(response, 'utf-8'), delimiter="\t")
+    for row in reader:
+        if row[0][0] == "#" or len(row) == 0:
+            continue
+        interesting_genes.append(row[0])
+
+    return interesting_genes
+
+def sort_by_interest(slim_genes, organism):
+    """Sort gene data by general interest or scholarly interest
+
+    This uses data from the Gene Hints pipeline:
+    https://github.com/broadinstitute/gene-hints
+
+    Human genes are ranked by Wikipedia page views, and non-human genes are
+    ranked by PubMed citations.  Sorting genes by interest gives a decent way
+    to determine which genes are most important to show, in cases where showing
+    many genes would be overwhelming.
+    """
+    ranks = fetch_interesting_genes(organism)
+    if ranks is None:
+        return slim_genes
+
+    # Sort genes by interest rank, and put unranked genes last
+    sorted_genes = sorted(
+        slim_genes,
+        key=lambda x: ranks.index(x[-1]) if x[-1] in ranks else 1E10,
+    )
+
+    return sorted_genes
+
 
 class GeneCache():
     """Convert Ensembl GTF files to minimal TSVs for Ideogram.js gene caches
@@ -193,7 +251,8 @@ class GeneCache():
         """
         [gtf_path, gtf_url] = self.fetch_ensembl_gtf(organism)
         [slim_genes, prefix] = trim_gtf(gtf_path)
-        self.write(slim_genes, organism, prefix, gtf_url)
+        sorted_slim_genes = sort_by_interest(slim_genes, organism)
+        self.write(sorted_slim_genes, organism, prefix, gtf_url)
 
     def populate(self):
         """Fill gene caches for all configured organisms
