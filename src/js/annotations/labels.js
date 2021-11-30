@@ -204,6 +204,8 @@ export function applyRankCutoff(annots, cutoff, ideo) {
   // Take the top N ranked genes, where N is `cutoff`
   annots = rankedAnnots.slice(0, cutoff);
 
+  // console.log(annots.map(annot => {return annot.name + ' ' + annot.rank }));
+
   return annots;
 }
 
@@ -216,14 +218,14 @@ function fillAnnotLabels(sortedAnnots=[]) {
   // Remove any pre-existing annotation labels, to avoid duplicates
   ideo.clearAnnotLabels();
 
-  const spacedAnnots = [];
+  let spacedAnnots = [];
   const spacedLayouts = [];
 
   if (sortedAnnots.length === 0) {
     sortedAnnots = ideo.flattenAnnots();
   }
 
-  sortedAnnots = applyRankCutoff(sortedAnnots, 20, ideo);
+  const m = 5; // padding
 
   sortedAnnots.forEach((annot, i) => {
     const layout = getAnnotLabelLayout(annot, ideo);
@@ -233,11 +235,14 @@ function fillAnnotLabels(sortedAnnots=[]) {
     const hasOverlap =
       spacedLayouts.length > 1 && spacedLayouts.some((sl, j) => {
 
-        const xOverlap = sl.left <= layout.right && sl.right >= layout.left;
+        const xOverlap = (
+          sl.left - m <= layout.right &&
+          sl.right >= layout.left - m
+        );
         const yOverlap =
           (
-            sl.top < layout.bottom && sl.bottom > layout.top ||
-            layout.top < sl.bottom && layout.bottom > sl.bottom
+            sl.top - m < layout.bottom && sl.bottom > layout.top - m ||
+            layout.top - m < sl.bottom && layout.bottom > sl.bottom
           );
 
         // if (annot.name === 'TP73') {
@@ -258,6 +263,9 @@ function fillAnnotLabels(sortedAnnots=[]) {
     spacedAnnots.push(annot);
     spacedLayouts.push(layout);
   });
+
+
+  spacedAnnots = applyRankCutoff(spacedAnnots, 20, ideo);
 
   // Ensure highest-ranked annots are ordered last in SVG,
   // to ensure the are written before lower-ranked annots

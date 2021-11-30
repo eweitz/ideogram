@@ -584,9 +584,9 @@ function finishPlotRelatedGenes(type, ideo) {
 
   annots = applyAnnotsIncludeList(annots, ideo);
   annots = mergeAnnots(annots);
-  annots = applyRankCutoff(annots, 40, ideo);
+  annots = applyRankCutoff(annots, 30, ideo);
   ideo.relatedAnnots = mergeAnnots(annots);
-  ideo.relatedAnnots = applyRankCutoff(annots, 40, ideo);
+  ideo.relatedAnnots = applyRankCutoff(annots, 30, ideo);
   annots.sort(sortAnnotsByRelatedStatus);
   ideo.relatedAnnots.sort(sortAnnotsByRelatedStatus);
 
