@@ -181,12 +181,12 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
   perfTimes.fetch = Math.round(fetchEndTime - fetchStartTime);
 
   const [
-    citedNames, namesById, idsByName, lociByName, lociById, sortedAnnots
+    interestingNames, namesById, idsByName, lociByName, lociById, sortedAnnots
   ] = parseCache(data, orgName);
   perfTimes.parseCache = Math.round(performance.now() - fetchEndTime);
 
   ideo.geneCache = {
-    citedNames, // Array of gene names, ordered by citation count
+    interestingNames, // Array ordered by general or scholarly interest
     namesById,
     idsByName,
     lociByName, // Object of gene positions, keyed by gene name

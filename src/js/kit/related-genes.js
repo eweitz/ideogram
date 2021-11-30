@@ -191,7 +191,7 @@ async function fetchInteractions(gene, ideo) {
  */
 async function fetchMyGeneInfo(queryString) {
   const myGeneBase = 'https://mygene.info/v3/query';
-  const response = await fetch(myGeneBase + queryString + '&size=20');
+  const response = await fetch(myGeneBase + queryString + '&size=400');
   const data = await response.json();
   return data;
 }
@@ -480,6 +480,37 @@ function applyAnnotsIncludeList(annots, ideo) {
   return includedAnnots;
 }
 
+function applyRankCutoff(annots, ideo) {
+  if ('geneCache' in ideo === false) return annots;
+
+  const ranks = ideo.geneCache.interestingNames;
+
+  annots = annots.map(annot => {
+    annot.rank = ranks.indexOf(annot.name) || 1E10;
+    return annot;
+  });
+
+  // Ranks annots by popularity
+  const rankedAnnots = annots.sort((a, b) => {
+
+    // Search gene is most important, regardless of popularity
+    if (a.color === 'red') return -1;
+    if (b.color === 'red') return 1;
+
+    // Rank 3 is more important than rank 30
+    return a.rank - b.rank;
+  });
+
+  // console.log(rankedAnnots);
+  // console.log(annots.map(annot => annot.name));
+  // Take the 20 top-ranked genes
+  annots = rankedAnnots.slice(0, 20);
+
+  // console.log(annots.map(annot => {return annot.name + ' ' + annot.rank }));
+  // console.log(annots)
+  return annots;
+}
+
 /** Fetch and draw interacting genes, return Promise for annots */
 function processInteractions(annot, ideo) {
   return new Promise(async (resolve) => {
@@ -583,7 +614,9 @@ function finishPlotRelatedGenes(type, ideo) {
 
   annots = applyAnnotsIncludeList(annots, ideo);
   annots = mergeAnnots(annots);
+  annots = applyRankCutoff(annots, ideo);
   ideo.relatedAnnots = mergeAnnots(annots);
+  ideo.relatedAnnots = applyRankCutoff(annots, ideo);
   annots.sort(sortAnnotsByRelatedStatus);
   ideo.relatedAnnots.sort(sortAnnotsByRelatedStatus);
 
