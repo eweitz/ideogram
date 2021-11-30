@@ -180,6 +180,33 @@ function addAnnotLabel(annotName, backgroundColor, borderColor) {
   renderLabel(annot, style, ideo);
 }
 
+export function applyRankCutoff(annots, cutoff, ideo) {
+  if ('geneCache' in ideo === false) return annots;
+
+  const ranks = ideo.geneCache.interestingNames;
+
+  annots = annots.map(annot => {
+    annot.rank = ranks.indexOf(annot.name) || 1E10;
+    return annot;
+  });
+
+  // Ranks annots by popularity
+  const rankedAnnots = annots.sort((a, b) => {
+
+    // Search gene is most important, regardless of popularity
+    if (a.color === 'red') return -1;
+    if (b.color === 'red') return 1;
+
+    // Rank 3 is more important than rank 30
+    return a.rank - b.rank;
+  });
+
+  // Take the top N ranked genes, where N is `cutoff`
+  annots = rankedAnnots.slice(0, cutoff);
+
+  return annots;
+}
+
 /** Label as many annotations as possible, without overlap */
 function fillAnnotLabels(sortedAnnots=[]) {
   const ideo = this;
@@ -195,6 +222,8 @@ function fillAnnotLabels(sortedAnnots=[]) {
   if (sortedAnnots.length === 0) {
     sortedAnnots = ideo.flattenAnnots();
   }
+
+  sortedAnnots = applyRankCutoff(sortedAnnots, 20, ideo);
 
   sortedAnnots.forEach((annot, i) => {
     const layout = getAnnotLabelLayout(annot, ideo);
