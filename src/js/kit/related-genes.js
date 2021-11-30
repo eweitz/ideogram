@@ -105,7 +105,7 @@ function maybeGeneSymbol(ixn, gene) {
 function isInteractionRelevant(rawIxn, gene, nameId, seenNameIds, ideo) {
   let isGeneSymbol;
   if ('geneCache' in ideo && gene.name) {
-    isGeneSymbol = rawIxn in ideo.geneCache.lociByName;
+    isGeneSymbol = rawIxn.toLowerCase() in ideo.geneCache.nameCaseMap;
   } else {
     isGeneSymbol = maybeGeneSymbol(rawIxn, gene);
   }
@@ -263,12 +263,22 @@ function fetchGenesFromCache(names, type, ideo) {
 
   const hits = names.map(name => {
 
-    if (!locusMap[name]) {
+    const nameLc = name.toLowerCase();
+
+    if (!locusMap[name] && !cache.nameCaseMap[nameLc]) {
       if (isSymbol) {
         throwGeneNotFound(name, ideo);
       } else {
         return;
       }
+    }
+
+    // Canonicalize name if it is mistaken in upstream data source.
+    // This can sometimes happen in WikiPathways, e.g. when searching
+    // interactions for rat Pten, it includes a result for "PIK3CA".
+    // In that case, this would correct PIK3CA to be Pik3ca.
+    if (isSymbol && !locusMap[name] && cache.nameCaseMap[nameLc]) {
+      name = cache.nameCaseMap[nameLc];
     }
 
     const locus = locusMap[name];

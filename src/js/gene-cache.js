@@ -82,6 +82,7 @@ function getEnsemblId(ensemblPrefix, slimEnsemblId) {
 /** Parse a gene cache TSV file, return array of useful transforms */
 function parseCache(rawTsv, orgName) {
   const names = [];
+  const nameCaseMap = {};
   const namesById = {};
   const idsByName = {};
   const lociByName = {};
@@ -113,6 +114,7 @@ function parseCache(rawTsv, orgName) {
     const locus = [chromosome, start, stop];
 
     names.push(gene);
+    nameCaseMap[gene.toLowerCase()] = gene;
     namesById[ensemblId] = gene;
     idsByName[gene] = ensemblId;
     lociByName[gene] = locus;
@@ -124,7 +126,10 @@ function parseCache(rawTsv, orgName) {
   const sortedAnnots = parseAnnots(preAnnots);
   perfTimes.parseAnnots = Math.round(performance.now() - t1);
 
-  return [names, namesById, idsByName, lociByName, lociById, sortedAnnots];
+  return [
+    names, nameCaseMap, namesById, idsByName, lociByName, lociById,
+    sortedAnnots
+  ];
 }
 
 /** Get organism's metadata fields */
@@ -181,12 +186,14 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
   perfTimes.fetch = Math.round(fetchEndTime - fetchStartTime);
 
   const [
-    interestingNames, namesById, idsByName, lociByName, lociById, sortedAnnots
+    interestingNames, nameCaseMap, namesById, idsByName,
+    lociByName, lociById, sortedAnnots
   ] = parseCache(data, orgName);
   perfTimes.parseCache = Math.round(performance.now() - fetchEndTime);
 
   ideo.geneCache = {
     interestingNames, // Array ordered by general or scholarly interest
+    nameCaseMap, // Maps of lowercase gene names to proper gene names
     namesById,
     idsByName,
     lociByName, // Object of gene positions, keyed by gene name
