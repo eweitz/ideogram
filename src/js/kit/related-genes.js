@@ -627,7 +627,7 @@ async function processSearchedGene(geneSymbol, ideo) {
   }
   const gene = data.hits.find(hit => {
     const genomicPos = getGenomicPos(hit, ideo); // omits alt loci
-    return genomicPos?.ensemblgene;
+    return genomicPos && genomicPos.ensemblgene;
   });
   const ensemblId = gene.genomic_pos.ensemblgene;
 

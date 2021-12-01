@@ -79,7 +79,10 @@ function writeLegend(ideo) {
 
   for (i = 0; i < legend.length; i++) {
     list = legend[i];
-    const nameHeight = list?.nameHeight || lineHeight;
+    let nameHeight = lineHeight;
+    if (list.nameHeight) {
+      nameHeight = list.nameHeight;
+    }
     let nameStyle = '';
     if (nameHeight) {
       nameStyle =

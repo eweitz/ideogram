@@ -141,7 +141,7 @@ function parseOrgMetadata(orgName) {
 /** Reports if current organism has a gene cache */
 function hasGeneCache(orgName) {
   const metadata = parseOrgMetadata(orgName);
-  return (metadata?.hasGeneCache === true);
+  return (metadata.hasGeneCache && metadata.hasGeneCache === true);
 }
 
 async function cacheFetch(url) {
@@ -165,7 +165,7 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
   if (!hasGeneCache(orgName)) return;
 
   // Skip initialization if cache is already populated
-  if (Ideogram.geneCache?.[orgName]) {
+  if (Ideogram.geneCache && Ideogram.geneCache[orgName]) {
     // Simplify chief use case, i.e. for single organism
     ideo.geneCache = Ideogram.geneCache[orgName];
     return;
