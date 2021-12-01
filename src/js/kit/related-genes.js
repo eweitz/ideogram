@@ -29,6 +29,7 @@ import {
 
 import {writeLegend} from '../annotations/legend';
 import {getAnnotDomId} from '../annotations/process';
+import {applyRankCutoff} from '../annotations/labels';
 import {getDir} from '../lib';
 import initGeneCache from '../gene-cache';
 
@@ -104,7 +105,7 @@ function maybeGeneSymbol(ixn, gene) {
 function isInteractionRelevant(rawIxn, gene, nameId, seenNameIds, ideo) {
   let isGeneSymbol;
   if ('geneCache' in ideo && gene.name) {
-    isGeneSymbol = rawIxn in ideo.geneCache.lociByName;
+    isGeneSymbol = rawIxn.toLowerCase() in ideo.geneCache.nameCaseMap;
   } else {
     isGeneSymbol = maybeGeneSymbol(rawIxn, gene);
   }
@@ -191,7 +192,7 @@ async function fetchInteractions(gene, ideo) {
  */
 async function fetchMyGeneInfo(queryString) {
   const myGeneBase = 'https://mygene.info/v3/query';
-  const response = await fetch(myGeneBase + queryString + '&size=20');
+  const response = await fetch(myGeneBase + queryString + '&size=400');
   const data = await response.json();
   return data;
 }
@@ -262,12 +263,22 @@ function fetchGenesFromCache(names, type, ideo) {
 
   const hits = names.map(name => {
 
-    if (!locusMap[name]) {
+    const nameLc = name.toLowerCase();
+
+    if (!locusMap[name] && !cache.nameCaseMap[nameLc]) {
       if (isSymbol) {
         throwGeneNotFound(name, ideo);
       } else {
         return;
       }
+    }
+
+    // Canonicalize name if it is mistaken in upstream data source.
+    // This can sometimes happen in WikiPathways, e.g. when searching
+    // interactions for rat Pten, it includes a result for "PIK3CA".
+    // In that case, this would correct PIK3CA to be Pik3ca.
+    if (isSymbol && !locusMap[name] && cache.nameCaseMap[nameLc]) {
+      name = cache.nameCaseMap[nameLc];
     }
 
     const locus = locusMap[name];
@@ -583,7 +594,9 @@ function finishPlotRelatedGenes(type, ideo) {
 
   annots = applyAnnotsIncludeList(annots, ideo);
   annots = mergeAnnots(annots);
+  annots = applyRankCutoff(annots, 40, ideo);
   ideo.relatedAnnots = mergeAnnots(annots);
+  ideo.relatedAnnots = applyRankCutoff(annots, 40, ideo);
   annots.sort(sortAnnotsByRelatedStatus);
   ideo.relatedAnnots.sort(sortAnnotsByRelatedStatus);
 
@@ -614,7 +627,7 @@ async function processSearchedGene(geneSymbol, ideo) {
   }
   const gene = data.hits.find(hit => {
     const genomicPos = getGenomicPos(hit, ideo); // omits alt loci
-    return genomicPos?.ensemblgene;
+    return genomicPos && genomicPos.ensemblgene;
   });
   const ensemblId = gene.genomic_pos.ensemblgene;
 
