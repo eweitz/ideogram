@@ -125,17 +125,18 @@
     const examplesByOrganism = {
       'homo-sapiens': ['RAD51', 'CD4', 'APOE'],
       'tupaia-belangeri': ['RAD51', 'CD4', 'APOE'],
-      'mus-musculus': ['Rad51', 'Pten', 'Apoe'],
-      'rattus-norvegicus': ['Rad51', 'Pten', 'Apoe'],
+      'mus-musculus': ['Pten', 'Rad51', 'Sox2'],
+      'rattus-norvegicus': ['Rad51', 'Pten', 'Sox2'],
       'drosophila-melanogaster': ['dpp', 'N', 'Ubx'],
       'caenorhabditis-elegans': ['rad-51', 'daf-16', 'hsf-1'],
       'saccharomyces-cerevisiae': ['rad51', 'atp6', 'cytb'],
       'arabidopsis-thaliana': ['PHYA', 'FLC', 'FT'],
       'danio-rerio': ['bmp4', 'myod1', 'cyp1a'],
+      'pan-troglodytes': ['RAD51', 'CD4', 'APOE'],
       'macaca-mulatta': ['RAD51', 'CD4', 'APOE'],
       'macaca-fascicularis': ['RAD51', 'CD4', 'APOE'],
-      'felis-catus': ['RAD51', 'CD4', 'APOE'],
-      'canis-lupus-familiaris': ['RAD51', 'CD4', 'APOE'],
+      'felis-catus': ['OXTR', 'MAPK9', 'FGF5'],
+      'canis-lupus-familiaris': ['OXTR', 'MAPK9', 'FGF5'],
       'equus-caballus': ['RAD51', 'CD4', 'APOE'],
       'bos-taurus': ['RAD51', 'CD4', 'APOE'],
       'sus-scrofa': ['RAD51', 'CD4', 'APOE'],
@@ -316,6 +317,8 @@
     // annotsInList = ['CDK9', 'CDK19', 'CDK1'];
     // let ideogram = Ideogram.initRelatedGenes(config, annotsInList)
     let ideogram;
+
+    if ('debug' in urlParams) config.debug = true;
     if ('q' in urlParams) {
       ideogram = Ideogram.initRelatedGenes(config);
     } else {

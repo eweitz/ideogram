@@ -92,6 +92,13 @@ export class Chromosome {
       opacity = '1';
     }
 
+    let centromereFill;
+    if (this._ideo.config.chrFillColor) {
+      const fillColor = self._color.getFillColor();
+      fill = fillColor.arm;
+      centromereFill = fillColor.centromere;
+    }
+
     // Render chromosome border
     container.append('g')
       .attr('class', 'chromosome-border')
@@ -101,6 +108,11 @@ export class Chromosome {
       .append('path')
       .attr('fill', fill)
       .style('fill-opacity', opacity)
+      .style('fill', function(d) {
+        if (d.class === 'acen' && centromereFill) {
+          return centromereFill;
+        }
+      })
       .attr('stroke', function(d, i) {
         return self._color.getBorderColor(chrSetIndex, chrIndex, i);
       })

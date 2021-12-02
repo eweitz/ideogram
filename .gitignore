@@ -20,3 +20,6 @@ __pycache__/
 # IDEA IDE files
 .idea/
 ideogram.iml
+
+scripts/python/env
+scripts/python/data

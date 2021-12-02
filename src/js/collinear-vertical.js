@@ -15,7 +15,7 @@ function labelGenomes(ideo) {
     d3.select(ideo.selector)
       .append('text')
       .attr('class', 'genomeLabel italic')
-      .attr('x', 50 + 200 * i)
+      .attr('x', 55 + 200 * i)
       .attr('y', 10)
       .text(scientificName)
       .attr('text-anchor', 'middle');
@@ -45,7 +45,7 @@ function rearrangeChromosomes(chrSets, yOffsets, x, ideo) {
     chr = ideo.chromosomesArray[i];
     taxid = chr.id.split('-')[1];
     orgIndex = ideo.config.taxids.indexOf(taxid);
-    adjustedX = x - orgIndex * 200 - 30;
+    adjustedX = x - orgIndex * 200 - 30 - 5;
     if (orgIndex === 0) {
       chrLabelX = -34;
       adjustedX += ideo.config.chrWidth * 2 - 16;
@@ -73,7 +73,7 @@ function rearrangeChromosomes(chrSets, yOffsets, x, ideo) {
 /**
 * Get pixel coordinates to use for rearrangement
 */
-function getyOffsets(chrSets, ideo) {
+function getYOffsets(chrSets, ideo) {
   var yOffsets, i, index, chr, prevChr, y, prevWidth, prevY, yBump, taxid,
     seenTaxids = {};
 
@@ -113,7 +113,7 @@ function collinearizeVerticalChromosomes(ideo) {
 
   x = -40;
 
-  yOffsets = getyOffsets(chrSets, ideo);
+  yOffsets = getYOffsets(chrSets, ideo);
   rearrangeChromosomes(chrSets, yOffsets, x, ideo);
 
   width = Math.round(yOffsets.slice(-1)[0] + 70);

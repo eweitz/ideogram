@@ -219,6 +219,7 @@ function getScientificName(taxid) {
 * "Canis lupus familiaris" -> "canis-lupus-familiaris"
 */
 function slug(value) {
+  if (typeof value === 'undefined') return '';
   return value.toLowerCase().replace(/ /g, '-');
 }
 

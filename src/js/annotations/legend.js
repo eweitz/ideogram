@@ -79,10 +79,19 @@ function writeLegend(ideo) {
 
   for (i = 0; i < legend.length; i++) {
     list = legend[i];
-    const nameHeight = list.nameHeight ? list.nameHeight : 0;
-    const heightCss = (nameHeight) ? ` style="height: ${nameHeight}px;"` : '';
+    let nameHeight = lineHeight;
+    if (list.nameHeight) {
+      nameHeight = list.nameHeight;
+    }
+    let nameStyle = '';
+    if (nameHeight) {
+      nameStyle =
+        `style="height: ${nameHeight}px; ` +
+        `position: relative; ` +
+        `left: -${nameHeight - 5}px;"`;
+    }
     if ('name' in list) {
-      labels = `<div${heightCss}>` + list.name + `</div>`;
+      labels = `<div ${nameStyle}>` + list.name + `</div>`;
     }
     svg = '<svg id="_ideogramLegendSvg" width="' + lineHeight + '">';
     [labels, svg] = getListItems(labels, svg, list, nameHeight, ideo);

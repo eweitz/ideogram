@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Color, chromosomes | Ideogram</title>
+  <style>
+    body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
+    a, a:visited {text-decoration: none;}
+    a:hover {text-decoration: underline;}
+    a, a:hover, a:visited, a:active {color: #0366d6;}
+  </style>
+  <script type="text/javascript" src="dist/js/ideogram.min.js"></script>
+<link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
+</head>
+<body>
+  <h1>Color, chromosomes | Ideogram</h1>
+  <a href="/ideogram">Overview</a> |
+  <a href="highlights-groups">Previous</a> |
+  <a href="ploidy-basic">Next</a> |
+  <a href="https://github.com/eweitz/ideogram/blob/gh-pages/color-chromosomes.html" target="_blank">Source</a>
+  <p>
+    The color of arms and centromeres of can be customized in unbanded chromosomes, as shown here.
+  </p>
+  <script type="text/javascript">
+
+    var ideogram = new Ideogram({
+      organism: 'human',
+      showFullyBanded: false,
+
+      // Custom arm color, default centromere color
+      // chrFillColor: '#CCF'
+
+      // Custom arm and centromere color
+      chrFillColor: {arm: '#AEA', centromere: '#EEA '}
+    });
+  </script>
+</body>
+</html>

@@ -29,6 +29,7 @@ import {
 
 import {writeLegend} from '../annotations/legend';
 import {getAnnotDomId} from '../annotations/process';
+import {applyRankCutoff} from '../annotations/labels';
 import {getDir} from '../lib';
 import initGeneCache from '../gene-cache';
 
@@ -104,7 +105,7 @@ function maybeGeneSymbol(ixn, gene) {
 function isInteractionRelevant(rawIxn, gene, nameId, seenNameIds, ideo) {
   let isGeneSymbol;
   if ('geneCache' in ideo && gene.name) {
-    isGeneSymbol = rawIxn in ideo.geneCache.lociByName;
+    isGeneSymbol = rawIxn.toLowerCase() in ideo.geneCache.nameCaseMap;
   } else {
     isGeneSymbol = maybeGeneSymbol(rawIxn, gene);
   }
@@ -191,7 +192,7 @@ async function fetchInteractions(gene, ideo) {
  */
 async function fetchMyGeneInfo(queryString) {
   const myGeneBase = 'https://mygene.info/v3/query';
-  const response = await fetch(myGeneBase + queryString + '&size=20');
+  const response = await fetch(myGeneBase + queryString + '&size=400');
   const data = await response.json();
   return data;
 }
@@ -217,7 +218,6 @@ function parseNameAndEnsemblIdFromMgiGene(gene) {
  * This comprises most of the content for tooltips for interacting genes.
  */
 function describeInteractions(gene, ixns, searchedGene) {
-
   const pathwayIds = [];
   const pathwayNames = [];
   let ixnsDescription = '';
@@ -245,24 +245,119 @@ function describeInteractions(gene, ixns, searchedGene) {
   return descriptionObj;
 }
 
+/** Throw error when searched gene (e.g. "Foo") isn't found */
+function throwGeneNotFound(geneSymbol, ideo) {
+  const organism = ideo.organismScientificName;
+  throw Error(`"${geneSymbol}" is not a known gene in ${organism}`);
+}
+
+/**
+ * Fetch genes from cache
+ * Construct objects that match format of MyGene.info API response
+ */
+function fetchGenesFromCache(names, type, ideo) {
+  const cache = ideo.geneCache;
+  const isSymbol = (type === 'symbol');
+  const locusMap = isSymbol ? cache.lociByName : cache.lociById;
+  const nameMap = isSymbol ? cache.idsByName : cache.namesById;
+
+  const hits = names.map(name => {
+
+    const nameLc = name.toLowerCase();
+
+    if (!locusMap[name] && !cache.nameCaseMap[nameLc]) {
+      if (isSymbol) {
+        throwGeneNotFound(name, ideo);
+      } else {
+        return;
+      }
+    }
+
+    // Canonicalize name if it is mistaken in upstream data source.
+    // This can sometimes happen in WikiPathways, e.g. when searching
+    // interactions for rat Pten, it includes a result for "PIK3CA".
+    // In that case, this would correct PIK3CA to be Pik3ca.
+    if (isSymbol && !locusMap[name] && cache.nameCaseMap[nameLc]) {
+      name = cache.nameCaseMap[nameLc];
+    }
+
+    const locus = locusMap[name];
+    const symbol = isSymbol ? name : nameMap[name];
+    const ensemblId = isSymbol ? nameMap[name] : name;
+
+    const hit = {
+      symbol,
+      name: '',
+      source: 'cache',
+      genomic_pos: {
+        chr: locus[0],
+        start: locus[1],
+        end: locus[2],
+        ensemblgene: ensemblId
+      }
+    };
+
+    return hit;
+  });
+
+  const hitsWithGenomicPos = hits.filter(hit => hit !== undefined);
+
+  return hitsWithGenomicPos;
+}
+
+/** Fetch genes from cache, or, if needed, from MyGene.info API */
+async function fetchGenes(names, type, ideo) {
+
+  let data;
+
+  // Account for single-gene fetch
+  if (typeof names === 'string') names = [names];
+
+  // Query parameter for MyGene.info API
+  const qParam = names.map(name => `${type}:${name.trim()}`).join(' OR ');
+  const taxid = ideo.config.taxid;
+
+  const queryStringBase = `?q=${qParam}&species=${taxid}&fields=`;
+
+  if (ideo.geneCache) {
+    const hits = fetchGenesFromCache(names, type, ideo);
+
+    // Asynchronously fetch full name, but don't await the response, because
+    // full names are only shown upon hovering over an annotation.
+    const queryString = `${queryStringBase}symbol,name`;
+    data = fetchMyGeneInfo(queryString).then(data => {
+      data.hits.forEach((hit) => {
+        const symbol = hit.symbol;
+        const fullName = hit.name;
+        if (symbol in ideo.annotDescriptions.annots) {
+          ideo.annotDescriptions.annots[symbol].name = fullName;
+        } else {
+          ideo.annotDescriptions.annots[symbol] = {name: fullName};
+        }
+      });
+    });
+
+    data = {hits, fromGeneCache: true};
+  } else {
+    // Fetch gene data from MyGene.info
+    const queryString = `${queryStringBase}symbol,genomic_pos,name`;
+    data = await fetchMyGeneInfo(queryString);
+  }
+
+  return data;
+}
+
 /**
  * Retrieves position and other data on interacting genes from MyGene.info
  */
 async function fetchInteractionAnnots(interactions, searchedGene, ideo) {
 
   const annots = [];
-  const geneList = Object.keys(interactions);
+  const symbols = Object.keys(interactions);
 
-  if (geneList.length === 0) return annots;
+  if (symbols.length === 0) return annots;
 
-  const ixnParam = geneList.map(ixn => {
-    return `symbol:${ixn.trim()}`;
-  }).join(' OR ');
-
-  const taxid = ideo.config.taxid;
-  const queryString =
-    `?q=${ixnParam}&species=${taxid}&fields=symbol,genomic_pos,name`;
-  const data = await fetchMyGeneInfo(queryString);
+  const data = await fetchGenes(symbols, 'symbol', ideo);
 
   data.hits.forEach(gene => {
     // If hit lacks position
@@ -288,67 +383,14 @@ async function fetchInteractionAnnots(interactions, searchedGene, ideo) {
   return annots;
 }
 
-// Commented out because call to Ensembl threw false-positive 400 error
-// Also had historically been slow, and included an extraneous OPTIONS
-// request that would often double effective response time.
-//
-// See alternative in fetchParalogPositionsFromMyGeneInfo
-//
-// /** Fetch positions of paralogs from Ensembl REST API */
-// async function fetchParalogPositionsFromEnsembl(homologs, ideo) {
-//   const annots = [];
-//   const orgUnderscored = ideo.config.organism.replace(/[ -]/g, '_');
-
-//   const homologIds = homologs.map(homolog => homolog.id);
-//   const path = '/lookup/id/' + orgUnderscored;
-//   const body = {
-//     ids: homologIds,
-//     species: orgUnderscored,
-//     object_type: 'gene'
-//   };
-//   const ensemblHomologGenes =
-//     await Ideogram.fetchEnsembl(path, body, 'POST');
-
-//   Object.entries(ensemblHomologGenes).map((idGene, i) => {
-//     const gene = idGene[1];
-
-//     // Seen in related genes for SIRT2 in Pan troglodytes
-//     if ('display_name' in gene === false) return;
-
-//     const annot = {
-//       name: gene.display_name,
-//       chr: gene.seq_region_name,
-//       start: gene.start,
-//       stop: gene.end,
-//       id: gene.id,
-//       color: 'pink'
-//     };
-
-//     annots.push(annot);
-//     const description = gene.description;
-//     const ensemblId = gene.id;
-//     const name = gene.description.split(' [')[0];
-//     const type = 'paralogous gene';
-//     const descriptionObj = {description, ensemblId, name, type};
-//     ideo.annotDescriptions.annots[annot.name] = descriptionObj;
-//   });
-
-//   return annots;
-// }
-
 /** Fetch paralog positions from MyGeneInfo */
 async function fetchParalogPositionsFromMyGeneInfo(
   homologs, searchedGene, ideo
 ) {
   const annots = [];
-  const qParam = homologs.map(homolog => {
-    return `ensemblgene:${homolog.id}`;
-  }).join(' OR ');
+  const ensemblIds = homologs.map(homolog => homolog.id);
 
-  const taxid = ideo.config.taxid;
-  const queryString =
-    `?q=${qParam}&species=${taxid}&fields=symbol,genomic_pos,name`;
-  const data = await fetchMyGeneInfo(queryString);
+  const data = await fetchGenes(ensemblIds, 'ensemblgene', ideo);
 
   data.hits.forEach(gene => {
 
@@ -389,14 +431,13 @@ async function fetchParalogs(annot, ideo) {
 }
 
 /**
- * Transforms MyGene.info (MGI) gene into Ideogram annotation
+ * Filters out placements on alternative loci scaffolds, an advanced
+ * genome assembly feature we are not concerned with in ideograms.
+ *
+ * Example:
+ * https://mygene.info/v3/query?q=symbol:PTPRC&species=9606&fields=symbol,genomic_pos,name
  */
-function parseAnnotFromMgiGene(gene, ideo, color='red') {
-  // Filters out placements on alternative loci scaffolds, an advanced
-  // genome assembly feature we are not concerned with in ideograms.
-  //
-  // Example:
-  // https://mygene.info/v3/query?q=symbol:PTPRC&species=9606&fields=symbol,genomic_pos,name
+function getGenomicPos(gene, ideo) {
   let genomicPos = null;
   if (Array.isArray(gene.genomic_pos)) {
     genomicPos = gene.genomic_pos.filter(pos => {
@@ -405,6 +446,14 @@ function parseAnnotFromMgiGene(gene, ideo, color='red') {
   } else {
     genomicPos = gene.genomic_pos;
   }
+  return genomicPos;
+}
+
+/**
+ * Transforms MyGene.info (MGI) gene into Ideogram annotation
+ */
+function parseAnnotFromMgiGene(gene, ideo, color='red') {
+  const genomicPos = getGenomicPos(gene, ideo);
 
   const annot = {
     name: gene.symbol,
@@ -545,7 +594,9 @@ function finishPlotRelatedGenes(type, ideo) {
 
   annots = applyAnnotsIncludeList(annots, ideo);
   annots = mergeAnnots(annots);
+  annots = applyRankCutoff(annots, 40, ideo);
   ideo.relatedAnnots = mergeAnnots(annots);
+  ideo.relatedAnnots = applyRankCutoff(annots, 40, ideo);
   annots.sort(sortAnnotsByRelatedStatus);
   ideo.relatedAnnots.sort(sortAnnotsByRelatedStatus);
 
@@ -569,21 +620,34 @@ function finishPlotRelatedGenes(type, ideo) {
 async function processSearchedGene(geneSymbol, ideo) {
   const t0 = performance.now();
 
-  // Fetch positon of searched gene
-  const taxid = ideo.config.taxid;
-  const queryString =
-    `?q=symbol:${geneSymbol}&species=${taxid}&fields=symbol,genomic_pos,name`;
-  const data = await fetchMyGeneInfo(queryString);
+  const data = await fetchGenes(geneSymbol, 'symbol', ideo);
 
   if (data.hits.length === 0) {
     return;
   }
-  const gene = data.hits[0];
-  const name = gene.name;
+  const gene = data.hits.find(hit => {
+    const genomicPos = getGenomicPos(hit, ideo); // omits alt loci
+    return genomicPos && genomicPos.ensemblgene;
+  });
   const ensemblId = gene.genomic_pos.ensemblgene;
-  ideo.annotDescriptions.annots[gene.symbol] = {
-    description: '', ensemblId, name, type: 'searched gene'
-  };
+
+  // Assign tooltip content.  Much of the content is often retrieved from
+  // the gene cache.  In that case, all fields except `name` are fetched
+  // from cache.  Occasionally, e.g. often upon the very first search, no
+  // content is yet available from cache.
+  let desc = {description: '', ensemblId, type: 'searched gene'};
+  if (gene.symbol in ideo.annotDescriptions.annots) {
+    // Most content already set via cache.
+    // `name` will be set via non-blocking part of `fetchGenes`.
+    const oldDesc = ideo.annotDescriptions.annots[gene.symbol];
+    desc = Object.assign(oldDesc, desc);
+  } else {
+    // No content has been set yet via cache.  In this case, `gene` already
+    // has all the data needed for the searched gene's tooltip content.
+    desc.name = gene.name;
+  }
+
+  ideo.annotDescriptions.annots[gene.symbol] = desc;
 
   const annot = parseAnnotFromMgiGene(gene, ideo);
 
@@ -682,11 +746,7 @@ async function plotRelatedGenes(geneSymbol=null) {
   // Fetch positon of searched gene
   const annot = await processSearchedGene(geneSymbol, ideo);
 
-  if (typeof annot === 'undefined') {
-    // E.g. when searched gene is "Foo"
-    const organism = ideo.organismScientificName;
-    throw Error(`"${geneSymbol}" is not a known gene in ${organism}`);
-  }
+  if (typeof annot === 'undefined') throwGeneNotFound(geneSymbol, ideo);
 
   ideo.config.legend = relatedLegend;
   writeLegend(ideo);
@@ -766,7 +826,7 @@ const legendHeaderStyle =
   `font-size: 14px; font-weight: bold; font-color: #333;`;
 const relatedLegend = [{
   name: `
-    <div style="position: relative; left: -15px;">
+    <div style="position: relative; left: 30px;">
       <div style="${legendHeaderStyle}">Related genes</div>
       <i>Click gene to search</i>
     </div>
@@ -781,7 +841,7 @@ const relatedLegend = [{
 
 const citedLegend = [{
   name: `
-    <div style="position: relative; left: -15px;">
+    <div style="position: relative; left: 30px;">
       <div style="${legendHeaderStyle}">Highly cited genes</div>
       <i>Click gene to search</i>
     </div>
@@ -911,7 +971,7 @@ function _initGeneHints(config, annotsInList) {
   }
 
   const annotsPath =
-    getDir('annotations/gene-cache/homo-sapiens-top-genes.tsv');
+    getDir('cache/homo-sapiens-top-genes.tsv');
 
   const kitDefaults = {
     showFullyBanded: false,

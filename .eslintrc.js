@@ -1,16 +1,24 @@
 module.exports = {
-  'extends': 'google',
-  'env': {'es6': true},
+  'env': {
+    'browser': true,
+    'es6': true
+  },
+  'extends': [
+    'google'
+  ],
+  'parser': '@babel/eslint-parser',
   'parserOptions': {
-    'ecmaVersion': 2018,
+    'ecmaVersion': 2020,
     'sourceType': 'module'
   },
   'rules': {
     'arrow-parens': 'off',
-    'brace-style': ['error', '1tbs', { 'allowSingleLine': true }],
+    'brace-style': ['error', '1tbs', {'allowSingleLine': true}],
     'comma-dangle': ['error', 'never'],
     'curly': ['error', 'multi-line'],
-    'indent': ['warn', 2, { 'SwitchCase': 1, 'CallExpression': { 'arguments': 1 } }],
+    'indent': [
+      'warn', 2, {'SwitchCase': 1, 'CallExpression': {'arguments': 1}}
+    ],
     'no-invalid-this': 'off',
     'no-undef': 'off',
     'require-jsdoc': 'off',

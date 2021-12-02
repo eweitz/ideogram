@@ -9,7 +9,7 @@
     a, a:hover, a:visited, a:active {color: #0366d6;}
     label {display: block; margin-bottom: 10px;}
     .left-select {position: absolute; left: 140px;}
-    #status-container {display: inline-block; margin-left: 86px;}
+    #status-container {display: inline-block; margin-left: 150px;}
     #error-container {color: red;}
     #ideogram-container {margin-left: 125px; z-index: -1}
     #search-container {
@@ -58,7 +58,7 @@
     ul li {list-style-type: none;}
   </style>
   <script type="text/javascript" src="dist/js/ideogram.min.js"></script>
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/homology@0.5.0/dist/homology.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/homology@0.6.0/dist/homology.min.js"></script>
   <!-- <script type="text/javascript" src="https://eweitz.github.io/homology/dist/homology.min.js"></script> -->
   <!-- <script type="text/javascript" src="http://localhost/homology/dist/homology.min.js"></script> -->
 <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
@@ -88,40 +88,66 @@
   <label for="org">
     Source organism:
     <select class="left-select org-select" id="org">
-      <option>Human (Homo sapiens)</option>
-      <option>Chimpanzee (Pan troglodytes)</option>
-      <option>Mouse (Mus musculus)</option>
-      <option>Rat (Rattus norvegicus)</option>
-      <option>Dog (Canis lupus familiaris)</option>
-      <option>Cat (Felis catus)</option>
-      <!-- <option>Chicken (Gallus gallus)</option> -->
-      <option>Zebrafish (Danio rerio)</option>
-      <option>Fly (Drosophila melanogaster)</option>
-      <option>Mosquito (Anopheles gambiae)</option>
-      <option>Worm (Caenorhabditis elegans)</option>
-      <option>Thale cress (Arabidopsis thaliana)</option>
-      <option>Corn (Zea mays)</option>
-      <option>Rice (Oryza sativa)</option>
+      <optgroup label="Primates">
+        <option>Human (Homo sapiens)</option>
+        <option>Chimpanzee (Pan troglodytes)</option>
+        <option>Cynomolgus monkey (Macaca fascicularis)</option>
+        <option>Rhesus macaque (Macaca mulatta)</option>
+      </optgroup>
+      <optgroup label="Rodents">
+        <option>Mouse (Mus musculus)</option>
+        <option>Rat (Rattus norvegicus)</option>
+      </optgroup>
+      <optgroup label="Other animals">
+        <option>Dog (Canis lupus familiaris)</option>
+        <option>Cat (Felis catus)</option>
+        <!-- <option>Chicken (Gallus gallus)</option> -->
+        <option>Zebrafish (Danio rerio)</option>
+        <option>Fly (Drosophila melanogaster)</option>
+        <option>Mosquito (Anopheles gambiae)</option>
+        <option>Worm (Caenorhabditis elegans)</option>
+      </optgroup>
+      <optgroup label="Plants">
+        <option>Thale cress (Arabidopsis thaliana)</option>
+        <option>Corn (Zea mays)</option>
+        <option>Rice (Oryza sativa)</option>
+        <option>Tomato (Solanum lycopersicum)</option>
+        <option>Pepper (Capsicum annuum)</option>
+      </optgroup>
+      <!-- <option>Yeast (Saccharomyces cerevisiae)</option> -->
     </select>
   </label>
   <label for="org2">
     Target organism:
     <select class="left-select org-select" id="org2">
-      <option>Human (Homo sapiens)</option>
-      <option>Chimpanzee (Pan troglodytes)</option>
-      <option selected>Mouse (Mus musculus)</option>
-      <option>Rat (Rattus norvegicus)</option>
-      <option>Dog (Canis lupus familiaris)</option>
-      <option>Cat (Felis catus)</option>
-      <!-- <option>Chicken (Gallus gallus)</option> -->
-      <option>Zebrafish (Danio rerio)</option>
-      <option>Fly (Drosophila melanogaster)</option>
-      <option>Mosquito (Anopheles gambiae)</option>
-      <option>Worm (Caenorhabditis elegans)</option>
-      <option>Thale cress (Arabidopsis thaliana)</option>
-      <option>Corn (Zea mays)</option>
-      <option>Rice (Oryza sativa)</option>
-      </select>
+      <optgroup label="Primates">
+        <option>Human (Homo sapiens)</option>
+        <option>Chimpanzee (Pan troglodytes)</option>
+        <option>Cynomolgus monkey (Macaca fascicularis)</option>
+        <option>Rhesus macaque (Macaca mulatta)</option>
+      </optgroup>
+      <optgroup label="Rodents">
+        <option>Mouse (Mus musculus)</option>
+        <option>Rat (Rattus norvegicus)</option>
+      </optgroup>
+      <optgroup label="Other animals">
+        <option>Dog (Canis lupus familiaris)</option>
+        <option>Cat (Felis catus)</option>
+        <!-- <option>Chicken (Gallus gallus)</option> -->
+        <option>Zebrafish (Danio rerio)</option>
+        <option>Fly (Drosophila melanogaster)</option>
+        <option>Mosquito (Anopheles gambiae)</option>
+        <option>Worm (Caenorhabditis elegans)</option>
+      </optgroup>
+      <optgroup label="Plants">
+        <option>Thale cress (Arabidopsis thaliana)</option>
+        <option>Corn (Zea mays)</option>
+        <option>Rice (Oryza sativa)</option>
+        <option>Tomato (Solanum lycopersicum)</option>
+        <option>Pepper (Capsicum annuum)</option>
+      </optgroup>
+      <!-- <option>Yeast (Saccharomyces cerevisiae)</option> -->
+    </select>
   </label>
     <a id="options-toggle">Options</a>
     <div id="options" style="display: none">
@@ -469,7 +495,14 @@
       if (shouldUpdateState()) {
         try {
           if (hasGenes) {
+            const t0 = performance.now()
             rawOrthologs = await fetchOrthologs(geneList, org1, [org2], backend);
+            const t1 = performance.now()
+            const ms = Math.round(t1 - t0)
+            console.log(
+              `Orthologs fetched for ${geneList.length} genes ` +
+              `in ${ms} ms`
+            )
             orthologs = rawOrthologs.map((rawOrtholog, i) => {
               if (genePropList.length === 0) return rawOrtholog
 
@@ -600,7 +633,7 @@
         chrHeight = 95;
       } else {
         // vertical
-        chrHeight = 48;
+        chrHeight = 44;
       }
 
       return chrHeight;
