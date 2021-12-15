@@ -798,6 +798,21 @@ function handleTooltipClick(ideo) {
   }
 }
 
+async function fetchInteractionDiagram(annot, descObj) {
+  // Fetch raw SVG for pathway diagram
+  const pathwayId = descObj.pathwayIds[0];
+  const baseUrl = 'https://eweitz.github.io/cachome/wikipathways/';
+  const diagramUrl = baseUrl + pathwayId + '.svg';
+  const response = await fetch(diagramUrl);
+  const rawDiagram = await response.text();
+
+  const pathwayDiagram = `<div class="pathway-diagram">${rawDiagram}</div>`;
+
+  annot.displayName = pathwayDiagram + annot.displayName;
+
+  document.querySelector('#_ideogramTooltip').innerHTML = annot.displayName;
+}
+
 /**
  * Enhance tooltip shown on hovering over gene annotation
  */
@@ -814,6 +829,10 @@ function decorateRelatedGene(annot) {
     `${fullName}<br/>` +
     `${description}` +
     `<br/>`;
+
+  if (descObj.type === 'interacting gene') {
+    fetchInteractionDiagram(annot, descObj);
+  }
 
   handleTooltipClick(ideo);
 
