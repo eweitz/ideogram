@@ -801,16 +801,28 @@ function handleTooltipClick(ideo) {
 async function fetchInteractionDiagram(annot, descObj) {
   // Fetch raw SVG for pathway diagram
   const pathwayId = descObj.pathwayIds[0];
-  const baseUrl = 'https://eweitz.github.io/cachome/wikipathways/';
+  const baseUrl = 'https://cachome.github.io/wikipathways/';
   const diagramUrl = baseUrl + pathwayId + '.svg';
   const response = await fetch(diagramUrl);
-  const rawDiagram = await response.text();
+  if (response.ok) {
+    const rawDiagram = await response.text();
 
-  const pathwayDiagram = `<div class="pathway-diagram">${rawDiagram}</div>`;
+    const pathwayDiagram = `<div class="pathway-diagram">${rawDiagram}</div>`;
 
-  annot.displayName = pathwayDiagram + annot.displayName;
+    annot.displayName += pathwayDiagram;
 
-  document.querySelector('#_ideogramTooltip').innerHTML = annot.displayName;
+    document.querySelector('#_ideogramTooltip').innerHTML = annot.displayName;
+
+    Ideogram.d3.select('svg.Diagram').attr('width', null);
+    Ideogram.d3.select('svg.Diagram').attr('height', 300);
+    const m = document.querySelector('[name="' + annot.name + '"]').getCTM();
+    document
+      .querySelector('svg.Diagram')
+      .setAttribute(
+        'viewBox',
+        (m.e/m.a - 150) + ' ' + (m.f/m.d - 150) + ' 350 300'
+      );
+    }
 }
 
 /**
