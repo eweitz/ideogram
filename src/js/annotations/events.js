@@ -30,12 +30,12 @@ function startHideAnnotTooltipTimeout() {
     return;
   }
 
-  this.hideAnnotTooltipTimeout = window.setTimeout(function() {
-    d3.select('._ideogramTooltip').transition()
-      .duration(500) // fade out for half second
-      .style('opacity', 0)
-      .style('pointer-events', 'none');
-  }, 250);
+  // this.hideAnnotTooltipTimeout = window.setTimeout(function() {
+  //   d3.select('._ideogramTooltip').transition()
+  //     .duration(500) // fade out for half second
+  //     .style('opacity', 0)
+  //     .style('pointer-events', 'none');
+  // }, 250);
 }
 
 function renderTooltip(tooltip, content, matrix, yOffset, ideo) {

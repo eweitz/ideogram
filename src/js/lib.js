@@ -7,6 +7,7 @@ import * as d3fetch from 'd3-fetch';
 import * as d3brush from 'd3-brush';
 import * as d3dispatch from 'd3-dispatch';
 import * as d3format from 'd3-format';
+import * as d3zoom from 'd3-zoom';
 import {scaleLinear} from 'd3-scale';
 import {max} from 'd3-array';
 import {easeExpIn} from 'd3-ease';
@@ -14,7 +15,7 @@ import {easeExpIn} from 'd3-ease';
 import {organismMetadata} from './init/organism-metadata';
 
 var d3 = Object.assign(
-  {}, d3fetch, d3brush, d3dispatch, d3format
+  {}, d3fetch, d3brush, d3dispatch, d3format, d3zoom
 );
 
 d3.select = select;

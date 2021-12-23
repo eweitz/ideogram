@@ -26,12 +26,12 @@ import {
   getRelatedGenesByType, getRelatedGenesTooltipAnalytics
 } from './analyze-related-genes';
 
-
 import {writeLegend} from '../annotations/legend';
 import {getAnnotDomId} from '../annotations/process';
 import {applyRankCutoff} from '../annotations/labels';
 import {getDir} from '../lib';
 import initGeneCache from '../gene-cache';
+import {fetchInteractionDiagram} from './wikipathways';
 
 /** Sets DOM IDs for ideo.relatedAnnots; needed to associate labels */
 function setRelatedAnnotDomIds(ideo) {
@@ -139,7 +139,7 @@ async function fetchInteractions(gene, ideo) {
 
   // For each interaction, get nodes immediately upstream and downstream.
   // Filter out pathway nodes that are definitely not gene symbols, then
-  // group pathways by (likely) gene symbol. Each interacting gene can have
+  // group pathways by gene symbol. Each interacting gene can have
   // multiple pathways.
   data.result.forEach(interaction => {
     if (interaction.species.toLowerCase() === orgNameSimple) {
@@ -557,9 +557,17 @@ function mergeDescriptions(annot, desc, ideo) {
   let mergedDesc;
   const descriptions = ideo.annotDescriptions.annots;
   if (annot.name in descriptions) {
-    mergedDesc = descriptions[annot.name];
-    mergedDesc.type += ', ' + desc.type;
-    mergedDesc.description += `<br/><br/>${desc.description}`;
+    const otherDesc = descriptions[annot.name];
+    mergedDesc = desc;
+    Object.keys(otherDesc).forEach(function(key) {
+      if (key in mergedDesc === false) {
+        mergedDesc[key] = otherDesc[key];
+      }
+    });
+    // Object.assign({}, descriptions[annot.name]);
+    console.log('mergedDesc', mergedDesc)
+    mergedDesc.type += ', ' + otherDesc.type;
+    mergedDesc.description += `<br/><br/>${otherDesc.description}`;
   } else {
     mergedDesc = desc;
   }
@@ -798,33 +806,6 @@ function handleTooltipClick(ideo) {
   }
 }
 
-async function fetchInteractionDiagram(annot, descObj) {
-  // Fetch raw SVG for pathway diagram
-  const pathwayId = descObj.pathwayIds[0];
-  const baseUrl = 'https://cachome.github.io/wikipathways/';
-  const diagramUrl = baseUrl + pathwayId + '.svg';
-  const response = await fetch(diagramUrl);
-  if (response.ok) {
-    const rawDiagram = await response.text();
-
-    const pathwayDiagram = `<div class="pathway-diagram">${rawDiagram}</div>`;
-
-    annot.displayName += pathwayDiagram;
-
-    document.querySelector('#_ideogramTooltip').innerHTML = annot.displayName;
-
-    Ideogram.d3.select('svg.Diagram').attr('width', null);
-    Ideogram.d3.select('svg.Diagram').attr('height', 300);
-    const m = document.querySelector('[name="' + annot.name + '"]').getCTM();
-    document
-      .querySelector('svg.Diagram')
-      .setAttribute(
-        'viewBox',
-        (m.e/m.a - 150) + ' ' + (m.f/m.d - 150) + ' 350 300'
-      );
-    }
-}
-
 /**
  * Enhance tooltip shown on hovering over gene annotation
  */
@@ -841,9 +822,9 @@ function decorateRelatedGene(annot) {
     `${fullName}<br/>` +
     `${description}` +
     `<br/>`;
-
-  if (descObj.type === 'interacting gene') {
-    fetchInteractionDiagram(annot, descObj);
+  console.log('descObj', descObj)
+  if (descObj.type.includes('interacting gene')) {
+    fetchInteractionDiagram(annot, descObj, ideo);
   }
 
   handleTooltipClick(ideo);
