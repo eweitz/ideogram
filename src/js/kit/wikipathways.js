@@ -28,24 +28,23 @@ const interactionArrowMap = {
  * fetches augmented GPML data for the pathway, and queries it to get only
  * interactions between the two genes.
  */
- async function findGpmlConnections(searchedGene, interactingGene, pathwayId) {
+ export async function findGpmlConnections(interactingGenes, pathwayId) {
+  const [searchedGene, interactingGene] = interactingGenes;
   const wpBaseUrl = 'https://webservice.wikipathways.org/';
   const pathwayUrl = wpBaseUrl + `getPathway?pwId=${pathwayId}&format=json`;
   const wpResponse = await fetch(pathwayUrl);
   const wpData = await wpResponse.json();
   // console.log('wpData', wpData)
   const rawGpml = wpData.pathway.gpml;
-  console.log('rawGpml', rawGpml)
+  // console.log('rawGpml', rawGpml)
   const gpml = new DOMParser().parseFromString(rawGpml, 'text/xml');
-  // console.log('gpml', gpml)
-  // console.log('gene1', gene1)
   const nodes = gpml.querySelectorAll(
     `DataNode[TextLabel="${searchedGene}"],` +
     `DataNode[TextLabel="${interactingGene}"]`
   );
 
   const genes = Array.from(nodes).map(node => {
-    console.log('node.innerHTML', node.innerHTML);
+    // console.log('node.innerHTML', node.innerHTML);
     return {
       textLabel: node.getAttribute('TextLabel'),
       graphId: node.getAttribute('GraphId'),
@@ -88,7 +87,7 @@ const interactionArrowMap = {
     let searchedGeneIndex = null;
     Array.from(graphics.children).forEach(child => {
       if (child.nodeName !== 'Point') {
-        console.log('child.nodeName', child.nodeName);
+        // console.log('child.nodeName', child.nodeName);
         return;
       }
       const point = child;
@@ -107,8 +106,8 @@ const interactionArrowMap = {
           if (searchedGeneIndex === null) {
             searchedGeneIndex = isStart ? 0 : 1;
           }
-          console.log('pointLabel', pointLabel)
-          console.log('searchedGene', searchedGene)
+          // console.log('pointLabel', pointLabel)
+          // console.log('searchedGene', searchedGene)
           ixnType = interactionArrowMap[arrowHead][isStart ? 0 : 1];
         }
       }
@@ -124,6 +123,7 @@ const interactionArrowMap = {
         ixnType = 'interacts with';
         console.log('searchedGeneIndex', searchedGeneIndex)
       }
+      ixnType = ixnType[0].toUpperCase() + ixnType.slice(1);
       const interactionGraphId = graphics.parentNode.getAttribute('GraphId');
       const connection = {
         'interactionId': interactionGraphId,
@@ -156,7 +156,8 @@ export async function fetchInteractionDiagram(annot, descObj, ideo) {
       Object.entries(ideo.annotDescriptions.annots)
         .find(([k, v]) => v.type === 'searched gene')[0];
     // console.log('searchedGene', searchedGene)
-    const cxns = await findGpmlConnections(searchedGene, annot.name, pathwayId);
+    const genes = [searchedGene, annot.name]
+    const cxns = await findGpmlConnections(genes, pathwayId);
 
     let selectors = `[name=${annot.name}]`;
     let searchedGeneIndex = 0;

@@ -31,7 +31,7 @@ import {getAnnotDomId} from '../annotations/process';
 import {applyRankCutoff} from '../annotations/labels';
 import {getDir} from '../lib';
 import initGeneCache from '../gene-cache';
-import {fetchInteractionDiagram} from './wikipathways';
+import {fetchInteractionDiagram, findGpmlConnections} from './wikipathways';
 
 /** Sets DOM IDs for ideo.relatedAnnots; needed to associate labels */
 function setRelatedAnnotDomIds(ideo) {
@@ -824,7 +824,24 @@ function decorateRelatedGene(annot) {
     `<br/>`;
   console.log('descObj', descObj)
   if (descObj.type.includes('interacting gene')) {
-    fetchInteractionDiagram(annot, descObj, ideo);
+    // fetchInteractionDiagram(annot, descObj, ideo);
+    annot.displayName = annot.displayName.replace(description, '');
+    const searchedGene =
+      Object.entries(ideo.annotDescriptions.annots)
+        .find(([k, v]) => v.type === 'searched gene')[0];
+    const genes = [searchedGene, annot.name];
+    const pathwayId = descObj.pathwayIds[0];
+    findGpmlConnections(genes, pathwayId).then(cxns => {
+      if (cxns.length === 1) {
+        const ixnType = cxns[0].ixnType;
+        const oldSummary = 'Interacts with ' + searchedGene;
+        const newSummary = ixnType + ' ' + searchedGene;
+        const newDesc = description.replace(oldSummary, newSummary);
+        annot.displayName = annot.displayName + newDesc;
+        document.querySelector('#_ideogramTooltip')
+          .innerHTML = annot.displayName;
+      }
+    });
   }
 
   handleTooltipClick(ideo);
