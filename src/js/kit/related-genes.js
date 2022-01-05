@@ -424,8 +424,15 @@ async function fetchParalogs(annot, ideo) {
   const homologs = ensemblHomologs.data[0].homologies;
 
   // Fetch positions of paralogs
-  const annots =
+  let annots =
     await fetchParalogPositionsFromMyGeneInfo(homologs, annot, ideo);
+
+  // Omit genes named like "AC113554.1", which is an "accession.version".
+  // Such accVers are raw and poorly suited here.
+  annots = annots.filter(annot => {
+    const isAccVer = annot.name.match(/AC[0-9.]+$/);
+    return !isAccVer;
+  });
 
   return annots;
 }
