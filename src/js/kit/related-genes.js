@@ -26,12 +26,12 @@ import {
   getRelatedGenesByType, getRelatedGenesTooltipAnalytics
 } from './analyze-related-genes';
 
-
 import {writeLegend} from '../annotations/legend';
 import {getAnnotDomId} from '../annotations/process';
 import {applyRankCutoff} from '../annotations/labels';
 import {getDir} from '../lib';
 import initGeneCache from '../gene-cache';
+import {detailAllInteractions} from './wikipathways';
 
 /** Sets DOM IDs for ideo.relatedAnnots; needed to associate labels */
 function setRelatedAnnotDomIds(ideo) {
@@ -139,7 +139,7 @@ async function fetchInteractions(gene, ideo) {
 
   // For each interaction, get nodes immediately upstream and downstream.
   // Filter out pathway nodes that are definitely not gene symbols, then
-  // group pathways by (likely) gene symbol. Each interacting gene can have
+  // group pathways by gene symbol. Each interacting gene can have
   // multiple pathways.
   data.result.forEach(interaction => {
     if (interaction.species.toLowerCase() === orgNameSimple) {
@@ -424,8 +424,15 @@ async function fetchParalogs(annot, ideo) {
   const homologs = ensemblHomologs.data[0].homologies;
 
   // Fetch positions of paralogs
-  const annots =
+  let annots =
     await fetchParalogPositionsFromMyGeneInfo(homologs, annot, ideo);
+
+  // Omit genes named like "AC113554.1", which is an "accession.version".
+  // Such accVers are raw and poorly suited here.
+  annots = annots.filter(annot => {
+    const isAccVer = annot.name.match(/^AC[0-9.]+$/);
+    return !isAccVer;
+  });
 
   return annots;
 }
@@ -557,9 +564,17 @@ function mergeDescriptions(annot, desc, ideo) {
   let mergedDesc;
   const descriptions = ideo.annotDescriptions.annots;
   if (annot.name in descriptions) {
-    mergedDesc = descriptions[annot.name];
-    mergedDesc.type += ', ' + desc.type;
-    mergedDesc.description += `<br/><br/>${desc.description}`;
+    const otherDesc = descriptions[annot.name];
+    mergedDesc = desc;
+    if (desc.type === otherDesc.type) return;
+    Object.keys(otherDesc).forEach(function(key) {
+      if (key in mergedDesc === false) {
+        mergedDesc[key] = otherDesc[key];
+      }
+    });
+    // Object.assign({}, descriptions[annot.name]);
+    mergedDesc.type += ', ' + otherDesc.type;
+    mergedDesc.description += `<br/><br/>${otherDesc.description}`;
   } else {
     mergedDesc = desc;
   }
@@ -799,6 +814,40 @@ function handleTooltipClick(ideo) {
 }
 
 /**
+ * Enhance description of interaction, e.g. "Interacts with" -> "Inhibits"
+ */
+function decorateInteraction(annot, descObj, ideo) {
+  const {description, originalDisplay} = descObj;
+
+  const pathwayIds = descObj.pathwayIds;
+  annot.displayName = annot.displayName.replace(description, '');
+
+  detailAllInteractions(annot.name, pathwayIds, ideo).then(ixnsByPwid => {
+    const oldHtml = document.querySelector('#_ideogramTooltip').innerHTML;
+    const coords = oldHtml.match(/<br\/?>chr.*/)[0];
+
+    const ixns = ixnsByPwid[pathwayIds[0]];
+    if (typeof ixns === 'undefined') return;
+
+    const trimmedOriginal =
+      originalDisplay.replaceAll(/(<br\/?>){3,}/g, '<br/><br/>');
+    let newHtml = trimmedOriginal + coords;
+
+    const isConsistent = ixns.every(ixn => {
+      return ixn.ixnType === ixns[0].ixnType;
+    });
+    if (ixns.length > 0 && isConsistent) {
+      const ixnType = ixns[0].ixnType;
+      const oldIxn = 'Interacts with';
+      const newIxn = ixnType;
+      const newDesc = trimmedOriginal.replace(oldIxn, newIxn);
+      newHtml = newDesc + coords;
+    }
+    document.querySelector('#_ideogramTooltip').innerHTML = newHtml;
+  });
+}
+
+/**
  * Enhance tooltip shown on hovering over gene annotation
  */
 function decorateRelatedGene(annot) {
@@ -809,11 +858,18 @@ function decorateRelatedGene(annot) {
   const fullName = descObj.name;
   const style = 'style="color: #0366d6; cursor: pointer;"';
 
-  annot.displayName =
+  const originalDisplay =
     `<span id="ideo-related-gene" ${style}>${annot.name}</span><br/>` +
     `${fullName}<br/>` +
     `${description}` +
     `<br/>`;
+
+  annot.displayName = originalDisplay;
+  if (descObj.type.includes('interacting gene')) {
+    descObj.originalDisplay = originalDisplay;
+    descObj.description = description;
+    decorateInteraction(annot, descObj, ideo);
+  }
 
   handleTooltipClick(ideo);
 
@@ -1039,6 +1095,8 @@ function _initGeneHints(config, annotsInList) {
   ideogram.annotSortFunction = sortAnnotsByRelatedStatus;
 
   initAnalyzeRelatedGenes(ideogram);
+
+  initGeneCache(ideogram.config.organism, ideogram);
 
   return ideogram;
 }
