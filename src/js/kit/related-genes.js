@@ -430,7 +430,7 @@ async function fetchParalogs(annot, ideo) {
   // Omit genes named like "AC113554.1", which is an "accession.version".
   // Such accVers are raw and poorly suited here.
   annots = annots.filter(annot => {
-    const isAccVer = annot.name.match(/AC[0-9.]+$/);
+    const isAccVer = annot.name.match(/^AC[0-9.]+$/);
     return !isAccVer;
   });
 
@@ -1046,6 +1046,8 @@ function _initGeneHints(config, annotsInList) {
   ideogram.annotSortFunction = sortAnnotsByRelatedStatus;
 
   initAnalyzeRelatedGenes(ideogram);
+
+  initGeneCache(ideogram.config.organism, ideogram);
 
   return ideogram;
 }
