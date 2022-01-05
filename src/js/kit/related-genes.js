@@ -566,13 +566,13 @@ function mergeDescriptions(annot, desc, ideo) {
   if (annot.name in descriptions) {
     const otherDesc = descriptions[annot.name];
     mergedDesc = desc;
+    if (desc.type === otherDesc.type) return;
     Object.keys(otherDesc).forEach(function(key) {
       if (key in mergedDesc === false) {
         mergedDesc[key] = otherDesc[key];
       }
     });
     // Object.assign({}, descriptions[annot.name]);
-    // console.log('mergedDesc', mergedDesc)
     mergedDesc.type += ', ' + otherDesc.type;
     mergedDesc.description += `<br/><br/>${otherDesc.description}`;
   } else {
