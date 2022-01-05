@@ -225,7 +225,7 @@ function fillAnnotLabels(sortedAnnots=[]) {
     sortedAnnots = ideo.flattenAnnots();
   }
 
-  const m = 5; // padding
+  const m = 3; // padding
 
   sortedAnnots.forEach((annot, i) => {
     const layout = getAnnotLabelLayout(annot, ideo);
@@ -265,7 +265,7 @@ function fillAnnotLabels(sortedAnnots=[]) {
   });
 
 
-  spacedAnnots = applyRankCutoff(spacedAnnots, 20, ideo);
+  spacedAnnots = applyRankCutoff(spacedAnnots, 10, ideo);
 
   // Ensure highest-ranked annots are ordered last in SVG,
   // to ensure the are written before lower-ranked annots
