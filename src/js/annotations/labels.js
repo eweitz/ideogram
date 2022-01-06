@@ -264,8 +264,12 @@ function fillAnnotLabels(sortedAnnots=[]) {
     spacedLayouts.push(layout);
   });
 
-
-  spacedAnnots = applyRankCutoff(spacedAnnots, 10, ideo);
+  let numLabels = 10;
+  const config = ideo.config;
+  if ('relatedGenesMode' in config && config.relatedGenesMode === 'hints') {
+    numLabels = 20;
+  }
+  spacedAnnots = applyRankCutoff(spacedAnnots, numLabels, ideo);
 
   // Ensure highest-ranked annots are ordered last in SVG,
   // to ensure the are written before lower-ranked annots
