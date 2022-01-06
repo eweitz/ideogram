@@ -3,20 +3,20 @@
 // See also: https://discover.nci.nih.gov/mim/formal_mim_spec.pdf
 const interactionArrowMap = {
   'Arrow': ['acts on', 'acted on by'],
-  'TBar': ['inhibits', 'is inhibited by'],
+  'TBar': ['inhibits', 'inhibited by'],
   'mim-binding': ['binds', 'binds'],
   'mim-catalysis': ['catalyzes', 'catalyzed by'],
   'mim-cleavage': ['cleaves', 'cleaved by'],
   'mim-conversion': ['converts', 'converted by'],
   // 'mim-covalent-bond': ['covalently binds',
   // 'mim-gap': 'MimGap',
-  'mim-inhibition': ['inhibits', 'is inhibited by'],
-  'mim-modification': ['modifies', 'is modified by'],
+  'mim-inhibition': ['inhibits', 'inhibited by'],
+  'mim-modification': ['modifies', 'modified by'],
   'mim-necessary-stimulation':
-    ['necessarily stimulates', 'is necessarily stimulated by'],
-  'mim-stimulation': ['stimulates', 'is stimulated by'],
+    ['necessarily stimulates', 'necessarily stimulated by'],
+  'mim-stimulation': ['stimulates', 'stimulated by'],
   'mim-transcription-translation':
-    ['transcribes / translates', 'is transcribed / translated by']
+    ['transcribes / translates', 'transcribed / translated by']
 };
 
 /**
