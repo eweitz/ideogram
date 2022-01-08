@@ -70,7 +70,7 @@ function getMatchingIds(gpml, label) {
 }
 
 /**
- * Request GPML data from WikiPathways API e.g.:
+ * Request GPML data from WikiPathways API, e.g.:
  * https://webservice.wikipathways.org/getPathway?pwId=WP3982&format=json
  *
  * For more easily readable versions, see also:
