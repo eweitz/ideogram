@@ -30,19 +30,26 @@ describe('Ideogram related genes kit', function() {
       rad54lLabel.dispatchEvent(new Event('mouseover'));
       let relatedGene = document.querySelector('#ideo-related-gene');
       assert.equal(relatedGene.textContent, 'RAD54L');
-      rad54lLabel.dispatchEvent(new Event('mouseout'));
 
-      const brca2Annot = document.querySelector('#chr13-9606 .annot path');
-      brca2Annot.dispatchEvent(new Event('mouseover'));
+      // Wait a second to account for fetching interaction details
+      setTimeout(function() {
+        const tooltip = document.querySelector('#_ideogramTooltip');
+        assert.include(tooltip.textContent, 'Stimulated by RAD51 in');
 
-      relatedGene = document.querySelector('#ideo-related-gene');
+        rad54lLabel.dispatchEvent(new Event('mouseout'));
 
-      assert.equal(relatedGene.textContent, 'BRCA2');
+        const brca2Annot = document.querySelector('#chr13-9606 .annot path');
+        brca2Annot.dispatchEvent(new Event('mouseover'));
 
-      const click = new MouseEvent('click', {view: window, bubbles: true});
-      relatedGene.dispatchEvent(click);
+        relatedGene = document.querySelector('#ideo-related-gene');
 
-      done();
+        assert.equal(relatedGene.textContent, 'BRCA2');
+
+        const click = new MouseEvent('click', {view: window, bubbles: true});
+        relatedGene.dispatchEvent(click);
+
+        done();
+      }, 1000);
     }
 
     function onClickAnnot(annot) {

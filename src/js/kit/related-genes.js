@@ -865,7 +865,7 @@ function decorateRelatedGene(annot) {
     `<br/>`;
 
   annot.displayName = originalDisplay;
-  if (descObj.type.includes('interacting gene')) {
+  if ('type' in descObj && descObj.type.includes('interacting gene')) {
     descObj.originalDisplay = originalDisplay;
     descObj.description = description;
     decorateInteraction(annot, descObj, ideo);
@@ -938,7 +938,8 @@ function _initRelatedGenes(config, annotsInList) {
     onWillShowAnnotTooltip: decorateRelatedGene,
     annotsInList: annotsInList,
     showTools: true,
-    showAnnotLabels: true
+    showAnnotLabels: true,
+    relatedGenesMode: 'related'
   };
 
   if ('onWillShowAnnotTooltip' in config) {
@@ -1041,7 +1042,8 @@ function _initGeneHints(config, annotsInList) {
     showTools: true,
     showAnnotLabels: true,
     onDrawAnnots: plotGeneHints,
-    annotationsPath: annotsPath
+    annotationsPath: annotsPath,
+    relatedGenesMode: 'hints'
   };
 
   if ('onWillShowAnnotTooltip' in config) {
