@@ -19,6 +19,191 @@ const interactionArrowMap = {
     ['transcribes / translates', 'transcribed / translated by']
 };
 
+// Which interactions types to show first, if showing multiple
+const rankedInteractionTypes = [
+  'transcribe',
+  'cleave',
+  'convert',
+  'bind',
+  'modifie',
+  'catalyze',
+  'necessarily stimulate',
+  'inhibit',
+  'stimulate',
+  'act'
+]
+
+export function sortInteractionTypes(a, b) {
+  const ranks = {};
+  for (let i = 0; i < rankedInteractionTypes.length; i++) {
+    const rankedIxnType = rankedInteractionTypes[i];
+    if (rankedIxnType.includes(a)) ranks.a = i;
+    if (rankedIxnType.includes(b)) ranks.b = i;
+  }
+  return ranks.b - ranks.a;
+}
+
+/** Determine if all given interactions in *one* pathway are same */
+function determineIxnsInPathwayAreSame(ixns) {
+  if (ixns.length === 0) return true;
+
+  let isSame = true;
+  const ixnTypeReference = ixns[0].ixnType;
+  ixns.forEach(ixn => {
+    if (ixn.ixnType !== ixnTypeReference) {
+      isSame = false;
+    }
+  });
+  return isSame;
+}
+
+/**
+ * Determine whether all given interactions in all given pathways are the same
+ */
+function setIsSame(enrichedIxns) {
+  let isSame = true;
+  const ixnsByPwid = enrichedIxns.ixnsByPwid;
+
+  // Use the first interaction type as a point of comparison
+  const firstIxn = Object.values(ixnsByPwid).find(ixns => {
+    return ixns.length > 0;
+  });
+  const ixnTypeReference = firstIxn.ixnType;
+
+  console.log('ixnTypeReference', ixnTypeReference)
+  Object.entries(ixnsByPwid).map(([pwid, ixns]) => {
+    const thisIsSame = determineIxnsInPathwayAreSame(ixns);
+    if (!thisIsSame) {
+      isSame = false;
+    }
+    enrichedIxns.isSameByPwid[pwid] = isSame;
+  });
+  enrichedIxns.isSame = isSame;
+
+  console.log('in setIsSame, enrichedIxns:')
+  console.log(enrichedIxns)
+  return enrichedIxns;
+}
+
+/**
+ * If interactions aren't all exactly the same, then they are often still
+ * directionally equivalent.
+ *
+ * E.g. if gene A both "modifies" and "converts" gene B, then we can summarize
+ * that as gene A "acts on" gene B, rather than completely reverting to saying
+ * gene A "interacts with" gene B.
+ *
+ */
+function summarizeByDirection(enrichedIxns) {
+
+  let isDirectionSame = true;
+
+  const leftTypes = []; // "Acts on" types
+  const rightTypes = []; // "Acted on by" types
+  Object.values(interactionArrowMap).forEach(directedTypes => {
+    rightTypes.push(directedTypes[0]);
+    leftTypes.push(directedTypes[1]);
+  });
+
+  const right = 'Acts on';
+  const left = 'Acted on by';
+
+  const ixnsByPwid = enrichedIxns.ixnsByPwid;
+  const ixnsByPwidValues = Object.values(ixnsByPwid);
+  const firstIxnType = ixnsByPwidValues[0][0].ixnType.toLowerCase();
+  const isRight = rightTypes.includes(firstIxnType);
+  const directionReference = isRight ? right : left;
+
+  Object.entries(ixnsByPwid).map(([pwid, ixns]) => {
+    let isPwDirectionSame = true;
+    if (ixns.length > 0) {
+      const pwFirstIxnType = ixns[0].ixnType.toLowerCase();
+      const pwIsRight = rightTypes.includes(pwFirstIxnType);
+      const pwDirectionReference = pwIsRight ? right : left;
+      ixns.forEach(ixn => {
+        const ixnType = ixn.ixnType.toLowerCase();
+        const thisIsRight = rightTypes.includes(ixnType);
+        const direction = thisIsRight ? right : left;
+        enrichedIxns.directionsByPwid[pwid] = direction;
+        if (direction !== directionReference) {
+          isDirectionSame = false;
+        }
+        if (direction !== pwDirectionReference) {
+          isPwDirectionSame = false;
+        }
+      });
+    }
+    enrichedIxns.isDirectionSameByPwid[pwid] = isPwDirectionSame;
+
+  });
+
+  enrichedIxns.isDirectionSame = isDirectionSame;
+  if (isDirectionSame === true) {
+    enrichedIxns.direction = directionReference;
+  }
+
+  return enrichedIxns;
+}
+
+export async function summarizeInteractions(gene, pathwayIds, ideo) {
+  let summary = null;
+
+  const ixnsByPwid = await detailAllInteractions(gene, pathwayIds, ideo);
+
+  const ixns = ixnsByPwid[pathwayIds[0]];
+
+  if (ixns.length > 0) {
+    let enrichedIxns = {
+      ixnsByPwid,
+      isSameByPwid: {}, // If pathway has all same interaction types
+      isSame: null, // If above is true for all pathways
+      isDirectionSameByPwid: {}, // If pathway has same ixn direction
+      isDirectionSame: null, // If above is true for all pathways
+      directionsByPwid: {}
+    };
+    enrichedIxns = setIsSame(enrichedIxns);
+
+    if (enrichedIxns.isSame) {
+      const ixnType = ixns[0].ixnType;
+      const newIxn = ixnType;
+      summary = newIxn;
+    } else {
+
+      enrichedIxns = summarizeByDirection(enrichedIxns);
+
+      if (enrichedIxns.isDirectionSame) {
+        summary = enrichedIxns.direction;
+      } else {
+        summary = 'Interacts with';
+      }
+    }
+  }
+
+
+    // if (direction !== null) {
+    //   summary = direction;
+    // }
+    // const pwidsByIxnType = {};
+    // Object.entries(ixns).map(([k, v]) => {
+    //   if (!pwidsByIxnType[v.ixnType]) {
+    //     pwidsByIxnType[v.ixnType] = [v.pathwayId];
+    //   } else {
+    //     pwidsByIxnType[v.ixnType].push([v.pathwayId]);
+    //   }
+    // });
+
+    // console.log('pwidsByIxnType')
+    // console.log(pwidsByIxnType)
+    // const tpArray = Object.entries(pwidsByIxnType);
+    // const sortedIndices = sortInteractionTypes(tpArray.map(tp => tp[0]));
+    // const sortedTpArray =
+    //   sortedIndices.map(sortedIndex => tpArray[sortedIndex]);
+
+    // console.log('sortedTpArray')
+    // console.log(sortedTpArray)
+  return summary;
+}
+
 /**
  * Get detailInteractions results for multiple pathways
  */
@@ -54,14 +239,18 @@ function getMatchingIds(gpml, label) {
   const geneGroupRefs = genes.map(g => g.groupRef);
   const groupSelectors =
     geneGroupRefs.map(ggr => `Group[GroupId="${ggr}"]`).join(',');
-  const groups = gpml.querySelectorAll(groupSelectors);
-  const geneGroups = Array.from(groups).map(group => {
-    return {
-      type: 'group',
-      graphId: group.getAttribute('GraphId'),
-      groupId: group.getAttribute('GroupId')
-    };
-  });
+
+  let geneGroups = [];
+  if (groupSelectors !== '') {
+    const groups = gpml.querySelectorAll(groupSelectors);
+    geneGroups = Array.from(groups).map(group => {
+      return {
+        type: 'group',
+        graphId: group.getAttribute('GraphId'),
+        groupId: group.getAttribute('GroupId')
+      };
+    });
+  }
 
   const geneGroupGraphIds = geneGroups.map(g => g.graphId);
   const matchingGraphIds = geneGraphIds.concat(geneGroupGraphIds);
