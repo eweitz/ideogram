@@ -33,22 +33,26 @@ describe('Ideogram related genes kit', function() {
 
       // Wait a second to account for fetching interaction details
       setTimeout(function() {
-        const tooltip = document.querySelector('#_ideogramTooltip');
+        let tooltip = document.querySelector('#_ideogramTooltip');
         assert.include(tooltip.textContent, 'Stimulated by RAD51 in');
 
         rad54lLabel.dispatchEvent(new Event('mouseout'));
 
         const brca2Annot = document.querySelector('#chr13-9606 .annot path');
         brca2Annot.dispatchEvent(new Event('mouseover'));
+        setTimeout(function() {
+          relatedGene = document.querySelector('#ideo-related-gene');
 
-        relatedGene = document.querySelector('#ideo-related-gene');
+          assert.equal(relatedGene.textContent, 'BRCA2');
 
-        assert.equal(relatedGene.textContent, 'BRCA2');
+          tooltip = document.querySelector('#_ideogramTooltip');
+          assert.include(tooltip.textContent, 'Interacts with RAD51 in');
 
-        const click = new MouseEvent('click', {view: window, bubbles: true});
-        relatedGene.dispatchEvent(click);
+          const click = new MouseEvent('click', {view: window, bubbles: true});
+          relatedGene.dispatchEvent(click);
 
-        done();
+          done();
+        }, 1000);
       }, 1000);
     }
 

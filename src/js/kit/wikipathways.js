@@ -31,7 +31,7 @@ const rankedInteractionTypes = [
   'inhibit',
   'stimulate',
   'act'
-]
+];
 
 export function sortInteractionTypes(a, b) {
   const ranks = {};
@@ -44,17 +44,34 @@ export function sortInteractionTypes(a, b) {
 }
 
 /** Determine if all given interactions in *one* pathway are same */
-function determineIxnsInPathwayAreSame(ixns) {
-  if (ixns.length === 0) return true;
+function determineIxnsInPathwayAreSame(ixns, ixnTypeReference) {
+  let isRefMatch = true;
+  let thisIsSame = true;
 
-  let isSame = true;
-  const ixnTypeReference = ixns[0].ixnType;
+  if (ixns.length === 0) return {isRefMatch, thisIsSame};
+
+  const thisIxnTypeReference = ixns[0].ixnType;
   ixns.forEach(ixn => {
-    if (ixn.ixnType !== ixnTypeReference) {
-      isSame = false;
+    const ixnType = ixn.ixnType;
+    if (ixnType !== ixnTypeReference) {
+      isRefMatch = false;
+    }
+    if (ixnType !== thisIxnTypeReference) {
+      thisIsSame = false;
     }
   });
-  return isSame;
+  return {isRefMatch, thisIsSame};
+}
+
+/**
+ * Return first valid interaction type from interactions-by-pathway object
+ */
+function getIxnTypeReference(ixnsByPwid) {
+  const ixnTypeReference = Object.values(ixnsByPwid).find(ixns => {
+    return ixns.length > 0 && 'ixnType' in ixns[0];
+  }).ixnType;
+
+  return ixnTypeReference;
 }
 
 /**
@@ -64,24 +81,18 @@ function setIsSame(enrichedIxns) {
   let isSame = true;
   const ixnsByPwid = enrichedIxns.ixnsByPwid;
 
-  // Use the first interaction type as a point of comparison
-  const firstIxn = Object.values(ixnsByPwid).find(ixns => {
-    return ixns.length > 0;
-  });
-  const ixnTypeReference = firstIxn.ixnType;
+  const ixnTypeReference = getIxnTypeReference(ixnsByPwid);
 
-  console.log('ixnTypeReference', ixnTypeReference)
   Object.entries(ixnsByPwid).map(([pwid, ixns]) => {
-    const thisIsSame = determineIxnsInPathwayAreSame(ixns);
-    if (!thisIsSame) {
+    const {isRefMatch, thisIsSame} =
+      determineIxnsInPathwayAreSame(ixns, ixnTypeReference);
+    if (!thisIsSame || isRefMatch) {
       isSame = false;
     }
-    enrichedIxns.isSameByPwid[pwid] = isSame;
+    enrichedIxns.isSameByPwid[pwid] = thisIsSame;
   });
   enrichedIxns.isSame = isSame;
 
-  console.log('in setIsSame, enrichedIxns:')
-  console.log(enrichedIxns)
   return enrichedIxns;
 }
 
@@ -109,8 +120,7 @@ function summarizeByDirection(enrichedIxns) {
   const left = 'Acted on by';
 
   const ixnsByPwid = enrichedIxns.ixnsByPwid;
-  const ixnsByPwidValues = Object.values(ixnsByPwid);
-  const firstIxnType = ixnsByPwidValues[0][0].ixnType.toLowerCase();
+  const firstIxnType = getIxnTypeReference(ixnsByPwid);
   const isRight = rightTypes.includes(firstIxnType);
   const directionReference = isRight ? right : left;
 
@@ -218,8 +228,8 @@ export async function detailAllInteractions(gene, pathwayIds, ideo) {
   return ixnsByPwid;
 }
 
-/** Get graphIds and groupIds for searching or interacting gene */
-function getMatchingIds(gpml, label) {
+/** Get IDs and data element objects for searched or interacting gene */
+function getMatches(gpml, label) {
 
   const nodes = Array.from(gpml.querySelectorAll(
     `DataNode[TextLabel="${label}"]`
@@ -228,6 +238,7 @@ function getMatchingIds(gpml, label) {
   const genes = nodes.map(node => {
     return {
       type: 'node',
+      matchedLabel: label,
       textLabel: node.getAttribute('TextLabel'),
       graphId: node.getAttribute('GraphId'),
       groupRef: node.getAttribute('GroupRef')
@@ -246,6 +257,7 @@ function getMatchingIds(gpml, label) {
     geneGroups = Array.from(groups).map(group => {
       return {
         type: 'group',
+        matchedLabel: label,
         graphId: group.getAttribute('GraphId'),
         groupId: group.getAttribute('GroupId')
       };
@@ -255,7 +267,9 @@ function getMatchingIds(gpml, label) {
   const geneGroupGraphIds = geneGroups.map(g => g.graphId);
   const matchingGraphIds = geneGraphIds.concat(geneGroupGraphIds);
 
-  return matchingGraphIds;
+  const elements = genes.concat(geneGroups);
+
+  return [matchingGraphIds, elements];
 }
 
 /**
@@ -285,17 +299,18 @@ async function fetchGpml(pathwayId) {
  *
  * This interaction object connects the searched gene and interacting gene.
  */
-function parseInteractionGraphics(graphics, graphIds) {
+function parseInteractionGraphic(graphic, graphIds) {
   let interaction = null;
 
   const {searchedGeneGraphIds, matchingGraphIds} = graphIds;
 
   const endGraphRefs = [];
   let numMatchingPoints = 0;
+  let isConnectedToSourceGene = false;
   let ixnType = null;
   let searchedGeneIndex = null;
 
-  Array.from(graphics.children).forEach(child => {
+  Array.from(graphic.children).forEach(child => {
     if (child.nodeName !== 'Point') return;
     const point = child;
     const graphRef = point.getAttribute('GraphRef');
@@ -304,6 +319,11 @@ function parseInteractionGraphics(graphics, graphIds) {
     if (matchingGraphIds.includes(graphRef)) {
       numMatchingPoints += 1;
       endGraphRefs.push(graphRef);
+
+      if (searchedGeneGraphIds.includes(graphRef)) {
+        isConnectedToSourceGene = true;
+      }
+
       if (point.getAttribute('ArrowHead')) {
         const arrowHead = point.getAttribute('ArrowHead');
         const isStart = searchedGeneGraphIds.includes(graphRef);
@@ -315,12 +335,12 @@ function parseInteractionGraphics(graphics, graphIds) {
     }
   });
 
-  if (numMatchingPoints >= 2) {
+  if (numMatchingPoints >= 2 && isConnectedToSourceGene) {
     if (searchedGeneIndex === null) {
       ixnType = 'interacts with';
     }
     ixnType = ixnType[0].toUpperCase() + ixnType.slice(1);
-    const interactionGraphId = graphics.parentNode.getAttribute('GraphId');
+    const interactionGraphId = graphic.parentNode.getAttribute('GraphId');
     interaction = {
       'interactionId': interactionGraphId,
       'endIds': endGraphRefs,
@@ -350,10 +370,15 @@ export async function detailInteractions(interactingGene, pathwayId, ideo) {
     Object.entries(ideo.annotDescriptions.annots)
       .find(([k, v]) => v.type === 'searched gene')[0];
 
-  // Gets IDs for searched gene and interacting gene, and,
+  // Gets IDs and elements for searched gene and interacting gene, and,
   // if they're in any groups, the IDs of those groups
-  const searchedGeneGraphIds = getMatchingIds(gpml, searchedGene);
-  const interactingGeneGraphIds = getMatchingIds(gpml, interactingGene);
+  const [searchedGeneGraphIds, se] = getMatches(gpml, searchedGene);
+  const [interactingGeneGraphIds, ie] = getMatches(gpml, interactingGene);
+
+  const elements = {
+    searchedGene: se,
+    interactingGene: ie
+  };
 
   const matchingGraphIds =
     searchedGeneGraphIds.concat(interactingGeneGraphIds);
@@ -362,9 +387,10 @@ export async function detailInteractions(interactingGene, pathwayId, ideo) {
   // Get interaction objects that connect the searched and interacting genes
   const interactions = [];
   const graphicsXml = gpml.querySelectorAll('Interaction Graphics');
-  Array.from(graphicsXml).forEach(graphics => {
-    const interaction = parseInteractionGraphics(graphics, graphIds);
+  Array.from(graphicsXml).forEach(graphic => {
+    const interaction = parseInteractionGraphic(graphic, graphIds);
     if (interaction !== null) {
+      interaction.elements = elements;
       interactions.push(interaction);
     }
   });
