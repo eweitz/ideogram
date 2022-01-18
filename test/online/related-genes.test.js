@@ -21,7 +21,7 @@ describe('Ideogram related genes kit', function() {
     return window.getComputedStyle(element).getPropertyValue('font-family');
   }
 
-  it('handles searched gene, annotation click, and font', done => {
+  it('handles searched gene, click, font, interaction summaries', done => {
 
     async function callback() {
       await ideogram.plotRelatedGenes('RAD51');
@@ -32,7 +32,10 @@ describe('Ideogram related genes kit', function() {
       assert.equal(relatedGene.textContent, 'RAD54L');
 
       // Wait a second to account for fetching interaction details
-      setTimeout(function() {
+      setTimeout(async function() {
+
+        // Test interaction gene summary processing, where one gene
+        // is part of a WikiPathways group
         let tooltip = document.querySelector('#_ideogramTooltip');
         assert.include(tooltip.textContent, 'Stimulated by RAD51 in');
 
@@ -40,18 +43,38 @@ describe('Ideogram related genes kit', function() {
 
         const brca2Annot = document.querySelector('#chr13-9606 .annot path');
         brca2Annot.dispatchEvent(new Event('mouseover'));
-        setTimeout(function() {
+        setTimeout(async function() {
           relatedGene = document.querySelector('#ideo-related-gene');
 
           assert.equal(relatedGene.textContent, 'BRCA2');
 
+          // Test interacting gene summary processing, where interactions
+          // *are not* directionally the same
           tooltip = document.querySelector('#_ideogramTooltip');
-          assert.include(tooltip.textContent, 'Interacts with RAD51 in');
+          assert.include(tooltip.textContent, 'Acts on RAD51 in');
 
-          const click = new MouseEvent('click', {view: window, bubbles: true});
-          relatedGene.dispatchEvent(click);
+          ideogram.plotRelatedGenes('ABL1');
 
-          done();
+          setTimeout(function() {
+            const atmLabel = document.querySelector('#ideogramLabel__c10_a0');
+            atmLabel.dispatchEvent(new Event('mouseover'));
+
+            setTimeout(function() {
+              // Test interacting gene summary processing, where interactions
+              // *are* directionally the same, though not identical in type
+              tooltip = document.querySelector('#_ideogramTooltip');
+              assert.include(tooltip.textContent, 'Acts on ABL1 in');
+
+              relatedGene = document.querySelector('#ideo-related-gene');
+              const click = new MouseEvent('click', {
+                view: window, bubbles: true
+              });
+              relatedGene.dispatchEvent(click);
+
+              done();
+            }, 4000);
+
+          }, 1000);
         }, 1000);
       }, 1000);
     }

@@ -50,9 +50,9 @@ function determineIxnsInPathwayAreSame(ixns, ixnTypeReference) {
 
   if (ixns.length === 0) return {isRefMatch, thisIsSame};
 
-  const thisIxnTypeReference = ixns[0].ixnType;
+  const thisIxnTypeReference = ixns[0].ixnType.toLowerCase();
   ixns.forEach(ixn => {
-    const ixnType = ixn.ixnType;
+    const ixnType = ixn.ixnType.toLowerCase();
     if (ixnType !== ixnTypeReference) {
       isRefMatch = false;
     }
@@ -69,7 +69,7 @@ function determineIxnsInPathwayAreSame(ixns, ixnTypeReference) {
 function getIxnTypeReference(ixnsByPwid) {
   const ixnTypeReference = Object.values(ixnsByPwid).find(ixns => {
     return ixns.length > 0 && 'ixnType' in ixns[0];
-  }).ixnType;
+  })[0].ixnType.toLowerCase();
 
   return ixnTypeReference;
 }
@@ -86,7 +86,7 @@ function setIsSame(enrichedIxns) {
   Object.entries(ixnsByPwid).map(([pwid, ixns]) => {
     const {isRefMatch, thisIsSame} =
       determineIxnsInPathwayAreSame(ixns, ixnTypeReference);
-    if (!thisIsSame || isRefMatch) {
+    if (!thisIsSame || !isRefMatch) {
       isSame = false;
     }
     enrichedIxns.isSameByPwid[pwid] = thisIsSame;
@@ -222,6 +222,7 @@ export async function detailAllInteractions(gene, pathwayIds, ideo) {
   await Promise.all(
     pathwayIds.map(async pathwayId => {
       const ixns = await detailInteractions(gene, pathwayId, ideo);
+
       ixnsByPwid[pathwayId] = ixns;
     })
   );
