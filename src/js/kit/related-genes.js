@@ -31,7 +31,7 @@ import {getAnnotDomId} from '../annotations/process';
 import {applyRankCutoff} from '../annotations/labels';
 import {getDir} from '../lib';
 import initGeneCache from '../gene-cache';
-import {detailAllInteractions} from './wikipathways';
+import {summarizeInteractions} from './wikipathways';
 
 /** Sets DOM IDs for ideo.relatedAnnots; needed to associate labels */
 function setRelatedAnnotDomIds(ideo) {
@@ -822,28 +822,21 @@ function decorateInteraction(annot, descObj, ideo) {
   const pathwayIds = descObj.pathwayIds;
   annot.displayName = annot.displayName.replace(description, '');
 
-  detailAllInteractions(annot.name, pathwayIds, ideo).then(ixnsByPwid => {
+  summarizeInteractions(annot.name, pathwayIds, ideo).then(summary => {
+    // Begin setting up new HTML for interaction section of tooltip
     const oldHtml = document.querySelector('#_ideogramTooltip').innerHTML;
     const coords = oldHtml.match(/<br\/?>chr.*/)[0];
-
-    const ixns = ixnsByPwid[pathwayIds[0]];
-    if (typeof ixns === 'undefined') return;
-
     const trimmedOriginal =
       originalDisplay.replaceAll(/(<br\/?>){3,}/g, '<br/><br/>');
     let newHtml = trimmedOriginal + coords;
 
-    const isConsistent = ixns.every(ixn => {
-      return ixn.ixnType === ixns[0].ixnType;
-    });
-    if (ixns.length > 0 && isConsistent) {
-      const ixnType = ixns[0].ixnType;
-      const oldIxn = 'Interacts with';
-      const newIxn = ixnType;
-      const newDesc = trimmedOriginal.replace(oldIxn, newIxn);
-      newHtml = newDesc + coords;
+    if (summary !== null) {
+      const oldSummary = 'Interacts with';
+      const newDisplay = trimmedOriginal.replace(oldSummary, summary);
+      newHtml = newDisplay + coords;
     }
     document.querySelector('#_ideogramTooltip').innerHTML = newHtml;
+
   });
 }
 
