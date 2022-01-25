@@ -21,6 +21,39 @@ describe('Ideogram related genes kit', function() {
     return window.getComputedStyle(element).getPropertyValue('font-family');
   }
 
+
+  it('handles gene with interacting genes but no paralogs', done => {
+
+    async function callback() {
+      const ideo = this;
+
+      await ideogram.plotRelatedGenes('BRCA2');
+
+      const related = ideo.getRelatedGenesByType();
+
+      const numParalogs = related.paralogous.length;
+      const numInteractingGenes = related.interacting.length;
+
+      assert.isAtLeast(numInteractingGenes, 1);
+      assert.equal(numParalogs, 0);
+
+      done();
+    }
+
+    function onClickAnnot(annot) {
+      ideogram.plotRelatedGenes(annot.name);
+    }
+
+    var config = {
+      organism: 'Homo sapiens',
+      onLoad: callback,
+      dataDir: '/dist/data/bands/native/',
+      onClickAnnot
+    };
+
+    const ideogram = Ideogram.initRelatedGenes(config);
+  });
+
   it('handles searched gene, click, font, interaction summaries', done => {
 
     async function callback() {
@@ -49,27 +82,21 @@ describe('Ideogram related genes kit', function() {
           assert.equal(relatedGene.textContent, 'BRCA2');
 
           // Test interacting gene summary processing, where interactions
-          // *are not* directionally the same
+          // *are* directionally the same, though not identical in type
           tooltip = document.querySelector('#_ideogramTooltip');
           assert.include(tooltip.textContent, 'Acts on RAD51 in');
 
-          ideogram.plotRelatedGenes('ABL1');
+          ideogram.plotRelatedGenes('BRCA1');
 
           setTimeout(function() {
-            const atmLabel = document.querySelector('#ideogramLabel__c10_a0');
-            atmLabel.dispatchEvent(new Event('mouseover'));
+            const bard1Label = document.querySelector('#ideogramLabel__c1_a0');
+            bard1Label.dispatchEvent(new Event('mouseover'));
 
             setTimeout(function() {
               // Test interacting gene summary processing, where interactions
-              // *are* directionally the same, though not identical in type
+              // *are not* directionally the same
               tooltip = document.querySelector('#_ideogramTooltip');
-              assert.include(tooltip.textContent, 'Acts on ABL1 in');
-
-              relatedGene = document.querySelector('#ideo-related-gene');
-              const click = new MouseEvent('click', {
-                view: window, bubbles: true
-              });
-              relatedGene.dispatchEvent(click);
+              assert.include(tooltip.textContent, 'Interacts with BRCA1 in');
 
               done();
             }, 4000);
@@ -108,38 +135,6 @@ describe('Ideogram related genes kit', function() {
       onPlotRelatedGenes,
       onWillShowAnnotTooltip,
       fontFamily: 'serif'
-    };
-
-    const ideogram = Ideogram.initRelatedGenes(config);
-  });
-
-  it('handles gene with interacting genes but no paralogs', done => {
-
-    async function callback() {
-      const ideo = this;
-
-      await ideogram.plotRelatedGenes('BRCA2');
-
-      const related = ideo.getRelatedGenesByType();
-
-      const numParalogs = related.paralogous.length;
-      const numInteractingGenes = related.interacting.length;
-
-      assert.isAtLeast(numInteractingGenes, 1);
-      assert.equal(numParalogs, 0);
-
-      done();
-    }
-
-    function onClickAnnot(annot) {
-      ideogram.plotRelatedGenes(annot.name);
-    }
-
-    var config = {
-      organism: 'Homo sapiens',
-      onLoad: callback,
-      dataDir: '/dist/data/bands/native/',
-      onClickAnnot
     };
 
     const ideogram = Ideogram.initRelatedGenes(config);
