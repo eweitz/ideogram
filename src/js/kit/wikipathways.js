@@ -1,3 +1,5 @@
+import { decompressSync, strFromU8 } from "fflate";
+
 // Definitions for ArrowHead values in WikiPathways GPML
 //
 // See also: https://discover.nci.nih.gov/mim/formal_mim_spec.pdf
@@ -285,11 +287,19 @@ function getMatches(gpml, label) {
  * data for biochemical pathways.
  */
 async function fetchGpml(pathwayId) {
-  const wpBaseUrl = 'https://webservice.wikipathways.org/';
-  const pathwayUrl = wpBaseUrl + `getPathway?pwId=${pathwayId}&format=json`;
+  // const wpBaseUrl = 'https://webservice.wikipathways.org/';
+  // const pathwayUrl = wpBaseUrl + `getPathway?pwId=${pathwayId}&format=json`;
+  // const wpResponse = await fetch(pathwayUrl);
+  // const wpData = await wpResponse.json();
+  // const rawGpml = wpData.pathway.gpml; // Printing this can help debug
+  // const gpml = new DOMParser().parseFromString(rawGpml, 'text/xml');
+
+  const wpBaseUrl = 'http://localhost/wikipathways-interactions/';
+  const pathwayUrl = wpBaseUrl + `data/${pathwayId}.xml`;
   const wpResponse = await fetch(pathwayUrl);
-  const wpData = await wpResponse.json();
-  const rawGpml = wpData.pathway.gpml; // Printing this can help debug
+  const blob = await wpResponse.blob();
+  const uint8Array = new Uint8Array(await blob.arrayBuffer());
+  const rawGpml = strFromU8(decompressSync(uint8Array));
   const gpml = new DOMParser().parseFromString(rawGpml, 'text/xml');
 
   return gpml;
