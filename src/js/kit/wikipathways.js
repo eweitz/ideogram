@@ -294,13 +294,17 @@ async function fetchGpml(pathwayId) {
   // const rawGpml = wpData.pathway.gpml; // Printing this can help debug
   // const gpml = new DOMParser().parseFromString(rawGpml, 'text/xml');
 
-  const wpBaseUrl = 'http://localhost/wikipathways-interactions/';
+  // const wpBaseUrl = 'http://localhost/wikipathways-interactions/';
+  const wpBaseUrl = 'https://cdn.jsdelivr.net/npm/wikipathways-interactions/';
   const pathwayUrl = wpBaseUrl + `data/${pathwayId}.xml`;
   const wpResponse = await fetch(pathwayUrl);
   const blob = await wpResponse.blob();
   const uint8Array = new Uint8Array(await blob.arrayBuffer());
   const rawGpml = strFromU8(decompressSync(uint8Array));
   const gpml = new DOMParser().parseFromString(rawGpml, 'text/xml');
+
+  console.log('gpml')
+  console.log(gpml)
 
   return gpml;
 }
