@@ -31,7 +31,7 @@ import {getAnnotDomId} from '../annotations/process';
 import {applyRankCutoff} from '../annotations/labels';
 import {getDir} from '../lib';
 import initGeneCache from '../gene-cache';
-import {summarizeInteractions} from './wikipathways';
+import {fetchGpmls, summarizeInteractions} from './wikipathways';
 
 /** Sets DOM IDs for ideo.relatedAnnots; needed to associate labels */
 function setRelatedAnnotDomIds(ideo) {
@@ -379,6 +379,10 @@ async function fetchInteractionAnnots(interactions, searchedGene, ideo) {
 
     mergeDescriptions(annot, descriptionObj, ideo);
   });
+
+  // Fetch GPML files to use when updating interaction descriptions with
+  // refined direction.
+  fetchGpmls(ideo);
 
   return annots;
 }
@@ -777,6 +781,8 @@ async function plotRelatedGenes(geneSymbol=null) {
   analyzeRelatedGenes(ideo);
 
   if (ideo.onPlotRelatedGenesCallback) ideo.onPlotRelatedGenesCallback();
+
+
 
 }
 

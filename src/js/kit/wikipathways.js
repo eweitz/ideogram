@@ -1,4 +1,4 @@
-import { decompressSync, strFromU8 } from "fflate";
+import {decompressSync, strFromU8} from 'fflate';
 
 // Definitions for ArrowHead values in WikiPathways GPML
 //
@@ -157,6 +157,14 @@ function summarizeByDirection(enrichedIxns) {
   return enrichedIxns;
 }
 
+/**
+ * Summarize interactions by direction
+ *
+ * @param {String} gene Interacting gene
+ * @param {Array} pathwayIds List of WikiPathways IDs
+ * @param {Object} ideo Ideogram instance object
+ * @returns
+ */
 export async function summarizeInteractions(gene, pathwayIds, ideo) {
   let summary = null;
 
@@ -218,6 +226,10 @@ export async function summarizeInteractions(gene, pathwayIds, ideo) {
 
 /**
  * Get detailInteractions results for multiple pathways
+ *
+ * @param gene Interacting gene
+ * @param pathwayIds List of WikiPathways IDs
+ * @ideo ideo Ideogram instance object
  */
 export async function detailAllInteractions(gene, pathwayIds, ideo) {
   const ixnsByPwid = {};
@@ -294,8 +306,8 @@ async function fetchGpml(pathwayId) {
   // const rawGpml = wpData.pathway.gpml; // Printing this can help debug
 
   // const wpBaseUrl = 'http://localhost/wikipathways-interactions/';
-  const wpBaseUrl = 'https://cdn.jsdelivr.net/npm/wikipathways-interactions/';
-  const pathwayUrl = wpBaseUrl + `data/${pathwayId}.xml.gz`;
+  const wpBaseUrl = 'https://cdn.jsdelivr.net/npm/ixn/';
+  const pathwayUrl = wpBaseUrl + pathwayId + '.xml.gz';
   const wpResponse = await fetch(pathwayUrl);
   const blob = await wpResponse.blob();
   const uint8Array = new Uint8Array(await blob.arrayBuffer());
@@ -307,6 +319,79 @@ async function fetchGpml(pathwayId) {
   // console.log(gpml)
 
   return gpml;
+}
+
+/**
+ * Request compressed GPML files, which contain detailed interaction data, e.g.
+ * https://cdn.jsdelivr.net/npm/ixn/WP3982.xml.gz
+ *
+ * For more easily readable versions, see also:
+ * - https://www.wikipathways.org/index.php?title=Pathway:WP3982&action=edit
+ * - https://www.wikipathways.org//wpi/wpi.php?action=downloadFile&type=gpml&pwTitle=Pathway:WP3982
+ *
+ * GPML (Graphical Pathway Markup Language) data encodes detailed interaction
+ * data for biochemical pathways.
+ */
+ export function fetchGpmls(ideo) {
+
+  const pathwayIdsByInteractingGene = {};
+  Object.entries(ideo.annotDescriptions.annots)
+    .forEach(([annotName, descObj]) => {
+      if ('type' in descObj && descObj.type.includes('interacting gene')) {
+        pathwayIdsByInteractingGene[annotName] = descObj.pathwayIds;
+      }
+    });
+
+  const gpmlsByInteractingGene = {};
+  Object.entries(pathwayIdsByInteractingGene)
+    .forEach(([ixnGene, pathwayIds]) => {
+      gpmlsByInteractingGene[ixnGene] = {};
+      pathwayIds.map(async pathwayId => {
+        const pathwayFile = `${pathwayId}.xml.gz`
+        const gpmlUrl = `https://cdn.jsdelivr.net/npm/ixn/${pathwayFile}`;
+        const response = await fetch(gpmlUrl);
+        const blob = await response.blob();
+        const uint8Array = new Uint8Array(await blob.arrayBuffer());
+        const rawGpml = strFromU8(decompressSync(uint8Array));
+
+        const gpml = new DOMParser().parseFromString(rawGpml, 'text/xml');
+
+        gpmlsByInteractingGene[ixnGene][pathwayId] = gpml;
+      });
+    });
+
+  ideo.gpmlsByInteractingGene = gpmlsByInteractingGene;
+
+  //// const wpBaseUrl = 'https://webservice.wikipathways.org/';
+  //// const pathwayUrl = wpBaseUrl + `getPathway?pwId=${pathwayId}&format=json`;
+  //// const wpResponse = await fetch(pathwayUrl);
+  //// const wpData = await wpResponse.json();
+  //// const rawGpml = wpData.pathway.gpml; // Printing this can help debug
+
+  //// const wpBaseUrl = 'http://localhost/wikipathways-interactions/';
+
+  // const gpmlUrl = `https://cdn.jsdelivr.net/npm/${id}.xml.gz`;
+  // const response = await fetch(gpmlUrl);
+  // const blob = await response.blob();
+  // const uint8Array = new Uint8Array(await blob.arrayBuffer());
+  // const rawGpml = strFromU8(decompressSync(uint8Array));
+
+  // Example:
+  // https://cdn.jsdelivr.net/combine/npm/ixn/WP1.xml.gz,npm/ixn/WP2.xml.gz
+  // const wpBaseUrl = 'https://cdn.jsdelivr.net/combine/';
+  // const pathwaySegments = pathwayIds.map(id => `npm/ixn/${id}.xml.gz`);
+  // const pathwaysUrl = wpBaseUrl + pathwaySegments.join(',');
+  // const wpResponse = await fetch(pathwaysUrl);
+  // const blob = await wpResponse.blob();
+  // const uint8Array = new Uint8Array(await blob.arrayBuffer());
+  // const rawGpml = strFromU8(decompressSync(uint8Array));
+
+  // const gpml = new DOMParser().parseFromString(rawGpml, 'text/xml');
+
+  // console.log('gpml')
+  // console.log(gpml)
+
+  // return gpml;
 }
 
 /**
@@ -378,7 +463,7 @@ function parseInteractionGraphic(graphic, graphIds) {
 export async function detailInteractions(interactingGene, pathwayId, ideo) {
 
   // Get pathway's GPML, which contains detailed interaction data
-  const gpml = await fetchGpml(pathwayId);
+  const gpml = ideo.gpmlsByInteractingGene[interactingGene][pathwayId];
 
   // Get symbol of the searched gene, e.g. "PTEN"
   const searchedGene =
