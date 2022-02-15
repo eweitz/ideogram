@@ -1,68 +1,258 @@
+import {decompressSync, strFromU8} from 'fflate';
+
 // Definitions for ArrowHead values in WikiPathways GPML
 //
 // See also: https://discover.nci.nih.gov/mim/formal_mim_spec.pdf
 const interactionArrowMap = {
   'Arrow': ['acts on', 'acted on by'],
-  'TBar': ['inhibits', 'is inhibited by'],
+  'TBar': ['inhibits', 'inhibited by'],
   'mim-binding': ['binds', 'binds'],
   'mim-catalysis': ['catalyzes', 'catalyzed by'],
   'mim-cleavage': ['cleaves', 'cleaved by'],
   'mim-conversion': ['converts', 'converted by'],
   // 'mim-covalent-bond': ['covalently binds',
   // 'mim-gap': 'MimGap',
-  'mim-inhibition': ['inhibits', 'is inhibited by'],
-  'mim-modification': ['modifies', 'is modified by'],
+  'mim-inhibition': ['inhibits', 'inhibited by'],
+  'mim-modification': ['modifies', 'modified by'],
   'mim-necessary-stimulation':
-    ['necessarily stimulates', 'is necessarily stimulated by'],
-  'mim-stimulation': ['stimulates', 'is stimulated by'],
+    ['necessarily stimulates', 'necessarily stimulated by'],
+  'mim-stimulation': ['stimulates', 'stimulated by'],
   'mim-transcription-translation':
-    ['transcribes / translates', 'is transcribed / translated by']
+    ['transcribes / translates', 'transcribed / translated by']
 };
 
-/**
- * Get detailInteractions results for multiple pathways
- */
-export async function detailAllInteractions(gene, pathwayIds, ideo) {
-  const ixnsByPwid = {};
-  await Promise.all(
-    pathwayIds.map(async pathwayId => {
-      const ixns = await detailInteractions(gene, pathwayId, ideo);
-      ixnsByPwid[pathwayId] = ixns;
-    })
-  );
-  return ixnsByPwid;
+// Which interactions types to show first, if showing multiple
+const rankedInteractionTypes = [
+  'transcribe',
+  'cleave',
+  'convert',
+  'bind',
+  'modifie',
+  'catalyze',
+  'necessarily stimulate',
+  'inhibit',
+  'stimulate',
+  'act'
+];
+
+export function sortInteractionTypes(a, b) {
+  const ranks = {};
+  for (let i = 0; i < rankedInteractionTypes.length; i++) {
+    const rankedIxnType = rankedInteractionTypes[i];
+    if (rankedIxnType.includes(a)) ranks.a = i;
+    if (rankedIxnType.includes(b)) ranks.b = i;
+  }
+  return ranks.b - ranks.a;
+}
+
+/** Determine if all given interactions in *one* pathway are same */
+function determineIxnsInPathwayAreSame(ixns, ixnTypeReference) {
+  let isRefMatch = true;
+  let thisIsSame = true;
+
+  if (ixns.length === 0) return {isRefMatch, thisIsSame};
+
+  const thisIxnTypeReference = ixns[0].ixnType.toLowerCase();
+  ixns.forEach(ixn => {
+    const ixnType = ixn.ixnType.toLowerCase();
+    if (ixnType !== ixnTypeReference) {
+      isRefMatch = false;
+    }
+    if (ixnType !== thisIxnTypeReference) {
+      thisIsSame = false;
+    }
+  });
+  return {isRefMatch, thisIsSame};
 }
 
 /**
- * Fetch GPML for pathway and find ID of Interaction between two genes,
- * and the ID of the two DataNodes for each of those interactions.
- *
- * WikiPathways SVG isn't detailed enough to reliably determine the specific
- * interaction elements relating two genes, given only the gene symbols.  This
- * fetches augmented GPML data for the pathway, and queries it to get only
- * interactions between the two genes.
+ * Return first valid interaction type from interactions-by-pathway object
  */
- export async function detailInteractions(interactingGene, pathwayId, ideo) {
+function getIxnTypeReference(ixnsByPwid) {
+  const ixnTypeReference = Object.values(ixnsByPwid).find(ixns => {
+    return ixns.length > 0 && 'ixnType' in ixns[0];
+  })[0].ixnType.toLowerCase();
 
-  // Fetch GPML data
-  const wpBaseUrl = 'https://webservice.wikipathways.org/';
-  const pathwayUrl = wpBaseUrl + `getPathway?pwId=${pathwayId}&format=json`;
-  const wpResponse = await fetch(pathwayUrl);
-  const wpData = await wpResponse.json();
-  const rawGpml = wpData.pathway.gpml;
-  const gpml = new DOMParser().parseFromString(rawGpml, 'text/xml');
+  return ixnTypeReference;
+}
 
-  const searchedGene =
-    Object.entries(ideo.annotDescriptions.annots)
-      .find(([k, v]) => v.type === 'searched gene')[0];
+/**
+ * Determine whether all given interactions in all given pathways are the same
+ */
+function setIsSame(enrichedIxns) {
+  let isSame = true;
+  const ixnsByPwid = enrichedIxns.ixnsByPwid;
 
-  const nodes = gpml.querySelectorAll(
-    `DataNode[TextLabel="${searchedGene}"],` +
-    `DataNode[TextLabel="${interactingGene}"]`
-  );
+  const ixnTypeReference = getIxnTypeReference(ixnsByPwid);
 
-  const genes = Array.from(nodes).map(node => {
+  Object.entries(ixnsByPwid).map(([pwid, ixns]) => {
+    const {isRefMatch, thisIsSame} =
+      determineIxnsInPathwayAreSame(ixns, ixnTypeReference);
+    if (!thisIsSame || !isRefMatch) {
+      isSame = false;
+    }
+    enrichedIxns.isSameByPwid[pwid] = thisIsSame;
+  });
+  enrichedIxns.isSame = isSame;
+
+  return enrichedIxns;
+}
+
+/**
+ * If interactions aren't all exactly the same, then they are often still
+ * directionally equivalent.
+ *
+ * E.g. if gene A both "modifies" and "converts" gene B, then we can summarize
+ * that as gene A "acts on" gene B, rather than completely reverting to saying
+ * gene A "interacts with" gene B.
+ *
+ */
+function summarizeByDirection(enrichedIxns) {
+
+  let isDirectionSame = true;
+
+  const leftTypes = []; // "Acts on" types
+  const rightTypes = []; // "Acted on by" types
+  Object.values(interactionArrowMap).forEach(directedTypes => {
+    rightTypes.push(directedTypes[0]);
+    leftTypes.push(directedTypes[1]);
+  });
+
+  const right = 'Acts on';
+  const left = 'Acted on by';
+
+  const ixnsByPwid = enrichedIxns.ixnsByPwid;
+  const firstIxnType = getIxnTypeReference(ixnsByPwid);
+  const isRight = rightTypes.includes(firstIxnType);
+  const directionReference = isRight ? right : left;
+
+  Object.entries(ixnsByPwid).map(([pwid, ixns]) => {
+    let isPwDirectionSame = true;
+    if (ixns.length > 0) {
+      const pwFirstIxnType = ixns[0].ixnType.toLowerCase();
+      const pwIsRight = rightTypes.includes(pwFirstIxnType);
+      const pwDirectionReference = pwIsRight ? right : left;
+      ixns.forEach(ixn => {
+        const ixnType = ixn.ixnType.toLowerCase();
+        const thisIsRight = rightTypes.includes(ixnType);
+        const direction = thisIsRight ? right : left;
+        enrichedIxns.directionsByPwid[pwid] = direction;
+        if (direction !== directionReference) {
+          isDirectionSame = false;
+        }
+        if (direction !== pwDirectionReference) {
+          isPwDirectionSame = false;
+        }
+      });
+    }
+    enrichedIxns.isDirectionSameByPwid[pwid] = isPwDirectionSame;
+
+  });
+
+  enrichedIxns.isDirectionSame = isDirectionSame;
+  if (isDirectionSame === true) {
+    enrichedIxns.direction = directionReference;
+  }
+
+  return enrichedIxns;
+}
+
+/**
+ * Summarize interactions by direction
+ *
+ * @param {String} gene Interacting gene
+ * @param {Array} pathwayIds List of WikiPathways IDs
+ * @param {Object} ideo Ideogram instance object
+ * @returns
+ */
+export function summarizeInteractions(gene, pathwayIds, ideo) {
+  let summary = null;
+
+  const ixnsByPwid = detailAllInteractions(gene, pathwayIds, ideo);
+
+  const ixns = ixnsByPwid[pathwayIds[0]];
+
+  if (ixns.length > 0) {
+    let enrichedIxns = {
+      ixnsByPwid,
+      isSameByPwid: {}, // If pathway has all same interaction types
+      isSame: null, // If above is true for all pathways
+      isDirectionSameByPwid: {}, // If pathway has same ixn direction
+      isDirectionSame: null, // If above is true for all pathways
+      directionsByPwid: {}
+    };
+    enrichedIxns = setIsSame(enrichedIxns);
+
+    if (enrichedIxns.isSame) {
+      const ixnType = ixns[0].ixnType;
+      const newIxn = ixnType;
+      summary = newIxn;
+    } else {
+
+      enrichedIxns = summarizeByDirection(enrichedIxns);
+
+      if (enrichedIxns.isDirectionSame) {
+        summary = enrichedIxns.direction;
+      } else {
+        summary = 'Interacts with';
+      }
+    }
+  }
+
+
+    // if (direction !== null) {
+    //   summary = direction;
+    // }
+    // const pwidsByIxnType = {};
+    // Object.entries(ixns).map(([k, v]) => {
+    //   if (!pwidsByIxnType[v.ixnType]) {
+    //     pwidsByIxnType[v.ixnType] = [v.pathwayId];
+    //   } else {
+    //     pwidsByIxnType[v.ixnType].push([v.pathwayId]);
+    //   }
+    // });
+
+    // console.log('pwidsByIxnType')
+    // console.log(pwidsByIxnType)
+    // const tpArray = Object.entries(pwidsByIxnType);
+    // const sortedIndices = sortInteractionTypes(tpArray.map(tp => tp[0]));
+    // const sortedTpArray =
+    //   sortedIndices.map(sortedIndex => tpArray[sortedIndex]);
+
+    // console.log('sortedTpArray')
+    // console.log(sortedTpArray)
+  return summary;
+}
+
+/**
+ * Get detailInteractions results for multiple pathways
+ *
+ * @param gene Interacting gene
+ * @param pathwayIds List of WikiPathways IDs
+ * @ideo ideo Ideogram instance object
+ */
+export function detailAllInteractions(gene, pathwayIds, ideo) {
+  const ixnsByPwid = {};
+
+  pathwayIds.map(pathwayId => {
+    const ixns = detailInteractions(gene, pathwayId, ideo);
+
+    ixnsByPwid[pathwayId] = ixns;
+  });
+  return ixnsByPwid;
+}
+
+/** Get IDs and data element objects for searched or interacting gene */
+function getMatches(gpml, label) {
+
+  const nodes = Array.from(gpml.querySelectorAll(
+    `DataNode[TextLabel="${label}"]`
+  ));
+
+  const genes = nodes.map(node => {
     return {
+      type: 'node',
+      matchedLabel: label,
       textLabel: node.getAttribute('TextLabel'),
       graphId: node.getAttribute('GraphId'),
       groupRef: node.getAttribute('GroupRef')
@@ -74,68 +264,170 @@ export async function detailAllInteractions(gene, pathwayIds, ideo) {
   const geneGroupRefs = genes.map(g => g.groupRef);
   const groupSelectors =
     geneGroupRefs.map(ggr => `Group[GroupId="${ggr}"]`).join(',');
-  const groups = gpml.querySelectorAll(groupSelectors);
-  const geneGroups = Array.from(groups).map(group => {
-    return {
-      graphId: group.getAttribute('GraphId'),
-      groupId: group.getAttribute('GroupId')
-    };
-  });
+
+  let geneGroups = [];
+  if (groupSelectors !== '') {
+    const groups = gpml.querySelectorAll(groupSelectors);
+    geneGroups = Array.from(groups).map(group => {
+      return {
+        type: 'group',
+        matchedLabel: label,
+        graphId: group.getAttribute('GraphId'),
+        groupId: group.getAttribute('GroupId')
+      };
+    });
+  }
 
   const geneGroupGraphIds = geneGroups.map(g => g.graphId);
   const matchingGraphIds = geneGraphIds.concat(geneGroupGraphIds);
 
-  const interactions = [];
+  const elements = genes.concat(geneGroups);
 
-  const graphicsXml = gpml.querySelectorAll('Interaction Graphics');
-  Array.from(graphicsXml).forEach(graphics => {
-    const endGraphRefs = [];
-    let numMatchingPoints = 0;
-    let ixnType = null;
-    let searchedGeneIndex = null;
+  return [matchingGraphIds, elements];
+}
 
-    Array.from(graphics.children).forEach(child => {
-      if (child.nodeName !== 'Point') return;
-      const point = child;
-      const graphRef = point.getAttribute('GraphRef');
-      if (graphRef === null) return;
+/**
+ * Request compressed GPML files, which contain detailed interaction data, e.g.
+ * https://cdn.jsdelivr.net/npm/ixn/WP3982.xml.gz
+ *
+ * For more easily readable versions, see also:
+ * - https://www.wikipathways.org/index.php?title=Pathway:WP3982&action=edit
+ * - https://www.wikipathways.org//wpi/wpi.php?action=downloadFile&type=gpml&pwTitle=Pathway:WP3982
+ *
+ * GPML (Graphical Pathway Markup Language) data encodes detailed interaction
+ * data for biochemical pathways.
+ */
+export function fetchGpmls(ideo) {
 
-      if (matchingGraphIds.includes(graphRef)) {
-        numMatchingPoints += 1;
-        endGraphRefs.push(graphRef);
-        if (point.getAttribute('ArrowHead')) {
-          const arrowHead = point.getAttribute('ArrowHead');
-          const pointLabel = genes.find(g => g.graphId = graphRef).textLabel;
-          const isStart = pointLabel === searchedGene;
-          if (searchedGeneIndex === null) {
-            searchedGeneIndex = isStart ? 0 : 1;
-          }
-          ixnType = interactionArrowMap[arrowHead][isStart ? 0 : 1];
-        }
+  const pathwayIdsByInteractingGene = {};
+  Object.entries(ideo.annotDescriptions.annots)
+    .forEach(([annotName, descObj]) => {
+      if ('type' in descObj && descObj.type.includes('interacting gene')) {
+        pathwayIdsByInteractingGene[annotName] = descObj.pathwayIds;
       }
     });
 
-    if (numMatchingPoints >= 2) {
-      if (searchedGeneIndex === null) {
-        const gi = genes.indexOf(genes.find(g => g.textLabel = searchedGene));
-        searchedGeneIndex = gi;
-        ixnType = 'interacts with';
-        // console.log('searchedGeneIndex', searchedGeneIndex)
+  const gpmlsByInteractingGene = {};
+  Object.entries(pathwayIdsByInteractingGene)
+    .forEach(([ixnGene, pathwayIds]) => {
+      gpmlsByInteractingGene[ixnGene] = {};
+      pathwayIds.map(async pathwayId => {
+        const pathwayFile = `${pathwayId}.xml.gz`;
+        const gpmlUrl = `https://cdn.jsdelivr.net/npm/ixn/${pathwayFile}`;
+        const response = await fetch(gpmlUrl);
+        const blob = await response.blob();
+        const uint8Array = new Uint8Array(await blob.arrayBuffer());
+        const rawGpml = strFromU8(decompressSync(uint8Array));
+
+        const gpml = new DOMParser().parseFromString(rawGpml, 'text/xml');
+
+        gpmlsByInteractingGene[ixnGene][pathwayId] = gpml;
+      });
+    });
+
+  ideo.gpmlsByInteractingGene = gpmlsByInteractingGene;
+}
+
+/**
+ * Get interaction object from a GPML graphics XML element
+ *
+ * This interaction object connects the searched gene and interacting gene.
+ */
+function parseInteractionGraphic(graphic, graphIds) {
+  let interaction = null;
+
+  const {searchedGeneGraphIds, matchingGraphIds} = graphIds;
+
+  const endGraphRefs = [];
+  let numMatchingPoints = 0;
+  let isConnectedToSourceGene = false;
+  let ixnType = null;
+  let searchedGeneIndex = null;
+
+  Array.from(graphic.children).forEach(child => {
+    if (child.nodeName !== 'Point') return;
+    const point = child;
+    const graphRef = point.getAttribute('GraphRef');
+    if (graphRef === null) return;
+
+    if (matchingGraphIds.includes(graphRef)) {
+      numMatchingPoints += 1;
+      endGraphRefs.push(graphRef);
+
+      if (searchedGeneGraphIds.includes(graphRef)) {
+        isConnectedToSourceGene = true;
       }
-      ixnType = ixnType[0].toUpperCase() + ixnType.slice(1);
-      const interactionGraphId = graphics.parentNode.getAttribute('GraphId');
-      const connection = {
-        'interactionId': interactionGraphId,
-        'endIds': endGraphRefs,
-        ixnType,
-        genes,
-        searchedGeneIndex // Whether searched gene is at start or end
-      };
-      interactions.push(connection);
+
+      if (point.getAttribute('ArrowHead')) {
+        const arrowHead = point.getAttribute('ArrowHead');
+        const isStart = searchedGeneGraphIds.includes(graphRef);
+        if (searchedGeneIndex === null) {
+          searchedGeneIndex = isStart ? 0 : 1;
+        }
+        ixnType = interactionArrowMap[arrowHead][isStart ? 0 : 1];
+      }
     }
   });
 
-  // console.log('interactions', interactions)
+  if (numMatchingPoints >= 2 && isConnectedToSourceGene) {
+    if (searchedGeneIndex === null) {
+      ixnType = 'interacts with';
+    }
+    ixnType = ixnType[0].toUpperCase() + ixnType.slice(1);
+    const interactionGraphId = graphic.parentNode.getAttribute('GraphId');
+    interaction = {
+      'interactionId': interactionGraphId,
+      'endIds': endGraphRefs,
+      ixnType
+    };
+  }
+
+  return interaction;
+}
+
+/**
+ * Fetch GPML for pathway and find ID of Interaction between two genes,
+ * and the ID of the two DataNodes for each of those interactions.
+ *
+ * WikiPathways SVG isn't detailed enough to reliably determine the specific
+ * interaction elements relating two genes, given only the gene symbols.  This
+ * fetches augmented GPML data for the pathway, and queries it to get only
+ * interactions between the two genes.
+ */
+export function detailInteractions(interactingGene, pathwayId, ideo) {
+
+  // Get pathway's GPML, which contains detailed interaction data
+  const gpml = ideo.gpmlsByInteractingGene[interactingGene][pathwayId];
+
+  // Get symbol of the searched gene, e.g. "PTEN"
+  const searchedGene =
+    Object.entries(ideo.annotDescriptions.annots)
+      .find(([k, v]) => v.type === 'searched gene')[0];
+
+  // Gets IDs and elements for searched gene and interacting gene, and,
+  // if they're in any groups, the IDs of those groups
+  const [searchedGeneGraphIds, se] = getMatches(gpml, searchedGene);
+  const [interactingGeneGraphIds, ie] = getMatches(gpml, interactingGene);
+
+  const elements = {
+    searchedGene: se,
+    interactingGene: ie
+  };
+
+  const matchingGraphIds =
+    searchedGeneGraphIds.concat(interactingGeneGraphIds);
+  const graphIds = {searchedGeneGraphIds, matchingGraphIds};
+
+  // Get interaction objects that connect the searched and interacting genes
+  const interactions = [];
+  const graphicsXml = gpml.querySelectorAll('Interaction Graphics');
+  Array.from(graphicsXml).forEach(graphic => {
+    const interaction = parseInteractionGraphic(graphic, graphIds);
+    if (interaction !== null) {
+      interaction.elements = elements;
+      interactions.push(interaction);
+    }
+  });
 
   return interactions;
 }

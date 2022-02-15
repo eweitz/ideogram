@@ -31,7 +31,7 @@ import {getAnnotDomId} from '../annotations/process';
 import {applyRankCutoff} from '../annotations/labels';
 import {getDir} from '../lib';
 import initGeneCache from '../gene-cache';
-import {detailAllInteractions} from './wikipathways';
+import {fetchGpmls, summarizeInteractions} from './wikipathways';
 
 /** Sets DOM IDs for ideo.relatedAnnots; needed to associate labels */
 function setRelatedAnnotDomIds(ideo) {
@@ -379,6 +379,10 @@ async function fetchInteractionAnnots(interactions, searchedGene, ideo) {
 
     mergeDescriptions(annot, descriptionObj, ideo);
   });
+
+  // Fetch GPML files to use when updating interaction descriptions with
+  // refined direction.
+  fetchGpmls(ideo);
 
   return annots;
 }
@@ -777,7 +781,6 @@ async function plotRelatedGenes(geneSymbol=null) {
   analyzeRelatedGenes(ideo);
 
   if (ideo.onPlotRelatedGenesCallback) ideo.onPlotRelatedGenesCallback();
-
 }
 
 function getAnnotByName(annotName, ideo) {
@@ -814,45 +817,22 @@ function handleTooltipClick(ideo) {
 }
 
 /**
- * Enhance description of interaction, e.g. "Interacts with" -> "Inhibits"
- */
-function decorateInteraction(annot, descObj, ideo) {
-  const {description, originalDisplay} = descObj;
-
-  const pathwayIds = descObj.pathwayIds;
-  annot.displayName = annot.displayName.replace(description, '');
-
-  detailAllInteractions(annot.name, pathwayIds, ideo).then(ixnsByPwid => {
-    const oldHtml = document.querySelector('#_ideogramTooltip').innerHTML;
-    const coords = oldHtml.match(/<br\/?>chr.*/)[0];
-
-    const ixns = ixnsByPwid[pathwayIds[0]];
-    if (typeof ixns === 'undefined') return;
-
-    const trimmedOriginal =
-      originalDisplay.replaceAll(/(<br\/?>){3,}/g, '<br/><br/>');
-    let newHtml = trimmedOriginal + coords;
-
-    const isConsistent = ixns.every(ixn => {
-      return ixn.ixnType === ixns[0].ixnType;
-    });
-    if (ixns.length > 0 && isConsistent) {
-      const ixnType = ixns[0].ixnType;
-      const oldIxn = 'Interacts with';
-      const newIxn = ixnType;
-      const newDesc = trimmedOriginal.replace(oldIxn, newIxn);
-      newHtml = newDesc + coords;
-    }
-    document.querySelector('#_ideogramTooltip').innerHTML = newHtml;
-  });
-}
-
-/**
  * Enhance tooltip shown on hovering over gene annotation
  */
 function decorateRelatedGene(annot) {
   const ideo = this;
   const descObj = ideo.annotDescriptions.annots[annot.name];
+
+  if ('type' in descObj && descObj.type.includes('interacting gene')) {
+    const pathwayIds = descObj.pathwayIds;
+    const summary = summarizeInteractions(annot.name, pathwayIds, ideo);
+    if (summary !== null) {
+      const oldSummary = 'Interacts with';
+      descObj.description =
+        descObj.description.replace(oldSummary, summary);
+    }
+  }
+
   const description =
     descObj.description.length > 0 ? `<br/>${descObj.description}` : '';
   const fullName = descObj.name;
@@ -865,11 +845,7 @@ function decorateRelatedGene(annot) {
     `<br/>`;
 
   annot.displayName = originalDisplay;
-  if ('type' in descObj && descObj.type.includes('interacting gene')) {
-    descObj.originalDisplay = originalDisplay;
-    descObj.description = description;
-    decorateInteraction(annot, descObj, ideo);
-  }
+
 
   handleTooltipClick(ideo);
 
