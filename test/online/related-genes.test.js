@@ -21,62 +21,95 @@ describe('Ideogram related genes kit', function() {
     return window.getComputedStyle(element).getPropertyValue('font-family');
   }
 
+
+  it('handles gene with interacting genes but no paralogs', done => {
+
+    async function callback() {
+      const ideo = this;
+
+      await ideogram.plotRelatedGenes('BRCA2');
+
+      const related = ideo.getRelatedGenesByType();
+
+      const numParalogs = related.paralogous.length;
+      const numInteractingGenes = related.interacting.length;
+
+      assert.isAtLeast(numInteractingGenes, 1);
+      assert.equal(numParalogs, 0);
+
+      done();
+    }
+
+    function onClickAnnot(annot) {
+      ideogram.plotRelatedGenes(annot.name);
+    }
+
+    var config = {
+      organism: 'Homo sapiens',
+      onLoad: callback,
+      dataDir: '/dist/data/bands/native/',
+      onClickAnnot
+    };
+
+    const ideogram = Ideogram.initRelatedGenes(config);
+  });
+
   it('handles searched gene, click, font, interaction summaries', done => {
 
     async function callback() {
       await ideogram.plotRelatedGenes('RAD51');
 
-      const rad54lLabel = document.querySelector('#ideogramLabel__c0_a0');
-      rad54lLabel.dispatchEvent(new Event('mouseover'));
-      let relatedGene = document.querySelector('#ideo-related-gene');
-      assert.equal(relatedGene.textContent, 'RAD54L');
-
-      // Wait a second to account for fetching interaction details
       setTimeout(async function() {
 
-        // Test interaction gene summary processing, where one gene
-        // is part of a WikiPathways group
-        let tooltip = document.querySelector('#_ideogramTooltip');
-        assert.include(tooltip.textContent, 'Stimulated by RAD51 in');
+        const rad54lLabel = document.querySelector('#ideogramLabel__c0_a0');
+        rad54lLabel.dispatchEvent(new Event('mouseover'));
+        let relatedGene = document.querySelector('#ideo-related-gene');
+        assert.equal(relatedGene.textContent, 'RAD54L');
 
-        rad54lLabel.dispatchEvent(new Event('mouseout'));
-
-        const brca2Annot = document.querySelector('#chr13-9606 .annot path');
-        brca2Annot.dispatchEvent(new Event('mouseover'));
+        // Wait a second to account for fetching interaction details
         setTimeout(async function() {
-          relatedGene = document.querySelector('#ideo-related-gene');
 
-          assert.equal(relatedGene.textContent, 'BRCA2');
+          // Test interaction gene summary processing, where one gene
+          // is part of a WikiPathways group
+          let tooltip = document.querySelector('#_ideogramTooltip');
+          assert.include(tooltip.textContent, 'Stimulated by RAD51 in');
 
-          // Test interacting gene summary processing, where interactions
-          // *are not* directionally the same
-          tooltip = document.querySelector('#_ideogramTooltip');
-          assert.include(tooltip.textContent, 'Acts on RAD51 in');
+          rad54lLabel.dispatchEvent(new Event('mouseout'));
 
-          ideogram.plotRelatedGenes('ABL1');
+          const brca2Annot = document.querySelector('#chr13-9606 .annot path');
+          brca2Annot.dispatchEvent(new Event('mouseover'));
 
-          setTimeout(function() {
-            const atmLabel = document.querySelector('#ideogramLabel__c10_a0');
-            atmLabel.dispatchEvent(new Event('mouseover'));
+          setTimeout(async function() {
+            relatedGene = document.querySelector('#ideo-related-gene');
 
+            assert.equal(relatedGene.textContent, 'BRCA2');
+
+            // Test interacting gene summary processing, where interactions
+            // *are* directionally the same, though not identical in type
+            tooltip = document.querySelector('#_ideogramTooltip');
+            assert.include(tooltip.textContent, 'Acts on RAD51 in');
+
+            ideogram.plotRelatedGenes('BRCA1');
             setTimeout(function() {
-              // Test interacting gene summary processing, where interactions
-              // *are* directionally the same, though not identical in type
-              tooltip = document.querySelector('#_ideogramTooltip');
-              assert.include(tooltip.textContent, 'Acts on ABL1 in');
+              const bard1Label =
+                document.querySelector('#ideogramLabel__c1_a0');
+              bard1Label.dispatchEvent(new Event('mouseover'));
 
-              relatedGene = document.querySelector('#ideo-related-gene');
-              const click = new MouseEvent('click', {
-                view: window, bubbles: true
-              });
-              relatedGene.dispatchEvent(click);
+              setTimeout(function() {
+                // Test interacting gene summary processing, where interactions
+                // *are not* directionally the same
+                tooltip = document.querySelector('#_ideogramTooltip');
+                assert.include(tooltip.textContent, 'Interacts with BRCA1 in');
 
-              done();
-            }, 4000);
+                done();
+              }, 2000);
 
+            }, 1000);
           }, 1000);
-        }, 1000);
-      }, 1000);
+        }, 2000);
+      }, 2000);
+
+
     }
 
     function onClickAnnot(annot) {
@@ -108,38 +141,6 @@ describe('Ideogram related genes kit', function() {
       onPlotRelatedGenes,
       onWillShowAnnotTooltip,
       fontFamily: 'serif'
-    };
-
-    const ideogram = Ideogram.initRelatedGenes(config);
-  });
-
-  it('handles gene with interacting genes but no paralogs', done => {
-
-    async function callback() {
-      const ideo = this;
-
-      await ideogram.plotRelatedGenes('BRCA2');
-
-      const related = ideo.getRelatedGenesByType();
-
-      const numParalogs = related.paralogous.length;
-      const numInteractingGenes = related.interacting.length;
-
-      assert.isAtLeast(numInteractingGenes, 1);
-      assert.equal(numParalogs, 0);
-
-      done();
-    }
-
-    function onClickAnnot(annot) {
-      ideogram.plotRelatedGenes(annot.name);
-    }
-
-    var config = {
-      organism: 'Homo sapiens',
-      onLoad: callback,
-      dataDir: '/dist/data/bands/native/',
-      onClickAnnot
     };
 
     const ideogram = Ideogram.initRelatedGenes(config);

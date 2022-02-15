@@ -1,3 +1,5 @@
+import {decompressSync, strFromU8} from 'fflate';
+
 // Definitions for ArrowHead values in WikiPathways GPML
 //
 // See also: https://discover.nci.nih.gov/mim/formal_mim_spec.pdf
@@ -155,10 +157,18 @@ function summarizeByDirection(enrichedIxns) {
   return enrichedIxns;
 }
 
-export async function summarizeInteractions(gene, pathwayIds, ideo) {
+/**
+ * Summarize interactions by direction
+ *
+ * @param {String} gene Interacting gene
+ * @param {Array} pathwayIds List of WikiPathways IDs
+ * @param {Object} ideo Ideogram instance object
+ * @returns
+ */
+export function summarizeInteractions(gene, pathwayIds, ideo) {
   let summary = null;
 
-  const ixnsByPwid = await detailAllInteractions(gene, pathwayIds, ideo);
+  const ixnsByPwid = detailAllInteractions(gene, pathwayIds, ideo);
 
   const ixns = ixnsByPwid[pathwayIds[0]];
 
@@ -216,16 +226,19 @@ export async function summarizeInteractions(gene, pathwayIds, ideo) {
 
 /**
  * Get detailInteractions results for multiple pathways
+ *
+ * @param gene Interacting gene
+ * @param pathwayIds List of WikiPathways IDs
+ * @ideo ideo Ideogram instance object
  */
-export async function detailAllInteractions(gene, pathwayIds, ideo) {
+export function detailAllInteractions(gene, pathwayIds, ideo) {
   const ixnsByPwid = {};
-  await Promise.all(
-    pathwayIds.map(async pathwayId => {
-      const ixns = await detailInteractions(gene, pathwayId, ideo);
 
-      ixnsByPwid[pathwayId] = ixns;
-    })
-  );
+  pathwayIds.map(pathwayId => {
+    const ixns = detailInteractions(gene, pathwayId, ideo);
+
+    ixnsByPwid[pathwayId] = ixns;
+  });
   return ixnsByPwid;
 }
 
@@ -274,8 +287,8 @@ function getMatches(gpml, label) {
 }
 
 /**
- * Request GPML data from WikiPathways API, e.g.:
- * https://webservice.wikipathways.org/getPathway?pwId=WP3982&format=json
+ * Request compressed GPML files, which contain detailed interaction data, e.g.
+ * https://cdn.jsdelivr.net/npm/ixn/WP3982.xml.gz
  *
  * For more easily readable versions, see also:
  * - https://www.wikipathways.org/index.php?title=Pathway:WP3982&action=edit
@@ -284,15 +297,35 @@ function getMatches(gpml, label) {
  * GPML (Graphical Pathway Markup Language) data encodes detailed interaction
  * data for biochemical pathways.
  */
-async function fetchGpml(pathwayId) {
-  const wpBaseUrl = 'https://webservice.wikipathways.org/';
-  const pathwayUrl = wpBaseUrl + `getPathway?pwId=${pathwayId}&format=json`;
-  const wpResponse = await fetch(pathwayUrl);
-  const wpData = await wpResponse.json();
-  const rawGpml = wpData.pathway.gpml; // Printing this can help debug
-  const gpml = new DOMParser().parseFromString(rawGpml, 'text/xml');
+export function fetchGpmls(ideo) {
 
-  return gpml;
+  const pathwayIdsByInteractingGene = {};
+  Object.entries(ideo.annotDescriptions.annots)
+    .forEach(([annotName, descObj]) => {
+      if ('type' in descObj && descObj.type.includes('interacting gene')) {
+        pathwayIdsByInteractingGene[annotName] = descObj.pathwayIds;
+      }
+    });
+
+  const gpmlsByInteractingGene = {};
+  Object.entries(pathwayIdsByInteractingGene)
+    .forEach(([ixnGene, pathwayIds]) => {
+      gpmlsByInteractingGene[ixnGene] = {};
+      pathwayIds.map(async pathwayId => {
+        const pathwayFile = `${pathwayId}.xml.gz`;
+        const gpmlUrl = `https://cdn.jsdelivr.net/npm/ixn/${pathwayFile}`;
+        const response = await fetch(gpmlUrl);
+        const blob = await response.blob();
+        const uint8Array = new Uint8Array(await blob.arrayBuffer());
+        const rawGpml = strFromU8(decompressSync(uint8Array));
+
+        const gpml = new DOMParser().parseFromString(rawGpml, 'text/xml');
+
+        gpmlsByInteractingGene[ixnGene][pathwayId] = gpml;
+      });
+    });
+
+  ideo.gpmlsByInteractingGene = gpmlsByInteractingGene;
 }
 
 /**
@@ -361,10 +394,10 @@ function parseInteractionGraphic(graphic, graphIds) {
  * fetches augmented GPML data for the pathway, and queries it to get only
  * interactions between the two genes.
  */
-export async function detailInteractions(interactingGene, pathwayId, ideo) {
+export function detailInteractions(interactingGene, pathwayId, ideo) {
 
   // Get pathway's GPML, which contains detailed interaction data
-  const gpml = await fetchGpml(pathwayId);
+  const gpml = ideo.gpmlsByInteractingGene[interactingGene][pathwayId];
 
   // Get symbol of the searched gene, e.g. "PTEN"
   const searchedGene =

@@ -120,24 +120,6 @@ function onClickAnnot(annot) {
 //     });
 // }
 
-// /** Taper hiding of all annotation labels */
-// function fadeOutAnnotLabels() {
-//   const ideo = this;
-//   const annotLabels = d3.selectAll('._ideogramLabel');
-//   const names = Array.from(annotLabels.nodes()).map(d => d.innerText);
-//   annotLabels.transition()
-//     .duration(2000) // fade out for a second
-//     .style('opacity', 0)
-//     .ease(d3.easeExpIn, 4)
-//     .style('pointer-events', 'none')
-//     .on('end', function(d, i) {
-//       if (i === names.length - 1) {
-//         annotLabels.remove();
-//         pulseAnnots(names, ideo);
-//       }
-//     });
-// }
-
 /**
  * Shows a tooltip for the given annotation.
  *
