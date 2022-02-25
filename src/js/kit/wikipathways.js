@@ -313,7 +313,7 @@ export function fetchGpmls(ideo) {
       gpmlsByInteractingGene[ixnGene] = {};
       pathwayIds.map(async pathwayId => {
         const pathwayFile = `${pathwayId}.xml.gz`;
-        const gpmlUrl = `https://cdn.jsdelivr.net/npm/ixn/${pathwayFile}`;
+        const gpmlUrl = `https://cdn.jsdelivr.net/npm/ixn2/${pathwayFile}`;
         const response = await fetch(gpmlUrl);
         const blob = await response.blob();
         const uint8Array = new Uint8Array(await blob.arrayBuffer());

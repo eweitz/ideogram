@@ -21,6 +21,8 @@
  * https://eweitz.github.io/ideogram/related-genes
  */
 
+ import {decompressSync, strFromU8} from 'fflate';
+
 import {
   initAnalyzeRelatedGenes, analyzePlotTimes, analyzeRelatedGenes, timeDiff,
   getRelatedGenesByType, getRelatedGenesTooltipAnalytics
@@ -128,14 +130,28 @@ async function fetchInteractions(gene, ideo) {
   const ixns = {};
   const seenNameIds = {};
   const orgNameSimple = ideo.config.organism.replace(/-/g, ' ');
-  const queryString = `?query=${gene.name}&format=json`;
-  const url =
-    `https://webservice.wikipathways.org/findInteractions${queryString}`;
+  const upperGene = gene.name.toUpperCase();
+  // const queryString = `?query=${gene.name}&format=json`;
+  // const url =
+  //   `https://webservice.wikipathways.org/findInteractions${queryString}`;
+  // const url = `http://localhost:8080/dist/data/cache/${gene.name}.json.gz`;
+  const url = `https://cdn.jsdelivr.net/npm/ixn2/${upperGene}.json.gz`;
 
   // await sleep(3000);
 
   const response = await fetch(url);
-  const data = await response.json();
+  // const data = await response.json();
+
+  let data = {result: []};
+
+  if (response.ok) {
+    const blob = await response.blob();
+    const uint8Array = new Uint8Array(await blob.arrayBuffer());
+    data = JSON.parse(strFromU8(decompressSync(uint8Array)));
+  }
+
+  // console.log('data')
+  // console.log(data)
 
   // For each interaction, get nodes immediately upstream and downstream.
   // Filter out pathway nodes that are definitely not gene symbols, then
