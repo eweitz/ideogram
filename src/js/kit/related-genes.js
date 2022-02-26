@@ -21,7 +21,7 @@
  * https://eweitz.github.io/ideogram/related-genes
  */
 
- import {decompressSync, strFromU8} from 'fflate';
+import {decompressSync, strFromU8} from 'fflate';
 
 import {
   initAnalyzeRelatedGenes, analyzePlotTimes, analyzeRelatedGenes, timeDiff,
@@ -30,7 +30,7 @@ import {
 
 import {writeLegend} from '../annotations/legend';
 import {getAnnotDomId} from '../annotations/process';
-import {applyRankCutoff} from '../annotations/labels';
+import {applyRankCutoff, sortAnnotsByRank} from '../annotations/labels';
 import {getDir} from '../lib';
 import initGeneCache from '../gene-cache';
 import {fetchGpmls, summarizeInteractions} from './wikipathways';
@@ -171,7 +171,16 @@ async function fetchInteractions(gene, ideo) {
       const name = interaction.name;
       const id = interaction.id;
 
-      rawIxns.forEach(rawIxn => {
+      // rawIxns can contain multiple genes, e.g. when
+      // a group (i.e. a complex or a set of paralogs)
+      // interacts with the searched gene
+      const wrappedRawIxns = rawIxns.map(rawIxn => {
+        return {name: rawIxn, color: ''};
+      });
+      const sortedRawIxns =
+        sortAnnotsByRank(wrappedRawIxns, ideo).map(i => i.name);
+
+      sortedRawIxns.forEach(rawIxn => {
 
         // Prevent overwriting searched gene.  Occurs with e.g. human CD4
         if (rawIxn.includes(gene.name)) return;
@@ -550,6 +559,19 @@ function processParalogs(annot, ideo) {
   });
 }
 
+/**
+ * Sorts gene names consistently.
+ *
+ * Might also loosely rank by first-discovered or most prominent
+ */
+function sortGeneNames(aName, bName) {
+  // Rank shorter names above longer names
+  if (bName.length !== aName.length) return bName.length - aName.length;
+
+  // Rank names of equal length alphabetically
+  return [aName, bName].sort().indexOf(aName) === 0 ? 1 : -1;
+}
+
 /** Sorts by relevance of related status */
 function sortAnnotsByRelatedStatus(a, b) {
   var aName, bName, aColor, bColor;
@@ -573,11 +595,7 @@ function sortAnnotsByRelatedStatus(a, b) {
   if (aColor === 'purple' && bColor === 'pink') return -1;
   if (bColor === 'purple' && aColor === 'pink') return 1;
 
-  // Rank shorter names above longer names
-  if (bName.length !== aName.length) return bName.length - aName.length;
-
-  // Rank names of equal length alphabetically
-  return [aName, bName].sort().indexOf(aName) === 0 ? 1 : -1;
+  return sortGeneNames(aName, bName);
 }
 
 function mergeDescriptions(annot, desc, ideo) {

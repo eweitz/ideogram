@@ -92,7 +92,7 @@ describe('Ideogram related genes kit', function() {
             ideogram.plotRelatedGenes('BRCA1');
             setTimeout(function() {
               const bard1Label =
-                document.querySelector('#ideogramLabel__c1_a0');
+                document.querySelector('#chr2-9606 .annot path');
               bard1Label.dispatchEvent(new Event('mouseover'));
 
               setTimeout(function() {
@@ -102,11 +102,11 @@ describe('Ideogram related genes kit', function() {
                 assert.include(tooltip.textContent, 'Interacts with BRCA1 in');
 
                 done();
-              }, 2000);
+              }, 1000);
 
             }, 1000);
           }, 1000);
-        }, 2000);
+        }, 1000);
       }, 2000);
 
 

@@ -180,7 +180,7 @@ function addAnnotLabel(annotName, backgroundColor, borderColor) {
   renderLabel(annot, style, ideo);
 }
 
-export function applyRankCutoff(annots, cutoff, ideo) {
+export function sortAnnotsByRank(annots, ideo) {
   if ('geneCache' in ideo === false) return annots;
 
   const ranks = ideo.geneCache.interestingNames;
@@ -200,6 +200,12 @@ export function applyRankCutoff(annots, cutoff, ideo) {
     // Rank 3 is more important than rank 30
     return a.rank - b.rank;
   });
+
+  return rankedAnnots;
+}
+
+export function applyRankCutoff(annots, cutoff, ideo) {
+  const rankedAnnots = sortAnnotsByRank(annots, ideo);
 
   // Take the top N ranked genes, where N is `cutoff`
   annots = rankedAnnots.slice(0, cutoff);
