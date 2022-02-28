@@ -182,21 +182,25 @@ async function fetchInteractions(gene, ideo) {
 
       sortedRawIxns.forEach(rawIxn => {
 
+        const normRawIxn = rawIxn.toLowerCase();
+
         // Prevent overwriting searched gene.  Occurs with e.g. human CD4
-        if (rawIxn.includes(gene.name)) return;
+        if (rawIxn.includes(gene.name.toLowerCase())) return;
+
+        // if (rawIxn === '') return; // Avoid oddly blank placeholders
 
         const nameId = name + id;
 
         const isRelevant =
-          isInteractionRelevant(rawIxn, gene, nameId, seenNameIds, ideo);
+          isInteractionRelevant(normRawIxn, gene, nameId, seenNameIds, ideo);
 
         if (isRelevant) {
           seenNameIds[nameId] = 1;
           const ixn = {name, pathwayId: id};
-          if (rawIxn in ixns) {
-            ixns[rawIxn].push(ixn);
+          if (normRawIxn in ixns) {
+            ixns[normRawIxn].push(ixn);
           } else {
-            ixns[rawIxn] = [ixn];
+            ixns[normRawIxn] = [ixn];
           }
         }
       });
@@ -398,7 +402,7 @@ async function fetchInteractionAnnots(interactions, searchedGene, ideo) {
     const annot = parseAnnotFromMgiGene(gene, ideo, 'purple');
     annots.push(annot);
 
-    const ixns = interactions[gene.symbol];
+    const ixns = interactions[gene.symbol.toLowerCase()];
 
     const descriptionObj = describeInteractions(gene, ixns, searchedGene);
 
