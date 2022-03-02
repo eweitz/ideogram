@@ -185,7 +185,7 @@ async function fetchInteractions(gene, ideo) {
         const normRawIxn = rawIxn.toLowerCase();
 
         // Prevent overwriting searched gene.  Occurs with e.g. human CD4
-        if (rawIxn.includes(gene.name.toLowerCase())) return;
+        if (normRawIxn.includes(gene.name.toLowerCase())) return;
 
         // if (rawIxn === '') return; // Avoid oddly blank placeholders
 
@@ -605,6 +605,7 @@ function sortAnnotsByRelatedStatus(a, b) {
 function mergeDescriptions(annot, desc, ideo) {
   let mergedDesc;
   const descriptions = ideo.annotDescriptions.annots;
+
   if (annot.name in descriptions) {
     const otherDesc = descriptions[annot.name];
     mergedDesc = desc;
