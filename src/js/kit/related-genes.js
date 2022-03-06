@@ -21,6 +21,8 @@
  * https://eweitz.github.io/ideogram/related-genes
  */
 
+import {decompressSync, strFromU8} from 'fflate';
+
 import {
   initAnalyzeRelatedGenes, analyzePlotTimes, analyzeRelatedGenes, timeDiff,
   getRelatedGenesByType, getRelatedGenesTooltipAnalytics
@@ -28,7 +30,7 @@ import {
 
 import {writeLegend} from '../annotations/legend';
 import {getAnnotDomId} from '../annotations/process';
-import {applyRankCutoff} from '../annotations/labels';
+import {applyRankCutoff, sortAnnotsByRank} from '../annotations/labels';
 import {getDir} from '../lib';
 import initGeneCache from '../gene-cache';
 import {fetchGpmls, summarizeInteractions} from './wikipathways';
@@ -128,14 +130,28 @@ async function fetchInteractions(gene, ideo) {
   const ixns = {};
   const seenNameIds = {};
   const orgNameSimple = ideo.config.organism.replace(/-/g, ' ');
-  const queryString = `?query=${gene.name}&format=json`;
-  const url =
-    `https://webservice.wikipathways.org/findInteractions${queryString}`;
+  const upperGene = gene.name.toUpperCase();
+  // const queryString = `?query=${gene.name}&format=json`;
+  // const url =
+  //   `https://webservice.wikipathways.org/findInteractions${queryString}`;
+  // const url = `http://localhost:8080/dist/data/cache/${gene.name}.json.gz`;
+  const url = `https://cdn.jsdelivr.net/npm/ixn2/${upperGene}.json.gz`;
 
   // await sleep(3000);
 
   const response = await fetch(url);
-  const data = await response.json();
+  // const data = await response.json();
+
+  let data = {result: []};
+
+  if (response.ok) {
+    const blob = await response.blob();
+    const uint8Array = new Uint8Array(await blob.arrayBuffer());
+    data = JSON.parse(strFromU8(decompressSync(uint8Array)));
+  }
+
+  // console.log('data')
+  // console.log(data)
 
   // For each interaction, get nodes immediately upstream and downstream.
   // Filter out pathway nodes that are definitely not gene symbols, then
@@ -155,23 +171,36 @@ async function fetchInteractions(gene, ideo) {
       const name = interaction.name;
       const id = interaction.id;
 
-      rawIxns.forEach(rawIxn => {
+      // rawIxns can contain multiple genes, e.g. when
+      // a group (i.e. a complex or a set of paralogs)
+      // interacts with the searched gene
+      const wrappedRawIxns = rawIxns.map(rawIxn => {
+        return {name: rawIxn, color: ''};
+      });
+      const sortedRawIxns =
+        sortAnnotsByRank(wrappedRawIxns, ideo).map(i => i.name);
+
+      sortedRawIxns.forEach(rawIxn => {
+
+        const normRawIxn = rawIxn.toLowerCase();
 
         // Prevent overwriting searched gene.  Occurs with e.g. human CD4
-        if (rawIxn.includes(gene.name)) return;
+        if (normRawIxn.includes(gene.name.toLowerCase())) return;
+
+        // if (rawIxn === '') return; // Avoid oddly blank placeholders
 
         const nameId = name + id;
 
         const isRelevant =
-          isInteractionRelevant(rawIxn, gene, nameId, seenNameIds, ideo);
+          isInteractionRelevant(normRawIxn, gene, nameId, seenNameIds, ideo);
 
         if (isRelevant) {
           seenNameIds[nameId] = 1;
           const ixn = {name, pathwayId: id};
-          if (rawIxn in ixns) {
-            ixns[rawIxn].push(ixn);
+          if (normRawIxn in ixns) {
+            ixns[normRawIxn].push(ixn);
           } else {
-            ixns[rawIxn] = [ixn];
+            ixns[normRawIxn] = [ixn];
           }
         }
       });
@@ -373,7 +402,7 @@ async function fetchInteractionAnnots(interactions, searchedGene, ideo) {
     const annot = parseAnnotFromMgiGene(gene, ideo, 'purple');
     annots.push(annot);
 
-    const ixns = interactions[gene.symbol];
+    const ixns = interactions[gene.symbol.toLowerCase()];
 
     const descriptionObj = describeInteractions(gene, ixns, searchedGene);
 
@@ -534,6 +563,19 @@ function processParalogs(annot, ideo) {
   });
 }
 
+/**
+ * Sorts gene names consistently.
+ *
+ * Might also loosely rank by first-discovered or most prominent
+ */
+function sortGeneNames(aName, bName) {
+  // Rank shorter names above longer names
+  if (bName.length !== aName.length) return bName.length - aName.length;
+
+  // Rank names of equal length alphabetically
+  return [aName, bName].sort().indexOf(aName) === 0 ? 1 : -1;
+}
+
 /** Sorts by relevance of related status */
 function sortAnnotsByRelatedStatus(a, b) {
   var aName, bName, aColor, bColor;
@@ -557,16 +599,13 @@ function sortAnnotsByRelatedStatus(a, b) {
   if (aColor === 'purple' && bColor === 'pink') return -1;
   if (bColor === 'purple' && aColor === 'pink') return 1;
 
-  // Rank shorter names above longer names
-  if (bName.length !== aName.length) return bName.length - aName.length;
-
-  // Rank names of equal length alphabetically
-  return [aName, bName].sort().indexOf(aName) === 0 ? 1 : -1;
+  return sortGeneNames(aName, bName);
 }
 
 function mergeDescriptions(annot, desc, ideo) {
   let mergedDesc;
   const descriptions = ideo.annotDescriptions.annots;
+
   if (annot.name in descriptions) {
     const otherDesc = descriptions[annot.name];
     mergedDesc = desc;
