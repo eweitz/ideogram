@@ -271,6 +271,43 @@ function fillAnnots(annots) {
   return filledAnnots;
 }
 
+export function applyRankCutoff(annots, cutoff, ideo) {
+  const rankedAnnots = sortAnnotsByRank(annots, ideo);
+
+  // Take the top N ranked genes, where N is `cutoff`
+  annots = rankedAnnots.slice(0, cutoff);
+
+  return annots;
+}
+
+export function setAnnotRanks(annots, ideo) {
+  if ('geneCache' in ideo === false) return annots;
+
+  const ranks = ideo.geneCache.interestingNames;
+
+  return annots.map(annot => {
+    annot.rank = ranks.indexOf(annot.name) || 1E10;
+    return annot;
+  });
+}
+
+export function sortAnnotsByRank(annots, ideo) {
+
+  if (ideo) {
+    annots = setAnnotRanks(annots, ideo);
+  }
+  // Ranks annots by popularity
+  return annots.sort((a, b) => {
+
+    // // Search gene is most important, regardless of popularity
+    // if (a.color === 'red') return -1;
+    // if (b.color === 'red') return 1;
+
+    // Rank 3 is more important than rank 30
+    return a.rank - b.rank;
+  });
+}
+
 export {
   onLoadAnnots, onDrawAnnots, processAnnotData, restoreDefaultTracks,
   updateDisplayedTracks, initAnnotSettings, fetchAnnots, drawAnnots,

@@ -1,4 +1,5 @@
 import {add2dAnnotsForChr} from './heatmap-2d';
+import {setAnnotRanks} from './annotations';
 
 // Default colors for tracks of annotations
 var colorMap = [
@@ -131,18 +132,6 @@ function addAnnotsForChr(annots, omittedAnnots, annotsByChr, chrModel,
     ideo.config.annotationsLayout === 'tracks'
   );
 
-  if (shouldAssignDomId) {
-    if (ideo.annotSortFunction) {
-      annotsByChr.annots.sort((a, b) => {
-        // Reverse-sort, so first annots are drawn last, and thus at top layer
-        return -ideo.annotSortFunction(a, b);
-      });
-    } else {
-      // Sort by genomic position, in ascending order
-      annotsByChr.annots.sort((a, b) => a[1] - b[1]);
-    }
-  }
-
   for (j = 0; j < annotsByChr.annots.length; j++) {
     ra = annotsByChr.annots[j];
     annot = {};
@@ -162,6 +151,23 @@ function addAnnotsForChr(annots, omittedAnnots, annotsByChr, chrModel,
 
     [annots, omittedAnnots] =
       addAnnot(annot, keys, ra, omittedAnnots, annots, m, ideo);
+  }
+
+  if (shouldAssignDomId) {
+    if (ideo.annotSortFunction) {
+      annots[m].annots = setAnnotRanks(annots[m].annots, ideo);
+      annots[m].annots.sort((a, b) => {
+        // Reverse-sort, so first annots are drawn last, and thus at top layer
+        return -ideo.annotSortFunction(a, b);
+      });
+    } else {
+      // Sort by genomic position, in ascending order
+      annots[m].annots.sort((a, b) => a[1] - b[1]);
+    }
+
+    for (j = 0; j < annots[m].annots.length; j++) {
+      annots[m].annots[j].domId = getAnnotDomId(m, j);
+    }
   }
 
   return [annots, omittedAnnots];
