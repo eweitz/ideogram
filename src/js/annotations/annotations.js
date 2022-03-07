@@ -286,7 +286,11 @@ export function setAnnotRanks(annots, ideo) {
   const ranks = ideo.geneCache.interestingNames;
 
   return annots.map(annot => {
-    annot.rank = ranks.indexOf(annot.name) || 1E10;
+    if (ranks.includes(annot.name)) {
+      annot.rank = ranks.indexOf(annot.name) + 1;
+    } else {
+      annot.rank = 1E10;
+    }
     return annot;
   });
 }
