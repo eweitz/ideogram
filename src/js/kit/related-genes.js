@@ -74,6 +74,8 @@ function setRelatedAnnotDomIds(ideo) {
   const relevanceSortedAnnotsNamesByChr = {};
   Object.entries(annotsByChr).map(([chr, annots]) => {
 
+    annots = setAnnotRanks(annots, ideo);
+
     // Sort so first annots are drawn last, and thus at top layer
     annots.sort((a, b) => -ideo.annotSortFunction(a, b));
 
@@ -911,9 +913,15 @@ function decorateRelatedGene(annot) {
   const fullName = descObj.name;
   const style = 'style="color: #0366d6; cursor: pointer;"';
 
+  let fullNameAndRank = fullName;
+  if ('rank' in annot) {
+    const rank = 'Ranked ' + annot.rank + ' in general or scholarly interest';
+    fullNameAndRank = `<span title="${rank}">${fullName}</span>`;
+  }
+
   const originalDisplay =
     `<span id="ideo-related-gene" ${style}>${annot.name}</span><br/>` +
-    `${fullName}<br/>` +
+    `${fullNameAndRank}<br/>` +
     `${description}` +
     `<br/>`;
 

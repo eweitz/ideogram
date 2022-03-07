@@ -94,10 +94,6 @@ function renderLabel(annot, style, ideo) {
 
   const fill = annot.color === 'pink' ? '#CF406B' : annot.color;
 
-  if (annot.name === 'RAD51' || annot.name === 'RAD51B') {
-    console.log(annot.name + ' style:', style)
-  }
-
   d3.select('#_ideogram').append('text')
     .attr('id', id)
     .attr('class', '_ideogramLabel')
@@ -377,7 +373,7 @@ function fillAnnotLabels(sortedAnnots=[]) {
     sortedAnnots = ideo.flattenAnnots();
   }
 
-  const strokeWidth = 3; // like padding
+  const strokeWidth = 1; // like padding
 
   sortedAnnots.forEach((annot, i) => {
     const layout = getAnnotLabelLayout(annot, ideo);
@@ -392,9 +388,9 @@ function fillAnnotLabels(sortedAnnots=[]) {
         const xOverlap = getIsXOverlap(sl, layout, strokeWidth);
         const yOverlap = getIsYOverlap(sl, layout, strokeWidth);
 
-        // if (annot.name === 'PTK2' || annot.name === 'XRCC3') {
+        // if (annot.name === 'AKT1' || annot.name === 'XRCC3') {
         //   const spacedAnnot = spacedAnnots[j].name;
-        //   if (spacedAnnot === 'ABL1' || spacedAnnot === 'RAD51') {
+        //   if (spacedAnnot === 'HIF1A' || spacedAnnot === 'RAD51') {
         //   // if (xOverlap && yOverlap) {
         //     // console.log('sl.top - strokeWidth', sl.top - strokeWidth)
         //     // console.log('sl.top - strokeWidth < layout.bottom')
