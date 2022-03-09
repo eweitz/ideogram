@@ -373,7 +373,7 @@ function fillAnnotLabels(sortedAnnots=[]) {
     sortedAnnots = ideo.flattenAnnots();
   }
 
-  const strokeWidth = 1; // like padding
+  const strokeWidth = 0; // like padding
 
   sortedAnnots.forEach((annot, i) => {
     const layout = getAnnotLabelLayout(annot, ideo);
