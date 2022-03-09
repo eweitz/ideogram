@@ -825,6 +825,8 @@ async function plotPathwayGenes(searchedGene, pathwayId, ideo) {
   console.log(ideo.geneCache)
 
   const annots = await fetchPathwayGeneAnnots(searchedGene, pathwayId, ideo);
+  ideo.relatedAnnots = annots
+  finishPlotRelatedGenes('pathway', ideo);
 
   console.log('plotPathwayGenes, annots:')
   console.log(annots)
