@@ -33,7 +33,9 @@ import {getAnnotDomId} from '../annotations/process';
 import {applyRankCutoff, sortAnnotsByRank} from '../annotations/labels';
 import {getDir} from '../lib';
 import initGeneCache from '../gene-cache';
-import {fetchGpmls, summarizeInteractions} from './wikipathways';
+import {
+  fetchGpmls, summarizeInteractions, fetchPathwayGenes
+} from './wikipathways';
 
 /** Sets DOM IDs for ideo.relatedAnnots; needed to associate labels */
 function setRelatedAnnotDomIds(ideo) {
@@ -242,6 +244,26 @@ function parseNameAndEnsemblIdFromMgiGene(gene) {
 }
 
 /**
+ * Summarizes genes in a pathway
+ *
+ * This comprises most of the content for tooltips for pathway genes.
+ */
+ function describePathwayGene(pathwayGene, searchedGene) {
+  let ixnsDescription = '';
+
+  ixnsDescription =
+    `Interacts with ${searchedGene.name}`;
+
+  const {name, ensemblId} = parseNameAndEnsemblIdFromMgiGene(pathwayGene);
+  const type = 'pathway gene';
+  const descriptionObj = {
+    description: ixnsDescription,
+    ixnsDescription, ensemblId, name, type
+  };
+  return descriptionObj;
+}
+
+/**
  * Summarizes interactions for a gene
  *
  * This comprises most of the content for tooltips for interacting genes.
@@ -253,12 +275,12 @@ function describeInteractions(gene, ixns, searchedGene) {
 
   if (typeof ixns !== 'undefined') {
     // ixns is undefined when querying e.g. CDKN1B in human
-    const pathwaysBase = 'https://www.wikipathways.org/index.php/Pathway:';
+    // const pathwaysBase = 'https://www.wikipathways.org/index.php/Pathway:';
     const links = ixns.map(ixn => {
-      const url = `${pathwaysBase}${ixn.pathwayId}`;
+      // const url = `${pathwaysBase}${ixn.pathwayId}`;
       pathwayIds.push(ixn.pathwayId);
       pathwayNames.push(ixn.name);
-      return `<a href="${url}" target="_blank">${ixn.name}</a>`;
+      return `<a class="_ideoPathway" id="${ixn.pathwayId}">${ixn.name}</a>`;
     }).join('<br/>');
 
     ixnsDescription =
@@ -398,6 +420,7 @@ async function fetchInteractionAnnots(interactions, searchedGene, ideo) {
     ) {
       return;
     }
+    console.log('gene', gene)
 
     const annot = parseAnnotFromMgiGene(gene, ideo, 'purple');
     annots.push(annot);
@@ -756,6 +779,57 @@ function adjustPlaceAndVisibility(ideo) {
   }
 }
 
+async function fetchPathwayGeneAnnots(searchedGene, pathwayId, ideo) {
+  const annots = [];
+
+  const pathwayGenes = await fetchPathwayGenes(pathwayId, ideo);
+
+  const data = await fetchGenes(pathwayGenes, 'symbol', ideo);
+  console.log('pathwayGenes')
+  console.log(pathwayGenes)
+  data.hits.forEach(gene => {
+    // If hit lacks position
+    // or is same as searched gene (e.g. search for human SRC),
+    // then skip processing
+    if (
+      'genomic_pos' in gene === false ||
+      gene.symbol === searchedGene.name
+    ) {
+      return;
+    }
+    console.log('gene', gene)
+
+    const annot = parseAnnotFromMgiGene(gene, ideo, 'blue');
+    annots.push(annot);
+
+    const descriptionObj = describePathwayGene(gene, searchedGene);
+
+    mergeDescriptions(annot, descriptionObj, ideo);
+  });
+
+  return annots;
+}
+
+function processPathwayGenes(pathwayId, ideo) {
+
+}
+
+/**
+ *
+ */
+async function plotPathwayGenes(searchedGene, pathwayId, ideo) {
+  console.log('in plotPathwayGenes, searchedGene, pathwayId, ideo, ideo.geneCache:')
+  console.log(searchedGene);
+  console.log(pathwayId);
+  console.log(ideo)
+  console.log(ideo.geneCache)
+
+  const annots = await fetchPathwayGeneAnnots(searchedGene, pathwayId, ideo);
+
+  console.log('plotPathwayGenes, annots:')
+  console.log(annots)
+}
+
 /**
  * For given gene, finds and draws interacting genes and paralogs
  *
@@ -856,6 +930,51 @@ function handleTooltipClick(ideo) {
 }
 
 /**
+ * Handles click on pathway links in annotation tooltips
+ */
+function handlePathwayClick(ideo) {
+  console.log('*****ok');
+  console.log('this')
+  console.log(this)
+  console.log('ideo')
+  console.log(ideo)
+  const pathwayId = this.target.id;
+  console.log('click, event.target.id');
+  console.log(event.target.id);
+  plotPathwayGenes(pathwayId);
+}
+
+/**
+ * Manage click on pathway links in annotation tooltips
+ */
+function managePathwayClickHandlers(searchedGene, ideo) {
+  setTimeout(function() {
+    const pathways = document.querySelectorAll('._ideoPathway');
+    console.log('pathways.length')
+    console.log(pathways.length)
+    if (pathways.length > 0 && !ideo.addedPathwayClickHandler) {
+      pathways.forEach(pathway => {
+        console.log('pathway')
+        console.log(pathway)
+        // pathway.removeEventListener('click', handlePathwayClick);
+        console.log('foo')
+        pathway.addEventListener('click', function(event) {
+          const pathwayId = event.target.id;
+          console.log('click, event.target.id');
+          console.log(event.target.id);
+          plotPathwayGenes(searchedGene, pathwayId, ideo);
+        });
+        // console.log('pathway', getEventListeners
+      });
+
+      // Ensures handler isn't added redundantly.  This is used because
+      // addEventListener options like {once: true} don't suffice
+      // ideo.addedPathwayClickHandler = true;
+    }
+  }, 100);
+}
+
+/**
  * Enhance tooltip shown on hovering over gene annotation
  */
 function decorateRelatedGene(annot) {
@@ -885,8 +1004,9 @@ function decorateRelatedGene(annot) {
 
   annot.displayName = originalDisplay;
 
+  // handleTooltipClick(ideo);
 
-  handleTooltipClick(ideo);
+  managePathwayClickHandlers(annot, ideo);
 
   return annot;
 }

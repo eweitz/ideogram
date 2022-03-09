@@ -286,6 +286,19 @@ function getMatches(gpml, label) {
   return [matchingGraphIds, elements];
 }
 
+async function fetchGpml(pathwayId) {
+  const pathwayFile = `${pathwayId}.xml.gz`;
+  const gpmlUrl = `https://cdn.jsdelivr.net/npm/ixn2/${pathwayFile}`;
+  const response = await fetch(gpmlUrl);
+  const blob = await response.blob();
+  const uint8Array = new Uint8Array(await blob.arrayBuffer());
+  const rawGpml = strFromU8(decompressSync(uint8Array));
+
+  const gpml = new DOMParser().parseFromString(rawGpml, 'text/xml');
+
+  return gpml;
+}
+
 /**
  * Request compressed GPML files, which contain detailed interaction data, e.g.
  * https://cdn.jsdelivr.net/npm/ixn/WP3982.xml.gz
@@ -312,15 +325,7 @@ export function fetchGpmls(ideo) {
     .forEach(([ixnGene, pathwayIds]) => {
       gpmlsByInteractingGene[ixnGene] = {};
       pathwayIds.map(async pathwayId => {
-        const pathwayFile = `${pathwayId}.xml.gz`;
-        const gpmlUrl = `https://cdn.jsdelivr.net/npm/ixn2/${pathwayFile}`;
-        const response = await fetch(gpmlUrl);
-        const blob = await response.blob();
-        const uint8Array = new Uint8Array(await blob.arrayBuffer());
-        const rawGpml = strFromU8(decompressSync(uint8Array));
-
-        const gpml = new DOMParser().parseFromString(rawGpml, 'text/xml');
-
+        const gpml = await fetchGpml(pathwayId);
         gpmlsByInteractingGene[ixnGene][pathwayId] = gpml;
       });
     });
@@ -385,6 +390,33 @@ function parseInteractionGraphic(graphic, graphIds) {
   return interaction;
 }
 
+
+/**
+ * Get all genes in the given pathway GPML
+ */
+export async function fetchPathwayGenes(pathwayId, ideo) {
+  console.log('in fetchPathwayGenes, ideo.geneCache')
+  console.log(ideo.geneCache)
+  const gpml = await fetchGpml(pathwayId);
+  // Gets IDs and elements for searched gene and interacting gene, and,
+  // if they're in any groups, the IDs of those groups
+  const genes = {};
+
+  const nodes = Array.from(gpml.querySelectorAll('DataNode'));
+  nodes.forEach(node => {
+    const label = node.getAttribute('TextLabel');
+    const normLabel = label.toLowerCase();
+    const isKnownGene = normLabel in ideo.geneCache.nameCaseMap;
+    if (isKnownGene) {
+      genes[label] = 1;
+    }
+  });
+
+  const pathwayGenes = Object.keys(genes);
+
+  return pathwayGenes;
+}
+
 /**
  * Fetch GPML for pathway and find ID of Interaction between two genes,
  * and the ID of the two DataNodes for each of those interactions.
@@ -394,7 +426,7 @@ function parseInteractionGraphic(graphic, graphIds) {
  * fetches augmented GPML data for the pathway, and queries it to get only
  * interactions between the two genes.
  */
-export function detailInteractions(interactingGene, pathwayId, ideo) {
+function detailInteractions(interactingGene, pathwayId, ideo) {
 
   // Get pathway's GPML, which contains detailed interaction data
   const gpml = ideo.gpmlsByInteractingGene[interactingGene][pathwayId];
