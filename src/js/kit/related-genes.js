@@ -28,10 +28,12 @@ import {
   getRelatedGenesByType, getRelatedGenesTooltipAnalytics
 } from './analyze-related-genes';
 
+import {
+  sortAnnotsByRank, applyRankCutoff, setAnnotRanks
+} from '../annotations/annotations';
 import {writeLegend} from '../annotations/legend';
 import {getAnnotDomId} from '../annotations/process';
-import {applyRankCutoff, sortAnnotsByRank} from '../annotations/labels';
-import {getDir} from '../lib';
+import {getDir, deepCopy} from '../lib';
 import initGeneCache from '../gene-cache';
 import {
   fetchGpmls, summarizeInteractions, fetchPathwayGenes
@@ -43,6 +45,21 @@ function setRelatedAnnotDomIds(ideo) {
 
   const sortedChrNames = ideo.chromosomesArray.map((chr) => {
     return chr.name;
+  });
+
+  // Count two related annots for same gene as one.
+  // E.g. gene Foo can both interact with and be paralog of gene Bar
+  // Instead of count Foo interacting annot and Foo paralog annot as two,
+  // only count it as one as they are merged in downstream UI.
+  //
+  // Searching STAT3 without this block shows the problem this fixes.
+  const seenNames = {};
+  ideo.relatedAnnots = ideo.relatedAnnots.filter(annot => {
+    if (annot.name in seenNames) {
+      return false;
+    }
+    seenNames[annot.name] = 1;
+    return true;
   });
 
   // Arrange related annots by chromosome
@@ -59,14 +76,22 @@ function setRelatedAnnotDomIds(ideo) {
   const relevanceSortedAnnotsNamesByChr = {};
   Object.entries(annotsByChr).map(([chr, annots]) => {
 
-    // Reverse-sort, so first annots are drawn last, and thus at top layer
-    annots.sort((a, b) => ideo.annotSortFunction(a, b));
+    annots = setAnnotRanks(annots, ideo);
 
-    const annotNames = annots.map((annot) => annot.name).reverse();
+    // Sort so first annots are drawn last, and thus at top layer
+    annots.sort((a, b) => -ideo.annotSortFunction(a, b));
+
+    const annotNames = annots.map((annot) => annot.name);
     relevanceSortedAnnotsNamesByChr[chr] = annotNames;
   });
 
+  // annotsByChr.annots.sort((a, b) => {
+  //   // Reverse-sort, so first annots are drawn last, and thus at top layer
+  //   return -ideo.annotSortFunction(a, b);
+  // });
+
   ideo.relatedAnnots.forEach((annot) => {
+
     const chr = annot.chr;
 
     // Annots have DOM IDs keyed by chromosome index and annotation index.
@@ -599,8 +624,8 @@ function sortGeneNames(aName, bName) {
   return [aName, bName].sort().indexOf(aName) === 0 ? 1 : -1;
 }
 
-/** Sorts by relevance of related status */
-function sortAnnotsByRelatedStatus(a, b) {
+/** Sorts by relevance of related type, then rank */
+export function sortByRelatedType(a, b) {
   var aName, bName, aColor, bColor;
   if ('name' in a) {
     // Locally processed annotations
@@ -622,7 +647,9 @@ function sortAnnotsByRelatedStatus(a, b) {
   if (aColor === 'purple' && bColor === 'pink') return -1;
   if (bColor === 'purple' && aColor === 'pink') return 1;
 
-  return sortGeneNames(aName, bName);
+  return a.rank - b.rank;
+
+  // return sortGeneNames(aName, bName);
 }
 
 function mergeDescriptions(annot, desc, ideo) {
@@ -671,24 +698,33 @@ function mergeAnnots(unmergedAnnots) {
 
 /** Filter, sort, draw annots.  Move legend. */
 function finishPlotRelatedGenes(type, ideo) {
-  let annots = ideo.relatedAnnots.slice();
+  setRelatedAnnotDomIds(ideo);
+
+  let annots = deepCopy(ideo.relatedAnnots);
 
   annots = applyAnnotsIncludeList(annots, ideo);
   annots = mergeAnnots(annots);
-  annots = applyRankCutoff(annots, 40, ideo);
+
+  // annots = applyRankCutoff(annots, 40, ideo);
   ideo.relatedAnnots = mergeAnnots(annots);
-  ideo.relatedAnnots = applyRankCutoff(annots, 40, ideo);
-  annots.sort(sortAnnotsByRelatedStatus);
-  ideo.relatedAnnots.sort(sortAnnotsByRelatedStatus);
+  // ideo.relatedAnnots = applyRankCutoff(annots, 40, ideo);
+  // annots.sort(sortByRelatedType);
+  ideo.relatedAnnots.sort(sortByRelatedType);
+
+  // ideo.relatedAnnots = ideo.relatedAnnots.slice(0, 40);
 
   if (annots.length > 1 && ideo.onFindRelatedGenesCallback) {
     ideo.onFindRelatedGenesCallback();
   }
 
   ideo.drawAnnots(annots);
+  // const idsToRemove = annots.slice(40).map(a => a.domId);
+  // if (idsToRemove.length > 0) {
+  //   const selector = '#' + idsToRemove.join(',#')
+  //   document.querySelectorAll(selector).forEach(el => el.remove());
+  // }
 
   if (ideo.config.showAnnotLabels) {
-    setRelatedAnnotDomIds(ideo);
     ideo.fillAnnotLabels(ideo.relatedAnnots);
   }
 
@@ -998,9 +1034,15 @@ function decorateRelatedGene(annot) {
   const fullName = descObj.name;
   const style = 'style="color: #0366d6; cursor: pointer;"';
 
+  let fullNameAndRank = fullName;
+  if ('rank' in annot) {
+    const rank = 'Ranked ' + annot.rank + ' in general or scholarly interest';
+    fullNameAndRank = `<span title="${rank}">${fullName}</span>`;
+  }
+
   const originalDisplay =
     `<span id="ideo-related-gene" ${style}>${annot.name}</span><br/>` +
-    `${fullName}<br/>` +
+    `${fullNameAndRank}<br/>` +
     `${description}` +
     `<br/>`;
 
@@ -1111,7 +1153,7 @@ function _initRelatedGenes(config, annotsInList) {
 
   ideogram.getTooltipAnalytics = getRelatedGenesTooltipAnalytics;
 
-  ideogram.annotSortFunction = sortAnnotsByRelatedStatus;
+  ideogram.annotSortFunction = sortByRelatedType;
 
   initAnalyzeRelatedGenes(ideogram);
 
@@ -1144,7 +1186,7 @@ function plotGeneHints() {
 
   adjustPlaceAndVisibility(ideo);
   moveLegend();
-  ideo.fillAnnotLabels();
+  ideo.fillAnnotLabels([]);
   const container = ideo.config.container;
   document.querySelector(container).style.visibility = '';
 }
@@ -1231,7 +1273,7 @@ function _initGeneHints(config, annotsInList) {
 
   ideogram.getTooltipAnalytics = getRelatedGenesTooltipAnalytics;
 
-  ideogram.annotSortFunction = sortAnnotsByRelatedStatus;
+  ideogram.annotSortFunction = sortByRelatedType;
 
   initAnalyzeRelatedGenes(ideogram);
 
