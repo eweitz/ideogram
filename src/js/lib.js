@@ -351,10 +351,15 @@ function getTextSize(text, ideo) {
   return {width, height};
 }
 
+/** Clone a nested array */
+function deepCopy(array) {
+  return JSON.parse(JSON.stringify(array));
+}
+
 export {
   assemblyIsAccession, hasNonGenBankAssembly, hasGenBankAssembly, getDataDir,
   getDir, round, onDidRotate, getSvg, d3, getEarlyTaxid, getTaxid,
   getCommonName, getScientificName, slug, isRoman, parseRoman, downloadPng,
-  fetchWithRetry, getTextSize, getFont,
+  fetchWithRetry, getTextSize, getFont, deepCopy,
   fetchWithAuth as fetch
 };

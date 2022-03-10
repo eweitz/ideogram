@@ -135,7 +135,7 @@ function parseCache(rawTsv, orgName) {
 /** Get organism's metadata fields */
 function parseOrgMetadata(orgName) {
   const taxid = getEarlyTaxid(orgName);
-  return organismMetadata[taxid];
+  return organismMetadata[taxid] || {};
 }
 
 /** Reports if current organism has a gene cache */
