@@ -1,4 +1,5 @@
 import {decompressSync, strFromU8} from 'fflate';
+import { sortAnnotsByRank } from '../annotations/annotations';
 
 // Definitions for ArrowHead values in WikiPathways GPML
 //
