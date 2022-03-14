@@ -391,13 +391,10 @@ function parseInteractionGraphic(graphic, graphIds) {
   return interaction;
 }
 
-
 /**
  * Get all genes in the given pathway GPML
  */
 export async function fetchPathwayGenes(pathwayId, ideo) {
-  console.log('in fetchPathwayGenes, ideo.geneCache')
-  console.log(ideo.geneCache)
   const gpml = await fetchGpml(pathwayId);
   // Gets IDs and elements for searched gene and interacting gene, and,
   // if they're in any groups, the IDs of those groups

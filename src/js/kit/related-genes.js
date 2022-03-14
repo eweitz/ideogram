@@ -273,11 +273,18 @@ function parseNameAndEnsemblIdFromMgiGene(gene) {
  *
  * This comprises most of the content for tooltips for pathway genes.
  */
- function describePathwayGene(pathwayGene, searchedGene) {
+ function describePathwayGene(pathwayGene, searchedGene, pathway) {
   let ixnsDescription = '';
 
+  const pathwaysBase = 'https://www.wikipathways.org/index.php/Pathway:';
+  const url = `${pathwaysBase}${pathway.id}`;
+  const attrs =
+    `href="${url}" ` +
+    `target="_blank" ` +
+    `title="See pathway diagram in WikiPathways"`;
   ixnsDescription =
-    `Interacts with ${searchedGene.name}`;
+    `Interacts with ${searchedGene.name} in:</br/>` +
+    `<a ${attrs}>${pathway.name}</a>`;
 
   const {name, ensemblId} = parseNameAndEnsemblIdFromMgiGene(pathwayGene);
   const type = 'pathway gene';
@@ -310,7 +317,7 @@ function describeInteractions(gene, ixns, searchedGene) {
         `title="Click to search for other genes in this pathway" ` +
         `style="cursor: pointer" ` +
         `data-pathway-id="${ixn.pathwayId}" ` +
-        `data-pathway-name="${ixn.pathwayName}"`;
+        `data-pathway-name="${ixn.name}"`;
       return `<a ${attrs}>${ixn.name}</a>`;
     }).join('<br/>');
 
@@ -821,10 +828,10 @@ function adjustPlaceAndVisibility(ideo) {
   }
 }
 
-async function fetchPathwayGeneAnnots(searchedGene, pathwayId, ideo) {
+async function fetchPathwayGeneAnnots(searchedGene, pathway, ideo) {
   const annots = [];
 
-  const pathwayGenes = await fetchPathwayGenes(pathwayId, ideo);
+  const pathwayGenes = await fetchPathwayGenes(pathway.id, ideo);
 
   const data = await fetchGenes(pathwayGenes, 'symbol', ideo);
   console.log('pathwayGenes')
@@ -843,7 +850,7 @@ async function fetchPathwayGeneAnnots(searchedGene, pathwayId, ideo) {
     const annot = parseAnnotFromMgiGene(gene, ideo, 'blue');
     annots.push(annot);
 
-    const descriptionObj = describePathwayGene(gene, searchedGene);
+    const descriptionObj = describePathwayGene(gene, searchedGene, pathway);
 
     mergeDescriptions(annot, descriptionObj, ideo);
   });
@@ -858,26 +865,26 @@ function processPathwayGenes(pathwayId, ideo) {
 /**
  *
  */
-async function plotPathwayGenes(searchedGene, pathwayId, pathwayName, ideo) {
-  console.log('in plotPathwayGenes, searchedGene, pathwayId, ideo, ideo.geneCache:')
-  console.log(searchedGene);
-  console.log(pathwayId);
-  console.log(ideo)
-  console.log(ideo.geneCache)
-
+async function plotPathwayGenes(searchedGene, pathway, ideo) {
   const headerTitle = 'Genes in pathway';
   initAnnotDescriptions(ideo, headerTitle);
 
+  legendPathwayName = pathway.name;
+  ideo.config.legend = pathwayLegend;
+  writeLegend(ideo);
+  moveLegend();
+
   ideo.relatedAnnots = [];
 
-  const annot = await processSearchedGene(searchedGene.name, ideo);
+  await processSearchedGene(searchedGene.name, ideo);
 
-  const annots = await fetchPathwayGeneAnnots(searchedGene, pathwayId, ideo);
+  const annots = await fetchPathwayGeneAnnots(searchedGene, pathway, ideo);
   ideo.relatedAnnots.push(...annots);
   finishPlotRelatedGenes('pathway', ideo);
 
   console.log('plotPathwayGenes, annots:')
   console.log(annots)
+
 }
 
 function initAnnotDescriptions(ideo, headerTitle) {
@@ -999,7 +1006,8 @@ function managePathwayClickHandlers(searchedGene, ideo) {
           const target = event.target;
           const pathwayId = target.getAttribute('data-pathway-id');
           const pathwayName = target.getAttribute('data-pathway-name');
-          plotPathwayGenes(searchedGene, pathwayId, pathwayName, ideo);
+          const pathway = {id: pathwayId, name: pathwayName}
+          plotPathwayGenes(searchedGene, pathway, ideo);
         });
       });
 
@@ -1057,6 +1065,7 @@ const shape = 'triangle';
 
 const legendHeaderStyle =
   `font-size: 14px; font-weight: bold; font-color: #333;`;
+
 const relatedLegend = [{
   name: `
     <div style="position: relative; left: 30px;">
@@ -1068,6 +1077,22 @@ const relatedLegend = [{
   rows: [
     {name: 'Interacting gene', color: 'purple', shape: shape},
     {name: 'Paralogous gene', color: 'pink', shape: shape},
+    {name: 'Searched gene', color: 'red', shape: shape}
+  ]
+}];
+
+let legendPathwayName = ''
+
+const pathwayLegend = [{
+  name: `
+    <div style="position: relative; left: 30px;">
+      <div style="${legendHeaderStyle}">Related genes</div>
+      <i>Click gene to search</i>
+    </div>
+  `,
+  nameHeight: 50,
+  rows: [
+    {name: 'Pathway gene', color: 'blue', shape: shape},
     {name: 'Searched gene', color: 'red', shape: shape}
   ]
 }];
