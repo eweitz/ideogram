@@ -36,7 +36,7 @@ import {getAnnotDomId} from '../annotations/process';
 import {getDir, deepCopy} from '../lib';
 import initGeneCache from '../gene-cache';
 import {
-  fetchGpmls, summarizeInteractions, fetchPathwayGenes
+  fetchGpmls, summarizeInteractions, fetchPathwayInteractions
 } from './wikipathways';
 
 /** Sets DOM IDs for ideo.relatedAnnots; needed to associate labels */
@@ -273,7 +273,7 @@ function parseNameAndEnsemblIdFromMgiGene(gene) {
  *
  * This comprises most of the content for tooltips for pathway genes.
  */
- function describePathwayGene(pathwayGene, searchedGene, pathway) {
+ function describePathwayGene(pathwayGene, searchedGene, pathway, summary) {
   let ixnsDescription = '';
 
   const pathwaysBase = 'https://www.wikipathways.org/index.php/Pathway:';
@@ -283,7 +283,7 @@ function parseNameAndEnsemblIdFromMgiGene(gene) {
     `target="_blank" ` +
     `title="See pathway diagram in WikiPathways"`;
   ixnsDescription =
-    `Interacts with ${searchedGene.name} in:</br/>` +
+    `${summary} ${searchedGene.name} in:</br/>` +
     `<a ${attrs}>${pathway.name}</a>`;
 
   const {name, ensemblId} = parseNameAndEnsemblIdFromMgiGene(pathwayGene);
@@ -656,7 +656,7 @@ export function sortByRelatedType(a, b) {
   if (aColor === 'red') return -1;
   if (bColor === 'red') return 1;
 
-  // Rank purple (interacting gene) above red (paralogous gene)
+  // Rank purple (interacting gene) above pink (paralogous gene)
   if (aColor === 'purple' && bColor === 'pink') return -1;
   if (bColor === 'purple' && aColor === 'pink') return 1;
 
@@ -722,7 +722,7 @@ function finishPlotRelatedGenes(type, ideo) {
   ideo.relatedAnnots = mergeAnnots(annots);
   // ideo.relatedAnnots = applyRankCutoff(annots, 40, ideo);
   // annots.sort(sortByRelatedType);
-  ideo.relatedAnnots.sort(sortByRelatedType);
+  ideo.relatedAnnots.sort(ideo.annotSortFunction);
 
   // ideo.relatedAnnots = ideo.relatedAnnots.slice(0, 40);
 
@@ -828,14 +828,53 @@ function adjustPlaceAndVisibility(ideo) {
   }
 }
 
+function sortByPathwayIxn(a, b) {
+  const aColor = a.color;
+  const bColor = b.color;
+
+  // Rank red (searched gene) highest
+  if (aColor === 'red') return -1;
+  if (bColor === 'red') return 1;
+
+  // Rank not grey above grey
+  if (aColor === 'grey' && bColor !== 'grey') return 1;
+  if (bColor === 'grey' && aColor !== 'grey') return -1;
+
+  return a.rank - b.rank;
+}
+
 async function fetchPathwayGeneAnnots(searchedGene, pathway, ideo) {
   const annots = [];
 
-  const pathwayGenes = await fetchPathwayGenes(pathway.id, ideo);
+  const pathwayIxns =
+    await fetchPathwayInteractions(searchedGene.name, pathway.id, ideo);
 
+  const pathwayGenes = Object.keys(pathwayIxns);
   const data = await fetchGenes(pathwayGenes, 'symbol', ideo);
   console.log('pathwayGenes')
   console.log(pathwayGenes)
+
+  const ixnColors = {
+    'Stimulates': 'green',
+    'Stimulated by': 'green',
+    'Necessarily stimulates': 'green',
+    'Necessarily stimulated by': 'green',
+    'Transcribes / translates': 'brown',
+    'Transcribed / translated by': 'brown',
+    'Inhibits': 'red',
+    'Inhibited by': 'red',
+    'Modifies': 'blue',
+    'Modified by': 'blue',
+    'Acts on': 'blue',
+    'Acted on by': 'blue',
+    'Catalyzes': 'orange',
+    'Catalyzed by': 'orange',
+    'Converts': 'orange',
+    'Converted by': 'orange',
+    'Binds': 'black',
+    'Shares pathway with': 'grey'
+  };
+
   data.hits.forEach(gene => {
     // If hit lacks position
     // or is same as searched gene (e.g. search for human SRC),
@@ -847,19 +886,29 @@ async function fetchPathwayGeneAnnots(searchedGene, pathway, ideo) {
       return;
     }
 
-    const annot = parseAnnotFromMgiGene(gene, ideo, 'blue');
+    // Account for edge case: cyclic AMP (cAMP) is not "CAMP" gene
+    if (gene.symbol === 'cAMP') return;
+
+    const summary = pathwayIxns[gene.symbol];
+    const color = ixnColors[summary];
+    // if (color !== 'blue') console.log(gene);
+
+    const annot = parseAnnotFromMgiGene(gene, ideo, color);
     annots.push(annot);
 
-    const descriptionObj = describePathwayGene(gene, searchedGene, pathway);
+    const descriptionObj =
+      describePathwayGene(gene, searchedGene, pathway, summary);
 
     mergeDescriptions(annot, descriptionObj, ideo);
   });
 
-  return sortAnnotsByRank(annots, ideo).slice(0, 20);
-}
+  ideo.annotSortFunction = sortByPathwayIxn;
 
-function processPathwayGenes(pathwayId, ideo) {
+  const sortedAnnots = annots.sort(sortByPathwayIxn).slice(0, 40)
+  console.log('sortedAnnots')
+  console.log(sortedAnnots)
 
+  return sortedAnnots;
 }
 
 /**
@@ -1027,7 +1076,15 @@ function decorateRelatedGene(annot) {
 
   if ('type' in descObj && descObj.type.includes('interacting gene')) {
     const pathwayIds = descObj.pathwayIds;
-    const summary = summarizeInteractions(annot.name, pathwayIds, ideo);
+    // Get symbol of the searched gene, e.g. "PTEN"
+    const searchedGene =
+      Object.entries(ideo.annotDescriptions.annots)
+        .find(([k, v]) => v.type === 'searched gene')[0];
+
+    const gpmls = ideo.gpmlsByInteractingGene[annot.name];
+
+    const summary =
+      summarizeInteractions(annot.name, searchedGene, pathwayIds, gpmls);
     if (summary !== null) {
       const oldSummary = 'Interacts with';
       descObj.description =

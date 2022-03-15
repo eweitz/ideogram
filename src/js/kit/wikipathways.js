@@ -162,14 +162,19 @@ function summarizeByDirection(enrichedIxns) {
  * Summarize interactions by direction
  *
  * @param {String} gene Interacting gene
+ * @param {String} searchedGene Searched gene
  * @param {Array} pathwayIds List of WikiPathways IDs
- * @param {Object} ideo Ideogram instance object
+ * @param {Object} gpmls Object of parsed GPML XMLs values, by pathway ID key
  * @returns
  */
-export function summarizeInteractions(gene, pathwayIds, ideo) {
+export function summarizeInteractions(gene, searchedGene, pathwayIds, gpmls) {
   let summary = null;
 
-  const ixnsByPwid = detailAllInteractions(gene, pathwayIds, ideo);
+  const ixnsByPwid =
+    detailAllInteractions(gene, searchedGene, pathwayIds, gpmls);
+
+  console.log('ixnsByPwid')
+  console.log(ixnsByPwid)
 
   const ixns = ixnsByPwid[pathwayIds[0]];
 
@@ -232,11 +237,12 @@ export function summarizeInteractions(gene, pathwayIds, ideo) {
  * @param pathwayIds List of WikiPathways IDs
  * @ideo ideo Ideogram instance object
  */
-export function detailAllInteractions(gene, pathwayIds, ideo) {
+export function detailAllInteractions(gene, searchedGene, pathwayIds, gpmls) {
   const ixnsByPwid = {};
 
   pathwayIds.map(pathwayId => {
-    const ixns = detailInteractions(gene, pathwayId, ideo);
+    const gpml = gpmls[pathwayId];
+    const ixns = detailInteractions(gene, searchedGene, gpml);
 
     ixnsByPwid[pathwayId] = ixns;
   });
@@ -394,7 +400,7 @@ function parseInteractionGraphic(graphic, graphIds) {
 /**
  * Get all genes in the given pathway GPML
  */
-export async function fetchPathwayGenes(pathwayId, ideo) {
+export async function fetchPathwayInteractions(searchedGene, pathwayId, ideo) {
   const gpml = await fetchGpml(pathwayId);
   // Gets IDs and elements for searched gene and interacting gene, and,
   // if they're in any groups, the IDs of those groups
@@ -411,8 +417,23 @@ export async function fetchPathwayGenes(pathwayId, ideo) {
   });
 
   const pathwayGenes = Object.keys(genes);
+  const pathwayIxns = {};
+  pathwayGenes.map(gene => {
+    if (gene === searchedGene) return;
+    const gpmls = {};
+    gpmls[pathwayId] = gpml;
+    console.log('gpmls')
+    console.log(gpmls)
+    const summary = summarizeInteractions(
+      gene, searchedGene, [pathwayId], gpmls
+    );
+    pathwayIxns[gene] = (summary ? summary : 'Shares pathway with');
+  });
 
-  return pathwayGenes;
+  console.log('pathwayIxns')
+  console.log(pathwayIxns)
+
+  return pathwayIxns;
 }
 
 /**
@@ -424,15 +445,12 @@ export async function fetchPathwayGenes(pathwayId, ideo) {
  * fetches augmented GPML data for the pathway, and queries it to get only
  * interactions between the two genes.
  */
-function detailInteractions(interactingGene, pathwayId, ideo) {
+function detailInteractions(interactingGene, searchedGene, gpml) {
 
-  // Get pathway's GPML, which contains detailed interaction data
-  const gpml = ideo.gpmlsByInteractingGene[interactingGene][pathwayId];
-
-  // Get symbol of the searched gene, e.g. "PTEN"
-  const searchedGene =
-    Object.entries(ideo.annotDescriptions.annots)
-      .find(([k, v]) => v.type === 'searched gene')[0];
+  console.log('interactingGene')
+  console.log(interactingGene)
+  console.log('searchedGene')
+  console.log(searchedGene)
 
   // Gets IDs and elements for searched gene and interacting gene, and,
   // if they're in any groups, the IDs of those groups
