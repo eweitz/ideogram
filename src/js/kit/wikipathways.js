@@ -173,9 +173,6 @@ export function summarizeInteractions(gene, searchedGene, pathwayIds, gpmls) {
   const ixnsByPwid =
     detailAllInteractions(gene, searchedGene, pathwayIds, gpmls);
 
-  console.log('ixnsByPwid')
-  console.log(ixnsByPwid)
-
   const ixns = ixnsByPwid[pathwayIds[0]];
 
   if (ixns.length > 0) {
@@ -294,12 +291,15 @@ function getMatches(gpml, label) {
 }
 
 async function fetchGpml(pathwayId) {
+  console.log('in fetchGpml')
   const pathwayFile = `${pathwayId}.xml.gz`;
   const gpmlUrl = `https://cdn.jsdelivr.net/npm/ixn2/${pathwayFile}`;
   const response = await fetch(gpmlUrl);
   const blob = await response.blob();
   const uint8Array = new Uint8Array(await blob.arrayBuffer());
   const rawGpml = strFromU8(decompressSync(uint8Array));
+
+  console.log('in fetchGpml, after rawGpml')
 
   const gpml = new DOMParser().parseFromString(rawGpml, 'text/xml');
 
@@ -401,20 +401,32 @@ function parseInteractionGraphic(graphic, graphIds) {
  * Get all genes in the given pathway GPML
  */
 export async function fetchPathwayInteractions(searchedGene, pathwayId, ideo) {
+  console.log('in fetchPathwayInteractions')
   const gpml = await fetchGpml(pathwayId);
+  console.log('in fetchPathwayInteractions, after gpml')
   // Gets IDs and elements for searched gene and interacting gene, and,
   // if they're in any groups, the IDs of those groups
   const genes = {};
 
+  console.log('')
   const nodes = Array.from(gpml.querySelectorAll('DataNode'));
+  console.log('in fetchPathwayInteractions, after nodes')
   nodes.forEach(node => {
     const label = node.getAttribute('TextLabel');
+    console.log('in fetchPathwayInteractions, after label')
     const normLabel = label.toLowerCase();
+    console.log('ideo')
+    console.log(ideo)
+    console.log('ideo.geneCache')
+    console.log(ideo.geneCache)
     const isKnownGene = normLabel in ideo.geneCache.nameCaseMap;
+    console.log('in fetchPathwayInteractions, after isKnownGene')
     if (isKnownGene) {
       genes[label] = 1;
     }
   });
+
+  console.log('in fetchPathwayInteractions, after nodes.forEach')
 
   const pathwayGenes = Object.keys(genes);
   const pathwayIxns = {};
@@ -422,16 +434,11 @@ export async function fetchPathwayInteractions(searchedGene, pathwayId, ideo) {
     if (gene === searchedGene) return;
     const gpmls = {};
     gpmls[pathwayId] = gpml;
-    console.log('gpmls')
-    console.log(gpmls)
     const summary = summarizeInteractions(
       gene, searchedGene, [pathwayId], gpmls
     );
     pathwayIxns[gene] = (summary ? summary : 'Shares pathway with');
   });
-
-  console.log('pathwayIxns')
-  console.log(pathwayIxns)
 
   return pathwayIxns;
 }
@@ -446,11 +453,6 @@ export async function fetchPathwayInteractions(searchedGene, pathwayId, ideo) {
  * interactions between the two genes.
  */
 function detailInteractions(interactingGene, searchedGene, gpml) {
-
-  console.log('interactingGene')
-  console.log(interactingGene)
-  console.log('searchedGene')
-  console.log(searchedGene)
 
   // Gets IDs and elements for searched gene and interacting gene, and,
   // if they're in any groups, the IDs of those groups
