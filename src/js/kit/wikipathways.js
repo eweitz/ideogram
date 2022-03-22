@@ -291,15 +291,12 @@ function getMatches(gpml, label) {
 }
 
 async function fetchGpml(pathwayId) {
-  console.log('in fetchGpml')
   const pathwayFile = `${pathwayId}.xml.gz`;
   const gpmlUrl = `https://cdn.jsdelivr.net/npm/ixn2/${pathwayFile}`;
   const response = await fetch(gpmlUrl);
   const blob = await response.blob();
   const uint8Array = new Uint8Array(await blob.arrayBuffer());
   const rawGpml = strFromU8(decompressSync(uint8Array));
-
-  console.log('in fetchGpml, after rawGpml')
 
   const gpml = new DOMParser().parseFromString(rawGpml, 'text/xml');
 
@@ -404,38 +401,20 @@ function parseInteractionGraphic(graphic, graphIds) {
  * Get all genes in the given pathway GPML
  */
 export async function fetchPathwayInteractions(searchedGene, pathwayId, ideo) {
-  console.log('in fetchPathwayInteractions')
   const gpml = await fetchGpml(pathwayId);
-  // console.log('in fetchPathwayInteractions, after gpml, gpml')
   // Gets IDs and elements for searched gene and interacting gene, and,
   // if they're in any groups, the IDs of those groups
   const genes = {};
 
-  // console.log('')
-  let nodes
-  try {
-    nodes = Array.from(gpml.querySelectorAll('DataNode'));
-  } catch (e) {
-    console.log('in fetchPathwayInteractions, in catch')
-  }
-  console.log('in fetchPathwayInteractions, after nodes, nodes: ' + nodes)
+  const nodes = Array.from(gpml.querySelectorAll('DataNode'));
   nodes.forEach(node => {
-    console.log('in fetchPathwayInteractions, before label')
     const label = node.getAttribute('TextLabel');
-    console.log('in fetchPathwayInteractions, after label')
     const normLabel = label.toLowerCase();
-    // console.log('ideo')
-    // console.log(ideo)
-    // console.log('ideo.geneCache')
-    // console.log(ideo.geneCache)
     const isKnownGene = normLabel in ideo.geneCache.nameCaseMap;
-    console.log('in fetchPathwayInteractions, after isKnownGene')
     if (isKnownGene) {
       genes[label] = 1;
     }
   });
-
-  console.log('in fetchPathwayInteractions, after nodes.forEach')
 
   const pathwayGenes = Object.keys(genes);
   const pathwayIxns = {};

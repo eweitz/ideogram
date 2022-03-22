@@ -325,7 +325,6 @@ export default class Ideogram {
    * @param {Object} config Ideogram configuration object
    */
   static initRelatedGenes(config, annotsInList='all') {
-    console.log('in top-level initRelatedGenes')
     return _initRelatedGenes(config, annotsInList);
   }
 

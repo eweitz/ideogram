@@ -20,16 +20,8 @@ let perfTimes;
 /** Get URL for gene cache file */
 function getCacheUrl(orgName, cacheDir, ideo) {
   const organism = slug(orgName);
-  console.log('in getCacheUrl, cacheDir')
-  console.log(cacheDir)
   if (!cacheDir) {
-    // const splitDataDir = ideo.config.dataDir.split('/');
-    // const dataIndex = splitDataDir.indexOf('data');
-    // const baseDir = splitDataDir.slice(0, dataIndex).join('/') + '/data/';
-    // const baseDir = getDir
     cacheDir = getDir('cache/');
-    console.log('in getCacheUrl, new cacheDir')
-    console.log(cacheDir)
   }
 
   const cacheUrl = cacheDir + organism + '-genes.tsv';
@@ -149,45 +141,15 @@ function hasGeneCache(orgName) {
 }
 
 async function cacheFetch(url) {
-  try {
-    console.log('&&&&&& in cacheFetch, url:')
-    console.log(url)
-    const response = await Ideogram.cache.match(url);
-    console.log('&&&&&& in cacheFetch, response:')
-    console.log(response)
-    if (typeof response === 'undefined') {
-      console.log('&&&&&& in cacheFetch, Ideogram.cache:')
-      console.log(Ideogram.cache)
-      // If cache miss, then fetch and add response to cache
-      try {
-        // await Ideogram.cache.add(url);
-        console.log('&&&&& before fetch, url:')
-        console.log(url)
-        const res = await fetch(url)
-        console.log('&&&&& after fetch, res:')
-        console.log(res)
-        if (!res.ok) {
-          console.log('&&&&& oops!')
-          throw new TypeError('bad response status');
-        }
-        console.log('&&&&& after if (!res.ok) {')
-        await Ideogram.cache.put(url, res);
-        console.log('&&&&& after await Ideogram.cache.put(url, res);')
-        return await Ideogram.cache.match(url);
-      } catch (e) {
-        console.log('&&&&& Failed to fetch web cache, url:')
-        console.log(url)
-        console.log('&&&&& Error:')
-        console.log(e)
-      }
-      console.log('&&&&&& in cacheFetch, after Ideogram.cache.add:')
-    }
-    console.log('&&&&&& exiting cacheFetch:')
+  const response = await Ideogram.cache.match(url);
+  if (typeof response === 'undefined') {
+    // If cache miss, then fetch and add response to cache
+    // await Ideogram.cache.add(url);
+    const res = await fetch(url);
+    await Ideogram.cache.put(url, res);
     return await Ideogram.cache.match(url);
-  } catch (e) {
-    console.log('&&&& top-level error handler, e:')
-    console.log(e)
   }
+  return await Ideogram.cache.match(url);
 }
 
 /**
@@ -195,15 +157,11 @@ async function cacheFetch(url) {
  */
 export default async function initGeneCache(orgName, ideo, cacheDir=null) {
 
-  console.log('in initGeneCache')
-
   const startTime = performance.now();
   perfTimes = {};
 
   // Skip initialization if files needed to make cache don't exist
   if (!hasGeneCache(orgName)) return;
-
-  console.log('!!!!!!!! in initGeneCache, after hasGeneCache')
 
   // Skip initialization if cache is already populated
   if (Ideogram.geneCache && Ideogram.geneCache[orgName]) {
@@ -216,33 +174,22 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
     Ideogram.geneCache = {};
   }
 
-  console.log('!!!!!!!! in initGeneCache, after !Ideogram.geneCache')
-
   Ideogram.cache = await caches.open(`ideogram-${version}`);
-
-  console.log('!!!!!!!! in initGeneCache, after await caches.open')
 
   const cacheUrl = getCacheUrl(orgName, cacheDir, ideo);
 
   const fetchStartTime = performance.now();
   const response = await cacheFetch(cacheUrl);
-  console.log('!!!!!!!! in initGeneCache, after cacheFetch, response:')
-  console.log(response)
+
   const data = await response.text();
-  // console.log('!!!!!!!! in initGeneCache, data:')
-  // console.log(data)
   const fetchEndTime = performance.now();
   perfTimes.fetch = Math.round(fetchEndTime - fetchStartTime);
-
-  console.log('!!!!!!!! in initGeneCache, after perfTimes.fetch')
 
   const [
     interestingNames, nameCaseMap, namesById, idsByName,
     lociByName, lociById, sortedAnnots
   ] = parseCache(data, orgName);
   perfTimes.parseCache = Math.round(performance.now() - fetchEndTime);
-
-  console.log('!!!!!!!! in initGeneCache, after perfTimes.parseCache')
 
   ideo.geneCache = {
     interestingNames, // Array ordered by general or scholarly interest
@@ -255,12 +202,8 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
   };
   Ideogram.geneCache[orgName] = ideo.geneCache;
 
-  console.log('!!!!!!!! in initGeneCache, Ideogram.geneCache[orgName] = ideo.geneCache;')
-
   if (ideo.config.debug) {
     perfTimes.total = Math.round(performance.now() - startTime);
     console.log('perfTimes in initGeneCache:', perfTimes);
   }
-
-  console.log('!!!!!!!! exiting initGeneCache')
 }

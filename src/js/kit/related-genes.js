@@ -743,7 +743,6 @@ function finishPlotRelatedGenes(type, ideo) {
   moveLegend();
 
   analyzePlotTimes(type, ideo);
-  console.log('after finishPlotRelatedGenes, type: ' + type)
 }
 
 /** Fetch position of searched gene, return corresponding annotation */
@@ -844,19 +843,13 @@ function sortByPathwayIxn(a, b) {
 }
 
 async function fetchPathwayGeneAnnots(searchedGene, pathway, ideo) {
-  console.log('in fetchPathwayGeneAnnots')
-
   const annots = [];
 
   const pathwayIxns =
     await fetchPathwayInteractions(searchedGene.name, pathway.id, ideo);
 
-  console.log('in fetchPathwayGeneAnnots, after pathwayIxns')
-
   const pathwayGenes = Object.keys(pathwayIxns);
   const data = await fetchGenes(pathwayGenes, 'symbol', ideo);
-
-  console.log('in fetchPathwayGeneAnnots, after data')
 
   const ixnColors = {
     'Stimulates': 'green',
@@ -880,8 +873,6 @@ async function fetchPathwayGeneAnnots(searchedGene, pathway, ideo) {
   };
 
   data.hits.forEach(gene => {
-    console.log('in fetchPathwayGeneAnnots, gene:')
-    console.log(gene)
     // If hit lacks position
     // or is same as searched gene (e.g. search for human SRC),
     // then skip processing
@@ -919,7 +910,6 @@ async function fetchPathwayGeneAnnots(searchedGene, pathway, ideo) {
  *
  */
 async function plotPathwayGenes(searchedGene, pathway, ideo) {
-  console.log('in plotPathwayGenes')
   const headerTitle = 'Genes in pathway';
   initAnnotDescriptions(ideo, headerTitle);
 
@@ -931,10 +921,8 @@ async function plotPathwayGenes(searchedGene, pathway, ideo) {
   ideo.relatedAnnots = [];
 
   await processSearchedGene(searchedGene.name, ideo);
-  console.log('in plotPathwayGenes, after processSearchedGene')
 
   const annots = await fetchPathwayGeneAnnots(searchedGene, pathway, ideo);
-  console.log('in plotPathwayGenes, after fetchPathwayGeneAnnots')
   ideo.relatedAnnots.push(...annots);
   finishPlotRelatedGenes('pathway', ideo);
 }
@@ -1049,7 +1037,6 @@ function handleTooltipClick(ideo) {
  * Manage click on pathway links in annotation tooltips
  */
 function managePathwayClickHandlers(searchedGene, ideo) {
-  console.log('in managePathwayClickHandlers')
   setTimeout(function() {
     const pathways = document.querySelectorAll('.ideo-pathway-link');
     if (pathways.length > 0 && !ideo.addedPathwayClickHandler) {
@@ -1187,7 +1174,6 @@ function setRelatedDecorPad(kitConfig) {
  * @param {Object} config Ideogram configuration object
  */
 function _initRelatedGenes(config, annotsInList) {
-  console.log('in _initRelatedGenes')
 
   if (annotsInList !== 'all') {
     annotsInList = annotsInList.map(name => name.toLowerCase());
@@ -1242,11 +1228,7 @@ function _initRelatedGenes(config, annotsInList) {
 
   initAnalyzeRelatedGenes(ideogram);
 
-  console.log('#### before initGeneCache')
-
   initGeneCache(ideogram.config.organism, ideogram);
-
-  console.log('#### after initGeneCache')
 
   return ideogram;
 }

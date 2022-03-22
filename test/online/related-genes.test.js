@@ -149,52 +149,30 @@ describe('Ideogram related genes kit', function() {
   it('handles pathway genes', done => {
 
     async function callback() {
-      console.log('***** A')
       await ideogram.plotRelatedGenes('RAD51');
-      console.log('***** 0')
 
       setTimeout(async function() {
-        console.log('***** 1')
 
         const rad54lLabel = document.querySelector('#ideogramLabel__c0_a0');
-        console.log('rad54lLabel')
-        console.log(rad54lLabel)
         rad54lLabel.dispatchEvent(new Event('mouseover'));
         const pathwayLink = document.querySelector('.ideo-pathway-link');
         const pathwayName = 'Integrated breast cancer pathway';
-        console.log('pathwayName', pathwayName)
-        console.log('pathwayLink.textContent', pathwayLink.textContent)
         assert.equal(pathwayLink.textContent, pathwayName);
-
-        // done();
 
         // Test interaction gene summary processing, where one gene
         // is part of a WikiPathways group
         const tooltip = document.querySelector('#_ideogramTooltip');
-        console.log('tooltip')
-        console.log(tooltip)
-        console.log('tooltip.textContent')
-        console.log(tooltip.textContent)
         assert.include(tooltip.textContent, 'Stimulated by RAD51 in');
-        // done();
 
         setTimeout(async function() {
-          console.log('pathwayLink')
-          console.log(pathwayLink)
           pathwayLink.dispatchEvent(new Event('click'));
-          console.log('after click pathwayLink')
-          // done();
 
           setTimeout(async function() {
-            console.log('***** 2')
             const brca2Annot =
               document.querySelector('#chr13-9606 .annot path');
             const brca2Color = brca2Annot.getAttribute('fill');
-            console.log('brca2Color', brca2Color)
             assert.equal(brca2Color, 'green');
-            console.log('***** 2')
             done();
-            console.log('***** after done?')
           }, 2000);
         }, 2000);
       }, 5000);
@@ -226,158 +204,158 @@ describe('Ideogram related genes kit', function() {
     const ideogram = Ideogram.initRelatedGenes(config);
   });
 
-  // it('handles gene with paralogs but no interacting genes', done => {
+  it('handles gene with paralogs but no interacting genes', done => {
 
-  //   async function callback() {
-  //     const ideo = this;
+    async function callback() {
+      const ideo = this;
 
-  //     await ideogram.plotRelatedGenes('DMC1');
+      await ideogram.plotRelatedGenes('DMC1');
 
-  //     const related = ideo.getRelatedGenesByType();
+      const related = ideo.getRelatedGenesByType();
 
-  //     const numParalogs = related.paralogous.length;
-  //     const numInteractingGenes = related.interacting.length;
+      const numParalogs = related.paralogous.length;
+      const numInteractingGenes = related.interacting.length;
 
-  //     assert.equal(numInteractingGenes, 0);
-  //     assert.isAtLeast(numParalogs, 1);
+      assert.equal(numInteractingGenes, 0);
+      assert.isAtLeast(numParalogs, 1);
 
-  //     done();
-  //   }
+      done();
+    }
 
-  //   function onClickAnnot(annot) {
-  //     ideogram.plotRelatedGenes(annot.name);
-  //   }
+    function onClickAnnot(annot) {
+      ideogram.plotRelatedGenes(annot.name);
+    }
 
-  //   var config = {
-  //     organism: 'Homo sapiens',
-  //     onLoad: callback,
-  //     dataDir: '/dist/data/bands/native/',
-  //     onClickAnnot
-  //   };
+    var config = {
+      organism: 'Homo sapiens',
+      onLoad: callback,
+      dataDir: '/dist/data/bands/native/',
+      onClickAnnot
+    };
 
-  //   const ideogram = Ideogram.initRelatedGenes(config);
-  // });
+    const ideogram = Ideogram.initRelatedGenes(config);
+  });
 
-  // it('handles gene with no interacting genes and no paralogs', done => {
+  it('handles gene with no interacting genes and no paralogs', done => {
 
-  //   async function callback() {
-  //     const ideo = this;
+    async function callback() {
+      const ideo = this;
 
-  //     await ideogram.plotRelatedGenes('BRCA1');
+      await ideogram.plotRelatedGenes('BRCA1');
 
-  //     const related = ideo.getRelatedGenesByType();
+      const related = ideo.getRelatedGenesByType();
 
-  //     const numParalogs = related.paralogous.length;
-  //     const numInteractingGenes = related.interacting.length;
+      const numParalogs = related.paralogous.length;
+      const numInteractingGenes = related.interacting.length;
 
-  //     assert.equal(numInteractingGenes, 0);
-  //     assert.equal(numParalogs, 0);
+      assert.equal(numInteractingGenes, 0);
+      assert.equal(numParalogs, 0);
 
-  //     done();
-  //   }
+      done();
+    }
 
-  //   function onClickAnnot(annot) {
-  //     ideogram.plotRelatedGenes(annot.name);
-  //   }
+    function onClickAnnot(annot) {
+      ideogram.plotRelatedGenes(annot.name);
+    }
 
-  //   var config = {
-  //     organism: 'Macaca mulatta', // Also tests standard, non-slugged name
-  //     onLoad: callback,
-  //     dataDir: '/dist/data/bands/native/',
-  //     onClickAnnot
-  //   };
+    var config = {
+      organism: 'Macaca mulatta', // Also tests standard, non-slugged name
+      onLoad: callback,
+      dataDir: '/dist/data/bands/native/',
+      onClickAnnot
+    };
 
-  //   const ideogram = Ideogram.initRelatedGenes(config);
-  // });
+    const ideogram = Ideogram.initRelatedGenes(config);
+  });
 
-  // it('handles gene with no interacting genes and no paralogs', done => {
-  //   async function callback() {
-  //     const ideo = this;
+  it('handles gene with no interacting genes and no paralogs', done => {
+    async function callback() {
+      const ideo = this;
 
-  //     await ideogram.plotRelatedGenes('BRCA1');
+      await ideogram.plotRelatedGenes('BRCA1');
 
-  //     const related = ideo.getRelatedGenesByType();
+      const related = ideo.getRelatedGenesByType();
 
-  //     const numParalogs = related.paralogous.length;
-  //     const numInteractingGenes = related.interacting.length;
+      const numParalogs = related.paralogous.length;
+      const numInteractingGenes = related.interacting.length;
 
-  //     assert.equal(numInteractingGenes, 0);
-  //     assert.equal(numParalogs, 0);
+      assert.equal(numInteractingGenes, 0);
+      assert.equal(numParalogs, 0);
 
-  //     done();
-  //   }
+      done();
+    }
 
-  //   function onClickAnnot(annot) {
-  //     ideogram.plotRelatedGenes(annot.name);
-  //   }
+    function onClickAnnot(annot) {
+      ideogram.plotRelatedGenes(annot.name);
+    }
 
-  //   var config = {
-  //     organism: 'Macaca mulatta',
-  //     onLoad: callback,
-  //     dataDir: '/dist/data/bands/native/',
-  //     onClickAnnot
-  //   };
+    var config = {
+      organism: 'Macaca mulatta',
+      onLoad: callback,
+      dataDir: '/dist/data/bands/native/',
+      onClickAnnot
+    };
 
-  //   const ideogram = Ideogram.initRelatedGenes(config);
-  // });
+    const ideogram = Ideogram.initRelatedGenes(config);
+  });
 
 
-  // it('handles gene that is unknown', done => {
+  it('handles gene that is unknown', done => {
 
-  //   async function callback() {
-  //     try {
-  //       await ideogram.plotRelatedGenes('Foo');
-  //     } catch (error) {
-  //       assert.equal(
-  //         error.message,
-  //         '"Foo" is not a known gene in Homo sapiens'
-  //       );
-  //       done();
-  //     }
-  //   }
+    async function callback() {
+      try {
+        await ideogram.plotRelatedGenes('Foo');
+      } catch (error) {
+        assert.equal(
+          error.message,
+          '"Foo" is not a known gene in Homo sapiens'
+        );
+        done();
+      }
+    }
 
-  //   var config = {
-  //     organism: 'Homo sapiens',
-  //     onLoad: callback,
-  //     dataDir: '/dist/data/bands/native/'
-  //   };
+    var config = {
+      organism: 'Homo sapiens',
+      onLoad: callback,
+      dataDir: '/dist/data/bands/native/'
+    };
 
-  //   const ideogram = Ideogram.initRelatedGenes(config);
-  // });
+    const ideogram = Ideogram.initRelatedGenes(config);
+  });
 
-  // it('handles default display of highly cited genes', done => {
+  it('handles default display of highly cited genes', done => {
 
-  //   async function callback() {
-  //     const ideo = this;
+    async function callback() {
+      const ideo = this;
 
-  //     const annots = ideo.flattenAnnots();
+      const annots = ideo.flattenAnnots();
 
-  //     assert.equal(annots.length, 16);
-  //     assert.equal(annots[0].name, 'IL10');
+      assert.equal(annots.length, 16);
+      assert.equal(annots[0].name, 'IL10');
 
-  //     done();
-  //   }
+      done();
+    }
 
-  //   function onClickAnnot(annot) {
-  //     ideogram.plotRelatedGenes(annot.name);
-  //   }
+    function onClickAnnot(annot) {
+      ideogram.plotRelatedGenes(annot.name);
+    }
 
-  //   const annotsPath =
-  //     '/dist/data/cache/homo-sapiens-top-genes.tsv';
+    const annotsPath =
+      '/dist/data/cache/homo-sapiens-top-genes.tsv';
 
-  //   var config = {
-  //     organism: 'Homo sapiens',
-  //     chrWidth: 8,
-  //     chrHeight: 90,
-  //     chrLabelSize: 10,
-  //     annotationHeight: 5,
-  //     onDrawAnnots: callback,
-  //     dataDir: '/dist/data/bands/native/',
-  //     annotationsPath: annotsPath,
-  //     onClickAnnot
-  //   };
+    var config = {
+      organism: 'Homo sapiens',
+      chrWidth: 8,
+      chrHeight: 90,
+      chrLabelSize: 10,
+      annotationHeight: 5,
+      onDrawAnnots: callback,
+      dataDir: '/dist/data/bands/native/',
+      annotationsPath: annotsPath,
+      onClickAnnot
+    };
 
-  //   const ideogram = Ideogram.initGeneHints(config);
-  // });
+    const ideogram = Ideogram.initGeneHints(config);
+  });
 
 });
