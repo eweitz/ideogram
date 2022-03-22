@@ -22,129 +22,129 @@ describe('Ideogram related genes kit', function() {
   }
 
 
-  // it('handles gene with interacting genes but no paralogs', done => {
+  it('handles gene with interacting genes but no paralogs', done => {
 
-  //   async function callback() {
-  //     const ideo = this;
+    async function callback() {
+      const ideo = this;
 
-  //     await ideogram.plotRelatedGenes('BRCA2');
+      await ideogram.plotRelatedGenes('BRCA2');
 
-  //     const related = ideo.getRelatedGenesByType();
+      const related = ideo.getRelatedGenesByType();
 
-  //     const numParalogs = related.paralogous.length;
-  //     const numInteractingGenes = related.interacting.length;
+      const numParalogs = related.paralogous.length;
+      const numInteractingGenes = related.interacting.length;
 
-  //     assert.isAtLeast(numInteractingGenes, 1);
-  //     assert.equal(numParalogs, 0);
+      assert.isAtLeast(numInteractingGenes, 1);
+      assert.equal(numParalogs, 0);
 
-  //     done();
-  //   }
+      done();
+    }
 
-  //   function onClickAnnot(annot) {
-  //     ideogram.plotRelatedGenes(annot.name);
-  //   }
+    function onClickAnnot(annot) {
+      ideogram.plotRelatedGenes(annot.name);
+    }
 
-  //   var config = {
-  //     organism: 'Homo sapiens',
-  //     onLoad: callback,
-  //     dataDir: '/dist/data/bands/native/',
-  //     onClickAnnot
-  //   };
+    var config = {
+      organism: 'Homo sapiens',
+      onLoad: callback,
+      dataDir: '/dist/data/bands/native/',
+      onClickAnnot
+    };
 
-  //   const ideogram = Ideogram.initRelatedGenes(config);
-  // });
+    const ideogram = Ideogram.initRelatedGenes(config);
+  });
 
-  // it('handles searched gene, click, font, interaction summaries', done => {
+  it('handles searched gene, click, font, interaction summaries', done => {
 
-  //   async function callback() {
-  //     await ideogram.plotRelatedGenes('RAD51');
+    async function callback() {
+      await ideogram.plotRelatedGenes('RAD51');
 
-  //     setTimeout(async function() {
+      setTimeout(async function() {
 
-  //       const rad54lLabel = document.querySelector('#ideogramLabel__c0_a0');
-  //       rad54lLabel.dispatchEvent(new Event('mouseover'));
-  //       let relatedGene = document.querySelector('#ideo-related-gene');
-  //       assert.equal(relatedGene.textContent, 'RAD54L');
+        const rad54lLabel = document.querySelector('#ideogramLabel__c0_a0');
+        rad54lLabel.dispatchEvent(new Event('mouseover'));
+        let relatedGene = document.querySelector('#ideo-related-gene');
+        assert.equal(relatedGene.textContent, 'RAD54L');
 
-  //       // Wait a second to account for fetching interaction details
-  //       setTimeout(async function() {
+        // Wait a second to account for fetching interaction details
+        setTimeout(async function() {
 
-  //         // Test interaction gene summary processing, where one gene
-  //         // is part of a WikiPathways group
-  //         let tooltip = document.querySelector('#_ideogramTooltip');
-  //         assert.include(tooltip.textContent, 'Stimulated by RAD51 in');
+          // Test interaction gene summary processing, where one gene
+          // is part of a WikiPathways group
+          let tooltip = document.querySelector('#_ideogramTooltip');
+          assert.include(tooltip.textContent, 'Stimulated by RAD51 in');
 
-  //         rad54lLabel.dispatchEvent(new Event('mouseout'));
+          rad54lLabel.dispatchEvent(new Event('mouseout'));
 
-  //         const brca2Annot = document.querySelector('#chr13-9606 .annot path');
-  //         brca2Annot.dispatchEvent(new Event('mouseover'));
+          const brca2Annot = document.querySelector('#chr13-9606 .annot path');
+          brca2Annot.dispatchEvent(new Event('mouseover'));
 
-  //         setTimeout(async function() {
-  //           relatedGene = document.querySelector('#ideo-related-gene');
+          setTimeout(async function() {
+            relatedGene = document.querySelector('#ideo-related-gene');
 
-  //           assert.equal(relatedGene.textContent, 'BRCA2');
+            assert.equal(relatedGene.textContent, 'BRCA2');
 
-  //           // Test interacting gene summary processing, where interactions
-  //           // *are* directionally the same, though not identical in type
-  //           tooltip = document.querySelector('#_ideogramTooltip');
-  //           assert.include(tooltip.textContent, 'Acts on RAD51 in');
+            // Test interacting gene summary processing, where interactions
+            // *are* directionally the same, though not identical in type
+            tooltip = document.querySelector('#_ideogramTooltip');
+            assert.include(tooltip.textContent, 'Acts on RAD51 in');
 
-  //           ideogram.plotRelatedGenes('BRCA1');
-  //           setTimeout(function() {
-  //             const bard1Label =
-  //               document.querySelector('#chr2-9606 .annot path');
-  //             bard1Label.dispatchEvent(new Event('mouseover'));
+            ideogram.plotRelatedGenes('BRCA1');
+            setTimeout(function() {
+              const bard1Label =
+                document.querySelector('#chr2-9606 .annot path');
+              bard1Label.dispatchEvent(new Event('mouseover'));
 
-  //             setTimeout(function() {
-  //               // Test interacting gene summary processing, where interactions
-  //               // *are not* directionally the same
-  //               tooltip = document.querySelector('#_ideogramTooltip');
-  //               assert.include(tooltip.textContent, 'Interacts with BRCA1 in');
+              setTimeout(function() {
+                // Test interacting gene summary processing, where interactions
+                // *are not* directionally the same
+                tooltip = document.querySelector('#_ideogramTooltip');
+                assert.include(tooltip.textContent, 'Interacts with BRCA1 in');
 
-  //               done();
-  //             }, 1000);
+                done();
+              }, 1000);
 
-  //           }, 1000);
-  //         }, 1000);
-  //       }, 1000);
-  //     }, 1000);
+            }, 1000);
+          }, 1000);
+        }, 1000);
+      }, 1000);
 
 
-  //   }
+    }
 
-  //   function onClickAnnot(annot) {
-  //     ideogram.plotRelatedGenes(annot.name);
-  //   }
+    function onClickAnnot(annot) {
+      ideogram.plotRelatedGenes(annot.name);
+    }
 
-  //   function onPlotRelatedGenes() {
-  //     const legendFontFamily = getFontFamily('#_ideogramLegend');
-  //     assert.equal(legendFontFamily, 'serif');
-  //     assert.equal(getFontFamily('.chrLabel'), 'serif');
-  //   }
+    function onPlotRelatedGenes() {
+      const legendFontFamily = getFontFamily('#_ideogramLegend');
+      assert.equal(legendFontFamily, 'serif');
+      assert.equal(getFontFamily('.chrLabel'), 'serif');
+    }
 
-  //   function onWillShowAnnotTooltip(annot) {
-  //     const ideo = this;
-  //     const analytics = ideo.getTooltipAnalytics(annot, ideo);
-  //     assert.equal(analytics.tooltipRelatedType, 'interacting');
-  //     return annot;
-  //   }
+    function onWillShowAnnotTooltip(annot) {
+      const ideo = this;
+      const analytics = ideo.getTooltipAnalytics(annot, ideo);
+      assert.equal(analytics.tooltipRelatedType, 'interacting');
+      return annot;
+    }
 
-  //   var config = {
-  //     organism: 'Homo sapiens', // Also tests standard, non-slugged name
-  //     chrWidth: 8,
-  //     chrHeight: 90,
-  //     chrLabelSize: 10,
-  //     annotationHeight: 5,
-  //     onLoad: callback,
-  //     dataDir: '/dist/data/bands/native/',
-  //     onClickAnnot,
-  //     onPlotRelatedGenes,
-  //     onWillShowAnnotTooltip,
-  //     fontFamily: 'serif'
-  //   };
+    var config = {
+      organism: 'Homo sapiens', // Also tests standard, non-slugged name
+      chrWidth: 8,
+      chrHeight: 90,
+      chrLabelSize: 10,
+      annotationHeight: 5,
+      onLoad: callback,
+      dataDir: '/dist/data/bands/native/',
+      onClickAnnot,
+      onPlotRelatedGenes,
+      onWillShowAnnotTooltip,
+      fontFamily: 'serif'
+    };
 
-  //   const ideogram = Ideogram.initRelatedGenes(config);
-  // });
+    const ideogram = Ideogram.initRelatedGenes(config);
+  });
 
   it('handles pathway genes', done => {
 
@@ -157,19 +157,33 @@ describe('Ideogram related genes kit', function() {
         console.log('***** 1')
 
         const rad54lLabel = document.querySelector('#ideogramLabel__c0_a0');
+        console.log('rad54lLabel')
+        console.log(rad54lLabel)
         rad54lLabel.dispatchEvent(new Event('mouseover'));
         const pathwayLink = document.querySelector('.ideo-pathway-link');
         const pathwayName = 'Integrated breast cancer pathway';
+        console.log('pathwayName', pathwayName)
+        console.log('pathwayLink.textContent', pathwayLink.textContent)
         assert.equal(pathwayLink.textContent, pathwayName);
+
+        // done();
 
         // Test interaction gene summary processing, where one gene
         // is part of a WikiPathways group
         const tooltip = document.querySelector('#_ideogramTooltip');
+        console.log('tooltip')
+        console.log(tooltip)
+        console.log('tooltip.textContent')
+        console.log(tooltip.textContent)
         assert.include(tooltip.textContent, 'Stimulated by RAD51 in');
+        // done();
 
         setTimeout(async function() {
           console.log('pathwayLink')
+          console.log(pathwayLink)
           pathwayLink.dispatchEvent(new Event('click'));
+          console.log('after click pathwayLink')
+          // done();
 
           setTimeout(async function() {
             console.log('***** 2')
@@ -181,8 +195,8 @@ describe('Ideogram related genes kit', function() {
             console.log('***** 2')
             done();
             console.log('***** after done?')
-          }, 1000);
-        }, 1000);
+          }, 2000);
+        }, 2000);
       }, 5000);
     }
 

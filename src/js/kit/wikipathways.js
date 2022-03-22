@@ -303,6 +303,9 @@ async function fetchGpml(pathwayId) {
 
   const gpml = new DOMParser().parseFromString(rawGpml, 'text/xml');
 
+  // console.log('gpml:')
+  // console.log(gpml)
+
   return gpml;
 }
 
@@ -403,22 +406,28 @@ function parseInteractionGraphic(graphic, graphIds) {
 export async function fetchPathwayInteractions(searchedGene, pathwayId, ideo) {
   console.log('in fetchPathwayInteractions')
   const gpml = await fetchGpml(pathwayId);
-  console.log('in fetchPathwayInteractions, after gpml')
+  // console.log('in fetchPathwayInteractions, after gpml, gpml')
   // Gets IDs and elements for searched gene and interacting gene, and,
   // if they're in any groups, the IDs of those groups
   const genes = {};
 
-  console.log('')
-  const nodes = Array.from(gpml.querySelectorAll('DataNode'));
-  console.log('in fetchPathwayInteractions, after nodes')
+  // console.log('')
+  let nodes
+  try {
+    nodes = Array.from(gpml.querySelectorAll('DataNode'));
+  } catch (e) {
+    console.log('in fetchPathwayInteractions, in catch')
+  }
+  console.log('in fetchPathwayInteractions, after nodes, nodes: ' + nodes)
   nodes.forEach(node => {
+    console.log('in fetchPathwayInteractions, before label')
     const label = node.getAttribute('TextLabel');
     console.log('in fetchPathwayInteractions, after label')
     const normLabel = label.toLowerCase();
-    console.log('ideo')
-    console.log(ideo)
-    console.log('ideo.geneCache')
-    console.log(ideo.geneCache)
+    // console.log('ideo')
+    // console.log(ideo)
+    // console.log('ideo.geneCache')
+    // console.log(ideo.geneCache)
     const isKnownGene = normLabel in ideo.geneCache.nameCaseMap;
     console.log('in fetchPathwayInteractions, after isKnownGene')
     if (isKnownGene) {
