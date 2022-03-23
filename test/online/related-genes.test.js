@@ -6,7 +6,7 @@
 describe('Ideogram related genes kit', function() {
 
   // Account for latency in Ensembl, MyGene.info, and WikiPathways
-  this.timeout(25000);
+  this.timeout(20000);
 
   d3 = Ideogram.d3;
 
@@ -107,7 +107,7 @@ describe('Ideogram related genes kit', function() {
             }, 1000);
           }, 1000);
         }, 1000);
-      }, 2000);
+      }, 1000);
 
 
     }
@@ -141,6 +141,64 @@ describe('Ideogram related genes kit', function() {
       onPlotRelatedGenes,
       onWillShowAnnotTooltip,
       fontFamily: 'serif'
+    };
+
+    const ideogram = Ideogram.initRelatedGenes(config);
+  });
+
+  it('handles pathway genes', done => {
+
+    async function callback() {
+      await ideogram.plotRelatedGenes('RAD51');
+
+      setTimeout(async function() {
+
+        const rad54lLabel = document.querySelector('#ideogramLabel__c0_a0');
+        rad54lLabel.dispatchEvent(new Event('mouseover'));
+        const pathwayLink = document.querySelector('.ideo-pathway-link');
+        const pathwayName = 'Integrated breast cancer pathway';
+        assert.equal(pathwayLink.textContent, pathwayName);
+
+        // Test interaction gene summary processing, where one gene
+        // is part of a WikiPathways group
+        const tooltip = document.querySelector('#_ideogramTooltip');
+        assert.include(tooltip.textContent, 'Stimulated by RAD51 in');
+
+        setTimeout(async function() {
+          pathwayLink.dispatchEvent(new Event('click'));
+
+          setTimeout(async function() {
+            const brca2Annot =
+              document.querySelector('#chr13-9606 .annot path');
+            const brca2Color = brca2Annot.getAttribute('fill');
+            assert.equal(brca2Color, 'green');
+            done();
+          }, 2000);
+        }, 2000);
+      }, 5000);
+    }
+
+    function onClickAnnot(annot) {
+      ideogram.plotRelatedGenes(annot.name);
+    }
+
+    function onWillShowAnnotTooltip(annot) {
+      const ideo = this;
+      const analytics = ideo.getTooltipAnalytics(annot, ideo);
+      assert.equal(analytics.tooltipRelatedType, 'interacting');
+      return annot;
+    }
+
+    var config = {
+      organism: 'Homo sapiens', // Also tests standard, non-slugged name
+      chrWidth: 8,
+      chrHeight: 90,
+      chrLabelSize: 10,
+      annotationHeight: 5,
+      onLoad: callback,
+      dataDir: '/dist/data/bands/native/',
+      onClickAnnot,
+      onWillShowAnnotTooltip
     };
 
     const ideogram = Ideogram.initRelatedGenes(config);

@@ -11,7 +11,7 @@
  * - find genomic position of a given gene (or all genes)
  */
 
-import {slug, getEarlyTaxid} from './lib';
+import {slug, getEarlyTaxid, getDir} from './lib';
 import {organismMetadata} from './init/organism-metadata';
 import version from './version';
 
@@ -20,12 +20,8 @@ let perfTimes;
 /** Get URL for gene cache file */
 function getCacheUrl(orgName, cacheDir, ideo) {
   const organism = slug(orgName);
-
   if (!cacheDir) {
-    const splitDataDir = ideo.config.dataDir.split('/');
-    const dataIndex = splitDataDir.indexOf('data');
-    const baseDir = splitDataDir.slice(0, dataIndex).join('/') + '/data/';
-    cacheDir = baseDir + 'cache/';
+    cacheDir = getDir('cache/');
   }
 
   const cacheUrl = cacheDir + organism + '-genes.tsv';
@@ -148,7 +144,10 @@ async function cacheFetch(url) {
   const response = await Ideogram.cache.match(url);
   if (typeof response === 'undefined') {
     // If cache miss, then fetch and add response to cache
-    await Ideogram.cache.add(url);
+    // await Ideogram.cache.add(url);
+    const res = await fetch(url);
+    await Ideogram.cache.put(url, res);
+    return await Ideogram.cache.match(url);
   }
   return await Ideogram.cache.match(url);
 }
@@ -181,6 +180,7 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
 
   const fetchStartTime = performance.now();
   const response = await cacheFetch(cacheUrl);
+
   const data = await response.text();
   const fetchEndTime = performance.now();
   perfTimes.fetch = Math.round(fetchEndTime - fetchStartTime);
