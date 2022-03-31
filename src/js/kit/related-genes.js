@@ -1116,7 +1116,7 @@ const relatedLegend = [{
   ]
 }];
 
-let legendPathwayName = ''
+let legendPathwayName = '';
 
 const pathwayLegend = [{
   name: `

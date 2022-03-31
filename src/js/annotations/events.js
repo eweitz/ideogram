@@ -46,7 +46,7 @@ function startHideAnnotTooltipTimeout() {
     ideo.isTooltipCooling = true;
     ideo.hideAnnotTooltipCounter = window.setTimeout(function() {
       ideo.isTooltipCooling = false;
-    }, 250);
+    }, 500);
   // }
 }
 
