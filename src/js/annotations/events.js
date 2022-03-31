@@ -42,12 +42,10 @@ function startHideAnnotTooltipTimeout() {
     hideAnnotTooltip();
   }, 250);
 
-  // if ('isTooltipCooling' in ideo && ideo.isTooltipCooling === false) {
-    ideo.isTooltipCooling = true;
-    ideo.hideAnnotTooltipCounter = window.setTimeout(function() {
-      ideo.isTooltipCooling = false;
-    }, 500);
-  // }
+  ideo.isTooltipCooling = true;
+  ideo.hideAnnotTooltipCounter = window.setTimeout(function() {
+    ideo.isTooltipCooling = false;
+  }, 500);
 }
 
 function renderTooltip(tooltip, content, matrix, yOffset, ideo) {
