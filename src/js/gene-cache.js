@@ -104,8 +104,9 @@ function parseCache(rawTsv, orgName) {
       continue;
     }
     const [
-      chromosome, rawStart, rawLength, slimEnsemblId, gene, fullName
+      chromosome, rawStart, rawLength, slimEnsemblId, gene, rawFullName
     ] = line.trim().split(/\t/);
+    const fullName = decodeURIComponent(rawFullName);
     const start = parseInt(rawStart);
     const stop = start + parseInt(rawLength);
     const ensemblId = getEnsemblId(ensemblPrefix, slimEnsemblId);
