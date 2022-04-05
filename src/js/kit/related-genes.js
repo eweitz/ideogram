@@ -1219,7 +1219,9 @@ function _initRelatedGenes(config, annotsInList) {
 
   initAnalyzeRelatedGenes(ideogram);
 
-  initGeneCache(ideogram.config.organism, ideogram);
+  let cacheDir = null;
+  if (config.cacheDir) cacheDir = config.cacheDir;
+  initGeneCache(ideogram.config.organism, ideogram, cacheDir);
 
   return ideogram;
 }
@@ -1339,7 +1341,9 @@ function _initGeneHints(config, annotsInList) {
 
   initAnalyzeRelatedGenes(ideogram);
 
-  initGeneCache(ideogram.config.organism, ideogram);
+  let cacheDir = null;
+  if (config.cacheDir) cacheDir = config.cacheDir;
+  initGeneCache(ideogram.config.organism, ideogram, cacheDir);
 
   return ideogram;
 }

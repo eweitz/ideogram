@@ -19,7 +19,7 @@ import version from './version';
 let perfTimes;
 
 /** Get URL for gene cache file */
-function getCacheUrl(orgName, cacheDir, ideo) {
+function getCacheUrl(orgName, cacheDir) {
   const organism = slug(orgName);
   if (!cacheDir) {
     cacheDir = getDir('cache/');
