@@ -10,6 +10,7 @@
  * - test if a given string is a gene name, e.g. for gene search
  * - find genomic position of a given gene (or all genes)
  */
+ import {decompressSync, strFromU8} from 'fflate';
 
 import {slug, getEarlyTaxid, getDir} from './lib';
 import {organismMetadata} from './init/organism-metadata';
@@ -24,7 +25,7 @@ function getCacheUrl(orgName, cacheDir, ideo) {
     cacheDir = getDir('cache/');
   }
 
-  const cacheUrl = cacheDir + organism + '-genes.tsv';
+  const cacheUrl = cacheDir + organism + '-genes.tsv.gz';
 
   return cacheUrl;
 }
@@ -80,7 +81,9 @@ function parseCache(rawTsv, orgName) {
   const names = [];
   const nameCaseMap = {};
   const namesById = {};
+  const fullNamesById = {};
   const idsByName = {};
+  const idsByFullName = {};
   const lociByName = {};
   const lociById = {};
   const preAnnots = [];
@@ -101,18 +104,20 @@ function parseCache(rawTsv, orgName) {
       continue;
     }
     const [
-      chromosome, rawStart, rawLength, slimEnsemblId, gene
+      chromosome, rawStart, rawLength, slimEnsemblId, gene, fullName
     ] = line.trim().split(/\t/);
     const start = parseInt(rawStart);
     const stop = start + parseInt(rawLength);
     const ensemblId = getEnsemblId(ensemblPrefix, slimEnsemblId);
-    preAnnots.push([chromosome, start, stop, ensemblId, gene]);
+    preAnnots.push([chromosome, start, stop, ensemblId, gene, fullName]);
     const locus = [chromosome, start, stop];
 
     names.push(gene);
     nameCaseMap[gene.toLowerCase()] = gene;
     namesById[ensemblId] = gene;
+    fullNamesById[ensemblId] = fullName;
     idsByName[gene] = ensemblId;
+    idsByFullName[fullName] = ensemblId;
     lociByName[gene] = locus;
     lociById[ensemblId] = locus;
   };
@@ -123,7 +128,8 @@ function parseCache(rawTsv, orgName) {
   perfTimes.parseAnnots = Math.round(performance.now() - t1);
 
   return [
-    names, nameCaseMap, namesById, idsByName, lociByName, lociById,
+    names, nameCaseMap, namesById, fullNamesById,
+    idsByName, idsByFullName, lociByName, lociById,
     sortedAnnots
   ];
 }
@@ -181,13 +187,17 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
   const fetchStartTime = performance.now();
   const response = await cacheFetch(cacheUrl);
 
-  const data = await response.text();
+  // const data = await response.text();
+
+  const blob = await response.blob();
+  const uint8Array = new Uint8Array(await blob.arrayBuffer());
+  const data = strFromU8(decompressSync(uint8Array));
   const fetchEndTime = performance.now();
   perfTimes.fetch = Math.round(fetchEndTime - fetchStartTime);
 
   const [
-    interestingNames, nameCaseMap, namesById, idsByName,
-    lociByName, lociById, sortedAnnots
+    interestingNames, nameCaseMap, namesById, fullNamesById,
+    idsByName, idsByFullName, lociByName, lociById, sortedAnnots
   ] = parseCache(data, orgName);
   perfTimes.parseCache = Math.round(performance.now() - fetchEndTime);
 
@@ -195,7 +205,9 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
     interestingNames, // Array ordered by general or scholarly interest
     nameCaseMap, // Maps of lowercase gene names to proper gene names
     namesById,
+    fullNamesById,
     idsByName,
+    idsByFullName,
     lociByName, // Object of gene positions, keyed by gene name
     lociById,
     sortedAnnots // Ideogram annotations sorted by genomic position

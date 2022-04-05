@@ -373,10 +373,11 @@ function fetchGenesFromCache(names, type, ideo) {
     const locus = locusMap[name];
     const symbol = isSymbol ? name : nameMap[name];
     const ensemblId = isSymbol ? nameMap[name] : name;
+    const fullName = cache.fullNamesById[ensemblId];
 
     const hit = {
       symbol,
-      name: '',
+      name: fullName,
       source: 'cache',
       genomic_pos: {
         chr: locus[0],
@@ -413,18 +414,19 @@ async function fetchGenes(names, type, ideo) {
 
     // Asynchronously fetch full name, but don't await the response, because
     // full names are only shown upon hovering over an annotation.
-    const queryString = `${queryStringBase}symbol,name`;
-    data = fetchMyGeneInfo(queryString).then(data => {
-      data.hits.forEach((hit) => {
-        const symbol = hit.symbol;
-        const fullName = hit.name;
-        if (symbol in ideo.annotDescriptions.annots) {
-          ideo.annotDescriptions.annots[symbol].name = fullName;
-        } else {
-          ideo.annotDescriptions.annots[symbol] = {name: fullName};
-        }
-      });
+    // const queryString = `${queryStringBase}symbol,name`;
+    // data = fetchMyGeneInfo(queryString).then(data => {
+    // data.hits.forEach((hit) => {
+    hits.forEach((hit) => {
+      const symbol = hit.symbol;
+      const fullName = hit.name;
+      if (symbol in ideo.annotDescriptions.annots) {
+        ideo.annotDescriptions.annots[symbol].name = fullName;
+      } else {
+        ideo.annotDescriptions.annots[symbol] = {name: fullName};
+      }
     });
+    // });
 
     data = {hits, fromGeneCache: true};
   } else {
@@ -678,8 +680,10 @@ function mergeDescriptions(annot, desc, ideo) {
       }
     });
     // Object.assign({}, descriptions[annot.name]);
-    mergedDesc.type += ', ' + otherDesc.type;
-    mergedDesc.description += `<br/><br/>${otherDesc.description}`;
+    if ('type' in otherDesc) {
+      mergedDesc.type += ', ' + otherDesc.type;
+      mergedDesc.description += `<br/><br/>${otherDesc.description}`;
+    }
   } else {
     mergedDesc = desc;
   }
