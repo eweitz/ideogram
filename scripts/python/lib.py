@@ -40,6 +40,7 @@ def download_gzip(url, output_path, cache=0):
     if is_cached(output_path, cache, 1):
         return
     headers={"Accept-Encoding": "gzip"}
+    print(f"Requesting {url}")
     request = urllib.request.Request(url, headers=headers)
     response = urllib.request.urlopen(request, context=ctx)
     content = gzip.decompress(response.read()).decode()

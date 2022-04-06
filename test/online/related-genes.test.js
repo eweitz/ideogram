@@ -48,6 +48,7 @@ describe('Ideogram related genes kit', function() {
       organism: 'Homo sapiens',
       onLoad: callback,
       dataDir: '/dist/data/bands/native/',
+      cacheDir: '/dist/data/cache/',
       onClickAnnot
     };
 
@@ -137,6 +138,7 @@ describe('Ideogram related genes kit', function() {
       annotationHeight: 5,
       onLoad: callback,
       dataDir: '/dist/data/bands/native/',
+      cacheDir: '/dist/data/cache/',
       onClickAnnot,
       onPlotRelatedGenes,
       onWillShowAnnotTooltip,
@@ -197,6 +199,7 @@ describe('Ideogram related genes kit', function() {
       annotationHeight: 5,
       onLoad: callback,
       dataDir: '/dist/data/bands/native/',
+      cacheDir: '/dist/data/cache/',
       onClickAnnot,
       onWillShowAnnotTooltip
     };
@@ -262,6 +265,7 @@ describe('Ideogram related genes kit', function() {
       organism: 'Macaca mulatta', // Also tests standard, non-slugged name
       onLoad: callback,
       dataDir: '/dist/data/bands/native/',
+      cacheDir: '/dist/data/cache/',
       onClickAnnot
     };
 
