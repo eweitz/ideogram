@@ -65,7 +65,7 @@ function parseAnnots(preAnnots) {
  *
  * Example output ID: ENSG00000223972
  * */
-export function getEnsemblId(ensemblPrefix, slimEnsemblId) {
+function getEnsemblId(ensemblPrefix, slimEnsemblId) {
 
   // C. elegans (prefix: WBGene) has special IDs, e.g. WBGene00197333
   const padLength = ensemblPrefix === 'WBGene' ? 8 : 11;
@@ -142,9 +142,9 @@ function parseOrgMetadata(orgName) {
 }
 
 /** Reports if current organism has a gene cache */
-function hasGeneCache(orgName) {
+export function hasParalogCache(orgName) {
   const metadata = parseOrgMetadata(orgName);
-  return (metadata.hasGeneCache && metadata.hasGeneCache === true);
+  return (metadata.hasParalogCache && metadata.hasParalogCache === true);
 }
 
 async function cacheFetch(url) {
@@ -162,23 +162,23 @@ async function cacheFetch(url) {
 /**
  * Fetch cached gene data, transform it usefully, and set it as ideo prop
  */
-export default async function initGeneCache(orgName, ideo, cacheDir=null) {
+export default async function initParalogCache(orgName, ideo, cacheDir=null) {
 
   const startTime = performance.now();
   perfTimes = {};
 
   // Skip initialization if files needed to make cache don't exist
-  if (!hasGeneCache(orgName)) return;
+  if (!hasParalogCache(orgName)) return;
 
   // Skip initialization if cache is already populated
-  if (Ideogram.geneCache && Ideogram.geneCache[orgName]) {
+  if (Ideogram.paralogCache && Ideogram.paralogCache[orgName]) {
     // Simplify chief use case, i.e. for single organism
-    ideo.geneCache = Ideogram.geneCache[orgName];
+    ideo.paralogCache = Ideogram.paralogCache[orgName];
     return;
   }
 
-  if (!Ideogram.geneCache) {
-    Ideogram.geneCache = {};
+  if (!Ideogram.paralogCache) {
+    Ideogram.paralogCache = {};
   }
 
   Ideogram.cache = await caches.open(`ideogram-${version}`);
@@ -202,7 +202,7 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
   ] = parseCache(data, orgName);
   perfTimes.parseCache = Math.round(performance.now() - fetchEndTime);
 
-  ideo.geneCache = {
+  ideo.paralogCache = {
     interestingNames, // Array ordered by general or scholarly interest
     nameCaseMap, // Maps of lowercase gene names to proper gene names
     namesById,
@@ -213,10 +213,10 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
     lociById,
     sortedAnnots // Ideogram annotations sorted by genomic position
   };
-  Ideogram.geneCache[orgName] = ideo.geneCache;
+  Ideogram.paralogCache[orgName] = ideo.paralogCache;
 
   if (ideo.config.debug) {
     perfTimes.total = Math.round(performance.now() - startTime);
-    console.log('perfTimes in initGeneCache:', perfTimes);
+    console.log('perfTimes in initParalogCache:', perfTimes);
   }
 }

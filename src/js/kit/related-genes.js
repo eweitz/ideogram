@@ -34,10 +34,12 @@ import {
 import {writeLegend} from '../annotations/legend';
 import {getAnnotDomId} from '../annotations/process';
 import {getDir, deepCopy} from '../lib';
-import initGeneCache from '../gene-cache';
+import initGeneCache, {getEnsemblId} from '../gene-cache';
+import {hasParalogCache} from '../paralog-cache';
 import {
   fetchGpmls, summarizeInteractions, fetchPathwayInteractions
 } from './wikipathways';
+// import {organismMetadata} from '../init/organism-metadata';
 
 /** Sets DOM IDs for ideo.relatedAnnots; needed to associate labels */
 function setRelatedAnnotDomIds(ideo) {
@@ -483,8 +485,9 @@ async function fetchParalogPositionsFromMyGeneInfo(
   homologs, searchedGene, ideo
 ) {
   const annots = [];
-  const ensemblIds = homologs.map(homolog => homolog.id);
 
+  const hasCache = hasParalogCache(ideo.config.organism)
+  const ensemblIds = hasCache ? homologs : homologs.map(homolog => homolog.id);
   const data = await fetchGenes(ensemblIds, 'ensemblgene', ideo);
 
   data.hits.forEach(gene => {
@@ -512,11 +515,22 @@ async function fetchParalogPositionsFromMyGeneInfo(
 async function fetchParalogs(annot, ideo) {
   const taxid = ideo.config.taxid;
 
+  let homologs;
   // Fetch paralogs
-  const params = `&format=condensed&type=paralogues&target_taxon=${taxid}`;
-  const path = `/homology/id/${annot.id}?${params}`;
-  const ensemblHomologs = await Ideogram.fetchEnsembl(path);
-  const homologs = ensemblHomologs.data[0].homologies;
+  if (hasParalogCache(ideo.config.organism)) {
+    const baseUrl = 'http://localhost:8080/dist/data/cache/paralogs/';
+    const url = `${baseUrl}homo-sapiens/${annot.name}.tsv`;
+    const response = await fetch(url);
+    const oneRowTsv = await response.text();
+    const rawHomologEnsemblIds = oneRowTsv.split('\t');
+    homologs = rawHomologEnsemblIds.map(r => getEnsemblId('ENSG', r));
+  } else {
+    const params = `&format=condensed&type=paralogues&target_taxon=${taxid}`;
+    const path = `/homology/id/${annot.id}?${params}`;
+    const ensemblHomologs = await Ideogram.fetchEnsembl(path);
+    homologs = ensemblHomologs.data[0].homologies;
+  }
+
 
   // Fetch positions of paralogs
   let annots =
