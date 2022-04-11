@@ -147,16 +147,25 @@ function hasGeneCache(orgName) {
   return (metadata.hasGeneCache && metadata.hasGeneCache === true);
 }
 
-async function cacheFetch(url) {
-  const response = await Ideogram.cache.match(url);
+export async function cacheFetch(url) {
+
+  const decompressedUrl = url.replace('.gz', '');
+  const response = await Ideogram.cache.match(decompressedUrl);
   if (typeof response === 'undefined') {
     // If cache miss, then fetch and add response to cache
     // await Ideogram.cache.add(url);
-    const res = await fetch(url);
-    await Ideogram.cache.put(url, res);
-    return await Ideogram.cache.match(url);
+    const rawResponse = await fetch(url);
+    const blob = await rawResponse.blob();
+    const uint8Array = new Uint8Array(await blob.arrayBuffer());
+    const data = strFromU8(decompressSync(uint8Array));
+    const decompressedResponse = new Response(
+      new Blob([data], {type: 'text/tab-separated-values'}),
+      rawResponse.init
+    );
+    await Ideogram.cache.put(decompressedUrl, decompressedResponse);
+    return await Ideogram.cache.match(decompressedUrl);
   }
-  return await Ideogram.cache.match(url);
+  return await Ideogram.cache.match(decompressedUrl);
 }
 
 /**
@@ -188,11 +197,7 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
   const fetchStartTime = performance.now();
   const response = await cacheFetch(cacheUrl);
 
-  // const data = await response.text();
-
-  const blob = await response.blob();
-  const uint8Array = new Uint8Array(await blob.arrayBuffer());
-  const data = strFromU8(decompressSync(uint8Array));
+  const data = await response.text();
   const fetchEndTime = performance.now();
   perfTimes.fetch = Math.round(fetchEndTime - fetchStartTime);
 

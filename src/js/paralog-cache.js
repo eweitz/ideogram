@@ -1,17 +1,12 @@
 /**
- * @fileoverview Fetch cached gene data: name, position, etc.
+ * @fileoverview Fetch cached paralogs: Ensembl IDs of <= 20 paralogs per genes
  *
- * Gene cache eliminates needing to fetch names and positions of genes from
- * third-party APIs at runtime.  It achieves this by fetching a static file
- * containing gene data upon initializing Ideogram.
- *
- * Use cases:
- *
- * - test if a given string is a gene name, e.g. for gene search
- * - find genomic position of a given gene (or all genes)
+ * Paralog cache eliminates needing to fetch IDs of paralogs for a given gene
+ * from third-party APIs at runtime.  It achieves this by fetching a static
+ * file containing gene data upon initializing Ideogram.
  */
- import {decompressSync, strFromU8} from 'fflate';
 
+import {cacheFetch} from './gene-cache';
 import {slug, getEarlyTaxid, getDir} from './lib';
 import {organismMetadata} from './init/organism-metadata';
 import version from './version';
@@ -22,42 +17,12 @@ let perfTimes;
 function getCacheUrl(orgName, cacheDir) {
   const organism = slug(orgName);
   if (!cacheDir) {
-    cacheDir = getDir('cache/');
+    cacheDir = getDir('cache/paralogs/');
   }
 
-  const cacheUrl = cacheDir + organism + '-genes.tsv.gz';
+  const cacheUrl = cacheDir + organism + '-paralogs.tsv.gz';
 
   return cacheUrl;
-}
-
-/**
- * Convert pre-annotation arrays to annotation objects
- * sorted by genomic position.
- */
-function parseAnnots(preAnnots) {
-  const chromosomes = {};
-
-  for (let i = 0; i < preAnnots.length; i++) {
-    const [chromosome, start, stop, ensemblId, gene] = preAnnots[i];
-
-    if (!(chromosome in chromosomes)) {
-      chromosomes[chromosome] = {chr: chromosome, annots: []};
-    } else {
-      const annot = {name: gene, start, stop, ensemblId};
-      chromosomes[chromosome].annots.push(annot);
-    }
-  }
-
-  const annotsSortedByPosition = {};
-
-  Object.entries(chromosomes).forEach(([chr, annotsByChr]) => {
-    annotsSortedByPosition[chr] = {
-      chr,
-      annots: annotsByChr.annots.sort((a, b) => a.start - b.start)
-    };
-  });
-
-  return annotsSortedByPosition;
 }
 
 /**
@@ -77,16 +42,10 @@ function getEnsemblId(ensemblPrefix, slimEnsemblId) {
 }
 
 /** Parse a gene cache TSV file, return array of useful transforms */
-function parseCache(rawTsv, orgName) {
+function parseCache(rawTsv) {
   const names = [];
   const nameCaseMap = {};
-  const namesById = {};
-  const fullNamesById = {};
-  const idsByName = {};
-  const idsByFullName = {};
-  const lociByName = {};
-  const lociById = {};
-  const preAnnots = [];
+  const paralogsByName = {};
   let ensemblPrefix;
 
   let t0 = performance.now();
@@ -103,36 +62,23 @@ function parseCache(rawTsv, orgName) {
       }
       continue;
     }
-    const [
-      chromosome, rawStart, rawLength, slimEnsemblId, gene, rawFullName
-    ] = line.trim().split(/\t/);
-    const fullName = decodeURIComponent(rawFullName);
-    const start = parseInt(rawStart);
-    const stop = start + parseInt(rawLength);
-    const ensemblId = getEnsemblId(ensemblPrefix, slimEnsemblId);
-    preAnnots.push([chromosome, start, stop, ensemblId, gene, fullName]);
-    const locus = [chromosome, start, stop];
+    const columns = line.trim().split(/\t/);
+    const gene = columns[0];
+    const slimEnsemblIds = columns.slice(1);
+
+    const paralogs = [];
+    for (let i = 0; i < slimEnsemblIds.length; i++) {
+      paralogs.push(getEnsemblId(ensemblPrefix, slimEnsemblIds[i]));
+    }
 
     names.push(gene);
     nameCaseMap[gene.toLowerCase()] = gene;
-    namesById[ensemblId] = gene;
-    fullNamesById[ensemblId] = fullName;
-    idsByName[gene] = ensemblId;
-    idsByFullName[fullName] = ensemblId;
-    lociByName[gene] = locus;
-    lociById[ensemblId] = locus;
+    paralogsByName[gene] = paralogs;
   };
   const t1 = performance.now();
   perfTimes.parseCacheLoop = Math.round(t1 - t0);
 
-  const sortedAnnots = parseAnnots(preAnnots);
-  perfTimes.parseAnnots = Math.round(performance.now() - t1);
-
-  return [
-    names, nameCaseMap, namesById, fullNamesById,
-    idsByName, idsByFullName, lociByName, lociById,
-    sortedAnnots
-  ];
+  return [names, nameCaseMap, paralogsByName];
 }
 
 /** Get organism's metadata fields */
@@ -147,20 +93,8 @@ export function hasParalogCache(orgName) {
   return (metadata.hasParalogCache && metadata.hasParalogCache === true);
 }
 
-async function cacheFetch(url) {
-  const response = await Ideogram.cache.match(url);
-  if (typeof response === 'undefined') {
-    // If cache miss, then fetch and add response to cache
-    // await Ideogram.cache.add(url);
-    const res = await fetch(url);
-    await Ideogram.cache.put(url, res);
-    return await Ideogram.cache.match(url);
-  }
-  return await Ideogram.cache.match(url);
-}
-
 /**
- * Fetch cached gene data, transform it usefully, and set it as ideo prop
+ * Fetch cached paralog data, transform it usefully, and set it as ideo prop
  */
 export default async function initParalogCache(orgName, ideo, cacheDir=null) {
 
@@ -187,31 +121,17 @@ export default async function initParalogCache(orgName, ideo, cacheDir=null) {
 
   const fetchStartTime = performance.now();
   const response = await cacheFetch(cacheUrl);
-
-  // const data = await response.text();
-
-  const blob = await response.blob();
-  const uint8Array = new Uint8Array(await blob.arrayBuffer());
-  const data = strFromU8(decompressSync(uint8Array));
+  const data = await response.text();
   const fetchEndTime = performance.now();
   perfTimes.fetch = Math.round(fetchEndTime - fetchStartTime);
 
-  const [
-    interestingNames, nameCaseMap, namesById, fullNamesById,
-    idsByName, idsByFullName, lociByName, lociById, sortedAnnots
-  ] = parseCache(data, orgName);
+  const [names, nameCaseMap, paralogsByName] = parseCache(data, orgName);
   perfTimes.parseCache = Math.round(performance.now() - fetchEndTime);
 
   ideo.paralogCache = {
-    interestingNames, // Array ordered by general or scholarly interest
+    names, // Names of genes with known paralogs
     nameCaseMap, // Maps of lowercase gene names to proper gene names
-    namesById,
-    fullNamesById,
-    idsByName,
-    idsByFullName,
-    lociByName, // Object of gene positions, keyed by gene name
-    lociById,
-    sortedAnnots // Ideogram annotations sorted by genomic position
+    paralogsByName // Array of paralog Ensembl IDs by gene name
   };
   Ideogram.paralogCache[orgName] = ideo.paralogCache;
 

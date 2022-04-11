@@ -35,7 +35,7 @@ import {writeLegend} from '../annotations/legend';
 import {getAnnotDomId} from '../annotations/process';
 import {getDir, deepCopy} from '../lib';
 import initGeneCache, {getEnsemblId} from '../gene-cache';
-import {hasParalogCache} from '../paralog-cache';
+import initParalogCache, {hasParalogCache} from '../paralog-cache';
 import {
   fetchGpmls, summarizeInteractions, fetchPathwayInteractions
 } from './wikipathways';
@@ -486,8 +486,8 @@ async function fetchParalogPositionsFromMyGeneInfo(
 ) {
   const annots = [];
 
-  const hasCache = hasParalogCache(ideo.config.organism)
-  const ensemblIds = hasCache ? homologs : homologs.map(homolog => homolog.id);
+  const cached = homologs.length && typeof homologs[0] === 'string';
+  const ensemblIds = cached ? homologs : homologs.map(homolog => homolog.id);
   const data = await fetchGenes(ensemblIds, 'ensemblgene', ideo);
 
   data.hits.forEach(gene => {
@@ -517,13 +517,17 @@ async function fetchParalogs(annot, ideo) {
 
   let homologs;
   // Fetch paralogs
-  if (hasParalogCache(ideo.config.organism)) {
-    const baseUrl = 'http://localhost:8080/dist/data/cache/paralogs/';
-    const url = `${baseUrl}homo-sapiens/${annot.name}.tsv`;
-    const response = await fetch(url);
-    const oneRowTsv = await response.text();
-    const rawHomologEnsemblIds = oneRowTsv.split('\t');
-    homologs = rawHomologEnsemblIds.map(r => getEnsemblId('ENSG', r));
+  if (ideo.paralogCache) {
+    // const baseUrl = 'http://localhost:8080/dist/data/cache/paralogs/';
+    // const url = `${baseUrl}homo-sapiens/${annot.name}.tsv`;
+    // const response = await fetch(url);
+    // const oneRowTsv = await response.text();
+    // const rawHomologEnsemblIds = oneRowTsv.split('\t');
+    // homologs = rawHomologEnsemblIds.map(r => getEnsemblId('ENSG', r));
+    const paralogsByName = ideo.paralogCache.paralogsByName;
+    const name = ideo.paralogCache.nameCaseMap[annot.name.toLowerCase()];
+    const hasParalogs = name in paralogsByName;
+    homologs = hasParalogs ? paralogsByName[name] : [];
   } else {
     const params = `&format=condensed&type=paralogues&target_taxon=${taxid}`;
     const path = `/homology/id/${annot.id}?${params}`;
@@ -1236,6 +1240,7 @@ function _initRelatedGenes(config, annotsInList) {
   let cacheDir = null;
   if (config.cacheDir) cacheDir = config.cacheDir;
   initGeneCache(ideogram.config.organism, ideogram, cacheDir);
+  initParalogCache(ideogram.config.organism, ideogram, cacheDir);
 
   return ideogram;
 }
@@ -1358,6 +1363,7 @@ function _initGeneHints(config, annotsInList) {
   let cacheDir = null;
   if (config.cacheDir) cacheDir = config.cacheDir;
   initGeneCache(ideogram.config.organism, ideogram, cacheDir);
+  initParalogCache(ideogram.config.organism, ideogram, cacheDir);
 
   return ideogram;
 }
