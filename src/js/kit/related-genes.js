@@ -874,90 +874,90 @@ function sortByPathwayIxn(a, b) {
   return a.rank - b.rank;
 }
 
-async function fetchPathwayGeneAnnots(searchedGene, pathway, ideo) {
-  const annots = [];
+// async function fetchPathwayGeneAnnots(searchedGene, pathway, ideo) {
+//   const annots = [];
 
-  const pathwayIxns =
-    await fetchPathwayInteractions(searchedGene.name, pathway.id, ideo);
+//   const pathwayIxns =
+//     await fetchPathwayInteractions(searchedGene.name, pathway.id, ideo);
 
-  const pathwayGenes = Object.keys(pathwayIxns);
-  const data = await fetchGenes(pathwayGenes, 'symbol', ideo);
+//   const pathwayGenes = Object.keys(pathwayIxns);
+//   const data = await fetchGenes(pathwayGenes, 'symbol', ideo);
 
-  const ixnColors = {
-    'Stimulates': 'green',
-    'Stimulated by': 'green',
-    'Necessarily stimulates': 'green',
-    'Necessarily stimulated by': 'green',
-    'Transcribes / translates': 'brown',
-    'Transcribed / translated by': 'brown',
-    'Inhibits': 'red',
-    'Inhibited by': 'red',
-    'Modifies': 'blue',
-    'Modified by': 'blue',
-    'Acts on': 'blue',
-    'Acted on by': 'blue',
-    'Catalyzes': 'orange',
-    'Catalyzed by': 'orange',
-    'Converts': 'orange',
-    'Converted by': 'orange',
-    'Binds': 'black',
-    'Shares pathway with': 'grey'
-  };
+//   const ixnColors = {
+//     'Stimulates': 'green',
+//     'Stimulated by': 'green',
+//     'Necessarily stimulates': 'green',
+//     'Necessarily stimulated by': 'green',
+//     'Transcribes / translates': 'brown',
+//     'Transcribed / translated by': 'brown',
+//     'Inhibits': 'red',
+//     'Inhibited by': 'red',
+//     'Modifies': 'blue',
+//     'Modified by': 'blue',
+//     'Acts on': 'blue',
+//     'Acted on by': 'blue',
+//     'Catalyzes': 'orange',
+//     'Catalyzed by': 'orange',
+//     'Converts': 'orange',
+//     'Converted by': 'orange',
+//     'Binds': 'black',
+//     'Shares pathway with': 'grey'
+//   };
 
-  data.hits.forEach(gene => {
-    // If hit lacks position
-    // or is same as searched gene (e.g. search for human SRC),
-    // then skip processing
-    if (
-      'genomic_pos' in gene === false ||
-      gene.symbol === searchedGene.name
-    ) {
-      return;
-    }
+//   data.hits.forEach(gene => {
+//     // If hit lacks position
+//     // or is same as searched gene (e.g. search for human SRC),
+//     // then skip processing
+//     if (
+//       'genomic_pos' in gene === false ||
+//       gene.symbol === searchedGene.name
+//     ) {
+//       return;
+//     }
 
-    // Account for edge case: cyclic AMP (cAMP) is not "CAMP" gene
-    if (gene.symbol === 'cAMP') return;
+//     // Account for edge case: cyclic AMP (cAMP) is not "CAMP" gene
+//     if (gene.symbol === 'cAMP') return;
 
-    const summary = pathwayIxns[gene.symbol];
-    const color = ixnColors[summary];
-    // if (color !== 'blue') console.log(gene);
+//     const summary = pathwayIxns[gene.symbol];
+//     const color = ixnColors[summary];
+//     // if (color !== 'blue') console.log(gene);
 
-    const annot = parseAnnotFromMgiGene(gene, ideo, color);
-    annots.push(annot);
+//     const annot = parseAnnotFromMgiGene(gene, ideo, color);
+//     annots.push(annot);
 
-    const descriptionObj =
-      describePathwayGene(gene, searchedGene, pathway, summary);
+//     const descriptionObj =
+//       describePathwayGene(gene, searchedGene, pathway, summary);
 
-    mergeDescriptions(annot, descriptionObj, ideo);
-  });
+//     mergeDescriptions(annot, descriptionObj, ideo);
+//   });
 
-  ideo.annotSortFunction = sortByPathwayIxn;
+//   ideo.annotSortFunction = sortByPathwayIxn;
 
-  const sortedAnnots = annots.sort(sortByPathwayIxn).slice(0, 40);
+//   const sortedAnnots = annots.sort(sortByPathwayIxn).slice(0, 40);
 
-  return sortedAnnots;
-}
+//   return sortedAnnots;
+// }
 
-/**
- *
- */
-async function plotPathwayGenes(searchedGene, pathway, ideo) {
-  const headerTitle = 'Genes in pathway';
-  initAnnotDescriptions(ideo, headerTitle);
+// /**
+//  *
+//  */
+// async function plotPathwayGenes(searchedGene, pathway, ideo) {
+//   const headerTitle = 'Genes in pathway';
+//   initAnnotDescriptions(ideo, headerTitle);
 
-  legendPathwayName = pathway.name;
-  ideo.config.legend = pathwayLegend;
-  writeLegend(ideo);
-  moveLegend();
+//   legendPathwayName = pathway.name;
+//   ideo.config.legend = pathwayLegend;
+//   writeLegend(ideo);
+//   moveLegend();
 
-  ideo.relatedAnnots = [];
+//   ideo.relatedAnnots = [];
 
-  await processSearchedGene(searchedGene.name, ideo);
+//   await processSearchedGene(searchedGene.name, ideo);
 
-  const annots = await fetchPathwayGeneAnnots(searchedGene, pathway, ideo);
-  ideo.relatedAnnots.push(...annots);
-  finishPlotRelatedGenes('pathway', ideo);
-}
+//   const annots = await fetchPathwayGeneAnnots(searchedGene, pathway, ideo);
+//   ideo.relatedAnnots.push(...annots);
+//   finishPlotRelatedGenes('pathway', ideo);
+// }
 
 function initAnnotDescriptions(ideo, headerTitle) {
   const organism = ideo.getScientificName(ideo.config.taxid);
@@ -1043,30 +1043,30 @@ function getAnnotByName(annotName, ideo) {
   return annotByName;
 }
 
-/**
- * Manage click on pathway links in annotation tooltips
- */
-function managePathwayClickHandlers(searchedGene, ideo) {
-  setTimeout(function() {
-    const pathways = document.querySelectorAll('.ideo-pathway-link');
-    if (pathways.length > 0 && !ideo.addedPathwayClickHandler) {
-      pathways.forEach(pathway => {
-        // pathway.removeEventListener('click', handlePathwayClick);
-        pathway.addEventListener('click', function(event) {
-          const target = event.target;
-          const pathwayId = target.getAttribute('data-pathway-id');
-          const pathwayName = target.getAttribute('data-pathway-name');
-          const pathway = {id: pathwayId, name: pathwayName};
-          plotPathwayGenes(searchedGene, pathway, ideo);
-        });
-      });
+// /**
+//  * Manage click on pathway links in annotation tooltips
+//  */
+// function managePathwayClickHandlers(searchedGene, ideo) {
+//   setTimeout(function() {
+//     const pathways = document.querySelectorAll('.ideo-pathway-link');
+//     if (pathways.length > 0 && !ideo.addedPathwayClickHandler) {
+//       pathways.forEach(pathway => {
+//         // pathway.removeEventListener('click', handlePathwayClick);
+//         pathway.addEventListener('click', function(event) {
+//           const target = event.target;
+//           const pathwayId = target.getAttribute('data-pathway-id');
+//           const pathwayName = target.getAttribute('data-pathway-name');
+//           const pathway = {id: pathwayId, name: pathwayName};
+//           plotPathwayGenes(searchedGene, pathway, ideo);
+//         });
+//       });
 
-      // Ensures handler isn't added redundantly.  This is used because
-      // addEventListener options like {once: true} don't suffice
-      // ideo.addedPathwayClickHandler = true;
-    }
-  }, 100);
-}
+//       // Ensures handler isn't added redundantly.  This is used because
+//       // addEventListener options like {once: true} don't suffice
+//       // ideo.addedPathwayClickHandler = true;
+//     }
+//   }, 100);
+// }
 
 /**
  * Handles click within annotation tooltip

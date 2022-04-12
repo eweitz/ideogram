@@ -18,6 +18,8 @@ function getCacheUrl(orgName, cacheDir) {
   const organism = slug(orgName);
   if (!cacheDir) {
     cacheDir = getDir('cache/paralogs/');
+  } else {
+    cacheDir += 'paralogs/';
   }
 
   const cacheUrl = cacheDir + organism + '-paralogs.tsv.gz';
