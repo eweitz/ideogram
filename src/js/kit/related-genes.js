@@ -309,17 +309,27 @@ function describeInteractions(gene, ixns, searchedGene) {
 
   if (typeof ixns !== 'undefined') {
     // ixns is undefined when querying e.g. CDKN1B in human
-    // const pathwaysBase = 'https://www.wikipathways.org/index.php/Pathway:';
     const links = ixns.map(ixn => {
-      // const url = `${pathwaysBase}${ixn.pathwayId}`;
+      // pathwayIds.push(ixn.pathwayId);
+      // pathwayNames.push(ixn.name);
+      // const attrs =
+      //   `class="ideo-pathway-link" ` +
+      //   `title="Click to search for other genes in this pathway" ` +
+      //   `style="cursor: pointer" ` +
+      //   `data-pathway-id="${ixn.pathwayId}" ` +
+      //   `data-pathway-name="${ixn.name}"`;
+      // return `<a ${attrs}>${ixn.name}</a>`;
+
+      const pathwaysBase = 'https://www.wikipathways.org/index.php/Pathway:';
+      const url = `${pathwaysBase}${ixn.pathwayId}`;
       pathwayIds.push(ixn.pathwayId);
       pathwayNames.push(ixn.name);
       const attrs =
         `class="ideo-pathway-link" ` +
-        `title="Click to search for other genes in this pathway" ` +
-        `style="cursor: pointer" ` +
+        `title="View in WikiPathways" ` +
         `data-pathway-id="${ixn.pathwayId}" ` +
-        `data-pathway-name="${ixn.name}"`;
+        `target="_blank" ` +
+        `href="${url}"`;
       return `<a ${attrs}>${ixn.name}</a>`;
     }).join('<br/>');
 
@@ -1046,7 +1056,7 @@ function managePathwayClickHandlers(searchedGene, ideo) {
           const target = event.target;
           const pathwayId = target.getAttribute('data-pathway-id');
           const pathwayName = target.getAttribute('data-pathway-name');
-          const pathway = {id: pathwayId, name: pathwayName}
+          const pathway = {id: pathwayId, name: pathwayName};
           plotPathwayGenes(searchedGene, pathway, ideo);
         });
       });
@@ -1113,7 +1123,7 @@ function decorateRelatedGene(annot) {
 
   // handleTooltipClick(ideo);
 
-  managePathwayClickHandlers(annot, ideo);
+  // managePathwayClickHandlers(annot, ideo);
 
   return annot;
 }
