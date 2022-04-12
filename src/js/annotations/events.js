@@ -15,6 +15,13 @@ function onDrawAnnots() {
   call(this.onDrawAnnotsCallback);
 }
 
+function hideAnnotTooltip() {
+  d3.select('._ideogramTooltip').transition()
+    .duration(500) // fade out for half second
+    .style('opacity', 0)
+    .style('pointer-events', 'none');
+}
+
 /**
  * Starts a timer that, upon expiring, hides the annotation tooltip.
  *
@@ -25,17 +32,20 @@ function onDrawAnnots() {
  * then the timer is cleared.
  */
 function startHideAnnotTooltipTimeout() {
+  const ideo = this;
 
-  if (this.config.showAnnotTooltip === false) {
+  if (ideo.config.showAnnotTooltip === false) {
     return;
   }
 
-  this.hideAnnotTooltipTimeout = window.setTimeout(function() {
-    d3.select('._ideogramTooltip').transition()
-      .duration(500) // fade out for half second
-      .style('opacity', 0)
-      .style('pointer-events', 'none');
+  ideo.hideAnnotTooltipTimeout = window.setTimeout(function() {
+    hideAnnotTooltip();
   }, 250);
+
+  ideo.isTooltipCooling = true;
+  ideo.hideAnnotTooltipCounter = window.setTimeout(function() {
+    ideo.isTooltipCooling = false;
+  }, 500);
 }
 
 function renderTooltip(tooltip, content, matrix, yOffset, ideo) {
@@ -84,6 +94,7 @@ function onWillShowAnnotTooltip(annot) {
  * Optional callback, invoked on clicking annotation
  */
 function onClickAnnot(annot) {
+  this.prevClickedAnnot = annot;
   this.onClickAnnotCallback(annot);
 }
 
@@ -141,6 +152,14 @@ function showAnnotTooltip(annot, context) {
   if (ideo.onWillShowAnnotTooltipCallback) {
     annot = ideo.onWillShowAnnotTooltipCallback(annot);
   }
+
+  // Enable onWillShowAnnotTooltipCallback to cancel showing tooltip
+  if (annot === null) {
+    hideAnnotTooltip();
+    return;
+  }
+
+  ideo.prevTooltipAnnotName = annot.name;
 
   tooltip = d3.select('._ideogramTooltip');
   tooltip.interrupt(); // Stop any in-progress disapperance

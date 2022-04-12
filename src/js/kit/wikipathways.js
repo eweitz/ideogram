@@ -1,4 +1,5 @@
 import {decompressSync, strFromU8} from 'fflate';
+import { sortAnnotsByRank } from '../annotations/annotations';
 
 // Definitions for ArrowHead values in WikiPathways GPML
 //
@@ -161,14 +162,16 @@ function summarizeByDirection(enrichedIxns) {
  * Summarize interactions by direction
  *
  * @param {String} gene Interacting gene
+ * @param {String} searchedGene Searched gene
  * @param {Array} pathwayIds List of WikiPathways IDs
- * @param {Object} ideo Ideogram instance object
+ * @param {Object} gpmls Object of parsed GPML XMLs values, by pathway ID key
  * @returns
  */
-export function summarizeInteractions(gene, pathwayIds, ideo) {
+export function summarizeInteractions(gene, searchedGene, pathwayIds, gpmls) {
   let summary = null;
 
-  const ixnsByPwid = detailAllInteractions(gene, pathwayIds, ideo);
+  const ixnsByPwid =
+    detailAllInteractions(gene, searchedGene, pathwayIds, gpmls);
 
   const ixns = ixnsByPwid[pathwayIds[0]];
 
@@ -231,11 +234,12 @@ export function summarizeInteractions(gene, pathwayIds, ideo) {
  * @param pathwayIds List of WikiPathways IDs
  * @ideo ideo Ideogram instance object
  */
-export function detailAllInteractions(gene, pathwayIds, ideo) {
+export function detailAllInteractions(gene, searchedGene, pathwayIds, gpmls) {
   const ixnsByPwid = {};
 
   pathwayIds.map(pathwayId => {
-    const ixns = detailInteractions(gene, pathwayId, ideo);
+    const gpml = gpmls[pathwayId];
+    const ixns = detailInteractions(gene, searchedGene, gpml);
 
     ixnsByPwid[pathwayId] = ixns;
   });
@@ -286,6 +290,22 @@ function getMatches(gpml, label) {
   return [matchingGraphIds, elements];
 }
 
+async function fetchGpml(pathwayId) {
+  const pathwayFile = `${pathwayId}.xml.gz`;
+  const gpmlUrl = `https://cdn.jsdelivr.net/npm/ixn2/${pathwayFile}`;
+  const response = await fetch(gpmlUrl);
+  const blob = await response.blob();
+  const uint8Array = new Uint8Array(await blob.arrayBuffer());
+  const rawGpml = strFromU8(decompressSync(uint8Array));
+
+  const gpml = new DOMParser().parseFromString(rawGpml, 'text/xml');
+
+  // console.log('gpml:')
+  // console.log(gpml)
+
+  return gpml;
+}
+
 /**
  * Request compressed GPML files, which contain detailed interaction data, e.g.
  * https://cdn.jsdelivr.net/npm/ixn/WP3982.xml.gz
@@ -312,15 +332,7 @@ export function fetchGpmls(ideo) {
     .forEach(([ixnGene, pathwayIds]) => {
       gpmlsByInteractingGene[ixnGene] = {};
       pathwayIds.map(async pathwayId => {
-        const pathwayFile = `${pathwayId}.xml.gz`;
-        const gpmlUrl = `https://cdn.jsdelivr.net/npm/ixn/${pathwayFile}`;
-        const response = await fetch(gpmlUrl);
-        const blob = await response.blob();
-        const uint8Array = new Uint8Array(await blob.arrayBuffer());
-        const rawGpml = strFromU8(decompressSync(uint8Array));
-
-        const gpml = new DOMParser().parseFromString(rawGpml, 'text/xml');
-
+        const gpml = await fetchGpml(pathwayId);
         gpmlsByInteractingGene[ixnGene][pathwayId] = gpml;
       });
     });
@@ -386,6 +398,40 @@ function parseInteractionGraphic(graphic, graphIds) {
 }
 
 /**
+ * Get all genes in the given pathway GPML
+ */
+export async function fetchPathwayInteractions(searchedGene, pathwayId, ideo) {
+  const gpml = await fetchGpml(pathwayId);
+  // Gets IDs and elements for searched gene and interacting gene, and,
+  // if they're in any groups, the IDs of those groups
+  const genes = {};
+
+  const nodes = Array.from(gpml.querySelectorAll('DataNode'));
+  nodes.forEach(node => {
+    const label = node.getAttribute('TextLabel');
+    const normLabel = label.toLowerCase();
+    const isKnownGene = normLabel in ideo.geneCache.nameCaseMap;
+    if (isKnownGene) {
+      genes[label] = 1;
+    }
+  });
+
+  const pathwayGenes = Object.keys(genes);
+  const pathwayIxns = {};
+  pathwayGenes.map(gene => {
+    if (gene === searchedGene) return;
+    const gpmls = {};
+    gpmls[pathwayId] = gpml;
+    const summary = summarizeInteractions(
+      gene, searchedGene, [pathwayId], gpmls
+    );
+    pathwayIxns[gene] = (summary ? summary : 'Shares pathway with');
+  });
+
+  return pathwayIxns;
+}
+
+/**
  * Fetch GPML for pathway and find ID of Interaction between two genes,
  * and the ID of the two DataNodes for each of those interactions.
  *
@@ -394,15 +440,7 @@ function parseInteractionGraphic(graphic, graphIds) {
  * fetches augmented GPML data for the pathway, and queries it to get only
  * interactions between the two genes.
  */
-export function detailInteractions(interactingGene, pathwayId, ideo) {
-
-  // Get pathway's GPML, which contains detailed interaction data
-  const gpml = ideo.gpmlsByInteractingGene[interactingGene][pathwayId];
-
-  // Get symbol of the searched gene, e.g. "PTEN"
-  const searchedGene =
-    Object.entries(ideo.annotDescriptions.annots)
-      .find(([k, v]) => v.type === 'searched gene')[0];
+function detailInteractions(interactingGene, searchedGene, gpml) {
 
   // Gets IDs and elements for searched gene and interacting gene, and,
   // if they're in any groups, the IDs of those groups

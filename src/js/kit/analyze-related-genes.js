@@ -73,7 +73,9 @@ function analyzePlotTimes(type, ideo) {
   // No paralogs, no interacting genes:
   // http://localhost:8080/examples/vanilla/related-genes?q=BRCA1&org=macaca-mulatta
 
-
+  if (type === 'pathway') {
+    return;
+  }
   const otherTypes = {
     paralogous: 'interacting',
     interacting: 'paralogous'

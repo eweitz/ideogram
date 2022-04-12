@@ -21,17 +21,25 @@
  * https://eweitz.github.io/ideogram/related-genes
  */
 
+import {decompressSync, strFromU8} from 'fflate';
+
 import {
   initAnalyzeRelatedGenes, analyzePlotTimes, analyzeRelatedGenes, timeDiff,
   getRelatedGenesByType, getRelatedGenesTooltipAnalytics
 } from './analyze-related-genes';
 
+import {
+  sortAnnotsByRank, applyRankCutoff, setAnnotRanks
+} from '../annotations/annotations';
 import {writeLegend} from '../annotations/legend';
 import {getAnnotDomId} from '../annotations/process';
-import {applyRankCutoff} from '../annotations/labels';
-import {getDir} from '../lib';
-import initGeneCache from '../gene-cache';
-import {fetchGpmls, summarizeInteractions} from './wikipathways';
+import {getDir, deepCopy} from '../lib';
+import initGeneCache, {getEnsemblId} from '../gene-cache';
+import initParalogCache, {hasParalogCache} from '../paralog-cache';
+import {
+  fetchGpmls, summarizeInteractions, fetchPathwayInteractions
+} from './wikipathways';
+// import {organismMetadata} from '../init/organism-metadata';
 
 /** Sets DOM IDs for ideo.relatedAnnots; needed to associate labels */
 function setRelatedAnnotDomIds(ideo) {
@@ -39,6 +47,21 @@ function setRelatedAnnotDomIds(ideo) {
 
   const sortedChrNames = ideo.chromosomesArray.map((chr) => {
     return chr.name;
+  });
+
+  // Count two related annots for same gene as one.
+  // E.g. gene Foo can both interact with and be paralog of gene Bar
+  // Instead of count Foo interacting annot and Foo paralog annot as two,
+  // only count it as one as they are merged in downstream UI.
+  //
+  // Searching STAT3 without this block shows the problem this fixes.
+  const seenNames = {};
+  ideo.relatedAnnots = ideo.relatedAnnots.filter(annot => {
+    if (annot.name in seenNames) {
+      return false;
+    }
+    seenNames[annot.name] = 1;
+    return true;
   });
 
   // Arrange related annots by chromosome
@@ -55,14 +78,22 @@ function setRelatedAnnotDomIds(ideo) {
   const relevanceSortedAnnotsNamesByChr = {};
   Object.entries(annotsByChr).map(([chr, annots]) => {
 
-    // Reverse-sort, so first annots are drawn last, and thus at top layer
-    annots.sort((a, b) => ideo.annotSortFunction(a, b));
+    annots = setAnnotRanks(annots, ideo);
 
-    const annotNames = annots.map((annot) => annot.name).reverse();
+    // Sort so first annots are drawn last, and thus at top layer
+    annots.sort((a, b) => -ideo.annotSortFunction(a, b));
+
+    const annotNames = annots.map((annot) => annot.name);
     relevanceSortedAnnotsNamesByChr[chr] = annotNames;
   });
 
+  // annotsByChr.annots.sort((a, b) => {
+  //   // Reverse-sort, so first annots are drawn last, and thus at top layer
+  //   return -ideo.annotSortFunction(a, b);
+  // });
+
   ideo.relatedAnnots.forEach((annot) => {
+
     const chr = annot.chr;
 
     // Annots have DOM IDs keyed by chromosome index and annotation index.
@@ -128,14 +159,28 @@ async function fetchInteractions(gene, ideo) {
   const ixns = {};
   const seenNameIds = {};
   const orgNameSimple = ideo.config.organism.replace(/-/g, ' ');
-  const queryString = `?query=${gene.name}&format=json`;
-  const url =
-    `https://webservice.wikipathways.org/findInteractions${queryString}`;
+  const upperGene = gene.name.toUpperCase();
+  // const queryString = `?query=${gene.name}&format=json`;
+  // const url =
+  //   `https://webservice.wikipathways.org/findInteractions${queryString}`;
+  // const url = `http://localhost:8080/dist/data/cache/${gene.name}.json.gz`;
+  const url = `https://cdn.jsdelivr.net/npm/ixn2/${upperGene}.json.gz`;
 
   // await sleep(3000);
 
   const response = await fetch(url);
-  const data = await response.json();
+  // const data = await response.json();
+
+  let data = {result: []};
+
+  if (response.ok) {
+    const blob = await response.blob();
+    const uint8Array = new Uint8Array(await blob.arrayBuffer());
+    data = JSON.parse(strFromU8(decompressSync(uint8Array)));
+  }
+
+  // console.log('data')
+  // console.log(data)
 
   // For each interaction, get nodes immediately upstream and downstream.
   // Filter out pathway nodes that are definitely not gene symbols, then
@@ -155,23 +200,36 @@ async function fetchInteractions(gene, ideo) {
       const name = interaction.name;
       const id = interaction.id;
 
-      rawIxns.forEach(rawIxn => {
+      // rawIxns can contain multiple genes, e.g. when
+      // a group (i.e. a complex or a set of paralogs)
+      // interacts with the searched gene
+      const wrappedRawIxns = rawIxns.map(rawIxn => {
+        return {name: rawIxn, color: ''};
+      });
+      const sortedRawIxns =
+        sortAnnotsByRank(wrappedRawIxns, ideo).map(i => i.name);
+
+      sortedRawIxns.forEach(rawIxn => {
+
+        const normRawIxn = rawIxn.toLowerCase();
 
         // Prevent overwriting searched gene.  Occurs with e.g. human CD4
-        if (rawIxn.includes(gene.name)) return;
+        if (normRawIxn.includes(gene.name.toLowerCase())) return;
+
+        // if (rawIxn === '') return; // Avoid oddly blank placeholders
 
         const nameId = name + id;
 
         const isRelevant =
-          isInteractionRelevant(rawIxn, gene, nameId, seenNameIds, ideo);
+          isInteractionRelevant(normRawIxn, gene, nameId, seenNameIds, ideo);
 
         if (isRelevant) {
           seenNameIds[nameId] = 1;
           const ixn = {name, pathwayId: id};
-          if (rawIxn in ixns) {
-            ixns[rawIxn].push(ixn);
+          if (normRawIxn in ixns) {
+            ixns[normRawIxn].push(ixn);
           } else {
-            ixns[rawIxn] = [ixn];
+            ixns[normRawIxn] = [ixn];
           }
         }
       });
@@ -213,6 +271,33 @@ function parseNameAndEnsemblIdFromMgiGene(gene) {
 }
 
 /**
+ * Summarizes genes in a pathway
+ *
+ * This comprises most of the content for tooltips for pathway genes.
+ */
+ function describePathwayGene(pathwayGene, searchedGene, pathway, summary) {
+  let ixnsDescription = '';
+
+  const pathwaysBase = 'https://www.wikipathways.org/index.php/Pathway:';
+  const url = `${pathwaysBase}${pathway.id}`;
+  const attrs =
+    `href="${url}" ` +
+    `target="_blank" ` +
+    `title="See pathway diagram in WikiPathways"`;
+  ixnsDescription =
+    `${summary} ${searchedGene.name} in:</br/>` +
+    `<a ${attrs}>${pathway.name}</a>`;
+
+  const {name, ensemblId} = parseNameAndEnsemblIdFromMgiGene(pathwayGene);
+  const type = 'pathway gene';
+  const descriptionObj = {
+    description: ixnsDescription,
+    ixnsDescription, ensemblId, name, type
+  };
+  return descriptionObj;
+}
+
+/**
  * Summarizes interactions for a gene
  *
  * This comprises most of the content for tooltips for interacting genes.
@@ -224,12 +309,28 @@ function describeInteractions(gene, ixns, searchedGene) {
 
   if (typeof ixns !== 'undefined') {
     // ixns is undefined when querying e.g. CDKN1B in human
-    const pathwaysBase = 'https://www.wikipathways.org/index.php/Pathway:';
     const links = ixns.map(ixn => {
+      // pathwayIds.push(ixn.pathwayId);
+      // pathwayNames.push(ixn.name);
+      // const attrs =
+      //   `class="ideo-pathway-link" ` +
+      //   `title="Click to search for other genes in this pathway" ` +
+      //   `style="cursor: pointer" ` +
+      //   `data-pathway-id="${ixn.pathwayId}" ` +
+      //   `data-pathway-name="${ixn.name}"`;
+      // return `<a ${attrs}>${ixn.name}</a>`;
+
+      const pathwaysBase = 'https://www.wikipathways.org/index.php/Pathway:';
       const url = `${pathwaysBase}${ixn.pathwayId}`;
       pathwayIds.push(ixn.pathwayId);
       pathwayNames.push(ixn.name);
-      return `<a href="${url}" target="_blank">${ixn.name}</a>`;
+      const attrs =
+        `class="ideo-pathway-link" ` +
+        `title="View in WikiPathways" ` +
+        `data-pathway-id="${ixn.pathwayId}" ` +
+        `target="_blank" ` +
+        `href="${url}"`;
+      return `<a ${attrs}>${ixn.name}</a>`;
     }).join('<br/>');
 
     ixnsDescription =
@@ -284,10 +385,11 @@ function fetchGenesFromCache(names, type, ideo) {
     const locus = locusMap[name];
     const symbol = isSymbol ? name : nameMap[name];
     const ensemblId = isSymbol ? nameMap[name] : name;
+    const fullName = cache.fullNamesById[ensemblId];
 
     const hit = {
       symbol,
-      name: '',
+      name: fullName,
       source: 'cache',
       genomic_pos: {
         chr: locus[0],
@@ -324,18 +426,19 @@ async function fetchGenes(names, type, ideo) {
 
     // Asynchronously fetch full name, but don't await the response, because
     // full names are only shown upon hovering over an annotation.
-    const queryString = `${queryStringBase}symbol,name`;
-    data = fetchMyGeneInfo(queryString).then(data => {
-      data.hits.forEach((hit) => {
-        const symbol = hit.symbol;
-        const fullName = hit.name;
-        if (symbol in ideo.annotDescriptions.annots) {
-          ideo.annotDescriptions.annots[symbol].name = fullName;
-        } else {
-          ideo.annotDescriptions.annots[symbol] = {name: fullName};
-        }
-      });
+    // const queryString = `${queryStringBase}symbol,name`;
+    // data = fetchMyGeneInfo(queryString).then(data => {
+    // data.hits.forEach((hit) => {
+    hits.forEach((hit) => {
+      const symbol = hit.symbol;
+      const fullName = hit.name;
+      if (symbol in ideo.annotDescriptions.annots) {
+        ideo.annotDescriptions.annots[symbol].name = fullName;
+      } else {
+        ideo.annotDescriptions.annots[symbol] = {name: fullName};
+      }
     });
+    // });
 
     data = {hits, fromGeneCache: true};
   } else {
@@ -373,7 +476,7 @@ async function fetchInteractionAnnots(interactions, searchedGene, ideo) {
     const annot = parseAnnotFromMgiGene(gene, ideo, 'purple');
     annots.push(annot);
 
-    const ixns = interactions[gene.symbol];
+    const ixns = interactions[gene.symbol.toLowerCase()];
 
     const descriptionObj = describeInteractions(gene, ixns, searchedGene);
 
@@ -392,8 +495,9 @@ async function fetchParalogPositionsFromMyGeneInfo(
   homologs, searchedGene, ideo
 ) {
   const annots = [];
-  const ensemblIds = homologs.map(homolog => homolog.id);
 
+  const cached = homologs.length && typeof homologs[0] === 'string';
+  const ensemblIds = cached ? homologs : homologs.map(homolog => homolog.id);
   const data = await fetchGenes(ensemblIds, 'ensemblgene', ideo);
 
   data.hits.forEach(gene => {
@@ -421,11 +525,26 @@ async function fetchParalogPositionsFromMyGeneInfo(
 async function fetchParalogs(annot, ideo) {
   const taxid = ideo.config.taxid;
 
+  let homologs;
   // Fetch paralogs
-  const params = `&format=condensed&type=paralogues&target_taxon=${taxid}`;
-  const path = `/homology/id/${annot.id}?${params}`;
-  const ensemblHomologs = await Ideogram.fetchEnsembl(path);
-  const homologs = ensemblHomologs.data[0].homologies;
+  if (ideo.paralogCache) {
+    // const baseUrl = 'http://localhost:8080/dist/data/cache/paralogs/';
+    // const url = `${baseUrl}homo-sapiens/${annot.name}.tsv`;
+    // const response = await fetch(url);
+    // const oneRowTsv = await response.text();
+    // const rawHomologEnsemblIds = oneRowTsv.split('\t');
+    // homologs = rawHomologEnsemblIds.map(r => getEnsemblId('ENSG', r));
+    const paralogsByName = ideo.paralogCache.paralogsByName;
+    const name = ideo.paralogCache.nameCaseMap[annot.name.toLowerCase()];
+    const hasParalogs = name in paralogsByName;
+    homologs = hasParalogs ? paralogsByName[name] : [];
+  } else {
+    const params = `&format=condensed&type=paralogues&target_taxon=${taxid}`;
+    const path = `/homology/id/${annot.id}?${params}`;
+    const ensemblHomologs = await Ideogram.fetchEnsembl(path);
+    homologs = ensemblHomologs.data[0].homologies;
+  }
+
 
   // Fetch positions of paralogs
   let annots =
@@ -534,8 +653,21 @@ function processParalogs(annot, ideo) {
   });
 }
 
-/** Sorts by relevance of related status */
-function sortAnnotsByRelatedStatus(a, b) {
+/**
+ * Sorts gene names consistently.
+ *
+ * Might also loosely rank by first-discovered or most prominent
+ */
+function sortGeneNames(aName, bName) {
+  // Rank shorter names above longer names
+  if (bName.length !== aName.length) return bName.length - aName.length;
+
+  // Rank names of equal length alphabetically
+  return [aName, bName].sort().indexOf(aName) === 0 ? 1 : -1;
+}
+
+/** Sorts by relevance of related type, then rank */
+export function sortByRelatedType(a, b) {
   var aName, bName, aColor, bColor;
   if ('name' in a) {
     // Locally processed annotations
@@ -553,20 +685,19 @@ function sortAnnotsByRelatedStatus(a, b) {
   if (aColor === 'red') return -1;
   if (bColor === 'red') return 1;
 
-  // Rank purple (interacting gene) above red (paralogous gene)
+  // Rank purple (interacting gene) above pink (paralogous gene)
   if (aColor === 'purple' && bColor === 'pink') return -1;
   if (bColor === 'purple' && aColor === 'pink') return 1;
 
-  // Rank shorter names above longer names
-  if (bName.length !== aName.length) return bName.length - aName.length;
+  return a.rank - b.rank;
 
-  // Rank names of equal length alphabetically
-  return [aName, bName].sort().indexOf(aName) === 0 ? 1 : -1;
+  // return sortGeneNames(aName, bName);
 }
 
 function mergeDescriptions(annot, desc, ideo) {
   let mergedDesc;
   const descriptions = ideo.annotDescriptions.annots;
+
   if (annot.name in descriptions) {
     const otherDesc = descriptions[annot.name];
     mergedDesc = desc;
@@ -577,8 +708,10 @@ function mergeDescriptions(annot, desc, ideo) {
       }
     });
     // Object.assign({}, descriptions[annot.name]);
-    mergedDesc.type += ', ' + otherDesc.type;
-    mergedDesc.description += `<br/><br/>${otherDesc.description}`;
+    if ('type' in otherDesc) {
+      mergedDesc.type += ', ' + otherDesc.type;
+      mergedDesc.description += `<br/><br/>${otherDesc.description}`;
+    }
   } else {
     mergedDesc = desc;
   }
@@ -609,24 +742,33 @@ function mergeAnnots(unmergedAnnots) {
 
 /** Filter, sort, draw annots.  Move legend. */
 function finishPlotRelatedGenes(type, ideo) {
-  let annots = ideo.relatedAnnots.slice();
+  setRelatedAnnotDomIds(ideo);
+
+  let annots = deepCopy(ideo.relatedAnnots);
 
   annots = applyAnnotsIncludeList(annots, ideo);
   annots = mergeAnnots(annots);
-  annots = applyRankCutoff(annots, 40, ideo);
+
+  // annots = applyRankCutoff(annots, 40, ideo);
   ideo.relatedAnnots = mergeAnnots(annots);
-  ideo.relatedAnnots = applyRankCutoff(annots, 40, ideo);
-  annots.sort(sortAnnotsByRelatedStatus);
-  ideo.relatedAnnots.sort(sortAnnotsByRelatedStatus);
+  // ideo.relatedAnnots = applyRankCutoff(annots, 40, ideo);
+  // annots.sort(sortByRelatedType);
+  ideo.relatedAnnots.sort(ideo.annotSortFunction);
+
+  // ideo.relatedAnnots = ideo.relatedAnnots.slice(0, 40);
 
   if (annots.length > 1 && ideo.onFindRelatedGenesCallback) {
     ideo.onFindRelatedGenesCallback();
   }
 
   ideo.drawAnnots(annots);
+  // const idsToRemove = annots.slice(40).map(a => a.domId);
+  // if (idsToRemove.length > 0) {
+  //   const selector = '#' + idsToRemove.join(',#')
+  //   document.querySelectorAll(selector).forEach(el => el.remove());
+  // }
 
   if (ideo.config.showAnnotLabels) {
-    setRelatedAnnotDomIds(ideo);
     ideo.fillAnnotLabels(ideo.relatedAnnots);
   }
 
@@ -717,6 +859,121 @@ function adjustPlaceAndVisibility(ideo) {
   }
 }
 
+function sortByPathwayIxn(a, b) {
+  const aColor = a.color;
+  const bColor = b.color;
+
+  // Rank red (searched gene) highest
+  if (aColor === 'red') return -1;
+  if (bColor === 'red') return 1;
+
+  // Rank not grey above grey
+  if (aColor === 'grey' && bColor !== 'grey') return 1;
+  if (bColor === 'grey' && aColor !== 'grey') return -1;
+
+  return a.rank - b.rank;
+}
+
+// async function fetchPathwayGeneAnnots(searchedGene, pathway, ideo) {
+//   const annots = [];
+
+//   const pathwayIxns =
+//     await fetchPathwayInteractions(searchedGene.name, pathway.id, ideo);
+
+//   const pathwayGenes = Object.keys(pathwayIxns);
+//   const data = await fetchGenes(pathwayGenes, 'symbol', ideo);
+
+//   const ixnColors = {
+//     'Stimulates': 'green',
+//     'Stimulated by': 'green',
+//     'Necessarily stimulates': 'green',
+//     'Necessarily stimulated by': 'green',
+//     'Transcribes / translates': 'brown',
+//     'Transcribed / translated by': 'brown',
+//     'Inhibits': 'red',
+//     'Inhibited by': 'red',
+//     'Modifies': 'blue',
+//     'Modified by': 'blue',
+//     'Acts on': 'blue',
+//     'Acted on by': 'blue',
+//     'Catalyzes': 'orange',
+//     'Catalyzed by': 'orange',
+//     'Converts': 'orange',
+//     'Converted by': 'orange',
+//     'Binds': 'black',
+//     'Shares pathway with': 'grey'
+//   };
+
+//   data.hits.forEach(gene => {
+//     // If hit lacks position
+//     // or is same as searched gene (e.g. search for human SRC),
+//     // then skip processing
+//     if (
+//       'genomic_pos' in gene === false ||
+//       gene.symbol === searchedGene.name
+//     ) {
+//       return;
+//     }
+
+//     // Account for edge case: cyclic AMP (cAMP) is not "CAMP" gene
+//     if (gene.symbol === 'cAMP') return;
+
+//     const summary = pathwayIxns[gene.symbol];
+//     const color = ixnColors[summary];
+//     // if (color !== 'blue') console.log(gene);
+
+//     const annot = parseAnnotFromMgiGene(gene, ideo, color);
+//     annots.push(annot);
+
+//     const descriptionObj =
+//       describePathwayGene(gene, searchedGene, pathway, summary);
+
+//     mergeDescriptions(annot, descriptionObj, ideo);
+//   });
+
+//   ideo.annotSortFunction = sortByPathwayIxn;
+
+//   const sortedAnnots = annots.sort(sortByPathwayIxn).slice(0, 40);
+
+//   return sortedAnnots;
+// }
+
+// /**
+//  *
+//  */
+// async function plotPathwayGenes(searchedGene, pathway, ideo) {
+//   const headerTitle = 'Genes in pathway';
+//   initAnnotDescriptions(ideo, headerTitle);
+
+//   legendPathwayName = pathway.name;
+//   ideo.config.legend = pathwayLegend;
+//   writeLegend(ideo);
+//   moveLegend();
+
+//   ideo.relatedAnnots = [];
+
+//   await processSearchedGene(searchedGene.name, ideo);
+
+//   const annots = await fetchPathwayGeneAnnots(searchedGene, pathway, ideo);
+//   ideo.relatedAnnots.push(...annots);
+//   finishPlotRelatedGenes('pathway', ideo);
+// }
+
+function initAnnotDescriptions(ideo, headerTitle) {
+  const organism = ideo.getScientificName(ideo.config.taxid);
+  const version = Ideogram.version;
+  const headers = [
+    `# ${headerTitle}`,
+    `# Organism: ${organism}`,
+    `# Generated by Ideogram.js version ${version}, https://github.com/eweitz/ideogram`,
+    `# Generated at ${window.location.href}`
+  ].join('\n');
+
+  delete ideo.annotDescriptions;
+  ideo.annotDescriptions = {headers, annots: {}};
+
+}
+
 /**
  * For given gene, finds and draws interacting genes and paralogs
  *
@@ -736,16 +993,7 @@ async function plotRelatedGenes(geneSymbol=null) {
 
   ideo.config = setRelatedDecorPad(ideo.config);
 
-  const organism = ideo.getScientificName(ideo.config.taxid);
-  const version = Ideogram.version;
-  const headers = [
-    `# Related genes for ${geneSymbol} in ${organism}`,
-    `# Generated by Ideogram.js version ${version}, https://github.com/eweitz/ideogram`,
-    `# Generated at ${window.location.href}`
-  ].join('\n');
-
-  delete ideo.annotDescriptions;
-  ideo.annotDescriptions = {headers, annots: {}};
+  initAnnotDescriptions(ideo, `Related genes for ${geneSymbol}`);
 
   const ideoSel = ideo.selector;
   const annotSel = ideoSel + ' .annot';
@@ -795,6 +1043,31 @@ function getAnnotByName(annotName, ideo) {
   return annotByName;
 }
 
+// /**
+//  * Manage click on pathway links in annotation tooltips
+//  */
+// function managePathwayClickHandlers(searchedGene, ideo) {
+//   setTimeout(function() {
+//     const pathways = document.querySelectorAll('.ideo-pathway-link');
+//     if (pathways.length > 0 && !ideo.addedPathwayClickHandler) {
+//       pathways.forEach(pathway => {
+//         // pathway.removeEventListener('click', handlePathwayClick);
+//         pathway.addEventListener('click', function(event) {
+//           const target = event.target;
+//           const pathwayId = target.getAttribute('data-pathway-id');
+//           const pathwayName = target.getAttribute('data-pathway-name');
+//           const pathway = {id: pathwayId, name: pathwayName};
+//           plotPathwayGenes(searchedGene, pathway, ideo);
+//         });
+//       });
+
+//       // Ensures handler isn't added redundantly.  This is used because
+//       // addEventListener options like {once: true} don't suffice
+//       // ideo.addedPathwayClickHandler = true;
+//     }
+//   }, 100);
+// }
+
 /**
  * Handles click within annotation tooltip
  *
@@ -821,11 +1094,28 @@ function handleTooltipClick(ideo) {
  */
 function decorateRelatedGene(annot) {
   const ideo = this;
+
+  if (
+    annot.name === ideo.prevClickedAnnot?.name &&
+    ideo.isTooltipCooling
+  ) {
+    // Cancels showing tooltip immediately after clicking gene
+    return null;
+  }
+
   const descObj = ideo.annotDescriptions.annots[annot.name];
 
   if ('type' in descObj && descObj.type.includes('interacting gene')) {
     const pathwayIds = descObj.pathwayIds;
-    const summary = summarizeInteractions(annot.name, pathwayIds, ideo);
+    // Get symbol of the searched gene, e.g. "PTEN"
+    const searchedGene =
+      Object.entries(ideo.annotDescriptions.annots)
+        .find(([k, v]) => v.type === 'searched gene')[0];
+
+    const gpmls = ideo.gpmlsByInteractingGene[annot.name];
+
+    const summary =
+      summarizeInteractions(annot.name, searchedGene, pathwayIds, gpmls);
     if (summary !== null) {
       const oldSummary = 'Interacts with';
       descObj.description =
@@ -838,16 +1128,23 @@ function decorateRelatedGene(annot) {
   const fullName = descObj.name;
   const style = 'style="color: #0366d6; cursor: pointer;"';
 
+  let fullNameAndRank = fullName;
+  if ('rank' in annot) {
+    const rank = 'Ranked ' + annot.rank + ' in general or scholarly interest';
+    fullNameAndRank = `<span title="${rank}">${fullName}</span>`;
+  }
+
   const originalDisplay =
     `<span id="ideo-related-gene" ${style}>${annot.name}</span><br/>` +
-    `${fullName}<br/>` +
+    `${fullNameAndRank}<br/>` +
     `${description}` +
     `<br/>`;
 
   annot.displayName = originalDisplay;
 
-
   handleTooltipClick(ideo);
+
+  // managePathwayClickHandlers(annot, ideo);
 
   return annot;
 }
@@ -856,6 +1153,7 @@ const shape = 'triangle';
 
 const legendHeaderStyle =
   `font-size: 14px; font-weight: bold; font-color: #333;`;
+
 const relatedLegend = [{
   name: `
     <div style="position: relative; left: 30px;">
@@ -867,6 +1165,22 @@ const relatedLegend = [{
   rows: [
     {name: 'Interacting gene', color: 'purple', shape: shape},
     {name: 'Paralogous gene', color: 'pink', shape: shape},
+    {name: 'Searched gene', color: 'red', shape: shape}
+  ]
+}];
+
+let legendPathwayName = '';
+
+const pathwayLegend = [{
+  name: `
+    <div style="position: relative; left: 30px;">
+      <div style="${legendHeaderStyle}">Related genes</div>
+      <i>Click gene to search</i>
+    </div>
+  `,
+  nameHeight: 50,
+  rows: [
+    {name: 'Pathway gene', color: 'blue', shape: shape},
     {name: 'Searched gene', color: 'red', shape: shape}
   ]
 }];
@@ -950,11 +1264,14 @@ function _initRelatedGenes(config, annotsInList) {
 
   ideogram.getTooltipAnalytics = getRelatedGenesTooltipAnalytics;
 
-  ideogram.annotSortFunction = sortAnnotsByRelatedStatus;
+  ideogram.annotSortFunction = sortByRelatedType;
 
   initAnalyzeRelatedGenes(ideogram);
 
-  initGeneCache(ideogram.config.organism, ideogram);
+  let cacheDir = null;
+  if (config.cacheDir) cacheDir = config.cacheDir;
+  initGeneCache(ideogram.config.organism, ideogram, cacheDir);
+  initParalogCache(ideogram.config.organism, ideogram, cacheDir);
 
   return ideogram;
 }
@@ -983,7 +1300,7 @@ function plotGeneHints() {
 
   adjustPlaceAndVisibility(ideo);
   moveLegend();
-  ideo.fillAnnotLabels();
+  ideo.fillAnnotLabels([]);
   const container = ideo.config.container;
   document.querySelector(container).style.visibility = '';
 }
@@ -1070,11 +1387,14 @@ function _initGeneHints(config, annotsInList) {
 
   ideogram.getTooltipAnalytics = getRelatedGenesTooltipAnalytics;
 
-  ideogram.annotSortFunction = sortAnnotsByRelatedStatus;
+  ideogram.annotSortFunction = sortByRelatedType;
 
   initAnalyzeRelatedGenes(ideogram);
 
-  initGeneCache(ideogram.config.organism, ideogram);
+  let cacheDir = null;
+  if (config.cacheDir) cacheDir = config.cacheDir;
+  initGeneCache(ideogram.config.organism, ideogram, cacheDir);
+  initParalogCache(ideogram.config.organism, ideogram, cacheDir);
 
   return ideogram;
 }

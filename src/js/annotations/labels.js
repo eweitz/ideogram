@@ -1,4 +1,6 @@
-import {d3, getFont, getTextSize} from '../lib';
+import {d3, getFont, getTextSize, deepCopy} from '../lib';
+
+import {sortAnnotsByRank} from './annotations';
 
 const allLabelStyle = `
   <style>
@@ -146,7 +148,6 @@ function getAnnotLabelLayout(annot, ideo) {
   width += pad;
 
   const labelSize = config.annotLabelSize ? config.annotLabelSize : 13;
-  // console.log('height, labelSize', height, labelSize);
 
   // Accounts for 1px top border, 1px bottom border as set in renderLabel
   height = labelSize;
@@ -155,8 +156,9 @@ function getAnnotLabelLayout(annot, ideo) {
   bottom = top + height;
   left = annotRect.left - ideoRect.left - width;
   right = left + width;
+  name = annot.name;
 
-  return {top, bottom, right, left, width, height};
+  return {top, bottom, right, left, width, height, name};
 }
 
 /**
@@ -180,40 +182,182 @@ function addAnnotLabel(annotName, backgroundColor, borderColor) {
   renderLabel(annot, style, ideo);
 }
 
-export function applyRankCutoff(annots, cutoff, ideo) {
-  if ('geneCache' in ideo === false) return annots;
+function getIsXOverlap(o, n, p) {
+  const oLeft = o.left - p;
+  const nLeft = n.left - p;
+  const oRight = o.right + p;
+  const nRight = n.right + p;
+  // A) oLeft < nLeft && oLeft < nRight && oRight < nRight && oRight > nLeft
+  // o     o
+  // o     o
+  // o     o
+  //
+  //    n      n
+  //    n      n
+  //    n      n
+  //
+  // B) oLeft > nLeft && oLeft < nRight && oRight > nRight && oRight > nLeft
+  //    o     o
+  //    o     o
+  //    o     o
+  //
+  // n     n
+  // n     n
+  // n     n
+  //
+  // C) oLeft < nLeft && oLeft < nRight && oRight > nRight && oRight > nLeft
+  // o         o
+  // o         o
+  // o         o
+  //
+  //    n   n
+  //    n   n
+  //
+  // D) oLeft > nLeft && oLeft < nRight && oRight > nLeft && oRight < nRight
+  //    o   o
+  //    o   o
+  //    o   o
+  //
+  // n         n
+  // n         n
+  // n         n
+  return (
+    (oLeft <= nLeft && oLeft <= nRight && oRight <= nRight && oRight >= nLeft) ||
+    (oLeft >= nLeft && oLeft <= nRight && oRight >= nRight && oRight >= nLeft) ||
+    (oLeft <= nLeft && oLeft <= nRight && oRight >= nRight && oRight >= nLeft) ||
+    (oLeft >= nLeft && oLeft <= nRight && oRight >= nLeft && oRight <= nRight)
+  )
+}
 
-  const ranks = ideo.geneCache.interestingNames;
+function getIsYOverlap(o, n, p) {
+    const oTop = o.top - p;
+    const nTop = n.top - p;
+    const oBottom = o.bottom + p;
+    const nBottom = n.bottom + p;
+    // Top of old annot (o) is above bottom of new annot (n),
+    // and bottom of old annot is below top of new annot
+    //
+    //  A) yOverlap = true
+    //      o.top < n.top && o.top < n.bottom && o.bottom < n.bottom && o.bottom > n.top
+    //    ooooo
+    //            nnnnn
+    //
+    //    ooooo
+    //            nnnnn
+    //
+    //  A.2)
+    //
+    //    ppppp
+    //    ppppp
+    //    ooooo
+    //
+    //            ppppp
+    //    ooooo   ppppp
+    //    ppppp   nnnnn
+    //    ppppp
+    //
+    //            nnnnn
+    //            ppppp
+    //            ppppp
+    //
+    //  B) yOverlap = true
+    //     o.top > n.top && o.top < n.bottom && o.bottom > n.bottom && o.bottom > n.top
+    //            nnnnn
+    //    ooooo
+    //
+    //            nnnnn
+    //    ooooo
+    //
+    //   B.2)
+    //
+    //            ppppp
+    //    ppppp   ppppp
+    //    ppppp   nnnnn
+    //    ooooo
+    //
+    //            nnnnn
+    //    ooooo   ppppp
+    //    ppppp   ppppp
+    //    ppppp
+    //
+    //
+    //  C) yOverlap = false
+    //     old.top < new.top && old.bottom < new.top
+    //    ooooo
+    //
+    //
+    //    ooooo
+    //
+    //          nnnnn
+    //
+    //
+    //          nnnnn
+    //
+    //  D) yOverlap = false
+    //          nnnnn
+    //
+    //
+    //          nnnnn
+    //
+    //    ooooo
+    //
+    //
+    //    ooooo
+    // sl.top - p < layout.bottom && sl.bottom > layout.top - p ||
+    // layout.top - p < sl.bottom && layout.bottom > sl.bottom
 
-  annots = annots.map(annot => {
-    annot.rank = ranks.indexOf(annot.name) || 1E10;
-    return annot;
-  });
+    // XY overlap
+    // A)
+    //
+    //  ooooooo
+    //  o     o
+    //  o    nonnnnn
+    //  ooooooo    n
+    //       n     n
+    //       nnnnnnn
+    //
+    //
+    //  B)
+    //       ooooooo
+    //       o     o
+    //  nnnnnnn    o
+    //  n    onooooo
+    //  n     n
+    //  nnnnnnn
+    //
+    //  C)
+    //
+    //  ooooooo   nnnnnnn
+    //  o     o   n     n
+    //  o     o   n     n
+    //  ooooooo   nnnnnnn
+    //
+    //  D)
+    //
+    //  ooooooo
+    //  o     o
+    //  o     o
+    //  ooooooo
+    //
+    //  nnnnnnn
+    //  n     n
+    //  n     n
+    //  nnnnnnn
+    return (
+      // false
+      (oTop <= nTop && oTop <= nBottom && oBottom <= nBottom && oBottom >= nTop) ||
+      (oTop >= nTop && oTop <= nBottom && oBottom >= nBottom && oBottom >= nTop)
+    );
 
-  // Ranks annots by popularity
-  const rankedAnnots = annots.sort((a, b) => {
-
-    // Search gene is most important, regardless of popularity
-    if (a.color === 'red') return -1;
-    if (b.color === 'red') return 1;
-
-    // Rank 3 is more important than rank 30
-    return a.rank - b.rank;
-  });
-
-  // Take the top N ranked genes, where N is `cutoff`
-  annots = rankedAnnots.slice(0, cutoff);
-
-  // console.log(annots.map(annot => {return annot.name + ' ' + annot.rank }));
-
-  return annots;
+    // (sl.top - p < layout.bottom || sl.bottom > layout.top - p) &&
+    // (layout.top - p < sl.bottom || layout.bottom > sl.bottom)
 }
 
 /** Label as many annotations as possible, without overlap */
 function fillAnnotLabels(sortedAnnots=[]) {
   const ideo = this;
 
-  sortedAnnots = sortedAnnots.slice(); // copy by value
+  sortedAnnots = deepCopy(sortedAnnots); // copy by value
 
   // Remove any pre-existing annotation labels, to avoid duplicates
   ideo.clearAnnotLabels();
@@ -221,40 +365,55 @@ function fillAnnotLabels(sortedAnnots=[]) {
   let spacedAnnots = [];
   const spacedLayouts = [];
 
+  // sortedAnnots = applyRankCutoff(sortedAnnots, 100, ideo);
+
+  // sortedAnnots = sortedAnnots.sort(ideo.annotSortFunction);
+
   if (sortedAnnots.length === 0) {
     sortedAnnots = ideo.flattenAnnots();
   }
 
-  const m = 3; // padding
+  const strokeWidth = 0; // like padding
 
   sortedAnnots.forEach((annot, i) => {
     const layout = getAnnotLabelLayout(annot, ideo);
 
-    if (layout === null) return;
+    if (layout === null) {
+      console.log(annot.name + ' has null layout')
+      return;
+    }
 
     const hasOverlap =
-      spacedLayouts.length > 1 && spacedLayouts.some((sl, j) => {
+      spacedLayouts.length > 0 && spacedLayouts.some((sl, j) => {
+        const xOverlap = getIsXOverlap(sl, layout, strokeWidth);
+        const yOverlap = getIsYOverlap(sl, layout, strokeWidth);
 
-        const xOverlap = (
-          sl.left - m <= layout.right &&
-          sl.right >= layout.left - m
-        );
-        const yOverlap =
-          (
-            sl.top - m < layout.bottom && sl.bottom > layout.top - m ||
-            layout.top - m < sl.bottom && layout.bottom > sl.bottom
-          );
-
-        // if (annot.name === 'TP73') {
+        // if (annot.name === 'AKT1' || annot.name === 'XRCC3') {
         //   const spacedAnnot = spacedAnnots[j].name;
-        //   console.log(
-        //     'xOverlap, yOverlap, annot.name, layout, spacedAnnot, sl'
-        //   );
-        //   console.log(
-        //     xOverlap, yOverlap, annot.name, layout, spacedAnnot, sl
-        //   );
+        //   if (spacedAnnot === 'HIF1A' || spacedAnnot === 'RAD51') {
+        //   // if (xOverlap && yOverlap) {
+        //     // console.log('sl.top - strokeWidth', sl.top - strokeWidth)
+        //     // console.log('sl.top - strokeWidth < layout.bottom')
+        //     // console.log(sl.top - strokeWidth < layout.bottom)
+        //     // console.log('sl.bottom > layout.top - strokeWidth')
+        //     // console.log(sl.bottom > layout.top - strokeWidth)
+        //     // console.log('layout.top - strokeWidth < sl.bottom')
+        //     // console.log(layout.top - strokeWidth < sl.bottom)
+        //     // console.log('layout.bottom > sl.bottom')
+        //     // console.log(layout.bottom > sl.bottom)
+        //     console.log(
+        //       'xOverlap, yOverlap, spacedAnnot, sl, annot.name, layout'
+        //     );
+        //     console.log(
+        //       xOverlap, yOverlap, spacedAnnot, sl, annot.name, layout
+        //     );
+        //   }
         // }
 
+        // if (xOverlap && yOverlap) {
+        //   console.log('overlap! annot');
+        //   console.log(annot.name, annot.chr, annot.color);
+        // }
         return xOverlap && yOverlap;
       });
 
@@ -269,7 +428,9 @@ function fillAnnotLabels(sortedAnnots=[]) {
   if ('relatedGenesMode' in config && config.relatedGenesMode === 'hints') {
     numLabels = 20;
   }
-  spacedAnnots = applyRankCutoff(spacedAnnots, numLabels, ideo);
+  // spacedAnnots = applyRankCutoff(spacedAnnots, numLabels, ideo);
+  spacedAnnots = spacedAnnots.sort(ideo.annotSortFunction).slice(0, numLabels)
+
 
   // Ensure highest-ranked annots are ordered last in SVG,
   // to ensure the are written before lower-ranked annots

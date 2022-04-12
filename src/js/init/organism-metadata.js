@@ -8,7 +8,8 @@ var organismMetadata = {
       GRCh37: 'GCF_000001405.13',
       NCBI36: 'GCF_000001405.12'
     },
-    hasGeneCache: true
+    hasGeneCache: true,
+    hasParalogCache: true
   },
   10090: {
     commonName: 'Mouse',
@@ -18,7 +19,8 @@ var organismMetadata = {
       GRCm38: 'GCF_000001635.20',
       MGSCv37: 'GCF_000001635.18'
     },
-    hasGeneCache: true
+    hasGeneCache: true,
+    hasParalogCache: true
   },
   9598: {
     commonName: 'Chimpanzee',
@@ -27,7 +29,8 @@ var organismMetadata = {
       'default': 'GCF_000001515.7',
       'Pan_tro 3.0': 'GCF_000001515.7'
     },
-    hasGeneCache: true
+    hasGeneCache: true,
+    hasParalogCache: true
   },
   10116: {
     commonName: 'Rat',
@@ -36,7 +39,8 @@ var organismMetadata = {
       'default': 'GCF_000001895.5',
       'Rnor_6.0': 'GCF_000001895.5'
     },
-    hasGeneCache: true
+    hasGeneCache: true,
+    hasParalogCache: true
   },
   3702: {
     commonName: 'Thale cress',
@@ -146,7 +150,8 @@ var organismMetadata = {
     assemblies: {
       default: 'GCF_000002315.6'
     },
-    hasGeneCache: true
+    hasGeneCache: true,
+    hasParalogCache: true
   },
   9593: {
     commonName: 'Gorilla',
@@ -168,7 +173,8 @@ var organismMetadata = {
     assemblies: {
       default: 'GCF_000364345.1'
     },
-    hasGeneCache: true
+    hasGeneCache: true,
+    hasParalogCache: true
   },
   9544: {
     commonName: 'Rhesus macaque',
@@ -176,7 +182,8 @@ var organismMetadata = {
     assemblies: {
       default: 'GCF_003339765.1'
     },
-    hasGeneCache: true
+    hasGeneCache: true,
+    hasParalogCache: true
   },
   9597: {
     commonName: 'Bonobo',
@@ -191,7 +198,8 @@ var organismMetadata = {
     assemblies: {
       default: 'GCF_014441545.1'
     },
-    hasGeneCache: true
+    hasGeneCache: true,
+    hasParalogCache: true
   },
   4932: {
     commonName: 'Yeast',
@@ -215,7 +223,8 @@ var organismMetadata = {
     assemblies: {
       default: 'GCF_000002985.6'
     },
-    hasGeneCache: true
+    hasGeneCache: true,
+    hasParalogCache: true
   },
   4081: {
     commonName: 'tomato',

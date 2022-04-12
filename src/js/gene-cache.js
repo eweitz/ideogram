@@ -10,25 +10,22 @@
  * - test if a given string is a gene name, e.g. for gene search
  * - find genomic position of a given gene (or all genes)
  */
+ import {decompressSync, strFromU8} from 'fflate';
 
-import {slug, getEarlyTaxid} from './lib';
+import {slug, getEarlyTaxid, getDir} from './lib';
 import {organismMetadata} from './init/organism-metadata';
 import version from './version';
 
 let perfTimes;
 
 /** Get URL for gene cache file */
-function getCacheUrl(orgName, cacheDir, ideo) {
+function getCacheUrl(orgName, cacheDir) {
   const organism = slug(orgName);
-
   if (!cacheDir) {
-    const splitDataDir = ideo.config.dataDir.split('/');
-    const dataIndex = splitDataDir.indexOf('data');
-    const baseDir = splitDataDir.slice(0, dataIndex).join('/') + '/data/';
-    cacheDir = baseDir + 'cache/';
+    cacheDir = getDir('cache/');
   }
 
-  const cacheUrl = cacheDir + organism + '-genes.tsv';
+  const cacheUrl = cacheDir + organism + '-genes.tsv.gz';
 
   return cacheUrl;
 }
@@ -68,7 +65,7 @@ function parseAnnots(preAnnots) {
  *
  * Example output ID: ENSG00000223972
  * */
-function getEnsemblId(ensemblPrefix, slimEnsemblId) {
+export function getEnsemblId(ensemblPrefix, slimEnsemblId) {
 
   // C. elegans (prefix: WBGene) has special IDs, e.g. WBGene00197333
   const padLength = ensemblPrefix === 'WBGene' ? 8 : 11;
@@ -84,7 +81,9 @@ function parseCache(rawTsv, orgName) {
   const names = [];
   const nameCaseMap = {};
   const namesById = {};
+  const fullNamesById = {};
   const idsByName = {};
+  const idsByFullName = {};
   const lociByName = {};
   const lociById = {};
   const preAnnots = [];
@@ -105,18 +104,21 @@ function parseCache(rawTsv, orgName) {
       continue;
     }
     const [
-      chromosome, rawStart, rawLength, slimEnsemblId, gene
+      chromosome, rawStart, rawLength, slimEnsemblId, gene, rawFullName
     ] = line.trim().split(/\t/);
+    const fullName = decodeURIComponent(rawFullName);
     const start = parseInt(rawStart);
     const stop = start + parseInt(rawLength);
     const ensemblId = getEnsemblId(ensemblPrefix, slimEnsemblId);
-    preAnnots.push([chromosome, start, stop, ensemblId, gene]);
+    preAnnots.push([chromosome, start, stop, ensemblId, gene, fullName]);
     const locus = [chromosome, start, stop];
 
     names.push(gene);
     nameCaseMap[gene.toLowerCase()] = gene;
     namesById[ensemblId] = gene;
+    fullNamesById[ensemblId] = fullName;
     idsByName[gene] = ensemblId;
+    idsByFullName[fullName] = ensemblId;
     lociByName[gene] = locus;
     lociById[ensemblId] = locus;
   };
@@ -127,7 +129,8 @@ function parseCache(rawTsv, orgName) {
   perfTimes.parseAnnots = Math.round(performance.now() - t1);
 
   return [
-    names, nameCaseMap, namesById, idsByName, lociByName, lociById,
+    names, nameCaseMap, namesById, fullNamesById,
+    idsByName, idsByFullName, lociByName, lociById,
     sortedAnnots
   ];
 }
@@ -135,7 +138,7 @@ function parseCache(rawTsv, orgName) {
 /** Get organism's metadata fields */
 function parseOrgMetadata(orgName) {
   const taxid = getEarlyTaxid(orgName);
-  return organismMetadata[taxid];
+  return organismMetadata[taxid] || {};
 }
 
 /** Reports if current organism has a gene cache */
@@ -144,13 +147,25 @@ function hasGeneCache(orgName) {
   return (metadata.hasGeneCache && metadata.hasGeneCache === true);
 }
 
-async function cacheFetch(url) {
-  const response = await Ideogram.cache.match(url);
+export async function cacheFetch(url) {
+
+  const decompressedUrl = url.replace('.gz', '');
+  const response = await Ideogram.cache.match(decompressedUrl);
   if (typeof response === 'undefined') {
     // If cache miss, then fetch and add response to cache
-    await Ideogram.cache.add(url);
+    // await Ideogram.cache.add(url);
+    const rawResponse = await fetch(url);
+    const blob = await rawResponse.blob();
+    const uint8Array = new Uint8Array(await blob.arrayBuffer());
+    const data = strFromU8(decompressSync(uint8Array));
+    const decompressedResponse = new Response(
+      new Blob([data], {type: 'text/tab-separated-values'}),
+      rawResponse.init
+    );
+    await Ideogram.cache.put(decompressedUrl, decompressedResponse);
+    return await Ideogram.cache.match(decompressedUrl);
   }
-  return await Ideogram.cache.match(url);
+  return await Ideogram.cache.match(decompressedUrl);
 }
 
 /**
@@ -181,13 +196,14 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
 
   const fetchStartTime = performance.now();
   const response = await cacheFetch(cacheUrl);
+
   const data = await response.text();
   const fetchEndTime = performance.now();
   perfTimes.fetch = Math.round(fetchEndTime - fetchStartTime);
 
   const [
-    interestingNames, nameCaseMap, namesById, idsByName,
-    lociByName, lociById, sortedAnnots
+    interestingNames, nameCaseMap, namesById, fullNamesById,
+    idsByName, idsByFullName, lociByName, lociById, sortedAnnots
   ] = parseCache(data, orgName);
   perfTimes.parseCache = Math.round(performance.now() - fetchEndTime);
 
@@ -195,7 +211,9 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
     interestingNames, // Array ordered by general or scholarly interest
     nameCaseMap, // Maps of lowercase gene names to proper gene names
     namesById,
+    fullNamesById,
     idsByName,
+    idsByFullName,
     lociByName, // Object of gene positions, keyed by gene name
     lociById,
     sortedAnnots // Ideogram annotations sorted by genomic position
