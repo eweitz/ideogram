@@ -1069,6 +1069,27 @@ function managePathwayClickHandlers(searchedGene, ideo) {
 }
 
 /**
+ * Handles click within annotation tooltip
+ *
+ * Makes clicking link in tooltip behave same as clicking annotation
+ */
+function handleTooltipClick(ideo) {
+  const tooltip = document.querySelector('._ideogramTooltip');
+  if (!ideo.addedTooltipClickHandler) {
+    tooltip.addEventListener('click', () => {
+      const geneDom = document.querySelector('#ideo-related-gene');
+      const annotName = geneDom.textContent;
+      const annot = getAnnotByName(annotName, ideo);
+      ideo.onClickAnnot(annot);
+    });
+
+    // Ensures handler isn't added redundantly.  This is used because
+    // addEventListener options like {once: true} don't suffice
+    ideo.addedTooltipClickHandler = true;
+  }
+}
+
+/**
  * Enhance tooltip shown on hovering over gene annotation
  */
 function decorateRelatedGene(annot) {
@@ -1121,7 +1142,7 @@ function decorateRelatedGene(annot) {
 
   annot.displayName = originalDisplay;
 
-  // handleTooltipClick(ideo);
+  handleTooltipClick(ideo);
 
   // managePathwayClickHandlers(annot, ideo);
 
