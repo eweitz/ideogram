@@ -40,12 +40,12 @@ assemblies_by_org = {
     "Drosophila melanogaster": "BDGP6.28"
 }
 
-interesting_genes_by_organism = {
+ranked_genes_by_organism = {
     "Homo sapiens": "gene-hints.tsv",
-    # "Mus musculus": "pubmed-citations.tsv",
-    # "Rattus norvegicus": "pubmed-citations.tsv",
-    # "Canis lupus familiaris": "pubmed-citations.tsv",
-    # "Felis catus": "pubmed-citations.tsv",
+    "Mus musculus": "pubmed-citations.tsv",
+    "Rattus norvegicus": "pubmed-citations.tsv",
+    "Canis lupus familiaris": "pubmed-citations.tsv",
+    "Felis catus": "pubmed-citations.tsv",
 }
 
 # metazoa = {
@@ -177,13 +177,13 @@ def fetch_interesting_genes(organism):
     """Request interest-ranked gene data from Gene Hints"""
     interesting_genes = []
 
-    if organism not in interesting_genes_by_organism:
+    if organism not in ranked_genes_by_organism:
         return None
     base_url = \
         "https://raw.githubusercontent.com/" +\
         "broadinstitute/gene-hints/main/data/"
     org_lch = organism.replace(" ", "-").lower()
-    interesting_file = interesting_genes_by_organism[organism]
+    interesting_file = ranked_genes_by_organism[organism]
     url = f"{base_url}{org_lch}-{interesting_file}"
     print('url', url)
     response = urllib.request.urlopen(url)
@@ -211,13 +211,17 @@ def sort_by_interest(slim_genes, organism):
     many genes would be overwhelming.
     """
     ranks = fetch_interesting_genes(organism)
+    # print('ranks[:20]')
+    # print(ranks[:20])
+    # print('slim_genes[:20]')
+    # print(slim_genes[:20])
     if ranks is None:
         return slim_genes
 
     # Sort genes by interest rank, and put unranked genes last
     sorted_genes = sorted(
         slim_genes,
-        key=lambda x: ranks.index(x[-1]) if x[-1] in ranks else 1E10,
+        key=lambda x: ranks.index(x[4]) if x[4] in ranks else 1E10,
     )
 
     return sorted_genes
