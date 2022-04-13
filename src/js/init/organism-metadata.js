@@ -9,7 +9,8 @@ var organismMetadata = {
       NCBI36: 'GCF_000001405.12'
     },
     hasGeneCache: true,
-    hasParalogCache: true
+    hasParalogCache: true,
+    hasInteractionCache: true
   },
   10090: {
     commonName: 'Mouse',
@@ -20,7 +21,8 @@ var organismMetadata = {
       MGSCv37: 'GCF_000001635.18'
     },
     hasGeneCache: true,
-    hasParalogCache: true
+    hasParalogCache: true,
+    hasInteractionCache: true
   },
   9598: {
     commonName: 'Chimpanzee',
