@@ -36,6 +36,7 @@ import {getAnnotDomId} from '../annotations/process';
 import {getDir, deepCopy} from '../lib';
 import initGeneCache, {getEnsemblId} from '../gene-cache';
 import initParalogCache, {hasParalogCache} from '../paralog-cache';
+import initInteractionCache from '../interaction-cache';
 import {
   fetchGpmls, summarizeInteractions, fetchPathwayInteractions
 } from './wikipathways';
@@ -160,23 +161,31 @@ async function fetchInteractions(gene, ideo) {
   const seenNameIds = {};
   const orgNameSimple = ideo.config.organism.replace(/-/g, ' ');
   const upperGene = gene.name.toUpperCase();
-  // const queryString = `?query=${gene.name}&format=json`;
-  // const url =
-  //   `https://webservice.wikipathways.org/findInteractions${queryString}`;
-  // const url = `http://localhost:8080/dist/data/cache/${gene.name}.json.gz`;
-  const url = `https://cdn.jsdelivr.net/npm/ixn2/${upperGene}.json.gz`;
-
-  // await sleep(3000);
-
-  const response = await fetch(url);
-  // const data = await response.json();
 
   let data = {result: []};
 
-  if (response.ok) {
-    const blob = await response.blob();
-    const uint8Array = new Uint8Array(await blob.arrayBuffer());
-    data = JSON.parse(strFromU8(decompressSync(uint8Array)));
+  if (ideo.interactionCache) {
+    if (upperGene in ideo.interactionCache) {
+      data = ideo.interactionCache[upperGene];
+    }
+  } else {
+
+    // const queryString = `?query=${gene.name}&format=json`;
+    // const url =
+    //   `https://webservice.wikipathways.org/findInteractions${queryString}`;
+    // const url = `http://localhost:8080/dist/data/cache/${gene.name}.json.gz`;
+    const url = `https://cdn.jsdelivr.net/npm/ixn2/${upperGene}.json.gz`;
+
+    // await sleep(3000);
+
+    const response = await fetch(url);
+    // const data = await response.json();
+
+    if (response.ok) {
+      const blob = await response.blob();
+      const uint8Array = new Uint8Array(await blob.arrayBuffer());
+      data = JSON.parse(strFromU8(decompressSync(uint8Array)));
+    }
   }
 
   // console.log('data')
@@ -1272,6 +1281,7 @@ function _initRelatedGenes(config, annotsInList) {
   if (config.cacheDir) cacheDir = config.cacheDir;
   initGeneCache(ideogram.config.organism, ideogram, cacheDir);
   initParalogCache(ideogram.config.organism, ideogram, cacheDir);
+  initInteractionCache(ideogram.config.organism, ideogram, cacheDir);
 
   return ideogram;
 }
@@ -1395,6 +1405,7 @@ function _initGeneHints(config, annotsInList) {
   if (config.cacheDir) cacheDir = config.cacheDir;
   initGeneCache(ideogram.config.organism, ideogram, cacheDir);
   initParalogCache(ideogram.config.organism, ideogram, cacheDir);
+  initInteractionCache(ideogram.config.organism, ideogram, cacheDir);
 
   return ideogram;
 }
