@@ -10,7 +10,7 @@
  * - test if a given string is a gene name, e.g. for gene search
  * - find genomic position of a given gene (or all genes)
  */
- import {decompressSync, strFromU8} from 'fflate';
+import {decompressSync, strFromU8} from 'fflate';
 
 import {slug, getEarlyTaxid, getDir} from './lib';
 import {organismMetadata} from './init/organism-metadata';
