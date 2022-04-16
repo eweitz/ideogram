@@ -66,11 +66,19 @@ function parseCache(rawTsv) {
     }
     const columns = line.trim().split(/\t/);
     const gene = columns[0];
-    const slimEnsemblIds = columns.slice(1);
 
-    const paralogs = [];
-    for (let i = 0; i < slimEnsemblIds.length; i++) {
-      paralogs.push(getEnsemblId(ensemblPrefix, slimEnsemblIds[i]));
+    let paralogs;
+    if (columns[2][0] === '_') {
+      const pointer = columns[2].slice(1);
+      const paralogSuperList = paralogsByName[pointer];
+      const geneId = getEnsemblId(ensemblPrefix, columns[1]);
+      paralogs = paralogSuperList.filter(id => id !== geneId);
+    } else {
+      const slimEnsemblIds = columns.slice(2);
+      paralogs = [];
+      for (let i = 0; i < slimEnsemblIds.length; i++) {
+        paralogs.push(getEnsemblId(ensemblPrefix, slimEnsemblIds[i]));
+      }
     }
 
     names.push(gene);
