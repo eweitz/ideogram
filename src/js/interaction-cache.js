@@ -137,6 +137,6 @@ export default async function initInteractionCache(
 
   if (ideo.config.debug) {
     perfTimes.total = Math.round(performance.now() - startTime);
-    console.log('perfTimes in initinteractionCache:', perfTimes);
+    console.log('perfTimes in initInteractionCache:', perfTimes);
   }
 }

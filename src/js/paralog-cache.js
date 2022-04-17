@@ -45,7 +45,6 @@ function getEnsemblId(ensemblPrefix, slimEnsemblId) {
 
 /** Parse a gene cache TSV file, return array of useful transforms */
 function parseCache(rawTsv) {
-  const names = [];
   const nameCaseMap = {};
   const paralogsByName = {};
   let ensemblPrefix;
@@ -71,8 +70,7 @@ function parseCache(rawTsv) {
     if (columns[2][0] === '_') {
       const pointer = columns[2].slice(1);
       const paralogSuperList = paralogsByName[pointer];
-      const geneId = getEnsemblId(ensemblPrefix, columns[1]);
-      paralogs = paralogSuperList.filter(id => id !== geneId);
+      paralogs = paralogSuperList.filter(id => id !== columns[1]);
     } else {
       const slimEnsemblIds = columns.slice(2);
       paralogs = [];
@@ -81,14 +79,13 @@ function parseCache(rawTsv) {
       }
     }
 
-    names.push(gene);
     nameCaseMap[gene.toLowerCase()] = gene;
     paralogsByName[gene] = paralogs;
   };
   const t1 = performance.now();
   perfTimes.parseCacheLoop = Math.round(t1 - t0);
 
-  return [names, nameCaseMap, paralogsByName];
+  return [nameCaseMap, paralogsByName];
 }
 
 /** Get organism's metadata fields */
@@ -114,6 +111,7 @@ export default async function initParalogCache(orgName, ideo, cacheDir=null) {
   // Skip initialization if files needed to make cache don't exist
   if (!hasParalogCache(orgName)) return;
 
+
   // Skip initialization if cache is already populated
   if (Ideogram.paralogCache && Ideogram.paralogCache[orgName]) {
     // Simplify chief use case, i.e. for single organism
@@ -135,11 +133,10 @@ export default async function initParalogCache(orgName, ideo, cacheDir=null) {
   const fetchEndTime = performance.now();
   perfTimes.fetch = Math.round(fetchEndTime - fetchStartTime);
 
-  const [names, nameCaseMap, paralogsByName] = parseCache(data, orgName);
+  const [nameCaseMap, paralogsByName] = parseCache(data, orgName);
   perfTimes.parseCache = Math.round(performance.now() - fetchEndTime);
 
   ideo.paralogCache = {
-    names, // Names of genes with known paralogs
     nameCaseMap, // Maps of lowercase gene names to proper gene names
     paralogsByName // Array of paralog Ensembl IDs by gene name
   };
@@ -150,3 +147,45 @@ export default async function initParalogCache(orgName, ideo, cacheDir=null) {
     console.log('perfTimes in initParalogCache:', perfTimes);
   }
 }
+
+
+// idsMissingLocations = []
+// // ideogram.geneCache.interestingNames.slice(0, 50).forEach(iGene => {
+//     seekGene = 'CDK1'
+//     // seekGene = iGene;
+//     // pIndex = 12600
+//     console.log(seekGene)
+//     let pgenes = Object.entries(ideogram.paralogCache.paralogsByName).map(([k, v]) => [k, v]).sort((a, b) => b[1].length - a[1].length)
+//     pgenes = pgenes.filter(pg => pg[0].slice(0, 3) !== 'RNU');
+//     pgenenames = pgenes.map(pg => pg[0])
+//     pIndex = pgenenames.indexOf(seekGene)
+//     // if (pIndex === -1) return;
+//     pids = pgenes[pIndex][1];
+//     pnames = pids.map(id => ideogram.geneCache.namesById[id]);
+//     console.log('pids', pids)
+//     const indicesMissingLocations = []
+//     plocs = pids.filter((id, i) => {
+//         const hasLoc = id in ideogram.geneCache.lociById
+//         if (!hasLoc) {
+//             idsMissingLocations.push(id)
+//             indicesMissingLocations.push(i)
+//         }
+//         return hasLoc
+//     }).map(id => ideogram.geneCache.lociById[id].join(':'));
+//     pnl = pnames.filter((_, i) => i in indicesMissingLocations === false).map((n, i) => n + ': ' + plocs[i]);
+//     gene = pgenenames[pIndex]
+//     // console.log('pnl before')
+//     // console.log(pnl)
+//     pnl.sort((a, b) => {
+//         const [aChr, aStart] = a.split(':').slice(1).map(p => p.trim())
+//         const [bChr, bStart] = b.split(':').slice(1).map(p => p.trim())
+//         chrSort = Ideogram.sortChromosomes(aChr, bChr)
+//         // console.log(aChr, bChr, chrSort)
+//         if (chrSort !== 0) return chrSort
+//         return aStart.localeCompare(bStart, 'en', {numeric: true});
+//     })
+//     console.log(seekGene, pnl.length)
+//     console.log('numParalogs: ' + pgenes.length)
+//     ideogram.plotRelatedGenes(gene)
+//     console.log(pnl)
+// // })

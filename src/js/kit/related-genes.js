@@ -1116,6 +1116,7 @@ function decorateRelatedGene(annot) {
 
   if ('type' in descObj && descObj.type.includes('interacting gene')) {
     const pathwayIds = descObj.pathwayIds;
+
     // Get symbol of the searched gene, e.g. "PTEN"
     const searchedGene =
       Object.entries(ideo.annotDescriptions.annots)
@@ -1279,9 +1280,14 @@ function _initRelatedGenes(config, annotsInList) {
 
   let cacheDir = null;
   if (config.cacheDir) cacheDir = config.cacheDir;
+  const t0Cache = performance.now();
   initGeneCache(ideogram.config.organism, ideogram, cacheDir);
   initParalogCache(ideogram.config.organism, ideogram, cacheDir);
   initInteractionCache(ideogram.config.organism, ideogram, cacheDir);
+  if (ideogram.config.debug) {
+    const timeCache = performance.now() - t0Cache;
+    console.log('Time to initialize feature caches: ' + timeCache);
+  }
 
   return ideogram;
 }
