@@ -65,17 +65,23 @@ function parseCache(rawTsv) {
     }
     const columns = line.trim().split(/\t/);
     const gene = columns[0];
+    const geneSlimId = columns[1];
 
     let paralogs;
     if (columns[2][0] === '_') {
       const pointer = columns[2].slice(1);
       const paralogSuperList = paralogsByName[pointer];
-      paralogs = paralogSuperList.filter(id => id !== columns[1]);
+      const geneId = getEnsemblId(ensemblPrefix, geneSlimId);
+      paralogs = paralogSuperList.filter(id => id !== geneId);
+      paralogs.unshift(getEnsemblId(ensemblPrefix, columns[3]));
     } else {
       const slimEnsemblIds = columns.slice(2);
       paralogs = [];
       for (let i = 0; i < slimEnsemblIds.length; i++) {
-        paralogs.push(getEnsemblId(ensemblPrefix, slimEnsemblIds[i]));
+        const slimId = slimEnsemblIds[i];
+        if (slimId !== geneSlimId) {
+          paralogs.push(getEnsemblId(ensemblPrefix, slimId));
+        }
       }
     }
 
