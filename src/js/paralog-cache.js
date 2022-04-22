@@ -67,16 +67,20 @@ function parseCache(rawTsv) {
     const gene = columns[0];
     const geneSlimId = columns[1];
 
-    let paralogs;
+    const paralogs = [];
     if (columns[2][0] === '_') {
-      const pointer = columns[2].slice(1);
+      const pointer = columns[2].slice(1).toUpperCase();
       const paralogSuperList = paralogsByName[pointer];
       const geneId = getEnsemblId(ensemblPrefix, geneSlimId);
-      paralogs = paralogSuperList.filter(id => id !== geneId);
+      for (let j = 0; j < paralogSuperList.length; j++) {
+        const id = paralogSuperList[j];
+        if (id !== geneId) {
+          paralogs.push(id);
+        }
+      }
       paralogs.unshift(getEnsemblId(ensemblPrefix, columns[3]));
     } else {
       const slimEnsemblIds = columns.slice(2);
-      paralogs = [];
       for (let i = 0; i < slimEnsemblIds.length; i++) {
         const slimId = slimEnsemblIds[i];
         if (slimId !== geneSlimId) {
@@ -85,13 +89,12 @@ function parseCache(rawTsv) {
       }
     }
 
-    nameCaseMap[gene.toLowerCase()] = gene;
-    paralogsByName[gene] = paralogs;
+    paralogsByName[gene.toUpperCase()] = paralogs;
   };
   const t1 = performance.now();
   perfTimes.parseCacheLoop = Math.round(t1 - t0);
 
-  return [nameCaseMap, paralogsByName];
+  return paralogsByName;
 }
 
 /** Get organism's metadata fields */
@@ -139,12 +142,11 @@ export default async function initParalogCache(orgName, ideo, cacheDir=null) {
   const fetchEndTime = performance.now();
   perfTimes.fetch = Math.round(fetchEndTime - fetchStartTime);
 
-  const [nameCaseMap, paralogsByName] = parseCache(data, orgName);
+  const paralogsByName = parseCache(data, orgName);
   perfTimes.parseCache = Math.round(performance.now() - fetchEndTime);
 
   ideo.paralogCache = {
-    nameCaseMap, // Maps of lowercase gene names to proper gene names
-    paralogsByName // Array of paralog Ensembl IDs by gene name
+    paralogsByName // Array of paralog Ensembl IDs by (uppercase) gene name
   };
   Ideogram.paralogCache[orgName] = ideo.paralogCache;
 

@@ -544,9 +544,9 @@ async function fetchParalogs(annot, ideo) {
     // const rawHomologEnsemblIds = oneRowTsv.split('\t');
     // homologs = rawHomologEnsemblIds.map(r => getEnsemblId('ENSG', r));
     const paralogsByName = ideo.paralogCache.paralogsByName;
-    const name = ideo.paralogCache.nameCaseMap[annot.name.toLowerCase()];
-    const hasParalogs = name in paralogsByName;
-    homologs = hasParalogs ? paralogsByName[name] : [];
+    const nameUc = annot.name.toUpperCase();
+    const hasParalogs = nameUc in paralogsByName;
+    homologs = hasParalogs ? paralogsByName[nameUc] : [];
   } else {
     const params = `&format=condensed&type=paralogues&target_taxon=${taxid}`;
     const path = `/homology/id/${annot.id}?${params}`;
