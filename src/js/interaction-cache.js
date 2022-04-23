@@ -19,8 +19,8 @@ function getCacheUrl(orgName, cacheDir) {
   if (!cacheDir) {
     cacheDir = getDir('cache/');
   }
-
-  const cacheUrl = cacheDir + 'wikipathways-interactions.json.gz';
+  cacheDir += 'interactions/';
+  const cacheUrl = cacheDir + organism + '-interactions.json.gz';
 
   return cacheUrl;
 }
@@ -41,45 +41,36 @@ function getEnsemblId(ensemblPrefix, slimEnsemblId) {
   return ensemblPrefix + zeroPaddedId;
 }
 
-// /** Parse a gene cache TSV file, return array of useful transforms */
-// function parseCache(rawTsv) {
-//   const names = [];
-//   const nameCaseMap = {};
-//   const paralogsByName = {};
-//   let ensemblPrefix;
+/** Parse a gene cache TSV file, return array of useful transforms */
+function parseCache(rawJson, organism) {
+  let t0 = performance.now();
+  const interactionsByName = {};
+  const tmp = organism.replace('-', ' ');
+  const desluggedOrg = tmp[0].toUpperCase() + tmp.slice(1);
 
-//   let t0 = performance.now();
-//   const lines = rawTsv.split(/\r\n|\n/);
-//   perfTimes.rawTsvSplit = Math.round(performance.now() - t0);
+  t0 = performance.now();
+  for (const gene in rawJson['interactions']) {
+    const ixnLists = rawJson['interactions'][gene];
+    interactionsByName[gene] = {result: []};
+    for (let i = 0; i < ixnLists.length; i++) {
+      const compressedIxn = ixnLists[i];
+      const slimPwId = compressedIxn[0];
+      interactionsByName[gene].result.push({
+        fields: {
+          left: {values: compressedIxn[1]},
+          right: {values: compressedIxn[2]}
+        },
+        id: 'WP' + slimPwId,
+        name: rawJson['pathwayNamesById'][slimPwId],
+        species: desluggedOrg
+      });
+    }
+  }
+  const t1 = performance.now();
+  perfTimes.parseCacheLoop = Math.round(t1 - t0);
 
-//   t0 = performance.now();
-//   for (let i = 0; i < lines.length; i++) {
-//     const line = lines[i];
-//     if (line === '') continue; // Skip empty lines
-//     if (line[0] === '#') {
-//       if (line.slice(0, 9) === '## prefix') {
-//         ensemblPrefix = line.split('prefix: ')[1];
-//       }
-//       continue;
-//     }
-//     const columns = line.trim().split(/\t/);
-//     const gene = columns[0];
-//     const slimEnsemblIds = columns.slice(1);
-
-//     const paralogs = [];
-//     for (let i = 0; i < slimEnsemblIds.length; i++) {
-//       paralogs.push(getEnsemblId(ensemblPrefix, slimEnsemblIds[i]));
-//     }
-
-//     names.push(gene);
-//     nameCaseMap[gene.toLowerCase()] = gene;
-//     paralogsByName[gene] = paralogs;
-//   };
-//   const t1 = performance.now();
-//   perfTimes.parseCacheLoop = Math.round(t1 - t0);
-
-//   return [names, nameCaseMap, paralogsByName];
-// }
+  return interactionsByName;
+}
 
 /** Get organism's metadata fields */
 function parseOrgMetadata(orgName) {
@@ -129,14 +120,14 @@ export default async function initInteractionCache(
   const fetchEndTime = performance.now();
   perfTimes.fetch = Math.round(fetchEndTime - fetchStartTime);
 
-  // const [names, nameCaseMap, paralogsByName] = parseCache(data, orgName);
-  // perfTimes.parseCache = Math.round(performance.now() - fetchEndTime);
+  const interactionsByName = parseCache(data, orgName);
+  perfTimes.parseCache = Math.round(performance.now() - fetchEndTime);
 
-  ideo.interactionCache = data;
+  ideo.interactionCache = interactionsByName;
   Ideogram.interactionCache[orgName] = ideo.interactionCache;
 
   if (ideo.config.debug) {
     perfTimes.total = Math.round(performance.now() - startTime);
-    console.log('perfTimes in initinteractionCache:', perfTimes);
+    console.log('perfTimes in initInteractionCache:', perfTimes);
   }
 }
