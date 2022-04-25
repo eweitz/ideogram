@@ -40,6 +40,7 @@ import initInteractionCache from '../interaction-cache';
 import {
   fetchGpmls, summarizeInteractions, fetchPathwayInteractions
 } from './wikipathways';
+// import {drawAnnotsByLayoutType} from '../annotations/draw';
 // import {organismMetadata} from '../init/organism-metadata';
 
 /** Sets DOM IDs for ideo.relatedAnnots; needed to associate labels */
@@ -528,6 +529,104 @@ async function fetchParalogPositionsFromMyGeneInfo(
   return annots;
 }
 
+function overplotParalogs(annots, ideo) {
+
+  if (annots.length < 2) return;
+
+  // Arrays of paralogs within 10 Mbp of each other
+  const neighborhoods = {};
+
+  neighborhoods[annots[0].chr] = {};
+  neighborhoods[annots[0].chr][annots[0].start] = [annots[0]];
+
+  const windowInt = 2_000_000;
+  const windowProse = '2 Mbp';
+
+  for (let i = 1; i < annots.length; i++) {
+    const annot = annots[i];
+    const chr = annot.chr;
+    const start = annot.start;
+    if (chr in neighborhoods) {
+      const starts = Object.keys(neighborhoods[chr]);
+      for (let j = 0; j < starts.length; j++) {
+        const startJInt = parseInt(starts[j]);
+        if (Math.abs(start - startJInt) < windowInt) {
+          // console.log('neighborhoods[chr]')
+          // console.log(neighborhoods[chr])
+          // console.log('neighborhoods[chr][startJInt]')
+          // console.log(neighborhoods[chr][startJInt])
+          neighborhoods[chr][startJInt].push(annot);
+        } else {
+          neighborhoods[chr][start] = [annot];
+        }
+      }
+    } else {
+      neighborhoods[chr] = {};
+      neighborhoods[chr][start] = [annot];
+    }
+  }
+
+  // console.log('neighborhoods')
+  // console.log(neighborhoods)
+
+  // Big enough to see and hover
+  const overlayAnnotLength = 15_000_000;
+
+
+  const searchedGene = getSearchedFromDescriptions(ideo);
+
+  console.log('paralogs in neighborhood')
+  const neighborhoodAnnots =
+    Object.entries(neighborhoods).map(([chr, neighborhood]) => {
+      const start = parseInt(Object.keys(neighborhood)[0]);
+      const paralogs = Object.values(neighborhood)[0];
+
+      // paralogs.map(paralog => {
+      //   console.log(paralog);
+      // })
+
+      const description =
+        `${paralogs.length} clustered paralogs of ${searchedGene}:` +
+        `<br/>` +
+        `${paralogs.map(paralog => {
+          return paralog.name;
+        }).join('<br/>')}`;
+
+      const chrLength = ideo.chromosomes[ideo.config.taxid][chr].bpLength;
+      let annotStart = start - overlayAnnotLength/2;
+      let annotStop = start + overlayAnnotLength/2;
+      if (annotStop > chrLength) {
+        annotStart = start - overlayAnnotLength;
+        annotStop = chrLength;
+      } else if (annotStart < 1) {
+        annotStart = 1;
+        annotStop = overlayAnnotLength;
+      };
+
+
+      const annot = {
+        name: 'Paralog neighborhood',
+        chr,
+        start: annotStart,
+        stop: annotStop,
+        color: 'green',
+        description,
+        paralogs
+      };
+      if (paralogs.length > 1) {
+        ideo.annotDescriptions.annots[annot.name] = annot;
+      }
+      return annot;
+    }).filter(n => n.paralogs.length > 1);
+
+  if (neighborhoodAnnots.length > 0) {
+    console.log('neighborhoodAnnots')
+    console.log(neighborhoodAnnots.map(na => na));
+    ideo.drawAnnots(neighborhoodAnnots, 'overlay', true);
+    moveLegend();
+  }
+}
+
 /**
  * Fetch paralogs of searched gene
  */
@@ -655,6 +754,7 @@ function processParalogs(annot, ideo) {
     const annots = await fetchParalogs(annot, ideo);
     ideo.relatedAnnots.push(...annots);
     finishPlotRelatedGenes('paralogous', ideo);
+    overplotParalogs(annots, ideo);
 
     ideo.time.rg.paralogs = timeDiff(t0);
 
@@ -770,7 +870,7 @@ function finishPlotRelatedGenes(type, ideo) {
     ideo.onFindRelatedGenesCallback();
   }
 
-  ideo.drawAnnots(annots);
+  ideo.drawAnnots(annots, undefined, true);
   // const idsToRemove = annots.slice(40).map(a => a.domId);
   // if (idsToRemove.length > 0) {
   //   const selector = '#' + idsToRemove.join(',#')
@@ -1098,6 +1198,14 @@ function handleTooltipClick(ideo) {
   }
 }
 
+/** Return searched gene from annotation descriptions in Ideogram object */
+function getSearchedFromDescriptions(ideo) {
+  return (
+    Object.entries(ideo.annotDescriptions.annots)
+      .find(([k, v]) => v.type === 'searched gene')[0]
+  );
+}
+
 /**
  * Enhance tooltip shown on hovering over gene annotation
  */
@@ -1117,9 +1225,7 @@ function decorateRelatedGene(annot) {
   if ('type' in descObj && descObj.type.includes('interacting gene')) {
     const pathwayIds = descObj.pathwayIds;
     // Get symbol of the searched gene, e.g. "PTEN"
-    const searchedGene =
-      Object.entries(ideo.annotDescriptions.annots)
-        .find(([k, v]) => v.type === 'searched gene')[0];
+    const searchedGene = getSearchedFromDescriptions(ideo);
 
     const gpmls = ideo.gpmlsByInteractingGene[annot.name];
 
