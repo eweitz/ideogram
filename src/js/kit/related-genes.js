@@ -577,20 +577,20 @@ function overplotParalogs(annots, ideo) {
 
   console.log('paralogs in neighborhood')
   const neighborhoodAnnots =
-    Object.entries(neighborhoods).map(([chr, neighborhood]) => {
+    Object.entries(neighborhoods).map(([chr, neighborhood], index) => {
       const start = parseInt(Object.keys(neighborhood)[0]);
-      const paralogs = Object.values(neighborhood)[0];
+      let paralogs = Object.values(neighborhood)[0];
+
+      if (paralogs.length < 2) {
+        return {paralogs};
+      }
 
       // paralogs.map(paralog => {
       //   console.log(paralog);
       // })
 
       const description =
-        `${paralogs.length} clustered paralogs of ${searchedGene}:` +
-        `<br/>` +
-        `${paralogs.map(paralog => {
-          return paralog.name;
-        }).join('<br/>')}`;
+        `${paralogs.length} nearby paralogs of ${searchedGene}`;
 
       const chrLength = ideo.chromosomes[ideo.config.taxid][chr].bpLength;
       let annotStart = start - overlayAnnotLength/2;
@@ -603,19 +603,30 @@ function overplotParalogs(annots, ideo) {
         annotStop = overlayAnnotLength;
       };
 
+      if ('geneCache' in ideo) {
+        paralogs = paralogs.map(paralog => {
+          paralog.fullName = ideo.geneCache.fullNamesById[paralog.id];
+          return paralog;
+        });
+      }
+
+      const key = 'paralogNeighborhood-' + index;
+      const fStart = start.toLocaleString(); // Format for readability
+      const displayCoordinates = `chr${chr}:${fStart} ± ${windowProse}`;
 
       const annot = {
-        name: 'Paralog neighborhood',
+        name: key,
         chr,
         start: annotStart,
         stop: annotStop,
         color: 'green',
         description,
-        paralogs
+        paralogs,
+        type: 'paralog neighborhood',
+        displayCoordinates
       };
-      if (paralogs.length > 1) {
-        ideo.annotDescriptions.annots[annot.name] = annot;
-      }
+
+      ideo.annotDescriptions.annots[annot.name] = annot;
       return annot;
     }).filter(n => n.paralogs.length > 1);
 
@@ -762,18 +773,18 @@ function processParalogs(annot, ideo) {
   });
 }
 
-/**
- * Sorts gene names consistently.
- *
- * Might also loosely rank by first-discovered or most prominent
- */
-function sortGeneNames(aName, bName) {
-  // Rank shorter names above longer names
-  if (bName.length !== aName.length) return bName.length - aName.length;
+// /**
+//  * Sorts gene names consistently.
+//  *
+//  * Might also loosely rank by first-discovered or most prominent
+//  */
+// function sortGeneNames(aName, bName) {
+//   // Rank shorter names above longer names
+//   if (bName.length !== aName.length) return bName.length - aName.length;
 
-  // Rank names of equal length alphabetically
-  return [aName, bName].sort().indexOf(aName) === 0 ? 1 : -1;
-}
+//   // Rank names of equal length alphabetically
+//   return [aName, bName].sort().indexOf(aName) === 0 ? 1 : -1;
+// }
 
 /** Sorts by relevance of related type, then rank */
 export function sortByRelatedType(a, b) {
@@ -1211,7 +1222,6 @@ function getSearchedFromDescriptions(ideo) {
  */
 function decorateRelatedGene(annot) {
   const ideo = this;
-
   if (
     annot.name === ideo.prevClickedAnnot?.name &&
     ideo.isTooltipCooling
@@ -1249,11 +1259,34 @@ function decorateRelatedGene(annot) {
     fullNameAndRank = `<span title="${rank}">${fullName}</span>`;
   }
 
-  const originalDisplay =
+  let originalDisplay =
     `<span id="ideo-related-gene" ${style}>${annot.name}</span><br/>` +
     `${fullNameAndRank}<br/>` +
     `${description}` +
     `<br/>`;
+
+  if (annot.name.includes('paralogNeighborhood')) {
+    originalDisplay =
+      'Paralog neighborhood<br/>' +
+      '<br/>' +
+      descObj.description + ':<br/>' +
+      `${descObj.paralogs.map(paralog => {
+        let title = '';
+        if (paralog.fullName) title = paralog.fullName;
+        if (paralog.rank) {
+          const rank = paralog.rank;
+          title += `&#013;Ranked ${rank} in general or scholarly interest`;
+        }
+        if (title !== '') title = `title="${title}"`;
+        return (
+          `<span class="ideo-paralog-neighbor" ${title} ${style}'>${
+            paralog.name
+          }</span>`
+        );
+      }).join('<br/>')}` +
+      '<br/>';
+    annot.displayCoordinates = descObj.displayCoordinates;
+  }
 
   annot.displayName = originalDisplay;
 
