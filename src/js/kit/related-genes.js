@@ -619,7 +619,7 @@ function overplotParalogs(annots, ideo) {
         chr,
         start: annotStart,
         stop: annotStop,
-        color: 'green',
+        color: 'pink',
         description,
         paralogs,
         type: 'paralog neighborhood',
@@ -1270,20 +1270,22 @@ function decorateRelatedGene(annot) {
       'Paralog neighborhood<br/>' +
       '<br/>' +
       descObj.description + ':<br/>' +
-      `${descObj.paralogs.map(paralog => {
-        let title = '';
-        if (paralog.fullName) title = paralog.fullName;
-        if (paralog.rank) {
-          const rank = paralog.rank;
-          title += `&#013;Ranked ${rank} in general or scholarly interest`;
-        }
-        if (title !== '') title = `title="${title}"`;
-        return (
-          `<span class="ideo-paralog-neighbor" ${title} ${style}'>${
-            paralog.name
-          }</span>`
-        );
-      }).join('<br/>')}` +
+      `${descObj.paralogs
+        .sort((a, b) => a.rank - b.rank) // Rank 1st highest
+        .map(paralog => {
+          let title = '';
+          if (paralog.fullName) title = paralog.fullName;
+          if (paralog.rank) {
+            const rank = paralog.rank;
+            title += `&#013;Ranked ${rank} in general or scholarly interest`;
+          }
+          if (title !== '') title = `title="${title}"`;
+          return (
+            `<span class="ideo-paralog-neighbor" ${title} ${style}'>${
+              paralog.name
+            }</span>`
+          );
+        }).join('<br/>')}` +
       '<br/>';
     annot.displayCoordinates = descObj.displayCoordinates;
   }
@@ -1377,6 +1379,7 @@ function _initRelatedGenes(config, annotsInList) {
     annotsInList: annotsInList,
     showTools: true,
     showAnnotLabels: true,
+    chrFillColor: {centromere: '#EABBBB'},
     relatedGenesMode: 'related'
   };
 
