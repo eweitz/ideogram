@@ -633,7 +633,7 @@ function overplotParalogs(annots, ideo) {
   if (neighborhoodAnnots.length > 0) {
     console.log('neighborhoodAnnots')
     console.log(neighborhoodAnnots.map(na => na));
-    ideo.drawAnnots(neighborhoodAnnots, 'overlay', true);
+    ideo.drawAnnots(neighborhoodAnnots, 'overlay', true, true);
     moveLegend();
   }
 }
@@ -881,7 +881,7 @@ function finishPlotRelatedGenes(type, ideo) {
     ideo.onFindRelatedGenesCallback();
   }
 
-  ideo.drawAnnots(annots, undefined, true);
+  ideo.drawAnnots(annots);
   // const idsToRemove = annots.slice(40).map(a => a.domId);
   // if (idsToRemove.length > 0) {
   //   const selector = '#' + idsToRemove.join(',#')
@@ -1160,6 +1160,12 @@ function getAnnotByName(annotName, ideo) {
       }
     });
   });
+  console.log('annotName', annotName)
+  console.log('annotByName', annotByName)
+  if (annotByName === null) {
+    console.log('ideo.annotsOther', ideo.annotsOther)
+    annotByName = ideo.annotDescriptions.annots[annotName]
+  }
   return annotByName;
 }
 
@@ -1194,10 +1200,27 @@ function getAnnotByName(annotName, ideo) {
  * Makes clicking link in tooltip behave same as clicking annotation
  */
 function handleTooltipClick(ideo) {
+  // const tooltip = document.querySelector('._ideogramTooltip');
+  // if (!ideo.addedTooltipClickHandler) {
+  //   tooltip.addEventListener('click', () => {
+  //     const geneDom = document.querySelector('#ideo-related-gene');
+  //     const annotName = geneDom.textContent;
+  //     const annot = getAnnotByName(annotName, ideo);
+  //     ideo.onClickAnnot(annot);
+  //   });
+
+  //   // Ensures handler isn't added redundantly.  This is used because
+  //   // addEventListener options like {once: true} don't suffice
+  //   ideo.addedTooltipClickHandler = true;
+  // }
+
   const tooltip = document.querySelector('._ideogramTooltip');
   if (!ideo.addedTooltipClickHandler) {
-    tooltip.addEventListener('click', () => {
-      const geneDom = document.querySelector('#ideo-related-gene');
+    tooltip.addEventListener('click', (event) => {
+      let geneDom = document.querySelector('#ideo-related-gene');
+      if (!geneDom) {
+        geneDom = event.target;
+      }
       const annotName = geneDom.textContent;
       const annot = getAnnotByName(annotName, ideo);
       ideo.onClickAnnot(annot);
@@ -1266,18 +1289,25 @@ function decorateRelatedGene(annot) {
     `<br/>`;
 
   if (annot.name.includes('paralogNeighborhood')) {
+
+    // Rank 1st highest, then put it last as it already has a triangle
+    // annotation, and is often also labeled.
+    const sortedParalogs =
+      descObj.paralogs.sort((a, b) => a.rank - b.rank);
+    const firstRanked = sortedParalogs.shift(); // Take off first
+    sortedParalogs.push(firstRanked); // Make it last
+
     originalDisplay =
       'Paralog neighborhood<br/>' +
       '<br/>' +
       descObj.description + ':<br/>' +
-      `${descObj.paralogs
-        .sort((a, b) => a.rank - b.rank) // Rank 1st highest
+      `${sortedParalogs
         .map(paralog => {
           let title = '';
           if (paralog.fullName) title = paralog.fullName;
           if (paralog.rank) {
             const rank = paralog.rank;
-            title += `&#013;Ranked ${rank} in general or scholarly interest`;
+            title += ` &#013;Ranked ${rank} in general or scholarly interest`;
           }
           if (title !== '') title = `title="${title}"`;
           return (
@@ -1379,7 +1409,7 @@ function _initRelatedGenes(config, annotsInList) {
     annotsInList: annotsInList,
     showTools: true,
     showAnnotLabels: true,
-    chrFillColor: {centromere: '#EABBBB'},
+    chrFillColor: {centromere: '#DAAAAA'},
     relatedGenesMode: 'related'
   };
 
