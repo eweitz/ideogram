@@ -566,16 +566,11 @@ function overplotParalogs(annots, ideo) {
     }
   }
 
-  // console.log('neighborhoods')
-  // console.log(neighborhoods)
-
   // Big enough to see and hover
   const overlayAnnotLength = 15_000_000;
 
-
   const searchedGene = getSearchedFromDescriptions(ideo);
 
-  console.log('paralogs in neighborhood')
   const neighborhoodAnnots =
     Object.entries(neighborhoods).map(([chr, neighborhood], index) => {
       const start = parseInt(Object.keys(neighborhood)[0]);
@@ -631,8 +626,8 @@ function overplotParalogs(annots, ideo) {
     }).filter(n => n.paralogs.length > 1);
 
   if (neighborhoodAnnots.length > 0) {
-    console.log('neighborhoodAnnots')
-    console.log(neighborhoodAnnots.map(na => na));
+    // console.log('neighborhoodAnnots')
+    // console.log(neighborhoodAnnots.map(na => na));
     ideo.drawAnnots(neighborhoodAnnots, 'overlay', true, true);
     moveLegend();
   }
