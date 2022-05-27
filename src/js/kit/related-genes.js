@@ -189,9 +189,6 @@ async function fetchInteractions(gene, ideo) {
     }
   }
 
-  // console.log('data')
-  // console.log(data)
-
   // For each interaction, get nodes immediately upstream and downstream.
   // Filter out pathway nodes that are definitely not gene symbols, then
   // group pathways by gene symbol. Each interacting gene can have
@@ -530,6 +527,7 @@ async function fetchParalogPositionsFromMyGeneInfo(
 }
 
 function overplotParalogs(annots, ideo) {
+  if (!ideo.config.showParalogNeighborhoods) return;
 
   if (annots.length < 2) return;
 
@@ -551,10 +549,6 @@ function overplotParalogs(annots, ideo) {
       for (let j = 0; j < starts.length; j++) {
         const startJInt = parseInt(starts[j]);
         if (Math.abs(start - startJInt) < windowInt) {
-          // console.log('neighborhoods[chr]')
-          // console.log(neighborhoods[chr])
-          // console.log('neighborhoods[chr][startJInt]')
-          // console.log(neighborhoods[chr][startJInt])
           neighborhoods[chr][startJInt].push(annot);
         } else {
           neighborhoods[chr][start] = [annot];
@@ -1155,11 +1149,9 @@ function getAnnotByName(annotName, ideo) {
       }
     });
   });
-  console.log('annotName', annotName)
-  console.log('annotByName', annotByName)
+
   if (annotByName === null) {
-    console.log('ideo.annotsOther', ideo.annotsOther)
-    annotByName = ideo.annotDescriptions.annots[annotName]
+    annotByName = ideo.annotDescriptions.annots[annotName];
   }
   return annotByName;
 }
@@ -1404,6 +1396,7 @@ function _initRelatedGenes(config, annotsInList) {
     annotsInList: annotsInList,
     showTools: true,
     showAnnotLabels: true,
+    showParalogNeighborhoods: true,
     chrFillColor: {centromere: '#DAAAAA'},
     relatedGenesMode: 'related'
   };
@@ -1511,6 +1504,7 @@ function _initGeneHints(config, annotsInList) {
     annotsInList: annotsInList,
     showTools: true,
     showAnnotLabels: true,
+    showParalogNeighborhoods: true,
     onDrawAnnots: plotGeneHints,
     annotationsPath: annotsPath,
     relatedGenesMode: 'hints'
