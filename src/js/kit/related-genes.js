@@ -531,6 +531,20 @@ function overplotParalogs(annots, ideo) {
 
   if (annots.length < 2) return;
 
+  const searchedGene = getSearchedFromDescriptions(ideo);
+  let searchedAnnot = null
+  ideo.annots.find(chrAnnots => {
+    console.log('chrAnnots')
+    console.log(chrAnnots)
+    return chrAnnots.annots.find(annot => {
+      if (annot.name === searchedGene) {
+        searchedAnnot = annot;
+      };
+    });
+  });
+
+  annots.push(searchedAnnot)
+
   // Arrays of paralogs within 10 Mbp of each other
   const neighborhoods = {};
 
@@ -540,7 +554,7 @@ function overplotParalogs(annots, ideo) {
   const windowInt = 2_000_000;
   const windowProse = '2 Mbp';
 
-  for (let i = 1; i < annots.length; i++) {
+  for (let i = 0; i < annots.length; i++) {
     const annot = annots[i];
     const chr = annot.chr;
     const start = annot.start;
@@ -560,69 +574,100 @@ function overplotParalogs(annots, ideo) {
     }
   }
 
+  console.log('neighborhoods')
+  console.log(neighborhoods)
+
   // Big enough to see and hover
   const overlayAnnotLength = 15_000_000;
 
-  const searchedGene = getSearchedFromDescriptions(ideo);
-
   const neighborhoodAnnots =
-    Object.entries(neighborhoods).map(([chr, neighborhood], index) => {
-      const start = parseInt(Object.keys(neighborhood)[0]);
-      let paralogs = Object.values(neighborhood)[0];
+    Object.entries(neighborhoods).map(([chr, hoods], index) => {
+      // console.log('hoods')
+      // console.log(hoods)
+      const annots = Object.entries(hoods).map(([start, neighboorhood]) => {
+        start = parseInt(start);
+        // console.log('start')
+        // console.log(start)
+        let paralogs = Object.values(neighboorhood);
 
-      if (paralogs.length < 2) {
-        return {paralogs};
+        console.log('paralogs')
+        console.log(paralogs)
+
+        if (
+          paralogs.length < 2
+          // paralogs.length < 1 && paralogs.find(p => p.name === searchedGene)
+        ) {
+          return [];
+        }
+
+        // paralogs.map(paralog => {
+        //   // console.log('paralog 0');
+        //   console.log(paralog);
+        // })
+
+        const description =
+          `${paralogs.length} nearby paralogs of ${searchedGene}`;
+
+        const chrLength = ideo.chromosomes[ideo.config.taxid][chr].bpLength;
+        let annotStart = start - overlayAnnotLength/2;
+        let annotStop = start + overlayAnnotLength/2;
+        if (annotStop > chrLength) {
+          annotStart = start - overlayAnnotLength;
+          annotStop = chrLength;
+        } else if (annotStart < 1) {
+          annotStart = 1;
+          annotStop = overlayAnnotLength;
+        };
+
+        if ('geneCache' in ideo) {
+          paralogs = paralogs.map(paralog => {
+            paralog.fullName = ideo.geneCache.fullNamesById[paralog.id];
+            return paralog;
+          });
+        }
+
+        const key = 'paralogNeighborhood-' + index;
+        const fStart = start.toLocaleString(); // Format for readability
+        const displayCoordinates = `chr${chr}:${fStart} ± ${windowProse}`;
+
+        const annot = {
+          name: key,
+          chr,
+          start: annotStart,
+          stop: annotStop,
+          color: 'pink',
+          description,
+          paralogs,
+          type: 'paralog neighborhood',
+          displayCoordinates
+        };
+
+        ideo.annotDescriptions.annots[annot.name] = annot;
+        return annot;
+      });
+
+      return annots;
+
+    }).filter(n => {
+      return n.length > 0;
+    });
+
+  const filteredNeighboorhoodAnnots = [];
+  neighborhoodAnnots.map(ns => {
+    ns.map(n => {
+      if (n.paralogs?.length > 1) {
+        filteredNeighboorhoodAnnots.push(n);
       }
+    });
+  });
 
-      // paralogs.map(paralog => {
-      //   console.log(paralog);
-      // })
+  console.log('filteredNeighboorhoodAnnots')
+  console.log(filteredNeighboorhoodAnnots)
 
-      const description =
-        `${paralogs.length} nearby paralogs of ${searchedGene}`;
-
-      const chrLength = ideo.chromosomes[ideo.config.taxid][chr].bpLength;
-      let annotStart = start - overlayAnnotLength/2;
-      let annotStop = start + overlayAnnotLength/2;
-      if (annotStop > chrLength) {
-        annotStart = start - overlayAnnotLength;
-        annotStop = chrLength;
-      } else if (annotStart < 1) {
-        annotStart = 1;
-        annotStop = overlayAnnotLength;
-      };
-
-      if ('geneCache' in ideo) {
-        paralogs = paralogs.map(paralog => {
-          paralog.fullName = ideo.geneCache.fullNamesById[paralog.id];
-          return paralog;
-        });
-      }
-
-      const key = 'paralogNeighborhood-' + index;
-      const fStart = start.toLocaleString(); // Format for readability
-      const displayCoordinates = `chr${chr}:${fStart} ± ${windowProse}`;
-
-      const annot = {
-        name: key,
-        chr,
-        start: annotStart,
-        stop: annotStop,
-        color: 'pink',
-        description,
-        paralogs,
-        type: 'paralog neighborhood',
-        displayCoordinates
-      };
-
-      ideo.annotDescriptions.annots[annot.name] = annot;
-      return annot;
-    }).filter(n => n.paralogs.length > 1);
-
-  if (neighborhoodAnnots.length > 0) {
-    // console.log('neighborhoodAnnots')
-    // console.log(neighborhoodAnnots.map(na => na));
-    ideo.drawAnnots(neighborhoodAnnots, 'overlay', true, true);
+  if (filteredNeighboorhoodAnnots.length > 0) {
+    console.log('neighborhoodAnnots')
+    console.log(filteredNeighboorhoodAnnots.map(na => na));
+    ideo.drawAnnots(filteredNeighboorhoodAnnots, 'overlay', true, true);
     moveLegend();
   }
 }
@@ -1219,7 +1264,7 @@ function handleTooltipClick(ideo) {
   }
 }
 
-/** Return searched gene from annotation descriptions in Ideogram object */
+/** Return searched gene name from annotation descriptions in Ideogram object */
 function getSearchedFromDescriptions(ideo) {
   return (
     Object.entries(ideo.annotDescriptions.annots)
