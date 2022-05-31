@@ -67,7 +67,9 @@ function getContentAndYOffset(annot) {
   var content, yOffset, range, displayName;
 
   range = 'chr' + annot.chr + ':' + annot.start.toLocaleString();
-  if (annot.length > 0) {
+  if (annot.displayCoordinates) {
+    range = annot.displayCoordinates;
+  } else if (annot.length > 0) {
     // Only show range if stop differs from start
     range += '-' + annot.stop.toLocaleString();
   }

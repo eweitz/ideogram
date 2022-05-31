@@ -40,6 +40,7 @@ import initInteractionCache from '../interaction-cache';
 import {
   fetchGpmls, summarizeInteractions, fetchPathwayInteractions
 } from './wikipathways';
+// import {drawAnnotsByLayoutType} from '../annotations/draw';
 // import {organismMetadata} from '../init/organism-metadata';
 
 /** Sets DOM IDs for ideo.relatedAnnots; needed to associate labels */
@@ -187,9 +188,6 @@ async function fetchInteractions(gene, ideo) {
       data = JSON.parse(strFromU8(decompressSync(uint8Array)));
     }
   }
-
-  // console.log('data')
-  // console.log(data)
 
   // For each interaction, get nodes immediately upstream and downstream.
   // Filter out pathway nodes that are definitely not gene symbols, then
@@ -528,6 +526,107 @@ async function fetchParalogPositionsFromMyGeneInfo(
   return annots;
 }
 
+function overplotParalogs(annots, ideo) {
+  if (!ideo.config.showParalogNeighborhoods) return;
+
+  if (annots.length < 2) return;
+
+  // Arrays of paralogs within 10 Mbp of each other
+  const neighborhoods = {};
+
+  neighborhoods[annots[0].chr] = {};
+  neighborhoods[annots[0].chr][annots[0].start] = [annots[0]];
+
+  const windowInt = 2_000_000;
+  const windowProse = '2 Mbp';
+
+  for (let i = 1; i < annots.length; i++) {
+    const annot = annots[i];
+    const chr = annot.chr;
+    const start = annot.start;
+    if (chr in neighborhoods) {
+      const starts = Object.keys(neighborhoods[chr]);
+      for (let j = 0; j < starts.length; j++) {
+        const startJInt = parseInt(starts[j]);
+        if (Math.abs(start - startJInt) < windowInt) {
+          neighborhoods[chr][startJInt].push(annot);
+        } else {
+          neighborhoods[chr][start] = [annot];
+        }
+      }
+    } else {
+      neighborhoods[chr] = {};
+      neighborhoods[chr][start] = [annot];
+    }
+  }
+
+  // Big enough to see and hover
+  const overlayAnnotLength = 15_000_000;
+
+  const searchedGene = getSearchedFromDescriptions(ideo);
+
+  const neighborhoodAnnots =
+    Object.entries(neighborhoods).map(([chr, neighborhood], index) => {
+      const start = parseInt(Object.keys(neighborhood)[0]);
+      let paralogs = Object.values(neighborhood)[0];
+
+      if (paralogs.length < 2) {
+        return {paralogs};
+      }
+
+      // paralogs.map(paralog => {
+      //   console.log(paralog);
+      // })
+
+      const description =
+        `${paralogs.length} nearby paralogs of ${searchedGene}`;
+
+      const chrLength = ideo.chromosomes[ideo.config.taxid][chr].bpLength;
+      let annotStart = start - overlayAnnotLength/2;
+      let annotStop = start + overlayAnnotLength/2;
+      if (annotStop > chrLength) {
+        annotStart = start - overlayAnnotLength;
+        annotStop = chrLength;
+      } else if (annotStart < 1) {
+        annotStart = 1;
+        annotStop = overlayAnnotLength;
+      };
+
+      if ('geneCache' in ideo) {
+        paralogs = paralogs.map(paralog => {
+          paralog.fullName = ideo.geneCache.fullNamesById[paralog.id];
+          return paralog;
+        });
+      }
+
+      const key = 'paralogNeighborhood-' + index;
+      const fStart = start.toLocaleString(); // Format for readability
+      const displayCoordinates = `chr${chr}:${fStart} ± ${windowProse}`;
+
+      const annot = {
+        name: key,
+        chr,
+        start: annotStart,
+        stop: annotStop,
+        color: 'pink',
+        description,
+        paralogs,
+        type: 'paralog neighborhood',
+        displayCoordinates
+      };
+
+      ideo.annotDescriptions.annots[annot.name] = annot;
+      return annot;
+    }).filter(n => n.paralogs.length > 1);
+
+  if (neighborhoodAnnots.length > 0) {
+    // console.log('neighborhoodAnnots')
+    // console.log(neighborhoodAnnots.map(na => na));
+    ideo.drawAnnots(neighborhoodAnnots, 'overlay', true, true);
+    moveLegend();
+  }
+}
+
 /**
  * Fetch paralogs of searched gene
  */
@@ -655,6 +754,7 @@ function processParalogs(annot, ideo) {
     const annots = await fetchParalogs(annot, ideo);
     ideo.relatedAnnots.push(...annots);
     finishPlotRelatedGenes('paralogous', ideo);
+    overplotParalogs(annots, ideo);
 
     ideo.time.rg.paralogs = timeDiff(t0);
 
@@ -662,18 +762,18 @@ function processParalogs(annot, ideo) {
   });
 }
 
-/**
- * Sorts gene names consistently.
- *
- * Might also loosely rank by first-discovered or most prominent
- */
-function sortGeneNames(aName, bName) {
-  // Rank shorter names above longer names
-  if (bName.length !== aName.length) return bName.length - aName.length;
+// /**
+//  * Sorts gene names consistently.
+//  *
+//  * Might also loosely rank by first-discovered or most prominent
+//  */
+// function sortGeneNames(aName, bName) {
+//   // Rank shorter names above longer names
+//   if (bName.length !== aName.length) return bName.length - aName.length;
 
-  // Rank names of equal length alphabetically
-  return [aName, bName].sort().indexOf(aName) === 0 ? 1 : -1;
-}
+//   // Rank names of equal length alphabetically
+//   return [aName, bName].sort().indexOf(aName) === 0 ? 1 : -1;
+// }
 
 /** Sorts by relevance of related type, then rank */
 export function sortByRelatedType(a, b) {
@@ -1049,6 +1149,10 @@ function getAnnotByName(annotName, ideo) {
       }
     });
   });
+
+  if (annotByName === null) {
+    annotByName = ideo.annotDescriptions.annots[annotName];
+  }
   return annotByName;
 }
 
@@ -1083,10 +1187,27 @@ function getAnnotByName(annotName, ideo) {
  * Makes clicking link in tooltip behave same as clicking annotation
  */
 function handleTooltipClick(ideo) {
+  // const tooltip = document.querySelector('._ideogramTooltip');
+  // if (!ideo.addedTooltipClickHandler) {
+  //   tooltip.addEventListener('click', () => {
+  //     const geneDom = document.querySelector('#ideo-related-gene');
+  //     const annotName = geneDom.textContent;
+  //     const annot = getAnnotByName(annotName, ideo);
+  //     ideo.onClickAnnot(annot);
+  //   });
+
+  //   // Ensures handler isn't added redundantly.  This is used because
+  //   // addEventListener options like {once: true} don't suffice
+  //   ideo.addedTooltipClickHandler = true;
+  // }
+
   const tooltip = document.querySelector('._ideogramTooltip');
   if (!ideo.addedTooltipClickHandler) {
-    tooltip.addEventListener('click', () => {
-      const geneDom = document.querySelector('#ideo-related-gene');
+    tooltip.addEventListener('click', (event) => {
+      let geneDom = document.querySelector('#ideo-related-gene');
+      if (!geneDom) {
+        geneDom = event.target;
+      }
       const annotName = geneDom.textContent;
       const annot = getAnnotByName(annotName, ideo);
       ideo.onClickAnnot(annot);
@@ -1098,12 +1219,19 @@ function handleTooltipClick(ideo) {
   }
 }
 
+/** Return searched gene from annotation descriptions in Ideogram object */
+function getSearchedFromDescriptions(ideo) {
+  return (
+    Object.entries(ideo.annotDescriptions.annots)
+      .find(([k, v]) => v.type === 'searched gene')[0]
+  );
+}
+
 /**
  * Enhance tooltip shown on hovering over gene annotation
  */
 function decorateRelatedGene(annot) {
   const ideo = this;
-
   if (
     annot.name === ideo.prevClickedAnnot?.name &&
     ideo.isTooltipCooling
@@ -1117,9 +1245,7 @@ function decorateRelatedGene(annot) {
   if ('type' in descObj && descObj.type.includes('interacting gene')) {
     const pathwayIds = descObj.pathwayIds;
     // Get symbol of the searched gene, e.g. "PTEN"
-    const searchedGene =
-      Object.entries(ideo.annotDescriptions.annots)
-        .find(([k, v]) => v.type === 'searched gene')[0];
+    const searchedGene = getSearchedFromDescriptions(ideo);
 
     const gpmls = ideo.gpmlsByInteractingGene[annot.name];
 
@@ -1143,11 +1269,43 @@ function decorateRelatedGene(annot) {
     fullNameAndRank = `<span title="${rank}">${fullName}</span>`;
   }
 
-  const originalDisplay =
+  let originalDisplay =
     `<span id="ideo-related-gene" ${style}>${annot.name}</span><br/>` +
     `${fullNameAndRank}<br/>` +
     `${description}` +
     `<br/>`;
+
+  if (annot.name.includes('paralogNeighborhood')) {
+
+    // Rank 1st highest, then put it last as it already has a triangle
+    // annotation, and is often also labeled.
+    const sortedParalogs =
+      descObj.paralogs.sort((a, b) => a.rank - b.rank);
+    const firstRanked = sortedParalogs.shift(); // Take off first
+    sortedParalogs.push(firstRanked); // Make it last
+
+    originalDisplay =
+      'Paralog neighborhood<br/>' +
+      '<br/>' +
+      descObj.description + ':<br/>' +
+      `${sortedParalogs
+        .map(paralog => {
+          let title = '';
+          if (paralog.fullName) title = paralog.fullName;
+          if (paralog.rank) {
+            const rank = paralog.rank;
+            title += ` &#013;Ranked ${rank} in general or scholarly interest`;
+          }
+          if (title !== '') title = `title="${title}"`;
+          return (
+            `<span class="ideo-paralog-neighbor" ${title} ${style}'>${
+              paralog.name
+            }</span>`
+          );
+        }).join('<br/>')}` +
+      '<br/>';
+    annot.displayCoordinates = descObj.displayCoordinates;
+  }
 
   annot.displayName = originalDisplay;
 
@@ -1238,6 +1396,8 @@ function _initRelatedGenes(config, annotsInList) {
     annotsInList: annotsInList,
     showTools: true,
     showAnnotLabels: true,
+    showParalogNeighborhoods: true,
+    chrFillColor: {centromere: '#DAAAAA'},
     relatedGenesMode: 'related'
   };
 
@@ -1344,6 +1504,7 @@ function _initGeneHints(config, annotsInList) {
     annotsInList: annotsInList,
     showTools: true,
     showAnnotLabels: true,
+    showParalogNeighborhoods: true,
     onDrawAnnots: plotGeneHints,
     annotationsPath: annotsPath,
     relatedGenesMode: 'hints'

@@ -1,6 +1,6 @@
 # ideogram
 
-[![Build Status](https://travis-ci.org/eweitz/ideogram.svg?branch=master)](https://travis-ci.org/eweitz/ideogram)
+[![Build Status](https://api.travis-ci.com/eweitz/ideogram.svg?branch=master)](https://app.travis-ci.com/github/eweitz/ideogram)
 [![Coverage Status](https://coveralls.io/repos/github/eweitz/ideogram/badge.svg)](https://coveralls.io/github/eweitz/ideogram)
 
 [Ideogram.js](https://eweitz.github.io/ideogram/) is a JavaScript library for [chromosome visualization](https://speakerdeck.com/eweitz/designing-genome-visualizations-with-ideogramjs). 
