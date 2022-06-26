@@ -47,3 +47,23 @@ def download_gzip(url, output_path, cache=0):
 
     with open(output_path, "w") as f:
         f.write(content)
+
+def download(url, output_path, cache=0):
+    """Download file, write to output path; use optional cache
+    Cached files can help speed development iterations by > 2x, and some
+    development scenarios (e.g. on a train or otherwise without an Internet
+    connection) can be impossible without it.
+    """
+
+    if is_cached(output_path, cache, 1):
+        return
+    print(f"Requesting {url}")
+    request = urllib.request.Request(url)
+    response = urllib.request.urlopen(request, context=ctx)
+    content = response.read().decode()
+
+    print('content')
+    print(content)
+
+    with open(output_path, "w") as f:
+        f.write(content)

@@ -1156,9 +1156,9 @@ function getAnnotByName(annotName, ideo) {
   return annotByName;
 }
 
-// /**
-//  * Manage click on pathway links in annotation tooltips
-//  */
+/**
+ * Manage click on pathway links in annotation tooltips
+ */
 // function managePathwayClickHandlers(searchedGene, ideo) {
 //   setTimeout(function() {
 //     const pathways = document.querySelectorAll('.ideo-pathway-link');
