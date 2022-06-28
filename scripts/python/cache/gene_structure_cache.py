@@ -155,13 +155,15 @@ def parse_feature(gff_row, canonical_ids):
     # 9	ensembl_havana	five_prime_UTR	112750760	112751001	.	+	.	Parent=transcript:ENST00000374232
     # 9	ensembl_havana	exon	112750760	112751157	.	+	.	Parent=transcript:ENST00000374232;Name=ENSE00001462855;constitutive=0;ensembl_end_phase=0;ensembl_phase=-1;exon_id=ENSE00001462855;rank=1;version=4
     if feat_type == "mRNA":
+        # + (forward) or - (reverse)
+        strand = gff_row[6]
         name = info["Name"]
         gene_id = info["Parent"].split("gene:")[1]
         biotype = info["biotype"]
         if biotype not in biotypes:
             biotypes[biotype] = 1
         transcript_support_level = info.get("transcript_support_level", "")
-        return structure + [name, gene_id, biotype, transcript_support_level]
+        return structure + [strand, name, gene_id, biotype, transcript_support_level]
 
     elif feat_type in ["five_prime_UTR", "three_prime_UTR"]:
         return structure
@@ -178,7 +180,6 @@ def parse_feature(gff_row, canonical_ids):
         ]
 
     return None
-
 
 def parse_bmtsv(bmtsv_path):
     """Parse BMTSV into a set of Ensembl canonical transcript IDs
@@ -231,7 +232,7 @@ def parse_transcript_component(raw_tc, mrna_start):
     return [biotype_compressed, start, length]
 
 def parse_mrna(raw_mrna):
-    # transcript_id, feat_type, chr, start, stop, name, gene_id, biotype, transcript_support_level
+    # transcript_id, feat_type, chr, start, stop, strand, name, gene_id, biotype, transcript_support_level
     # ENST00000616016 mRNA    1       925741  944581  SAMD11-210      ENSG00000187634 protein_coding  5
     transcript_id = raw_mrna[0]
 
@@ -240,12 +241,14 @@ def parse_mrna(raw_mrna):
     stop = raw_mrna[4]
     length = get_length(start, stop)
 
-    name = raw_mrna[5]
-    # gene_id = raw_mrna[6]
-    biotype_compressed = str(biotypes[raw_mrna[7]])
+    strand = raw_mrna[5]
+
+    name = raw_mrna[6]
+    # gene_id = raw_mrna[7]
+    biotype_compressed = str(biotypes[raw_mrna[8]])
 
     # return [transcript_id, chr, start, length, name, gene_id, biotype]
-    return [[name, biotype_compressed], start]
+    return [[name, biotype_compressed, strand], start]
 
 def build_structures(structures_by_id):
     biotypes_list = list(biotypes.keys())
@@ -398,15 +401,17 @@ class GeneStructureCache():
             download(url, bmtsv_path, cache=self.reuse_bmtsv)
         return [bmtsv_path, url]
 
-    def write(self, structures, organism, prefix, bmtsv_url):
+    def write(self, structures, organism, gff_url, bmtsv_url):
         """Save fetched and transformed gene data to cache file
         """
-        headers = (
-            f"## Ideogram.js gene cache for {organism}\n" +
-            f"## Derived from {bmtsv_url}\n"
-            f"## prefix: {prefix}\n"
-            f"# chr\tstart\tlength\tslim_id\tsymbol\tdescription\n"
-        )
+        headers = "\n".join([
+            f"## Ideogram.js gene structure cache for {organism}",
+            f"## Derived from: {gff_url}",
+            f"## Filtered to only canonical transcripts using Ensembl BioMart: {bmtsv_url}",
+            f"## features: <transcript_component>;<start (transcript-relative)>;<end (transcript-relative)>",
+            f"## transcript_component: 0 = 3'-UTR, 1 = exon, 2 = 5'-UTR",
+            f"# transcript_name\tbiotype_compressed\t\tstrand\tfeatures"
+        ]) + "\n"
 
         # print('structures')
         # print(structures)
@@ -422,24 +427,22 @@ class GeneStructureCache():
     def fetch_transcript_ids(self, organism):
         [bmtsv_path, bmtsv_url] = self.fetch_ensembl_biomart_tsv(organism)
         transcript_ids = parse_bmtsv(bmtsv_path)
-        return transcript_ids
+        return [transcript_ids, bmtsv_url]
 
     def populate_by_org(self, organism):
         """Fill gene caches for a configured organism
         """
         # [slim_transcripts, prefix] = self.fetch_slim_transcripts(organism)
-        canonical_ids = self.fetch_transcript_ids(organism)
+        [canonical_ids, bmtsv_url] = self.fetch_transcript_ids(organism)
 
         [gff_path, gff_url] = fetch_gff(organism, self.output_dir, True)
 
         structures = parse_structures(canonical_ids, gff_path, gff_url)
 
         sorted_structures = sort_structures(structures, organism)
-        prefix = ""
-        bmtsv_url = ""
 
         # sorted_slim_genes = sort_by_interest(slim_genes, organism)
-        self.write(sorted_structures, organism, prefix, bmtsv_url)
+        self.write(sorted_structures, organism, gff_url, bmtsv_url)
 
     def populate(self):
         """Fill gene caches for all configured organisms
