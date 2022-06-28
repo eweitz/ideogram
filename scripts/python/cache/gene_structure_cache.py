@@ -20,7 +20,7 @@ if __name__ == "__main__":
     sys.path.append(cur_dir + "/..")
 
 from lib import download
-from gene_cache import trim_id, detect_prefix, fetch_gff, parse_gff_info_field
+from gene_cache import trim_id, detect_prefix, fetch_gff, parse_gff_info_field, fetch_interesting_genes
 
 # Organisms configured for gene caching, and their genome assembly names
 assemblies_by_org = {
@@ -206,18 +206,29 @@ def compress_biotype(biotype, biotype_map):
         new_last = last + 1
 
 
-def parse_exon(raw_exon, mrna):
+tc_map = {
+    'exon': '0',
+    'three_prime_UTR': '1',
+    'five_prime_UTR': '2',
+}
+def parse_transcript_component(raw_tc, mrna_start):
     # transcript_id, feat_type, chr, start, stop, exon_id, constitutive, ensembl_phase, rank
     # ENST00000641515 exon    1       65419   65433   ENSE00003812156 0       -1      1
 
+    biotype_compressed = ""
+    biotype = raw_tc[1]
+    if biotype in tc_map:
+        biotype_compressed = tc_map[biotype]
+    else:
+        print('biotype: ', biotype)
+
     # Use mRNA-relative start coordinate
-    mrna_start = mrna[2]
-    start = get_length(mrna_start, raw_exon[3])
+    start = get_length(mrna_start, raw_tc[3])
 
     # Length of this exon
-    length = get_length(raw_exon[3], raw_exon[4])
+    length = get_length(raw_tc[3], raw_tc[4])
 
-    return [start, length]
+    return [biotype_compressed, start, length]
 
 def parse_mrna(raw_mrna):
     # transcript_id, feat_type, chr, start, stop, name, gene_id, biotype, transcript_support_level
@@ -230,32 +241,31 @@ def parse_mrna(raw_mrna):
     length = get_length(start, stop)
 
     name = raw_mrna[5]
-    gene_id = raw_mrna[6]
-    biotype = raw_mrna[7]
+    # gene_id = raw_mrna[6]
+    biotype_compressed = str(biotypes[raw_mrna[7]])
 
-    return [transcript_id, chr, start, length, name, gene_id, biotype]
+    # return [transcript_id, chr, start, length, name, gene_id, biotype]
+    return [[name, biotype_compressed], start]
 
 def build_structures(structures_by_id):
-    print('biotypes')
-    print(biotypes)
+    biotypes_list = list(biotypes.keys())
+    for biotype, i in enumerate(biotypes_list):
+        biotypes[biotype] = i
+
     structures = []
-    i = 0
     for id in structures_by_id:
-        i += 1
-        if i % 1 == 0:
-            print('build, i: ' + str(i))
         structure_lists = structures_by_id[id]
         if structure_lists[0][1] != "mRNA":
             continue
         structure = []
-        mrna = parse_mrna(structure_lists[0])
+        [mrna, mrna_start] = parse_mrna(structure_lists[0])
         structure += mrna
 
-        for structure_list in structure_lists:
-            exon = parse_exon(structure_list, mrna)
-            structure += [";".join(exon) ]
+        for structure_list in structure_lists[1:]:
+            tc = parse_transcript_component (structure_list, mrna_start)
+            structure += [";".join(tc) ]
 
-        structures.append("\t".join(structure))
+        structures.append(structure)
 
     return structures
 
@@ -297,9 +307,9 @@ def parse_structures(canonical_ids, gff_path, gff_url):
                 print(f"On entry {i}")
                 print(feature)
 
-            # if i > 500000:
-                # return structures_by_id
-                # break
+            # if i > 100000:
+            #     # return structures_by_id
+            #     break
 
             id = feature[0]
             feat_type = feature[1]
@@ -322,6 +332,37 @@ def parse_structures(canonical_ids, gff_path, gff_url):
     print('type(structures) 000')
     print(type(structures))
     return structures
+
+def sort_structures(structures, organism):
+    ranks = fetch_interesting_genes(organism)
+    print('ranks[0:10]')
+    print(ranks[0:10])
+    print('structures[0:10]')
+    print(structures[0:10])
+    sorted_structures = []
+
+    structures_with_genes = []
+    for structure in structures:
+        # E.g. FOO-BAR-404 -> FOO-BAR
+        gene = "".join(structure[0].split('-')[:-1])
+        structures_with_genes.append([gene] + structure)
+
+    # Sort genes by interest rank, and put unranked genes last
+    sorted_structures_with_genes = sorted(
+        structures_with_genes,
+        key=lambda x: ranks.index(x[0]) if x[0] in ranks else 1E10,
+    )
+
+    sorted_structures = []
+    for structure in sorted_structures_with_genes:
+        sorted_structures.append(structure[1:])
+
+    print('sorted_structures[0:10]')
+    print(sorted_structures[0:10])
+
+    return sorted_structures
+
+
 
 class GeneStructureCache():
     """Convert Ensembl BioMart TSVs to compact TSVs for Ideogram.js caches
@@ -369,7 +410,7 @@ class GeneStructureCache():
 
         # print('structures')
         # print(structures)
-        structure_lines = "\n".join(structures)
+        structure_lines = "\n".join(["\t".join(s) for s in structures])
         content = headers + structure_lines
 
         org_lch = organism.lower().replace(" ", "-")
@@ -392,13 +433,13 @@ class GeneStructureCache():
         [gff_path, gff_url] = fetch_gff(organism, self.output_dir, True)
 
         structures = parse_structures(canonical_ids, gff_path, gff_url)
-        print('type(structures)')
-        print(type(structures))
+
+        sorted_structures = sort_structures(structures, organism)
         prefix = ""
-        bmtsv_url = ''
+        bmtsv_url = ""
 
         # sorted_slim_genes = sort_by_interest(slim_genes, organism)
-        self.write(structures, organism, prefix, bmtsv_url)
+        self.write(sorted_structures, organism, prefix, bmtsv_url)
 
     def populate(self):
         """Fill gene caches for all configured organisms

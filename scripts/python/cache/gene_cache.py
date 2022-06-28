@@ -75,7 +75,7 @@ def parse_gff_info_field(info):
     Example INFO field:
     gene_id "ENSMUSG00000102628"; gene_version "2"; gene_name "Gm37671"; gene_source "havana"; gene_biotype "TEC";
     """
-    fields = [f.strip() for f in info.split(';')][:-1]
+    fields = [f.strip() for f in info.split(';')]
     kvs = [f.split("=") for f in fields]
     info_dict = {}
     for kv in kvs:
