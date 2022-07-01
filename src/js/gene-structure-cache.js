@@ -39,8 +39,8 @@ function deserializeSubparts(rawSubparts) {
     const rawSubpart = rawSubparts[i].split(';');
     const subpartType = subpartTypes[parseInt(rawSubpart[0])];
     const start = parseInt(rawSubpart[1]);
-    const stop = parseInt(rawSubpart[1]);
-    const subpart = [subpartType, start, stop];
+    const length = parseInt(rawSubpart[2]);
+    const subpart = [subpartType, start, length];
     subparts.push(subpart);
   }
   return subparts;

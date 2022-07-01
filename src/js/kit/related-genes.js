@@ -969,6 +969,44 @@ function adjustPlaceAndVisibility(ideo) {
   }
 }
 
+function getGeneStructureSvg(gene, ideo) {
+  const subparts = ideo.geneStructureCache[gene].subparts;
+  const featureLengthBp = subparts.slice(-1)[0][2];
+
+  const featureLengthPx = 50;
+
+  const pxPerBp = featureLengthPx / featureLengthBp;
+
+  const intronHeight = 2;
+  const heights = {
+    "5'-UTR": 10,
+    'exon': 5,
+    "3'-UTR": 10
+  };
+
+  const geneStructure = [];
+
+  for (let i = 0; i < subparts.length; i++) {
+    const subpart = subparts[i];
+    const subpartType = subpart[0];
+    let height = intronHeight;
+    if (subpartType in heights) {
+      height = heights[subpartType];
+    }
+    const left = subpart[1] * pxPerBp;
+    const length = subpart[2] * pxPerBp;
+    const right = left + length;
+    const subpartSvg = (
+      `<rect fill="black" x="${left}" width="${length}" y="0" height="${height}" />`
+    );
+    geneStructure.push(subpartSvg);
+  }
+  const geneStructureSvg = '<svg>' + geneStructure.join('') + '</svg>';
+  console.log('geneStructureSvg');
+  console.log(geneStructureSvg);
+  return geneStructureSvg;
+}
+
 function sortByPathwayIxn(a, b) {
   const aColor = a.color;
   const bColor = b.color;
@@ -1211,6 +1249,7 @@ function handleTooltipClick(ideo) {
       }
       const annotName = geneDom.textContent;
       const annot = getAnnotByName(annotName, ideo);
+
       ideo.onClickAnnot(annot);
     });
 
@@ -1270,10 +1309,13 @@ function decorateRelatedGene(annot) {
     fullNameAndRank = `<span title="${rank}">${fullName}</span>`;
   }
 
+  const geneStructureSvg = getGeneStructureSvg(annot.name, ideo);
+
   let originalDisplay =
     `<span id="ideo-related-gene" ${style}>${annot.name}</span><br/>` +
     `${fullNameAndRank}<br/>` +
     `${description}` +
+    `${geneStructureSvg}` +
     `<br/>`;
 
   if (annot.name.includes('paralogNeighborhood')) {
