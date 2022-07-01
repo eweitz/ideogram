@@ -208,9 +208,9 @@ def compress_biotype(biotype, biotype_map):
 
 
 tc_map = {
-    'exon': '0',
-    'three_prime_UTR': '1',
-    'five_prime_UTR': '2',
+    'five_prime_UTR': '0',
+    'exon': '1',
+    'three_prime_UTR': '2',
 }
 def parse_transcript_component(raw_tc, mrna_start):
     # transcript_id, feat_type, chr, start, stop, exon_id, constitutive, ensembl_phase, rank

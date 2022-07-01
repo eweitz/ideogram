@@ -37,6 +37,7 @@ import {getDir, deepCopy} from '../lib';
 import initGeneCache, {getEnsemblId} from '../gene-cache';
 import initParalogCache, {hasParalogCache} from '../paralog-cache';
 import initInteractionCache from '../interaction-cache';
+import initGeneStructureCache from '../gene-structure-cache';
 import {
   fetchGpmls, summarizeInteractions, fetchPathwayInteractions
 } from './wikipathways';
@@ -1438,10 +1439,12 @@ function _initRelatedGenes(config, annotsInList) {
   initAnalyzeRelatedGenes(ideogram);
 
   let cacheDir = null;
+  const organism = ideogram.config.organism;
   if (config.cacheDir) cacheDir = config.cacheDir;
-  initGeneCache(ideogram.config.organism, ideogram, cacheDir);
-  initParalogCache(ideogram.config.organism, ideogram, cacheDir);
-  initInteractionCache(ideogram.config.organism, ideogram, cacheDir);
+  initGeneCache(organism, ideogram, cacheDir);
+  initParalogCache(organism, ideogram, cacheDir);
+  initInteractionCache(organism, ideogram, cacheDir);
+  initGeneStructureCache(organism, ideogram, cacheDir);
 
   return ideogram;
 }
@@ -1563,10 +1566,12 @@ function _initGeneHints(config, annotsInList) {
   initAnalyzeRelatedGenes(ideogram);
 
   let cacheDir = null;
+  const organism = ideogram.config.organism;
   if (config.cacheDir) cacheDir = config.cacheDir;
-  initGeneCache(ideogram.config.organism, ideogram, cacheDir);
-  initParalogCache(ideogram.config.organism, ideogram, cacheDir);
-  initInteractionCache(ideogram.config.organism, ideogram, cacheDir);
+  initGeneCache(organism, ideogram, cacheDir);
+  initParalogCache(organism, ideogram, cacheDir);
+  initInteractionCache(organism, ideogram, cacheDir);
+  initGeneStructureCache(organism, ideogram, cacheDir);
 
   return ideogram;
 }
