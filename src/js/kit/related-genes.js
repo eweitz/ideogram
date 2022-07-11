@@ -1017,7 +1017,7 @@ function getGeneStructureSvg(gene, ideo) {
     const length = subpart[2] / bpPerPx;
     const posAttrs = `x="${left}" width="${length}" y="0" height="${height}"`;
     const subpartSvg = (
-      `<rect fill="${color}" ${posAttrs} />`
+      `<rect rx="1.5" fill="${color}" ${posAttrs} />`
     );
     geneStructureArray.push(subpartSvg);
   }
