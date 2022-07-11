@@ -240,6 +240,34 @@ describe('Ideogram related genes kit', function() {
   //   const ideogram = Ideogram.initRelatedGenes(config);
   // });
 
+  it('handles gene with paralog neighborhoods', done => {
+
+    async function callback() {
+      const ideo = this;
+
+      await ideo.plotRelatedGenes('LPL');
+
+      const chr10ParalogNeighborhoods = ideo.annotsOther['9'].annots;
+      assert.equal(chr10ParalogNeighborhoods.length, 1);
+
+      done();
+    }
+
+    function onClickAnnot(annot) {
+      ideogram.plotRelatedGenes(annot.name);
+    }
+
+    var config = {
+      organism: 'Homo sapiens', // Also tests standard, non-slugged name
+      onLoad: callback,
+      dataDir: '/dist/data/bands/native/',
+      cacheDir: '/dist/data/cache/',
+      onClickAnnot
+    };
+
+    const ideogram = Ideogram.initRelatedGenes(config);
+  });
+
   it('handles gene with no interacting genes and no paralogs', done => {
 
     async function callback() {

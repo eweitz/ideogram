@@ -40,7 +40,7 @@ function parseFriendlyKeys(friendlyAnnots) {
 /**
  * Draws annotations defined by user
  */
-function drawAnnots(friendlyAnnots) {
+function drawAnnots(friendlyAnnots, layout, keep=false, isOtherLayout=false) {
   var keys, chr,
     rawAnnots = [],
     ideo = this,
@@ -50,7 +50,7 @@ function drawAnnots(friendlyAnnots) {
     'annots' in friendlyAnnots[0] || // When filtering
     'values' in friendlyAnnots[0] // When drawing cached expression matrices
   ) {
-    return ideo.drawProcessedAnnots(friendlyAnnots);
+    return ideo.drawProcessedAnnots(friendlyAnnots, layout);
   }
 
   for (chr in chrs) {
@@ -61,9 +61,15 @@ function drawAnnots(friendlyAnnots) {
   keys = parseFriendlyKeys(friendlyAnnots);
 
   ideo.rawAnnots = {keys: keys, annots: rawAnnots};
-  ideo.annots = ideo.processAnnotData(ideo.rawAnnots);
 
-  ideo.drawProcessedAnnots(ideo.annots);
+  const processedAnnots = ideo.processAnnotData(ideo.rawAnnots);
+  if (!isOtherLayout) {
+    ideo.annots = processedAnnots;
+  } else {
+    ideo.annotsOther = processedAnnots;
+  }
+
+  ideo.drawProcessedAnnots(processedAnnots, layout, keep);
 }
 
 function getShapes(annotHeight) {
@@ -207,13 +213,14 @@ function drawAnnotsByLayoutType(layout, annots, ideo) {
  * on a chromosome, or along one or more "tracks"
  * running parallel to each chromosome.
  */
-function drawProcessedAnnots(annots) {
-  var layout,
-    ideo = this;
+function drawProcessedAnnots(annots, layout, keep=false) {
+  var ideo = this;
 
-  d3.selectAll(ideo.selector + ' .annot').remove();
+  if (!keep) {
+    d3.selectAll(ideo.selector + ' .annot').remove();
+  }
 
-  layout = 'tracks';
+  if (layout === undefined) layout = 'tracks';
   if (ideo.config.annotationsLayout) layout = ideo.config.annotationsLayout;
 
   if ('legend' in ideo.config) writeLegend(ideo);
