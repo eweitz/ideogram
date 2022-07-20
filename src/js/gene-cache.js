@@ -141,8 +141,8 @@ function parseOrgMetadata(orgName) {
   return organismMetadata[taxid] || {};
 }
 
-/** Reports if current organism has a gene cache */
-function hasGeneCache(orgName) {
+/** Reports if current organism has gene cache support */
+function hasGeneCacheSupport(orgName) {
   const metadata = parseOrgMetadata(orgName);
   return (metadata.hasGeneCache && metadata.hasGeneCache === true);
 }
@@ -177,7 +177,7 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
   perfTimes = {};
 
   // Skip initialization if files needed to make cache don't exist
-  if (!hasGeneCache(orgName)) return;
+  if (!hasGeneCacheSupport(orgName)) return;
 
   // Skip initialization if cache is already populated
   if (Ideogram.geneCache && Ideogram.geneCache[orgName]) {
