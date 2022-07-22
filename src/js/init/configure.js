@@ -92,9 +92,10 @@ function configureSingleChromosome(config, ideo) {
   }
 }
 
-function configureOrganisms(ideo) {
+function configureOrganisms(config, ideo) {
   ideo.organisms = Object.assign({}, organismMetadata);
-  ideo.organismsWithBands = Object.assign({}, ideo.organisms);
+  if (config.taxid && config.organismMetadata) ideo.organisms[config.taxid] = config.organismMetadata
+  ideo.organismsWithBands = Object.assign({}, organismMetadata);
 }
 
 function configureCallbacks(config, ideo) {
@@ -183,7 +184,7 @@ function configure(config) {
   configureWidth(this);
   configureMargin(this);
   configureCallbacks(config, this);
-  configureOrganisms(this);
+  configureOrganisms(config, this);
   configureBump(this);
   configureSingleChromosome(config, this);
   configureTextStyle(this);
