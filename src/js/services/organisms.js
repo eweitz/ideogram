@@ -71,7 +71,7 @@ function setTaxidData(taxid, ideo) {
     return fetchWithRetry(chromosomesUrl)
       .then(response => {
         return response.json().then(function(json) {
-          resolve(json.chrBands);
+          resolve(json);
         });
       })
       .catch((errorMessage) => {
@@ -80,17 +80,18 @@ function setTaxidData(taxid, ideo) {
   });
 
   return promise2
-    .then(function(chrBands) {
+    .then(function(chrData) {
       // Check if chromosome data exists locally.
       // This is used for pre-processed centromere data,
       // which is not accessible via EUtils.  See get_chromosomes.py.
+      var chrBands = chrData.chrBands
 
       var asmAndChrTaxidsArray = [''],
         chromosomes = [],
         seenChrs = {},
         chr, maxLength, splitBand, length;
 
-      ideo.bandData[taxid] = chrBands;
+      ideo.bandData[chrData.taxid] = chrBands;
 
       for (var i = 0; i < chrBands.length; i++) {
         splitBand = chrBands[i].split(' ');
