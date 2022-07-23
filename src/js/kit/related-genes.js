@@ -1034,14 +1034,14 @@ function getGeneStructureSvg(gene, ideo) {
       'transform="scale(-1 1)" ' +
       'style="position: relative; left: -10px;"';
   }
-  const title =
-    `<title>
-      Canonical transcript&#013;
-      Exons: ${numExons}
-    </title>`;
+  const titleData = [
+    `Transcript name: ${geneStructure.transcriptName}`,
+    `Strand: ${geneStructure.strand}`,
+    `Exons: ${numExons}`
+  ].join('&#013;'); // Newline, entity-encoded to render in browser default UI
   const geneStructureSvg =
     `<svg width="${(featureLengthPx + 20)}" height="25" ${transform}>` +
-      `${title}` +
+      `<title>${titleData}</title>` +
       geneStructureArray.join('') +
     '</svg>';
   // console.log('geneStructureSvg');
@@ -1350,8 +1350,6 @@ function decorateRelatedGene(annot) {
     const rank = 'Ranked ' + annot.rank + ' in general or scholarly interest';
     fullNameAndRank = `<span title="${rank}">${fullName}</span>`;
   }
-  console.log('rank')
-  console.log(annot.rank)
 
   const geneStructureSvg = getGeneStructureSvg(annot.name, ideo);
 
@@ -1359,7 +1357,8 @@ function decorateRelatedGene(annot) {
     `<span id="ideo-related-gene" ${style}>${annot.name}</span><br/>` +
     `${fullNameAndRank}<br/>` +
     `${description}` +
-    '<br/><br/><br/>' +
+    '<br/><br/>' +
+    'Canonical transcript<br/><br/>' +
     `${geneStructureSvg}` +
     `<br/>`;
 
