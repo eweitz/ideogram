@@ -971,7 +971,8 @@ function adjustPlaceAndVisibility(ideo) {
 
 function getGeneStructureSvg(gene, ideo) {
   const geneStructure = ideo.geneStructureCache[gene];
-  let subparts = geneStructure.subparts;
+  console.log(geneStructure);
+  const subparts = geneStructure.subparts;
   const lastSubpart = subparts.slice(-1)[0];
   const featureLengthBp = lastSubpart[1] + lastSubpart[2];
 
@@ -983,7 +984,7 @@ function getGeneStructureSvg(gene, ideo) {
   const intronColor = 'black';
   const heights = {
     "5'-UTR": 20,
-    'exon': 10,
+    'exon': 15,
     "3'-UTR": 20
   };
 
@@ -998,9 +999,11 @@ function getGeneStructureSvg(gene, ideo) {
   const intronPosAttrs =
     `x="0" width="${featureLengthPx}" y="5" height="${intronHeight}"`;
   const intronRect =
-    `<rect fill="black" ${intronPosAttrs}/>`
+    `<rect fill="black" ${intronPosAttrs}/>`;
 
   geneStructureArray.push(intronRect);
+
+  let numExons = 0;
 
   for (let i = 0; i < subparts.length; i++) {
     const subpart = subparts[i];
@@ -1008,6 +1011,9 @@ function getGeneStructureSvg(gene, ideo) {
     let color = intronColor;
     if (subpartType in colors) {
       color = colors[subpartType];
+    }
+    if (subpartType === 'exon') {
+      numExons += 1;
     }
     let height = intronHeight;
     if (subpartType in heights) {
@@ -1022,16 +1028,24 @@ function getGeneStructureSvg(gene, ideo) {
     geneStructureArray.push(subpartSvg);
   }
 
-  let transform = '';
+  let transform = 'style="position: relative; left: 10px;"';
   if (geneStructure.strand === '-') {
-    transform = 'transform="scale(-1 1)"';
+    transform =
+      'transform="scale(-1 1)" ' +
+      'style="position: relative; left: -10px;"';
   }
+  const title =
+    `<title>
+      Canonical transcript&#013;
+      Exons: ${numExons}
+    </title>`;
   const geneStructureSvg =
     `<svg width="${(featureLengthPx + 20)}" height="25" ${transform}>` +
-    geneStructureArray.join('') +
+      `${title}` +
+      geneStructureArray.join('') +
     '</svg>';
-  console.log('geneStructureSvg');
-  console.log(geneStructureSvg);
+  // console.log('geneStructureSvg');
+  // console.log(geneStructureSvg);
   return geneStructureSvg;
 }
 
@@ -1336,6 +1350,8 @@ function decorateRelatedGene(annot) {
     const rank = 'Ranked ' + annot.rank + ' in general or scholarly interest';
     fullNameAndRank = `<span title="${rank}">${fullName}</span>`;
   }
+  console.log('rank')
+  console.log(annot.rank)
 
   const geneStructureSvg = getGeneStructureSvg(annot.name, ideo);
 
