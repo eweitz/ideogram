@@ -983,21 +983,21 @@ function getGeneStructureSvg(gene, ideo) {
   const intronHeight = 1;
   const intronColor = 'black';
   const heights = {
-    "5'-UTR": 20,
-    'exon': 15,
-    "3'-UTR": 20
+    "5'-UTR": 15,
+    'exon': 20,
+    "3'-UTR": 15
   };
 
   const colors = {
-    "5'-UTR": 'brown',
-    'exon': 'blue',
-    "3'-UTR": 'orange'
+    "5'-UTR": '#155069',
+    'exon': '#DAA521',
+    "3'-UTR": '#357089'
   };
 
   const geneStructureArray = [];
 
   const intronPosAttrs =
-    `x="0" width="${featureLengthPx}" y="5" height="${intronHeight}"`;
+    `x="0" width="${featureLengthPx}" y="10" height="${intronHeight}"`;
   const intronRect =
     `<rect fill="black" ${intronPosAttrs}/>`;
 
@@ -1016,14 +1016,15 @@ function getGeneStructureSvg(gene, ideo) {
       numExons += 1;
     }
     let height = intronHeight;
+    let y = subpartType === 'exon' ? 0 : 2.5;
     if (subpartType in heights) {
       height = heights[subpartType];
     }
     const left = subpart[1] / bpPerPx;
     const length = subpart[2] / bpPerPx;
-    const posAttrs = `x="${left}" width="${length}" y="0" height="${height}"`;
+    const pos = `x="${left}" width="${length}" y="${y}" height="${height}"`;
     const subpartSvg = (
-      `<rect rx="1.5" fill="${color}" ${posAttrs} />`
+      `<rect rx="1.5" fill="${color}" ${pos} />`
     );
     geneStructureArray.push(subpartSvg);
   }
