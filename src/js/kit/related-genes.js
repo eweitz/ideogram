@@ -1005,8 +1005,13 @@ function getGeneStructureSvg(gene, ideo) {
 
   let numExons = 0;
 
-  for (let i = 0; i < subparts.length; i++) {
-    const subpart = subparts[i];
+  const sortedSubparts = subparts.sort((a, b) => {
+    if (a[0] === 'exon' && b[0] !== 'exon') return -1;
+    if (a[0] !== 'exon' && b[0] === 'exon') return 1;
+  });
+
+  for (let i = 0; i < sortedSubparts.length; i++) {
+    const subpart = sortedSubparts[i];
     const subpartType = subpart[0];
     let color = intronColor;
     if (subpartType in colors) {
@@ -1016,7 +1021,7 @@ function getGeneStructureSvg(gene, ideo) {
       numExons += 1;
     }
     let height = intronHeight;
-    let y = subpartType === 'exon' ? 0 : 2.5;
+    const y = subpartType === 'exon' ? 0 : 2.5;
     if (subpartType in heights) {
       height = heights[subpartType];
     }
