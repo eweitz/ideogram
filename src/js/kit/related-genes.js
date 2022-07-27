@@ -1357,15 +1357,20 @@ function decorateRelatedGene(annot) {
     fullNameAndRank = `<span title="${rank}">${fullName}</span>`;
   }
 
-  const geneStructureSvg = getGeneStructureSvg(annot.name, ideo);
+  let geneStructureHtml = '';
+  if (ideo.config.showGeneStructureInTooltip) {
+    const geneStructureSvg = getGeneStructureSvg(annot.name, ideo);
+    geneStructureHtml =
+      '<br/><br/>' +
+      'Canonical transcript<br/><br/>' +
+      `${geneStructureSvg}`;
+  }
 
   let originalDisplay =
     `<span id="ideo-related-gene" ${style}>${annot.name}</span><br/>` +
     `${fullNameAndRank}<br/>` +
-    `${description}` +
-    '<br/><br/>' +
-    'Canonical transcript<br/><br/>' +
-    `${geneStructureSvg}` +
+    description +
+    geneStructureHtml +
     `<br/>`;
 
   if (annot.name.includes('paralogNeighborhood')) {
@@ -1536,7 +1541,9 @@ function _initRelatedGenes(config, annotsInList) {
   initGeneCache(organism, ideogram, cacheDir);
   initParalogCache(organism, ideogram, cacheDir);
   initInteractionCache(organism, ideogram, cacheDir);
-  initGeneStructureCache(organism, ideogram, cacheDir);
+  if (ideogram.config.showGeneStructureInTooltip) {
+    initGeneStructureCache(organism, ideogram, cacheDir);
+  }
 
   return ideogram;
 }
@@ -1663,7 +1670,9 @@ function _initGeneHints(config, annotsInList) {
   initGeneCache(organism, ideogram, cacheDir);
   initParalogCache(organism, ideogram, cacheDir);
   initInteractionCache(organism, ideogram, cacheDir);
-  initGeneStructureCache(organism, ideogram, cacheDir);
+  if (ideogram.config.showGeneStructureInTooltip) {
+    initGeneStructureCache(organism, ideogram, cacheDir);
+  }
 
   return ideogram;
 }
