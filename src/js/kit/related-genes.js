@@ -1045,8 +1045,9 @@ function getGeneStructureSvg(gene, ideo) {
   }
   const titleData = [
     `Transcript name: ${geneStructure.transcriptName}`,
-    `Strand: ${geneStructure.strand}`,
-    `Exons: ${numExons}`
+    `Exons: ${numExons}`,
+    `Biotype: ${geneStructure.biotype.replace(/_/g, ' ')}`,
+    `Strand: ${geneStructure.strand}`
   ].join('&#013;'); // Newline, entity-encoded to render in browser default UI
   const geneStructureSvg =
     `<svg width="${(featureLengthPx + 20)}" height="25" ${transform}>` +

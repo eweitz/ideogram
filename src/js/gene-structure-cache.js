@@ -30,14 +30,12 @@ function getCacheUrl(orgName, cacheDir) {
   return cacheUrl;
 }
 
-const subpartTypes = ["5'-UTR", 'exon', "3'-UTR"]
-
 /** Parse compressed feature subparts to more easily computable format */
-function deserializeSubparts(rawSubparts) {
+function deserializeSubparts(rawSubparts, subpartKeys) {
   const subparts = [];
   for (let i = 0; i < rawSubparts.length; i++) {
     const rawSubpart = rawSubparts[i].split(';');
-    const subpartType = subpartTypes[parseInt(rawSubpart[0])];
+    const subpartType = subpartKeys[parseInt(rawSubpart[0])];
     const start = parseInt(rawSubpart[1]);
     const length = parseInt(rawSubpart[2]);
     const subpart = [subpartType, start, length];
@@ -48,6 +46,18 @@ function deserializeSubparts(rawSubparts) {
 
 const biotypes = ['protein coding', 'foo', 'bar'];
 
+function parseMetainformationHeader(line) {
+  const splitHead = line.split(' keys: ');
+  if (splitHead.length < 2) return [null];
+  const metaHeader = splitHead[0].split('## ')[1];
+  const keys = {};
+  splitHead[1].split(', ').forEach(entry => {
+    const splitEntry = entry.split(' = ');
+    keys[splitEntry[0]] = splitEntry[1];
+  });
+  return [metaHeader, keys];
+}
+
 /** Parse a gene structure cache TSV file, return array of useful transforms */
 function parseCache(rawTsv) {
   const featuresByGene = {};
@@ -56,11 +66,21 @@ function parseCache(rawTsv) {
   const lines = rawTsv.split(/\r\n|\n/);
   perfTimes.rawTsvSplit = Math.round(performance.now() - t0);
 
+  let biotypeKeys, subpartKeys;
+
   t0 = performance.now();
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (line === '') continue; // Skip empty lines
     if (line[0] === '#') {
+      if (line[1] === '#') {
+        const [metaHeader, keys] = parseMetainformationHeader(line);
+        if (metaHeader === 'biotype') {
+          biotypeKeys = keys;
+        } else if (metaHeader === 'subpart') {
+          subpartKeys = keys;
+        }
+      }
       continue;
     }
     const splitLine = line.trim().split(/\t/);
@@ -72,9 +92,9 @@ function parseCache(rawTsv) {
     const gene = transcriptName.split('-').slice(0, -1).join('-');
 
     const rawSubparts = splitLine.slice(3);
-    const subparts = deserializeSubparts(rawSubparts);
+    const subparts = deserializeSubparts(rawSubparts, subpartKeys);
 
-    const biotype = biotypes[biotypeCompressed];
+    const biotype = biotypeKeys[biotypeCompressed];
 
     const feature = {
       transcriptName,
@@ -137,7 +157,6 @@ export default async function initGeneStructureCache(
   const startTime = performance.now();
   perfTimes = {};
 
-  console.log('in initGeneStructureCache')
   // Skip initialization if files needed to make cache don't exist
   if (!hasGeneStructureCache(orgName)) return;
 

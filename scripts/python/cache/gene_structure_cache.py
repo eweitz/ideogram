@@ -207,31 +207,31 @@ def compress_biotype(biotype, biotype_map):
         new_last = last + 1
 
 
-tc_map = {
+subpart_map = {
     'five_prime_UTR': '0',
     'exon': '1',
     'three_prime_UTR': '2',
 }
-def parse_transcript_component(raw_tc, mrna_start):
+def parse_transcript_subpart(raw_subpart, mrna_start):
     # transcript_id, feat_type, chr, start, stop, exon_id, constitutive, ensembl_phase, rank
     # ENST00000641515 exon    1       65419   65433   ENSE00003812156 0       -1      1
 
-    biotype_compressed = ""
-    biotype = raw_tc[1]
-    if biotype in tc_map:
-        biotype_compressed = tc_map[biotype]
+    subpart_type_compressed = ""
+    subpart_type = raw_subpart[1]
+    if subpart_type in subpart_map:
+        subpart_type_compressed = subpart_map[subpart_type]
     else:
-        print('biotype: ', biotype)
+        print('subpart_type: ', subpart_type)
 
     # Use mRNA-relative start coordinate
-    start = get_length(mrna_start, raw_tc[3])
+    start = get_length(mrna_start, raw_subpart[3])
 
     # Length of this exon
-    length = get_length(raw_tc[3], raw_tc[4])
+    length = get_length(raw_subpart[3], raw_subpart[4])
 
-    return [biotype_compressed, start, length]
+    return [subpart_type_compressed, start, length]
 
-def parse_mrna(raw_mrna):
+def parse_mrna(raw_mrna, biotypes_list):
     # transcript_id, feat_type, chr, start, stop, strand, name, gene_id, biotype, transcript_support_level
     # ENST00000616016 mRNA    1       925741  944581  SAMD11-210      ENSG00000187634 protein_coding  5
     transcript_id = raw_mrna[0]
@@ -245,15 +245,13 @@ def parse_mrna(raw_mrna):
 
     name = raw_mrna[6]
     # gene_id = raw_mrna[7]
-    biotype_compressed = str(biotypes[raw_mrna[8]])
+    biotype_compressed = str(biotypes_list.index(raw_mrna[8]))
 
     # return [transcript_id, chr, start, length, name, gene_id, biotype]
     return [[name, biotype_compressed, strand], start]
 
 def build_structures(structures_by_id):
     biotypes_list = list(biotypes.keys())
-    for biotype, i in enumerate(biotypes_list):
-        biotypes[biotype] = i
 
     structures = []
     for id in structures_by_id:
@@ -261,12 +259,12 @@ def build_structures(structures_by_id):
         if structure_lists[0][1] != "mRNA":
             continue
         structure = []
-        [mrna, mrna_start] = parse_mrna(structure_lists[0])
+        [mrna, mrna_start] = parse_mrna(structure_lists[0], biotypes_list)
         structure += mrna
 
         for structure_list in structure_lists[1:]:
-            tc = parse_transcript_component (structure_list, mrna_start)
-            structure += [";".join(tc) ]
+            subpart = parse_transcript_subpart(structure_list, mrna_start)
+            structure += [";".join(subpart) ]
 
         structures.append(structure)
 
@@ -306,7 +304,7 @@ def parse_structures(canonical_ids, gff_path, gff_url):
                 continue
 
 
-            if (i % 1000 == 0):
+            if (i % 10000 == 0):
                 print(f"On entry {i}")
                 print(feature)
 
@@ -332,8 +330,6 @@ def parse_structures(canonical_ids, gff_path, gff_url):
             # slim_genes.append([chr, start, length, slim_id, symbol, desc])
 
     structures = build_structures(structures_by_id)
-    print('type(structures) 000')
-    print(type(structures))
     return structures
 
 def sort_structures(structures, organism):
@@ -404,12 +400,18 @@ class GeneStructureCache():
     def write(self, structures, organism, gff_url, bmtsv_url):
         """Save fetched and transformed gene data to cache file
         """
+        biotypes_list = list(biotypes.keys())
+        biotype_keys = ", ".join([
+            f"{str(i)} = {key}" for i, key in enumerate(biotypes_list)
+        ])
+
         headers = "\n".join([
             f"## Ideogram.js gene structure cache for {organism}",
             f"## Derived from: {gff_url}",
             f"## Filtered to only canonical transcripts using Ensembl BioMart: {bmtsv_url}",
-            f"## features: <transcript_component>;<start (transcript-relative)>;<end (transcript-relative)>",
-            f"## transcript_component: 0 = 3'-UTR, 1 = exon, 2 = 5'-UTR",
+            f"## features: <subpart_compressed>;<start (transcript-relative)>;<end (transcript-relative)>",
+            f"## biotype keys: {biotype_keys}",
+            f"## subpart keys: 0 = 3'-UTR, 1 = exon, 2 = 5'-UTR",
             f"# transcript_name\tbiotype_compressed\t\tstrand\tfeatures"
         ]) + "\n"
 
