@@ -970,7 +970,12 @@ function adjustPlaceAndVisibility(ideo) {
 }
 
 function getGeneStructureSvg(gene, ideo) {
-  if (gene in ideo.geneStructureCache === false) return null;
+  if (
+    'geneStructureCache' in ideo === false ||
+    gene in ideo.geneStructureCache === false
+  ) {
+    return null;
+  }
 
   const geneStructure = ideo.geneStructureCache[gene];
   console.log(geneStructure);
