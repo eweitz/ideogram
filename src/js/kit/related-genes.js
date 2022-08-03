@@ -970,6 +970,8 @@ function adjustPlaceAndVisibility(ideo) {
 }
 
 function getGeneStructureSvg(gene, ideo) {
+  if (gene in ideo.geneStructureCache === false) return null;
+
   const geneStructure = ideo.geneStructureCache[gene];
   console.log(geneStructure);
   const subparts = geneStructure.subparts;
@@ -983,9 +985,9 @@ function getGeneStructureSvg(gene, ideo) {
   const intronHeight = 1;
   const intronColor = 'black';
   const heights = {
-    "5'-UTR": 15,
+    "5'-UTR": 20,
     'exon': 20,
-    "3'-UTR": 15
+    "3'-UTR": 20
   };
 
   const colors = {
@@ -1021,7 +1023,8 @@ function getGeneStructureSvg(gene, ideo) {
       numExons += 1;
     }
     let height = intronHeight;
-    const y = subpartType === 'exon' ? 0 : 2.5;
+    const y = 2.5;
+    // const y = subpartType === 'exon' ? 0 : 2.5;
     if (subpartType in heights) {
       height = heights[subpartType];
     }
@@ -1358,12 +1361,15 @@ function decorateRelatedGene(annot) {
   }
 
   let geneStructureHtml = '';
-  if (ideo.config.showGeneStructureInTooltip) {
+  const isParalogNeighborhood = annot.name.includes('paralogNeighborhood');
+  if (ideo.config.showGeneStructureInTooltip && !isParalogNeighborhood) {
     const geneStructureSvg = getGeneStructureSvg(annot.name, ideo);
-    geneStructureHtml =
-      '<br/><br/>' +
-      'Canonical transcript<br/><br/>' +
-      `${geneStructureSvg}`;
+    if (geneStructureSvg) {
+      geneStructureHtml =
+        '<br/><br/>' +
+        'Canonical transcript<br/><br/>' +
+        `${geneStructureSvg}`;
+    }
   }
 
   let originalDisplay =
@@ -1373,7 +1379,7 @@ function decorateRelatedGene(annot) {
     geneStructureHtml +
     `<br/>`;
 
-  if (annot.name.includes('paralogNeighborhood')) {
+  if (isParalogNeighborhood) {
 
     // Rank 1st highest, then put it last as it already has a triangle
     // annotation, and is often also labeled.

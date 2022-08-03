@@ -46,7 +46,7 @@ function deserializeSubparts(rawSubparts) {
   return subparts;
 }
 
-const biotypes = ['protein coding', 'foo', 'bar']
+const biotypes = ['protein coding', 'foo', 'bar'];
 
 /** Parse a gene structure cache TSV file, return array of useful transforms */
 function parseCache(rawTsv) {
