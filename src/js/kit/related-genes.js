@@ -37,6 +37,7 @@ import {getDir, deepCopy} from '../lib';
 import initGeneCache, {getEnsemblId} from '../gene-cache';
 import initParalogCache, {hasParalogCache} from '../paralog-cache';
 import initInteractionCache from '../interaction-cache';
+import initGeneStructureCache from '../gene-structure-cache';
 import {
   fetchGpmls, summarizeInteractions, fetchPathwayInteractions
 } from './wikipathways';
@@ -968,6 +969,100 @@ function adjustPlaceAndVisibility(ideo) {
   }
 }
 
+function getGeneStructureSvg(gene, ideo) {
+  if (
+    'geneStructureCache' in ideo === false ||
+    gene in ideo.geneStructureCache === false
+  ) {
+    return null;
+  }
+
+  const geneStructure = ideo.geneStructureCache[gene];
+  const subparts = geneStructure.subparts;
+  const lastSubpart = subparts.slice(-1)[0];
+  const featureLengthBp = lastSubpart[1] + lastSubpart[2];
+
+  const featureLengthPx = 250;
+
+  const bpPerPx = featureLengthBp / featureLengthPx;
+
+  const intronHeight = 1;
+  const intronColor = 'black';
+  const heights = {
+    "5'-UTR": 20,
+    'exon': 20,
+    "3'-UTR": 20
+  };
+
+  const colors = {
+    "5'-UTR": '#155069',
+    'exon': '#DAA521',
+    "3'-UTR": '#357089'
+  };
+
+  const geneStructureArray = [];
+
+  const intronPosAttrs =
+    `x="0" width="${featureLengthPx}" y="10" height="${intronHeight}"`;
+  const intronRect =
+    `<rect fill="black" ${intronPosAttrs}/>`;
+
+  geneStructureArray.push(intronRect);
+
+  let numExons = 0;
+
+  const sortedSubparts = subparts.sort((a, b) => {
+    if (a[0] === 'exon' && b[0] !== 'exon') return -1;
+    if (a[0] !== 'exon' && b[0] === 'exon') return 1;
+  });
+
+  for (let i = 0; i < sortedSubparts.length; i++) {
+    const subpart = sortedSubparts[i];
+    const subpartType = subpart[0];
+    let color = intronColor;
+    if (subpartType in colors) {
+      color = colors[subpartType];
+    }
+    if (subpartType === 'exon') {
+      numExons += 1;
+    }
+    let height = intronHeight;
+    const y = 2.5;
+    // const y = subpartType === 'exon' ? 0 : 2.5;
+    if (subpartType in heights) {
+      height = heights[subpartType];
+    }
+    const left = subpart[1] / bpPerPx;
+    const length = subpart[2] / bpPerPx;
+    const pos = `x="${left}" width="${length}" y="${y}" height="${height}"`;
+    const subpartSvg = (
+      `<rect rx="1.5" fill="${color}" ${pos} />`
+    );
+    geneStructureArray.push(subpartSvg);
+  }
+
+  let transform = 'style="position: relative; left: 10px;"';
+  if (geneStructure.strand === '-') {
+    transform =
+      'transform="scale(-1 1)" ' +
+      'style="position: relative; left: -10px;"';
+  }
+  const titleData = [
+    `Transcript name: ${geneStructure.transcriptName}`,
+    `Exons: ${numExons}`,
+    `Biotype: ${geneStructure.biotype.replace(/_/g, ' ')}`,
+    `Strand: ${geneStructure.strand}`
+  ].join('&#013;'); // Newline, entity-encoded to render in browser default UI
+  const geneStructureSvg =
+    `<svg width="${(featureLengthPx + 20)}" height="25" ${transform}>` +
+      `<title>${titleData}</title>` +
+      geneStructureArray.join('') +
+    '</svg>';
+  // console.log('geneStructureSvg');
+  // console.log(geneStructureSvg);
+  return geneStructureSvg;
+}
+
 function sortByPathwayIxn(a, b) {
   const aColor = a.color;
   const bColor = b.color;
@@ -1156,9 +1251,9 @@ function getAnnotByName(annotName, ideo) {
   return annotByName;
 }
 
-// /**
-//  * Manage click on pathway links in annotation tooltips
-//  */
+/**
+ * Manage click on pathway links in annotation tooltips
+ */
 // function managePathwayClickHandlers(searchedGene, ideo) {
 //   setTimeout(function() {
 //     const pathways = document.querySelectorAll('.ideo-pathway-link');
@@ -1210,6 +1305,7 @@ function handleTooltipClick(ideo) {
       }
       const annotName = geneDom.textContent;
       const annot = getAnnotByName(annotName, ideo);
+
       ideo.onClickAnnot(annot);
     });
 
@@ -1269,13 +1365,26 @@ function decorateRelatedGene(annot) {
     fullNameAndRank = `<span title="${rank}">${fullName}</span>`;
   }
 
+  let geneStructureHtml = '';
+  const isParalogNeighborhood = annot.name.includes('paralogNeighborhood');
+  if (ideo.config.showGeneStructureInTooltip && !isParalogNeighborhood) {
+    const geneStructureSvg = getGeneStructureSvg(annot.name, ideo);
+    if (geneStructureSvg) {
+      geneStructureHtml =
+        '<br/><br/>' +
+        'Canonical transcript<br/><br/>' +
+        `${geneStructureSvg}`;
+    }
+  }
+
   let originalDisplay =
     `<span id="ideo-related-gene" ${style}>${annot.name}</span><br/>` +
     `${fullNameAndRank}<br/>` +
-    `${description}` +
+    description +
+    geneStructureHtml +
     `<br/>`;
 
-  if (annot.name.includes('paralogNeighborhood')) {
+  if (isParalogNeighborhood) {
 
     // Rank 1st highest, then put it last as it already has a triangle
     // annotation, and is often also labeled.
@@ -1438,10 +1547,14 @@ function _initRelatedGenes(config, annotsInList) {
   initAnalyzeRelatedGenes(ideogram);
 
   let cacheDir = null;
+  const organism = ideogram.config.organism;
   if (config.cacheDir) cacheDir = config.cacheDir;
-  initGeneCache(ideogram.config.organism, ideogram, cacheDir);
-  initParalogCache(ideogram.config.organism, ideogram, cacheDir);
-  initInteractionCache(ideogram.config.organism, ideogram, cacheDir);
+  initGeneCache(organism, ideogram, cacheDir);
+  initParalogCache(organism, ideogram, cacheDir);
+  initInteractionCache(organism, ideogram, cacheDir);
+  if (ideogram.config.showGeneStructureInTooltip) {
+    initGeneStructureCache(organism, ideogram, cacheDir);
+  }
 
   return ideogram;
 }
@@ -1563,10 +1676,14 @@ function _initGeneHints(config, annotsInList) {
   initAnalyzeRelatedGenes(ideogram);
 
   let cacheDir = null;
+  const organism = ideogram.config.organism;
   if (config.cacheDir) cacheDir = config.cacheDir;
-  initGeneCache(ideogram.config.organism, ideogram, cacheDir);
-  initParalogCache(ideogram.config.organism, ideogram, cacheDir);
-  initInteractionCache(ideogram.config.organism, ideogram, cacheDir);
+  initGeneCache(organism, ideogram, cacheDir);
+  initParalogCache(organism, ideogram, cacheDir);
+  initInteractionCache(organism, ideogram, cacheDir);
+  if (ideogram.config.showGeneStructureInTooltip) {
+    initGeneStructureCache(organism, ideogram, cacheDir);
+  }
 
   return ideogram;
 }

@@ -1,4 +1,4 @@
-import {d3} from '../lib';
+import {d3, formatSiPrefix} from '../lib';
 // import {getShapes} from './draw';
 
 /**
@@ -63,7 +63,12 @@ function renderTooltip(tooltip, content, matrix, yOffset, ideo) {
     });
 }
 
-function getContentAndYOffset(annot) {
+function getCoarseBpLength(annot) {
+  const length = Math.abs(annot.stop - annot.start);
+  return formatSiPrefix(length) + 'bp';
+}
+
+function getContentAndYOffset(annot, includeLength=false) {
   var content, yOffset, range, displayName;
 
   range = 'chr' + annot.chr + ':' + annot.start.toLocaleString();
@@ -72,6 +77,7 @@ function getContentAndYOffset(annot) {
   } else if (annot.length > 0) {
     // Only show range if stop differs from start
     range += '-' + annot.stop.toLocaleString();
+    if (includeLength) range += ' (' + getCoarseBpLength(annot) + ')';
   }
   content = range;
   yOffset = 24;
@@ -168,7 +174,8 @@ function showAnnotTooltip(annot, context) {
 
   matrix = context.getScreenCTM().translate(cx, cy);
 
-  [content, yOffset] = getContentAndYOffset(annot);
+  const includeLength = true;
+  [content, yOffset] = getContentAndYOffset(annot, includeLength);
 
   renderTooltip(tooltip, content, matrix, yOffset, ideo);
 }

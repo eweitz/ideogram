@@ -309,7 +309,7 @@ describe('Ideogram', function() {
     function callback() {
       d3.select('.annot path').dispatch('mouseover');
       var content = d3.select('._ideogramTooltip').html();
-      assert.equal(content, 'BRCA1<br>chr17:43,044,294-43,125,482');
+      assert.equal(content, 'BRCA1<br>chr17:43,044,294-43,125,482 (81 kbp)');
       d3.select('.annot path').dispatch('mouseout');
       done();
     }
