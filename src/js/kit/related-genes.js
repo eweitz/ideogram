@@ -978,7 +978,6 @@ function getGeneStructureSvg(gene, ideo) {
   }
 
   const geneStructure = ideo.geneStructureCache[gene];
-  console.log(geneStructure);
   const subparts = geneStructure.subparts;
   const lastSubpart = subparts.slice(-1)[0];
   const featureLengthBp = lastSubpart[1] + lastSubpart[2];
