@@ -142,6 +142,8 @@ describe('Ideogram related genes kit', function() {
       onClickAnnot,
       onPlotRelatedGenes,
       onWillShowAnnotTooltip,
+      showGeneStructureInTooltip: true,
+      showParalogNeighborhoods: true,
       fontFamily: 'serif'
     };
 

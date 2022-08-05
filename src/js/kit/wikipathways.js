@@ -12,7 +12,7 @@ const interactionArrowMap = {
   'mim-cleavage': ['cleaves', 'cleaved by'],
   'mim-conversion': ['converts', 'converted by'],
   // 'mim-covalent-bond': ['covalently binds',
-  // 'mim-gap': 'MimGap',
+  'mim-gap': ['interacts with', 'interacts with'],
   'mim-inhibition': ['inhibits', 'inhibited by'],
   'mim-modification': ['modifies', 'modified by'],
   'mim-necessary-stimulation':
