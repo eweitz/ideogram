@@ -7,9 +7,9 @@
  */
 
 import {cacheFetch} from './gene-cache';
-import {slug, getEarlyTaxid, getDir} from './lib';
-import {organismMetadata} from './init/organism-metadata';
-import version from './version';
+import {slug, getEarlyTaxid, getDir} from '../../lib';
+import {organismMetadata} from '../organism-metadata';
+import version from '../../version';
 
 let perfTimes;
 

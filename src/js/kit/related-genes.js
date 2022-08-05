@@ -34,10 +34,6 @@ import {
 import {writeLegend} from '../annotations/legend';
 import {getAnnotDomId} from '../annotations/process';
 import {getDir, deepCopy} from '../lib';
-import initGeneCache, {getEnsemblId} from '../gene-cache';
-import initParalogCache, {hasParalogCache} from '../paralog-cache';
-import initInteractionCache from '../interaction-cache';
-import initGeneStructureCache from '../gene-structure-cache';
 import {
   fetchGpmls, summarizeInteractions, fetchPathwayInteractions
 } from './wikipathways';
@@ -1562,7 +1558,8 @@ function _initRelatedGenes(config, annotsInList) {
     showAnnotLabels: true,
     showParalogNeighborhoods: true,
     chrFillColor: {centromere: '#DAAAAA'},
-    relatedGenesMode: 'related'
+    relatedGenesMode: 'related',
+    useCache: true
   };
 
   if ('onWillShowAnnotTooltip' in config) {
@@ -1600,17 +1597,6 @@ function _initRelatedGenes(config, annotsInList) {
   ideogram.annotSortFunction = sortByRelatedType;
 
   initAnalyzeRelatedGenes(ideogram);
-
-
-  let cacheDir = null;
-  const organism = ideogram.config.organism;
-  if (config.cacheDir) cacheDir = config.cacheDir;
-  initGeneCache(organism, ideogram, cacheDir);
-  initParalogCache(organism, ideogram, cacheDir);
-  initInteractionCache(organism, ideogram, cacheDir);
-  if (ideogram.config.showGeneStructureInTooltip) {
-    initGeneStructureCache(organism, ideogram, cacheDir);
-  }
 
   return ideogram;
 }
@@ -1676,7 +1662,8 @@ function _initGeneHints(config, annotsInList) {
     showParalogNeighborhoods: true,
     onDrawAnnots: plotGeneHints,
     annotationsPath: annotsPath,
-    relatedGenesMode: 'hints'
+    relatedGenesMode: 'hints',
+    useCache: true
   };
 
   if ('onWillShowAnnotTooltip' in config) {
@@ -1730,16 +1717,6 @@ function _initGeneHints(config, annotsInList) {
   ideogram.annotSortFunction = sortByRelatedType;
 
   initAnalyzeRelatedGenes(ideogram);
-
-  let cacheDir = null;
-  const organism = ideogram.config.organism;
-  if (config.cacheDir) cacheDir = config.cacheDir;
-  initGeneCache(organism, ideogram, cacheDir);
-  initParalogCache(organism, ideogram, cacheDir);
-  initInteractionCache(organism, ideogram, cacheDir);
-  if (ideogram.config.showGeneStructureInTooltip) {
-    initGeneStructureCache(organism, ideogram, cacheDir);
-  }
 
   return ideogram;
 }

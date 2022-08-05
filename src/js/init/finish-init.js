@@ -1,5 +1,6 @@
 import {d3} from '../lib';
 import collinearizeChromosomes from '../collinear';
+import {initCaches} from './caches/cache';
 
 function processLabels(config, ideo) {
   var i, chrID, t0C, t1C;
@@ -117,7 +118,9 @@ function finishInit(t0) {
 
   if (config.geometry === 'collinear') collinearizeChromosomes(ideo);
 
-  if (ideo.onLoadCallback) ideo.onLoadCallback();
+  initCaches(ideo).then(() => {
+    if (ideo.onLoadCallback) ideo.onLoadCallback();
+  });
 }
 
 export {finishInit};
