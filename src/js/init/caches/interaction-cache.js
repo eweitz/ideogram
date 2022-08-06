@@ -6,7 +6,7 @@
  * file containing gene data upon initializing Ideogram.
  */
 
-import {cacheFetch} from './gene-cache';
+import {cacheFetch} from './cache-lib';
 import {slug, getEarlyTaxid, getDir} from '../../lib';
 import {organismMetadata} from '../organism-metadata';
 import version from '../../version';

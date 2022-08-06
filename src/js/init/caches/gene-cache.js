@@ -16,6 +16,11 @@ import {slug, getEarlyTaxid, getDir} from '../../lib';
 import {organismMetadata} from '../organism-metadata';
 import version from '../../version';
 
+const geneCacheWorker = new Worker(
+  new URL('./gene-cache-worker.js', import.meta.url),
+  {type: 'module'}
+);
+
 let perfTimes;
 
 /** Get URL for gene cache file */
@@ -30,111 +35,6 @@ function getCacheUrl(orgName, cacheDir) {
   return cacheUrl;
 }
 
-/**
- * Convert pre-annotation arrays to annotation objects
- * sorted by genomic position.
- */
-function parseAnnots(preAnnots) {
-  const chromosomes = {};
-
-  for (let i = 0; i < preAnnots.length; i++) {
-    const [chromosome, start, stop, ensemblId, gene] = preAnnots[i];
-
-    if (!(chromosome in chromosomes)) {
-      chromosomes[chromosome] = {chr: chromosome, annots: []};
-    } else {
-      const annot = {name: gene, start, stop, ensemblId};
-      chromosomes[chromosome].annots.push(annot);
-    }
-  }
-
-  const annotsSortedByPosition = {};
-
-  Object.entries(chromosomes).forEach(([chr, annotsByChr]) => {
-    annotsSortedByPosition[chr] = {
-      chr,
-      annots: annotsByChr.annots.sort((a, b) => a.start - b.start)
-    };
-  });
-
-  return annotsSortedByPosition;
-}
-
-/**
- * Build full Ensembl ID from prefix (e.g. ENSG) and slim ID (e.g. 223972)
- *
- * Example output ID: ENSG00000223972
- * */
-export function getEnsemblId(ensemblPrefix, slimEnsemblId) {
-
-  // C. elegans (prefix: WBGene) has special IDs, e.g. WBGene00197333
-  const padLength = ensemblPrefix === 'WBGene' ? 8 : 11;
-
-  // Zero-pad the slim ID, e.g. 223972 -> 00000223972
-  const zeroPaddedId = slimEnsemblId.padStart(padLength, '0');
-
-  return ensemblPrefix + zeroPaddedId;
-}
-
-/** Parse a gene cache TSV file, return array of useful transforms */
-function parseCache(rawTsv, orgName) {
-  const names = [];
-  const nameCaseMap = {};
-  const namesById = {};
-  const fullNamesById = {};
-  const idsByName = {};
-  const idsByFullName = {};
-  const lociByName = {};
-  const lociById = {};
-  const preAnnots = [];
-  let ensemblPrefix;
-
-  let t0 = performance.now();
-  const lines = rawTsv.split(/\r\n|\n/);
-  perfTimes.rawTsvSplit = Math.round(performance.now() - t0);
-
-  t0 = performance.now();
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    if (line === '') continue; // Skip empty lines
-    if (line[0] === '#') {
-      if (line.slice(0, 9) === '## prefix') {
-        ensemblPrefix = line.split('prefix: ')[1];
-      }
-      continue;
-    }
-    const [
-      chromosome, rawStart, rawLength, slimEnsemblId, gene, rawFullName
-    ] = line.trim().split(/\t/);
-    const fullName = decodeURIComponent(rawFullName);
-    const start = parseInt(rawStart);
-    const stop = start + parseInt(rawLength);
-    const ensemblId = getEnsemblId(ensemblPrefix, slimEnsemblId);
-    preAnnots.push([chromosome, start, stop, ensemblId, gene, fullName]);
-    const locus = [chromosome, start, stop];
-
-    names.push(gene);
-    nameCaseMap[gene.toLowerCase()] = gene;
-    namesById[ensemblId] = gene;
-    fullNamesById[ensemblId] = fullName;
-    idsByName[gene] = ensemblId;
-    idsByFullName[fullName] = ensemblId;
-    lociByName[gene] = locus;
-    lociById[ensemblId] = locus;
-  };
-  const t1 = performance.now();
-  perfTimes.parseCacheLoop = Math.round(t1 - t0);
-
-  const sortedAnnots = parseAnnots(preAnnots);
-  perfTimes.parseAnnots = Math.round(performance.now() - t1);
-
-  return [
-    names, nameCaseMap, namesById, fullNamesById,
-    idsByName, idsByFullName, lociByName, lociById,
-    sortedAnnots
-  ];
-}
-
 /** Get organism's metadata fields */
 function parseOrgMetadata(orgName) {
   const taxid = getEarlyTaxid(orgName);
@@ -147,27 +47,6 @@ function hasGeneCacheSupport(orgName) {
   return (metadata.hasGeneCache && metadata.hasGeneCache === true);
 }
 
-export async function cacheFetch(url) {
-
-  const decompressedUrl = url.replace('.gz', '');
-  const response = await Ideogram.cache.match(decompressedUrl);
-  if (typeof response === 'undefined') {
-    // If cache miss, then fetch and add response to cache
-    // await Ideogram.cache.add(url);
-    const rawResponse = await fetch(url);
-    const blob = await rawResponse.blob();
-    const uint8Array = new Uint8Array(await blob.arrayBuffer());
-    const data = strFromU8(decompressSync(uint8Array));
-    const decompressedResponse = new Response(
-      new Blob([data], {type: 'text/tab-separated-values'}),
-      rawResponse.init
-    );
-    await Ideogram.cache.put(decompressedUrl, decompressedResponse);
-    return await Ideogram.cache.match(decompressedUrl);
-  }
-  return await Ideogram.cache.match(decompressedUrl);
-}
-
 /**
  * Fetch cached gene data, transform it usefully, and set it as ideo prop
  */
@@ -175,6 +54,8 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
 
   const startTime = performance.now();
   perfTimes = {};
+
+  let parsedCache;
 
   // Skip initialization if files needed to make cache don't exist
   if (!hasGeneCacheSupport(orgName)) return;
@@ -194,34 +75,33 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
 
   const cacheUrl = getCacheUrl(orgName, cacheDir, ideo);
 
-  const fetchStartTime = performance.now();
-  const response = await cacheFetch(cacheUrl);
+  console.log('before posting message');
+  geneCacheWorker.postMessage([cacheUrl, orgName, perfTimes]);
+  console.log('Message posted to geneCacheWorker');
+  geneCacheWorker.addEventListener('message', event => {
+    // console.log('Received message from worker')
+    [parsedCache, perfTimes] = event.data;
+    const [
+      interestingNames, nameCaseMap, namesById, fullNamesById,
+      idsByName, idsByFullName, lociByName, lociById, sortedAnnots
+    ] = parsedCache;
 
-  const data = await response.text();
-  const fetchEndTime = performance.now();
-  perfTimes.fetch = Math.round(fetchEndTime - fetchStartTime);
+    ideo.geneCache = {
+      interestingNames, // Array ordered by general or scholarly interest
+      nameCaseMap, // Maps of lowercase gene names to proper gene names
+      namesById,
+      fullNamesById,
+      idsByName,
+      idsByFullName,
+      lociByName, // Object of gene positions, keyed by gene name
+      lociById,
+      sortedAnnots // Ideogram annotations sorted by genomic position
+    };
+    Ideogram.geneCache[orgName] = ideo.geneCache;
 
-  const [
-    interestingNames, nameCaseMap, namesById, fullNamesById,
-    idsByName, idsByFullName, lociByName, lociById, sortedAnnots
-  ] = parseCache(data, orgName);
-  perfTimes.parseCache = Math.round(performance.now() - fetchEndTime);
-
-  ideo.geneCache = {
-    interestingNames, // Array ordered by general or scholarly interest
-    nameCaseMap, // Maps of lowercase gene names to proper gene names
-    namesById,
-    fullNamesById,
-    idsByName,
-    idsByFullName,
-    lociByName, // Object of gene positions, keyed by gene name
-    lociById,
-    sortedAnnots // Ideogram annotations sorted by genomic position
-  };
-  Ideogram.geneCache[orgName] = ideo.geneCache;
-
-  if (ideo.config.debug) {
-    perfTimes.total = Math.round(performance.now() - startTime);
-    console.log('perfTimes in initGeneCache:', perfTimes);
-  }
+    if (ideo.config.debug) {
+      perfTimes.total = Math.round(performance.now() - startTime);
+      console.log('perfTimes in initGeneCache:', perfTimes);
+    }
+  });
 }
