@@ -170,6 +170,10 @@ function summarizeByDirection(enrichedIxns) {
 export function summarizeInteractions(gene, searchedGene, pathwayIds, gpmls) {
   let summary = null;
 
+  // Coarse interactions are cached offline, so if not connected to Internet
+  // then fallback to generic summary.
+  if (!navigator.onLine) return 'Interacts with';
+
   const ixnsByPwid =
     detailAllInteractions(gene, searchedGene, pathwayIds, gpmls);
 

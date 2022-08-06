@@ -473,9 +473,6 @@ async function fetchGenes(names, type, ideo) {
 
     // Asynchronously fetch full name, but don't await the response, because
     // full names are only shown upon hovering over an annotation.
-    // const queryString = `${queryStringBase}symbol,name`;
-    // data = fetchMyGeneInfo(queryString).then(data => {
-    // data.hits.forEach((hit) => {
     hits.forEach((hit) => {
       const symbol = hit.symbol;
       const fullName = hit.name;
@@ -493,8 +490,6 @@ async function fetchGenes(names, type, ideo) {
     try {
       data = await fetchMyGeneInfo(queryString);
     } catch (error) {
-      console.log('error')
-      console.log(error)
       const isFailedFetch = (error.message === 'Failed to fetch');
       if (isFailedFetch && navigator.onLine) {
         // Retry fetching 3 times, waiting longer each time
@@ -502,9 +497,6 @@ async function fetchGenes(names, type, ideo) {
       }
     }
   }
-
-  console.log('data')
-  console.log(data)
 
   return data;
 }
@@ -1238,13 +1230,13 @@ async function plotRelatedGenes(geneSymbol=null) {
 
   const ideo = this;
 
-  ideo.clearAnnotLabels();
-  const legend = document.querySelector('#_ideogramLegend');
-  if (legend) legend.remove();
-
   if (!geneSymbol) {
     return plotGeneHints(ideo);
   }
+
+  ideo.clearAnnotLabels();
+  const legend = document.querySelector('#_ideogramLegend');
+  if (legend) legend.remove();
 
   ideo.config = setRelatedDecorPad(ideo.config);
 

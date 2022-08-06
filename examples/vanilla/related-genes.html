@@ -217,13 +217,12 @@
     }
 
     async function handleOrganism() {
-
       const newOrganism = getOrganism();
       const newGene = getGene();
 
       urlParams.org = newOrganism;
+      document.querySelector('#ideogram-container').style.visibility = 'hidden';
       if (typeof newGene === 'undefined') {
-        document.querySelector('#ideogram-container').style.visibility = 'hidden';
         delete urlParams.q;
       } else {
         urlParams.q = newGene;
