@@ -13,8 +13,6 @@ export async function initCaches(ideo) {
 
   let cacheDir = null;
 
-
-
   const cachePromise = Promise.all([
     // initGeneCache(organism, ideo, cacheDir),
     initGeneCache(organism, ideo, cacheDir),

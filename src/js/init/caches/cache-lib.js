@@ -1,4 +1,24 @@
+import {decompressSync, strFromU8} from 'fflate';
+
 import version from '../../version';
+import {getEarlyTaxid} from '../../lib';
+import {organismMetadata} from '../organism-metadata';
+
+/**
+ * Build full Ensembl ID from prefix (e.g. ENSG) and slim ID (e.g. 223972)
+ *
+ * Example output ID: ENSG00000223972
+ * */
+export function getEnsemblId(ensemblPrefix, slimEnsemblId) {
+
+  // C. elegans (prefix: WBGene) has special IDs, e.g. WBGene00197333
+  const padLength = ensemblPrefix === 'WBGene' ? 8 : 11;
+
+  // Zero-pad the slim ID, e.g. 223972 -> 00000223972
+  const zeroPaddedId = slimEnsemblId.padStart(padLength, '0');
+
+  return ensemblPrefix + zeroPaddedId;
+}
 
 export async function cacheFetch(url) {
 
@@ -21,4 +41,10 @@ export async function cacheFetch(url) {
     return await cache.match(decompressedUrl);
   }
   return await cache.match(decompressedUrl);
+}
+
+/** Get organism's metadata fields */
+export function parseOrgMetadata(orgName) {
+  const taxid = getEarlyTaxid(orgName);
+  return organismMetadata[taxid] || {};
 }

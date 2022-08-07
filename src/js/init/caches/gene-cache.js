@@ -10,11 +10,9 @@
  * - test if a given string is a gene name, e.g. for gene search
  * - find genomic position of a given gene (or all genes)
  */
-import {decompressSync, strFromU8} from 'fflate';
 
-import {slug, getEarlyTaxid, getDir} from '../../lib';
-import {organismMetadata} from '../organism-metadata';
-import version from '../../version';
+import {slug, getDir} from '../../lib';
+import {parseOrgMetadata} from './cache-lib';
 
 const geneCacheWorker = new Worker(
   new URL('./gene-cache-worker.js', import.meta.url),
@@ -33,12 +31,6 @@ function getCacheUrl(orgName, cacheDir) {
   const cacheUrl = cacheDir + organism + '-genes.tsv.gz';
 
   return cacheUrl;
-}
-
-/** Get organism's metadata fields */
-function parseOrgMetadata(orgName) {
-  const taxid = getEarlyTaxid(orgName);
-  return organismMetadata[taxid] || {};
 }
 
 /** Reports if current organism has gene cache support */
@@ -70,8 +62,6 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
   if (!Ideogram.geneCache) {
     Ideogram.geneCache = {};
   }
-
-  Ideogram.cache = await caches.open(`ideogram-${version}`);
 
   const cacheUrl = getCacheUrl(orgName, cacheDir, ideo);
 

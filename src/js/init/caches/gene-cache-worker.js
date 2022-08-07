@@ -1,20 +1,4 @@
-import {cacheFetch} from './cache-lib';
-
-/**
- * Build full Ensembl ID from prefix (e.g. ENSG) and slim ID (e.g. 223972)
- *
- * Example output ID: ENSG00000223972
- * */
-export function getEnsemblId(ensemblPrefix, slimEnsemblId) {
-
-  // C. elegans (prefix: WBGene) has special IDs, e.g. WBGene00197333
-  const padLength = ensemblPrefix === 'WBGene' ? 8 : 11;
-
-  // Zero-pad the slim ID, e.g. 223972 -> 00000223972
-  const zeroPaddedId = slimEnsemblId.padStart(padLength, '0');
-
-  return ensemblPrefix + zeroPaddedId;
-}
+import {cacheFetch, getEnsemblId} from './cache-lib';
 
 /**
  * Convert pre-annotation arrays to annotation objects

@@ -6,7 +6,7 @@
  * file containing gene data upon initializing Ideogram.
  */
 
-import {cacheFetch} from './cache-lib';
+import {cacheFetch, getEnsemblId, parseOrgMetadata} from './cache-lib';
 import {slug, getEarlyTaxid, getDir} from '../../lib';
 import {organismMetadata} from '../organism-metadata';
 import version from '../../version';
@@ -25,22 +25,6 @@ function getCacheUrl(orgName, cacheDir) {
   const cacheUrl = cacheDir + organism + '-paralogs.tsv.gz';
 
   return cacheUrl;
-}
-
-/**
- * Build full Ensembl ID from prefix (e.g. ENSG) and slim ID (e.g. 223972)
- *
- * Example output ID: ENSG00000223972
- * */
-function getEnsemblId(ensemblPrefix, slimEnsemblId) {
-
-  // C. elegans (prefix: WBGene) has special IDs, e.g. WBGene00197333
-  const padLength = ensemblPrefix === 'WBGene' ? 8 : 11;
-
-  // Zero-pad the slim ID, e.g. 223972 -> 00000223972
-  const zeroPaddedId = slimEnsemblId.padStart(padLength, '0');
-
-  return ensemblPrefix + zeroPaddedId;
 }
 
 /** Parse a gene cache TSV file, return array of useful transforms */
@@ -95,12 +79,6 @@ function parseCache(rawTsv) {
   perfTimes.parseCacheLoop = Math.round(t1 - t0);
 
   return paralogsByName;
-}
-
-/** Get organism's metadata fields */
-function parseOrgMetadata(orgName) {
-  const taxid = getEarlyTaxid(orgName);
-  return organismMetadata[taxid] || {};
 }
 
 /** Reports if current organism has a gene cache */
