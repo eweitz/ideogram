@@ -6,26 +6,26 @@
  * file containing gene data upon initializing Ideogram.
  */
 
-import {cacheFetch, getEnsemblId, parseOrgMetadata} from './cache-lib';
-import {slug, getEarlyTaxid, getDir} from '../../lib';
-import {organismMetadata} from '../organism-metadata';
+import {
+  cacheFetch, getEnsemblId, parseOrgMetadata, getCacheUrl
+} from './cache-lib';
 import version from '../../version';
 
 let perfTimes;
 
-/** Get URL for gene cache file */
-function getCacheUrl(orgName, cacheDir) {
-  const organism = slug(orgName);
-  if (!cacheDir) {
-    cacheDir = getDir('cache/paralogs/');
-  } else {
-    cacheDir += 'paralogs/';
-  }
+// /** Get URL for gene cache file */
+// function getCacheUrl(orgName, cacheDir) {
+//   const organism = slug(orgName);
+//   if (!cacheDir) {
+//     cacheDir = getDir('cache/paralogs/');
+//   } else {
+//     cacheDir += 'paralogs/';
+//   }
 
-  const cacheUrl = cacheDir + organism + '-paralogs.tsv.gz';
+//   const cacheUrl = cacheDir + organism + '-paralogs.tsv.gz';
 
-  return cacheUrl;
-}
+//   return cacheUrl;
+// }
 
 /** Parse a gene cache TSV file, return array of useful transforms */
 function parseCache(rawTsv) {
@@ -112,7 +112,7 @@ export default async function initParalogCache(orgName, ideo, cacheDir=null) {
 
   Ideogram.cache = await caches.open(`ideogram-${version}`);
 
-  const cacheUrl = getCacheUrl(orgName, cacheDir, ideo);
+  const cacheUrl = getCacheUrl(orgName, cacheDir, 'paralogs');
 
   const fetchStartTime = performance.now();
   const response = await cacheFetch(cacheUrl);

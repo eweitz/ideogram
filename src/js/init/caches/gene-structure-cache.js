@@ -9,26 +9,26 @@
  *
  * - show gene's canonical Ensembl transcript, including its UTRs and exons
  */
-import {decompressSync, strFromU8} from 'fflate';
 
-import {slug, getEarlyTaxid, getDir} from '../../lib';
+import {getCacheUrl, cacheFetch} from './cache-lib';
+import {getEarlyTaxid} from '../../lib';
 import {organismMetadata} from '../organism-metadata';
 import version from '../../version';
 
 let perfTimes;
 
-/** Get URL for gene structure cache file */
-function getCacheUrl(orgName, cacheDir) {
-  const organism = slug(orgName);
-  if (!cacheDir) {
-    cacheDir = getDir('cache/');
-  }
-  cacheDir += 'gene-structures/';
+// /** Get URL for gene structure cache file */
+// function getCacheUrl(orgName, cacheDir, cacheType, fileType='tsv') {
+//   const organism = slug(orgName);
+//   if (!cacheDir) {
+//     cacheDir = getDir('cache/');
+//   }
+//   cacheDir += 'gene-structures/';
 
-  const cacheUrl = cacheDir + organism + '-gene-structures.tsv.gz';
+//   const cacheUrl = cacheDir + organism + '-gene-structures.tsv.gz';
 
-  return cacheUrl;
-}
+//   return cacheUrl;
+// }
 
 /** Parse compressed feature subparts to more easily computable format */
 function deserializeSubparts(rawSubparts, subpartKeys) {
@@ -43,8 +43,6 @@ function deserializeSubparts(rawSubparts, subpartKeys) {
   }
   return subparts;
 }
-
-const biotypes = ['protein coding', 'foo', 'bar'];
 
 function parseMetainformationHeader(line) {
   const splitHead = line.split(' keys: ');
@@ -126,27 +124,6 @@ function hasGeneStructureCache(orgName) {
   );
 }
 
-export async function cacheFetch(url) {
-
-  const decompressedUrl = url.replace('.gz', '');
-  const response = await Ideogram.cache.match(decompressedUrl);
-  if (typeof response === 'undefined') {
-    // If cache miss, then fetch and add response to cache
-    // await Ideogram.cache.add(url);
-    const rawResponse = await fetch(url);
-    const blob = await rawResponse.blob();
-    const uint8Array = new Uint8Array(await blob.arrayBuffer());
-    const data = strFromU8(decompressSync(uint8Array));
-    const decompressedResponse = new Response(
-      new Blob([data], {type: 'text/tab-separated-values'}),
-      rawResponse.init
-    );
-    await Ideogram.cache.put(decompressedUrl, decompressedResponse);
-    return await Ideogram.cache.match(decompressedUrl);
-  }
-  return await Ideogram.cache.match(decompressedUrl);
-}
-
 /**
 * Fetch cached gene data, transform it usefully, and set it as ideo prop
 */
@@ -173,7 +150,7 @@ export default async function initGeneStructureCache(
 
   Ideogram.cache = await caches.open(`ideogram-${version}`);
 
-  const cacheUrl = getCacheUrl(orgName, cacheDir, ideo);
+  const cacheUrl = getCacheUrl(orgName, cacheDir, 'gene-structures');
 
   const fetchStartTime = performance.now();
   const response = await cacheFetch(cacheUrl);

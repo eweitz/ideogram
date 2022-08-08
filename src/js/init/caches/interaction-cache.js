@@ -6,24 +6,10 @@
  * file containing gene data upon initializing Ideogram.
  */
 
-import {cacheFetch, parseOrgMetadata} from './cache-lib';
-import {slug, getEarlyTaxid, getDir} from '../../lib';
-import {organismMetadata} from '../organism-metadata';
-import version from '../../version';
+import {getCacheUrl, cacheFetch, parseOrgMetadata} from './cache-lib';
+import {slug, getDir} from '../../lib';
 
 let perfTimes;
-
-/** Get URL for gene cache file */
-function getCacheUrl(orgName, cacheDir) {
-  const organism = slug(orgName);
-  if (!cacheDir) {
-    cacheDir = getDir('cache/');
-  }
-  cacheDir += 'interactions/';
-  const cacheUrl = cacheDir + organism + '-interactions.json.gz';
-
-  return cacheUrl;
-}
 
 /** Parse a gene cache TSV file, return array of useful transforms */
 function parseCache(rawJson, organism) {
@@ -88,9 +74,7 @@ export default async function initInteractionCache(
     Ideogram.interactionCache = {};
   }
 
-  Ideogram.cache = await caches.open(`ideogram-${version}`);
-
-  const cacheUrl = getCacheUrl(orgName, cacheDir, ideo);
+  const cacheUrl = getCacheUrl(orgName, cacheDir, 'interactions', 'json');
 
   const fetchStartTime = performance.now();
   const response = await cacheFetch(cacheUrl);

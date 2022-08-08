@@ -1,8 +1,50 @@
 import {decompressSync, strFromU8} from 'fflate';
 
 import version from '../../version';
-import {getEarlyTaxid} from '../../lib';
+import {getEarlyTaxid, slug, getDir} from '../../lib';
 import {organismMetadata} from '../organism-metadata';
+
+// /** Get URL for gene structure cache file */
+// export function getCacheUrl(orgName, cacheDir, cacheType, fileType='tsv') {
+//   const organism = slug(orgName);
+//   if (!cacheDir) {
+//     cacheDir = getDir('cache/');
+//   }
+//   cacheDir += 'gene-structures/';
+
+//   const cacheUrl = cacheDir + organism + '-gene-structures.tsv.gz';
+
+//   return cacheUrl;
+// }
+
+// /** Get URL for gene cache file */
+// function getCacheUrl(orgName, cacheDir) {
+//   const organism = slug(orgName);
+//   if (!cacheDir) {
+//     cacheDir = getDir('cache/paralogs/');
+//   } else {
+//     cacheDir += 'paralogs/';
+//   }
+
+//   const cacheUrl = cacheDir + organism + '-paralogs.tsv.gz';
+
+//   return cacheUrl;
+// }
+
+/** Get URL for gene structure cache file */
+export function getCacheUrl(orgName, cacheDir, cacheType, fileType='tsv') {
+  const organism = slug(orgName);
+  if (!cacheDir) {
+    cacheDir = getDir('cache/' + cacheType + '/');
+  } else {
+    cacheDir += cacheType + '/';
+  }
+
+  const cacheUrl =
+    cacheDir + organism + '-' + cacheType + '.' + fileType + '.gz';
+
+  return cacheUrl;
+}
 
 /**
  * Build full Ensembl ID from prefix (e.g. ENSG) and slim ID (e.g. 223972)

@@ -11,8 +11,7 @@
  * - find genomic position of a given gene (or all genes)
  */
 
-import {slug, getDir} from '../../lib';
-import {parseOrgMetadata} from './cache-lib';
+import {parseOrgMetadata, getCacheUrl} from './cache-lib';
 
 const geneCacheWorker = new Worker(
   new URL('./gene-cache-worker.js', import.meta.url),
@@ -21,17 +20,6 @@ const geneCacheWorker = new Worker(
 
 let perfTimes;
 
-/** Get URL for gene cache file */
-function getCacheUrl(orgName, cacheDir) {
-  const organism = slug(orgName);
-  if (!cacheDir) {
-    cacheDir = getDir('cache/');
-  }
-
-  const cacheUrl = cacheDir + organism + '-genes.tsv.gz';
-
-  return cacheUrl;
-}
 
 /** Reports if current organism has gene cache support */
 function hasGeneCacheSupport(orgName) {
@@ -63,7 +51,7 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
     Ideogram.geneCache = {};
   }
 
-  const cacheUrl = getCacheUrl(orgName, cacheDir, ideo);
+  const cacheUrl = getCacheUrl(orgName, cacheDir, 'genes');
 
   console.log('before posting message');
   geneCacheWorker.postMessage([cacheUrl, orgName, perfTimes]);

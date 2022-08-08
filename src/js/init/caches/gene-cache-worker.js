@@ -4,7 +4,7 @@ import {cacheFetch, getEnsemblId} from './cache-lib';
  * Convert pre-annotation arrays to annotation objects
  * sorted by genomic position.
  */
- function parseAnnots(preAnnots) {
+function parseAnnots(preAnnots) {
   const chromosomes = {};
 
   for (let i = 0; i < preAnnots.length; i++) {
