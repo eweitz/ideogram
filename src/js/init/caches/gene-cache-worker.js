@@ -1,4 +1,4 @@
-import {cacheFetch, getEnsemblId} from './cache-lib';
+import {fetchAndParse, getEnsemblId} from './cache-lib';
 
 /**
  * Convert pre-annotation arrays to annotation objects
@@ -30,9 +30,8 @@ function parseAnnots(preAnnots) {
   return annotsSortedByPosition;
 }
 
-
 /** Parse a gene cache TSV file, return array of useful transforms */
-function parseCache(rawTsv, orgName, perfTimes) {
+function parseCache(rawTsv, perfTimes) {
   const names = [];
   const nameCaseMap = {};
   const namesById = {};
@@ -90,25 +89,9 @@ function parseCache(rawTsv, orgName, perfTimes) {
   ];
 }
 
-async function fetchAndParse(cacheUrl, orgName, perfTimes) {
-  const fetchStartTime = performance.now();
-  const response = await cacheFetch(cacheUrl);
-
-  const data = await response.text();
-  const fetchEndTime = performance.now();
-  perfTimes.fetch = Math.round(fetchEndTime - fetchStartTime);
-
-  const parsedCache = parseCache(data, orgName, perfTimes);
-  perfTimes.parseCache = Math.round(performance.now() - fetchEndTime);
-
-  return [parsedCache, perfTimes];
-}
-
 addEventListener('message', async event => {
-  console.log('in worker message handler')
-  let [cacheUrl, orgName, perfTimes] = event.data;
-  const result = await fetchAndParse(cacheUrl, orgName, perfTimes);
-  const parsedCache = result[0];
-  perfTimes = result[1];
-  postMessage([parsedCache, perfTimes]);
+  // console.log('in worker message handler');
+  const [cacheUrl, perfTimes] = event.data;
+  const result = await fetchAndParse(cacheUrl, perfTimes, parseCache);
+  postMessage(result);
 });

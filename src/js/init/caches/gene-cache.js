@@ -13,7 +13,7 @@
 
 import {parseOrgMetadata, getCacheUrl} from './cache-lib';
 
-const geneCacheWorker = new Worker(
+const cacheWorker = new Worker(
   new URL('./gene-cache-worker.js', import.meta.url),
   {type: 'module'}
 );
@@ -53,10 +53,10 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
 
   const cacheUrl = getCacheUrl(orgName, cacheDir, 'genes');
 
-  console.log('before posting message');
-  geneCacheWorker.postMessage([cacheUrl, orgName, perfTimes]);
-  console.log('Message posted to geneCacheWorker');
-  geneCacheWorker.addEventListener('message', event => {
+  // console.log('before posting message');
+  cacheWorker.postMessage([cacheUrl, perfTimes]);
+  // console.log('Message posted to geneCacheWorker');
+  cacheWorker.addEventListener('message', event => {
     // console.log('Received message from worker')
     [parsedCache, perfTimes] = event.data;
     const [

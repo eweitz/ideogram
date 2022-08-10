@@ -4,33 +4,6 @@ import version from '../../version';
 import {getEarlyTaxid, slug, getDir} from '../../lib';
 import {organismMetadata} from '../organism-metadata';
 
-// /** Get URL for gene structure cache file */
-// export function getCacheUrl(orgName, cacheDir, cacheType, fileType='tsv') {
-//   const organism = slug(orgName);
-//   if (!cacheDir) {
-//     cacheDir = getDir('cache/');
-//   }
-//   cacheDir += 'gene-structures/';
-
-//   const cacheUrl = cacheDir + organism + '-gene-structures.tsv.gz';
-
-//   return cacheUrl;
-// }
-
-// /** Get URL for gene cache file */
-// function getCacheUrl(orgName, cacheDir) {
-//   const organism = slug(orgName);
-//   if (!cacheDir) {
-//     cacheDir = getDir('cache/paralogs/');
-//   } else {
-//     cacheDir += 'paralogs/';
-//   }
-
-//   const cacheUrl = cacheDir + organism + '-paralogs.tsv.gz';
-
-//   return cacheUrl;
-// }
-
 /** Get URL for gene structure cache file */
 export function getCacheUrl(orgName, cacheDir, cacheType, fileType='tsv') {
   const organism = slug(orgName);
@@ -70,7 +43,6 @@ export async function cacheFetch(url) {
   const response = await cache.match(decompressedUrl);
   if (typeof response === 'undefined') {
     // If cache miss, then fetch and add response to cache
-    // await Ideogram.cache.add(url);
     const rawResponse = await fetch(url);
     const blob = await rawResponse.blob();
     const uint8Array = new Uint8Array(await blob.arrayBuffer());
@@ -89,4 +61,17 @@ export async function cacheFetch(url) {
 export function parseOrgMetadata(orgName) {
   const taxid = getEarlyTaxid(orgName);
   return organismMetadata[taxid] || {};
+}
+
+export async function fetchAndParse(cacheUrl, perfTimes, parseFn) {
+  const fetchStartTime = performance.now();
+  const response = await cacheFetch(cacheUrl);
+  const data = await response.text();
+  const fetchEndTime = performance.now();
+  perfTimes.fetch = Math.round(fetchEndTime - fetchStartTime);
+
+  const parsedCache = parseFn(data, perfTimes);
+  perfTimes.parseCache = Math.round(performance.now() - fetchEndTime);
+
+  return [parsedCache, perfTimes];
 }

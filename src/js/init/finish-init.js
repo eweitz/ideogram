@@ -118,7 +118,13 @@ function finishInit(t0) {
 
   if (config.geometry === 'collinear') collinearizeChromosomes(ideo);
 
+  const t0InitCaches = Date.now();
   initCaches(ideo).then(() => {
+
+    const timeInitCaches = Date.now() - t0InitCaches;
+    if (ideo.config.debug) {
+      console.log('Time in initCaches: ' + timeInitCaches + ' ms');
+    }
     if (ideo.onLoadCallback) ideo.onLoadCallback();
   });
 }

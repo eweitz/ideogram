@@ -6,80 +6,14 @@
  * file containing gene data upon initializing Ideogram.
  */
 
-import {
-  cacheFetch, getEnsemblId, parseOrgMetadata, getCacheUrl
-} from './cache-lib';
-import version from '../../version';
+import {parseOrgMetadata, getCacheUrl} from './cache-lib';
+
+const cacheWorker = new Worker(
+  new URL('./paralog-cache-worker.js', import.meta.url),
+  {type: 'module'}
+);
 
 let perfTimes;
-
-// /** Get URL for gene cache file */
-// function getCacheUrl(orgName, cacheDir) {
-//   const organism = slug(orgName);
-//   if (!cacheDir) {
-//     cacheDir = getDir('cache/paralogs/');
-//   } else {
-//     cacheDir += 'paralogs/';
-//   }
-
-//   const cacheUrl = cacheDir + organism + '-paralogs.tsv.gz';
-
-//   return cacheUrl;
-// }
-
-/** Parse a gene cache TSV file, return array of useful transforms */
-function parseCache(rawTsv) {
-  const nameCaseMap = {};
-  const paralogsByName = {};
-  let ensemblPrefix;
-
-  let t0 = performance.now();
-  const lines = rawTsv.split(/\r\n|\n/);
-  perfTimes.rawTsvSplit = Math.round(performance.now() - t0);
-
-  t0 = performance.now();
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    if (line === '') continue; // Skip empty lines
-    if (line[0] === '#') {
-      if (line.slice(0, 9) === '## prefix') {
-        ensemblPrefix = line.split('prefix: ')[1];
-      }
-      continue;
-    }
-    const columns = line.trim().split(/\t/);
-    const gene = columns[0];
-    const geneSlimId = columns[1];
-
-    const paralogs = [];
-    if (columns[2][0] === '_') {
-      const pointer = columns[2].slice(1).toUpperCase();
-      const paralogSuperList = paralogsByName[pointer];
-      const geneId = getEnsemblId(ensemblPrefix, geneSlimId);
-      for (let j = 0; j < paralogSuperList.length; j++) {
-        const id = paralogSuperList[j];
-        if (id !== geneId) {
-          paralogs.push(id);
-        }
-      }
-      paralogs.unshift(getEnsemblId(ensemblPrefix, columns[3]));
-    } else {
-      const slimEnsemblIds = columns.slice(2);
-      for (let i = 0; i < slimEnsemblIds.length; i++) {
-        const slimId = slimEnsemblIds[i];
-        if (slimId !== geneSlimId) {
-          paralogs.push(getEnsemblId(ensemblPrefix, slimId));
-        }
-      }
-    }
-
-    paralogsByName[gene.toUpperCase()] = paralogs;
-  };
-  const t1 = performance.now();
-  perfTimes.parseCacheLoop = Math.round(t1 - t0);
-
-  return paralogsByName;
-}
 
 /** Reports if current organism has a gene cache */
 export function hasParalogCache(orgName) {
@@ -98,7 +32,6 @@ export default async function initParalogCache(orgName, ideo, cacheDir=null) {
   // Skip initialization if files needed to make cache don't exist
   if (!hasParalogCache(orgName)) return;
 
-
   // Skip initialization if cache is already populated
   if (Ideogram.paralogCache && Ideogram.paralogCache[orgName]) {
     // Simplify chief use case, i.e. for single organism
@@ -110,28 +43,25 @@ export default async function initParalogCache(orgName, ideo, cacheDir=null) {
     Ideogram.paralogCache = {};
   }
 
-  Ideogram.cache = await caches.open(`ideogram-${version}`);
-
   const cacheUrl = getCacheUrl(orgName, cacheDir, 'paralogs');
 
-  const fetchStartTime = performance.now();
-  const response = await cacheFetch(cacheUrl);
-  const data = await response.text();
-  const fetchEndTime = performance.now();
-  perfTimes.fetch = Math.round(fetchEndTime - fetchStartTime);
+  // console.log('before posting message');
+  cacheWorker.postMessage([cacheUrl, perfTimes]);
+  // console.log('Message posted to paralogCacheWorker');
 
-  const paralogsByName = parseCache(data, orgName);
-  perfTimes.parseCache = Math.round(performance.now() - fetchEndTime);
+  cacheWorker.addEventListener('message', event => {
+    let paralogsByName;
+    [paralogsByName, perfTimes] = event.data;
+    ideo.paralogCache = {
+      paralogsByName // Array of paralog Ensembl IDs by (uppercase) gene name
+    };
+    Ideogram.paralogCache[orgName] = ideo.paralogCache;
 
-  ideo.paralogCache = {
-    paralogsByName // Array of paralog Ensembl IDs by (uppercase) gene name
-  };
-  Ideogram.paralogCache[orgName] = ideo.paralogCache;
-
-  if (ideo.config.debug) {
-    perfTimes.total = Math.round(performance.now() - startTime);
-    console.log('perfTimes in initParalogCache:', perfTimes);
-  }
+    if (ideo.config.debug) {
+      perfTimes.total = Math.round(performance.now() - startTime);
+      console.log('perfTimes in initParalogCache:', perfTimes);
+    }
+  });
 }
 
 
