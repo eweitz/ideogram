@@ -89,9 +89,9 @@ export function parseCache(rawTsv, perfTimes) {
   ];
 }
 
-// addEventListener('message', async event => {
-//   // console.log('in gene cache worker message handler');
-//   const [cacheUrl, perfTimes] = event.data;
-//   const result = await fetchAndParse(cacheUrl, perfTimes, parseCache);
-//   postMessage(result);
-// });
+addEventListener('message', async event => {
+  // console.log('in gene cache worker message handler');
+  const [cacheUrl, perfTimes] = event.data;
+  const result = await fetchAndParse(cacheUrl, perfTimes, parseCache);
+  postMessage(result);
+});

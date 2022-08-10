@@ -12,13 +12,11 @@
  */
 
 import {parseOrgMetadata, getCacheUrl} from './cache-lib';
-import {fetchAndParse} from './cache-lib';
-import {parseCache} from './gene-cache-worker';
 
-// const cacheWorker = new Worker(
-//   new URL('./gene-cache-worker.js', import.meta.url),
-//   {type: 'module'}
-// );
+const cacheWorker = new Worker(
+  new URL('./gene-cache-worker.js', import.meta.url),
+  {type: 'module'}
+);
 
 let perfTimes;
 
@@ -55,63 +53,37 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
 
   const cacheUrl = getCacheUrl(orgName, cacheDir, 'genes');
 
-  [parsedCache, perfTimes] =
-    await fetchAndParse(cacheUrl, perfTimes, parseCache);
+  return new Promise(resolve => {
+    // console.log('before posting message');
+    cacheWorker.postMessage([cacheUrl, perfTimes]);
+    // console.log('Message posted to geneCacheWorker');
+    cacheWorker.addEventListener('message', event => {
+      // console.log('Received message from worker')
+      [parsedCache, perfTimes] = event.data;
+      const [
+        interestingNames, nameCaseMap, namesById, fullNamesById,
+        idsByName, idsByFullName, lociByName, lociById, sortedAnnots
+      ] = parsedCache;
 
-  const [
-    interestingNames, nameCaseMap, namesById, fullNamesById,
-    idsByName, idsByFullName, lociByName, lociById, sortedAnnots
-  ] = parsedCache;
+      ideo.geneCache = {
+        interestingNames, // Array ordered by general or scholarly interest
+        nameCaseMap, // Maps of lowercase gene names to proper gene names
+        namesById,
+        fullNamesById,
+        idsByName,
+        idsByFullName,
+        lociByName, // Object of gene positions, keyed by gene name
+        lociById,
+        sortedAnnots // Ideogram annotations sorted by genomic position
+      };
+      Ideogram.geneCache[orgName] = ideo.geneCache;
 
-  ideo.geneCache = {
-    interestingNames, // Array ordered by general or scholarly interest
-    nameCaseMap, // Maps of lowercase gene names to proper gene names
-    namesById,
-    fullNamesById,
-    idsByName,
-    idsByFullName,
-    lociByName, // Object of gene positions, keyed by gene name
-    lociById,
-    sortedAnnots // Ideogram annotations sorted by genomic position
-  };
-  Ideogram.geneCache[orgName] = ideo.geneCache;
+      if (ideo.config.debug) {
+        perfTimes.total = Math.round(performance.now() - startTime);
+        console.log('perfTimes in initGeneCache:', perfTimes);
+      }
 
-  if (ideo.config.debug) {
-    perfTimes.total = Math.round(performance.now() - startTime);
-    console.log('perfTimes in initGeneCache:', perfTimes);
-  }
-
-  // return new Promise(resolve => {
-  //   // console.log('before posting message');
-  //   cacheWorker.postMessage([cacheUrl, perfTimes]);
-  //   // console.log('Message posted to geneCacheWorker');
-  //   cacheWorker.addEventListener('message', event => {
-  //     // console.log('Received message from worker')
-  //     [parsedCache, perfTimes] = event.data;
-  //     const [
-  //       interestingNames, nameCaseMap, namesById, fullNamesById,
-  //       idsByName, idsByFullName, lociByName, lociById, sortedAnnots
-  //     ] = parsedCache;
-
-  //     ideo.geneCache = {
-  //       interestingNames, // Array ordered by general or scholarly interest
-  //       nameCaseMap, // Maps of lowercase gene names to proper gene names
-  //       namesById,
-  //       fullNamesById,
-  //       idsByName,
-  //       idsByFullName,
-  //       lociByName, // Object of gene positions, keyed by gene name
-  //       lociById,
-  //       sortedAnnots // Ideogram annotations sorted by genomic position
-  //     };
-  //     Ideogram.geneCache[orgName] = ideo.geneCache;
-
-  //     if (ideo.config.debug) {
-  //       perfTimes.total = Math.round(performance.now() - startTime);
-  //       console.log('perfTimes in initGeneCache:', perfTimes);
-  //     }
-
-  //     resolve();
-  //   });
-  // });
+      resolve();
+    });
+  });
 }
