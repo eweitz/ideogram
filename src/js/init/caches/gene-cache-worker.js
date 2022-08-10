@@ -31,7 +31,7 @@ function parseAnnots(preAnnots) {
 }
 
 /** Parse a gene cache TSV file, return array of useful transforms */
-function parseCache(rawTsv, perfTimes) {
+export function parseCache(rawTsv, perfTimes) {
   const names = [];
   const nameCaseMap = {};
   const namesById = {};
@@ -89,9 +89,9 @@ function parseCache(rawTsv, perfTimes) {
   ];
 }
 
-addEventListener('message', async event => {
-  // console.log('in worker message handler');
-  const [cacheUrl, perfTimes] = event.data;
-  const result = await fetchAndParse(cacheUrl, perfTimes, parseCache);
-  postMessage(result);
-});
+// addEventListener('message', async event => {
+//   // console.log('in gene cache worker message handler');
+//   const [cacheUrl, perfTimes] = event.data;
+//   const result = await fetchAndParse(cacheUrl, perfTimes, parseCache);
+//   postMessage(result);
+// });
