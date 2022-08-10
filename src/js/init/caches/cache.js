@@ -13,8 +13,10 @@ export async function initCaches(ideo) {
 
   let cacheDir = null;
 
+  // Start all these in parallel.  Only initGeneCache blocks; it internally
+  // resolves a Promise, whereas the others return upon completing their
+  // respective initializations.
   const cachePromise = Promise.all([
-    // initGeneCache(organism, ideo, cacheDir),
     initGeneCache(organism, ideo, cacheDir),
     initParalogCache(organism, ideo, cacheDir),
     initInteractionCache(organism, ideo, cacheDir)
