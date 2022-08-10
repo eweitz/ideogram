@@ -1,3 +1,5 @@
+/** @fileoverview Functions used by multiple content-specific cache modules */
+
 import {decompressSync, strFromU8} from 'fflate';
 
 import version from '../../version';
@@ -63,6 +65,7 @@ export function parseOrgMetadata(orgName) {
   return organismMetadata[taxid] || {};
 }
 
+/** Fetch URL from service worker cache, call given parsing function */
 export async function fetchAndParse(cacheUrl, perfTimes, parseFn) {
   const fetchStartTime = performance.now();
   const response = await cacheFetch(cacheUrl);
