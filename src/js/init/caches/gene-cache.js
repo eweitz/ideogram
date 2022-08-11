@@ -62,7 +62,8 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
       [parsedCache, perfTimes] = event.data;
       const [
         interestingNames, nameCaseMap, namesById, fullNamesById,
-        idsByName, idsByFullName, lociByName, lociById, sortedAnnots
+        idsByName, lociByName, lociById
+        //, sortedAnnots
       ] = parsedCache;
 
       ideo.geneCache = {
@@ -71,10 +72,9 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
         namesById,
         fullNamesById,
         idsByName,
-        idsByFullName,
         lociByName, // Object of gene positions, keyed by gene name
-        lociById,
-        sortedAnnots // Ideogram annotations sorted by genomic position
+        lociById
+        //, sortedAnnots // Ideogram annotations sorted by genomic position
       };
       Ideogram.geneCache[orgName] = ideo.geneCache;
 

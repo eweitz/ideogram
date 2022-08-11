@@ -37,7 +37,6 @@ export function parseCache(rawTsv, perfTimes) {
   const namesById = {};
   const fullNamesById = {};
   const idsByName = {};
-  const idsByFullName = {};
   const lociByName = {};
   const lociById = {};
   const preAnnots = [];
@@ -72,20 +71,19 @@ export function parseCache(rawTsv, perfTimes) {
     namesById[ensemblId] = gene;
     fullNamesById[ensemblId] = fullName;
     idsByName[gene] = ensemblId;
-    idsByFullName[fullName] = ensemblId;
     lociByName[gene] = locus;
     lociById[ensemblId] = locus;
   };
   const t1 = performance.now();
   perfTimes.parseCacheLoop = Math.round(t1 - t0);
 
-  const sortedAnnots = parseAnnots(preAnnots);
+  // const sortedAnnots = parseAnnots(preAnnots);
   perfTimes.parseAnnots = Math.round(performance.now() - t1);
 
   return [
     names, nameCaseMap, namesById, fullNamesById,
-    idsByName, idsByFullName, lociByName, lociById,
-    sortedAnnots
+    idsByName, lociByName, lociById
+    // , sortedAnnots
   ];
 }
 
