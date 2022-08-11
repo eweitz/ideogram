@@ -436,7 +436,7 @@ async function retryFetch(requestedThing, numLimit, fn, args) {
 
   numFailedFetches[requestedThing] += 1;
 
-  // Exponential back
+  // Exponential backoff
   const baseWaitMs = 500;
   const waitMilliseconds = exponentialBackoffWithJitter(numFailed, baseWaitMs);
 

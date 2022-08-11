@@ -10,9 +10,7 @@
  * - show gene's canonical Ensembl transcript, including its UTRs and exons
  */
 
-import {getCacheUrl} from './cache-lib';
-import {getEarlyTaxid} from '../../lib';
-import {organismMetadata} from '../organism-metadata';
+import {getCacheUrl, parseOrgMetadata} from './cache-lib';
 
 const cacheWorker = new Worker(
   new URL('./gene-structure-cache-worker.js', import.meta.url),
@@ -20,12 +18,6 @@ const cacheWorker = new Worker(
 );
 
 let perfTimes;
-
-/** Get organism's metadata fields */
-function parseOrgMetadata(orgName) {
-  const taxid = getEarlyTaxid(orgName);
-  return organismMetadata[taxid] || {};
-}
 
 /** Reports if current organism has a gene structure cache */
 function hasGeneStructureCache(orgName) {
@@ -37,7 +29,7 @@ function hasGeneStructureCache(orgName) {
 }
 
 /**
-* Fetch cached gene data, transform it usefully, and set it as ideo prop
+* Fetch cached gene structure data, transform it, and set it as ideo prop
 */
 export default async function initGeneStructureCache(
   orgName, ideo, cacheDir=null

@@ -1,6 +1,6 @@
 import {fetchAndParse, getEnsemblId} from './cache-lib';
 
-/** Parse a gene cache TSV file, return array of useful transforms */
+/** Parse a paralog cache TSV file, return array of useful transforms */
 export function parseCache(rawTsv, perfTimes) {
   const paralogsByName = {};
   let ensemblPrefix;

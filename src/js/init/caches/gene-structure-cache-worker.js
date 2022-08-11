@@ -14,6 +14,7 @@ function deserializeSubparts(rawSubparts, subpartKeys) {
   return subparts;
 }
 
+/** Parse metainformation header lines, i.e. those beginning  "## "" */
 function parseMetainformationHeader(line) {
   const splitHead = line.split(' keys: ');
   if (splitHead.length < 2) return [null];
@@ -40,7 +41,11 @@ function parseCache(rawTsv, perfTimes) {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (line === '') continue; // Skip empty lines
+
+    // Parse header
     if (line[0] === '#') {
+
+      // Parse metainformation headers
       if (line[1] === '#') {
         const [metaHeader, keys] = parseMetainformationHeader(line);
         if (metaHeader === 'biotype') {
@@ -64,6 +69,7 @@ function parseCache(rawTsv, perfTimes) {
 
     const biotype = biotypeKeys[biotypeCompressed];
 
+    // E.g. ACE2-201, protein_coding, -, <array of exon or UTR arrays>
     const feature = {
       transcriptName,
       biotype,
