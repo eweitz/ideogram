@@ -16,7 +16,7 @@ const cacheWorker = new Worker(
 let perfTimes;
 
 /** Reports if current organism has a gene cache */
-export function hasInteractionCache(orgName) {
+export function supportsInteractionCache(orgName) {
   const metadata = parseOrgMetadata(orgName);
   return (
     metadata.hasInteractionCache && metadata.hasInteractionCache === true
@@ -34,7 +34,7 @@ export default async function initInteractionCache(
   perfTimes = {};
 
   // Skip initialization if files needed to make cache don't exist
-  if (!hasInteractionCache(orgName)) return;
+  if (!supportsInteractionCache(orgName)) return;
 
   // Skip initialization if cache is already populated
   if (Ideogram.interactionCache && Ideogram.interactionCache[orgName]) {

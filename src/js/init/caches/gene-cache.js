@@ -22,7 +22,7 @@ let perfTimes;
 
 
 /** Reports if current organism has gene cache support */
-function hasGeneCacheSupport(orgName) {
+function supportsGeneCache(orgName) {
   const metadata = parseOrgMetadata(orgName);
   return (metadata.hasGeneCache && metadata.hasGeneCache === true);
 }
@@ -38,7 +38,7 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
   let parsedCache;
 
   // Skip initialization if files needed to make cache don't exist
-  if (!hasGeneCacheSupport(orgName)) return;
+  if (!supportsGeneCache(orgName)) return;
 
   // Skip initialization if cache is already populated
   if (Ideogram.geneCache && Ideogram.geneCache[orgName]) {

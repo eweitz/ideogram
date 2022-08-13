@@ -20,7 +20,7 @@ const cacheWorker = new Worker(
 let perfTimes;
 
 /** Reports if current organism has a gene structure cache */
-function hasGeneStructureCache(orgName) {
+function supportsGeneStructureCache(orgName) {
   const metadata = parseOrgMetadata(orgName);
   return (
     metadata.hasGeneStructureCache &&
@@ -39,7 +39,7 @@ export default async function initGeneStructureCache(
   perfTimes = {};
 
   // Skip initialization if files needed to make cache don't exist
-  if (!hasGeneStructureCache(orgName)) return;
+  if (!supportsGeneStructureCache(orgName)) return;
 
   // Skip initialization if cache is already populated
   if (Ideogram.geneStructureCache && Ideogram.geneStructureCache[orgName]) {

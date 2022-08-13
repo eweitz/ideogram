@@ -16,7 +16,7 @@ const cacheWorker = new Worker(
 let perfTimes;
 
 /** Reports if current organism has a gene cache */
-export function hasParalogCache(orgName) {
+export function supportsParalogCache(orgName) {
   const metadata = parseOrgMetadata(orgName);
   return (metadata.hasParalogCache && metadata.hasParalogCache === true);
 }
@@ -30,7 +30,7 @@ export default async function initParalogCache(orgName, ideo, cacheDir=null) {
   perfTimes = {};
 
   // Skip initialization if files needed to make cache don't exist
-  if (!hasParalogCache(orgName)) return;
+  if (!supportsParalogCache(orgName)) return;
 
   // Skip initialization if cache is already populated
   if (Ideogram.paralogCache && Ideogram.paralogCache[orgName]) {
@@ -45,22 +45,26 @@ export default async function initParalogCache(orgName, ideo, cacheDir=null) {
 
   const cacheUrl = getCacheUrl(orgName, cacheDir, 'paralogs');
 
-  // console.log('before posting message');
-  cacheWorker.postMessage([cacheUrl, perfTimes]);
-  // console.log('Message posted to paralogCacheWorker');
+  return new Promise(resolve => {
+    // console.log('before posting message');
+    cacheWorker.postMessage([cacheUrl, perfTimes]);
+    // console.log('Message posted to paralogCacheWorker');
 
-  cacheWorker.addEventListener('message', event => {
-    let paralogsByName;
-    [paralogsByName, perfTimes] = event.data;
-    ideo.paralogCache = {
-      paralogsByName // Array of paralog Ensembl IDs by (uppercase) gene name
-    };
-    Ideogram.paralogCache[orgName] = ideo.paralogCache;
+    cacheWorker.addEventListener('message', event => {
+      let paralogsByName;
+      [paralogsByName, perfTimes] = event.data;
+      ideo.paralogCache = {
+        paralogsByName // Array of paralog Ensembl IDs by (uppercase) gene name
+      };
+      Ideogram.paralogCache[orgName] = ideo.paralogCache;
 
-    if (ideo.config.debug) {
-      perfTimes.total = Math.round(performance.now() - startTime);
-      console.log('perfTimes in initParalogCache:', perfTimes);
-    }
+      if (ideo.config.debug) {
+        perfTimes.total = Math.round(performance.now() - startTime);
+        console.log('perfTimes in initParalogCache:', perfTimes);
+      }
+
+      resolve();
+    });
   });
 }
 
