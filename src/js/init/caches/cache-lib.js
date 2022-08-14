@@ -6,6 +6,13 @@ import version from '../../version';
 import {getEarlyTaxid, slug, getDir} from '../../lib';
 import {organismMetadata} from '../organism-metadata';
 
+/** Reports if current organism has a gene structure cache */
+export function supportsCache(orgName, cacheName) {
+  const metadata = parseOrgMetadata(orgName);
+  const cacheProp = 'has' + cacheName + 'Cache';
+  return metadata[cacheProp] && metadata[cacheProp] === true;
+}
+
 /** Get URL for gene structure cache file */
 export function getCacheUrl(orgName, cacheDir, cacheType, fileType='tsv') {
   const organism = slug(orgName);

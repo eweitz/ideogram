@@ -6,7 +6,7 @@
  * file containing gene data upon initializing Ideogram.
  */
 
-import {getCacheUrl, parseOrgMetadata} from './cache-lib';
+import {getCacheUrl, supportsCache} from './cache-lib';
 
 const cacheWorker = new Worker(
   new URL('./interaction-cache-worker.js', import.meta.url),
@@ -14,14 +14,6 @@ const cacheWorker = new Worker(
 );
 
 let perfTimes;
-
-/** Reports if current organism has a gene cache */
-export function supportsInteractionCache(orgName) {
-  const metadata = parseOrgMetadata(orgName);
-  return (
-    metadata.hasInteractionCache && metadata.hasInteractionCache === true
-  );
-}
 
 /**
  * Fetch cached paralog data, transform it usefully, and set it as ideo prop
@@ -34,7 +26,7 @@ export default async function initInteractionCache(
   perfTimes = {};
 
   // Skip initialization if files needed to make cache don't exist
-  if (!supportsInteractionCache(orgName)) return;
+  if (!supportsCache(orgName, 'Interaction')) return;
 
   // Skip initialization if cache is already populated
   if (Ideogram.interactionCache && Ideogram.interactionCache[orgName]) {

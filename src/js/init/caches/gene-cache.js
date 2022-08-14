@@ -11,7 +11,7 @@
  * - find genomic position of a given gene (or all genes)
  */
 
-import {parseOrgMetadata, getCacheUrl} from './cache-lib';
+import {supportsCache, getCacheUrl} from './cache-lib';
 
 const cacheWorker = new Worker(
   new URL('./gene-cache-worker.js', import.meta.url),
@@ -19,13 +19,6 @@ const cacheWorker = new Worker(
 );
 
 let perfTimes;
-
-
-/** Reports if current organism has gene cache support */
-function supportsGeneCache(orgName) {
-  const metadata = parseOrgMetadata(orgName);
-  return (metadata.hasGeneCache && metadata.hasGeneCache === true);
-}
 
 /**
  * Fetch cached gene data, transform it usefully, and set it as ideo prop
@@ -38,7 +31,7 @@ export default async function initGeneCache(orgName, ideo, cacheDir=null) {
   let parsedCache;
 
   // Skip initialization if files needed to make cache don't exist
-  if (!supportsGeneCache(orgName)) return;
+  if (!supportsCache(orgName, 'Gene')) return;
 
   // Skip initialization if cache is already populated
   if (Ideogram.geneCache && Ideogram.geneCache[orgName]) {

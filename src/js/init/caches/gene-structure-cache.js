@@ -10,7 +10,7 @@
  * - show gene's canonical Ensembl transcript, including its UTRs and exons
  */
 
-import {getCacheUrl, parseOrgMetadata} from './cache-lib';
+import {getCacheUrl, supportsCache} from './cache-lib';
 
 const cacheWorker = new Worker(
   new URL('./gene-structure-cache-worker.js', import.meta.url),
@@ -18,15 +18,6 @@ const cacheWorker = new Worker(
 );
 
 let perfTimes;
-
-/** Reports if current organism has a gene structure cache */
-function supportsGeneStructureCache(orgName) {
-  const metadata = parseOrgMetadata(orgName);
-  return (
-    metadata.hasGeneStructureCache &&
-    metadata.hasGeneStructureCache === true
-  );
-}
 
 /**
 * Fetch cached gene structure data, transform it, and set it as ideo prop
@@ -39,7 +30,7 @@ export default async function initGeneStructureCache(
   perfTimes = {};
 
   // Skip initialization if files needed to make cache don't exist
-  if (!supportsGeneStructureCache(orgName)) return;
+  if (!supportsCache(orgName, 'GeneStructure')) return;
 
   // Skip initialization if cache is already populated
   if (Ideogram.geneStructureCache && Ideogram.geneStructureCache[orgName]) {

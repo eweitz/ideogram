@@ -6,7 +6,7 @@
  * file containing gene data upon initializing Ideogram.
  */
 
-import {parseOrgMetadata, getCacheUrl} from './cache-lib';
+import {supportsCache, getCacheUrl} from './cache-lib';
 
 const cacheWorker = new Worker(
   new URL('./paralog-cache-worker.js', import.meta.url),
@@ -14,13 +14,6 @@ const cacheWorker = new Worker(
 );
 
 let perfTimes;
-
-/** Reports if current organism has a gene cache */
-export function supportsParalogCache(orgName) {
-  const metadata = parseOrgMetadata(orgName);
-  return (metadata.hasParalogCache && metadata.hasParalogCache === true);
-}
-
 /**
  * Fetch cached paralog data, transform it usefully, and set it as ideo prop
  */
@@ -30,7 +23,7 @@ export default async function initParalogCache(orgName, ideo, cacheDir=null) {
   perfTimes = {};
 
   // Skip initialization if files needed to make cache don't exist
-  if (!supportsParalogCache(orgName)) return;
+  if (!supportsCache(orgName, 'Paralog')) return;
 
   // Skip initialization if cache is already populated
   if (Ideogram.paralogCache && Ideogram.paralogCache[orgName]) {
