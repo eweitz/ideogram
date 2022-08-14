@@ -1,4 +1,4 @@
-import {cacheFetch} from './cache-lib';
+import {fetchAndParse} from './cache-lib';
 
 /** Parse an interaction cache JSON file, return array of useful transforms */
 function parseCache(rawJson, perfTimes, orgName) {
@@ -31,22 +31,9 @@ function parseCache(rawJson, perfTimes, orgName) {
   return interactionsByName;
 }
 
-async function fetchAndParse(cacheUrl, perfTimes, orgName) {
-  const fetchStartTime = performance.now();
-  const response = await cacheFetch(cacheUrl);
-  const data = await response.json();
-  const fetchEndTime = performance.now();
-  perfTimes.fetch = Math.round(fetchEndTime - fetchStartTime);
-
-  const parsedCache = parseCache(data, perfTimes, orgName);
-  perfTimes.parseCache = Math.round(performance.now() - fetchEndTime);
-
-  return [parsedCache, perfTimes];
-}
-
 addEventListener('message', async event => {
   // console.log('in interaction worker message handler');
-  const [cacheUrl, orgName, perfTimes] = event.data;
-  const result = await fetchAndParse(cacheUrl, orgName, perfTimes);
+  const [cacheUrl, perfTimes, orgName] = event.data;
+  const result = await fetchAndParse(cacheUrl, perfTimes, parseCache, orgName);
   postMessage(result);
 });

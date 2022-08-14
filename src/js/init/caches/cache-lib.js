@@ -73,14 +73,21 @@ export function parseOrgMetadata(orgName) {
 }
 
 /** Fetch URL from service worker cache, call given parsing function */
-export async function fetchAndParse(cacheUrl, perfTimes, parseFn) {
+export async function fetchAndParse(
+  cacheUrl, perfTimes, parseFn, orgName=null
+) {
   const fetchStartTime = performance.now();
   const response = await cacheFetch(cacheUrl);
-  const data = await response.text();
+  let data;
+  if (cacheUrl.includes('.json')) {
+    data = await response.json();
+  } else {
+    data = await response.text();
+  }
   const fetchEndTime = performance.now();
   perfTimes.fetch = Math.round(fetchEndTime - fetchStartTime);
 
-  const parsedCache = parseFn(data, perfTimes);
+  const parsedCache = parseFn(data, perfTimes, orgName);
   perfTimes.parseCache = Math.round(performance.now() - fetchEndTime);
 
   return [parsedCache, perfTimes];
