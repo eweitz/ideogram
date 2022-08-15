@@ -92,3 +92,12 @@ export async function fetchAndParse(
 
   return [parsedCache, perfTimes];
 }
+
+/** Print size and time of given parsed cache */
+export function inspectWorker(cacheName, json) {
+  const size = new TextEncoder().encode(JSON.stringify(json)).length;
+  const kiloBytes = size / 1024;
+  const megaBytes = kiloBytes / 1024;
+  console.log(`Parsed ${cacheName}Cache size: ${megaBytes} MiB`);
+  console.timeEnd(`${cacheName}CacheWorker`);
+}

@@ -110,6 +110,7 @@ function setGeneStructureCache(parsedCache, ideo) {
 async function cacheFactory(cacheName, orgName, ideo, cacheDir=null) {
 
   const cacheProps = allCacheProps[cacheName];
+  const debug = ideo.config.debug;
 
   /**
  * Fetch cached gene data, transform it usefully, and set it as ideo prop
@@ -139,21 +140,18 @@ async function cacheFactory(cacheName, orgName, ideo, cacheDir=null) {
 
   const cacheWorker = cacheProps.worker;
 
-  if (ideo.config.debug) console.time(`${cacheName}: Ideogram`)
+  if (debug) console.time(`${cacheName}Cache total`);
   return new Promise(resolve => {
-    // console.log('before posting message');
-    const message = [cacheUrl, perfTimes];
+    const message = [cacheUrl, perfTimes, debug];
     if (cacheName === 'interaction') message.push(orgName);
     cacheWorker.postMessage(message);
-    // console.log('Message posted to geneCacheWorker');
     cacheWorker.addEventListener('message', event => {
-      // console.log('Received message from worker')
       [parsedCache, perfTimes] = event.data;
       cacheProps.fn(parsedCache, ideo, orgName);
       Ideogram[staticProp][orgName] = ideo[staticProp];
 
-      if (ideo.config.debug) {
-        if (ideo.config.debug) console.timeEnd(`${cacheName}: Ideogram`);
+      if (debug) {
+        console.timeEnd(`${cacheName}Cache total`);
         perfTimes.total = Math.round(performance.now() - startTime);
         const preamble = 'perfTimes in init' + cacheProps.metadata + 'Cache:';
         console.log(preamble, perfTimes);

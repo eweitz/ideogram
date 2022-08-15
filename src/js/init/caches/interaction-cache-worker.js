@@ -1,4 +1,4 @@
-import {fetchAndParse} from './cache-lib';
+import {fetchAndParse, inspectWorker} from './cache-lib';
 
 /** Parse an interaction cache JSON file, return array of useful transforms */
 function parseCache(rawJson, perfTimes, orgName) {
@@ -32,8 +32,9 @@ function parseCache(rawJson, perfTimes, orgName) {
 }
 
 addEventListener('message', async event => {
-  // console.log('in interaction worker message handler');
-  const [cacheUrl, perfTimes, orgName] = event.data;
+  console.time('interactionCacheWorker');
+  const [cacheUrl, perfTimes, debug, orgName] = event.data;
   const result = await fetchAndParse(cacheUrl, perfTimes, parseCache, orgName);
   postMessage(result);
+  if (debug) inspectWorker('interaction', result[0]);
 });

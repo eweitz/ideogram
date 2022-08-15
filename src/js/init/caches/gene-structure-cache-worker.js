@@ -1,4 +1,4 @@
-import {fetchAndParse} from './cache-lib';
+import {fetchAndParse, inspectWorker} from './cache-lib';
 
 /** Parse compressed feature subparts to more easily computable format */
 function deserializeSubparts(rawSubparts, subpartKeys) {
@@ -86,8 +86,9 @@ function parseCache(rawTsv, perfTimes) {
 }
 
 addEventListener('message', async event => {
-  // console.log('in worker message handler');
-  const [cacheUrl, perfTimes] = event.data;
+  console.time('geneStructureCacheWorker');
+  const [cacheUrl, perfTimes, debug] = event.data;
   const result = await fetchAndParse(cacheUrl, perfTimes, parseCache);
   postMessage(result);
+  if (debug) inspectWorker('geneStructure', result[0]);
 });

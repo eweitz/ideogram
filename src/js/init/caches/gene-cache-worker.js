@@ -1,4 +1,4 @@
-import {fetchAndParse, getEnsemblId} from './cache-lib';
+import {fetchAndParse, getEnsemblId, inspectWorker} from './cache-lib';
 
 /**
  * Convert pre-annotation arrays to annotation objects
@@ -57,7 +57,8 @@ export function parseCache(rawTsv, perfTimes) {
       continue;
     }
     const [
-      chromosome, rawStart, rawLength, slimEnsemblId, gene, rawFullName
+      chromosome, rawStart, rawLength, slimEnsemblId, gene
+      , rawFullName
     ] = line.trim().split(/\t/);
     const fullName = decodeURIComponent(rawFullName);
     const start = parseInt(rawStart);
@@ -81,23 +82,18 @@ export function parseCache(rawTsv, perfTimes) {
   perfTimes.parseAnnots = Math.round(performance.now() - t1);
 
   return [
-    names, nameCaseMap, namesById, fullNamesById,
+    names, nameCaseMap, namesById,
+    fullNamesById,
     idsByName, lociByName, lociById
     // , sortedAnnots
   ];
 }
 
 addEventListener('message', async event => {
-  console.time('geneCacheWorker: Ideogram')
+  console.time('geneCacheWorker');
   // console.log('in gene cache worker message handler');
   const [cacheUrl, perfTimes, debug] = event.data;
   const result = await fetchAndParse(cacheUrl, perfTimes, parseCache);
   postMessage(result);
-  if (debug) {
-    // const size = new TextEncoder().encode(JSON.stringify(result[0])).length;
-    // const kiloBytes = size / 1024;
-    // const megaBytes = kiloBytes / 1024;
-    // console.log('parsed geneCache size: ' + megaBytes + ' MiB');
-    console.timeEnd('geneCacheWorker: Ideogram')
-  }
+  if (debug) inspectWorker('gene', result[0]);
 });

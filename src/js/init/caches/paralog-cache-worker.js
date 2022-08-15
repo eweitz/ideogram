@@ -1,4 +1,4 @@
-import {fetchAndParse, getEnsemblId} from './cache-lib';
+import {fetchAndParse, getEnsemblId, inspectWorker} from './cache-lib';
 
 /** Parse a paralog cache TSV file, return array of useful transforms */
 export function parseCache(rawTsv, perfTimes) {
@@ -54,8 +54,9 @@ export function parseCache(rawTsv, perfTimes) {
 }
 
 addEventListener('message', async event => {
-  // console.log('in paralog worker message handler');
-  const [cacheUrl, perfTimes] = event.data;
+  console.time('paralogCacheWorker');
+  const [cacheUrl, perfTimes, debug] = event.data;
   const result = await fetchAndParse(cacheUrl, perfTimes, parseCache);
   postMessage(result);
+  if (debug) inspectWorker('paralog', result[0]);
 });
