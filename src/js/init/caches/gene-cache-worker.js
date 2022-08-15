@@ -87,9 +87,17 @@ export function parseCache(rawTsv, perfTimes) {
   ];
 }
 
-addEventListener('message', async event => {
-  // console.log('in gene cache worker message handler');
-  const [cacheUrl, perfTimes] = event.data;
-  const result = await fetchAndParse(cacheUrl, perfTimes, parseCache);
-  postMessage(result);
-});
+// addEventListener('message', async event => {
+//   console.time('geneCacheWorker: Ideogram');
+//   // console.log('in gene cache worker message handler');
+//   const [cacheUrl, perfTimes, debug] = event.data;
+//   const result = await fetchAndParse(cacheUrl, perfTimes, parseCache);
+//   postMessage(result);
+//   if (debug) {
+//     const size = new TextEncoder().encode(JSON.stringify(result[0])).length;
+//     const kiloBytes = size / 1024;
+//     const megaBytes = kiloBytes / 1024;
+//     console.log('parsed geneCache size: ' + megaBytes + ' MiB');
+//     console.timeEnd('geneCacheWorker: Ideogram');
+//   }
+// });
