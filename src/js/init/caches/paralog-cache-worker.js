@@ -37,8 +37,8 @@ export function parseCache(rawTsv, perfTimes) {
       paralogs.unshift(getEnsemblId(ensemblPrefix, columns[3]));
     } else {
       const slimEnsemblIds = columns.slice(2);
-      for (let i = 0; i < slimEnsemblIds.length; i++) {
-        const slimId = slimEnsemblIds[i];
+      for (let j = 0; j < slimEnsemblIds.length; j++) {
+        const slimId = slimEnsemblIds[j];
         if (slimId !== geneSlimId) {
           paralogs.push(getEnsemblId(ensemblPrefix, slimId));
         }
