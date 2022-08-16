@@ -1603,13 +1603,25 @@ function _initGeneHints(config, annotsInList) {
     annotsInList = annotsInList.map(name => name.toLowerCase());
   }
 
-  const annotsPath =
-    getDir('cache/homo-sapiens-top-genes.tsv');
+  let annotsPath;
+  if (!config.annotationsPath) {
+    annotsPath =
+      getDir('cache/homo-sapiens-top-genes.tsv');
+  } else {
+    annotsPath = config.annotationsPath;
+  }
+
+  let hintsLegend;
+  if (!config.legend) {
+    hintsLegend = citedLegend;
+  } else {
+    hintsLegend = config.hintsLegend;
+  }
 
   const kitDefaults = {
     showFullyBanded: false,
     rotatable: false,
-    legend: citedLegend,
+    legend: hintsLegend,
     chrMargin: -4,
     chrBorderColor: '#333',
     chrLabelColor: '#333',

@@ -122,6 +122,19 @@
   <div id="ideogram-container" style="visibility: hidden;"></div>
   <script type="text/javascript">
 
+    const legendHeaderStyle =
+      `font-size: 14px; font-weight: bold; font-color: #333;`;
+    const hintsLegend = [{
+      name: `
+        <div style="position: relative; left: 30px;">
+          <div style="${legendHeaderStyle}">Gene highlights</div>
+          <i>Click gene to search</i>
+        </div>
+      `,
+      nameHeight: 30,
+      rows: []
+    }];
+
     const examplesByOrganism = {
       'homo-sapiens': ['RAD51', 'CD4', 'APOE'],
       'tupaia-belangeri': ['RAD51', 'CD4', 'APOE'],
@@ -312,7 +325,11 @@
       onPlotRelatedGenes: reportRelatedGenes,
       showParalogNeighborhoods: true,
       showGeneStructureInTooltip: true,
-      onClickAnnot
+      onClickAnnot,
+
+      // Experiment
+      annotationsPath: 'https://raw.githubusercontent.com/eweitz/ideogram/master/dist/data/cache/homo-sapiens-top-genes.tsv',
+      legend: hintsLegend
     }
 
     // annotsInList = ['CDK9', 'CDK19', 'CDK1'];
