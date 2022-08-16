@@ -45,9 +45,9 @@ export async function initCaches(ideo) {
   if (!config.useCache) return;
 
   const organism = config.organism;
-  if (config.cacheDir) cacheDir = config.cacheDir;
 
   let cacheDir = null;
+  if (config.cacheDir) cacheDir = config.cacheDir;
 
   // Start all these in parallel.  Only initGeneCache blocks; it internally
   // resolves a Promise, whereas the others return upon completing their
