@@ -1,17 +1,25 @@
-import {supportsCache, getCacheUrl} from './cache-lib';
+import {supportsCache, getCacheUrl, fetchAndParse} from './cache-lib';
 
-const geneCacheWorker = new Worker(
-  new URL('./gene-cache-worker.js', import.meta.url), {type: 'module'}
-);
-const paralogCacheWorker = new Worker(
-  new URL('./paralog-cache-worker.js', import.meta.url), {type: 'module'}
-);
-const interactionCacheWorker = new Worker(
-  new URL('./interaction-cache-worker.js', import.meta.url), {type: 'module'}
-);
-const geneStructureCacheWorker = new Worker(
-  new URL('./gene-structure-cache-worker.js', import.meta.url), {type: 'module'}
-);
+// Uncomment when workers work outside localhost
+// const geneCacheWorker = new Worker(
+//   new URL('./gene-cache-worker.js', import.meta.url), {type: 'module'}
+// );
+// const paralogCacheWorker = new Worker(
+//   new URL('./paralog-cache-worker.js', import.meta.url), {type: 'module'}
+// );
+// const interactionCacheWorker = new Worker(
+//   new URL('./interaction-cache-worker.js', import.meta.url), {type: 'module'}
+// );
+// const geneStructureCacheWorker = new Worker(
+//   new URL('./gene-structure-cache-worker.js', import.meta.url), {type: 'module'}
+// );
+
+import {parseCache as parseGeneCache} from './gene-cache-worker';
+import {parseCache as parseParalogCache} from './paralog-cache-worker';
+import {parseCache as parseInteractionCache} from './interaction-cache-worker';
+import {
+  parseCache as parseGeneStructureCache
+} from './gene-structure-cache-worker';
 
 
 /**
@@ -21,11 +29,13 @@ const geneStructureCacheWorker = new Worker(
  * - Gene cache: gene symbol -> full name, Ensembl ID, genomic coordinates
  * - Paralog cache: gene symbol -> paralogs (evolutionarily related genes)
  * - Interaction cache: gene symbol -> adjacent genes in biochemical pathways
+ *
+ * And, optionally:
  * - Gene structure cache: gene symbol -> canonical transcript, exons, UTRs
  *
  * Used for related genes kit now, likely worth generalizing in the future.
  *
- * This approaches makes navigating related genes ideogram instant and
+ * This approach makes navigating related genes ideogram instant and
  * possible completely offline (i.e. a progressive web component) -- but only
  * once caches are populated.
  */
@@ -56,19 +66,27 @@ export async function initCaches(ideo) {
 const allCacheProps = {
   gene: {
     metadata: 'Gene', dir: 'genes',
-    fn: setGeneCache, worker: geneCacheWorker
+    fn: setGeneCache,
+    // worker: geneCacheWorker // Uncomment when workers work
+    parseFn: parseGeneCache // Remove when workers work
   },
   paralog: {
     metadata: 'Paralog', dir: 'paralogs',
-    fn: setParalogCache, worker: paralogCacheWorker
+    fn: setParalogCache,
+    // worker: paralogCacheWorker // Uncomment when workers work
+    parseFn: parseParalogCache // Remove when workers work
   },
   interaction: {
     metadata: 'Interaction', dir: 'interactions',
-    fn: setInteractionCache, worker: interactionCacheWorker, extension: 'json'
+    fn: setInteractionCache, extension: 'json',
+    // worker: interactionCacheWorker, // Uncomment when workers work
+    parseFn: parseInteractionCache // Remove when workers work
   },
   geneStructure: {
     metadata: 'GeneStructure', dir: 'gene-structures',
-    fn: setGeneStructureCache, worker: geneStructureCacheWorker
+    fn: setGeneStructureCache,
+    // worker: geneStructureCacheWorker // Uncomment when workers work
+    parseFn: parseGeneStructureCache // Remove when workers work
   }
 };
 
@@ -138,15 +156,17 @@ async function cacheFactory(cacheName, orgName, ideo, cacheDir=null) {
   const extension = cacheProps?.extension ?? 'tsv';
   const cacheUrl = getCacheUrl(orgName, cacheDir, cacheProps.dir, extension);
 
-  const cacheWorker = cacheProps.worker;
+  [parsedCache, perfTimes] =
+    await fetchAndParse(cacheUrl, perfTimes, cacheProps.parseFn, orgName);
 
+  // const cacheWorker = cacheProps.worker;
   if (debug) console.time(`${cacheName}Cache total`);
   return new Promise(resolve => {
-    const message = [cacheUrl, perfTimes, debug];
-    if (cacheName === 'interaction') message.push(orgName);
-    cacheWorker.postMessage(message);
-    cacheWorker.addEventListener('message', event => {
-      [parsedCache, perfTimes] = event.data;
+  //   const message = [cacheUrl, perfTimes, debug];
+  //   if (cacheName === 'interaction') message.push(orgName);
+  //   cacheWorker.postMessage(message);
+  //   cacheWorker.addEventListener('message', event => {
+  //     [parsedCache, perfTimes] = event.data;
       cacheProps.fn(parsedCache, ideo, orgName);
       Ideogram[staticProp][orgName] = ideo[staticProp];
 
@@ -158,6 +178,6 @@ async function cacheFactory(cacheName, orgName, ideo, cacheDir=null) {
       }
 
       resolve();
-    });
+    // });
   });
 }

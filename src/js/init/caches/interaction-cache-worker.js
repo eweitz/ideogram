@@ -1,7 +1,7 @@
 import {fetchAndParse, inspectWorker} from './cache-lib';
 
 /** Parse an interaction cache JSON file, return array of useful transforms */
-function parseCache(rawJson, perfTimes, orgName) {
+export function parseCache(rawJson, perfTimes, orgName) {
   let t0 = performance.now();
   const interactionsByName = {};
   const tmp = orgName.replace('-', ' ');
@@ -31,10 +31,11 @@ function parseCache(rawJson, perfTimes, orgName) {
   return interactionsByName;
 }
 
-addEventListener('message', async event => {
-  console.time('interactionCacheWorker');
-  const [cacheUrl, perfTimes, debug, orgName] = event.data;
-  const result = await fetchAndParse(cacheUrl, perfTimes, parseCache, orgName);
-  postMessage(result);
-  if (debug) inspectWorker('interaction', result[0]);
-});
+// Uncomment when workers work outside localhost
+// addEventListener('message', async event => {
+//   console.time('interactionCacheWorker');
+//   const [cacheUrl, perfTimes, debug, orgName] = event.data;
+//   const result = await fetchAndParse(cacheUrl, perfTimes, parseCache, orgName);
+//   postMessage(result);
+//   if (debug) inspectWorker('interaction', result[0]);
+// });

@@ -53,10 +53,11 @@ export function parseCache(rawTsv, perfTimes) {
   return paralogsByName;
 }
 
-addEventListener('message', async event => {
-  console.time('paralogCacheWorker');
-  const [cacheUrl, perfTimes, debug] = event.data;
-  const result = await fetchAndParse(cacheUrl, perfTimes, parseCache);
-  postMessage(result);
-  if (debug) inspectWorker('paralog', result[0]);
-});
+// Uncomment when workers work outside localhost
+// addEventListener('message', async event => {
+//   console.time('paralogCacheWorker');
+//   const [cacheUrl, perfTimes, debug] = event.data;
+//   const result = await fetchAndParse(cacheUrl, perfTimes, parseCache);
+//   postMessage(result);
+//   if (debug) inspectWorker('paralog', result[0]);
+// });

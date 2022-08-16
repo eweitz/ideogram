@@ -89,11 +89,12 @@ export function parseCache(rawTsv, perfTimes) {
   ];
 }
 
-addEventListener('message', async event => {
-  console.time('geneCacheWorker');
-  // console.log('in gene cache worker message handler');
-  const [cacheUrl, perfTimes, debug] = event.data;
-  const result = await fetchAndParse(cacheUrl, perfTimes, parseCache);
-  postMessage(result);
-  if (debug) inspectWorker('gene', result[0]);
-});
+// Uncomment when workers work outside localhost
+// addEventListener('message', async event => {
+//   console.time('geneCacheWorker');
+//   // console.log('in gene cache worker message handler');
+//   const [cacheUrl, perfTimes, debug] = event.data;
+//   const result = await fetchAndParse(cacheUrl, perfTimes, parseCache);
+//   postMessage(result);
+//   if (debug) inspectWorker('gene', result[0]);
+// });

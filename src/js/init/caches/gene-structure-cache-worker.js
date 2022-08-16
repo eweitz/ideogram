@@ -28,7 +28,7 @@ function parseMetainformationHeader(line) {
 }
 
 /** Parse a gene structure cache TSV file, return array of useful transforms */
-function parseCache(rawTsv, perfTimes) {
+export function parseCache(rawTsv, perfTimes) {
   const featuresByGene = {};
 
   let t0 = performance.now();
@@ -85,10 +85,11 @@ function parseCache(rawTsv, perfTimes) {
   return featuresByGene;
 }
 
-addEventListener('message', async event => {
-  console.time('geneStructureCacheWorker');
-  const [cacheUrl, perfTimes, debug] = event.data;
-  const result = await fetchAndParse(cacheUrl, perfTimes, parseCache);
-  postMessage(result);
-  if (debug) inspectWorker('geneStructure', result[0]);
-});
+// Uncomment when workers work outside localhost
+// addEventListener('message', async event => {
+//   console.time('geneStructureCacheWorker');
+//   const [cacheUrl, perfTimes, debug] = event.data;
+//   const result = await fetchAndParse(cacheUrl, perfTimes, parseCache);
+//   postMessage(result);
+//   if (debug) inspectWorker('geneStructure', result[0]);
+// });
