@@ -34,10 +34,6 @@ import {
 import {writeLegend} from '../annotations/legend';
 import {getAnnotDomId} from '../annotations/process';
 import {getDir, deepCopy} from '../lib';
-import initGeneCache, {getEnsemblId} from '../gene-cache';
-import initParalogCache, {hasParalogCache} from '../paralog-cache';
-import initInteractionCache from '../interaction-cache';
-import initGeneStructureCache from '../gene-structure-cache';
 import {
   fetchGpmls, summarizeInteractions, fetchPathwayInteractions
 } from './wikipathways';
@@ -415,6 +411,49 @@ function fetchGenesFromCache(names, type, ideo) {
   return hitsWithGenomicPos;
 }
 
+/** Wait for a certain time (delay) in milliseconds */
+function wait(delay) {
+  return new Promise((resolve) => setTimeout(resolve, delay));
+}
+
+/**
+ * Get time to wait before retrying a fail service, gracefully
+ *
+ * The returned wait time helps avoid flooding the server
+ */
+function exponentialBackoffWithJitter(numFailures, baseWaitMs) {
+  const jitter = 10 * Math.random();
+  return Math.round(baseWaitMs + jitter) * (numFailures ** 2);
+}
+
+async function retryFetch(requestedThing, numLimit, fn, args) {
+
+  const numFailed = numFailedFetches[requestedThing];
+  if (numFailed > numLimit) {
+    const preamble = 'Failed to fetch from Ideogram third-party service for: ';
+    throw new TypeError(preamble + requestedThing);
+  }
+
+  numFailedFetches[requestedThing] += 1;
+
+  // Exponential backoff
+  const baseWaitMs = 500;
+  const waitMilliseconds = exponentialBackoffWithJitter(numFailed, baseWaitMs);
+
+  console.log(
+    `Failed fetch for ${requestedThing} ${numFailed} times, ` +
+    `retrying in ${waitMilliseconds} ms`
+  );
+
+  await wait(waitMilliseconds);
+  return await fn(...args);
+}
+
+/** Number of times fetches for various things have consecutively failed */
+const numFailedFetches = {
+  genes: 0
+};
+
 /** Fetch genes from cache, or, if needed, from MyGene.info API */
 async function fetchGenes(names, type, ideo) {
 
@@ -434,9 +473,6 @@ async function fetchGenes(names, type, ideo) {
 
     // Asynchronously fetch full name, but don't await the response, because
     // full names are only shown upon hovering over an annotation.
-    // const queryString = `${queryStringBase}symbol,name`;
-    // data = fetchMyGeneInfo(queryString).then(data => {
-    // data.hits.forEach((hit) => {
     hits.forEach((hit) => {
       const symbol = hit.symbol;
       const fullName = hit.name;
@@ -446,13 +482,20 @@ async function fetchGenes(names, type, ideo) {
         ideo.annotDescriptions.annots[symbol] = {name: fullName};
       }
     });
-    // });
 
     data = {hits, fromGeneCache: true};
   } else {
     // Fetch gene data from MyGene.info
     const queryString = `${queryStringBase}symbol,genomic_pos,name`;
-    data = await fetchMyGeneInfo(queryString);
+    try {
+      data = await fetchMyGeneInfo(queryString);
+    } catch (error) {
+      const isFailedFetch = (error.message === 'Failed to fetch');
+      if (isFailedFetch && navigator.onLine) {
+        // Retry fetching 3 times, waiting longer each time
+        data = await retryFetch('genes', 3, fetchGenes, [names, type, ideo]);
+      }
+    }
   }
 
   return data;
@@ -1187,13 +1230,13 @@ async function plotRelatedGenes(geneSymbol=null) {
 
   const ideo = this;
 
-  ideo.clearAnnotLabels();
-  const legend = document.querySelector('#_ideogramLegend');
-  if (legend) legend.remove();
-
   if (!geneSymbol) {
     return plotGeneHints(ideo);
   }
+
+  ideo.clearAnnotLabels();
+  const legend = document.querySelector('#_ideogramLegend');
+  if (legend) legend.remove();
 
   ideo.config = setRelatedDecorPad(ideo.config);
 
@@ -1482,82 +1525,18 @@ function setRelatedDecorPad(kitConfig) {
   return kitConfig;
 }
 
-/**
- * Wrapper for Ideogram constructor, with generic "Related genes" options
- *
- * This function is made available as a static method on Ideogram.
- *
- * @param {Object} config Ideogram configuration object
- */
-function _initRelatedGenes(config, annotsInList) {
-
-  if (annotsInList !== 'all') {
-    annotsInList = annotsInList.map(name => name.toLowerCase());
-  }
-
-  const kitDefaults = {
-    showFullyBanded: false,
-    rotatable: false,
-    legend: relatedLegend,
-    chrBorderColor: '#333',
-    chrLabelColor: '#333',
-    onWillShowAnnotTooltip: decorateRelatedGene,
-    annotsInList: annotsInList,
-    showTools: true,
-    showAnnotLabels: true,
-    showParalogNeighborhoods: true,
-    chrFillColor: {centromere: '#DAAAAA'},
-    relatedGenesMode: 'related'
-  };
-
-  if ('onWillShowAnnotTooltip' in config) {
-    const key = 'onWillShowAnnotTooltip';
-    const clientFn = config[key];
-    const defaultFunction = kitDefaults[key];
-    const newFunction = function(annot) {
-      annot = defaultFunction.bind(this)(annot);
-      annot = clientFn.bind(this)(annot);
-      return annot;
-    };
-    kitDefaults[key] = newFunction;
-    delete config[key];
-  }
-
-  // Override kit defaults if client specifies otherwise
-  let kitConfig = Object.assign(kitDefaults, config);
-
-  kitConfig = setRelatedDecorPad(kitConfig);
-
-  const ideogram = new Ideogram(kitConfig);
-
-  // Called upon completing last plot, including all related genes
-  if (config.onPlotRelatedGenes) {
-    ideogram.onPlotRelatedGenesCallback = config.onPlotRelatedGenes;
-  }
-
-  // Called upon 1) finding paralogs, and 2) finding interacting genes
-  if (config.onFindRelatedGenes) {
-    ideogram.onFindRelatedGenesCallback = config.onFindRelatedGenes;
-  }
-
-  ideogram.getTooltipAnalytics = getRelatedGenesTooltipAnalytics;
-
-  ideogram.annotSortFunction = sortByRelatedType;
-
-  initAnalyzeRelatedGenes(ideogram);
-
-  let cacheDir = null;
-  const organism = ideogram.config.organism;
-  if (config.cacheDir) cacheDir = config.cacheDir;
-  initGeneCache(organism, ideogram, cacheDir);
-  initParalogCache(organism, ideogram, cacheDir);
-  initInteractionCache(organism, ideogram, cacheDir);
-  if (ideogram.config.showGeneStructureInTooltip) {
-    initGeneStructureCache(organism, ideogram, cacheDir);
-  }
-
-  return ideogram;
-}
+let kitDefaults = {
+  showFullyBanded: false,
+  rotatable: false,
+  legend: relatedLegend,
+  chrMargin: -4,
+  chrBorderColor: '#333',
+  chrLabelColor: '#333',
+  onWillShowAnnotTooltip: decorateRelatedGene,
+  showTools: true,
+  showAnnotLabels: true,
+  chrFillColor: {centromere: '#DAAAAA'}
+};
 
 function plotGeneHints() {
   const ideo = this;
@@ -1595,45 +1574,50 @@ function plotGeneHints() {
  *
  * @param {Object} config Ideogram configuration object
  */
-function _initGeneHints(config, annotsInList) {
+function _initRelatedGenes(config, annotsInList) {
 
+  kitDefaults = Object.assign(kitDefaults, {
+    showParalogNeighborhoods: true,
+    relatedGenesMode: 'related',
+    useCache: true
+  });
+
+  return initSearchIdeogram(kitDefaults, config, annotsInList);
+}
+
+/**
+ * Wrapper for Ideogram constructor, with generic "Related genes" options
+ *
+ * This function is made available as a static method on Ideogram.
+ *
+ * @param {Object} config Ideogram configuration object
+ */
+function _initGeneHints(config, annotsInList) {
   delete config.onPlotRelatedGenes;
+
+  const path = 'cache/homo-sapiens-top-genes.tsv';
+  const annotsPath = config.annotationsPath ?? getDir(path);
+
+  const hintsLegend = config.legend ? config.hintsLegend : citedLegend;
+
+  kitDefaults = Object.assign(kitDefaults, {
+    relatedGenesMode: 'hints',
+    annotationsPath: annotsPath,
+    hintsLegend,
+    useCache: true,
+    onDrawAnnots: plotGeneHints
+  });
+
+  return initSearchIdeogram(kitDefaults, config, annotsInList);
+}
+
+function initSearchIdeogram(kitDefaults, config, annotsInList) {
+
 
   if (annotsInList !== 'all') {
     annotsInList = annotsInList.map(name => name.toLowerCase());
   }
-
-  let annotsPath;
-  if (!config.annotationsPath) {
-    annotsPath =
-      getDir('cache/homo-sapiens-top-genes.tsv');
-  } else {
-    annotsPath = config.annotationsPath;
-  }
-
-  let hintsLegend;
-  if (!config.legend) {
-    hintsLegend = citedLegend;
-  } else {
-    hintsLegend = config.hintsLegend;
-  }
-
-  const kitDefaults = {
-    showFullyBanded: false,
-    rotatable: false,
-    legend: hintsLegend,
-    chrMargin: -4,
-    chrBorderColor: '#333',
-    chrLabelColor: '#333',
-    onWillShowAnnotTooltip: decorateRelatedGene,
-    annotsInList: annotsInList,
-    showTools: true,
-    showAnnotLabels: true,
-    showParalogNeighborhoods: true,
-    onDrawAnnots: plotGeneHints,
-    annotationsPath: annotsPath,
-    relatedGenesMode: 'hints'
-  };
+  kitDefaults.annotsInList = annotsInList;
 
   if ('onWillShowAnnotTooltip' in config) {
     const key = 'onWillShowAnnotTooltip';
@@ -1686,16 +1670,6 @@ function _initGeneHints(config, annotsInList) {
   ideogram.annotSortFunction = sortByRelatedType;
 
   initAnalyzeRelatedGenes(ideogram);
-
-  let cacheDir = null;
-  const organism = ideogram.config.organism;
-  if (config.cacheDir) cacheDir = config.cacheDir;
-  initGeneCache(organism, ideogram, cacheDir);
-  initParalogCache(organism, ideogram, cacheDir);
-  initInteractionCache(organism, ideogram, cacheDir);
-  if (ideogram.config.showGeneStructureInTooltip) {
-    initGeneStructureCache(organism, ideogram, cacheDir);
-  }
 
   return ideogram;
 }
