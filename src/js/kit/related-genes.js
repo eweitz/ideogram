@@ -1517,11 +1517,7 @@ const citedLegend = [{
 
 /** Sets legendPad for related genes view */
 function setRelatedDecorPad(kitConfig) {
-  if (kitConfig.showAnnotLabels) {
-    kitConfig.legendPad = 70;
-  } else {
-    kitConfig.legendPad = 30;
-  }
+  kitConfig.legendPad = kitConfig.showAnnotLabels ? 70 : 30;
   return kitConfig;
 }
 
@@ -1598,26 +1594,26 @@ function _initGeneHints(config, annotsInList) {
   const path = 'cache/homo-sapiens-top-genes.tsv';
   const annotsPath = config.annotationsPath ?? getDir(path);
 
-  const hintsLegend = config.legend ? config.hintsLegend : citedLegend;
+  const hintsLegend = config.legend ?? citedLegend;
 
   kitDefaults = Object.assign(kitDefaults, {
     relatedGenesMode: 'hints',
     annotationsPath: annotsPath,
     hintsLegend,
+    onDrawAnnots: plotGeneHints,
     useCache: true,
-    onDrawAnnots: plotGeneHints
   });
 
   return initSearchIdeogram(kitDefaults, config, annotsInList);
 }
 
 function initSearchIdeogram(kitDefaults, config, annotsInList) {
-
-
   if (annotsInList !== 'all') {
     annotsInList = annotsInList.map(name => name.toLowerCase());
   }
   kitDefaults.annotsInList = annotsInList;
+
+  kitDefaults.legendPad = kitDefaults.showAnnotLabels ? 80 : 30;
 
   if ('onWillShowAnnotTooltip' in config) {
     const key = 'onWillShowAnnotTooltip';
@@ -1646,12 +1642,6 @@ function initSearchIdeogram(kitDefaults, config, annotsInList) {
 
   // Override kit defaults if client specifies otherwise
   const kitConfig = Object.assign(kitDefaults, config);
-
-  if (kitConfig.showAnnotLabels) {
-    kitConfig.legendPad = 80;
-  } else {
-    kitConfig.legendPad = 30;
-  }
 
   const ideogram = new Ideogram(kitConfig);
 
