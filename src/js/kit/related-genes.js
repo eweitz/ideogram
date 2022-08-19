@@ -1470,16 +1470,20 @@ function decorateRelatedGene(annot) {
 
 const shape = 'triangle';
 
-const legendHeaderStyle =
-  `font-size: 14px; font-weight: bold; font-color: #333;`;
+function getLegendName(nameText) {
+  const legendHeaderStyle =
+    `font-size: 14px; font-weight: bold; font-color: #333;`;
 
-const relatedLegend = [{
-  name: `
+  return `
     <div style="position: relative; left: 30px;">
-      <div style="${legendHeaderStyle}">Related genes</div>
+      <div style="${legendHeaderStyle}">${nameText}</div>
       <i>Click gene to search</i>
     </div>
-  `,
+  `;
+}
+
+const relatedLegend = [{
+  name: getLegendName('Related genes'),
   nameHeight: 50,
   rows: [
     {name: 'Interacting gene', color: 'purple', shape: shape},
@@ -1491,12 +1495,7 @@ const relatedLegend = [{
 let legendPathwayName = '';
 
 const pathwayLegend = [{
-  name: `
-    <div style="position: relative; left: 30px;">
-      <div style="${legendHeaderStyle}">Related genes</div>
-      <i>Click gene to search</i>
-    </div>
-  `,
+  name: getLegendName('Related genes'),
   nameHeight: 50,
   rows: [
     {name: 'Pathway gene', color: 'blue', shape: shape},
@@ -1505,12 +1504,7 @@ const pathwayLegend = [{
 }];
 
 const citedLegend = [{
-  name: `
-    <div style="position: relative; left: 30px;">
-      <div style="${legendHeaderStyle}">Highly cited genes</div>
-      <i>Click gene to search</i>
-    </div>
-  `,
+  name: getLegendName('Highly cited genes'),
   nameHeight: 30,
   rows: []
 }];
@@ -1525,7 +1519,6 @@ let kitDefaults = {
   showFullyBanded: false,
   rotatable: false,
   legend: relatedLegend,
-  chrMargin: -4,
   chrBorderColor: '#333',
   chrLabelColor: '#333',
   onWillShowAnnotTooltip: decorateRelatedGene,
@@ -1571,11 +1564,11 @@ function plotGeneHints() {
  * @param {Object} config Ideogram configuration object
  */
 function _initRelatedGenes(config, annotsInList) {
-
   kitDefaults = Object.assign(kitDefaults, {
     showParalogNeighborhoods: true,
     relatedGenesMode: 'related',
-    useCache: true
+    useCache: true,
+    awaitCache: true
   });
 
   return initSearchIdeogram(kitDefaults, config, annotsInList);
@@ -1591,17 +1584,18 @@ function _initRelatedGenes(config, annotsInList) {
 function _initGeneHints(config, annotsInList) {
   delete config.onPlotRelatedGenes;
 
-  const path = 'cache/homo-sapiens-top-genes.tsv';
-  const annotsPath = config.annotationsPath ?? getDir(path);
+  if (config.legendName) {
+    citedLegend[0].name = getLegendName(config.legendName);
+  }
 
-  const hintsLegend = config.legend ?? citedLegend;
+  config.legend = citedLegend;
 
   kitDefaults = Object.assign(kitDefaults, {
     relatedGenesMode: 'hints',
-    annotationsPath: annotsPath,
-    hintsLegend,
+    chrMargin: -4,
+    annotationsPath: getDir('cache/homo-sapiens-top-genes.tsv'),
     onDrawAnnots: plotGeneHints,
-    useCache: true,
+    useCache: true
   });
 
   return initSearchIdeogram(kitDefaults, config, annotsInList);

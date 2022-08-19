@@ -49,18 +49,26 @@ export async function initCaches(ideo) {
   let cacheDir = null;
   if (config.cacheDir) cacheDir = config.cacheDir;
 
-  // Start all these in parallel.  Only initGeneCache blocks; it internally
-  // resolves a Promise, whereas the others return upon completing their
-  // respective initializations.
-  const cachePromise = Promise.all([
-    cacheFactory('gene', organism, ideo, cacheDir),
-    cacheFactory('paralog', organism, ideo, cacheDir),
-    cacheFactory('interaction', organism, ideo, cacheDir)
-  ]);
+  if (config.awaitCache) {
+    // Start all these in parallel.  Only initGeneCache blocks; it internally
+    // resolves a Promise, whereas the others return upon completing their
+    // respective initializations.
+    const cachePromise = Promise.all([
+      cacheFactory('gene', organism, ideo, cacheDir),
+      cacheFactory('paralog', organism, ideo, cacheDir),
+      cacheFactory('interaction', organism, ideo, cacheDir)
+    ]);
 
-  cacheFactory('geneStructure', organism, ideo, cacheDir);
+    cacheFactory('geneStructure', organism, ideo, cacheDir);
 
-  return cachePromise;
+    return cachePromise;
+
+  } else {
+    cacheFactory('gene', organism, ideo, cacheDir);
+    cacheFactory('paralog', organism, ideo, cacheDir);
+    cacheFactory('interaction', organism, ideo, cacheDir);
+    cacheFactory('geneStructure', organism, ideo, cacheDir);
+  }
 }
 
 const allCacheProps = {
