@@ -59,7 +59,9 @@ export async function initCaches(ideo) {
       cacheFactory('interaction', organism, ideo, cacheDir)
     ]);
 
-    cacheFactory('geneStructure', organism, ideo, cacheDir);
+    if (config.showGeneStructureInTooltip) {
+      cacheFactory('geneStructure', organism, ideo, cacheDir);
+    }
 
     return cachePromise;
 
@@ -67,7 +69,9 @@ export async function initCaches(ideo) {
     cacheFactory('gene', organism, ideo, cacheDir);
     cacheFactory('paralog', organism, ideo, cacheDir);
     cacheFactory('interaction', organism, ideo, cacheDir);
-    cacheFactory('geneStructure', organism, ideo, cacheDir);
+    if (config.showGeneStructureInTooltip) {
+      cacheFactory('geneStructure', organism, ideo, cacheDir);
+    }
   }
 }
 
