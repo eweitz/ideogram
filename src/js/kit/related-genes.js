@@ -33,7 +33,7 @@ import {
 } from '../annotations/annotations';
 import {writeLegend} from '../annotations/legend';
 import {getAnnotDomId} from '../annotations/process';
-import {getDir, deepCopy} from '../lib';
+import {getDir, deepCopy, slug} from '../lib';
 import {
   fetchGpmls, summarizeInteractions, fetchPathwayInteractions
 } from './wikipathways';
@@ -1564,8 +1564,11 @@ function plotGeneHints() {
  * @param {Object} config Ideogram configuration object
  */
 function _initRelatedGenes(config, annotsInList) {
+
+  const isHuman = slug(config.organism) === 'homo-sapiens';
+
   kitDefaults = Object.assign(kitDefaults, {
-    showParalogNeighborhoods: true,
+    showParalogNeighborhoods: isHuman,
     relatedGenesMode: 'related',
     useCache: true,
     awaitCache: true
