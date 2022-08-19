@@ -1516,6 +1516,10 @@ function setRelatedDecorPad(kitConfig) {
 }
 
 let kitDefaults = {
+  chrWidth: 9,
+  chrHeight: 100,
+  chrLabelSize: 12,
+  annotationHeight: 7,
   showFullyBanded: false,
   rotatable: false,
   legend: relatedLegend,
