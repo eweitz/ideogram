@@ -235,6 +235,24 @@ function getScientificName(taxid) {
   return null;
 }
 
+/** Convert string to camelcase */
+export function camel(str) {
+  const camelCaseString = str
+    .split(/[ _-]/g)
+    .map((token, i) => {
+      if (i > 0) {
+        return token[0].toUpperCase() + token.slice(1);
+      } else {
+        return token;
+      }
+    })
+    .join('');
+
+  console.log('camelCaseString')
+  console.log(camelCaseString)
+  return camelCaseString;
+}
+
 /**
 * Examples:
 * "Homo sapiens" -> "homo-sapiens"

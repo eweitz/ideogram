@@ -203,6 +203,41 @@
       return geneSymbol;
     }
 
+    function parseDE(items, keysByField) {
+
+      const rows = items.map(item => {
+        return `${item.group} | ${item.log2fc} | ${item.adjustedPval}`
+      }).join('<br/>')
+
+      const head = ['Group | log2(FC) | Adj. p-value<br/>']
+      return head.concat(rows);
+
+      // return deFields.join(' -- ')
+    }
+
+    function onDrawAnnots() {
+      const ideo = this;
+      console.log('ideo, ideo.rawAnnots.keys, ideo.annotDescriptions')
+      console.log(ideo)
+      console.log(ideo.rawAnnots.keys)
+      console.log('JSON.stringify(ideo.annotDescriptions)')
+      console.log(JSON.stringify(ideo.annotDescriptions))
+
+      const deInnerFields =
+        ideo.rawAnnots.innerKeysByField['differentialExpression'];
+      const chrAnnots = ideo.annots;
+      for (let i = 0; i < chrAnnots.length; i++) {
+        const annots = chrAnnots[i].annots;
+        for (let j = 0; j < annots.length; j++) {
+          const annot = annots[j];
+          console.log('annot')
+          console.log(annot)
+          ideo.annotDescriptions.annots[annot.name].description =
+            parseDE(annot.differentialExpression, deInnerFields);
+        }
+      }
+    }
+
     function updateExamples(organism) {
       const rawExamples = examplesByOrganism[organism];
 
@@ -294,8 +329,7 @@
       onLoad: plotGeneFromUrl,
       onPlotRelatedGenes: reportRelatedGenes,
       showGeneStructureInTooltip: true,
-      onClickAnnot,
-      // onLoadAnnots
+      onClickAnnot
     }
 
     // annotsInList = ['CDK9', 'CDK19', 'CDK1'];
@@ -311,15 +345,17 @@
       }
       if ('org' in urlParams) {
         if (urlParams.org === 'homo-sapiens') {
-          config.annotationsPath = 'https://raw.githubusercontent.com/eweitz/ideogram/master/dist/data/cache/homo-sapiens-top-genes.tsv',
+          // config.annotationsPath = 'https://raw.githubusercontent.com/eweitz/ideogram/master/dist/data/cache/homo-sapiens-top-genes.tsv',
           config.legendName = 'Gene leads'
+          config.onDrawAnnots = onDrawAnnots
           ideogram = Ideogram.initGeneHints(config);
         } else {
           ideogram = Ideogram.initRelatedGenes(config);
         }
       } else {
-        config.annotationsPath = 'https://raw.githubusercontent.com/eweitz/ideogram/master/dist/data/cache/homo-sapiens-top-genes.tsv',
+        // config.annotationsPath = 'https://raw.githubusercontent.com/eweitz/ideogram/master/dist/data/cache/homo-sapiens-top-genes.tsv',
         config.legendName = 'Gene leads'
+        config.onDrawAnnots = onDrawAnnots
         ideogram = Ideogram.initGeneHints(config);
       }
     }

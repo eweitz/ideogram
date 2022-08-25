@@ -2,6 +2,8 @@
  * @fileoverview Parse raw Ideogram.js annotations from a TSV file
  */
 
+import {camel} from './../lib';
+
 export class TsvParser {
 
   constructor(tsv, ideo) {
@@ -33,8 +35,8 @@ export class TsvParser {
     }
 
     let headers;
-    const keysByField = {};
-    const customHeaders = {};
+    const innerKeysByField = {};
+    const customHeaders = [];
 
     const numRequired = 4;
     // let numColumns;
@@ -52,15 +54,16 @@ export class TsvParser {
           if (keySplit.length > 1) {
             const field = keySplit[0].slice(3);
             const keys = keySplit[1].split(';');
-            keysByField[field] = keys;
+            innerKeysByField[camel(field)] = keys;
           }
         } else {
+          console.log('parsing headers');
           // Slice/trim off "# ", take columns 5 and onward, e.g.:
           // full_name\tmentions\tdifferential_expression\tinterest_rank
-          headers = line.slice(1).trim().split(/\t/);
+          headers = line.slice(1).trim().split(/\t/).map(h => camel(h));
           // numColumns = headers.length;
           const customs = headers.slice(numRequired);
-          customs.forEach((custom, i) => customHeaders[custom] = i);
+          customs.forEach((custom, i) => customHeaders.push(camel(custom)));
         }
         continue;
       }
@@ -73,13 +76,34 @@ export class TsvParser {
       if (chrIndex === -1) continue;
 
       const customValues = columns.slice(numRequired);
+      for (let j = 0; j < numRequired; j++) {
+        const customHeader = customHeaders[j];
+        if (customHeader in innerKeysByField) {
+          const innerKeys = innerKeysByField[customHeader]
+          const block = columns[numRequired + j];
+          const group = block.split(';');
+          const customValue = [];
+          for (let k = 0; k < group.length; k++) {
+            const innerObj = {};
+            const innerValues = group[k].split('!');
+            for (let m = 0; m < innerValues.length; m++) {
+              const innerKey = innerKeys[m];
+              const innerValue = innerValues[m];
+              innerObj[camel(innerKey)] = innerValue;
+            }
+            customValue.push(innerObj);
+          }
+          customValues[j] = customValue;
+        }
+      }
+
 
       const annot = [name, chr, start, length].concat(customValues);
 
       annots[chrIndex].annots.push(annot);
     };
 
-    const rawAnnots = {keys: headers, annots: annots};
+    const rawAnnots = {keys: headers, annots, innerKeysByField};
     return rawAnnots;
   }
 }
