@@ -248,8 +248,6 @@ export function camel(str) {
     })
     .join('');
 
-  console.log('camelCaseString')
-  console.log(camelCaseString)
   return camelCaseString;
 }
 

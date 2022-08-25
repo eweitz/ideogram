@@ -50,6 +50,10 @@
       cursor: pointer;
     }
 
+    ._ideogramTooltip th, ._ideogramTooltip td {
+      text-align: left;
+    }
+
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
   <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -203,35 +207,45 @@
       return geneSymbol;
     }
 
-    function parseDE(items, keysByField) {
+    /** Parse differential expression items, return as table for tooltip */
+    function parseDE(items) {
 
-      const rows = items.map(item => {
-        return `${item.group} | ${item.log2fc} | ${item.adjustedPval}`
-      }).join('<br/>')
+      if (items.length < 1) return '';
 
-      const head = ['Group | log2(FC) | Adj. p-value<br/>']
-      return head.concat(rows);
+      const rows = '<tbody><tr>' + items.map(item => {
+        return (
+          `<td>${item.group}</td>` +
+          `<td>${item.log2fc}</td>` +
+          `<td>${item.adjustedPval}</td>`
+          + `<td>${item.scoresRank}</td>`
+        );
+      }).join('</tr><tr>') + '</tr></tbody>';
 
-      // return deFields.join(' -- ')
+      const head =
+        '<thead><th>Group</th><th>log2(FC)</th><th>Adj. p-value</th><th>Rank in group</th></thead>';
+
+      const summary = 'summary="Differential expression"'
+      const result = '<table>' + head + rows + '</table>'
+
+      return result;
     }
 
+    /** Called immediately before displaying features along chromosomes */
     function onDrawAnnots() {
       const ideo = this;
-      console.log('ideo, ideo.rawAnnots.keys, ideo.annotDescriptions')
-      console.log(ideo)
-      console.log(ideo.rawAnnots.keys)
-      console.log('JSON.stringify(ideo.annotDescriptions)')
-      console.log(JSON.stringify(ideo.annotDescriptions))
+
+      if (ideo.config.relatedGenesMode !== 'leads') return;
 
       const deInnerFields =
         ideo.rawAnnots.innerKeysByField['differentialExpression'];
+
       const chrAnnots = ideo.annots;
+
       for (let i = 0; i < chrAnnots.length; i++) {
         const annots = chrAnnots[i].annots;
+
         for (let j = 0; j < annots.length; j++) {
           const annot = annots[j];
-          console.log('annot')
-          console.log(annot)
           ideo.annotDescriptions.annots[annot.name].description =
             parseDE(annot.differentialExpression, deInnerFields);
         }
@@ -348,7 +362,7 @@
           // config.annotationsPath = 'https://raw.githubusercontent.com/eweitz/ideogram/master/dist/data/cache/homo-sapiens-top-genes.tsv',
           config.legendName = 'Gene leads'
           config.onDrawAnnots = onDrawAnnots
-          ideogram = Ideogram.initGeneHints(config);
+          ideogram = Ideogram.initGeneLeads(config);
         } else {
           ideogram = Ideogram.initRelatedGenes(config);
         }
@@ -356,7 +370,7 @@
         // config.annotationsPath = 'https://raw.githubusercontent.com/eweitz/ideogram/master/dist/data/cache/homo-sapiens-top-genes.tsv',
         config.legendName = 'Gene leads'
         config.onDrawAnnots = onDrawAnnots
-        ideogram = Ideogram.initGeneHints(config);
+        ideogram = Ideogram.initGeneLeads(config);
       }
     }
   </script>

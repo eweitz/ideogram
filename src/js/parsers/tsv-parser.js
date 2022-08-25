@@ -83,15 +83,17 @@ export class TsvParser {
           const block = columns[numRequired + j];
           const group = block.split(';');
           const customValue = [];
-          for (let k = 0; k < group.length; k++) {
-            const innerObj = {};
-            const innerValues = group[k].split('!');
-            for (let m = 0; m < innerValues.length; m++) {
-              const innerKey = innerKeys[m];
-              const innerValue = innerValues[m];
-              innerObj[camel(innerKey)] = innerValue;
+          if (group[0] !== '') {
+            for (let k = 0; k < group.length; k++) {
+              const innerObj = {};
+              const innerValues = group[k].split('!');
+              for (let m = 0; m < innerValues.length; m++) {
+                const innerKey = innerKeys[m];
+                const innerValue = innerValues[m];
+                innerObj[camel(innerKey)] = innerValue;
+              }
+              customValue.push(innerObj);
             }
-            customValue.push(innerObj);
           }
           customValues[j] = customValue;
         }

@@ -1593,6 +1593,8 @@ function _initRelatedGenes(config, annotsInList) {
 
   const isHuman = slug(config.organism) === 'homo-sapiens';
 
+  if (config.relatedGenesMode === 'leads') delete config.onDrawAnnots;
+
   kitDefaults = Object.assign(kitDefaults, {
     showParalogNeighborhoods: isHuman,
     relatedGenesMode: 'related',
@@ -1622,8 +1624,8 @@ function _initGeneHints(config, annotsInList) {
   kitDefaults = Object.assign(kitDefaults, {
     relatedGenesMode: 'hints',
     chrMargin: -4,
-    // annotationsPath: getDir('cache/homo-sapiens-top-genes.tsv'),
-    annotationsPath: getDir('annotations/gene_leads.tsv'),
+    annotationsPath: getDir('cache/homo-sapiens-top-genes.tsv'),
+    // annotationsPath: getDir('annotations/gene_leads.tsv'),
     onDrawAnnots: plotGeneHints,
     useCache: true
   });
@@ -1648,7 +1650,7 @@ function _initGeneHints(config, annotsInList) {
   config.legend = citedLegend;
 
   kitDefaults = Object.assign(kitDefaults, {
-    relatedGenesMode: 'hints',
+    relatedGenesMode: 'leads',
     chrMargin: -4,
     // annotationsPath: getDir('cache/homo-sapiens-top-genes.tsv'),
     annotationsPath: getDir('annotations/gene_leads.tsv'),
@@ -1717,5 +1719,6 @@ function initSearchIdeogram(kitDefaults, config, annotsInList) {
 }
 
 export {
-  _initGeneHints, _initRelatedGenes, plotRelatedGenes, getRelatedGenesByType
+  _initGeneHints, _initGeneLeads, _initRelatedGenes,
+  plotRelatedGenes, getRelatedGenesByType
 };
