@@ -1400,7 +1400,7 @@ function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
   return geneStructureHtml;
 }
 
-function decorateParalogNeighborhood(annot, descObj) {
+function decorateParalogNeighborhood(annot, descObj, style) {
   // Rank 1st highest, then put it last as it already has a triangle
   // annotation, and is often also labeled.
   const sortedParalogs =
@@ -1408,7 +1408,7 @@ function decorateParalogNeighborhood(annot, descObj) {
   const firstRanked = sortedParalogs.shift(); // Take off first
   sortedParalogs.push(firstRanked); // Make it last
 
-  originalDisplay =
+  const originalDisplay =
     'Paralog neighborhood<br/>' +
     '<br/>' +
     descObj.description + ':<br/>' +
@@ -1477,7 +1477,8 @@ function decorateAnnot(annot) {
     `<br/>`;
 
   if (isParalogNeighborhood) {
-    [annot, originalDisplay] = decorateParalogNeighborhood(annot, descObj);
+    [annot, originalDisplay] =
+      decorateParalogNeighborhood(annot, descObj, style);
   }
 
   annot.displayName = originalDisplay;
