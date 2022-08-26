@@ -57,7 +57,6 @@ export class TsvParser {
             innerKeysByField[camel(field)] = keys;
           }
         } else {
-          console.log('parsing headers');
           // Slice/trim off "# ", take columns 5 and onward, e.g.:
           // full_name\tmentions\tdifferential_expression\tinterest_rank
           headers = line.slice(1).trim().split(/\t/).map(h => camel(h));

@@ -1448,7 +1448,7 @@ function decorateAnnot(annot) {
 
   let descObj = ideo.annotDescriptions.annots[annot.name];
 
-  if (ideo.mode === 'related-genes') {
+  if (ideo.config.relatedGenesMode === 'related') {
     descObj = decorateInteractingGene(annot, descObj, ideo);
   }
 
@@ -1558,7 +1558,6 @@ function plotGeneHints() {
 
   if (!ideo || 'annotDescriptions' in ideo) return;
 
-  console.log('in plotGeneHints')
   ideo.annotDescriptions = {annots: {}};
 
   ideo.flattenAnnots().map((annot) => {
@@ -1594,7 +1593,10 @@ function _initRelatedGenes(config, annotsInList) {
 
   const isHuman = slug(config.organism) === 'homo-sapiens';
 
-  if (config.relatedGenesMode === 'leads') delete config.onDrawAnnots;
+  if (config.relatedGenesMode === 'leads') {
+    delete config.onDrawAnnots;
+    delete config.relatedGenesMode;
+  };
 
   kitDefaults = Object.assign(kitDefaults, {
     showParalogNeighborhoods: isHuman,
