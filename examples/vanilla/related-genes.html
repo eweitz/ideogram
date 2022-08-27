@@ -50,6 +50,10 @@
       cursor: pointer;
     }
 
+    ._ideogramTooltip th, ._ideogramTooltip td {
+      text-align: left;
+    }
+
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
   <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -203,6 +207,51 @@
       return geneSymbol;
     }
 
+    /** Parse differential expression items, return as table for tooltip */
+    function parseDE(items) {
+
+      if (items.length < 1) return '';
+
+      const rows = '<tbody><tr>' + items.map(item => {
+        return (
+          `<td>${item.group}</td>` +
+          `<td>${item.log2fc}</td>` +
+          `<td>${item.adjustedPval}</td>`
+          + `<td>${item.scoresRank}</td>`
+        );
+      }).join('</tr><tr>') + '</tr></tbody>';
+
+      const head =
+        '<thead><th>Group</th><th>log2(FC)</th><th>Adj. p-value</th><th>Rank in group</th></thead>';
+
+      const summary = 'summary="Differential expression"'
+      const result = '<table>' + head + rows + '</table>'
+
+      return result;
+    }
+
+    /** Called immediately before displaying features along chromosomes */
+    function onDrawAnnots() {
+      const ideo = this;
+
+      if (ideo.config.relatedGenesMode !== 'leads') return;
+
+      const deInnerFields =
+        ideo.rawAnnots.innerKeysByField['differentialExpression'];
+
+      const chrAnnots = ideo.annots;
+
+      for (let i = 0; i < chrAnnots.length; i++) {
+        const annots = chrAnnots[i].annots;
+
+        for (let j = 0; j < annots.length; j++) {
+          const annot = annots[j];
+          ideo.annotDescriptions.annots[annot.name].description =
+            parseDE(annot.differentialExpression, deInnerFields);
+        }
+      }
+    }
+
     function updateExamples(organism) {
       const rawExamples = examplesByOrganism[organism];
 
@@ -285,33 +334,15 @@
       ideogram.plotRelatedGenes(annot.name);
     }
 
-    function onWillShowAnnotTooltip(annot) {
-      const ideo = this;
-      const tooltipAnalytics = ideo.getTooltipAnalytics(annot);
-
-      // Reduces analytics noise.  Accounts for quick moves from label to
-      // annot, which flickers tooltip and represents an technical artifact
-      // that is not worth analyzing.
-      if (tooltipAnalytics) console.log(tooltipAnalytics);
-
-      return annot
-    }
-
     updateExamples(organism);
 
     config = {
       organism: organism,
       container: '#ideogram-container',
-      chrWidth: 9,
-      chrHeight: 100,
-      chrLabelSize: 12,
-      annotationHeight: 7,
       // fontFamily: "'Montserrat', sans-serif",
       onLoad: plotGeneFromUrl,
       onPlotRelatedGenes: reportRelatedGenes,
-      showParalogNeighborhoods: organism === 'homo-sapiens',
       showGeneStructureInTooltip: true,
-      cacheDir: '/dist/data/cache/',
       onClickAnnot
     }
 
@@ -328,11 +359,22 @@
       }
       if ('org' in urlParams) {
         if (urlParams.org === 'homo-sapiens') {
-          ideogram = Ideogram.initGeneHints(config);
+          if ('gene-leads' in urlParams) {
+            config.legendName = 'Gene leads'
+            config.onDrawAnnots = onDrawAnnots
+            ideogram = Ideogram.initGeneLeads(config);
+          } else {
+            ideogram = Ideogram.initGeneHints(config);
+          }
         } else {
           ideogram = Ideogram.initRelatedGenes(config);
         }
       } else {
+        if ('gene-leads' in urlParams) {
+            config.legendName = 'Gene leads'
+            config.onDrawAnnots = onDrawAnnots
+            ideogram = Ideogram.initGeneLeads(config);
+        }
         ideogram = Ideogram.initGeneHints(config);
       }
     }
