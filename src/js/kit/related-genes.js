@@ -1012,7 +1012,22 @@ function adjustPlaceAndVisibility(ideo) {
   }
 }
 
-function getGeneStructureSvg(gene, ideo) {
+/** Splice out introns from transcript, leaving only exons */
+function spliceTranscript(subparts) {
+  const splicedSubparts = [];
+  let prevEnd = 0;
+  for (let i = 0; i < subparts.length; i++) {
+    const subpart = subparts[i];
+    const [subpartType, start, length] = subpart;
+    const splicedStart = prevEnd === 0 ? start : prevEnd;
+    const splicedEnd = splicedStart + length;
+    splicedSubparts.push([subpartType, splicedStart, splicedEnd]);
+    prevEnd = splicedEnd;
+  }
+  return splicedSubparts;
+}
+
+function getGeneStructureSvg(gene, ideo, omitIntrons=true) {
   if (
     'geneStructureCache' in ideo === false ||
     gene in ideo.geneStructureCache === false
@@ -1021,7 +1036,8 @@ function getGeneStructureSvg(gene, ideo) {
   }
 
   const geneStructure = ideo.geneStructureCache[gene];
-  const subparts = geneStructure.subparts;
+  let subparts = geneStructure.subparts;
+  if (omitIntrons) subparts = spliceTranscript(subparts);
   const lastSubpart = subparts.slice(-1)[0];
   const featureLengthBp = lastSubpart[1] + lastSubpart[2];
 
@@ -1078,8 +1094,13 @@ function getGeneStructureSvg(gene, ideo) {
     const left = subpart[1] / bpPerPx;
     const length = subpart[2] / bpPerPx;
     const pos = `x="${left}" width="${length}" y="${y}" height="${height}"`;
+    const lineHeight = height + 2.5;
+    const lineAttrs = // "";
+      `x1="${left}" x2="${left}" y1="${y}" y2="${lineHeight}" stroke="#BA8501"`;
+    const stroke = `stroke-left="black" `;
     const subpartSvg = (
-      `<rect rx="1.5" fill="${color}" ${pos} />`
+      `<rect rx="1.5" fill="${color}" ${pos} ${stroke} />` +
+      `<line ${lineAttrs} />`
     );
     geneStructureArray.push(subpartSvg);
   }
