@@ -1027,7 +1027,45 @@ function spliceTranscript(subparts) {
   return splicedSubparts;
 }
 
-function getGeneStructureSvg(gene, ideo, omitIntrons=true) {
+
+function addGeneStructureListeners(ideo) {
+  console.log('0')
+  setTimeout(function() {
+    console.log('ok');
+    const toggler = document.querySelector('._ideoGeneStructureToggle');
+    console.log('toggler');
+    console.log(toggler);
+    // toggler.addEventListener('mouseover', (event) => {
+    //   console.log('foo')
+    //   let geneDom = document.querySelector('#ideo-related-gene');
+    //   const gene = geneDom.textContent;
+    //   toggleGeneStructure(gene, ideo);
+    // });
+    toggler.addEventListener('mouseenter', (event) => {
+      console.log('enter')
+      let geneDom = document.querySelector('#ideo-related-gene');
+      const gene = geneDom.textContent;
+      toggleGeneStructure(gene, ideo, true);
+    });
+
+    toggler.addEventListener('mouseleave', (event) => {
+      console.log('leave')
+      let geneDom = document.querySelector('#ideo-related-gene');
+      const gene = geneDom.textContent;
+      toggleGeneStructure(gene, ideo, false);
+    });
+  }, 100);
+}
+
+function toggleGeneStructure(gene, ideo, omitIntrons) {
+  // ideo.omitIntrons = 'omitIntrons' in ideo ? !ideo.omitIntrons : true;
+  // console.log('ideo.omitIntrons')
+  // console.log(ideo.omitIntrons)
+  const svg = getGeneStructureSvg(gene, ideo, omitIntrons);
+  document.querySelector('._ideoGeneStructure').innerHTML = svg;
+}
+
+function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
   if (
     'geneStructureCache' in ideo === false ||
     gene in ideo.geneStructureCache === false
@@ -1036,7 +1074,11 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=true) {
   }
 
   const geneStructure = ideo.geneStructureCache[gene];
-  let subparts = geneStructure.subparts;
+  let subparts = geneStructure.subparts.sort((a, b) => {
+    if (a[0] === 'exon' && b[0] !== 'exon') return -1;
+    if (a[0] !== 'exon' && b[0] === 'exon') return 1;
+  });
+
   if (omitIntrons) subparts = spliceTranscript(subparts);
   const lastSubpart = subparts.slice(-1)[0];
   const featureLengthBp = lastSubpart[1] + lastSubpart[2];
@@ -1045,6 +1087,7 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=true) {
 
   const bpPerPx = featureLengthBp / featureLengthPx;
 
+  const y = 15;
   const intronHeight = 1;
   const intronColor = 'black';
   const heights = {
@@ -1062,7 +1105,7 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=true) {
   const geneStructureArray = [];
 
   const intronPosAttrs =
-    `x="0" width="${featureLengthPx}" y="10" height="${intronHeight}"`;
+    `x="0" width="${featureLengthPx}" y="${y + 10}" height="${intronHeight}"`;
   const intronRect =
     `<rect fill="black" ${intronPosAttrs}/>`;
 
@@ -1070,13 +1113,8 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=true) {
 
   let numExons = 0;
 
-  const sortedSubparts = subparts.sort((a, b) => {
-    if (a[0] === 'exon' && b[0] !== 'exon') return -1;
-    if (a[0] !== 'exon' && b[0] === 'exon') return 1;
-  });
-
-  for (let i = 0; i < sortedSubparts.length; i++) {
-    const subpart = sortedSubparts[i];
+  for (let i = 0; i < subparts.length; i++) {
+    const subpart = subparts[i];
     const subpartType = subpart[0];
     let color = intronColor;
     if (subpartType in colors) {
@@ -1086,7 +1124,6 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=true) {
       numExons += 1;
     }
     let height = intronHeight;
-    const y = 2.5;
     // const y = subpartType === 'exon' ? 0 : 2.5;
     if (subpartType in heights) {
       height = heights[subpartType];
@@ -1094,7 +1131,7 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=true) {
     const left = subpart[1] / bpPerPx;
     const length = subpart[2] / bpPerPx;
     const pos = `x="${left}" width="${length}" y="${y}" height="${height}"`;
-    const lineHeight = height + 2.5;
+    const lineHeight = y + height;
     const lineAttrs = // "";
       `x1="${left}" x2="${left}" y1="${y}" y2="${lineHeight}" stroke="#BA8501"`;
     const stroke = `stroke-left="black" `;
@@ -1111,6 +1148,10 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=true) {
       'transform="scale(-1 1)" ' +
       'style="position: relative; left: -10px;"';
   }
+
+  // const handler = `toggleGeneStructure(${gene}, ${ideo}, ${omitIntrons});`;
+  const handler = `toggleGeneStructure(${gene}, ${ideo}, ${omitIntrons});`;
+
   const titleData = [
     `Transcript name: ${geneStructure.transcriptName}`,
     `Exons: ${numExons}`,
@@ -1118,12 +1159,22 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=true) {
     `Strand: ${geneStructure.strand}`
   ].join('&#013;'); // Newline, entity-encoded to render in browser default UI
   const geneStructureSvg =
-    `<svg width="${(featureLengthPx + 20)}" height="25" ${transform}>` +
+    // `<svg><rect x="5" width="50" y="5" height="10" fill="grey"/></svg>` +
+    `<svg class="_ideoGeneStructure" ` +
+      `width="${(featureLengthPx + 20)}" height="40" ${transform}` +
+    `>` +
       `<title>${titleData}</title>` +
       geneStructureArray.join('') +
+      `<rect ` +
+        `class="_ideoGeneStructureToggle" ` +
+        `x="5" width="50" y="0" height="10" fill="grey" `+
+      `/>` +
     '</svg>';
   // console.log('geneStructureSvg');
   // console.log(geneStructureSvg);
+
+  addGeneStructureListeners(ideo);
+
   return geneStructureSvg;
 }
 
