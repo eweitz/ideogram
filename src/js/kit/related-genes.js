@@ -1016,52 +1016,42 @@ function adjustPlaceAndVisibility(ideo) {
 function spliceTranscript(subparts) {
   const splicedSubparts = [];
   let prevEnd = 0;
+  let prevStart = 0;
   for (let i = 0; i < subparts.length; i++) {
     const subpart = subparts[i];
     const [subpartType, start, length] = subpart;
-    const splicedStart = prevEnd === 0 ? start : prevEnd;
+    const splicedStart = (start === prevStart) ? start : prevEnd;
     const splicedEnd = splicedStart + length;
-    splicedSubparts.push([subpartType, splicedStart, splicedEnd]);
+    splicedSubparts.push([subpartType, splicedStart, length]);
     prevEnd = splicedEnd;
+    prevStart = splicedStart;
   }
   return splicedSubparts;
 }
 
 
 function addGeneStructureListeners(ideo) {
-  console.log('0')
   setTimeout(function() {
-    console.log('ok');
     const toggler = document.querySelector('._ideoGeneStructureToggle');
-    console.log('toggler');
-    console.log(toggler);
-    // toggler.addEventListener('mouseover', (event) => {
-    //   console.log('foo')
-    //   let geneDom = document.querySelector('#ideo-related-gene');
-    //   const gene = geneDom.textContent;
-    //   toggleGeneStructure(gene, ideo);
-    // });
-    toggler.addEventListener('mouseenter', (event) => {
-      console.log('enter')
-      let geneDom = document.querySelector('#ideo-related-gene');
-      const gene = geneDom.textContent;
-      toggleGeneStructure(gene, ideo, true);
-    });
 
-    toggler.addEventListener('mouseleave', (event) => {
-      console.log('leave')
-      let geneDom = document.querySelector('#ideo-related-gene');
-      const gene = geneDom.textContent;
-      toggleGeneStructure(gene, ideo, false);
+    const geneDom = document.querySelector('#ideo-related-gene');
+    const gene = geneDom.textContent;
+
+    // toggler.addEventListener('mouseenter', () => {
+    //   toggleGeneStructure(gene, ideo, true);
+    // });
+    // toggler.addEventListener('mouseleave', () => {
+    //   toggleGeneStructure(gene, ideo, false);
+    // });
+    toggler.addEventListener('click', () => {
+      toggleGeneStructure(gene, ideo);
     });
   }, 100);
 }
 
 function toggleGeneStructure(gene, ideo, omitIntrons) {
-  // ideo.omitIntrons = 'omitIntrons' in ideo ? !ideo.omitIntrons : true;
-  // console.log('ideo.omitIntrons')
-  // console.log(ideo.omitIntrons)
-  const svg = getGeneStructureSvg(gene, ideo, omitIntrons);
+  ideo.omitIntrons = 'omitIntrons' in ideo ? !ideo.omitIntrons : true;
+  const svg = getGeneStructureSvg(gene, ideo, ideo.omitIntrons);
   document.querySelector('._ideoGeneStructure').innerHTML = svg;
 }
 
@@ -1074,13 +1064,17 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
   }
 
   const geneStructure = ideo.geneStructureCache[gene];
-  let subparts = geneStructure.subparts.sort((a, b) => {
-    if (a[0] === 'exon' && b[0] !== 'exon') return -1;
-    if (a[0] !== 'exon' && b[0] === 'exon') return 1;
+  const subparts = geneStructure.subparts;
+
+  let sortedSubparts = subparts.sort((a, b) => {
+    return a[1] - b[1];
+    // if (a[0] === 'exon' && b[0] !== 'exon') return -1;
+    // if (a[0] !== 'exon' && b[0] === 'exon') return 1;
   });
 
-  if (omitIntrons) subparts = spliceTranscript(subparts);
-  const lastSubpart = subparts.slice(-1)[0];
+  if (omitIntrons) sortedSubparts = spliceTranscript(sortedSubparts);
+
+  const lastSubpart = sortedSubparts.slice(-1)[0];
   const featureLengthBp = lastSubpart[1] + lastSubpart[2];
 
   const featureLengthPx = 250;
@@ -1102,6 +1096,12 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
     "3'-UTR": '#357089'
   };
 
+  const lineColors = {
+    "5'-UTR": '#003049',
+    'exon': '#BA8501',
+    "3'-UTR": '#155069'
+  };
+
   const geneStructureArray = [];
 
   const intronPosAttrs =
@@ -1113,8 +1113,8 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
 
   let numExons = 0;
 
-  for (let i = 0; i < subparts.length; i++) {
-    const subpart = subparts[i];
+  for (let i = 0; i < sortedSubparts.length; i++) {
+    const subpart = sortedSubparts[i];
     const subpartType = subpart[0];
     let color = intronColor;
     if (subpartType in colors) {
@@ -1132,11 +1132,13 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
     const length = subpart[2] / bpPerPx;
     const pos = `x="${left}" width="${length}" y="${y}" height="${height}"`;
     const lineHeight = y + height;
+    const lineStroke = `stroke="${lineColors[subpartType]}"`;
     const lineAttrs = // "";
-      `x1="${left}" x2="${left}" y1="${y}" y2="${lineHeight}" stroke="#BA8501"`;
+      `x1="${left}" x2="${left}" y1="${y}" y2="${lineHeight}" ${lineStroke}`;
     const stroke = `stroke-left="black" `;
+    const cls = `class="${subpartType}" `;
     const subpartSvg = (
-      `<rect rx="1.5" fill="${color}" ${pos} ${stroke} />` +
+      `<rect ${cls} rx="1.5" fill="${color}" ${pos} ${stroke} />` +
       `<line ${lineAttrs} />`
     );
     geneStructureArray.push(subpartSvg);
@@ -1170,8 +1172,6 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
         `x="5" width="50" y="0" height="10" fill="grey" `+
       `/>` +
     '</svg>';
-  // console.log('geneStructureSvg');
-  // console.log(geneStructureSvg);
 
   addGeneStructureListeners(ideo);
 
