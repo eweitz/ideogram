@@ -1,7 +1,6 @@
 """Convert Ensembl BMTSV files to minimal TSVs for Ideogram.js gene caches
 
 Ideogram uses cached gene data to drastically simplify and speed up rendering.
-
 """
 
 import argparse
@@ -411,7 +410,7 @@ class GeneStructureCache():
             f"## Filtered to only canonical transcripts using Ensembl BioMart: {bmtsv_url}",
             f"## features: <subpart_compressed>;<start (transcript-relative)>;<end (transcript-relative)>",
             f"## biotype keys: {biotype_keys}",
-            f"## subpart keys: 0 = 3'-UTR, 1 = exon, 2 = 5'-UTR",
+            f"## subpart keys: 0 = 5'-UTR, 1 = exon, 2 = 3'-UTR",
             f"# transcript_name\tbiotype_compressed\t\tstrand\tfeatures"
         ]) + "\n"
 
