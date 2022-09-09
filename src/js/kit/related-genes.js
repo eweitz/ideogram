@@ -1034,6 +1034,8 @@ function addGeneStructureListeners(ideo) {
   setTimeout(function() {
     const toggler = document.querySelector('._ideoGeneStructureToggle');
 
+    if (!toggler) return;
+
     const geneDom = document.querySelector('#ideo-related-gene');
     const gene = geneDom.textContent;
 
@@ -1043,14 +1045,19 @@ function addGeneStructureListeners(ideo) {
     // toggler.addEventListener('mouseleave', () => {
     //   toggleGeneStructure(gene, ideo, false);
     // });
-    toggler.addEventListener('click', () => {
+    toggler.addEventListener('change', (event) => {
+      console.log('in toggler change handler, event:')
+      console.log(event)
       toggleGeneStructure(gene, ideo);
+      event.stopPropagation();
     });
   }, 100);
 }
 
-function toggleGeneStructure(gene, ideo, omitIntrons) {
+function toggleGeneStructure(gene, ideo) {
   ideo.omitIntrons = 'omitIntrons' in ideo ? !ideo.omitIntrons : true;
+  console.log('ideo.omitIntrons')
+  console.log(ideo.omitIntrons)
   const svg = getGeneStructureSvg(gene, ideo, ideo.omitIntrons);
   document.querySelector('._ideoGeneStructure').innerHTML = svg;
 }
@@ -1144,15 +1151,16 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
     geneStructureArray.push(subpartSvg);
   }
 
-  let transform = 'style="position: relative; left: 10px;"';
+  let transform = 'style="position: relative; left: 10px; display: block;"';
   if (geneStructure.strand === '-') {
     transform =
       'transform="scale(-1 1)" ' +
-      'style="position: relative; left: -10px;"';
+      'style="position: relative; left: -10px; display: block;"';
   }
 
-  // const handler = `toggleGeneStructure(${gene}, ${ideo}, ${omitIntrons});`;
-  const handler = `toggleGeneStructure(${gene}, ${ideo}, ${omitIntrons});`;
+  const toggleStyle = 'style="cursor: pointer;"';
+  const inOrOut = omitIntrons ? 'in' : 'out';
+  const toggleTitle = `title="Click to splice ${inOrOut} introns"`;
 
   const titleData = [
     `Transcript name: ${geneStructure.transcriptName}`,
@@ -1167,13 +1175,11 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
     `>` +
       `<title>${titleData}</title>` +
       geneStructureArray.join('') +
-      `<rect ` +
-        `class="_ideoGeneStructureToggle" ` +
-        `x="5" width="50" y="0" height="10" fill="grey" `+
-      `/>` +
+      // `<rect ` +
+      //   `class="_ideoGeneStructureToggle" ${toggleStyle} ${toggleTitle} ` +
+      //   `x="5" width="50" y="0" height="10" fill="grey" `+
+      // `/>` +
     '</svg>';
-
-  addGeneStructureListeners(ideo);
 
   return geneStructureSvg;
 }
@@ -1414,6 +1420,10 @@ export function handleTooltipClick(ideo) {
   const tooltip = document.querySelector('._ideogramTooltip');
   if (!ideo.addedTooltipClickHandler) {
     tooltip.addEventListener('click', (event) => {
+      console.log('in tooltip click handler, event:')
+      if (['input', 'label'].includes(event.target.localName)) {
+        return;
+      }
       let geneDom = document.querySelector('#ideo-related-gene');
       if (!geneDom) {
         geneDom = event.target;
@@ -1461,12 +1471,26 @@ function decorateInteractingGene(annot, descObj, ideo) {
 function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
   let geneStructureHtml = '';
   if (ideo.config.showGeneStructureInTooltip && !isParalogNeighborhood) {
-    const geneStructureSvg = getGeneStructureSvg(annot.name, ideo);
+    const omitIntrons = ideo.omitIntrons;
+    const gene = annot.name;
+    const geneStructureSvg = getGeneStructureSvg(gene, ideo, omitIntrons);
     if (geneStructureSvg) {
+      const cls = 'class="_ideoGeneStructureToggle"';
+      const checked = omitIntrons ? 'checked' : '';
+      const inputAttrs =
+        `type="checkbox" ${checked} style="position: relative; top: 1.5px;"`;
+      const style =
+        'style="position: relative; top: -5px; margin-right: 11px; ' +
+        'float: right; cursor: pointer;"';
+      const attrs = `${cls} ${style}`;
+      const divStyle = 'style="position: relative; left: 30px;"';
       geneStructureHtml =
         '<br/><br/>' +
-        'Canonical transcript<br/><br/>' +
+        `<div><span ${divStyle}>Canonical transcript</span>` +
+        `<label ${attrs}><input ${inputAttrs}}/>Splice</label></div>` +
         `${geneStructureSvg}`;
+
+      addGeneStructureListeners(ideo);
     }
   }
   return geneStructureHtml;
