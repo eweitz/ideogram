@@ -4,34 +4,15 @@ function getSpliceToggle(ideo) {
   const title = `title="Click to splice ${inOrOut} introns"`;
   const checked = ideo.omitIntrons ? 'checked' : '';
   const inputAttrs =
-    `type="checkbox" ${checked} style="position: relative; top: 1.5px;"`;
+    `type="checkbox" ${checked} ` +
+    `style="position: relative; top: 1.5px; cursor: pointer;"`;
   const style =
     'style="position: relative; top: -5px; margin-right: 11px; ' +
     'float: right; cursor: pointer;"';
   const attrs = `${cls} ${style} ${title}`;
 
-  const label = `<label ${attrs}><input ${inputAttrs}}/>Splice</label>`;
+  const label = `<label ${attrs}><input ${inputAttrs} />Splice</label>`;
   return label;
-}
-
-export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
-  let geneStructureHtml = '';
-  if (ideo.config.showGeneStructureInTooltip && !isParalogNeighborhood) {
-    const omitIntrons = ideo.omitIntrons;
-    const gene = annot.name;
-    const geneStructureSvg = getGeneStructureSvg(gene, ideo, omitIntrons);
-    if (geneStructureSvg) {
-      const toggle = getSpliceToggle(ideo);
-      const divStyle = 'style="position: relative; left: 30px;"';
-      geneStructureHtml =
-        '<br/><br/>' +
-        `<div><span ${divStyle}>Canonical transcript</span>${toggle}</div>` +
-        `${geneStructureSvg}`;
-
-      addGeneStructureListeners(ideo);
-    }
-  }
-  return geneStructureHtml;
 }
 
 /** Splice out introns from transcript, leaving only exons */
@@ -53,15 +34,14 @@ function spliceTranscript(subparts) {
 
 function addGeneStructureListeners(ideo) {
   setTimeout(function() {
+    const container = document.querySelector('._ideoGeneStructureContainer');
     const toggler = document.querySelector('._ideoSpliceToggle');
 
-    if (!toggler) return;
+    if (!container) return;
 
     const geneDom = document.querySelector('#ideo-related-gene');
     const gene = geneDom.textContent;
     toggler.addEventListener('change', (event) => {
-      console.log('in toggler change handler, event:')
-      console.log(event)
       toggleGeneStructure(gene, ideo);
       event.stopPropagation();
     });
@@ -192,4 +172,36 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
     '</svg>';
 
   return geneStructureSvg;
+}
+
+export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
+  let geneStructureHtml = '';
+  if (ideo.config.showGeneStructureInTooltip && !isParalogNeighborhood) {
+    const omitIntrons = ideo.omitIntrons;
+    const gene = annot.name;
+    const geneStructureSvg = getGeneStructureSvg(gene, ideo, omitIntrons);
+    if (geneStructureSvg) {
+      const cls = 'class="_ideoGeneStructureContainer"';
+      const toggle = getSpliceToggle(ideo);
+      const divStyle = 'style="position: relative; left: 30px;"';
+      const name = 'Canonical transcript'
+      geneStructureHtml =
+        '<br/><br/>' +
+        '<style>' +
+          '._ideoGeneStructureContainer:hover ._ideoSpliceToggle {' +
+            'visibility: visible;' +
+          '} ' +
+          '._ideoGeneStructureContainer ._ideoSpliceToggle {' +
+            'visibility: hidden;' +
+          '}' +
+          '</style>' +
+        `<div ${cls}>` +
+        `<div><span ${divStyle}>${name}</span>${toggle}</div>` +
+        `${geneStructureSvg}` +
+        `</div>`;
+
+      addGeneStructureListeners(ideo);
+    }
+  }
+  return geneStructureHtml;
 }
