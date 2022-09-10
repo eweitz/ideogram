@@ -1032,7 +1032,7 @@ function spliceTranscript(subparts) {
 
 function addGeneStructureListeners(ideo) {
   setTimeout(function() {
-    const toggler = document.querySelector('._ideoGeneStructureToggle');
+    const toggler = document.querySelector('._ideoSpliceToggle');
 
     if (!toggler) return;
 
@@ -1151,16 +1151,14 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
     geneStructureArray.push(subpartSvg);
   }
 
-  let transform = 'style="position: relative; left: 10px; display: block;"';
+  const sharedStyle =
+    'position: relative; width: 274px; margin: auto;';
+  let transform = `style="${sharedStyle} left: 10px;"`;
   if (geneStructure.strand === '-') {
     transform =
       'transform="scale(-1 1)" ' +
-      'style="position: relative; left: -10px; display: block;"';
+      `style="${sharedStyle} left: -10px;"`;
   }
-
-  const toggleStyle = 'style="cursor: pointer;"';
-  const inOrOut = omitIntrons ? 'in' : 'out';
-  const toggleTitle = `title="Click to splice ${inOrOut} introns"`;
 
   const titleData = [
     `Transcript name: ${geneStructure.transcriptName}`,
@@ -1468,6 +1466,22 @@ function decorateInteractingGene(annot, descObj, ideo) {
   return descObj;
 }
 
+function getSpliceToggle(ideo) {
+  const cls = 'class="_ideoSpliceToggle"';
+  const inOrOut = ideo.omitIntrons ? 'in' : 'out';
+  const title = `title="Click to splice ${inOrOut} introns"`;
+  const checked = ideo.omitIntrons ? 'checked' : '';
+  const inputAttrs =
+    `type="checkbox" ${checked} style="position: relative; top: 1.5px;"`;
+  const style =
+    'style="position: relative; top: -5px; margin-right: 11px; ' +
+    'float: right; cursor: pointer;"';
+  const attrs = `${cls} ${style} ${title}`;
+
+  const label = `<label ${attrs}><input ${inputAttrs}}/>Splice</label>`;
+  return label;
+}
+
 function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
   let geneStructureHtml = '';
   if (ideo.config.showGeneStructureInTooltip && !isParalogNeighborhood) {
@@ -1475,19 +1489,11 @@ function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
     const gene = annot.name;
     const geneStructureSvg = getGeneStructureSvg(gene, ideo, omitIntrons);
     if (geneStructureSvg) {
-      const cls = 'class="_ideoGeneStructureToggle"';
-      const checked = omitIntrons ? 'checked' : '';
-      const inputAttrs =
-        `type="checkbox" ${checked} style="position: relative; top: 1.5px;"`;
-      const style =
-        'style="position: relative; top: -5px; margin-right: 11px; ' +
-        'float: right; cursor: pointer;"';
-      const attrs = `${cls} ${style}`;
+      const toggle = getSpliceToggle(ideo);
       const divStyle = 'style="position: relative; left: 30px;"';
       geneStructureHtml =
         '<br/><br/>' +
-        `<div><span ${divStyle}>Canonical transcript</span>` +
-        `<label ${attrs}><input ${inputAttrs}}/>Splice</label></div>` +
+        `<div><span ${divStyle}>Canonical transcript</span>${toggle}</div>` +
         `${geneStructureSvg}`;
 
       addGeneStructureListeners(ideo);
