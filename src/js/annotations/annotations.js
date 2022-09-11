@@ -13,7 +13,7 @@ import {inflateThresholds} from './heatmap-lib';
 import {inflateHeatmaps} from './heatmap-collinear';
 import {
   onLoadAnnots, onDrawAnnots, startHideAnnotTooltipTimeout,
-  onWillShowAnnotTooltip, showAnnotTooltip, onClickAnnot
+  onWillShowAnnotTooltip, onDidShowAnnotTooltip, showAnnotTooltip, onClickAnnot
 } from './events';
 
 import {
@@ -55,6 +55,10 @@ function initTooltip(ideo, config) {
 
   if (config.onWillShowAnnotTooltip) {
     ideo.onWillShowAnnotTooltipCallback = config.onWillShowAnnotTooltip;
+  }
+
+  if (config.onDidShowAnnotTooltip) {
+    ideo.onDidShowAnnotTooltipCallback = config.onDidShowAnnotTooltip;
   }
 }
 
@@ -317,7 +321,8 @@ export {
   updateDisplayedTracks, initAnnotSettings, fetchAnnots, drawAnnots,
   getHistogramBars, drawHeatmaps, deserializeAnnotsForHeatmap, fillAnnots,
   drawProcessedAnnots, drawSynteny, startHideAnnotTooltipTimeout,
-  showAnnotTooltip, onWillShowAnnotTooltip, setOriginalTrackIndexes,
+  showAnnotTooltip, onWillShowAnnotTooltip, onDidShowAnnotTooltip,
+  setOriginalTrackIndexes,
   afterRawAnnots, onClickAnnot, downloadAnnotations, addAnnotLabel,
   removeAnnotLabel, fillAnnotLabels, clearAnnotLabels, flattenAnnots
   // fadeOutAnnotLabels

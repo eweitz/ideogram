@@ -1,7 +1,6 @@
 function getSpliceToggle(ideo) {
   const cls = 'class="_ideoSpliceToggle"';
-  const inOrOut = ideo.omitIntrons ? 'in' : 'out';
-  const title = `title="Click to splice ${inOrOut} introns"`;
+  const title = `title="Click to toggle introns"`;
   const checked = ideo.omitIntrons ? 'checked' : '';
   const inputAttrs =
     `type="checkbox" ${checked} ` +
@@ -32,20 +31,18 @@ function spliceTranscript(subparts) {
   return splicedSubparts;
 }
 
-function addGeneStructureListeners(ideo) {
-  setTimeout(function() {
-    const container = document.querySelector('._ideoGeneStructureContainer');
-    const toggler = document.querySelector('._ideoSpliceToggle');
+export function addSpliceToggleListeners(ideo) {
+  const container = document.querySelector('._ideoGeneStructureContainer');
+  const toggler = document.querySelector('._ideoSpliceToggle');
 
-    if (!container) return;
+  if (!container) return;
 
-    const geneDom = document.querySelector('#ideo-related-gene');
-    const gene = geneDom.textContent;
-    toggler.addEventListener('change', (event) => {
-      toggleGeneStructure(gene, ideo);
-      event.stopPropagation();
-    });
-  }, 100);
+  const geneDom = document.querySelector('#ideo-related-gene');
+  const gene = geneDom.textContent;
+  toggler.addEventListener('change', (event) => {
+    toggleGeneStructure(gene, ideo);
+    event.stopPropagation();
+  });
 }
 
 function toggleGeneStructure(gene, ideo) {
@@ -184,7 +181,7 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
       const cls = 'class="_ideoGeneStructureContainer"';
       const toggle = getSpliceToggle(ideo);
       const divStyle = 'style="position: relative; left: 30px;"';
-      const name = 'Canonical transcript'
+      const name = 'Canonical transcript';
       geneStructureHtml =
         '<br/><br/>' +
         '<style>' +
@@ -199,8 +196,6 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
         `<div><span ${divStyle}>${name}</span>${toggle}</div>` +
         `${geneStructureSvg}` +
         `</div>`;
-
-      addGeneStructureListeners(ideo);
     }
   }
   return geneStructureHtml;

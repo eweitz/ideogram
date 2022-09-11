@@ -27,10 +27,10 @@ import {
   initAnalyzeRelatedGenes, analyzePlotTimes, analyzeRelatedGenes, timeDiff,
   getRelatedGenesByType, getRelatedGenesTooltipAnalytics
 } from './analyze-related-genes';
-import {getGeneStructureHtml} from './gene-structure';
+import {getGeneStructureHtml, addSpliceToggleListeners} from './gene-structure';
 
 import {
-  sortAnnotsByRank, applyRankCutoff, setAnnotRanks
+  sortAnnotsByRank, applyRankCutoff, setAnnotRanks,
 } from '../annotations/annotations';
 import {writeLegend} from '../annotations/legend';
 import {getAnnotDomId} from '../annotations/process';
@@ -1226,6 +1226,12 @@ function getAnnotByName(annotName, ideo) {
 //   }, 100);
 // }
 
+function onDidShowAnnotTooltip() {
+  const ideo = this;
+  handleTooltipClick(ideo);
+  addSpliceToggleListeners(ideo);
+}
+
 /**
  * Handles click within annotation tooltip
  *
@@ -1249,10 +1255,10 @@ export function handleTooltipClick(ideo) {
   const tooltip = document.querySelector('._ideogramTooltip');
   if (!ideo.addedTooltipClickHandler) {
     tooltip.addEventListener('click', (event) => {
-      console.log('in tooltip click handler, event:')
       if (['input', 'label'].includes(event.target.localName)) {
         return;
       }
+
       let geneDom = document.querySelector('#ideo-related-gene');
       if (!geneDom) {
         geneDom = event.target;
@@ -1380,8 +1386,6 @@ function decorateAnnot(annot) {
 
   annot.displayName = originalDisplay;
 
-  handleTooltipClick(ideo);
-
   // managePathwayClickHandlers(annot, ideo);
 
   return annot;
@@ -1445,6 +1449,7 @@ let kitDefaults = {
   chrBorderColor: '#333',
   chrLabelColor: '#333',
   onWillShowAnnotTooltip: decorateAnnot,
+  onDidShowAnnotTooltip,
   showTools: true,
   showAnnotLabels: true,
   chrFillColor: {centromere: '#DAAAAA'}
@@ -1571,6 +1576,19 @@ function initSearchIdeogram(kitDefaults, config, annotsInList) {
 
   if ('onWillShowAnnotTooltip' in config) {
     const key = 'onWillShowAnnotTooltip';
+    const clientFn = config[key];
+    const defaultFunction = kitDefaults[key];
+    const newFunction = function(annot) {
+      annot = defaultFunction.bind(this)(annot);
+      annot = clientFn.bind(this)(annot);
+      return annot;
+    };
+    kitDefaults[key] = newFunction;
+    delete config[key];
+  }
+
+  if ('onDidShowAnnotTooltip' in config) {
+    const key = 'onDidShowAnnotTooltip';
     const clientFn = config[key];
     const defaultFunction = kitDefaults[key];
     const newFunction = function(annot) {
