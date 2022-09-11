@@ -6,7 +6,7 @@ function getSpliceToggle(ideo) {
     `type="checkbox" ${checked} ` +
     `style="position: relative; top: 1.5px; cursor: pointer;"`;
   const style =
-    'style="position: relative; top: -5px; margin-right: 11px; ' +
+    'style="position: relative; top: -5px; margin-left: 20px; ' +
     'float: right; cursor: pointer;"';
   const attrs = `${cls} ${style} ${title}`;
 
@@ -180,11 +180,17 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
     if (geneStructureSvg) {
       const cls = 'class="_ideoGeneStructureContainer"';
       const toggle = getSpliceToggle(ideo);
-      const divStyle = 'style="position: relative; left: 30px;"';
+      const divStyle = 'style="margin-left: 70px;"';
       const name = 'Canonical transcript';
       geneStructureHtml =
         '<br/><br/>' +
         '<style>' +
+          '._ideoGeneStructureContainer {' +
+            'display: flex;' +
+            'justify-content: center;' +
+            'align-items: center;' +
+            'flex-direction: column;' +
+          '}' +
           '._ideoGeneStructureContainer:hover ._ideoSpliceToggle {' +
             'visibility: visible;' +
           '} ' +
