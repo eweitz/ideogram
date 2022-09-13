@@ -27,9 +27,10 @@ import {
   initAnalyzeRelatedGenes, analyzePlotTimes, analyzeRelatedGenes, timeDiff,
   getRelatedGenesByType, getRelatedGenesTooltipAnalytics
 } from './analyze-related-genes';
+import {getGeneStructureHtml, addSpliceToggleListeners} from './gene-structure';
 
 import {
-  sortAnnotsByRank, applyRankCutoff, setAnnotRanks
+  sortAnnotsByRank, applyRankCutoff, setAnnotRanks,
 } from '../annotations/annotations';
 import {writeLegend} from '../annotations/legend';
 import {getAnnotDomId} from '../annotations/process';
@@ -1012,100 +1013,6 @@ function adjustPlaceAndVisibility(ideo) {
   }
 }
 
-function getGeneStructureSvg(gene, ideo) {
-  if (
-    'geneStructureCache' in ideo === false ||
-    gene in ideo.geneStructureCache === false
-  ) {
-    return null;
-  }
-
-  const geneStructure = ideo.geneStructureCache[gene];
-  const subparts = geneStructure.subparts;
-  const lastSubpart = subparts.slice(-1)[0];
-  const featureLengthBp = lastSubpart[1] + lastSubpart[2];
-
-  const featureLengthPx = 250;
-
-  const bpPerPx = featureLengthBp / featureLengthPx;
-
-  const intronHeight = 1;
-  const intronColor = 'black';
-  const heights = {
-    "5'-UTR": 20,
-    'exon': 20,
-    "3'-UTR": 20
-  };
-
-  const colors = {
-    "5'-UTR": '#155069',
-    'exon': '#DAA521',
-    "3'-UTR": '#357089'
-  };
-
-  const geneStructureArray = [];
-
-  const intronPosAttrs =
-    `x="0" width="${featureLengthPx}" y="10" height="${intronHeight}"`;
-  const intronRect =
-    `<rect fill="black" ${intronPosAttrs}/>`;
-
-  geneStructureArray.push(intronRect);
-
-  let numExons = 0;
-
-  const sortedSubparts = subparts.sort((a, b) => {
-    if (a[0] === 'exon' && b[0] !== 'exon') return -1;
-    if (a[0] !== 'exon' && b[0] === 'exon') return 1;
-  });
-
-  for (let i = 0; i < sortedSubparts.length; i++) {
-    const subpart = sortedSubparts[i];
-    const subpartType = subpart[0];
-    let color = intronColor;
-    if (subpartType in colors) {
-      color = colors[subpartType];
-    }
-    if (subpartType === 'exon') {
-      numExons += 1;
-    }
-    let height = intronHeight;
-    const y = 2.5;
-    // const y = subpartType === 'exon' ? 0 : 2.5;
-    if (subpartType in heights) {
-      height = heights[subpartType];
-    }
-    const left = subpart[1] / bpPerPx;
-    const length = subpart[2] / bpPerPx;
-    const pos = `x="${left}" width="${length}" y="${y}" height="${height}"`;
-    const subpartSvg = (
-      `<rect rx="1.5" fill="${color}" ${pos} />`
-    );
-    geneStructureArray.push(subpartSvg);
-  }
-
-  let transform = 'style="position: relative; left: 10px;"';
-  if (geneStructure.strand === '-') {
-    transform =
-      'transform="scale(-1 1)" ' +
-      'style="position: relative; left: -10px;"';
-  }
-  const titleData = [
-    `Transcript name: ${geneStructure.transcriptName}`,
-    `Exons: ${numExons}`,
-    `Biotype: ${geneStructure.biotype.replace(/_/g, ' ')}`,
-    `Strand: ${geneStructure.strand}`
-  ].join('&#013;'); // Newline, entity-encoded to render in browser default UI
-  const geneStructureSvg =
-    `<svg width="${(featureLengthPx + 20)}" height="25" ${transform}>` +
-      `<title>${titleData}</title>` +
-      geneStructureArray.join('') +
-    '</svg>';
-  // console.log('geneStructureSvg');
-  // console.log(geneStructureSvg);
-  return geneStructureSvg;
-}
-
 function sortByPathwayIxn(a, b) {
   const aColor = a.color;
   const bColor = b.color;
@@ -1319,6 +1226,12 @@ function getAnnotByName(annotName, ideo) {
 //   }, 100);
 // }
 
+function onDidShowAnnotTooltip() {
+  const ideo = this;
+  handleTooltipClick(ideo);
+  addSpliceToggleListeners(ideo);
+}
+
 /**
  * Handles click within annotation tooltip
  *
@@ -1342,6 +1255,10 @@ export function handleTooltipClick(ideo) {
   const tooltip = document.querySelector('._ideogramTooltip');
   if (!ideo.addedTooltipClickHandler) {
     tooltip.addEventListener('click', (event) => {
+      if (['input', 'label'].includes(event.target.localName)) {
+        return;
+      }
+
       let geneDom = document.querySelector('#ideo-related-gene');
       if (!geneDom) {
         geneDom = event.target;
@@ -1384,20 +1301,6 @@ function decorateInteractingGene(annot, descObj, ideo) {
   }
 
   return descObj;
-}
-
-function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
-  let geneStructureHtml = '';
-  if (ideo.config.showGeneStructureInTooltip && !isParalogNeighborhood) {
-    const geneStructureSvg = getGeneStructureSvg(annot.name, ideo);
-    if (geneStructureSvg) {
-      geneStructureHtml =
-        '<br/><br/>' +
-        'Canonical transcript<br/><br/>' +
-        `${geneStructureSvg}`;
-    }
-  }
-  return geneStructureHtml;
 }
 
 function decorateParalogNeighborhood(annot, descObj, style) {
@@ -1483,8 +1386,6 @@ function decorateAnnot(annot) {
 
   annot.displayName = originalDisplay;
 
-  handleTooltipClick(ideo);
-
   // managePathwayClickHandlers(annot, ideo);
 
   return annot;
@@ -1548,6 +1449,7 @@ let kitDefaults = {
   chrBorderColor: '#333',
   chrLabelColor: '#333',
   onWillShowAnnotTooltip: decorateAnnot,
+  onDidShowAnnotTooltip,
   showTools: true,
   showAnnotLabels: true,
   chrFillColor: {centromere: '#DAAAAA'}
@@ -1674,6 +1576,19 @@ function initSearchIdeogram(kitDefaults, config, annotsInList) {
 
   if ('onWillShowAnnotTooltip' in config) {
     const key = 'onWillShowAnnotTooltip';
+    const clientFn = config[key];
+    const defaultFunction = kitDefaults[key];
+    const newFunction = function(annot) {
+      annot = defaultFunction.bind(this)(annot);
+      annot = clientFn.bind(this)(annot);
+      return annot;
+    };
+    kitDefaults[key] = newFunction;
+    delete config[key];
+  }
+
+  if ('onDidShowAnnotTooltip' in config) {
+    const key = 'onDidShowAnnotTooltip';
     const clientFn = config[key];
     const defaultFunction = kitDefaults[key];
     const newFunction = function(annot) {

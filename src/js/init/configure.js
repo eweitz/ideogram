@@ -109,6 +109,9 @@ function configureCallbacks(config, ideo) {
   if (config.onWillShowAnnotTooltip) {
     ideo.onWillShowAnnotTooltipCallback = config.onWillShowAnnotTooltip;
   }
+  if (config.onDidShowAnnotTooltip) {
+    ideo.onDidShowAnnotTooltipCallback = config.onDidShowAnnotTooltip;
+  }
   if (config.onClickAnnot) {
     ideo.onClickAnnotCallback = config.onClickAnnot;
   }

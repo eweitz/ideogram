@@ -98,6 +98,10 @@ function onWillShowAnnotTooltip(annot) {
   call(this.onWillShowAnnotTooltipCallback, annot);
 }
 
+function onDidShowAnnotTooltip() {
+  call(this.onDidShowAnnotTooltipCallback);
+}
+
 /**
  * Optional callback, invoked on clicking annotation
  */
@@ -178,9 +182,14 @@ function showAnnotTooltip(annot, context) {
   [content, yOffset] = getContentAndYOffset(annot, includeLength);
 
   renderTooltip(tooltip, content, matrix, yOffset, ideo);
+
+  if (ideo.onDidShowAnnotTooltipCallback) {
+    ideo.onDidShowAnnotTooltipCallback();
+  }
 }
 
 export {
   onLoadAnnots, onDrawAnnots, startHideAnnotTooltipTimeout,
-  onWillShowAnnotTooltip, showAnnotTooltip, onClickAnnot
+  onWillShowAnnotTooltip, showAnnotTooltip, onClickAnnot,
+  onDidShowAnnotTooltip
 };

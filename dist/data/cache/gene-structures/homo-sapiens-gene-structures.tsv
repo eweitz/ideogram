@@ -3,7 +3,7 @@
 ## Filtered to only canonical transcripts using Ensembl BioMart: https://www.ensembl.org/biomart/martservice?query=%3C%21DOCTYPE%20Query%3E%3CQuery%20formatter%3D%22TSV%22%20header%3D%220%22%20uniqueRows%3D%220%22%20count%3D%22%22%20datasetConfigVersion%3D%220.6%22%3E%3CDataset%20name%3D%22hsapiens_gene_ensembl%22%20interface%3D%22default%22%3E%3CFilter%20name%3D%22transcript_is_canonical%22%20excluded%3D%220%22/%3E%3CAttribute%20name%3D%22ensembl_transcript_id%22%20/%3E%3C/Dataset%3E%3C/Query%3E
 ## features: <subpart_compressed>;<start (transcript-relative)>;<end (transcript-relative)>
 ## biotype keys: 0 = protein_coding, 1 = nonsense_mediated_decay, 2 = polymorphic_pseudogene, 3 = non_stop_decay
-## subpart keys: 0 = 3'-UTR, 1 = exon, 2 = 5'-UTR
+## subpart keys: 0 = 5'-UTR, 1 = exon, 2 = 3'-UTR
 # transcript_name	biotype_compressed		strand	features
 ACE2-201	0	-	2;0;871	1;0;980	1;2991;194	1;5220;116	1;6693;100	1;9262;58	1;10591;172	1;11168;122	1;12334;98	1;14633;144	1;17056;226	1;20188;169	1;24442;97	1;26720;105	1;28311;112	1;30680;143	1;31196;93	1;33812;158	1;39693;234	0;39879;48
 TP53-201	0	-	2;0;1187	1;0;1269	1;2188;106	1;5114;73	1;5280;136	1;5760;109	1;6438;112	1;6632;183	1;7573;278	1;7961;21	1;8100;101	0;8174;27	1;18956;113	0;18956;113
