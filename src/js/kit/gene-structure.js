@@ -36,8 +36,11 @@ function addHoverListeners(ideo) {
       const footer = getFooter();
       ideo.originalTooltipFooter = footer.innerHTML;
       const subpartText = subpart.getAttribute('data-subpart');
-      const trimmedFoot = footer.innerHTML.replace('&nbsp;', '');
-      footer.innerHTML = `${subpartText}${trimmedFoot}`;
+      const trimmedFoot =
+        footer.innerHTML
+          .replace('&nbsp;', '')
+          .replace('<br>Transcript name', 'Transcript name');
+      footer.innerHTML = `<br/>${subpartText}${trimmedFoot}`;
     });
     subpart.addEventListener('mouseleave', event => {
       const footer = getFooter();
@@ -198,8 +201,9 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
       let subpartNumber = numBySubpart[subpartType];
       if (strand === '-') subpartNumber = total - subpartNumber + 1;
       const numOfTotal = total > 1 ? `${subpartNumber} of ${total} ` : '';
-      const text = `${subpartType} ${numOfTotal}${pipe} Length: ${lengthBp} bp`;
-      data = `data-subpart="${text}"`;
+      const prettyType = subpartType[0].toUpperCase() + subpartType.slice(1);
+      const html = `${prettyType} ${numOfTotal}${pipe} ${lengthBp} bp`;
+      data = `data-subpart="${html}"`;
     }
 
     // Define subpart border
@@ -225,7 +229,7 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
   }
 
   const footerData =
-  `Transcript name: ${geneStructure.transcriptName}<br/>` + [
+  `<br/>Transcript name: ${geneStructure.transcriptName}<br/>` + [
     `Exons: ${totalBySubpart['exon']}`,
       `Biotype: ${geneStructure.biotype.replace(/_/g, ' ')}`,
       `Strand: ${strand}`
