@@ -13,33 +13,37 @@ function addSpliceToggleListeners(ideo) {
 }
 
 function addHoverListeners(ideo) {
-  // const subparts = document.querySelectorAll('._ideoGeneStructure rect');
-  const container = document.querySelector('._ideoGeneStructure');
-  function getFooter() {return document.querySelector('._ideoTooltipFooter');}
+  const subparts = document.querySelectorAll('._ideoGeneStructure rect');
+  const container = document.querySelector('._ideoGeneStructureContainer');
+  function getFooter() {
+    return document.querySelector('._ideoGeneStructureFooter');
+  }
 
   container.addEventListener('mouseenter', event => {
     const footer = getFooter();
-    ideo.originalTooltipFooter = footer.textContent;
-    const text = container.getAttribute('data-ideo-footer');
-    footer.innerHTML = text;
+    // ideo.originalTooltipFooter = footer.textContent;
+    const svg = container.querySelector('svg');
+    const transcriptSummary = svg.getAttribute('data-ideo-footer');
+    footer.innerHTML = `&nbsp;<br/>${transcriptSummary}`;
   });
   container.addEventListener('mouseleave', event => {
     const footer = getFooter();
-    footer.innerHTML = ideo.originalTooltipFooter;
+    footer.innerHTML = '';
   });
 
-  // subparts.forEach(subpart => {
-  //   subpart.addEventListener('mouseenter', event => {
-  //     const footer = getFooter()
-  //     ideo.originalTooltipFooter = footer.textContent;
-  //     const subpartText = subpart.getAttribute('data-subpart-footer');
-  //     footer.textContent = subpartText;
-  //   });
-  //   subpart.addEventListener('mouseleave', event => {
-  //     const footer = getFooter();
-  //     footer.textContent = ideo.originalTooltipFooter;
-  //   });
-  // });
+  subparts.forEach(subpart => {
+    subpart.addEventListener('mouseenter', event => {
+      const footer = getFooter();
+      ideo.originalTooltipFooter = footer.innerHTML;
+      const subpartText = subpart.getAttribute('data-subpart');
+      const trimmedFoot = footer.innerHTML.replace('&nbsp;', '');
+      footer.innerHTML = `${subpartText}${trimmedFoot}`;
+    });
+    subpart.addEventListener('mouseleave', event => {
+      const footer = getFooter();
+      footer.innerHTML = ideo.originalTooltipFooter;
+    });
+  });
 }
 
 export function addGeneStructureListeners(ideo) {
@@ -95,8 +99,9 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
   }
 
   const geneStructure = ideo.geneStructureCache[gene];
-  const subparts = geneStructure.subparts;
+  const strand = geneStructure.strand;
 
+  const subparts = geneStructure.subparts;
   let sortedSubparts = subparts.sort((a, b) => {
     return a[1] - b[1];
     // if (a[0] === 'exon' && b[0] !== 'exon') return -1;
@@ -154,6 +159,9 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
     "3'-UTR": 0
   }
 
+  // Subtle visual delimiter; separates horizontally adjacent fields in UI
+  const pipe = `<span style='color: #CCC'>|</span>`;
+
   // Get counts for e.g. "4" in "Exon 2 of 4"
   for (let i = 0; i < sortedSubparts.length; i++) {
     const subpart = sortedSubparts[i];
@@ -177,18 +185,21 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
     }
 
     // Define subpart position, tooltip footer
+    const lengthBp = subpart[2];
     const left = subpart[1] / bpPerPx;
-    const length = subpart[2] / bpPerPx;
+    const length = lengthBp / bpPerPx;
     const pos = `x="${left}" width="${length}" y="${y}" height="${height}"`;
     const cls = `class="${subpartType}" `;
 
-    let title = ''; // TODO: Handle introns better, refine CDS vs. UTR in exons
+    let data = ''; // TODO: Handle introns better, refine CDS vs. UTR in exons
     if (subpartType in numBySubpart) {
       const total = totalBySubpart[subpartType];
       numBySubpart[subpartType] += 1;
-      const subpartNumber = numBySubpart[subpartType];
-      const text = `${subpartType} ${subpartNumber} of ${total}`;
-      title = `title="${text}"`;
+      let subpartNumber = numBySubpart[subpartType];
+      if (strand === '-') subpartNumber = total - subpartNumber + 1;
+      const numOfTotal = total > 1 ? `${subpartNumber} of ${total} ` : '';
+      const text = `${subpartType} ${numOfTotal}${pipe} Length: ${lengthBp} bp`;
+      data = `data-subpart="${text}"`;
     }
 
     // Define subpart border
@@ -198,7 +209,7 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
       `x1="${left}" x2="${left}" y1="${y}" y2="${lineHeight}" ${lineStroke}`;
 
     const subpartSvg = (
-      `<rect ${cls} rx="1.5" fill="${color}" ${pos} ${title}/>` +
+      `<rect ${cls} rx="1.5" fill="${color}" ${pos} ${data}/>` +
       `<line ${lineAttrs} />`
     );
     geneStructureArray.push(subpartSvg);
@@ -207,7 +218,7 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
   const sharedStyle =
     'position: relative; width: 274px; margin: auto;';
   let transform = `style="${sharedStyle} left: 10px;"`;
-  if (geneStructure.strand === '-') {
+  if (strand === '-') {
     transform =
       'transform="scale(-1 1)" ' +
       `style="${sharedStyle} left: -10px;"`;
@@ -216,9 +227,9 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
   const footerData =
   `Transcript name: ${geneStructure.transcriptName}<br/>` + [
     `Exons: ${totalBySubpart['exon']}`,
-    `Biotype: ${geneStructure.biotype.replace(/_/g, ' ')}`,
-    `Strand: ${geneStructure.strand}`
-  ].join(" <span style='color: #CCC'>|</span> ");
+      `Biotype: ${geneStructure.biotype.replace(/_/g, ' ')}`,
+      `Strand: ${strand}`
+    ].join(` ${pipe} `);
 
   //.join('&#013;'); // Newline, entity-encoded to render in browser default UI
   const geneStructureSvg =
@@ -266,6 +277,7 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
         `<div ${cls}>` +
         `<div><span ${divStyle}>${name}</span>${toggle}</div>` +
         `${geneStructureSvg}` +
+        `<div class="_ideoGeneStructureFooter"></div>` +
         `</div>`;
     }
   }
