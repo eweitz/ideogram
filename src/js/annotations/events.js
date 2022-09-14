@@ -79,7 +79,7 @@ function getContentAndYOffset(annot, includeLength=false) {
     range += '-' + annot.stop.toLocaleString();
     if (includeLength) range += ' (' + getCoarseBpLength(annot) + ')';
   }
-  content = range;
+  content = `<span class="_ideoTooltipFooter">${range}</span>`;
   yOffset = 24;
 
   if (annot.name) {

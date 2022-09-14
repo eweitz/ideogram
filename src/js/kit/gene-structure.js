@@ -1,3 +1,52 @@
+function addSpliceToggleListeners(ideo) {
+  const container = document.querySelector('._ideoGeneStructureContainer');
+  const toggler = document.querySelector('._ideoSpliceToggle');
+
+  if (!container) return;
+
+  const geneDom = document.querySelector('#ideo-related-gene');
+  const gene = geneDom.textContent;
+  toggler.addEventListener('change', (event) => {
+    toggleGeneStructure(gene, ideo);
+    event.stopPropagation();
+  });
+}
+
+function addHoverListeners(ideo) {
+  // const subparts = document.querySelectorAll('._ideoGeneStructure rect');
+  const container = document.querySelector('._ideoGeneStructure');
+  function getFooter() {return document.querySelector('._ideoTooltipFooter');}
+
+  container.addEventListener('mouseenter', event => {
+    const footer = getFooter();
+    ideo.originalTooltipFooter = footer.textContent;
+    const text = container.getAttribute('data-ideo-footer');
+    footer.innerHTML = text;
+  });
+  container.addEventListener('mouseleave', event => {
+    const footer = getFooter();
+    footer.innerHTML = ideo.originalTooltipFooter;
+  });
+
+  // subparts.forEach(subpart => {
+  //   subpart.addEventListener('mouseenter', event => {
+  //     const footer = getFooter()
+  //     ideo.originalTooltipFooter = footer.textContent;
+  //     const subpartText = subpart.getAttribute('data-subpart-footer');
+  //     footer.textContent = subpartText;
+  //   });
+  //   subpart.addEventListener('mouseleave', event => {
+  //     const footer = getFooter();
+  //     footer.textContent = ideo.originalTooltipFooter;
+  //   });
+  // });
+}
+
+export function addGeneStructureListeners(ideo) {
+  addSpliceToggleListeners(ideo);
+  addHoverListeners(ideo);
+}
+
 function getSpliceToggle(ideo) {
   const cls = 'class="_ideoSpliceToggle"';
   const title = `title="Click to toggle introns"`;
@@ -29,20 +78,6 @@ function spliceTranscript(subparts) {
     prevStart = splicedStart;
   }
   return splicedSubparts;
-}
-
-export function addSpliceToggleListeners(ideo) {
-  const container = document.querySelector('._ideoGeneStructureContainer');
-  const toggler = document.querySelector('._ideoSpliceToggle');
-
-  if (!container) return;
-
-  const geneDom = document.querySelector('#ideo-related-gene');
-  const gene = geneDom.textContent;
-  toggler.addEventListener('change', (event) => {
-    toggleGeneStructure(gene, ideo);
-    event.stopPropagation();
-  });
 }
 
 function toggleGeneStructure(gene, ideo) {
@@ -107,7 +142,26 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
 
   geneStructureArray.push(intronRect);
 
-  let numExons = 0;
+  // Set up counters for e.g. "Exon 2 of 4" ("<subpart> <num> of <total>")
+  const numBySubpart = {
+    "5'-UTR": 0,
+    'exon': 0,
+    "3'-UTR": 0
+  }
+  const totalBySubpart = {
+    "5'-UTR": 0,
+    'exon': 0,
+    "3'-UTR": 0
+  }
+
+  // Get counts for e.g. "4" in "Exon 2 of 4"
+  for (let i = 0; i < sortedSubparts.length; i++) {
+    const subpart = sortedSubparts[i];
+    const subpartType = subpart[0];
+    if (subpartType in totalBySubpart) {
+      totalBySubpart[subpartType] += 1;
+    }
+  }
 
   for (let i = 0; i < sortedSubparts.length; i++) {
     const subpart = sortedSubparts[i];
@@ -116,25 +170,35 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
     if (subpartType in colors) {
       color = colors[subpartType];
     }
-    if (subpartType === 'exon') {
-      numExons += 1;
-    }
     let height = intronHeight;
     // const y = subpartType === 'exon' ? 0 : 2.5;
     if (subpartType in heights) {
       height = heights[subpartType];
     }
+
+    // Define subpart position, tooltip footer
     const left = subpart[1] / bpPerPx;
     const length = subpart[2] / bpPerPx;
     const pos = `x="${left}" width="${length}" y="${y}" height="${height}"`;
+    const cls = `class="${subpartType}" `;
+
+    let title = ''; // TODO: Handle introns better, refine CDS vs. UTR in exons
+    if (subpartType in numBySubpart) {
+      const total = totalBySubpart[subpartType];
+      numBySubpart[subpartType] += 1;
+      const subpartNumber = numBySubpart[subpartType];
+      const text = `${subpartType} ${subpartNumber} of ${total}`;
+      title = `title="${text}"`;
+    }
+
+    // Define subpart border
     const lineHeight = y + height;
     const lineStroke = `stroke="${lineColors[subpartType]}"`;
     const lineAttrs = // "";
       `x1="${left}" x2="${left}" y1="${y}" y2="${lineHeight}" ${lineStroke}`;
-    const stroke = `stroke-left="black" `;
-    const cls = `class="${subpartType}" `;
+
     const subpartSvg = (
-      `<rect ${cls} rx="1.5" fill="${color}" ${pos} ${stroke} />` +
+      `<rect ${cls} rx="1.5" fill="${color}" ${pos} ${title}/>` +
       `<line ${lineAttrs} />`
     );
     geneStructureArray.push(subpartSvg);
@@ -149,18 +213,19 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
       `style="${sharedStyle} left: -10px;"`;
   }
 
-  const titleData = [
-    `Transcript name: ${geneStructure.transcriptName}`,
-    `Exons: ${numExons}`,
+  const footerData =
+  `Transcript name: ${geneStructure.transcriptName}<br/>` + [
+    `Exons: ${totalBySubpart['exon']}`,
     `Biotype: ${geneStructure.biotype.replace(/_/g, ' ')}`,
     `Strand: ${geneStructure.strand}`
-  ].join('&#013;'); // Newline, entity-encoded to render in browser default UI
+  ].join(" <span style='color: #CCC'>|</span> ");
+
+  //.join('&#013;'); // Newline, entity-encoded to render in browser default UI
   const geneStructureSvg =
     // `<svg><rect x="5" width="50" y="5" height="10" fill="grey"/></svg>` +
-    `<svg class="_ideoGeneStructure" ` +
+    `<svg class="_ideoGeneStructure" data-ideo-footer="${footerData}" ` +
       `width="${(featureLengthPx + 20)}" height="40" ${transform}` +
     `>` +
-      `<title>${titleData}</title>` +
       geneStructureArray.join('') +
       // `<rect ` +
       //   `class="_ideoGeneStructureToggle" ${toggleStyle} ${toggleTitle} ` +
@@ -180,7 +245,7 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
     if (geneStructureSvg) {
       const cls = 'class="_ideoGeneStructureContainer"';
       const toggle = getSpliceToggle(ideo);
-      const divStyle = 'style="margin-left: 70px;"';
+      const divStyle = 'style="margin-left: 75px;"';
       const name = 'Canonical transcript';
       geneStructureHtml =
         '<br/><br/>' +
