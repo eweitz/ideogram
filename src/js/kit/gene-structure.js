@@ -8,6 +8,7 @@ function addSpliceToggleListeners(ideo) {
   const gene = geneDom.textContent;
   toggler.addEventListener('change', (event) => {
     toggleGeneStructure(gene, ideo);
+    addHoverListeners(ideo);
     event.stopPropagation();
   });
 }
@@ -71,18 +72,37 @@ function getSpliceToggle(ideo) {
 }
 
 /** Splice out introns from transcript, leaving only exons */
-function spliceTranscript(subparts) {
+function spliceOut(subparts) {
   const splicedSubparts = [];
   let prevEnd = 0;
   let prevStart = 0;
   for (let i = 0; i < subparts.length; i++) {
     const subpart = subparts[i];
     const [subpartType, start, length] = subpart;
-    const splicedStart = (start === prevStart) ? start : prevEnd;
+    const isUTR = start === prevStart;
+    const splicedStart = isUTR ? start : prevEnd;
     const splicedEnd = splicedStart + length;
     splicedSubparts.push([subpartType, splicedStart, length]);
     prevEnd = splicedEnd;
     prevStart = splicedStart;
+  }
+  return splicedSubparts;
+}
+
+/** Splice in introns to transcript, making introns explicit subparts */
+function spliceIn(subparts) {
+  const splicedSubparts = [];
+  let prevEnd = 0;
+  for (let i = 0; i < subparts.length; i++) {
+    const subpart = subparts[i];
+    const [start, length] = subpart.slice(1);
+    if (start > prevEnd) {
+      const intronStart = prevEnd;
+      const intronLength = start - prevEnd;
+      splicedSubparts.push(['intron', intronStart, intronLength]);
+    }
+    prevEnd = start + length;
+    splicedSubparts.push(subpart);
   }
   return splicedSubparts;
 }
@@ -111,7 +131,12 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
     // if (a[0] !== 'exon' && b[0] === 'exon') return 1;
   });
 
-  if (omitIntrons) sortedSubparts = spliceTranscript(sortedSubparts);
+  if (omitIntrons) {
+    sortedSubparts = spliceOut(sortedSubparts);
+  } else {
+    sortedSubparts = spliceIn(sortedSubparts);
+  }
+
 
   const lastSubpart = sortedSubparts.slice(-1)[0];
   const featureLengthBp = lastSubpart[1] + lastSubpart[2];
@@ -126,13 +151,15 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
   const heights = {
     "5'-UTR": 20,
     'exon': 20,
+    'intron': 20,
     "3'-UTR": 20
   };
 
   const colors = {
     "5'-UTR": '#155069',
     'exon': '#DAA521',
-    "3'-UTR": '#357089'
+    "intron": '#FFFFFF00',
+    "3'-UTR": '#357089',
   };
 
   const lineColors = {
@@ -154,12 +181,20 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
   const numBySubpart = {
     "5'-UTR": 0,
     'exon': 0,
+    'intron': 0,
     "3'-UTR": 0
   }
   const totalBySubpart = {
     "5'-UTR": 0,
     'exon': 0,
+    'intron': 0,
     "3'-UTR": 0
+  }
+  const classes = {
+    "5'-UTR": 'five-prime-utr',
+    'exon': 'exon',
+    "3'-UTR": 'three-prime-utr',
+    'intron': 'intron'
   }
 
   // Subtle visual delimiter; separates horizontally adjacent fields in UI
@@ -192,7 +227,7 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
     const left = subpart[1] / bpPerPx;
     const length = lengthBp / bpPerPx;
     const pos = `x="${left}" width="${length}" y="${y}" height="${height}"`;
-    const cls = `class="${subpartType}" `;
+    const cls = `class="${classes[subpartType]}" `;
 
     let data = ''; // TODO: Handle introns better, refine CDS vs. UTR in exons
     if (subpartType in numBySubpart) {
@@ -229,23 +264,16 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
   }
 
   const footerData =
-  `<br/>Transcript name: ${geneStructure.transcriptName}<br/>` + [
-    `Exons: ${totalBySubpart['exon']}`,
+    `<br/>Transcript name: ${geneStructure.transcriptName}<br/>` + [
+      `Exons: ${totalBySubpart['exon']}`,
       `Biotype: ${geneStructure.biotype.replace(/_/g, ' ')}`,
       `Strand: ${strand}`
     ].join(` ${pipe} `);
-
-  //.join('&#013;'); // Newline, entity-encoded to render in browser default UI
   const geneStructureSvg =
-    // `<svg><rect x="5" width="50" y="5" height="10" fill="grey"/></svg>` +
     `<svg class="_ideoGeneStructure" data-ideo-footer="${footerData}" ` +
       `width="${(featureLengthPx + 20)}" height="40" ${transform}` +
     `>` +
       geneStructureArray.join('') +
-      // `<rect ` +
-      //   `class="_ideoGeneStructureToggle" ${toggleStyle} ${toggleTitle} ` +
-      //   `x="5" width="50" y="0" height="10" fill="grey" `+
-      // `/>` +
     '</svg>';
 
   return geneStructureSvg;
