@@ -15,6 +15,8 @@ function addSpliceToggleListeners(ideo) {
 
 function addHoverListeners(ideo) {
   const subparts = document.querySelectorAll('._ideoGeneStructure rect');
+  if (subparts.length === 0) return; // E.g. paralog neighborhoods, lncRNA
+
   const container = document.querySelector('._ideoGeneStructureContainer');
   function getFooter() {
     return document.querySelector('._ideoGeneStructureFooter');
@@ -82,7 +84,7 @@ function spliceOut(subparts) {
     const isUTR = start === prevStart;
     const splicedStart = isUTR ? start : prevEnd;
     const splicedEnd = splicedStart + length;
-    splicedSubparts.push([subpartType, splicedStart, length]);
+    splicedSubparts.push([subpartType, splicedStart, length + 1]);
     prevEnd = splicedEnd;
     prevStart = splicedStart;
   }
@@ -98,7 +100,7 @@ function spliceIn(subparts) {
     const [start, length] = subpart.slice(1);
     if (start > prevEnd) {
       const intronStart = prevEnd;
-      const intronLength = start - prevEnd;
+      const intronLength = start - prevEnd - 1;
       splicedSubparts.push(['intron', intronStart, intronLength]);
     }
     prevEnd = start + length;
