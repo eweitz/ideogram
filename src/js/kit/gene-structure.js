@@ -295,6 +295,13 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
       geneStructureHtml =
         '<br/><br/>' +
         '<style>' +
+          '._ideoGeneStructureContainer rect:hover {' +
+            'stroke: #D0D0DD !important;' +
+            'stroke-width: 3px;' +
+          '}' +
+          '._ideoGeneStructureContainer rect:hover + line {' +
+            'visibility: hidden;' +
+          '}' +
           '._ideoGeneStructureContainer {' +
             'display: flex;' +
             'justify-content: center;' +
