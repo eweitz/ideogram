@@ -13,9 +13,52 @@ function addSpliceToggleListeners(ideo) {
   });
 }
 
+
+/** Go to previous subpart on left arrow; next on right */
+function navigateSubparts(event) {
+  const subparts = document.querySelectorAll('._ideoGeneStructure rect');
+  if (subparts.length === 0) return; // E.g. paralog neighborhoods, lncRNA
+  const cls = '_ideoHoveredSubpart';
+  const subpart = document.querySelector(`.${cls}`);
+  let i;
+  subparts.forEach((el, index) => {
+    if (el.classList.contains(cls)) {
+      i = index;
+    }
+  });
+
+  const options = {view: window, bubbles: false, cancelable: true};
+  const mouseEnter = new MouseEvent('mouseenter', options);
+  const mouseLeave = new MouseEvent('mouseleave', options);
+
+  if (event.key === 'ArrowLeft') {
+    if (i === 0) return;
+    subpart.dispatchEvent(mouseLeave);
+    const prevSubpart = subparts[i - 1];
+    prevSubpart.dispatchEvent(mouseEnter);
+  } else if (event.key === 'ArrowRight') {
+    if (i === subparts.length) return;
+    subpart.dispatchEvent(mouseLeave);
+    const nextSubpart = subparts[i + 1];
+    nextSubpart.dispatchEvent(mouseEnter);
+  }
+  event.stopPropagation();
+  event.preventDefault();
+}
+
+/**
+ * Add handlers for hover events in transcript container and beneath, e.g.:
+ *
+ * - Show transcript details on hovering near transcript
+ * - Show subpart (i.e. exon, 3'-UTR, 5'-UTR) details on hovering over subpart
+ * - Highlight subpart on hovering over subpart
+ * - Navigate to previous or next subpart on pressing left or right arrow keys
+ */
 function addHoverListeners(ideo) {
   const subparts = document.querySelectorAll('._ideoGeneStructure rect');
   if (subparts.length === 0) return; // E.g. paralog neighborhoods, lncRNA
+
+  ideo.subparts = subparts;
 
   const container = document.querySelector('._ideoGeneStructureContainer');
   function getFooter() {
@@ -28,14 +71,25 @@ function addHoverListeners(ideo) {
     const svg = container.querySelector('svg');
     const transcriptSummary = svg.getAttribute('data-ideo-footer');
     footer.innerHTML = `&nbsp;<br/>${transcriptSummary}`;
+
+    document.addEventListener('keydown', navigateSubparts);
   });
   container.addEventListener('mouseleave', event => {
     const footer = getFooter();
     footer.innerHTML = '';
+    document.removeEventListener('keydown', navigateSubparts);
   });
 
-  subparts.forEach(subpart => {
+  subparts.forEach((subpart, i) => {
+
+    // On hovering over subpart, highlight it and show details
     subpart.addEventListener('mouseenter', event => {
+
+      // Highlight
+      event.target.classList.add('_ideoHoveredSubpart');
+      event.target.style = 'stroke: #D0D0DD !important; stroke-width: 3px;';
+
+      // Show details
       const footer = getFooter();
       ideo.originalTooltipFooter = footer.innerHTML;
       const subpartText = subpart.getAttribute('data-subpart');
@@ -45,7 +99,11 @@ function addHoverListeners(ideo) {
           .replace('<br>Transcript name', 'Transcript name');
       footer.innerHTML = `<br/>${subpartText}${trimmedFoot}`;
     });
+
+    // On hovering out, de-highlight and hide details
     subpart.addEventListener('mouseleave', event => {
+      event.target.classList.remove('_ideoHoveredSubpart');
+      event.target.style = '';
       const footer = getFooter();
       footer.innerHTML = ideo.originalTooltipFooter;
     });
@@ -295,10 +353,6 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
       geneStructureHtml =
         '<br/><br/>' +
         '<style>' +
-          '._ideoGeneStructureContainer rect:hover {' +
-            'stroke: #D0D0DD !important;' +
-            'stroke-width: 3px;' +
-          '}' +
           '._ideoGeneStructureContainer rect:hover + line {' +
             'visibility: hidden;' +
           '}' +
