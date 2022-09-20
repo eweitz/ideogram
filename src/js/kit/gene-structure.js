@@ -13,6 +13,13 @@ function addSpliceToggleListeners(ideo) {
   });
 }
 
+function nextIsOutOfSubpartBounds(i, subparts, key) {
+  const isLeft = key === 'left';
+  return (
+    i === 1 && isLeft ||
+    i === subparts.length - 1 && !isLeft
+  );
+}
 
 /** Go to previous subpart on left arrow; next on right */
 function navigateSubparts(event) {
@@ -34,16 +41,30 @@ function navigateSubparts(event) {
   // Account for strand, so left key always goes left; right always right
   const structure = document.querySelector('._ideoGeneStructure');
   const strand = structure.getAttribute('data-ideo-strand');
-  const left = strand === '+' ? 'ArrowLeft' : 'ArrowRight';
-  const right = strand === '+' ? 'ArrowRight' : 'ArrowLeft';
+  const isPositiveStrand = strand === '+';
+  const left = isPositiveStrand ? 'ArrowLeft' : 'ArrowRight';
+  const right = isPositiveStrand ? 'ArrowRight' : 'ArrowLeft';
+  let key;
+  if (event.key === left) {
+    key = 'left';
+  } else if (event.key === right) {
+    key = 'right';
+  }
+
+  if (
+    typeof key === 'undefined' ||
+    nextIsOutOfSubpartBounds(i, subparts, key)
+  ) {
+    event.stopPropagation();
+    event.preventDefault();
+    return;
+  }
 
   if (event.key === left) {
-    if (i === 0) return;
     subpart.dispatchEvent(mouseLeave);
     const prevSubpart = subparts[i - 1];
     prevSubpart.dispatchEvent(mouseEnter);
   } else if (event.key === right) {
-    if (i === subparts.length) return;
     subpart.dispatchEvent(mouseLeave);
     const nextSubpart = subparts[i + 1];
     nextSubpart.dispatchEvent(mouseEnter);
