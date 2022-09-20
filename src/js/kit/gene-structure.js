@@ -31,12 +31,18 @@ function navigateSubparts(event) {
   const mouseEnter = new MouseEvent('mouseenter', options);
   const mouseLeave = new MouseEvent('mouseleave', options);
 
-  if (event.key === 'ArrowLeft') {
+  // Account for strand, so left key always goes left; right always right
+  const structure = document.querySelector('._ideoGeneStructure');
+  const strand = structure.getAttribute('data-ideo-strand');
+  const left = strand === '+' ? 'ArrowLeft' : 'ArrowRight';
+  const right = strand === '+' ? 'ArrowRight' : 'ArrowLeft';
+
+  if (event.key === left) {
     if (i === 0) return;
     subpart.dispatchEvent(mouseLeave);
     const prevSubpart = subparts[i - 1];
     prevSubpart.dispatchEvent(mouseEnter);
-  } else if (event.key === 'ArrowRight') {
+  } else if (event.key === right) {
     if (i === subparts.length) return;
     subpart.dispatchEvent(mouseLeave);
     const nextSubpart = subparts[i + 1];
@@ -330,7 +336,8 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
       `Strand: ${strand}`
     ].join(` ${pipe} `);
   const geneStructureSvg =
-    `<svg class="_ideoGeneStructure" data-ideo-footer="${footerData}" ` +
+    `<svg class="_ideoGeneStructure" ` +
+      `data-ideo-strand="${strand}" data-ideo-footer="${footerData}" ` +
       `width="${(featureLengthPx + 20)}" height="40" ${transform}` +
     `>` +
       geneStructureArray.join('') +
