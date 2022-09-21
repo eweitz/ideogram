@@ -16,14 +16,29 @@ function addSpliceToggleListeners(ideo) {
 function nextIsOutOfSubpartBounds(i, subparts, key) {
   const isLeft = key === 'left';
   return (
-    i === 1 && isLeft ||
+    i === 0 && isLeft ||
     i === subparts.length - 1 && !isLeft
   );
 }
 
 /** Go to previous subpart on left arrow; next on right */
 function navigateSubparts(event) {
-  const subparts = document.querySelectorAll('._ideoGeneStructure rect');
+  const subparts = Array.from(document.querySelectorAll('rect.subpart'));
+
+  const structure = document.querySelector('._ideoGeneStructure');
+  const strand = structure.getAttribute('data-ideo-strand');
+  const isPositiveStrand = strand === '+';
+
+  // TODO: Consolidate with other negative-strand splicing code
+  const secondSubpart = subparts[1];
+  if (
+    !isPositiveStrand && subparts[1].classList.contains('three-prime-utr')
+  ) {
+    const firstSubpart = subparts[0];
+    subparts.splice(0, 1, secondSubpart);
+    subparts.splice(1, 1, firstSubpart);
+  }
+
   if (subparts.length === 0) return; // E.g. paralog neighborhoods, lncRNA
   const cls = '_ideoHoveredSubpart';
   const subpart = document.querySelector(`.${cls}`);
@@ -39,9 +54,6 @@ function navigateSubparts(event) {
   const mouseLeave = new MouseEvent('mouseleave', options);
 
   // Account for strand, so left key always goes left; right always right
-  const structure = document.querySelector('._ideoGeneStructure');
-  const strand = structure.getAttribute('data-ideo-strand');
-  const isPositiveStrand = strand === '+';
   const left = isPositiveStrand ? 'ArrowLeft' : 'ArrowRight';
   const right = isPositiveStrand ? 'ArrowRight' : 'ArrowLeft';
   let key;
@@ -214,8 +226,6 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
   const subparts = geneStructure.subparts;
   let sortedSubparts = subparts.sort((a, b) => {
     return a[1] - b[1];
-    // if (a[0] === 'exon' && b[0] !== 'exon') return -1;
-    // if (a[0] !== 'exon' && b[0] === 'exon') return 1;
   });
 
   if (omitIntrons) {
@@ -287,6 +297,16 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
   // Subtle visual delimiter; separates horizontally adjacent fields in UI
   const pipe = `<span style='color: #CCC'>|</span>`;
 
+  // TODO: Consolidate with other negative-strand splicing code
+  const firstSubpart = sortedSubparts[0];
+  if (
+    strand === '-' && firstSubpart[0] === "3'-UTR"
+  ) {
+    const secondSubpart = sortedSubparts[1];
+    sortedSubparts.splice(0, 1, secondSubpart);
+    sortedSubparts.splice(1, 1, firstSubpart);
+  }
+
   // Get counts for e.g. "4" in "Exon 2 of 4"
   for (let i = 0; i < sortedSubparts.length; i++) {
     const subpart = sortedSubparts[i];
@@ -314,7 +334,7 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
     const left = subpart[1] / bpPerPx;
     const length = lengthBp / bpPerPx;
     const pos = `x="${left}" width="${length}" y="${y}" height="${height}"`;
-    const cls = `class="${classes[subpartType]}" `;
+    const cls = `class="subpart ${classes[subpartType]}" `;
 
     let data = ''; // TODO: Handle introns better, refine CDS vs. UTR in exons
     if (subpartType in numBySubpart) {
