@@ -21,23 +21,57 @@ function nextIsOutOfSubpartBounds(i, subparts, key) {
   );
 }
 
+/**
+ * Swap genome-ordered subparts so they render with expected visual layering
+ *
+ * SVG elements render last-on-top, which often hides subparts UTRs at the
+ * ends of transcripts when they're genomically ordered, as they are in e.g.
+ * Ensembl.
+ *
+ * See also: swapEndDomSubpartsBack
+ */
+function swapEndSubpartsForward(sortedSubparts, strand) {
+  const firstSubpart = sortedSubparts[0];
+  if (
+    strand === '-' && firstSubpart[0] === "3'-UTR" ||
+    strand === '+' && firstSubpart[0] === "5'-UTR"
+  ) {
+    const secondSubpart = sortedSubparts[1];
+    sortedSubparts.splice(0, 1, secondSubpart);
+    sortedSubparts.splice(1, 1, firstSubpart);
+  }
+
+  return sortedSubparts;
+}
+
+/**
+ * Restore SVG subparts to genome order, for proper keyboard navigation
+ *
+ * See also: swapEndSubpartsForward
+ */
+function swapEndDomSubpartsBack(strand, subparts) {
+  const isPositiveStrand = strand === '+';
+  const subpart2 = subparts[1];
+  if (
+    !isPositiveStrand && subpart2.classList.contains('three-prime-utr') ||
+    isPositiveStrand && subpart2.classList.contains('five-prime-utr')
+  ) {
+    const subpart1 = subparts[0];
+    subparts.splice(0, 1, subpart2);
+    subparts.splice(1, 1, subpart1);
+  }
+  return subparts;
+}
+
 /** Go to previous subpart on left arrow; next on right */
 function navigateSubparts(event) {
-  const subparts = Array.from(document.querySelectorAll('rect.subpart'));
+  const domSubparts = Array.from(document.querySelectorAll('rect.subpart'));
 
   const structure = document.querySelector('._ideoGeneStructure');
   const strand = structure.getAttribute('data-ideo-strand');
   const isPositiveStrand = strand === '+';
 
-  // TODO: Consolidate with other negative-strand splicing code
-  const secondSubpart = subparts[1];
-  if (
-    !isPositiveStrand && subparts[1].classList.contains('three-prime-utr')
-  ) {
-    const firstSubpart = subparts[0];
-    subparts.splice(0, 1, secondSubpart);
-    subparts.splice(1, 1, firstSubpart);
-  }
+  const subparts = swapEndDomSubpartsBack(strand, domSubparts);
 
   if (subparts.length === 0) return; // E.g. paralog neighborhoods, lncRNA
   const cls = '_ideoHoveredSubpart';
@@ -297,15 +331,7 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
   // Subtle visual delimiter; separates horizontally adjacent fields in UI
   const pipe = `<span style='color: #CCC'>|</span>`;
 
-  // TODO: Consolidate with other negative-strand splicing code
-  const firstSubpart = sortedSubparts[0];
-  if (
-    strand === '-' && firstSubpart[0] === "3'-UTR"
-  ) {
-    const secondSubpart = sortedSubparts[1];
-    sortedSubparts.splice(0, 1, secondSubpart);
-    sortedSubparts.splice(1, 1, firstSubpart);
-  }
+  sortedSubparts = swapEndSubpartsForward(sortedSubparts, strand);
 
   // Get counts for e.g. "4" in "Exon 2 of 4"
   for (let i = 0; i < sortedSubparts.length; i++) {
