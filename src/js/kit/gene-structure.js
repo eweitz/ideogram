@@ -63,6 +63,16 @@ function swapEndDomSubpartsBack(strand, subparts) {
   return subparts;
 }
 
+/**
+ * Remove any hover stroke outlines, for subpart highlight edge cases like
+ * mouseenter in subpart A while distant subpart B is navigated
+ */
+function removeHighlights() {
+  const cls = '_ideoHoveredSubpart';
+  const hovereds = document.querySelectorAll(`.${cls}`);
+  hovereds.forEach(el => el.classList.remove(cls));
+}
+
 /** Go to previous subpart on left arrow; next on right */
 function navigateSubparts(event) {
   const domSubparts = Array.from(document.querySelectorAll('rect.subpart'));
@@ -106,6 +116,8 @@ function navigateSubparts(event) {
     return;
   }
 
+  removeHighlights();
+
   if (event.key === left) {
     subpart.dispatchEvent(mouseLeave);
     const prevSubpart = subparts[i - 1];
@@ -128,7 +140,7 @@ function navigateSubparts(event) {
  * - Navigate to previous or next subpart on pressing left or right arrow keys
  */
 function addHoverListeners(ideo) {
-  const subparts = document.querySelectorAll('._ideoGeneStructure rect');
+  const subparts = document.querySelectorAll('rect.subpart');
   if (subparts.length === 0) return; // E.g. paralog neighborhoods, lncRNA
 
   ideo.subparts = subparts;
@@ -144,7 +156,6 @@ function addHoverListeners(ideo) {
     const svg = container.querySelector('svg');
     const transcriptSummary = svg.getAttribute('data-ideo-footer');
     footer.innerHTML = `&nbsp;<br/>${transcriptSummary}`;
-
     document.addEventListener('keydown', navigateSubparts);
   });
   container.addEventListener('mouseleave', event => {
@@ -157,10 +168,10 @@ function addHoverListeners(ideo) {
 
     // On hovering over subpart, highlight it and show details
     subpart.addEventListener('mouseenter', event => {
+      removeHighlights();
 
-      // Highlight
+      // Highlight hovered subpart, adding an aura around it
       event.target.classList.add('_ideoHoveredSubpart');
-      event.target.style = 'stroke: #D0D0DD !important; stroke-width: 3px;';
 
       // Show details
       const footer = getFooter();
@@ -176,7 +187,6 @@ function addHoverListeners(ideo) {
     // On hovering out, de-highlight and hide details
     subpart.addEventListener('mouseleave', event => {
       event.target.classList.remove('_ideoHoveredSubpart');
-      event.target.style = '';
       const footer = getFooter();
       footer.innerHTML = ideo.originalTooltipFooter;
     });
@@ -441,6 +451,9 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
           '} ' +
           '._ideoGeneStructureContainer ._ideoSpliceToggle {' +
             'visibility: hidden;' +
+          '}' +
+          '._ideoHoveredSubpart {' +
+            'stroke: #D0D0DD !important; stroke-width: 3px;' +
           '}' +
           '</style>' +
         `<div ${cls}>` +
