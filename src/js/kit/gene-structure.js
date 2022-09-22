@@ -117,14 +117,22 @@ function navigateSubparts(event) {
   }
 
   removeHighlights();
-
-  if (event.key === left) {
+  const alt = event.altKey;
+  const meta = event.metaKey;
+  if (event.key === left) { // Jump back
     subpart.dispatchEvent(mouseLeave);
-    const prevSubpart = subparts[i - 1];
+    let index = i - 1;
+    if (alt) index = i - 10 < 0 ? 0 : i - 10;
+    if (meta) index = 0;
+    const prevSubpart = subparts[index];
     prevSubpart.dispatchEvent(mouseEnter);
-  } else if (event.key === right) {
+  } else if (event.key === right) { // Jump forward
     subpart.dispatchEvent(mouseLeave);
-    const nextSubpart = subparts[i + 1];
+    const last = subparts.length - 1;
+    let index = i + 1;
+    if (alt) index = i + 10 > last ? last : i + 10;
+    if (meta) index = last;
+    const nextSubpart = subparts[index];
     nextSubpart.dispatchEvent(mouseEnter);
   }
   event.stopPropagation();
