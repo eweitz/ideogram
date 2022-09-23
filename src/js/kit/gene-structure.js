@@ -1,13 +1,21 @@
+function toggleSpliceByKeyboard(event) {
+  if (event.key === 's') {
+    const spliceToggle = document.querySelector('._ideoSpliceToggle input');
+    if (!spliceToggle) return;
+    spliceToggle.dispatchEvent(new MouseEvent('click'));
+  }
+}
+
 function addSpliceToggleListeners(ideo) {
+  document.addEventListener('keydown', toggleSpliceByKeyboard);
+
   const container = document.querySelector('._ideoGeneStructureContainer');
   const toggler = document.querySelector('._ideoSpliceToggle');
 
   if (!container) return;
 
-  const geneDom = document.querySelector('#ideo-related-gene');
-  const gene = geneDom.textContent;
   toggler.addEventListener('change', (event) => {
-    toggleGeneStructure(gene, ideo);
+    toggleGeneStructure(ideo);
     addHoverListeners(ideo);
     event.stopPropagation();
   });
@@ -72,6 +80,7 @@ function removeHighlights() {
   const hovereds = document.querySelectorAll(`.${cls}`);
   hovereds.forEach(el => el.classList.remove(cls));
 }
+
 
 /** Go to previous subpart on left arrow; next on right */
 function navigateSubparts(event) {
@@ -258,9 +267,12 @@ function spliceIn(subparts) {
   return splicedSubparts;
 }
 
-function toggleGeneStructure(gene, ideo) {
-  ideo.omitIntrons = 'omitIntrons' in ideo ? !ideo.omitIntrons : true;
-  const svg = getGeneStructureSvg(gene, ideo, ideo.omitIntrons);
+function toggleGeneStructure(ideo) {
+  const geneDom = document.querySelector('#ideo-related-gene');
+  const gene = geneDom.textContent;
+  const omitIntrons =
+    Array.from(document.querySelectorAll('.subpart.intron')).length > 0;
+  const svg = getGeneStructureSvg(gene, ideo, omitIntrons);
   document.querySelector('._ideoGeneStructure').innerHTML = svg;
 }
 
