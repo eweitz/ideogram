@@ -218,8 +218,8 @@ export function addGeneStructureListeners(ideo) {
 function getSpliceToggle(ideo) {
   const cls = 'class="_ideoSpliceToggle"';
   const checked = ideo.omitIntrons ? 'checked' : '';
-  const inOrOut = ideo.omitIntrons ? 'in' : 'out';
-  const title = `title="Splice ${inOrOut} introns"`;
+  const text = ideo.omitIntrons ? 'Insert introns' : 'Splice exons';
+  const title = `title="${text}"`;
   const inputAttrs =
     `type="checkbox" ${checked} ` +
     `style="display: none;"`;
@@ -233,7 +233,7 @@ function getSpliceToggle(ideo) {
   return label;
 }
 
-/** Splice out introns from transcript, leaving only exons */
+/** Splice exons in transcript, removing introns */
 function spliceOut(subparts) {
   const splicedSubparts = [];
   let prevEnd = 0;
@@ -251,7 +251,7 @@ function spliceOut(subparts) {
   return splicedSubparts;
 }
 
-/** Splice in introns to transcript, making introns explicit subparts */
+/** Insert introns to transcript, making introns explicit subparts */
 function spliceIn(subparts) {
   const splicedSubparts = [];
   let prevEnd = 0;
@@ -311,10 +311,9 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
   }
 
 
-  const spliceToggle = document.querySelector('._ideoSpliceToggle')
+  const spliceToggle = document.querySelector('._ideoSpliceToggle');
   if (spliceToggle) {
-    const inOrOut = omitIntrons ? 'in' : 'out';
-    const title = `Splice ${inOrOut} introns`;
+    const title = omitIntrons ? 'Insert introns' : 'Splice exons';
     spliceToggle.title = title;
   }
 
