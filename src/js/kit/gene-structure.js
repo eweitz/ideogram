@@ -274,6 +274,16 @@ function toggleGeneStructure(ideo) {
     Array.from(document.querySelectorAll('.subpart.intron')).length > 0;
   const svg = getGeneStructureSvg(gene, ideo, omitIntrons);
   document.querySelector('._ideoGeneStructure').innerHTML = svg;
+
+  let modifier = '';
+  const nameDOM = document.querySelector('._ideoGeneStructureContainerName');
+  nameDOM.classList.remove('pre-mRNA');
+  if (!omitIntrons) {
+    modifier = 'pre-';
+    nameDOM.classList.add('pre-mRNA');
+  }
+  const name = `Canonical ${modifier}mRNA transcript`;
+  nameDOM.textContent = name;
 }
 
 function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
@@ -452,11 +462,17 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
     if (geneStructureSvg) {
       const cls = 'class="_ideoGeneStructureContainer"';
       const toggle = getSpliceToggle(ideo);
-      const divStyle = 'style="margin-left: 75px;"';
-      const name = 'Canonical transcript';
+      const spanClass = `class="_ideoGeneStructureContainerName pre-mRNA"`;
+      const name = 'Canonical pre-mRNA transcript';
       geneStructureHtml =
         '<br/><br/>' +
         '<style>' +
+          '._ideoGeneStructureContainerName {' +
+            'margin-left: 75px;' +
+          '}' +
+          '._ideoGeneStructureContainerName.pre-mRNA {' +
+            'margin-left: 54px;' +
+          '}' +
           '._ideoGeneStructureContainer rect:hover + line {' +
             'visibility: hidden;' +
           '}' +
@@ -477,7 +493,7 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
           '}' +
           '</style>' +
         `<div ${cls}>` +
-        `<div><span ${divStyle}>${name}</span>${toggle}</div>` +
+        `<div><span ${spanClass}>${name}</span>${toggle}</div>` +
         `${geneStructureSvg}` +
         `<div class="_ideoGeneStructureFooter"></div>` +
         `</div>`;
