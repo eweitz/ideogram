@@ -217,17 +217,19 @@ export function addGeneStructureListeners(ideo) {
 
 function getSpliceToggle(ideo) {
   const cls = 'class="_ideoSpliceToggle"';
-  const title = `title="Click to toggle introns"`;
   const checked = ideo.omitIntrons ? 'checked' : '';
+  const inOrOut = ideo.omitIntrons ? 'in' : 'out';
+  const title = `title="Splice ${inOrOut} introns"`;
   const inputAttrs =
     `type="checkbox" ${checked} ` +
-    `style="position: relative; top: 1.5px; cursor: pointer;"`;
+    `style="display: none;"`;
   const style =
     'style="position: relative; top: -5px; margin-left: 20px; ' +
-    'float: right; cursor: pointer;"';
+    'float: right; cursor: pointer; font-size: 16px; ' +
+    'padding: 2px 4px; border: 1px solid #CCC; border-radius: 3px;"';
   const attrs = `${cls} ${style} ${title}`;
 
-  const label = `<label ${attrs}><input ${inputAttrs} />Splice</label>`;
+  const label = `<label ${attrs}><input ${inputAttrs} />&#x2702;</label>`;
   return label;
 }
 
@@ -306,6 +308,14 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
     sortedSubparts = spliceOut(sortedSubparts);
   } else {
     sortedSubparts = spliceIn(sortedSubparts);
+  }
+
+
+  const spliceToggle = document.querySelector('._ideoSpliceToggle')
+  if (spliceToggle) {
+    const inOrOut = omitIntrons ? 'in' : 'out';
+    const title = `Splice ${inOrOut} introns`;
+    spliceToggle.title = title;
   }
 
 
@@ -468,7 +478,7 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
         '<br/><br/>' +
         '<style>' +
           '._ideoGeneStructureContainerName {' +
-            'margin-left: 75px;' +
+            'margin-left: 60px;' +
           '}' +
           '._ideoGeneStructureContainerName.pre-mRNA {' +
             'margin-left: 54px;' +
