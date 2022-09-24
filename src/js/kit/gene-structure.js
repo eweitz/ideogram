@@ -278,14 +278,18 @@ function toggleGeneStructure(ideo) {
   document.querySelector('._ideoGeneStructure').innerHTML = svg;
 
   let modifier = '';
+  let titleMod = 'without';
   const nameDOM = document.querySelector('._ideoGeneStructureContainerName');
   nameDOM.classList.remove('pre-mRNA');
   if (!omitIntrons) {
     modifier = 'pre-';
+    titleMod = 'with'
     nameDOM.classList.add('pre-mRNA');
   }
-  const name = `Canonical ${modifier}mRNA transcript`;
+  const title = `Canonical transcript per Ensembl, ${titleMod} introns`;
+  const name = `Canonical ${modifier}mRNA`;
   nameDOM.textContent = name;
+  nameDOM.title = title;
 }
 
 function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
@@ -472,15 +476,17 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
       const cls = 'class="_ideoGeneStructureContainer"';
       const toggle = getSpliceToggle(ideo);
       const spanClass = `class="_ideoGeneStructureContainerName pre-mRNA"`;
-      const name = 'Canonical pre-mRNA transcript';
+      const title = 'Canonical transcript per Ensembl, with introns';
+      const spanAttrs = `${spanClass} title="${title}"`;
+      const name = 'Canonical pre-mRNA';
       geneStructureHtml =
         '<br/><br/>' +
         '<style>' +
           '._ideoGeneStructureContainerName {' +
-            'margin-left: 60px;' +
+            'margin-left: 50px;' +
           '}' +
           '._ideoGeneStructureContainerName.pre-mRNA {' +
-            'margin-left: 54px;' +
+            'margin-left: 44px;' +
           '}' +
           '._ideoGeneStructureContainer rect:hover + line {' +
             'visibility: hidden;' +
@@ -502,7 +508,7 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
           '}' +
           '</style>' +
         `<div ${cls}>` +
-        `<div><span ${spanClass}>${name}</span>${toggle}</div>` +
+        `<div><span ${spanAttrs}>${name}</span>${toggle}</div>` +
         `${geneStructureSvg}` +
         `<div class="_ideoGeneStructureFooter"></div>` +
         `</div>`;
