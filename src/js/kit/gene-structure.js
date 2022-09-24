@@ -215,16 +215,17 @@ export function addGeneStructureListeners(ideo) {
   addHoverListeners(ideo);
 }
 
-function getSpliceToggle(ideo) {
-  const cls = 'class="_ideoSpliceToggle"';
-  const checked = ideo.omitIntrons ? 'checked' : '';
-  const text = ideo.omitIntrons ? 'Insert introns' : 'Splice exons';
+function getSpliceToggle() {
+  const cls = 'class="_ideoSpliceToggle pre-mRNA"';
+  const omitIntrons = false //getOmitIntrons();
+  const checked = omitIntrons ? 'checked' : '';
+  const text = omitIntrons ? 'Insert introns' : 'Splice exons';
   const title = `title="${text}"`;
   const inputAttrs =
     `type="checkbox" ${checked} ` +
     `style="display: none;"`;
   const style =
-    'style="position: relative; top: -5px; margin-left: 20px; ' +
+    `style="position: relative; top: -5px; ` +
     'float: right; cursor: pointer; font-size: 16px; ' +
     'padding: 2px 4px; border: 1px solid #CCC; border-radius: 3px;"';
   const attrs = `${cls} ${style} ${title}`;
@@ -269,22 +270,28 @@ function spliceIn(subparts) {
   return splicedSubparts;
 }
 
+function getOmitIntrons() {
+  const omitIntrons =
+    Array.from(document.querySelectorAll('.subpart.intron')).length > 0;
+  return omitIntrons;
+}
+
 function toggleGeneStructure(ideo) {
   const geneDom = document.querySelector('#ideo-related-gene');
   const gene = geneDom.textContent;
-  const omitIntrons =
-    Array.from(document.querySelectorAll('.subpart.intron')).length > 0;
+  const omitIntrons = getOmitIntrons();
   const svg = getGeneStructureSvg(gene, ideo, omitIntrons);
   document.querySelector('._ideoGeneStructure').innerHTML = svg;
 
   let modifier = '';
   let titleMod = 'without';
   const nameDOM = document.querySelector('._ideoGeneStructureContainerName');
-  nameDOM.classList.remove('pre-mRNA');
+  const toggleDOM = document.querySelector('._ideoSpliceToggle');
+  [nameDOM, toggleDOM].forEach(el => el.classList.remove('pre-mRNA'));
   if (!omitIntrons) {
     modifier = 'pre-';
-    titleMod = 'with'
-    nameDOM.classList.add('pre-mRNA');
+    titleMod = 'with';
+    [nameDOM, toggleDOM].forEach(el => el.classList.add('pre-mRNA'));
   }
   const title = `Canonical transcript per Ensembl, ${titleMod} introns`;
   const name = `Canonical ${modifier}mRNA`;
@@ -469,7 +476,7 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
 export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
   let geneStructureHtml = '';
   if (ideo.config.showGeneStructureInTooltip && !isParalogNeighborhood) {
-    const omitIntrons = ideo.omitIntrons;
+    const omitIntrons = false; // getOmitIntrons();
     const gene = annot.name;
     const geneStructureSvg = getGeneStructureSvg(gene, ideo, omitIntrons);
     if (geneStructureSvg) {
@@ -483,10 +490,10 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
         '<br/><br/>' +
         '<style>' +
           '._ideoGeneStructureContainerName {' +
-            'margin-left: 50px;' +
+            'margin-left: 75px;' +
           '}' +
           '._ideoGeneStructureContainerName.pre-mRNA {' +
-            'margin-left: 44px;' +
+            'margin-left: 69px;' +
           '}' +
           '._ideoGeneStructureContainer rect:hover + line {' +
             'visibility: hidden;' +
@@ -502,6 +509,12 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
           '} ' +
           '._ideoGeneStructureContainer ._ideoSpliceToggle {' +
             'visibility: hidden;' +
+          '}' +
+          '._ideoSpliceToggle {' +
+            'margin-left: 55px; background-color: #EEE;' +
+          '}' +
+          '._ideoSpliceToggle.pre-mRNA {' +
+            'margin-left: 40px; background-color: #F8F8F8;' +
           '}' +
           '._ideoHoveredSubpart {' +
             'stroke: #D0D0DD !important; stroke-width: 3px;' +
