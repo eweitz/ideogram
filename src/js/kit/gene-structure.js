@@ -215,21 +215,27 @@ export function addGeneStructureListeners(ideo) {
   addHoverListeners(ideo);
 }
 
+function getSpliceToggleHoverTitle(omitIntrons) {
+  return omitIntrons ? 'Insert introns (s)' : 'Splice exons (s)';
+}
+
 function getSpliceToggle() {
   const cls = 'class="_ideoSpliceToggle pre-mRNA"';
   const omitIntrons = false //getOmitIntrons();
   const checked = omitIntrons ? 'checked' : '';
-  const text = omitIntrons ? 'Insert introns' : 'Splice exons';
+  const text = getSpliceToggleHoverTitle(omitIntrons);
   const title = `title="${text}"`;
   const inputAttrs =
     `type="checkbox" ${checked} ` +
     `style="display: none;"`;
   const style =
-    `style="position: relative; top: -5px; ` +
+    'style="position: relative; top: -5px; ' +
+    'user-select: none; ' + // Prevent distracting highlight on quick toggle
     'float: right; cursor: pointer; font-size: 16px; ' +
     'padding: 2px 4px; border: 1px solid #CCC; border-radius: 3px;"';
   const attrs = `${cls} ${style} ${title}`;
 
+  // Scissors icon
   const label = `<label ${attrs}><input ${inputAttrs} />&#x2702;</label>`;
   return label;
 }
@@ -324,7 +330,7 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
 
   const spliceToggle = document.querySelector('._ideoSpliceToggle');
   if (spliceToggle) {
-    const title = omitIntrons ? 'Insert introns' : 'Splice exons';
+    const title = getSpliceToggleHoverTitle(omitIntrons);
     spliceToggle.title = title;
   }
 
