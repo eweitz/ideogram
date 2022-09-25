@@ -15,7 +15,7 @@ function addSpliceToggleListeners(ideo) {
   if (!container) return;
 
   toggler.addEventListener('change', (event) => {
-    toggleGeneStructure(ideo);
+    toggleSplice(ideo);
     addHoverListeners(ideo);
     event.stopPropagation();
   });
@@ -219,9 +219,9 @@ function getSpliceToggleHoverTitle(omitIntrons) {
   return omitIntrons ? 'Insert introns (s)' : 'Splice exons (s)';
 }
 
-function getSpliceToggle() {
+function getSpliceToggle(ideo) {
   const cls = 'class="_ideoSpliceToggle pre-mRNA"';
-  const omitIntrons = false //getOmitIntrons();
+  const omitIntrons = ideo.omitIntrons;
   const checked = omitIntrons ? 'checked' : '';
   const text = getSpliceToggleHoverTitle(omitIntrons);
   const title = `title="${text}"`;
@@ -276,31 +276,33 @@ function spliceIn(subparts) {
   return splicedSubparts;
 }
 
-function getOmitIntrons() {
-  const omitIntrons =
-    Array.from(document.querySelectorAll('.subpart.intron')).length > 0;
-  return omitIntrons;
+function getSpliceStateText(omitIntrons) {
+  let modifier = '';
+  let titleMod = 'without';
+  if (!omitIntrons) {
+    modifier = 'pre-';
+    titleMod = 'with';
+  }
+  const title = `Canonical transcript per Ensembl, ${titleMod} introns`;
+  const name = `Canonical ${modifier}mRNA`;
+  return {title, name};
 }
 
-function toggleGeneStructure(ideo) {
+function toggleSplice(ideo) {
   const geneDom = document.querySelector('#ideo-related-gene');
   const gene = geneDom.textContent;
-  const omitIntrons = getOmitIntrons();
+  ideo.omitIntrons = !ideo.omitIntrons;
+  const omitIntrons = ideo.omitIntrons;
   const svg = getGeneStructureSvg(gene, ideo, omitIntrons);
   document.querySelector('._ideoGeneStructure').innerHTML = svg;
 
-  let modifier = '';
-  let titleMod = 'without';
   const nameDOM = document.querySelector('._ideoGeneStructureContainerName');
   const toggleDOM = document.querySelector('._ideoSpliceToggle');
   [nameDOM, toggleDOM].forEach(el => el.classList.remove('pre-mRNA'));
   if (!omitIntrons) {
-    modifier = 'pre-';
-    titleMod = 'with';
     [nameDOM, toggleDOM].forEach(el => el.classList.add('pre-mRNA'));
   }
-  const title = `Canonical transcript per Ensembl, ${titleMod} introns`;
-  const name = `Canonical ${modifier}mRNA`;
+  const {title, name} = getSpliceStateText(omitIntrons);
   nameDOM.textContent = name;
   nameDOM.title = title;
 }
@@ -482,16 +484,17 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
 export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
   let geneStructureHtml = '';
   if (ideo.config.showGeneStructureInTooltip && !isParalogNeighborhood) {
-    const omitIntrons = false; // getOmitIntrons();
+    if ('omitIntrons' in ideo === false) ideo.omitIntrons = false;
+    const omitIntrons = ideo.omitIntrons;
     const gene = annot.name;
     const geneStructureSvg = getGeneStructureSvg(gene, ideo, omitIntrons);
     if (geneStructureSvg) {
       const cls = 'class="_ideoGeneStructureContainer"';
       const toggle = getSpliceToggle(ideo);
-      const spanClass = `class="_ideoGeneStructureContainerName pre-mRNA"`;
-      const title = 'Canonical transcript per Ensembl, with introns';
+      const rnaClass = omitIntrons ? '' : ' pre-mRNA';
+      const spanClass = `class="_ideoGeneStructureContainerName${rnaClass}"`;
+      const {name, title} = getSpliceStateText(omitIntrons);
       const spanAttrs = `${spanClass} title="${title}"`;
-      const name = 'Canonical pre-mRNA';
       geneStructureHtml =
         '<br/><br/>' +
         '<style>' +
