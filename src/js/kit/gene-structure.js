@@ -500,7 +500,7 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
         '<br/><br/>' +
         '<style>' +
           '._ideoGeneStructureContainerName {' +
-            'margin-left: 75px;' +
+            'margin-left: 81px;' +
           '}' +
           '._ideoGeneStructureContainerName.pre-mRNA {' +
             'margin-left: 69px;' +
@@ -521,10 +521,10 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
             'visibility: hidden;' +
           '}' +
           '._ideoSpliceToggle {' +
-            'margin-left: 55px; background-color: #EEE;' +
+            'margin-left: 53px; background-color: #EEE;' +
           '}' +
           '._ideoSpliceToggle.pre-mRNA {' +
-            'margin-left: 40px; background-color: #F8F8F8;' +
+            'margin-left: 43px; background-color: #F8F8F8;' +
           '}' +
           '._ideoHoveredSubpart {' +
             'stroke: #D0D0DD !important; stroke-width: 3px;' +
