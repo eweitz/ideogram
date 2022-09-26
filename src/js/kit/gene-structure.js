@@ -220,8 +220,9 @@ function getSpliceToggleHoverTitle(omitIntrons) {
 }
 
 function getSpliceToggle(ideo) {
-  const cls = 'class="_ideoSpliceToggle pre-mRNA"';
   const omitIntrons = ideo.omitIntrons;
+  const modifier = omitIntrons ? '' : 'pre-';
+  const cls = `class="_ideoSpliceToggle ${modifier}mRNA"`;
   const checked = omitIntrons ? 'checked' : '';
   const text = getSpliceToggleHoverTitle(omitIntrons);
   const title = `title="${text}"`;
