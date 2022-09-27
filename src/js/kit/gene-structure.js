@@ -36,40 +36,65 @@ function nextIsOutOfSubpartBounds(i, subparts, key) {
  * ends of transcripts when they're genomically ordered, as they are in e.g.
  * Ensembl.
  *
- * See also: swapEndDomSubpartsBack
+ * See also: swapUTRsBack
  */
-function swapEndSubpartsForward(sortedSubparts, strand) {
-  const firstSubpart = sortedSubparts[0];
-  if (
-    strand === '-' && firstSubpart[0] === "3'-UTR" ||
-    strand === '+' && firstSubpart[0] === "5'-UTR"
-  ) {
-    const secondSubpart = sortedSubparts[1];
-    sortedSubparts.splice(0, 1, secondSubpart);
-    sortedSubparts.splice(1, 1, firstSubpart);
-  }
+function swapUTRsForward(subparts, isPositiveStrand) {
+  const swappedSubparts = subparts.slice();
+  subparts.forEach((subpart, i) => {
+    if (i === 0) return;
+    const prevSubpart = subparts[i - 1];
+    const utr5 = "5'-UTR";
+    const utr3 = "3'-UTR";
+    if (
+      !isPositiveStrand && prevSubpart[0] === utr3 && subpart[0] !== utr3 ||
+      isPositiveStrand && prevSubpart[0] === utr5 && subpart[0] !== utr5
+    ) {
+      swappedSubparts[i] = prevSubpart;
+      swappedSubparts[i - 1] = subpart;
+    }
+  });
 
-  return sortedSubparts;
+  return swappedSubparts;
+}
+
+function has(element, cls) {
+  return element.classList.contains(cls)
 }
 
 /**
  * Restore SVG subparts to genome order, for proper keyboard navigation
  *
- * See also: swapEndSubpartsForward
+ * See also: swapUTRsForward
  */
-function swapEndDomSubpartsBack(strand, subparts) {
-  const isPositiveStrand = strand === '+';
-  const subpart2 = subparts[1];
-  if (
-    !isPositiveStrand && subpart2.classList.contains('three-prime-utr') ||
-    isPositiveStrand && subpart2.classList.contains('five-prime-utr')
-  ) {
-    const subpart1 = subparts[0];
-    subparts.splice(0, 1, subpart2);
-    subparts.splice(1, 1, subpart1);
-  }
-  return subparts;
+function swapUTRsBack(subparts, isPositiveStrand) {
+  const swappedSubparts = subparts.slice();
+  subparts.forEach((subpart, i) => {
+    if (i === swappedSubparts.length - 1) return;
+    const nextSubpart = subparts[i + 1];
+    const utr5 = 'five-prime-utr';
+    const utr3 = 'three-prime-utr';
+    if (
+      !isPositiveStrand && has(nextSubpart, utr3) && !has(subpart, utr3) ||
+      isPositiveStrand && has(nextSubpart, utr5) && !has(subpart, utr5)
+    ) {
+      swappedSubparts.splice(i, 1, nextSubpart);
+      swappedSubparts.splice(i + 1, 1, subpart);
+    }
+  });
+  return swappedSubparts;
 }
+// function swapUTRsBack(subparts, isPositiveStrand) {
+//   const subpart2 = subparts[1];
+//   if (
+//     !isPositiveStrand && subpart2.classList.contains('three-prime-utr') ||
+//     isPositiveStrand && subpart2.classList.contains('five-prime-utr')
+//   ) {
+//     const subpart1 = subparts[0];
+//     subparts.splice(0, 1, subpart2);
+//     subparts.splice(1, 1, subpart1);
+//   }
+//   return subparts;
+// }
 
 /**
  * Remove any hover stroke outlines, for subpart highlight edge cases like
@@ -90,7 +115,7 @@ function navigateSubparts(event) {
   const strand = structure.getAttribute('data-ideo-strand');
   const isPositiveStrand = strand === '+';
 
-  const subparts = swapEndDomSubpartsBack(strand, domSubparts);
+  const subparts = swapUTRsBack(domSubparts, isPositiveStrand);
 
   if (subparts.length === 0) return; // E.g. paralog neighborhoods, lncRNA
   const cls = '_ideoHoveredSubpart';
@@ -249,10 +274,20 @@ function spliceOut(subparts) {
   for (let i = 0; i < subparts.length; i++) {
     const subpart = subparts[i];
     const [subpartType, start, length] = subpart;
-    const isUTR = start === prevStart;
-    const splicedStart = isUTR ? start : prevEnd;
+    const isSpliceOverlap = start === prevStart;
+    const isOtherOverlap = i > 0 && start === subparts[i - 1][1];
+    let splicedStart;
+    if (isSpliceOverlap) {
+      splicedStart = start;
+    } else if (isOtherOverlap) {
+      // e.g. 5'-UTRs of OXTR
+      splicedStart = prevStart;
+    } else {
+      splicedStart = prevEnd;
+    }
     const splicedEnd = splicedStart + length;
-    splicedSubparts.push([subpartType, splicedStart, length + 1]);
+    const splicedSubpart = [subpartType, splicedStart, length + 1];
+    splicedSubparts.push(splicedSubpart);
     prevEnd = splicedEnd;
     prevStart = splicedStart;
   }
@@ -330,7 +365,6 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
     sortedSubparts = spliceIn(sortedSubparts);
   }
 
-
   const spliceToggle = document.querySelector('._ideoSpliceToggle');
   if (spliceToggle) {
     const title = getSpliceToggleHoverTitle(omitIntrons);
@@ -400,7 +434,8 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
   // Subtle visual delimiter; separates horizontally adjacent fields in UI
   const pipe = `<span style='color: #CCC'>|</span>`;
 
-  sortedSubparts = swapEndSubpartsForward(sortedSubparts, strand);
+  const isPositiveStrand = strand === '+';
+  sortedSubparts = swapUTRsForward(sortedSubparts, isPositiveStrand);
 
   // Get counts for e.g. "4" in "Exon 2 of 4"
   for (let i = 0; i < sortedSubparts.length; i++) {
