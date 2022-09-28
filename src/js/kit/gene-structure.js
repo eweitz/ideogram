@@ -397,9 +397,9 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
   };
 
   const lineColors = {
-    "5'-UTR": '#003049',
+    "5'-UTR": '#70A099',
     'exon': '#BA8501',
-    "3'-UTR": '#155069'
+    "3'-UTR": '#90C0B9'
   };
 
   const geneStructureArray = [];
