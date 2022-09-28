@@ -240,16 +240,16 @@ export function addGeneStructureListeners(ideo) {
   addHoverListeners(ideo);
 }
 
-function getSpliceToggleHoverTitle(omitIntrons) {
-  return omitIntrons ? 'Insert introns (s)' : 'Splice exons (s)';
+function getSpliceToggleHoverTitle(spliceExons) {
+  return spliceExons ? 'Insert introns (s)' : 'Splice exons (s)';
 }
 
 function getSpliceToggle(ideo) {
-  const omitIntrons = ideo.omitIntrons;
-  const modifier = omitIntrons ? '' : 'pre-';
+  const spliceExons = ideo.spliceExons;
+  const modifier = spliceExons ? '' : 'pre-';
   const cls = `class="_ideoSpliceToggle ${modifier}mRNA"`;
-  const checked = omitIntrons ? 'checked' : '';
-  const text = getSpliceToggleHoverTitle(omitIntrons);
+  const checked = spliceExons ? 'checked' : '';
+  const text = getSpliceToggleHoverTitle(spliceExons);
   const title = `title="${text}"`;
   const inputAttrs =
     `type="checkbox" ${checked} ` +
@@ -312,10 +312,10 @@ function spliceIn(subparts) {
   return splicedSubparts;
 }
 
-function getSpliceStateText(omitIntrons) {
+function getSpliceStateText(spliceExons) {
   let modifier = '';
   let titleMod = 'without';
-  if (!omitIntrons) {
+  if (!spliceExons) {
     modifier = 'pre-';
     titleMod = 'with';
   }
@@ -327,23 +327,23 @@ function getSpliceStateText(omitIntrons) {
 function toggleSplice(ideo) {
   const geneDom = document.querySelector('#ideo-related-gene');
   const gene = geneDom.textContent;
-  ideo.omitIntrons = !ideo.omitIntrons;
-  const omitIntrons = ideo.omitIntrons;
-  const svg = getGeneStructureSvg(gene, ideo, omitIntrons);
+  ideo.spliceExons = !ideo.spliceExons;
+  const spliceExons = ideo.spliceExons;
+  const svg = getGeneStructureSvg(gene, ideo, spliceExons);
   document.querySelector('._ideoGeneStructure').innerHTML = svg;
 
   const nameDOM = document.querySelector('._ideoGeneStructureContainerName');
   const toggleDOM = document.querySelector('._ideoSpliceToggle');
   [nameDOM, toggleDOM].forEach(el => el.classList.remove('pre-mRNA'));
-  if (!omitIntrons) {
+  if (!spliceExons) {
     [nameDOM, toggleDOM].forEach(el => el.classList.add('pre-mRNA'));
   }
-  const {title, name} = getSpliceStateText(omitIntrons);
+  const {title, name} = getSpliceStateText(spliceExons);
   nameDOM.textContent = name;
   nameDOM.title = title;
 }
 
-function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
+function getGeneStructureSvg(gene, ideo, spliceExons=false) {
   if (
     'geneStructureCache' in ideo === false ||
     gene in ideo.geneStructureCache === false
@@ -359,7 +359,7 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
     return a[1] - b[1];
   });
 
-  if (omitIntrons) {
+  if (spliceExons) {
     sortedSubparts = spliceOut(sortedSubparts);
   } else {
     sortedSubparts = spliceIn(sortedSubparts);
@@ -367,7 +367,7 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
 
   const spliceToggle = document.querySelector('._ideoSpliceToggle');
   if (spliceToggle) {
-    const title = getSpliceToggleHoverTitle(omitIntrons);
+    const title = getSpliceToggleHoverTitle(spliceExons);
     spliceToggle.title = title;
   }
 
@@ -520,16 +520,16 @@ function getGeneStructureSvg(gene, ideo, omitIntrons=false) {
 export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
   let geneStructureHtml = '';
   if (ideo.config.showGeneStructureInTooltip && !isParalogNeighborhood) {
-    if ('omitIntrons' in ideo === false) ideo.omitIntrons = false;
-    const omitIntrons = ideo.omitIntrons;
+    if ('spliceExons' in ideo === false) ideo.spliceExons = true;
+    const spliceExons = ideo.spliceExons;
     const gene = annot.name;
-    const geneStructureSvg = getGeneStructureSvg(gene, ideo, omitIntrons);
+    const geneStructureSvg = getGeneStructureSvg(gene, ideo, spliceExons);
     if (geneStructureSvg) {
       const cls = 'class="_ideoGeneStructureContainer"';
       const toggle = getSpliceToggle(ideo);
-      const rnaClass = omitIntrons ? '' : ' pre-mRNA';
+      const rnaClass = spliceExons ? '' : ' pre-mRNA';
       const spanClass = `class="_ideoGeneStructureContainerName${rnaClass}"`;
-      const {name, title} = getSpliceStateText(omitIntrons);
+      const {name, title} = getSpliceStateText(spliceExons);
       const spanAttrs = `${spanClass} title="${title}"`;
       geneStructureHtml =
         '<br/><br/>' +
