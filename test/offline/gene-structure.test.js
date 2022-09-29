@@ -23,7 +23,7 @@ describe('Ideogram gene structure functionality', function() {
         const apoelLabel = document.querySelector('#ideogramLabel__c18_a1');
         apoelLabel.dispatchEvent(new Event('mouseover'));
         const subparts = document.querySelectorAll('rect.subpart');
-        assert.equal(subparts.length, 7);
+        assert.equal(subparts.length, 7); // spliced, without introns
         done();
       }, 500);
     }
@@ -102,6 +102,39 @@ describe('Ideogram gene structure functionality', function() {
           'Transcript name: APOE-201' +
           'Exons: 4 | Biotype: protein coding | Strand: +'
         );
+        done();
+      }, 500);
+    }
+
+    function onClickAnnot(annot) {
+      ideogram.plotRelatedGenes(annot.name);
+    }
+
+    var config = {
+      organism: 'Homo sapiens', // Also tests standard, non-slugged name
+      onLoad: callback,
+      dataDir: '/dist/data/bands/native/',
+      cacheDir: '/dist/data/cache/',
+      onClickAnnot,
+      showGeneStructureInTooltip: true,
+      showParalogNeighborhoods: true
+    };
+
+    const ideogram = Ideogram.initRelatedGenes(config);
+  });
+
+  it('toggles exon splice / intron insert', done => {
+    async function callback() {
+      await ideogram.plotRelatedGenes('APOE');
+      setTimeout(async function() {
+        const apoelLabel = document.querySelector('#ideogramLabel__c18_a1');
+        apoelLabel.dispatchEvent(new Event('mouseover'));
+
+        // Press "s" key, to toggle exon splicing
+        const sKeydown = new KeyboardEvent('keydown', {key: 's'});
+        document.dispatchEvent(sKeydown);
+        const subparts = document.querySelectorAll('rect.subpart');
+        assert.equal(subparts.length, 10); // includes introns
         done();
       }, 500);
     }
