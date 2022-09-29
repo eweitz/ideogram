@@ -5,6 +5,9 @@
 
 describe('Ideogram gene structure functionality', function() {
 
+  // Account for latency
+  this.timeout(10000);
+
   d3 = Ideogram.d3;
 
   beforeEach(function() {
@@ -20,9 +23,9 @@ describe('Ideogram gene structure functionality', function() {
         const apoelLabel = document.querySelector('#ideogramLabel__c18_a1');
         apoelLabel.dispatchEvent(new Event('mouseover'));
         const subparts = document.querySelectorAll('rect.subpart');
-        assert.equal(subparts.length, 10);
+        assert.equal(subparts.length, 7);
         done();
-      }, 200);
+      }, 500);
     }
 
     function onClickAnnot(annot) {
@@ -42,26 +45,39 @@ describe('Ideogram gene structure functionality', function() {
     const ideogram = Ideogram.initRelatedGenes(config);
   });
 
-  it('supports mouse-highlighting subparts', done => {
+  it('supports mouse-highlighting and keyboard-navigating subparts', done => {
     async function callback() {
       await ideogram.plotRelatedGenes('APOE');
       setTimeout(async function() {
         const apoelLabel = document.querySelector('#ideogramLabel__c18_a1');
         apoelLabel.dispatchEvent(new Event('mouseover'));
-        const subparts = document.querySelectorAll('rect.subpart');
-        const exon3 = subparts[6];
-        exon3.dispatchEvent(new Event('mouseenter')); // hover over exon
 
+        // Mimic real user action
         const container =
           document.querySelector('._ideoGeneStructureContainer');
         container.dispatchEvent(new Event('mouseenter'));
-        const footer = document.querySelector('._ideoGeneStructureFooter');
-        assert.equal(footer.textContent, 'Exon 3 of 4 | 192 bp');
 
+        // Navigate by hovering with cursor
+        const subparts = document.querySelectorAll('rect.subpart');
+        const exon3 = subparts[4];
+        exon3.dispatchEvent(new Event('mouseenter')); // hover over exon
+        const footer = document.querySelector('._ideoGeneStructureFooter');
+        const exonText = footer.textContent.slice(0, 20);
+        assert.equal(exonText, 'Exon 3 of 4 | 193 bp');
+
+        // Navigate subparts by pressing arrow key
         const left = new KeyboardEvent('keydown', {key: 'ArrowLeft'});
-        exon3.dispatchEvent(left);
+        document.dispatchEvent(left);
+        console.log(footer.textContent)
+        const exonText2 = footer.textContent;
+        assert.equal(
+          exonText2,
+          'Exon 2 of 4 | 66 bp' +
+          'Transcript name: APOE-201' +
+          'Exons: 4 | Biotype: protein coding | Strand: +'
+        );
         done();
-      }, 200);
+      }, 500);
     }
 
     function onClickAnnot(annot) {

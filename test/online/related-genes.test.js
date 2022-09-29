@@ -109,11 +109,11 @@ describe('Ideogram related genes kit', function() {
                   document.querySelectorAll('._ideoGeneStructure');
                 assert.equal(structures.length, 1);
                 done();
-              }, 100);
+              }, 500);
 
-            }, 100);
-          }, 100);
-        }, 100);
+            }, 500);
+          }, 500);
+        }, 500);
       }, 1000);
 
 
