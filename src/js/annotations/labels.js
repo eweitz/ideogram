@@ -379,7 +379,7 @@ function fillAnnotLabels(sortedAnnots=[]) {
     const layout = getAnnotLabelLayout(annot, ideo);
 
     if (layout === null) {
-      console.log(annot.name + ' has null layout')
+      console.debug(annot.name + ' has null layout')
       return;
     }
 

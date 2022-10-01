@@ -102,12 +102,18 @@ describe('Ideogram related genes kit', function() {
                 tooltip = document.querySelector('#_ideogramTooltip');
                 assert.include(tooltip.textContent, 'Interacts with BRCA1 in');
 
+                const structureContainer =
+                  document.querySelector('._ideoGeneStructureContainer');
+                structureContainer.dispatchEvent(new Event('mouseover'));
+                const structures =
+                  document.querySelectorAll('._ideoGeneStructure');
+                assert.equal(structures.length, 1);
                 done();
-              }, 1000);
+              }, 500);
 
-            }, 1000);
-          }, 1000);
-        }, 1000);
+            }, 500);
+          }, 500);
+        }, 500);
       }, 1000);
 
 
