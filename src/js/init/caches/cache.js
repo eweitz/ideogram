@@ -20,7 +20,9 @@ import {parseCache as parseInteractionCache} from './interaction-cache-worker';
 import {
   parseCache as parseGeneStructureCache
 } from './gene-structure-cache-worker';
-
+import {
+  parseCache as parseRegulationCache
+} from './regulation-cache-worker';
 
 /**
  * Populates in-memory content caches from on-disk service worker (SW) caches.
@@ -61,6 +63,7 @@ export async function initCaches(ideo) {
 
     if (config.showGeneStructureInTooltip) {
       cacheFactory('geneStructure', organism, ideo, cacheDir);
+      cacheFactory('regulation', organism, ideo, cacheDir);
     }
 
     return cachePromise;
@@ -71,6 +74,7 @@ export async function initCaches(ideo) {
     cacheFactory('interaction', organism, ideo, cacheDir);
     if (config.showGeneStructureInTooltip) {
       cacheFactory('geneStructure', organism, ideo, cacheDir);
+      cacheFactory('regulation', organism, ideo, cacheDir);
     }
   }
 }
@@ -99,6 +103,12 @@ const allCacheProps = {
     fn: setGeneStructureCache,
     // worker: geneStructureCacheWorker // Uncomment when workers work
     parseFn: parseGeneStructureCache // Remove when workers work
+  },
+  regulation: {
+    metadata: 'Regulation', dir: 'regulation',
+    fn: setRegulationCache,
+    // worker: geneStructureCacheWorker // Uncomment when workers work
+    parseFn: parseRegulationCache // Remove when workers work
   }
 };
 
@@ -135,6 +145,11 @@ function setInteractionCache(parsedCache, ideo) {
 function setGeneStructureCache(parsedCache, ideo) {
   const featuresByGene = parsedCache;
   ideo.geneStructureCache = featuresByGene;
+}
+
+function setRegulationCache(parsedCache, ideo) {
+  const featuresByChr = parsedCache;
+  ideo.regulationCache = featuresByChr;
 }
 
 async function cacheFactory(cacheName, orgName, ideo, cacheDir=null) {

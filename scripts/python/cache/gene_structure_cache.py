@@ -4,11 +4,9 @@ Ideogram uses cached gene data to drastically simplify and speed up rendering.
 """
 
 import argparse
-import codecs
 import csv
 import gzip
 import os
-import re
 import sys
 import urllib.request
 from urllib.parse import quote
