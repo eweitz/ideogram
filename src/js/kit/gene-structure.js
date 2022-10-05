@@ -343,6 +343,31 @@ function toggleSplice(ideo) {
   nameDOM.title = title;
 }
 
+function getTranscriptCoordinates(gene, ideo, spliceExons=false) {
+  const geneStructure = ideo.geneStructureCache[gene];
+  const strand = geneStructure.strand;
+
+  const rawSubparts = geneStructure.subparts;
+  let subparts = rawSubparts.sort((a, b) => {
+    return a[1] - b[1];
+  });
+
+  if (spliceExons) {
+    subparts = spliceOut(subparts);
+  } else {
+    subparts = spliceIn(subparts);
+  }
+
+  const lastSubpart = subparts.slice(-1)[0];
+  const lengthBp = lastSubpart[1] + lastSubpart[2];
+
+  const lengthPx = 250;
+
+  const bpPerPx = lengthBp / lengthPx;
+
+  return {strand, subparts, lengthBp, lengthPx, bpPerPx};
+}
+
 function getGeneStructureSvg(gene, ideo, spliceExons=false) {
   if (
     'geneStructureCache' in ideo === false ||
@@ -352,32 +377,18 @@ function getGeneStructureSvg(gene, ideo, spliceExons=false) {
   }
 
   const geneStructure = ideo.geneStructureCache[gene];
-  const strand = geneStructure.strand;
+  const {strand, subparts, lengthBp, lengthPx, bpPerPx} =
+    getTranscriptCoordinates(gene, ideo, spliceExons);
 
-  const subparts = geneStructure.subparts;
-  let sortedSubparts = subparts.sort((a, b) => {
-    return a[1] - b[1];
-  });
+  let sortedSubparts = subparts;
 
-  if (spliceExons) {
-    sortedSubparts = spliceOut(sortedSubparts);
-  } else {
-    sortedSubparts = spliceIn(sortedSubparts);
-  }
+  const featureLengthPx = lengthPx;
 
   const spliceToggle = document.querySelector('._ideoSpliceToggle');
   if (spliceToggle) {
     const title = getSpliceToggleHoverTitle(spliceExons);
     spliceToggle.title = title;
   }
-
-
-  const lastSubpart = sortedSubparts.slice(-1)[0];
-  const featureLengthBp = lastSubpart[1] + lastSubpart[2];
-
-  const featureLengthPx = 250;
-
-  const bpPerPx = featureLengthBp / featureLengthPx;
 
   const y = 15;
   const intronHeight = 1;
@@ -517,6 +528,55 @@ function getGeneStructureSvg(gene, ideo, spliceExons=false) {
   return geneStructureSvg;
 }
 
+/**
+ * TODO:
+ * - Update gene structure cache with transcript start offset from gene start
+ */
+function getRegulationSvg(annot, ideo, spliceExons=false) {
+  const transcript = getTranscriptCoordinates(annot.name, ideo, spliceExons);
+  const regFeats = ideo.regulationCache[annot.chr];
+
+  const geneStart = annot.start;
+
+  const window = 1_000_000; // 1 Mbp
+  const narrowWindow = 2000; // 2 kbp, same as GTEx
+
+  const cisRegFeats = [];
+  const narrowCisRegFeats = [];
+  const containedRegFeats = [];
+
+  for (let i = 0; i < regFeats.length; i++) {
+    const regFeat = regFeats[i];
+    const regStart = regFeat[1];
+    const distance = geneStart - regStart;
+    if (distance >= -window && distance <= window) {
+      cisRegFeats.push(regFeat);
+      const regStop = regStart + regFeat[2];
+      const regBefore = regStart - annot.start; // offset from start
+      const regAfter = regStop - annot.stop; // offset from stop
+      if (regBefore >= narrowWindow && regAfter <= narrowWindow) {
+        narrowCisRegFeats.push(regFeat);
+        if (regBefore >= 0 && regAfter <= 0) {
+          containedRegFeats.push(regFeat);
+        }
+      }
+    }
+  }
+
+  const rects = [];
+  // for (let i = 0; i < containedRegFeats.length; i++) {
+  //   const startOffset =
+  // }
+  console.log('cis-regulation features:');
+  console.log(cisRegFeats);
+
+  console.log('narrow cis-regulation features:');
+  console.log(narrowCisRegFeats);
+
+  console.log('Contained regulation features:');
+  console.log(containedRegFeats);
+}
+
 export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
   let geneStructureHtml = '';
   if (ideo.config.showGeneStructureInTooltip && !isParalogNeighborhood) {
@@ -524,6 +584,7 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
     const spliceExons = ideo.spliceExons;
     const gene = annot.name;
     const geneStructureSvg = getGeneStructureSvg(gene, ideo, spliceExons);
+    const regulationSvg = getRegulationSvg(annot, ideo, spliceExons);
     if (geneStructureSvg) {
       const cls = 'class="_ideoGeneStructureContainer"';
       const toggle = getSpliceToggle(ideo);

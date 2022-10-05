@@ -35,7 +35,6 @@ export function parseCache(rawTsv, perfTimes) {
 
     // Parse header
     if (line[0] === '#') {
-
       // Parse metainformation headers
       if (line[1] === '#') {
         const [metaHeader, keys] = parseMetainformationHeader(line);
