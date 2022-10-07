@@ -268,7 +268,7 @@ function getSpliceToggle(ideo) {
   return label;
 }
 
-/** Splice exons in transcript, removing introns */
+/** Splice exons in transcript, removing introns; add positions */
 function spliceOut(subparts) {
   const splicedSubparts = [];
   let prevEnd = 0;
@@ -293,10 +293,11 @@ function spliceOut(subparts) {
     prevEnd = splicedEnd;
     prevStart = splicedStart;
   }
-  return splicedSubparts;
+  const splicedPositionedSubparts = addPositions(splicedSubparts);
+  return splicedPositionedSubparts;
 }
 
-/** Insert introns to transcript, making introns explicit subparts */
+/** Insert introns to transcript; add positions */
 function spliceIn(subparts) {
   const splicedSubparts = [];
   let prevEnd = 0;
@@ -311,7 +312,8 @@ function spliceIn(subparts) {
     prevEnd = start + length;
     splicedSubparts.push(subpart);
   }
-  return splicedSubparts;
+  const splicedPositionedSubparts = addPositions(splicedSubparts);
+  return splicedPositionedSubparts;
 }
 
 function getSpliceStateText(spliceExons) {
@@ -326,55 +328,60 @@ function getSpliceStateText(spliceExons) {
   return {title, name};
 }
 
+/** Draw introns in initial splice toggle from mRNA to pre-mRNA */
+function drawIntrons(prelimSubparts) {
+  let numInserted = 0;
+  const subpartEls = document.querySelectorAll('.subpart');
+  document.querySelectorAll('.subpart').forEach((subpartEl, i) => {
+    if (i >= prelimSubparts.length - 1) return;
+    const nextPos = prelimSubparts[i + 1];
+    if (nextPos[0] === 'intron') {
+      // const posAttrs = `x="${nextPos.x}" width="${nextPos.width}"`;
+      const otherAttrs = 'y="15" height="20" fill="#FFFFFF00"';
+      const intronRect =
+        // `<rect class="subpart intron" ${posAttrs} ${otherAttrs} />`;
+        `<rect class="subpart intron" ${otherAttrs} />`;
+      subpartEls[i - numInserted].insertAdjacentHTML('afterend', intronRect);
+      numInserted += 1;
+    }
+  });
+}
+
 function toggleSplice(ideo) {
   const geneDom = document.querySelector('#ideo-related-gene');
   const gene = geneDom.textContent;
   ideo.spliceExons = !ideo.spliceExons;
   const spliceExons = ideo.spliceExons;
-  const [svg, prelimPositions, maturePositions] =
+  const [svg, prelimSubparts, matureSubparts] =
     getGeneStructureSvg(gene, ideo, spliceExons);
 
-  const rawMatures = maturePositions.slice();
+  const rawMatures = matureSubparts.slice();
   console.log('rawMatures', rawMatures);
-  prelimPositions.forEach((pos, i) => {
-    if (pos.type === 'intron') {
-      const prevMatX = maturePositions[i - 1].x;
-      const nullIntron = {type: 'intron', x: prevMatX, width: 0}
-      maturePositions.splice(i, 0, nullIntron);
+  prelimSubparts.forEach((pos, i) => {
+    if (pos[0] === 'intron') {
+      const prevMatX = matureSubparts[i - 1][3].x;
+      const nullIntron = ['intron', 0, 0, {x: prevMatX, width: 0}];
+      matureSubparts.splice(i, 0, nullIntron);
     }
   });
 
   const addedIntrons = document.querySelectorAll('.subpart.intron').length > 0;
   if (!spliceExons && !addedIntrons) {
-    let numInserted = 0;
-    const subpartEls = document.querySelectorAll('.subpart');
-    document.querySelectorAll('.subpart').forEach((subpartEl, i) => {
-      if (i >= prelimPositions.length - 1) return;
-      const nextPos = prelimPositions[i + 1];
-      if (nextPos.type === 'intron') {
-        // const posAttrs = `x="${nextPos.x}" width="${nextPos.width}"`;
-        const otherAttrs = 'y="15" height="20" fill="#FFFFFF00"';
-        const intronRect =
-          // `<rect class="subpart intron" ${posAttrs} ${otherAttrs} />`;
-          `<rect class="subpart intron" ${otherAttrs} />`;
-        subpartEls[i - numInserted].insertAdjacentHTML('afterend', intronRect);
-        numInserted += 1;
-      }
-    });
+    drawIntrons(prelimSubparts);
   }
 
-  console.log('prelimPositions', prelimPositions);
-  console.log('maturePositions', maturePositions);
+  // console.log('prelimSubparts', prelimSubparts);
+  // console.log('matureSubparts', matureSubparts);
 
-  const positions = spliceExons ? maturePositions : prelimPositions;
+  const subparts = spliceExons ? matureSubparts : prelimSubparts;
 
   d3.select('._ideoGeneStructure').selectAll('.subpart')
-    .data(positions)
+    .data(subparts)
     .transition()
-    .attr('x', (d, i) => positions[i].x)
-    .attr('width', (d, i) => positions[i].width)
+    .attr('x', (d, i) => subparts[i][3].x)
+    .attr('width', (d, i) => subparts[i][3].width)
     .on('end', (d, i) => {
-      if (i !== positions.length - 1) return;
+      if (i !== subparts.length - 1) return;
       // document.querySelector('._ideoGeneStructure').innerHTML = svg;
 
       const nameDOM =
@@ -390,9 +397,7 @@ function toggleSplice(ideo) {
     });
 }
 
-function getPositions(subparts) {
-  const positions = [];
-
+function addPositions(subparts) {
   const lastSubpart = subparts.slice(-1)[0];
   const featureLengthBp = lastSubpart[1] + lastSubpart[2];
 
@@ -402,16 +407,20 @@ function getPositions(subparts) {
 
   for (let i = 0; i < subparts.length; i++) {
     const subpart = subparts[i];
-    const subpartType = subpart[0];
+    if (subpart.length !== 3) continue;
     // Define subpart position, tooltip footer
     const lengthBp = subpart[2];
-    const left = subpart[1] / bpPerPx;
-    const length = lengthBp / bpPerPx;
+    const x = subpart[1] / bpPerPx;
+    const width = lengthBp / bpPerPx;
 
-    positions.push({type: subpartType, x: left, width: length});
+    subparts[i].push({x, width});
   }
 
-  return positions;
+  return subparts;
+}
+
+function getSubpartBorderLine(subpart) {
+
 }
 
 function getGeneStructureSvg(gene, ideo, spliceExons=false) {
@@ -446,12 +455,7 @@ function getGeneStructureSvg(gene, ideo, spliceExons=false) {
     spliceToggle.title = title;
   }
 
-  const lastSubpart = subparts.slice(-1)[0];
-  const featureLengthBp = lastSubpart[1] + lastSubpart[2];
-
   const featureLengthPx = 250;
-
-  const bpPerPx = featureLengthBp / featureLengthPx;
 
   const y = 15;
   const intronHeight = 1;
@@ -515,8 +519,11 @@ function getGeneStructureSvg(gene, ideo, spliceExons=false) {
   matureSubparts = swapUTRsForward(matureSubparts, isPositiveStrand);
 
   // Container for positional data: x, width
-  const prelimPositions = getPositions(prelimSubparts);
-  const maturePositions = getPositions(matureSubparts);
+  // const prelimPositions = getPositions(prelimSubparts);
+  // const maturePositions = getPositions(matureSubparts);
+
+  // matureSubparts = matureSubparts.filter(p => p[0] !== 'intron');
+  // const positions = spliceExons ? trimmedMatures : prelimPositions;
 
   // Get counts for e.g. "4" in "Exon 2 of 4"
   for (let i = 0; i < subparts.length; i++) {
@@ -529,6 +536,7 @@ function getGeneStructureSvg(gene, ideo, spliceExons=false) {
 
   for (let i = 0; i < subparts.length; i++) {
     const subpart = subparts[i];
+    // const position = positions[i];
     const subpartType = subpart[0];
     let color = intronColor;
     if (subpartType in colors) {
@@ -542,10 +550,10 @@ function getGeneStructureSvg(gene, ideo, spliceExons=false) {
 
     // Define subpart position, tooltip footer
     const lengthBp = subpart[2];
-    const left = subpart[1] / bpPerPx;
-    const length = lengthBp / bpPerPx;
+    const x = subpart[3].x;
+    const width = subpart[3].width;
 
-    const pos = `x="${left}" width="${length}" y="${y}" height="${height}"`;
+    const pos = `x="${x}" width="${width}" y="${y}" height="${height}"`;
     const cls = `class="subpart ${classes[subpartType]}" `;
 
     let data = ''; // TODO: Handle introns better, refine CDS vs. UTR in exons
@@ -564,7 +572,7 @@ function getGeneStructureSvg(gene, ideo, spliceExons=false) {
     const lineHeight = y + height;
     const lineStroke = `stroke="${lineColors[subpartType]}"`;
     const lineAttrs = // "";
-      `x1="${left}" x2="${left}" y1="${y}" y2="${lineHeight}" ${lineStroke}`;
+      `x1="${x}" x2="${x}" y1="${y}" y2="${lineHeight}" ${lineStroke}`;
 
     const subpartSvg = (
       `<rect ${cls} rx="1.5" fill="${color}" ${pos} ${data}/>` +
@@ -596,7 +604,7 @@ function getGeneStructureSvg(gene, ideo, spliceExons=false) {
       geneStructureArray.join('') +
     '</svg>';
 
-  return [geneStructureSvg, prelimPositions, maturePositions];
+  return [geneStructureSvg, prelimSubparts, matureSubparts];
 }
 
 export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
