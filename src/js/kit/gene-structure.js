@@ -8,6 +8,7 @@ function toggleSpliceByKeyboard(event) {
   }
 }
 
+/** Listen for keydown and click on / change to splice toggle input */
 function addSpliceToggleListeners(ideo) {
   document.addEventListener('keydown', toggleSpliceByKeyboard);
 
@@ -23,6 +24,7 @@ function addSpliceToggleListeners(ideo) {
   });
 }
 
+/** Helper for keyboard navigation */
 function nextIsOutOfSubpartBounds(i, subparts, key) {
   const isLeft = key === 'left';
   return (
@@ -48,8 +50,8 @@ function swapUTRsForward(subparts, isPositiveStrand) {
     const utr5 = "5'-UTR";
     const utr3 = "3'-UTR";
     if (
-      !isPositiveStrand && prevSubpart[0] === utr3 && subpart[0] !== utr3 ||
-      isPositiveStrand && prevSubpart[0] === utr5 && subpart[0] !== utr5
+      !isPositiveStrand && prevSubpart[0] === utr3 && subpart[0] === 'exon' ||
+      isPositiveStrand && prevSubpart[0] === utr5 && subpart[0] === 'exon'
     ) {
       swappedSubparts[i] = prevSubpart;
       swappedSubparts[i - 1] = subpart;
@@ -60,7 +62,25 @@ function swapUTRsForward(subparts, isPositiveStrand) {
 }
 
 function has(element, cls) {
-  return element.classList.contains(cls)
+  return element.classList.contains(cls);
+}
+
+function shouldSwapBackDOM(subpart, nextSubpart, isPositiveStrand) {
+  const utr5 = 'five-prime-utr';
+  const utr3 = 'three-prime-utr';
+  return (
+    !isPositiveStrand && has(nextSubpart, utr3) && !has(subpart, utr3) ||
+    isPositiveStrand && has(nextSubpart, utr5) && !has(subpart, utr5)
+  );
+}
+
+function shouldSwapBackData(subpart, nextSubpart, isPositiveStrand) {
+  const utr5 = "5'-UTR";
+  const utr3 = "3'-UTR";
+  return (
+    !isPositiveStrand && nextSubpart[0] === utr3 && subpart[0] !== utr3 ||
+    isPositiveStrand && nextSubpart[0] === utr5 && subpart[0] !== utr5
+  );
 }
 
 /**
@@ -73,12 +93,11 @@ function swapUTRsBack(subparts, isPositiveStrand) {
   subparts.forEach((subpart, i) => {
     if (i === swappedSubparts.length - 1) return;
     const nextSubpart = subparts[i + 1];
-    const utr5 = 'five-prime-utr';
-    const utr3 = 'three-prime-utr';
-    if (
-      !isPositiveStrand && has(nextSubpart, utr3) && !has(subpart, utr3) ||
-      isPositiveStrand && has(nextSubpart, utr5) && !has(subpart, utr5)
-    ) {
+    let shouldSwapBack = shouldSwapBackDOM;
+    if (Array.isArray(nextSubpart)) {
+      shouldSwapBack = shouldSwapBackData;
+    }
+    if (shouldSwapBack(subpart, nextSubpart, isPositiveStrand)) {
       swappedSubparts.splice(i, 1, nextSubpart);
       swappedSubparts.splice(i + 1, 1, subpart);
     }
@@ -355,23 +374,12 @@ function toggleSplice(ideo) {
   const [svg, prelimSubparts, matureSubparts] =
     getGeneStructureSvg(gene, ideo, spliceExons);
 
-  const rawMatures = matureSubparts.slice();
-  console.log('rawMatures', rawMatures);
-  prelimSubparts.forEach((pos, i) => {
-    if (pos[0] === 'intron') {
-      const prevMatX = matureSubparts[i - 1][3].x;
-      const nullIntron = ['intron', 0, 0, {x: prevMatX, width: 0}];
-      matureSubparts.splice(i, 0, nullIntron);
-    }
-  });
-
-  const addedIntrons = document.querySelectorAll('.subpart.intron').length > 0;
+  const addedIntrons = document.querySelectorAll('.intron').length > 0;
   if (!spliceExons && !addedIntrons) {
     drawIntrons(prelimSubparts);
+  } else {
+    document.querySelectorAll('.intron').forEach(el => el.remove());
   }
-
-  // console.log('prelimSubparts', prelimSubparts);
-  // console.log('matureSubparts', matureSubparts);
 
   const subparts = spliceExons ? matureSubparts : prelimSubparts;
 
@@ -412,8 +420,9 @@ function addPositions(subparts) {
     const lengthBp = subpart[2];
     const x = subpart[1] / bpPerPx;
     const width = lengthBp / bpPerPx;
+    const type = subpart[0];
 
-    subparts[i].push({x, width});
+    subparts[i].push({type, x, width});
   }
 
   return subparts;
