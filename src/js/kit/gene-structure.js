@@ -22,6 +22,40 @@ const lineColors = {
   "3'-UTR": '#90C0B9'
 };
 
+const css =
+  `<style>
+  ._ideoGeneStructureContainerName {
+    margin-left: 81px;
+  }
+  ._ideoGeneStructureContainerName.pre-mRNA {
+    margin-left: 69px;
+  }
+  ._ideoGeneStructureContainer rect:hover + line {
+    visibility: hidden;
+  }
+  ._ideoGeneStructureContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+  ._ideoGeneStructureContainer:hover ._ideoSpliceToggle {
+    visibility: visible;
+  }
+  ._ideoGeneStructureContainer ._ideoSpliceToggle {
+    visibility: hidden;
+  }
+  ._ideoSpliceToggle {
+    margin-left: 53px; background-color: #EEE;
+  }
+  ._ideoSpliceToggle.pre-mRNA {
+    margin-left: 43px; background-color: #F8F8F8;
+  }
+  ._ideoHoveredSubpart {
+    stroke: #D0D0DD !important; stroke-width: 3px;
+  }
+  </style>`;
+
 
 function toggleSpliceByKeyboard(event) {
   if (event.key === 's') {
@@ -414,12 +448,15 @@ function toggleSplice(ideo) {
     .attr('width', (d, i) => subparts[i][3].width)
     .on('end', (d, i) => {
       if (i !== subparts.length - 1) return;
+
+      // Restore subpart boundary lines
       document.querySelectorAll('.subpart').forEach((subpartDOM, i) => {
         const subpart = subparts[i];
         const line = getSubpartBorderLine(subpart);
         subpartDOM.insertAdjacentHTML('afterend', line);
       });
 
+      // Update title for gene structure diagram
       const nameDOM =
         document.querySelector('._ideoGeneStructureContainerName');
       const toggleDOM = document.querySelector('._ideoSpliceToggle');
@@ -638,38 +675,7 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
       const spanAttrs = `${spanClass} title="${title}"`;
       geneStructureHtml =
         '<br/><br/>' +
-        '<style>' +
-          '._ideoGeneStructureContainerName {' +
-            'margin-left: 81px;' +
-          '}' +
-          '._ideoGeneStructureContainerName.pre-mRNA {' +
-            'margin-left: 69px;' +
-          '}' +
-          '._ideoGeneStructureContainer rect:hover + line {' +
-            'visibility: hidden;' +
-          '}' +
-          '._ideoGeneStructureContainer {' +
-            'display: flex;' +
-            'justify-content: center;' +
-            'align-items: center;' +
-            'flex-direction: column;' +
-          '}' +
-          '._ideoGeneStructureContainer:hover ._ideoSpliceToggle {' +
-            'visibility: visible;' +
-          '} ' +
-          '._ideoGeneStructureContainer ._ideoSpliceToggle {' +
-            'visibility: hidden;' +
-          '}' +
-          '._ideoSpliceToggle {' +
-            'margin-left: 53px; background-color: #EEE;' +
-          '}' +
-          '._ideoSpliceToggle.pre-mRNA {' +
-            'margin-left: 43px; background-color: #F8F8F8;' +
-          '}' +
-          '._ideoHoveredSubpart {' +
-            'stroke: #D0D0DD !important; stroke-width: 3px;' +
-          '}' +
-          '</style>' +
+        css +
         `<div ${cls}>` +
         `<div><span ${spanAttrs}>${name}</span>${toggle}</div>` +
         `${geneStructureSvg}` +
