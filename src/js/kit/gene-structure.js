@@ -1,5 +1,28 @@
 import {d3} from '../lib';
 
+const y = 15;
+
+const heights = {
+  "5'-UTR": 20,
+  'exon': 20,
+  'intron': 20,
+  "3'-UTR": 20
+};
+
+const colors = {
+  "5'-UTR": '#155069',
+  'exon': '#DAA521',
+  "intron": '#FFFFFF00',
+  "3'-UTR": '#357089'
+};
+
+const lineColors = {
+  "5'-UTR": '#70A099',
+  'exon': '#BA8501',
+  "3'-UTR": '#90C0B9'
+};
+
+
 function toggleSpliceByKeyboard(event) {
   if (event.key === 's') {
     const spliceToggle = document.querySelector('._ideoSpliceToggle input');
@@ -380,6 +403,7 @@ function toggleSplice(ideo) {
   } else {
     document.querySelectorAll('.intron').forEach(el => el.remove());
   }
+  document.querySelectorAll('.subpart-line').forEach(el => el.remove());
 
   const subparts = spliceExons ? matureSubparts : prelimSubparts;
 
@@ -390,7 +414,11 @@ function toggleSplice(ideo) {
     .attr('width', (d, i) => subparts[i][3].width)
     .on('end', (d, i) => {
       if (i !== subparts.length - 1) return;
-      // document.querySelector('._ideoGeneStructure').innerHTML = svg;
+      document.querySelectorAll('.subpart').forEach((subpartDOM, i) => {
+        const subpart = subparts[i];
+        const line = getSubpartBorderLine(subpart);
+        subpartDOM.insertAdjacentHTML('afterend', line);
+      });
 
       const nameDOM =
         document.querySelector('._ideoGeneStructureContainerName');
@@ -429,7 +457,15 @@ function addPositions(subparts) {
 }
 
 function getSubpartBorderLine(subpart) {
-
+  const subpartType = subpart[0];
+  // Define subpart border
+  const x = subpart[3].x;
+  const height = heights[subpartType];
+  const lineHeight = y + height;
+  const lineStroke = `stroke="${lineColors[subpartType]}"`;
+  const lineAttrs = // "";
+    `x1="${x}" x2="${x}" y1="${y}" y2="${lineHeight}" ${lineStroke}`;
+  return `<line class="subpart-line" ${lineAttrs} />`;
 }
 
 function getGeneStructureSvg(gene, ideo, spliceExons=false) {
@@ -466,29 +502,8 @@ function getGeneStructureSvg(gene, ideo, spliceExons=false) {
 
   const featureLengthPx = 250;
 
-  const y = 15;
   const intronHeight = 1;
   const intronColor = 'black';
-  const heights = {
-    "5'-UTR": 20,
-    'exon': 20,
-    'intron': 20,
-    "3'-UTR": 20
-  };
-
-  const colors = {
-    "5'-UTR": '#155069',
-    'exon': '#DAA521',
-    "intron": '#FFFFFF00',
-    "3'-UTR": '#357089',
-  };
-
-  const lineColors = {
-    "5'-UTR": '#70A099',
-    'exon': '#BA8501',
-    "3'-UTR": '#90C0B9'
-  };
-
   const geneStructureArray = [];
 
   const intronPosAttrs =
@@ -504,19 +519,19 @@ function getGeneStructureSvg(gene, ideo, spliceExons=false) {
     'exon': 0,
     'intron': 0,
     "3'-UTR": 0
-  }
+  };
   const totalBySubpart = {
     "5'-UTR": 0,
     'exon': 0,
     'intron': 0,
     "3'-UTR": 0
-  }
+  };
   const classes = {
     "5'-UTR": 'five-prime-utr',
     'exon': 'exon',
     "3'-UTR": 'three-prime-utr',
     'intron': 'intron'
-  }
+  };
 
   // Subtle visual delimiter; separates horizontally adjacent fields in UI
   const pipe = `<span style='color: #CCC'>|</span>`;
@@ -551,11 +566,8 @@ function getGeneStructureSvg(gene, ideo, spliceExons=false) {
     if (subpartType in colors) {
       color = colors[subpartType];
     }
-    let height = intronHeight;
-    // const y = subpartType === 'exon' ? 0 : 2.5;
-    if (subpartType in heights) {
-      height = heights[subpartType];
-    }
+
+    const height = heights[subpartType];
 
     // Define subpart position, tooltip footer
     const lengthBp = subpart[2];
@@ -577,15 +589,9 @@ function getGeneStructureSvg(gene, ideo, spliceExons=false) {
       data = `data-subpart="${html}"`;
     }
 
-    // Define subpart border
-    const lineHeight = y + height;
-    const lineStroke = `stroke="${lineColors[subpartType]}"`;
-    const lineAttrs = // "";
-      `x1="${x}" x2="${x}" y1="${y}" y2="${lineHeight}" ${lineStroke}`;
-
     const subpartSvg = (
       `<rect ${cls} rx="1.5" fill="${color}" ${pos} ${data}/>` +
-      `<line ${lineAttrs} />`
+      getSubpartBorderLine(subpart)
     );
     geneStructureArray.push(subpartSvg);
   }
