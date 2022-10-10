@@ -251,6 +251,39 @@ function navigateSubparts(event) {
   event.preventDefault();
 }
 
+function getFooter() {
+  return document.querySelector('._ideoGeneStructureFooter');
+}
+
+function addSubpartHoverListener(subpartDOM, ideo) {
+  const subpart = subpartDOM;
+  // On hovering over subpart, highlight it and show details
+  subpart.addEventListener('mouseenter', event => {
+    removeHighlights();
+
+    // Highlight hovered subpart, adding an aura around it
+    event.target.classList.add('_ideoHoveredSubpart');
+
+    // Show details
+    const footer = getFooter();
+    ideo.originalTooltipFooter = footer.innerHTML;
+    const subpartText = subpart.getAttribute('data-subpart');
+    const trimmedFoot =
+      footer.innerHTML
+        .replace('&nbsp;', '')
+        .replace('<br>Transcript name', 'Transcript name');
+    footer.innerHTML = `<br/>${subpartText}${trimmedFoot}`;
+  });
+
+  // On hovering out, de-highlight and hide details
+  subpart.addEventListener('mouseleave', event => {
+    event.target.classList.remove('_ideoHoveredSubpart');
+    const footer = getFooter();
+    footer.innerHTML = ideo.originalTooltipFooter;
+  });
+}
+
+
 /**
  * Add handlers for hover events in transcript container and beneath, e.g.:
  *
@@ -260,15 +293,13 @@ function navigateSubparts(event) {
  * - Navigate to previous or next subpart on pressing left or right arrow keys
  */
 function addHoverListeners(ideo) {
+
   const subparts = document.querySelectorAll('rect.subpart');
   if (subparts.length === 0) return; // E.g. paralog neighborhoods, lncRNA
 
   ideo.subparts = subparts;
 
   const container = document.querySelector('._ideoGeneStructureContainer');
-  function getFooter() {
-    return document.querySelector('._ideoGeneStructureFooter');
-  }
 
   container.addEventListener('mouseenter', event => {
     const footer = getFooter();
@@ -284,32 +315,11 @@ function addHoverListeners(ideo) {
     document.removeEventListener('keydown', navigateSubparts);
   });
 
-  subparts.forEach((subpart, i) => {
+  if (ideo.addedSubpartListeners) return;
+  ideo.addedSubpartListeners = true;
 
-    // On hovering over subpart, highlight it and show details
-    subpart.addEventListener('mouseenter', event => {
-      removeHighlights();
-
-      // Highlight hovered subpart, adding an aura around it
-      event.target.classList.add('_ideoHoveredSubpart');
-
-      // Show details
-      const footer = getFooter();
-      ideo.originalTooltipFooter = footer.innerHTML;
-      const subpartText = subpart.getAttribute('data-subpart');
-      const trimmedFoot =
-        footer.innerHTML
-          .replace('&nbsp;', '')
-          .replace('<br>Transcript name', 'Transcript name');
-      footer.innerHTML = `<br/>${subpartText}${trimmedFoot}`;
-    });
-
-    // On hovering out, de-highlight and hide details
-    subpart.addEventListener('mouseleave', event => {
-      event.target.classList.remove('_ideoHoveredSubpart');
-      const footer = getFooter();
-      footer.innerHTML = ideo.originalTooltipFooter;
-    });
+  subparts.forEach(subpart => {
+    addSubpartHoverListener(subpart, ideo);
   });
 }
 
@@ -406,7 +416,7 @@ function getSpliceStateText(spliceExons) {
 
 
 /** Draw introns in initial splice toggle from mRNA to pre-mRNA */
-function drawIntrons(prelimSubparts, matureSubparts) {
+function drawIntrons(prelimSubparts, matureSubparts, ideo) {
   // Hypothetical example data, in shorthand
   // pres = [u5_1, e1, i1, e2, i2, e3, i3, e4, i4, e5, i5, e6, u3_1]
   // mats = [u5_1, e1, e2, e3, e4, e5, e6, u3_1]
@@ -417,13 +427,18 @@ function drawIntrons(prelimSubparts, matureSubparts) {
     const matureIndex = i - numInserted;
     const matureSubpart = matureSubparts[matureIndex];
     if (matureSubpart[0] !== prelimSubpart[0]) {
-      const otherAttrs = 'y="15" height="20" fill="#FFFFFF00"';
+      const summary = prelimSubpart[3].summary;
+      const otherAttrs = `y="15" height="20" fill="#FFFFFF00" ${summary}`;
       const intronRect =
         `<rect class="subpart intron" ${otherAttrs} />`;
       subpartEls[matureIndex].insertAdjacentHTML('beforebegin', intronRect);
       numInserted += 1;
     }
   });
+
+  document.querySelectorAll('.intron').forEach(subpartDOM => {
+    addSubpartHoverListener(subpartDOM, ideo);
+  })
 }
 
 function toggleSplice(ideo) {
@@ -436,7 +451,7 @@ function toggleSplice(ideo) {
 
   const addedIntrons = document.querySelectorAll('.intron').length > 0;
   if (!spliceExons && !addedIntrons) {
-    drawIntrons(prelimSubparts, matureSubparts);
+    drawIntrons(prelimSubparts, matureSubparts, ideo);
   } else {
     document.querySelectorAll('.intron').forEach(el => el.remove());
   }
@@ -506,6 +521,10 @@ function getSubpartBorderLine(subpart) {
   const lineAttrs = // "";
     `x1="${x}" x2="${x}" y1="${y}" y2="${lineHeight}" ${lineStroke}`;
   return `<line class="subpart-line" ${lineAttrs} />`;
+}
+
+function getDataSubpartAttr() {
+
 }
 
 function getGeneStructureSvg(gene, ideo, spliceExons=false) {
@@ -617,20 +636,24 @@ function getGeneStructureSvg(gene, ideo, spliceExons=false) {
     const pos = `x="${x}" width="${width}" y="${y}" height="${height}"`;
     const cls = `class="subpart ${classes[subpartType]}" `;
 
-    let data = ''; // TODO: Handle introns better, refine CDS vs. UTR in exons
-    if (subpartType in numBySubpart) {
-      const total = totalBySubpart[subpartType];
-      numBySubpart[subpartType] += 1;
-      let subpartNumber = numBySubpart[subpartType];
-      if (strand === '-') subpartNumber = total - subpartNumber + 1;
-      const numOfTotal = total > 1 ? `${subpartNumber} of ${total} ` : '';
-      const prettyType = subpartType[0].toUpperCase() + subpartType.slice(1);
-      const html = `${prettyType} ${numOfTotal}${pipe} ${lengthBp} bp`;
-      data = `data-subpart="${html}"`;
+    // TODO: Handle introns better, refine CDS vs. UTR in exons
+    const total = totalBySubpart[subpartType];
+    numBySubpart[subpartType] += 1;
+    let subpartNumber = numBySubpart[subpartType];
+    if (strand === '-') subpartNumber = total - subpartNumber + 1;
+    const numOfTotal = total > 1 ? `${subpartNumber} of ${total} ` : '';
+    const prettyType = subpartType[0].toUpperCase() + subpartType.slice(1);
+    const html = `${prettyType} ${numOfTotal}${pipe} ${lengthBp} bp`;
+    const summary = `data-subpart="${html}"`;
+    if (!spliceExons) {
+      prelimSubparts[i][3].summary = summary;
+    } else if (subpartType !== 'intron') {
+      matureSubparts[i][3].summary = summary;
     }
 
+
     const subpartSvg = (
-      `<rect ${cls} rx="1.5" fill="${color}" ${pos} ${data}/>` +
+      `<rect ${cls} rx="1.5" fill="${color}" ${pos} ${summary}/>` +
       getSubpartBorderLine(subpart)
     );
     geneStructureArray.push(subpartSvg);
@@ -665,6 +688,7 @@ function getGeneStructureSvg(gene, ideo, spliceExons=false) {
 export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
   let geneStructureHtml = '';
   if (ideo.config.showGeneStructureInTooltip && !isParalogNeighborhood) {
+    ideo.addedSubpartListeners = false;
     if ('spliceExons' in ideo === false) ideo.spliceExons = true;
     const spliceExons = ideo.spliceExons;
     const gene = annot.name;
