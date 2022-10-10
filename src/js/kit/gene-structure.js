@@ -404,20 +404,23 @@ function getSpliceStateText(spliceExons) {
   return {title, name};
 }
 
+
 /** Draw introns in initial splice toggle from mRNA to pre-mRNA */
-function drawIntrons(prelimSubparts) {
+function drawIntrons(prelimSubparts, matureSubparts) {
+  // Hypothetical example data, in shorthand
+  // pres = [u5_1, e1, i1, e2, i2, e3, i3, e4, i4, e5, i5, e6, u3_1]
+  // mats = [u5_1, e1, e2, e3, e4, e5, e6, u3_1]
+
   let numInserted = 0;
   const subpartEls = document.querySelectorAll('.subpart');
-  document.querySelectorAll('.subpart').forEach((subpartEl, i) => {
-    if (i >= prelimSubparts.length - 1) return;
-    const nextPos = prelimSubparts[i + 1];
-    if (nextPos[0] === 'intron') {
-      // const posAttrs = `x="${nextPos.x}" width="${nextPos.width}"`;
+  prelimSubparts.forEach((prelimSubpart, i) => {
+    const matureIndex = i - numInserted;
+    const matureSubpart = matureSubparts[matureIndex];
+    if (matureSubpart[0] !== prelimSubpart[0]) {
       const otherAttrs = 'y="15" height="20" fill="#FFFFFF00"';
       const intronRect =
-        // `<rect class="subpart intron" ${posAttrs} ${otherAttrs} />`;
         `<rect class="subpart intron" ${otherAttrs} />`;
-      subpartEls[i - numInserted].insertAdjacentHTML('afterend', intronRect);
+      subpartEls[matureIndex].insertAdjacentHTML('beforebegin', intronRect);
       numInserted += 1;
     }
   });
@@ -433,7 +436,7 @@ function toggleSplice(ideo) {
 
   const addedIntrons = document.querySelectorAll('.intron').length > 0;
   if (!spliceExons && !addedIntrons) {
-    drawIntrons(prelimSubparts);
+    drawIntrons(prelimSubparts, matureSubparts);
   } else {
     document.querySelectorAll('.intron').forEach(el => el.remove());
   }
