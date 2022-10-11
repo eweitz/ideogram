@@ -438,7 +438,7 @@ function drawIntrons(prelimSubparts, matureSubparts, ideo) {
 
   document.querySelectorAll('.intron').forEach(subpartDOM => {
     addSubpartHoverListener(subpartDOM, ideo);
-  })
+  });
 }
 
 function toggleSplice(ideo) {
@@ -532,7 +532,7 @@ function getGeneStructureSvg(gene, ideo, spliceExons=false) {
     'geneStructureCache' in ideo === false ||
     gene in ideo.geneStructureCache === false
   ) {
-    return null;
+    return [null];
   }
 
   const geneStructure = ideo.geneStructureCache[gene];
