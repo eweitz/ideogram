@@ -47,6 +47,8 @@ describe('Ideogram gene structure functionality', function() {
 
   it('supports mouse-highlighting and keyboard-navigating subparts', done => {
     async function callback() {
+      console.log('this.onDrawAnnots')
+      console.log(this.onDrawAnnots)
 
       // Positive-stranded gene
       await ideogram.plotRelatedGenes('APOE');

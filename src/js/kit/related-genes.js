@@ -1438,7 +1438,7 @@ function setRelatedDecorPad(kitConfig) {
   return kitConfig;
 }
 
-let kitDefaults = {
+const globalKitDefaults = {
   chrWidth: 9,
   chrHeight: 100,
   chrLabelSize: 12,
@@ -1500,12 +1500,12 @@ function _initRelatedGenes(config, annotsInList) {
     delete config.relatedGenesMode;
   };
 
-  kitDefaults = Object.assign(kitDefaults, {
+  const kitDefaults = Object.assign({
     showParalogNeighborhoods: isHuman,
     relatedGenesMode: 'related',
     useCache: true,
     awaitCache: true
-  });
+  }, globalKitDefaults);
 
   return initSearchIdeogram(kitDefaults, config, annotsInList);
 }
@@ -1526,14 +1526,14 @@ function _initGeneHints(config, annotsInList) {
 
   config.legend = citedLegend;
 
-  kitDefaults = Object.assign(kitDefaults, {
+  const kitDefaults = Object.assign({
     relatedGenesMode: 'hints',
     chrMargin: -4,
     annotationsPath: getDir('cache/homo-sapiens-top-genes.tsv'),
     // annotationsPath: getDir('annotations/gene_leads.tsv'),
     onDrawAnnots: plotGeneHints,
     useCache: true
-  });
+  }, globalKitDefaults);
 
   return initSearchIdeogram(kitDefaults, config, annotsInList);
 }
@@ -1554,14 +1554,14 @@ function _initGeneHints(config, annotsInList) {
 
   config.legend = citedLegend;
 
-  kitDefaults = Object.assign(kitDefaults, {
+  const kitDefaults = Object.assign({
     relatedGenesMode: 'leads',
     chrMargin: -4,
     // annotationsPath: getDir('cache/homo-sapiens-top-genes.tsv'),
     annotationsPath: getDir('annotations/gene_leads.tsv'),
     onDrawAnnots: plotGeneHints,
     useCache: true
-  });
+  }, globalKitDefaults);
 
   return initSearchIdeogram(kitDefaults, config, annotsInList);
 }
