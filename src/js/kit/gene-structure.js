@@ -260,7 +260,6 @@ function addSubpartHoverListener(subpartDOM, ideo) {
   // On hovering over subpart, highlight it and show details
   subpart.addEventListener('mouseenter', event => {
     removeHighlights();
-
     // Highlight hovered subpart, adding an aura around it
     event.target.classList.add('_ideoHoveredSubpart');
 
@@ -478,13 +477,16 @@ function toggleSplice(ideo) {
       const nameDOM =
         document.querySelector('._ideoGeneStructureContainerName');
       const toggleDOM = document.querySelector('._ideoSpliceToggle');
-      [nameDOM, toggleDOM].forEach(el => el.classList.remove('pre-mRNA'));
-      if (!spliceExons) {
-        [nameDOM, toggleDOM].forEach(el => el.classList.add('pre-mRNA'));
+
+      if (nameDOM && toggleDOM) {
+        [nameDOM, toggleDOM].forEach(el => el.classList.remove('pre-mRNA'));
+        if (!spliceExons) {
+          [nameDOM, toggleDOM].forEach(el => el.classList.add('pre-mRNA'));
+        }
+        const {title, name} = getSpliceStateText(spliceExons);
+        nameDOM.textContent = name;
+        nameDOM.title = title;
       }
-      const {title, name} = getSpliceStateText(spliceExons);
-      nameDOM.textContent = name;
-      nameDOM.title = title;
     });
 }
 
