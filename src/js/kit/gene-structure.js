@@ -1,3 +1,62 @@
+import {d3} from '../lib';
+
+const y = 15;
+
+const heights = {
+  "5'-UTR": 20,
+  'exon': 20,
+  'intron': 20,
+  "3'-UTR": 20
+};
+
+const colors = {
+  "5'-UTR": '#155069',
+  'exon': '#DAA521',
+  "intron": '#FFFFFF00',
+  "3'-UTR": '#357089'
+};
+
+const lineColors = {
+  "5'-UTR": '#70A099',
+  'exon': '#BA8501',
+  "3'-UTR": '#90C0B9'
+};
+
+const css =
+  `<style>
+  ._ideoGeneStructureContainerName {
+    margin-left: 81px;
+  }
+  ._ideoGeneStructureContainerName.pre-mRNA {
+    margin-left: 69px;
+  }
+  ._ideoGeneStructureContainer rect:hover + line {
+    visibility: hidden;
+  }
+  ._ideoGeneStructureContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+  ._ideoGeneStructureContainer:hover ._ideoSpliceToggle {
+    visibility: visible;
+  }
+  ._ideoGeneStructureContainer ._ideoSpliceToggle {
+    visibility: hidden;
+  }
+  ._ideoSpliceToggle {
+    margin-left: 53px; background-color: #EEE;
+  }
+  ._ideoSpliceToggle.pre-mRNA {
+    margin-left: 43px; background-color: #F8F8F8;
+  }
+  ._ideoHoveredSubpart {
+    stroke: #D0D0DD !important; stroke-width: 3px;
+  }
+  </style>`;
+
+
 function toggleSpliceByKeyboard(event) {
   if (event.key === 's') {
     const spliceToggle = document.querySelector('._ideoSpliceToggle input');
@@ -6,6 +65,7 @@ function toggleSpliceByKeyboard(event) {
   }
 }
 
+/** Listen for keydown and click on / change to splice toggle input */
 function addSpliceToggleListeners(ideo) {
   document.addEventListener('keydown', toggleSpliceByKeyboard);
 
@@ -21,6 +81,7 @@ function addSpliceToggleListeners(ideo) {
   });
 }
 
+/** Helper for keyboard navigation */
 function nextIsOutOfSubpartBounds(i, subparts, key) {
   const isLeft = key === 'left';
   return (
@@ -46,8 +107,8 @@ function swapUTRsForward(subparts, isPositiveStrand) {
     const utr5 = "5'-UTR";
     const utr3 = "3'-UTR";
     if (
-      !isPositiveStrand && prevSubpart[0] === utr3 && subpart[0] !== utr3 ||
-      isPositiveStrand && prevSubpart[0] === utr5 && subpart[0] !== utr5
+      !isPositiveStrand && prevSubpart[0] === utr3 && subpart[0] === 'exon' ||
+      isPositiveStrand && prevSubpart[0] === utr5 && subpart[0] === 'exon'
     ) {
       swappedSubparts[i] = prevSubpart;
       swappedSubparts[i - 1] = subpart;
@@ -58,7 +119,25 @@ function swapUTRsForward(subparts, isPositiveStrand) {
 }
 
 function has(element, cls) {
-  return element.classList.contains(cls)
+  return element.classList.contains(cls);
+}
+
+function shouldSwapBackDOM(subpart, nextSubpart, isPositiveStrand) {
+  const utr5 = 'five-prime-utr';
+  const utr3 = 'three-prime-utr';
+  return (
+    !isPositiveStrand && has(nextSubpart, utr3) && !has(subpart, utr3) ||
+    isPositiveStrand && has(nextSubpart, utr5) && !has(subpart, utr5)
+  );
+}
+
+function shouldSwapBackData(subpart, nextSubpart, isPositiveStrand) {
+  const utr5 = "5'-UTR";
+  const utr3 = "3'-UTR";
+  return (
+    !isPositiveStrand && nextSubpart[0] === utr3 && subpart[0] !== utr3 ||
+    isPositiveStrand && nextSubpart[0] === utr5 && subpart[0] !== utr5
+  );
 }
 
 /**
@@ -71,12 +150,11 @@ function swapUTRsBack(subparts, isPositiveStrand) {
   subparts.forEach((subpart, i) => {
     if (i === swappedSubparts.length - 1) return;
     const nextSubpart = subparts[i + 1];
-    const utr5 = 'five-prime-utr';
-    const utr3 = 'three-prime-utr';
-    if (
-      !isPositiveStrand && has(nextSubpart, utr3) && !has(subpart, utr3) ||
-      isPositiveStrand && has(nextSubpart, utr5) && !has(subpart, utr5)
-    ) {
+    let shouldSwapBack = shouldSwapBackDOM;
+    if (Array.isArray(nextSubpart)) {
+      shouldSwapBack = shouldSwapBackData;
+    }
+    if (shouldSwapBack(subpart, nextSubpart, isPositiveStrand)) {
       swappedSubparts.splice(i, 1, nextSubpart);
       swappedSubparts.splice(i + 1, 1, subpart);
     }
@@ -173,6 +251,38 @@ function navigateSubparts(event) {
   event.preventDefault();
 }
 
+function getFooter() {
+  return document.querySelector('._ideoGeneStructureFooter');
+}
+
+function addSubpartHoverListener(subpartDOM, ideo) {
+  const subpart = subpartDOM;
+  // On hovering over subpart, highlight it and show details
+  subpart.addEventListener('mouseenter', event => {
+    removeHighlights();
+    // Highlight hovered subpart, adding an aura around it
+    event.target.classList.add('_ideoHoveredSubpart');
+
+    // Show details
+    const footer = getFooter();
+    ideo.originalTooltipFooter = footer.innerHTML;
+    const subpartText = subpart.getAttribute('data-subpart');
+    const trimmedFoot =
+      footer.innerHTML
+        .replace('&nbsp;', '')
+        .replace('<br>Transcript name', 'Transcript name');
+    footer.innerHTML = `<br/>${subpartText}${trimmedFoot}`;
+  });
+
+  // On hovering out, de-highlight and hide details
+  subpart.addEventListener('mouseleave', event => {
+    event.target.classList.remove('_ideoHoveredSubpart');
+    const footer = getFooter();
+    footer.innerHTML = ideo.originalTooltipFooter;
+  });
+}
+
+
 /**
  * Add handlers for hover events in transcript container and beneath, e.g.:
  *
@@ -182,15 +292,13 @@ function navigateSubparts(event) {
  * - Navigate to previous or next subpart on pressing left or right arrow keys
  */
 function addHoverListeners(ideo) {
+
   const subparts = document.querySelectorAll('rect.subpart');
   if (subparts.length === 0) return; // E.g. paralog neighborhoods, lncRNA
 
   ideo.subparts = subparts;
 
   const container = document.querySelector('._ideoGeneStructureContainer');
-  function getFooter() {
-    return document.querySelector('._ideoGeneStructureFooter');
-  }
 
   container.addEventListener('mouseenter', event => {
     const footer = getFooter();
@@ -206,32 +314,11 @@ function addHoverListeners(ideo) {
     document.removeEventListener('keydown', navigateSubparts);
   });
 
-  subparts.forEach((subpart, i) => {
+  if (ideo.addedSubpartListeners) return;
+  ideo.addedSubpartListeners = true;
 
-    // On hovering over subpart, highlight it and show details
-    subpart.addEventListener('mouseenter', event => {
-      removeHighlights();
-
-      // Highlight hovered subpart, adding an aura around it
-      event.target.classList.add('_ideoHoveredSubpart');
-
-      // Show details
-      const footer = getFooter();
-      ideo.originalTooltipFooter = footer.innerHTML;
-      const subpartText = subpart.getAttribute('data-subpart');
-      const trimmedFoot =
-        footer.innerHTML
-          .replace('&nbsp;', '')
-          .replace('<br>Transcript name', 'Transcript name');
-      footer.innerHTML = `<br/>${subpartText}${trimmedFoot}`;
-    });
-
-    // On hovering out, de-highlight and hide details
-    subpart.addEventListener('mouseleave', event => {
-      event.target.classList.remove('_ideoHoveredSubpart');
-      const footer = getFooter();
-      footer.innerHTML = ideo.originalTooltipFooter;
-    });
+  subparts.forEach(subpart => {
+    addSubpartHoverListener(subpart, ideo);
   });
 }
 
@@ -266,7 +353,7 @@ function getSpliceToggle(ideo) {
   return label;
 }
 
-/** Splice exons in transcript, removing introns */
+/** Splice exons in transcript, removing introns; add positions */
 function spliceOut(subparts) {
   const splicedSubparts = [];
   let prevEnd = 0;
@@ -291,10 +378,11 @@ function spliceOut(subparts) {
     prevEnd = splicedEnd;
     prevStart = splicedStart;
   }
-  return splicedSubparts;
+  const splicedPositionedSubparts = addPositions(splicedSubparts);
+  return splicedPositionedSubparts;
 }
 
-/** Insert introns to transcript, making introns explicit subparts */
+/** Insert introns to transcript; add positions */
 function spliceIn(subparts) {
   const splicedSubparts = [];
   let prevEnd = 0;
@@ -309,7 +397,8 @@ function spliceIn(subparts) {
     prevEnd = start + length;
     splicedSubparts.push(subpart);
   }
-  return splicedSubparts;
+  const splicedPositionedSubparts = addPositions(splicedSubparts);
+  return splicedPositionedSubparts;
 }
 
 function getSpliceStateText(spliceExons) {
@@ -324,23 +413,120 @@ function getSpliceStateText(spliceExons) {
   return {title, name};
 }
 
+
+/** Draw introns in initial splice toggle from mRNA to pre-mRNA */
+function drawIntrons(prelimSubparts, matureSubparts, ideo) {
+  // Hypothetical example data, in shorthand
+  // pres = [u5_1, e1, i1, e2, i2, e3, i3, e4, i4, e5, i5, e6, u3_1]
+  // mats = [u5_1, e1, e2, e3, e4, e5, e6, u3_1]
+
+  let numInserted = 0;
+  const subpartEls = document.querySelectorAll('.subpart');
+  prelimSubparts.forEach((prelimSubpart, i) => {
+    const matureIndex = i - numInserted;
+    const matureSubpart = matureSubparts[matureIndex];
+    if (matureSubpart[0] !== prelimSubpart[0]) {
+      const summary = prelimSubpart[3].summary;
+      const otherAttrs = `y="15" height="20" fill="#FFFFFF00" ${summary}`;
+      const intronRect =
+        `<rect class="subpart intron" ${otherAttrs} />`;
+      subpartEls[matureIndex].insertAdjacentHTML('beforebegin', intronRect);
+      numInserted += 1;
+    }
+  });
+
+  document.querySelectorAll('.intron').forEach(subpartDOM => {
+    addSubpartHoverListener(subpartDOM, ideo);
+  });
+}
+
 function toggleSplice(ideo) {
   const geneDom = document.querySelector('#ideo-related-gene');
   const gene = geneDom.textContent;
   ideo.spliceExons = !ideo.spliceExons;
   const spliceExons = ideo.spliceExons;
-  const svg = getGeneStructureSvg(gene, ideo, spliceExons);
-  document.querySelector('._ideoGeneStructure').innerHTML = svg;
+  const [svg, prelimSubparts, matureSubparts] =
+    getGeneStructureSvg(gene, ideo, spliceExons);
 
-  const nameDOM = document.querySelector('._ideoGeneStructureContainerName');
-  const toggleDOM = document.querySelector('._ideoSpliceToggle');
-  [nameDOM, toggleDOM].forEach(el => el.classList.remove('pre-mRNA'));
-  if (!spliceExons) {
-    [nameDOM, toggleDOM].forEach(el => el.classList.add('pre-mRNA'));
+  const addedIntrons = document.querySelectorAll('.intron').length > 0;
+  if (!spliceExons && !addedIntrons) {
+    drawIntrons(prelimSubparts, matureSubparts, ideo);
+  } else {
+    document.querySelectorAll('.intron').forEach(el => el.remove());
   }
-  const {title, name} = getSpliceStateText(spliceExons);
-  nameDOM.textContent = name;
-  nameDOM.title = title;
+  document.querySelectorAll('.subpart-line').forEach(el => el.remove());
+
+  const subparts = spliceExons ? matureSubparts : prelimSubparts;
+
+  d3.select('._ideoGeneStructure').selectAll('.subpart')
+    .data(subparts)
+    .transition()
+    .attr('x', (d, i) => subparts[i][3].x)
+    .attr('width', (d, i) => subparts[i][3].width)
+    .on('end', (d, i) => {
+      if (i !== subparts.length - 1) return;
+
+      // Restore subpart boundary lines
+      document.querySelectorAll('.subpart').forEach((subpartDOM, i) => {
+        const subpart = subparts[i];
+        const line = getSubpartBorderLine(subpart);
+        subpartDOM.insertAdjacentHTML('afterend', line);
+      });
+
+      // Update title for gene structure diagram
+      const nameDOM =
+        document.querySelector('._ideoGeneStructureContainerName');
+      const toggleDOM = document.querySelector('._ideoSpliceToggle');
+
+      if (nameDOM && toggleDOM) {
+        [nameDOM, toggleDOM].forEach(el => el.classList.remove('pre-mRNA'));
+        if (!spliceExons) {
+          [nameDOM, toggleDOM].forEach(el => el.classList.add('pre-mRNA'));
+        }
+        const {title, name} = getSpliceStateText(spliceExons);
+        nameDOM.textContent = name;
+        nameDOM.title = title;
+      }
+    });
+}
+
+function addPositions(subparts) {
+  const lastSubpart = subparts.slice(-1)[0];
+  const featureLengthBp = lastSubpart[1] + lastSubpart[2];
+
+  const featureLengthPx = 250;
+
+  const bpPerPx = featureLengthBp / featureLengthPx;
+
+  for (let i = 0; i < subparts.length; i++) {
+    const subpart = subparts[i];
+    if (subpart.length !== 3) continue;
+    // Define subpart position, tooltip footer
+    const lengthBp = subpart[2];
+    const x = subpart[1] / bpPerPx;
+    const width = lengthBp / bpPerPx;
+    const type = subpart[0];
+
+    subparts[i].push({type, x, width});
+  }
+
+  return subparts;
+}
+
+function getSubpartBorderLine(subpart) {
+  const subpartType = subpart[0];
+  // Define subpart border
+  const x = subpart[3].x;
+  const height = heights[subpartType];
+  const lineHeight = y + height;
+  const lineStroke = `stroke="${lineColors[subpartType]}"`;
+  const lineAttrs = // "";
+    `x1="${x}" x2="${x}" y1="${y}" y2="${lineHeight}" ${lineStroke}`;
+  return `<line class="subpart-line" ${lineAttrs} />`;
+}
+
+function getDataSubpartAttr() {
+
 }
 
 function getGeneStructureSvg(gene, ideo, spliceExons=false) {
@@ -348,21 +534,25 @@ function getGeneStructureSvg(gene, ideo, spliceExons=false) {
     'geneStructureCache' in ideo === false ||
     gene in ideo.geneStructureCache === false
   ) {
-    return null;
+    return [null];
   }
 
   const geneStructure = ideo.geneStructureCache[gene];
   const strand = geneStructure.strand;
 
-  const subparts = geneStructure.subparts;
-  let sortedSubparts = subparts.sort((a, b) => {
-    return a[1] - b[1];
-  });
+  const rawSubparts = geneStructure.subparts;
+  let subparts;
+  // let subparts = rawSubparts.sort((a, b) => {
+  //   return a[1] - b[1];
+  // });
 
+
+  let prelimSubparts = spliceIn(rawSubparts);
+  let matureSubparts = spliceOut(rawSubparts);
   if (spliceExons) {
-    sortedSubparts = spliceOut(sortedSubparts);
+    subparts = matureSubparts;
   } else {
-    sortedSubparts = spliceIn(sortedSubparts);
+    subparts = prelimSubparts;
   }
 
   const spliceToggle = document.querySelector('._ideoSpliceToggle');
@@ -371,37 +561,10 @@ function getGeneStructureSvg(gene, ideo, spliceExons=false) {
     spliceToggle.title = title;
   }
 
-
-  const lastSubpart = sortedSubparts.slice(-1)[0];
-  const featureLengthBp = lastSubpart[1] + lastSubpart[2];
-
   const featureLengthPx = 250;
 
-  const bpPerPx = featureLengthBp / featureLengthPx;
-
-  const y = 15;
   const intronHeight = 1;
   const intronColor = 'black';
-  const heights = {
-    "5'-UTR": 20,
-    'exon': 20,
-    'intron': 20,
-    "3'-UTR": 20
-  };
-
-  const colors = {
-    "5'-UTR": '#155069',
-    'exon': '#DAA521',
-    "intron": '#FFFFFF00',
-    "3'-UTR": '#357089',
-  };
-
-  const lineColors = {
-    "5'-UTR": '#70A099',
-    'exon': '#BA8501',
-    "3'-UTR": '#90C0B9'
-  };
-
   const geneStructureArray = [];
 
   const intronPosAttrs =
@@ -417,76 +580,83 @@ function getGeneStructureSvg(gene, ideo, spliceExons=false) {
     'exon': 0,
     'intron': 0,
     "3'-UTR": 0
-  }
+  };
   const totalBySubpart = {
     "5'-UTR": 0,
     'exon': 0,
     'intron': 0,
     "3'-UTR": 0
-  }
+  };
   const classes = {
     "5'-UTR": 'five-prime-utr',
     'exon': 'exon',
     "3'-UTR": 'three-prime-utr',
     'intron': 'intron'
-  }
+  };
 
   // Subtle visual delimiter; separates horizontally adjacent fields in UI
   const pipe = `<span style='color: #CCC'>|</span>`;
 
   const isPositiveStrand = strand === '+';
-  sortedSubparts = swapUTRsForward(sortedSubparts, isPositiveStrand);
+  subparts = swapUTRsForward(subparts, isPositiveStrand);
+
+  prelimSubparts = swapUTRsForward(prelimSubparts, isPositiveStrand);
+  matureSubparts = swapUTRsForward(matureSubparts, isPositiveStrand);
+
+  // Container for positional data: x, width
+  // const prelimPositions = getPositions(prelimSubparts);
+  // const maturePositions = getPositions(matureSubparts);
+
+  // matureSubparts = matureSubparts.filter(p => p[0] !== 'intron');
+  // const positions = spliceExons ? trimmedMatures : prelimPositions;
 
   // Get counts for e.g. "4" in "Exon 2 of 4"
-  for (let i = 0; i < sortedSubparts.length; i++) {
-    const subpart = sortedSubparts[i];
+  for (let i = 0; i < subparts.length; i++) {
+    const subpart = subparts[i];
     const subpartType = subpart[0];
     if (subpartType in totalBySubpart) {
       totalBySubpart[subpartType] += 1;
     }
   }
 
-  for (let i = 0; i < sortedSubparts.length; i++) {
-    const subpart = sortedSubparts[i];
+  for (let i = 0; i < subparts.length; i++) {
+    const subpart = subparts[i];
+    // const position = positions[i];
     const subpartType = subpart[0];
     let color = intronColor;
     if (subpartType in colors) {
       color = colors[subpartType];
     }
-    let height = intronHeight;
-    // const y = subpartType === 'exon' ? 0 : 2.5;
-    if (subpartType in heights) {
-      height = heights[subpartType];
-    }
+
+    const height = heights[subpartType];
 
     // Define subpart position, tooltip footer
     const lengthBp = subpart[2];
-    const left = subpart[1] / bpPerPx;
-    const length = lengthBp / bpPerPx;
-    const pos = `x="${left}" width="${length}" y="${y}" height="${height}"`;
+    const x = subpart[3].x;
+    const width = subpart[3].width;
+
+    const pos = `x="${x}" width="${width}" y="${y}" height="${height}"`;
     const cls = `class="subpart ${classes[subpartType]}" `;
 
-    let data = ''; // TODO: Handle introns better, refine CDS vs. UTR in exons
-    if (subpartType in numBySubpart) {
-      const total = totalBySubpart[subpartType];
-      numBySubpart[subpartType] += 1;
-      let subpartNumber = numBySubpart[subpartType];
-      if (strand === '-') subpartNumber = total - subpartNumber + 1;
-      const numOfTotal = total > 1 ? `${subpartNumber} of ${total} ` : '';
-      const prettyType = subpartType[0].toUpperCase() + subpartType.slice(1);
-      const html = `${prettyType} ${numOfTotal}${pipe} ${lengthBp} bp`;
-      data = `data-subpart="${html}"`;
+    // TODO: Handle introns better, refine CDS vs. UTR in exons
+    const total = totalBySubpart[subpartType];
+    numBySubpart[subpartType] += 1;
+    let subpartNumber = numBySubpart[subpartType];
+    if (strand === '-') subpartNumber = total - subpartNumber + 1;
+    const numOfTotal = total > 1 ? `${subpartNumber} of ${total} ` : '';
+    const prettyType = subpartType[0].toUpperCase() + subpartType.slice(1);
+    const html = `${prettyType} ${numOfTotal}${pipe} ${lengthBp} bp`;
+    const summary = `data-subpart="${html}"`;
+    if (!spliceExons) {
+      prelimSubparts[i][3].summary = summary;
+    } else if (subpartType !== 'intron') {
+      matureSubparts[i][3].summary = summary;
     }
 
-    // Define subpart border
-    const lineHeight = y + height;
-    const lineStroke = `stroke="${lineColors[subpartType]}"`;
-    const lineAttrs = // "";
-      `x1="${left}" x2="${left}" y1="${y}" y2="${lineHeight}" ${lineStroke}`;
 
     const subpartSvg = (
-      `<rect ${cls} rx="1.5" fill="${color}" ${pos} ${data}/>` +
-      `<line ${lineAttrs} />`
+      `<rect ${cls} rx="1.5" fill="${color}" ${pos} ${summary}/>` +
+      getSubpartBorderLine(subpart)
     );
     geneStructureArray.push(subpartSvg);
   }
@@ -514,16 +684,17 @@ function getGeneStructureSvg(gene, ideo, spliceExons=false) {
       geneStructureArray.join('') +
     '</svg>';
 
-  return geneStructureSvg;
+  return [geneStructureSvg, prelimSubparts, matureSubparts];
 }
 
 export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
   let geneStructureHtml = '';
   if (ideo.config.showGeneStructureInTooltip && !isParalogNeighborhood) {
+    ideo.addedSubpartListeners = false;
     if ('spliceExons' in ideo === false) ideo.spliceExons = true;
     const spliceExons = ideo.spliceExons;
     const gene = annot.name;
-    const geneStructureSvg = getGeneStructureSvg(gene, ideo, spliceExons);
+    const geneStructureSvg = getGeneStructureSvg(gene, ideo, spliceExons)[0];
     if (geneStructureSvg) {
       const cls = 'class="_ideoGeneStructureContainer"';
       const toggle = getSpliceToggle(ideo);
@@ -533,38 +704,7 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
       const spanAttrs = `${spanClass} title="${title}"`;
       geneStructureHtml =
         '<br/><br/>' +
-        '<style>' +
-          '._ideoGeneStructureContainerName {' +
-            'margin-left: 81px;' +
-          '}' +
-          '._ideoGeneStructureContainerName.pre-mRNA {' +
-            'margin-left: 69px;' +
-          '}' +
-          '._ideoGeneStructureContainer rect:hover + line {' +
-            'visibility: hidden;' +
-          '}' +
-          '._ideoGeneStructureContainer {' +
-            'display: flex;' +
-            'justify-content: center;' +
-            'align-items: center;' +
-            'flex-direction: column;' +
-          '}' +
-          '._ideoGeneStructureContainer:hover ._ideoSpliceToggle {' +
-            'visibility: visible;' +
-          '} ' +
-          '._ideoGeneStructureContainer ._ideoSpliceToggle {' +
-            'visibility: hidden;' +
-          '}' +
-          '._ideoSpliceToggle {' +
-            'margin-left: 53px; background-color: #EEE;' +
-          '}' +
-          '._ideoSpliceToggle.pre-mRNA {' +
-            'margin-left: 43px; background-color: #F8F8F8;' +
-          '}' +
-          '._ideoHoveredSubpart {' +
-            'stroke: #D0D0DD !important; stroke-width: 3px;' +
-          '}' +
-          '</style>' +
+        css +
         `<div ${cls}>` +
         `<div><span ${spanAttrs}>${name}</span>${toggle}</div>` +
         `${geneStructureSvg}` +

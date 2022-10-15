@@ -275,32 +275,32 @@ function parseNameAndEnsemblIdFromMgiGene(gene) {
   return {name, ensemblId};
 }
 
-/**
- * Summarizes genes in a pathway
- *
- * This comprises most of the content for tooltips for pathway genes.
- */
- function describePathwayGene(pathwayGene, searchedGene, pathway, summary) {
-  let ixnsDescription = '';
+// /**
+//  * Summarizes genes in a pathway
+//  *
+//  * This comprises most of the content for tooltips for pathway genes.
+//  */
+//  function describePathwayGene(pathwayGene, searchedGene, pathway, summary) {
+//   let ixnsDescription = '';
 
-  const pathwaysBase = 'https://www.wikipathways.org/index.php/Pathway:';
-  const url = `${pathwaysBase}${pathway.id}`;
-  const attrs =
-    `href="${url}" ` +
-    `target="_blank" ` +
-    `title="See pathway diagram in WikiPathways"`;
-  ixnsDescription =
-    `${summary} ${searchedGene.name} in:</br/>` +
-    `<a ${attrs}>${pathway.name}</a>`;
+//   const pathwaysBase = 'https://www.wikipathways.org/index.php/Pathway:';
+//   const url = `${pathwaysBase}${pathway.id}`;
+//   const attrs =
+//     `href="${url}" ` +
+//     `target="_blank" ` +
+//     `title="See pathway diagram in WikiPathways"`;
+//   ixnsDescription =
+//     `${summary} ${searchedGene.name} in:</br/>` +
+//     `<a ${attrs}>${pathway.name}</a>`;
 
-  const {name, ensemblId} = parseNameAndEnsemblIdFromMgiGene(pathwayGene);
-  const type = 'pathway gene';
-  const descriptionObj = {
-    description: ixnsDescription,
-    ixnsDescription, ensemblId, name, type
-  };
-  return descriptionObj;
-}
+//   const {name, ensemblId} = parseNameAndEnsemblIdFromMgiGene(pathwayGene);
+//   const type = 'pathway gene';
+//   const descriptionObj = {
+//     description: ixnsDescription,
+//     ixnsDescription, ensemblId, name, type
+//   };
+//   return descriptionObj;
+// }
 
 /**
  * Summarizes interactions for a gene
@@ -1013,20 +1013,20 @@ function adjustPlaceAndVisibility(ideo) {
   }
 }
 
-function sortByPathwayIxn(a, b) {
-  const aColor = a.color;
-  const bColor = b.color;
+// function sortByPathwayIxn(a, b) {
+//   const aColor = a.color;
+//   const bColor = b.color;
 
-  // Rank red (searched gene) highest
-  if (aColor === 'red') return -1;
-  if (bColor === 'red') return 1;
+//   // Rank red (searched gene) highest
+//   if (aColor === 'red') return -1;
+//   if (bColor === 'red') return 1;
 
-  // Rank not grey above grey
-  if (aColor === 'grey' && bColor !== 'grey') return 1;
-  if (bColor === 'grey' && aColor !== 'grey') return -1;
+//   // Rank not grey above grey
+//   if (aColor === 'grey' && bColor !== 'grey') return 1;
+//   if (bColor === 'grey' && aColor !== 'grey') return -1;
 
-  return a.rank - b.rank;
-}
+//   return a.rank - b.rank;
+// }
 
 // async function fetchPathwayGeneAnnots(searchedGene, pathway, ideo) {
 //   const annots = [];
@@ -1438,7 +1438,7 @@ function setRelatedDecorPad(kitConfig) {
   return kitConfig;
 }
 
-let kitDefaults = {
+const globalKitDefaults = {
   chrWidth: 9,
   chrHeight: 100,
   chrLabelSize: 12,
@@ -1500,12 +1500,12 @@ function _initRelatedGenes(config, annotsInList) {
     delete config.relatedGenesMode;
   };
 
-  kitDefaults = Object.assign(kitDefaults, {
+  const kitDefaults = Object.assign({
     showParalogNeighborhoods: isHuman,
     relatedGenesMode: 'related',
     useCache: true,
     awaitCache: true
-  });
+  }, globalKitDefaults);
 
   return initSearchIdeogram(kitDefaults, config, annotsInList);
 }
@@ -1526,14 +1526,14 @@ function _initGeneHints(config, annotsInList) {
 
   config.legend = citedLegend;
 
-  kitDefaults = Object.assign(kitDefaults, {
+  const kitDefaults = Object.assign({
     relatedGenesMode: 'hints',
     chrMargin: -4,
     annotationsPath: getDir('cache/homo-sapiens-top-genes.tsv'),
     // annotationsPath: getDir('annotations/gene_leads.tsv'),
     onDrawAnnots: plotGeneHints,
     useCache: true
-  });
+  }, globalKitDefaults);
 
   return initSearchIdeogram(kitDefaults, config, annotsInList);
 }
@@ -1554,14 +1554,14 @@ function _initGeneHints(config, annotsInList) {
 
   config.legend = citedLegend;
 
-  kitDefaults = Object.assign(kitDefaults, {
+  const kitDefaults = Object.assign({
     relatedGenesMode: 'leads',
     chrMargin: -4,
     // annotationsPath: getDir('cache/homo-sapiens-top-genes.tsv'),
     annotationsPath: getDir('annotations/gene_leads.tsv'),
     onDrawAnnots: plotGeneHints,
     useCache: true
-  });
+  }, globalKitDefaults);
 
   return initSearchIdeogram(kitDefaults, config, annotsInList);
 }

@@ -127,20 +127,17 @@ describe('Ideogram gene structure functionality', function() {
     async function callback() {
       await ideogram.plotRelatedGenes('APOE');
       setTimeout(async function() {
-        const apoelLabel = document.querySelector('#ideogramLabel__c18_a1');
-        apoelLabel.dispatchEvent(new Event('mouseover'));
+        const apoeLabel = document.querySelector('#ideogramLabel__c18_a1');
+        apoeLabel.dispatchEvent(new Event('mouseover'));
 
         // Press "s" key, to toggle exon splicing
         const sKeydown = new KeyboardEvent('keydown', {key: 's'});
         document.dispatchEvent(sKeydown);
         const subparts = document.querySelectorAll('rect.subpart');
         assert.equal(subparts.length, 10); // includes introns
+
         done();
       }, 500);
-    }
-
-    function onClickAnnot(annot) {
-      ideogram.plotRelatedGenes(annot.name);
     }
 
     var config = {
@@ -148,7 +145,6 @@ describe('Ideogram gene structure functionality', function() {
       onLoad: callback,
       dataDir: '/dist/data/bands/native/',
       cacheDir: '/dist/data/cache/',
-      onClickAnnot,
       showGeneStructureInTooltip: true,
       showParalogNeighborhoods: true
     };
