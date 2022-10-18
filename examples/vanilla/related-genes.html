@@ -207,51 +207,6 @@
       return geneSymbol;
     }
 
-    /** Parse differential expression items, return as table for tooltip */
-    function parseDE(items) {
-
-      if (items.length < 1) return '';
-
-      const rows = '<tbody><tr>' + items.map(item => {
-        return (
-          `<td>${item.group}</td>` +
-          `<td>${item.log2fc}</td>` +
-          `<td>${item.adjustedPval}</td>`
-          + `<td>${item.scoresRank}</td>`
-        );
-      }).join('</tr><tr>') + '</tr></tbody>';
-
-      const head =
-        '<thead><th>Group</th><th>log2(FC)</th><th>Adj. p-value</th><th>Rank in group</th></thead>';
-
-      const summary = 'summary="Differential expression"'
-      const result = '<table>' + head + rows + '</table>'
-
-      return result;
-    }
-
-    /** Called immediately before displaying features along chromosomes */
-    function onDrawAnnots() {
-      const ideo = this;
-
-      if (ideo.config.relatedGenesMode !== 'leads') return;
-
-      const deInnerFields =
-        ideo.rawAnnots.innerKeysByField['differentialExpression'];
-
-      const chrAnnots = ideo.annots;
-
-      for (let i = 0; i < chrAnnots.length; i++) {
-        const annots = chrAnnots[i].annots;
-
-        for (let j = 0; j < annots.length; j++) {
-          const annot = annots[j];
-          ideo.annotDescriptions.annots[annot.name].description =
-            parseDE(annot.differentialExpression, deInnerFields);
-        }
-      }
-    }
-
     function updateExamples(organism) {
       const rawExamples = examplesByOrganism[organism];
 
@@ -361,7 +316,7 @@
         if (urlParams.org === 'homo-sapiens') {
           if ('gene-leads' in urlParams) {
             config.legendName = 'Gene leads'
-            config.onDrawAnnots = onDrawAnnots
+            // config.onDrawAnnots = onDrawAnnots
             ideogram = Ideogram.initGeneLeads(config);
           } else {
             ideogram = Ideogram.initGeneHints(config);

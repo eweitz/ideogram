@@ -40,6 +40,7 @@ import {
 } from './wikipathways';
 // import {drawAnnotsByLayoutType} from '../annotations/draw';
 // import {organismMetadata} from '../init/organism-metadata';
+import {onDrawGeneLeadsAnnots} from './gene-leads'
 
 /** Sets DOM IDs for ideo.relatedAnnots; needed to associate labels */
 function setRelatedAnnotDomIds(ideo) {
@@ -1484,6 +1485,32 @@ function plotGeneHints() {
   document.querySelector(container).style.visibility = '';
 }
 
+function plotGeneLeads() {
+  const ideo = this;
+
+  if (!ideo || 'annotDescriptions' in ideo) return;
+
+  ideo.annotDescriptions = {annots: {}};
+
+  ideo.flattenAnnots().map((annot) => {
+    let description = [];
+    description = description.join('<br/><br/>');
+    ideo.annotDescriptions.annots[annot.name] = {
+      description,
+      name: annot.fullName
+    };
+  });
+
+  adjustPlaceAndVisibility(ideo);
+  moveLegend();
+  ideo.fillAnnotLabels([]);
+  const container = ideo.config.container;
+  document.querySelector(container).style.visibility = '';
+
+
+  onDrawGeneLeadsAnnots(ideo);
+}
+
 /**
  * Wrapper for Ideogram constructor, with generic "Related genes" options
  *
@@ -1554,12 +1581,13 @@ function _initGeneHints(config, annotsInList) {
 
   config.legend = citedLegend;
 
+  config.onDrawAnnots = plotGeneLeads;
+
   const kitDefaults = Object.assign({
     relatedGenesMode: 'leads',
     chrMargin: -4,
     // annotationsPath: getDir('cache/homo-sapiens-top-genes.tsv'),
     annotationsPath: getDir('annotations/gene_leads.tsv'),
-    onDrawAnnots: plotGeneHints,
     useCache: true
   }, globalKitDefaults);
 
