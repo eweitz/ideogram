@@ -1,4 +1,4 @@
-export function _toggleDEDetail(showDetail) {
+export function toggleDEDetail(showDetail) {
   const detailDisplay = showDetail ? '' : 'none';
   const summaryDisplay = showDetail ? 'none' : '';
   document.querySelector('._ideoDEDetail').style.display = detailDisplay;
@@ -34,8 +34,6 @@ function parseDE(items) {
   // '"';
   // const moreAttrs = `${moreStyle} class="_ideoDifferentialExpressionMore"`;
   // const more = `<span ${moreAttrs}>...</span>`;
-  const onMouseEnterDE = `onMouseEnter="Ideogram.toggleDEDetail(true);"`;
-  const onMouseLeaveDE = `onMouseLeave="Ideogram.toggleDEDetail(false);"`;
   const summary = `<div class="_ideoDESummary">${prettyGroups}</div>`;
 
   const detailStyle = 'style="display: none; margin-top: 15px;"';
@@ -45,7 +43,7 @@ function parseDE(items) {
     `</div>`;
   const result =
     `<br/><br/>` +
-    `<div class="_ideoDESection" ${onMouseEnterDE} ${onMouseLeaveDE}>` +
+    `<div class="_ideoDESection">` +
       preamble + summary + detail +
       '<style>' +
         '._ideoDEDetail table { width: 375px; margin: 0 auto;}' +
@@ -55,6 +53,13 @@ function parseDE(items) {
   // const result = `<br/><br/>${detail}`;
 
   return result;
+}
+
+export function onDidShowGeneLeadsAnnotTooltip() {
+  const deSection = document.querySelector('._ideoDESection');
+  if (!deSection) return;
+  deSection.addEventListener('mouseenter', () => toggleDEDetail(true));
+  deSection.addEventListener('mouseleave', () => toggleDEDetail(false));
 }
 
 /** Called immediately before displaying features along chromosomes */

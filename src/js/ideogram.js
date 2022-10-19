@@ -68,8 +68,6 @@ import {
   plotRelatedGenes, getRelatedGenesByType
 } from './kit/related-genes';
 
-import {_toggleDEDetail} from './kit/gene-leads';
-
 export default class Ideogram {
   constructor(config) {
 
@@ -342,21 +340,12 @@ export default class Ideogram {
     return _initGeneHints(config, annotsInList);
   }
 
-    /**
+  /**
    * Wrapper for Ideogram constructor, with generic "Related genes" options
    *
    * @param {Object} config Ideogram configuration object
    */
-     static initGeneLeads(config, annotsInList='all') {
-      return _initGeneLeads(config, annotsInList);
-    }
-
-  /**
-   * Toggle differential expression detail view in gene leads kit
-   *
-   * @param {Boolean} showDetail Whether to show detail view
-   */
-  static toggleDEDetail(showDetail) {
-    return _toggleDEDetail(showDetail);
+  static initGeneLeads(config, annotsInList='all') {
+    return _initGeneLeads(config, annotsInList);
   }
 }

@@ -40,7 +40,9 @@ import {
 } from './wikipathways';
 // import {drawAnnotsByLayoutType} from '../annotations/draw';
 // import {organismMetadata} from '../init/organism-metadata';
-import {onDrawGeneLeadsAnnots} from './gene-leads'
+import {
+  onDrawGeneLeadsAnnots, onDidShowGeneLeadsAnnotTooltip
+} from './gene-leads'
 
 /** Sets DOM IDs for ideo.relatedAnnots; needed to associate labels */
 function setRelatedAnnotDomIds(ideo) {
@@ -1582,6 +1584,7 @@ function _initGeneHints(config, annotsInList) {
   config.legend = citedLegend;
 
   config.onDrawAnnots = plotGeneLeads;
+  config.onDidShowAnnotTooltip = onDidShowGeneLeadsAnnotTooltip;
 
   const kitDefaults = Object.assign({
     relatedGenesMode: 'leads',
