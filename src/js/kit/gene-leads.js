@@ -19,7 +19,7 @@ function parseDE(items) {
     );
   }).join('</tr><tr>') + '</tr></tbody>';
 
-  const thCells = ['Group', 'log2(FC)', 'Adj. p-value', 'Rank in group'];
+  const thCells = ['Group', 'log2(FC)', 'Adj. p-value', 'DE score rank'];
   const head =
     `<thead><th>${thCells.join('</th><th>')}</th></thead>`;
 
