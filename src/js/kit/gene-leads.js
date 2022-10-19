@@ -48,6 +48,7 @@ function parseDE(items) {
       '<style>' +
         '._ideoDEDetail table { width: 375px; margin: 0 auto;}' +
         '._ideoDEDetail tr { padding: 2px; }' +
+        '._ideoDEDetail th, ._ideoDEDetail td { text-align: left; }' +
       '</style>' +
     '</div>';
   // const result = `<br/><br/>${detail}`;
