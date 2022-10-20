@@ -42,7 +42,7 @@ function parseDE(items) {
       `<table>${head + rows}</table>` +
     `</div>`;
   const result =
-    `<br/><br/>` +
+    // `<br/><br/>` +
     `<div class="_ideoDESection">` +
       preamble + summary + detail +
       '<style>' +
@@ -78,8 +78,12 @@ export function onDrawGeneLeadsAnnots(ideo) {
     for (let j = 0; j < annots.length; j++) {
       const annot = annots[j];
       const numMentions = annot.publicationMentions;
-      const s = numMentions > 1 ? 's' : '';
-      const pubDesc = `Mentioned ${numMentions} time${s} in linked publication`;
+      let pubDesc = '';
+      if (numMentions > 0) {
+        const s = numMentions > 1 ? 's' : '';
+        pubDesc =
+          `Mentioned ${numMentions} time${s} in linked publication<br/><br/>`;
+      }
       const deDesc = parseDE(annot.differentialExpression, deInnerFields);
 
       const desc = pubDesc + deDesc;
