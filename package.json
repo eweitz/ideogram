@@ -46,11 +46,11 @@
   "dependencies": {
     "crossfilter2": "1.5.2",
     "d3-array": "^2.8.0",
-    "d3-brush": "^2.1.0",
+    "d3-brush": "^3.0.0",
     "d3-dispatch": "^2.0.0",
     "d3-fetch": "^2.0.0",
     "d3-format": "^2.0.0",
-    "d3-scale": "^3.2.3",
+    "d3-scale": "^4.0.2",
     "fflate": "^0.7.3"
   },
   "devDependencies": {
