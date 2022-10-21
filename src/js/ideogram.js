@@ -17,7 +17,8 @@ import {
   updateDisplayedTracks, initAnnotSettings, fetchAnnots, drawAnnots,
   getHistogramBars, drawHeatmaps, deserializeAnnotsForHeatmap, fillAnnots,
   drawProcessedAnnots, drawSynteny, startHideAnnotTooltipTimeout,
-  showAnnotTooltip, onWillShowAnnotTooltip, setOriginalTrackIndexes,
+  showAnnotTooltip, onWillShowAnnotTooltip, onDidShowAnnotTooltip,
+  setOriginalTrackIndexes,
   afterRawAnnots, onClickAnnot, downloadAnnotations, addAnnotLabel,
   removeAnnotLabel, fillAnnotLabels, clearAnnotLabels, flattenAnnots
   // fadeOutAnnotLabels
@@ -63,7 +64,8 @@ import {
 } from './views/chromosome-labels.js';
 
 import {
-  _initGeneHints, _initRelatedGenes, plotRelatedGenes, getRelatedGenesByType
+  _initGeneHints, _initGeneLeads, _initRelatedGenes,
+  plotRelatedGenes, getRelatedGenesByType
 } from './kit/related-genes';
 
 export default class Ideogram {
@@ -96,6 +98,7 @@ export default class Ideogram {
     this.startHideAnnotTooltipTimeout = startHideAnnotTooltipTimeout;
     this.showAnnotTooltip = showAnnotTooltip;
     this.onWillShowAnnotTooltip = onWillShowAnnotTooltip;
+    this.onDidShowAnnotTooltip = onDidShowAnnotTooltip;
     this.onClickAnnot = onClickAnnot;
     this.setOriginalTrackIndexes = setOriginalTrackIndexes;
     this.afterRawAnnots = afterRawAnnots;
@@ -336,4 +339,13 @@ export default class Ideogram {
   static initGeneHints(config, annotsInList='all') {
     return _initGeneHints(config, annotsInList);
   }
+
+    /**
+   * Wrapper for Ideogram constructor, with generic "Related genes" options
+   *
+   * @param {Object} config Ideogram configuration object
+   */
+     static initGeneLeads(config, annotsInList='all') {
+      return _initGeneLeads(config, annotsInList);
+    }
 }

@@ -27,16 +27,14 @@ import {
   initAnalyzeRelatedGenes, analyzePlotTimes, analyzeRelatedGenes, timeDiff,
   getRelatedGenesByType, getRelatedGenesTooltipAnalytics
 } from './analyze-related-genes';
+import {getGeneStructureHtml, addGeneStructureListeners} from './gene-structure';
 
 import {
-  sortAnnotsByRank, applyRankCutoff, setAnnotRanks
+  sortAnnotsByRank, applyRankCutoff, setAnnotRanks,
 } from '../annotations/annotations';
 import {writeLegend} from '../annotations/legend';
 import {getAnnotDomId} from '../annotations/process';
-import {getDir, deepCopy} from '../lib';
-import initGeneCache, {getEnsemblId} from '../gene-cache';
-import initParalogCache, {hasParalogCache} from '../paralog-cache';
-import initInteractionCache from '../interaction-cache';
+import {getDir, deepCopy, slug} from '../lib';
 import {
   fetchGpmls, summarizeInteractions, fetchPathwayInteractions
 } from './wikipathways';
@@ -277,32 +275,32 @@ function parseNameAndEnsemblIdFromMgiGene(gene) {
   return {name, ensemblId};
 }
 
-/**
- * Summarizes genes in a pathway
- *
- * This comprises most of the content for tooltips for pathway genes.
- */
- function describePathwayGene(pathwayGene, searchedGene, pathway, summary) {
-  let ixnsDescription = '';
+// /**
+//  * Summarizes genes in a pathway
+//  *
+//  * This comprises most of the content for tooltips for pathway genes.
+//  */
+//  function describePathwayGene(pathwayGene, searchedGene, pathway, summary) {
+//   let ixnsDescription = '';
 
-  const pathwaysBase = 'https://www.wikipathways.org/index.php/Pathway:';
-  const url = `${pathwaysBase}${pathway.id}`;
-  const attrs =
-    `href="${url}" ` +
-    `target="_blank" ` +
-    `title="See pathway diagram in WikiPathways"`;
-  ixnsDescription =
-    `${summary} ${searchedGene.name} in:</br/>` +
-    `<a ${attrs}>${pathway.name}</a>`;
+//   const pathwaysBase = 'https://www.wikipathways.org/index.php/Pathway:';
+//   const url = `${pathwaysBase}${pathway.id}`;
+//   const attrs =
+//     `href="${url}" ` +
+//     `target="_blank" ` +
+//     `title="See pathway diagram in WikiPathways"`;
+//   ixnsDescription =
+//     `${summary} ${searchedGene.name} in:</br/>` +
+//     `<a ${attrs}>${pathway.name}</a>`;
 
-  const {name, ensemblId} = parseNameAndEnsemblIdFromMgiGene(pathwayGene);
-  const type = 'pathway gene';
-  const descriptionObj = {
-    description: ixnsDescription,
-    ixnsDescription, ensemblId, name, type
-  };
-  return descriptionObj;
-}
+//   const {name, ensemblId} = parseNameAndEnsemblIdFromMgiGene(pathwayGene);
+//   const type = 'pathway gene';
+//   const descriptionObj = {
+//     description: ixnsDescription,
+//     ixnsDescription, ensemblId, name, type
+//   };
+//   return descriptionObj;
+// }
 
 /**
  * Summarizes interactions for a gene
@@ -414,6 +412,49 @@ function fetchGenesFromCache(names, type, ideo) {
   return hitsWithGenomicPos;
 }
 
+/** Wait for a certain time (delay) in milliseconds */
+function wait(delay) {
+  return new Promise((resolve) => setTimeout(resolve, delay));
+}
+
+/**
+ * Get time to wait before retrying a fail service, gracefully
+ *
+ * The returned wait time helps avoid flooding the server
+ */
+function exponentialBackoffWithJitter(numFailures, baseWaitMs) {
+  const jitter = 10 * Math.random();
+  return Math.round(baseWaitMs + jitter) * (numFailures ** 2);
+}
+
+async function retryFetch(requestedThing, numLimit, fn, args) {
+
+  const numFailed = numFailedFetches[requestedThing];
+  if (numFailed > numLimit) {
+    const preamble = 'Failed to fetch from Ideogram third-party service for: ';
+    throw new TypeError(preamble + requestedThing);
+  }
+
+  numFailedFetches[requestedThing] += 1;
+
+  // Exponential backoff
+  const baseWaitMs = 500;
+  const waitMilliseconds = exponentialBackoffWithJitter(numFailed, baseWaitMs);
+
+  console.log(
+    `Failed fetch for ${requestedThing} ${numFailed} times, ` +
+    `retrying in ${waitMilliseconds} ms`
+  );
+
+  await wait(waitMilliseconds);
+  return await fn(...args);
+}
+
+/** Number of times fetches for various things have consecutively failed */
+const numFailedFetches = {
+  genes: 0
+};
+
 /** Fetch genes from cache, or, if needed, from MyGene.info API */
 async function fetchGenes(names, type, ideo) {
 
@@ -433,9 +474,6 @@ async function fetchGenes(names, type, ideo) {
 
     // Asynchronously fetch full name, but don't await the response, because
     // full names are only shown upon hovering over an annotation.
-    // const queryString = `${queryStringBase}symbol,name`;
-    // data = fetchMyGeneInfo(queryString).then(data => {
-    // data.hits.forEach((hit) => {
     hits.forEach((hit) => {
       const symbol = hit.symbol;
       const fullName = hit.name;
@@ -445,13 +483,20 @@ async function fetchGenes(names, type, ideo) {
         ideo.annotDescriptions.annots[symbol] = {name: fullName};
       }
     });
-    // });
 
     data = {hits, fromGeneCache: true};
   } else {
     // Fetch gene data from MyGene.info
     const queryString = `${queryStringBase}symbol,genomic_pos,name`;
-    data = await fetchMyGeneInfo(queryString);
+    try {
+      data = await fetchMyGeneInfo(queryString);
+    } catch (error) {
+      const isFailedFetch = (error.message === 'Failed to fetch');
+      if (isFailedFetch && navigator.onLine) {
+        // Retry fetching 3 times, waiting longer each time
+        data = await retryFetch('genes', 3, fetchGenes, [names, type, ideo]);
+      }
+    }
   }
 
   return data;
@@ -866,8 +911,8 @@ function finishPlotRelatedGenes(type, ideo) {
 
   // ideo.relatedAnnots = ideo.relatedAnnots.slice(0, 40);
 
-  if (annots.length > 1 && ideo.onFindRelatedGenesCallback) {
-    ideo.onFindRelatedGenesCallback();
+  if (annots.length > 1 && ideo.onFindGenesCallback) {
+    ideo.onFindGenesCallback();
   }
 
   ideo.drawAnnots(annots);
@@ -968,20 +1013,20 @@ function adjustPlaceAndVisibility(ideo) {
   }
 }
 
-function sortByPathwayIxn(a, b) {
-  const aColor = a.color;
-  const bColor = b.color;
+// function sortByPathwayIxn(a, b) {
+//   const aColor = a.color;
+//   const bColor = b.color;
 
-  // Rank red (searched gene) highest
-  if (aColor === 'red') return -1;
-  if (bColor === 'red') return 1;
+//   // Rank red (searched gene) highest
+//   if (aColor === 'red') return -1;
+//   if (bColor === 'red') return 1;
 
-  // Rank not grey above grey
-  if (aColor === 'grey' && bColor !== 'grey') return 1;
-  if (bColor === 'grey' && aColor !== 'grey') return -1;
+//   // Rank not grey above grey
+//   if (aColor === 'grey' && bColor !== 'grey') return 1;
+//   if (bColor === 'grey' && aColor !== 'grey') return -1;
 
-  return a.rank - b.rank;
-}
+//   return a.rank - b.rank;
+// }
 
 // async function fetchPathwayGeneAnnots(searchedGene, pathway, ideo) {
 //   const annots = [];
@@ -1092,13 +1137,13 @@ async function plotRelatedGenes(geneSymbol=null) {
 
   const ideo = this;
 
-  ideo.clearAnnotLabels();
-  const legend = document.querySelector('#_ideogramLegend');
-  if (legend) legend.remove();
-
   if (!geneSymbol) {
     return plotGeneHints(ideo);
   }
+
+  ideo.clearAnnotLabels();
+  const legend = document.querySelector('#_ideogramLegend');
+  if (legend) legend.remove();
 
   ideo.config = setRelatedDecorPad(ideo.config);
 
@@ -1137,7 +1182,7 @@ async function plotRelatedGenes(geneSymbol=null) {
 
   analyzeRelatedGenes(ideo);
 
-  if (ideo.onPlotRelatedGenesCallback) ideo.onPlotRelatedGenesCallback();
+  if (ideo.onPlotFoundGenesCallback) ideo.onPlotFoundGenesCallback();
 }
 
 function getAnnotByName(annotName, ideo) {
@@ -1156,9 +1201,9 @@ function getAnnotByName(annotName, ideo) {
   return annotByName;
 }
 
-// /**
-//  * Manage click on pathway links in annotation tooltips
-//  */
+/**
+ * Manage click on pathway links in annotation tooltips
+ */
 // function managePathwayClickHandlers(searchedGene, ideo) {
 //   setTimeout(function() {
 //     const pathways = document.querySelectorAll('.ideo-pathway-link');
@@ -1181,12 +1226,18 @@ function getAnnotByName(annotName, ideo) {
 //   }, 100);
 // }
 
+function onDidShowAnnotTooltip() {
+  const ideo = this;
+  handleTooltipClick(ideo);
+  addGeneStructureListeners(ideo);
+}
+
 /**
  * Handles click within annotation tooltip
  *
  * Makes clicking link in tooltip behave same as clicking annotation
  */
-function handleTooltipClick(ideo) {
+export function handleTooltipClick(ideo) {
   // const tooltip = document.querySelector('._ideogramTooltip');
   // if (!ideo.addedTooltipClickHandler) {
   //   tooltip.addEventListener('click', () => {
@@ -1204,12 +1255,17 @@ function handleTooltipClick(ideo) {
   const tooltip = document.querySelector('._ideogramTooltip');
   if (!ideo.addedTooltipClickHandler) {
     tooltip.addEventListener('click', (event) => {
+      if (['input', 'label'].includes(event.target.localName)) {
+        return;
+      }
+
       let geneDom = document.querySelector('#ideo-related-gene');
       if (!geneDom) {
         geneDom = event.target;
       }
       const annotName = geneDom.textContent;
       const annot = getAnnotByName(annotName, ideo);
+
       ideo.onClickAnnot(annot);
     });
 
@@ -1227,21 +1283,7 @@ function getSearchedFromDescriptions(ideo) {
   );
 }
 
-/**
- * Enhance tooltip shown on hovering over gene annotation
- */
-function decorateRelatedGene(annot) {
-  const ideo = this;
-  if (
-    annot.name === ideo.prevClickedAnnot?.name &&
-    ideo.isTooltipCooling
-  ) {
-    // Cancels showing tooltip immediately after clicking gene
-    return null;
-  }
-
-  const descObj = ideo.annotDescriptions.annots[annot.name];
-
+function decorateInteractingGene(annot, descObj, ideo) {
   if ('type' in descObj && descObj.type.includes('interacting gene')) {
     const pathwayIds = descObj.pathwayIds;
     // Get symbol of the searched gene, e.g. "PTEN"
@@ -1258,6 +1300,61 @@ function decorateRelatedGene(annot) {
     }
   }
 
+  return descObj;
+}
+
+function decorateParalogNeighborhood(annot, descObj, style) {
+  // Rank 1st highest, then put it last as it already has a triangle
+  // annotation, and is often also labeled.
+  const sortedParalogs =
+    descObj.paralogs.sort((a, b) => a.rank - b.rank);
+  const firstRanked = sortedParalogs.shift(); // Take off first
+  sortedParalogs.push(firstRanked); // Make it last
+
+  const originalDisplay =
+    'Paralog neighborhood<br/>' +
+    '<br/>' +
+    descObj.description + ':<br/>' +
+    `${sortedParalogs
+      .map(paralog => {
+        let title = '';
+        if (paralog.fullName) title = paralog.fullName;
+        if (paralog.rank) {
+          const rank = paralog.rank;
+          title += ` &#013;Ranked ${rank} in general or scholarly interest`;
+        }
+        if (title !== '') title = `title="${title}"`;
+        return (
+          `<span class="ideo-paralog-neighbor" ${title} ${style}'>${
+            paralog.name
+          }</span>`
+        );
+      }).join('<br/>')}` +
+    '<br/>';
+  annot.displayCoordinates = descObj.displayCoordinates;
+
+  return [annot, originalDisplay];
+}
+
+/**
+ * Enhance tooltip shown on hovering over gene annotation
+ */
+function decorateAnnot(annot) {
+  const ideo = this;
+  if (
+    annot.name === ideo.prevClickedAnnot?.name &&
+    ideo.isTooltipCooling
+  ) {
+    // Cancels showing tooltip immediately after clicking gene
+    return null;
+  }
+
+  let descObj = ideo.annotDescriptions.annots[annot.name];
+
+  if (ideo.config.relatedGenesMode === 'related') {
+    descObj = decorateInteractingGene(annot, descObj, ideo);
+  }
+
   const description =
     descObj.description.length > 0 ? `<br/>${descObj.description}` : '';
   const fullName = descObj.name;
@@ -1269,47 +1366,25 @@ function decorateRelatedGene(annot) {
     fullNameAndRank = `<span title="${rank}">${fullName}</span>`;
   }
 
+  const isParalogNeighborhood = annot.name.includes('paralogNeighborhood');
+
+  const geneStructureHtml = getGeneStructureHtml(
+    annot, ideo, isParalogNeighborhood
+  );
+
   let originalDisplay =
     `<span id="ideo-related-gene" ${style}>${annot.name}</span><br/>` +
     `${fullNameAndRank}<br/>` +
-    `${description}` +
+    description +
+    geneStructureHtml +
     `<br/>`;
 
-  if (annot.name.includes('paralogNeighborhood')) {
-
-    // Rank 1st highest, then put it last as it already has a triangle
-    // annotation, and is often also labeled.
-    const sortedParalogs =
-      descObj.paralogs.sort((a, b) => a.rank - b.rank);
-    const firstRanked = sortedParalogs.shift(); // Take off first
-    sortedParalogs.push(firstRanked); // Make it last
-
-    originalDisplay =
-      'Paralog neighborhood<br/>' +
-      '<br/>' +
-      descObj.description + ':<br/>' +
-      `${sortedParalogs
-        .map(paralog => {
-          let title = '';
-          if (paralog.fullName) title = paralog.fullName;
-          if (paralog.rank) {
-            const rank = paralog.rank;
-            title += ` &#013;Ranked ${rank} in general or scholarly interest`;
-          }
-          if (title !== '') title = `title="${title}"`;
-          return (
-            `<span class="ideo-paralog-neighbor" ${title} ${style}'>${
-              paralog.name
-            }</span>`
-          );
-        }).join('<br/>')}` +
-      '<br/>';
-    annot.displayCoordinates = descObj.displayCoordinates;
+  if (isParalogNeighborhood) {
+    [annot, originalDisplay] =
+      decorateParalogNeighborhood(annot, descObj, style);
   }
 
   annot.displayName = originalDisplay;
-
-  handleTooltipClick(ideo);
 
   // managePathwayClickHandlers(annot, ideo);
 
@@ -1318,16 +1393,20 @@ function decorateRelatedGene(annot) {
 
 const shape = 'triangle';
 
-const legendHeaderStyle =
-  `font-size: 14px; font-weight: bold; font-color: #333;`;
+function getLegendName(nameText) {
+  const legendHeaderStyle =
+    `font-size: 14px; font-weight: bold; font-color: #333;`;
 
-const relatedLegend = [{
-  name: `
+  return `
     <div style="position: relative; left: 30px;">
-      <div style="${legendHeaderStyle}">Related genes</div>
+      <div style="${legendHeaderStyle}">${nameText}</div>
       <i>Click gene to search</i>
     </div>
-  `,
+  `;
+}
+
+const relatedLegend = [{
+  name: getLegendName('Related genes'),
   nameHeight: 50,
   rows: [
     {name: 'Interacting gene', color: 'purple', shape: shape},
@@ -1339,12 +1418,7 @@ const relatedLegend = [{
 let legendPathwayName = '';
 
 const pathwayLegend = [{
-  name: `
-    <div style="position: relative; left: 30px;">
-      <div style="${legendHeaderStyle}">Related genes</div>
-      <i>Click gene to search</i>
-    </div>
-  `,
+  name: getLegendName('Related genes'),
   nameHeight: 50,
   rows: [
     {name: 'Pathway gene', color: 'blue', shape: shape},
@@ -1353,98 +1427,33 @@ const pathwayLegend = [{
 }];
 
 const citedLegend = [{
-  name: `
-    <div style="position: relative; left: 30px;">
-      <div style="${legendHeaderStyle}">Highly cited genes</div>
-      <i>Click gene to search</i>
-    </div>
-  `,
+  name: getLegendName('Highly cited genes'),
   nameHeight: 30,
   rows: []
 }];
 
 /** Sets legendPad for related genes view */
 function setRelatedDecorPad(kitConfig) {
-  if (kitConfig.showAnnotLabels) {
-    kitConfig.legendPad = 70;
-  } else {
-    kitConfig.legendPad = 30;
-  }
+  kitConfig.legendPad = kitConfig.showAnnotLabels ? 70 : 30;
   return kitConfig;
 }
 
-/**
- * Wrapper for Ideogram constructor, with generic "Related genes" options
- *
- * This function is made available as a static method on Ideogram.
- *
- * @param {Object} config Ideogram configuration object
- */
-function _initRelatedGenes(config, annotsInList) {
-
-  if (annotsInList !== 'all') {
-    annotsInList = annotsInList.map(name => name.toLowerCase());
-  }
-
-  const kitDefaults = {
-    showFullyBanded: false,
-    rotatable: false,
-    legend: relatedLegend,
-    chrBorderColor: '#333',
-    chrLabelColor: '#333',
-    onWillShowAnnotTooltip: decorateRelatedGene,
-    annotsInList: annotsInList,
-    showTools: true,
-    showAnnotLabels: true,
-    showParalogNeighborhoods: true,
-    chrFillColor: {centromere: '#DAAAAA'},
-    relatedGenesMode: 'related'
-  };
-
-  if ('onWillShowAnnotTooltip' in config) {
-    const key = 'onWillShowAnnotTooltip';
-    const clientFn = config[key];
-    const defaultFunction = kitDefaults[key];
-    const newFunction = function(annot) {
-      annot = defaultFunction.bind(this)(annot);
-      annot = clientFn.bind(this)(annot);
-      return annot;
-    };
-    kitDefaults[key] = newFunction;
-    delete config[key];
-  }
-
-  // Override kit defaults if client specifies otherwise
-  let kitConfig = Object.assign(kitDefaults, config);
-
-  kitConfig = setRelatedDecorPad(kitConfig);
-
-  const ideogram = new Ideogram(kitConfig);
-
-  // Called upon completing last plot, including all related genes
-  if (config.onPlotRelatedGenes) {
-    ideogram.onPlotRelatedGenesCallback = config.onPlotRelatedGenes;
-  }
-
-  // Called upon 1) finding paralogs, and 2) finding interacting genes
-  if (config.onFindRelatedGenes) {
-    ideogram.onFindRelatedGenesCallback = config.onFindRelatedGenes;
-  }
-
-  ideogram.getTooltipAnalytics = getRelatedGenesTooltipAnalytics;
-
-  ideogram.annotSortFunction = sortByRelatedType;
-
-  initAnalyzeRelatedGenes(ideogram);
-
-  let cacheDir = null;
-  if (config.cacheDir) cacheDir = config.cacheDir;
-  initGeneCache(ideogram.config.organism, ideogram, cacheDir);
-  initParalogCache(ideogram.config.organism, ideogram, cacheDir);
-  initInteractionCache(ideogram.config.organism, ideogram, cacheDir);
-
-  return ideogram;
-}
+const globalKitDefaults = {
+  chrWidth: 9,
+  chrHeight: 100,
+  chrLabelSize: 12,
+  annotationHeight: 7,
+  showFullyBanded: false,
+  rotatable: false,
+  legend: relatedLegend,
+  chrBorderColor: '#333',
+  chrLabelColor: '#333',
+  onWillShowAnnotTooltip: decorateAnnot,
+  onDidShowAnnotTooltip,
+  showTools: true,
+  showAnnotLabels: true,
+  chrFillColor: {centromere: '#DAAAAA'}
+};
 
 function plotGeneHints() {
   const ideo = this;
@@ -1482,33 +1491,88 @@ function plotGeneHints() {
  *
  * @param {Object} config Ideogram configuration object
  */
+function _initRelatedGenes(config, annotsInList) {
+
+  const isHuman = slug(config.organism) === 'homo-sapiens';
+
+  if (config.relatedGenesMode === 'leads') {
+    delete config.onDrawAnnots;
+    delete config.relatedGenesMode;
+  };
+
+  const kitDefaults = Object.assign({
+    showParalogNeighborhoods: isHuman,
+    relatedGenesMode: 'related',
+    useCache: true,
+    awaitCache: true
+  }, globalKitDefaults);
+
+  return initSearchIdeogram(kitDefaults, config, annotsInList);
+}
+
+/**
+ * Wrapper for Ideogram constructor, with generic "Related genes" options
+ *
+ * This function is made available as a static method on Ideogram.
+ *
+ * @param {Object} config Ideogram configuration object
+ */
 function _initGeneHints(config, annotsInList) {
+  delete config.onPlotFoundGenes;
 
-  delete config.onPlotRelatedGenes;
+  if (config.legendName) {
+    citedLegend[0].name = getLegendName(config.legendName);
+  }
 
+  config.legend = citedLegend;
+
+  const kitDefaults = Object.assign({
+    relatedGenesMode: 'hints',
+    chrMargin: -4,
+    annotationsPath: getDir('cache/homo-sapiens-top-genes.tsv'),
+    // annotationsPath: getDir('annotations/gene_leads.tsv'),
+    onDrawAnnots: plotGeneHints,
+    useCache: true
+  }, globalKitDefaults);
+
+  return initSearchIdeogram(kitDefaults, config, annotsInList);
+}
+
+/**
+ * Wrapper for Ideogram constructor, with generic "Related genes" options
+ *
+ * This function is made available as a static method on Ideogram.
+ *
+ * @param {Object} config Ideogram configuration object
+ */
+ function _initGeneLeads(config, annotsInList) {
+  delete config.onPlotFoundGenes;
+
+  if (config.legendName) {
+    citedLegend[0].name = getLegendName(config.legendName);
+  }
+
+  config.legend = citedLegend;
+
+  const kitDefaults = Object.assign({
+    relatedGenesMode: 'leads',
+    chrMargin: -4,
+    // annotationsPath: getDir('cache/homo-sapiens-top-genes.tsv'),
+    annotationsPath: getDir('annotations/gene_leads.tsv'),
+    onDrawAnnots: plotGeneHints,
+    useCache: true
+  }, globalKitDefaults);
+
+  return initSearchIdeogram(kitDefaults, config, annotsInList);
+}
+
+function initSearchIdeogram(kitDefaults, config, annotsInList) {
   if (annotsInList !== 'all') {
     annotsInList = annotsInList.map(name => name.toLowerCase());
   }
+  kitDefaults.annotsInList = annotsInList;
 
-  const annotsPath =
-    getDir('cache/homo-sapiens-top-genes.tsv');
-
-  const kitDefaults = {
-    showFullyBanded: false,
-    rotatable: false,
-    legend: citedLegend,
-    chrMargin: -4,
-    chrBorderColor: '#333',
-    chrLabelColor: '#333',
-    onWillShowAnnotTooltip: decorateRelatedGene,
-    annotsInList: annotsInList,
-    showTools: true,
-    showAnnotLabels: true,
-    showParalogNeighborhoods: true,
-    onDrawAnnots: plotGeneHints,
-    annotationsPath: annotsPath,
-    relatedGenesMode: 'hints'
-  };
+  kitDefaults.legendPad = kitDefaults.showAnnotLabels ? 80 : 30;
 
   if ('onWillShowAnnotTooltip' in config) {
     const key = 'onWillShowAnnotTooltip';
@@ -1523,12 +1587,25 @@ function _initGeneHints(config, annotsInList) {
     delete config[key];
   }
 
+  if ('onDidShowAnnotTooltip' in config) {
+    const key = 'onDidShowAnnotTooltip';
+    const clientFn = config[key];
+    const defaultFunction = kitDefaults[key];
+    const newFunction = function(annot) {
+      annot = defaultFunction.bind(this)(annot);
+      annot = clientFn.bind(this)(annot);
+      return annot;
+    };
+    kitDefaults[key] = newFunction;
+    delete config[key];
+  }
+
   if ('onDrawAnnots' in config) {
     const key = 'onDrawAnnots';
     const clientFn = config[key];
-    const defaultFunction = kitDefaults[key];
+    const defaultFn = kitDefaults[key];
     const newFunction = function() {
-      defaultFunction.bind(this)();
+      if (defaultFn) defaultFn.bind(this)();
       clientFn.bind(this)();
     };
     kitDefaults[key] = newFunction;
@@ -1538,22 +1615,16 @@ function _initGeneHints(config, annotsInList) {
   // Override kit defaults if client specifies otherwise
   const kitConfig = Object.assign(kitDefaults, config);
 
-  if (kitConfig.showAnnotLabels) {
-    kitConfig.legendPad = 80;
-  } else {
-    kitConfig.legendPad = 30;
-  }
-
   const ideogram = new Ideogram(kitConfig);
 
-  // Called upon completing last plot, including all related genes
-  if (config.onPlotRelatedGenes) {
-    ideogram.onPlotRelatedGenesCallback = config.onPlotRelatedGenes;
+  // Called upon 1) finding paralogs, and 2) finding interacting genes
+  if (config.onFindGenes) {
+    ideogram.onFindGenesCallback = config.onFindGenes;
   }
 
-  // Called upon 1) finding paralogs, and 2) finding interacting genes
-  if (config.onFindRelatedGenes) {
-    ideogram.onFindRelatedGenesCallback = config.onFindRelatedGenes;
+  // Called upon completing last plot, including all related genes
+  if (config.onPlotFoundGenes) {
+    ideogram.onPlotFoundGenesCallback = config.onPlotFoundGenes;
   }
 
   ideogram.getTooltipAnalytics = getRelatedGenesTooltipAnalytics;
@@ -1562,15 +1633,10 @@ function _initGeneHints(config, annotsInList) {
 
   initAnalyzeRelatedGenes(ideogram);
 
-  let cacheDir = null;
-  if (config.cacheDir) cacheDir = config.cacheDir;
-  initGeneCache(ideogram.config.organism, ideogram, cacheDir);
-  initParalogCache(ideogram.config.organism, ideogram, cacheDir);
-  initInteractionCache(ideogram.config.organism, ideogram, cacheDir);
-
   return ideogram;
 }
 
 export {
-  _initGeneHints, _initRelatedGenes, plotRelatedGenes, getRelatedGenesByType
+  _initGeneHints, _initGeneLeads, _initRelatedGenes,
+  plotRelatedGenes, getRelatedGenesByType
 };

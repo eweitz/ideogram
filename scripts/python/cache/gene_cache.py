@@ -20,6 +20,11 @@ if __name__ == "__main__":
 
 from lib import download_gzip
 
+def fetch_gff(organism, output_dir="data/", reuse_gff=True):
+    gcache = GeneCache(output_dir, reuse_gff)
+    [gff_path, gff_url] = gcache.fetch_ensembl_gff(organism)
+    return [gff_path, gff_url]
+
 # Organisms configured for gene caching, and their genome assembly names
 assemblies_by_org = {
     "Homo sapiens": "GRCh38",
@@ -70,7 +75,7 @@ def parse_gff_info_field(info):
     Example INFO field:
     gene_id "ENSMUSG00000102628"; gene_version "2"; gene_name "Gm37671"; gene_source "havana"; gene_biotype "TEC";
     """
-    fields = [f.strip() for f in info.split(';')][:-1]
+    fields = [f.strip() for f in info.split(';')]
     kvs = [f.split("=") for f in fields]
     info_dict = {}
     for kv in kvs:
@@ -289,7 +294,8 @@ class GeneCache():
 
         Consider parallelizing this.
         """
-        for organism in assemblies_by_org:
+        # for organism in assemblies_by_org:
+        for organism in ["Homo sapiens"]:
             self.populate_by_org(organism)
 
 # Command-line handler

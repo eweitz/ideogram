@@ -12,7 +12,7 @@ const interactionArrowMap = {
   'mim-cleavage': ['cleaves', 'cleaved by'],
   'mim-conversion': ['converts', 'converted by'],
   // 'mim-covalent-bond': ['covalently binds',
-  // 'mim-gap': 'MimGap',
+  'mim-gap': ['interacts with', 'interacts with'],
   'mim-inhibition': ['inhibits', 'inhibited by'],
   'mim-modification': ['modifies', 'modified by'],
   'mim-necessary-stimulation':
@@ -169,6 +169,10 @@ function summarizeByDirection(enrichedIxns) {
  */
 export function summarizeInteractions(gene, searchedGene, pathwayIds, gpmls) {
   let summary = null;
+
+  // Coarse interactions are cached offline, so if not connected to Internet
+  // then fallback to generic summary.
+  if (!navigator.onLine) return 'Interacts with';
 
   const ixnsByPwid =
     detailAllInteractions(gene, searchedGene, pathwayIds, gpmls);

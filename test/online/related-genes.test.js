@@ -11,7 +11,6 @@ describe('Ideogram related genes kit', function() {
   d3 = Ideogram.d3;
 
   beforeEach(function() {
-
     delete window.chrBands;
     d3.selectAll('div').remove();
   });
@@ -27,7 +26,7 @@ describe('Ideogram related genes kit', function() {
     async function callback() {
       const ideo = this;
 
-      await ideogram.plotRelatedGenes('BRCA2');
+      await ideo.plotRelatedGenes('BRCA2');
 
       const related = ideo.getRelatedGenesByType();
 
@@ -36,23 +35,17 @@ describe('Ideogram related genes kit', function() {
 
       assert.isAtLeast(numInteractingGenes, 1);
       assert.equal(numParalogs, 0);
-
       done();
     }
 
-    function onClickAnnot(annot) {
-      ideogram.plotRelatedGenes(annot.name);
-    }
-
-    var config = {
+    const config = {
       organism: 'Homo sapiens',
       onLoad: callback,
       dataDir: '/dist/data/bands/native/',
-      cacheDir: '/dist/data/cache/',
-      onClickAnnot
+      cacheDir: '/dist/data/cache/'
     };
 
-    const ideogram = Ideogram.initRelatedGenes(config);
+    Ideogram.initRelatedGenes(config);
   });
 
   it('handles searched gene, click, font, interaction summaries', done => {
@@ -102,12 +95,18 @@ describe('Ideogram related genes kit', function() {
                 tooltip = document.querySelector('#_ideogramTooltip');
                 assert.include(tooltip.textContent, 'Interacts with BRCA1 in');
 
+                const structureContainer =
+                  document.querySelector('._ideoGeneStructureContainer');
+                structureContainer.dispatchEvent(new Event('mouseover'));
+                const structures =
+                  document.querySelectorAll('._ideoGeneStructure');
+                assert.equal(structures.length, 1);
                 done();
-              }, 1000);
+              }, 500);
 
-            }, 1000);
-          }, 1000);
-        }, 1000);
+            }, 500);
+          }, 500);
+        }, 500);
       }, 1000);
 
 
@@ -142,6 +141,8 @@ describe('Ideogram related genes kit', function() {
       onClickAnnot,
       onPlotRelatedGenes,
       onWillShowAnnotTooltip,
+      showGeneStructureInTooltip: true,
+      showParalogNeighborhoods: true,
       fontFamily: 'serif'
     };
 
@@ -358,7 +359,7 @@ describe('Ideogram related genes kit', function() {
 
   it('handles default display of highly cited genes', done => {
 
-    async function callback() {
+    function callback() {
       const ideo = this;
 
       const annots = ideo.flattenAnnots();
@@ -369,14 +370,10 @@ describe('Ideogram related genes kit', function() {
       done();
     }
 
-    function onClickAnnot(annot) {
-      ideogram.plotRelatedGenes(annot.name);
-    }
-
     const annotsPath =
       '/dist/data/cache/homo-sapiens-top-genes.tsv';
 
-    var config = {
+    const config = {
       organism: 'Homo sapiens',
       chrWidth: 8,
       chrHeight: 90,
@@ -384,11 +381,10 @@ describe('Ideogram related genes kit', function() {
       annotationHeight: 5,
       onDrawAnnots: callback,
       dataDir: '/dist/data/bands/native/',
-      annotationsPath: annotsPath,
-      onClickAnnot
+      annotationsPath: annotsPath
     };
 
-    const ideogram = Ideogram.initGeneHints(config);
+    Ideogram.initGeneHints(config);
   });
 
 });

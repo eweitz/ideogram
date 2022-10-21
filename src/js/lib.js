@@ -124,6 +124,30 @@ function round(coord) {
   return Math.round(coord * 100) / 100;
 }
 
+/**
+ * Convert e.g. 1000 to 1 k, 1500000 to 1.5 M, etc.
+ * Used to format 1500000 base pairs to e.g. 1.5 Mbp
+ *
+ * Adapted from https://stackoverflow.com/a/9462382/10564415
+ */
+function formatSiPrefix(num, digits) {
+  const lookup = [
+    {value: 1, symbol: ''},
+    {value: 1e3, symbol: 'k'},
+    {value: 1e6, symbol: 'M'},
+    {value: 1e9, symbol: 'G'},
+    {value: 1e12, symbol: 'T'},
+    {value: 1e15, symbol: 'P'},
+    {value: 1e18, symbol: 'E'}
+  ];
+  const rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
+  var item = lookup.slice().reverse().find(function(item) {
+    return num >= item.value;
+  });
+  // eslint-disable-next-line max-len
+  return item ? (num / item.value).toFixed(digits).replace(rx, '$1') + ' ' + item.symbol : '0';
+}
+
 function onDidRotate(chrModel) {
   call(this.onDidRotateCallback, chrModel);
 }
@@ -209,6 +233,22 @@ function getScientificName(taxid) {
     return ideo.organisms[taxid].scientificName;
   }
   return null;
+}
+
+/** Convert string to camelcase */
+export function camel(str) {
+  const camelCaseString = str
+    .split(/[ _-]/g)
+    .map((token, i) => {
+      if (i > 0) {
+        return token[0].toUpperCase() + token.slice(1);
+      } else {
+        return token;
+      }
+    })
+    .join('');
+
+  return camelCaseString;
 }
 
 /**
@@ -358,8 +398,8 @@ function deepCopy(array) {
 
 export {
   assemblyIsAccession, hasNonGenBankAssembly, hasGenBankAssembly, getDataDir,
-  getDir, round, onDidRotate, getSvg, d3, getEarlyTaxid, getTaxid,
-  getCommonName, getScientificName, slug, isRoman, parseRoman, downloadPng,
-  fetchWithRetry, getTextSize, getFont, deepCopy,
+  getDir, round, formatSiPrefix, onDidRotate, getSvg, d3, getEarlyTaxid,
+  getTaxid, getCommonName, getScientificName, slug, isRoman, parseRoman,
+  downloadPng, fetchWithRetry, getTextSize, getFont, deepCopy,
   fetchWithAuth as fetch
 };
