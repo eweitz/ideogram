@@ -141,8 +141,9 @@ def parse_feature(gff_row, canonical_ids):
     elif "Parent" in info:
         transcript_id = info["Parent"].split("transcript:")[1]
 
-    if transcript_id not in canonical_ids:
-        return None
+    # is_canonical = transcript_id not in canonical_ids
+    # if transcript_id not in canonical_ids:
+    #     return None
 
     chr = gff_row[0]
     start = gff_row[3]
@@ -247,7 +248,7 @@ def parse_mrna(raw_mrna, biotypes_list):
     biotype_compressed = str(biotypes_list.index(raw_mrna[8]))
 
     # return [transcript_id, chr, start, length, name, gene_id, biotype]
-    return [[name, biotype_compressed, strand], start]
+    return [[transcript_id, name, biotype_compressed, strand], start]
 
 def build_structures(structures_by_id):
     biotypes_list = list(biotypes.keys())
@@ -302,7 +303,6 @@ def parse_structures(canonical_ids, gff_path, gff_url):
             if feature == None:
                 continue
 
-
             if (i % 10000 == 0):
                 print(f"On entry {i}")
                 print(feature)
@@ -319,6 +319,7 @@ def parse_structures(canonical_ids, gff_path, gff_url):
                 structures_by_id[id].append(feature)
             else:
                 structures_by_id[id] = [feature]
+
             # [chr, start, stop, id, symbol, desc] = parsed_gene
             # length = str(int(stop) - int(start))
 
@@ -331,7 +332,7 @@ def parse_structures(canonical_ids, gff_path, gff_url):
     structures = build_structures(structures_by_id)
     return structures
 
-def sort_structures(structures, organism):
+def sort_structures(structures, organism, canonical_ids):
     ranks = fetch_interesting_genes(organism)
     print('ranks[0:10]')
     print(ranks[0:10])
@@ -342,8 +343,16 @@ def sort_structures(structures, organism):
     structures_with_genes = []
     for structure in structures:
         # E.g. FOO-BAR-404 -> FOO-BAR
-        gene = "".join(structure[0].split('-')[:-1])
+        gene = "".join(structure[1].split('-')[:-1])
         structures_with_genes.append([gene] + structure)
+
+
+    structs = structures_with_genes
+    structs = sorted(
+        structs,
+        key=lambda s: s[1] in canonical_ids, reverse=True
+    )
+    structures_with_genes = structs
 
     # Sort genes by interest rank, and put unranked genes last
     sorted_structures_with_genes = sorted(
@@ -353,14 +362,44 @@ def sort_structures(structures, organism):
 
     sorted_structures = []
     for structure in sorted_structures_with_genes:
-        sorted_structures.append(structure[1:])
+        sorted_structures.append(structure[2:])
+
+
+    # structs =
+    # for id in structures_by_id:
+    #     structs = structures_by_id[id]
+    #     structs = sorted(structs, key=lambda s: s[0] in canonical_ids)
+    #     structs = sorted(structs, key=lambda s: s[0] in canonical_ids)
 
     print('sorted_structures[0:10]')
     print(sorted_structures[0:10])
 
     return sorted_structures
 
-
+def compress_structures(structures):
+    compressed_structures = []
+    seen_parts = {}
+    prev_gene = ''
+    for (i, structure) in enumerate(structures):
+        compressed_structure = structure[0:3]
+        subparts = structure[3:]
+        gene = structure[0].split('-')[0]
+        if gene == prev_gene:
+            for (j, subpart) in enumerate(subparts):
+                if subpart in seen_parts:
+                    compressed_subpart = seen_parts[subpart]
+                else:
+                    compressed_subpart = subpart
+                    seen_parts[subpart] = str(i) + '_' + str(j)
+                compressed_structure.append(compressed_subpart)
+        else:
+            prev_gene = gene
+            seen_parts = {}
+            for (subpart, j) in enumerate(subparts):
+                seen_parts[subpart] = str(i) + '_' + str(j)
+            compressed_structure = structure
+        compressed_structures.append(compressed_structure)
+    return compressed_structures
 
 class GeneStructureCache():
     """Convert Ensembl BioMart TSVs to compact TSVs for Ideogram.js caches
@@ -440,10 +479,11 @@ class GeneStructureCache():
 
         structures = parse_structures(canonical_ids, gff_path, gff_url)
 
-        sorted_structures = sort_structures(structures, organism)
+        sorted_structures = sort_structures(structures, organism, canonical_ids)
+        refined_structures = compress_structures(sorted_structures)
 
         # sorted_slim_genes = sort_by_interest(slim_genes, organism)
-        self.write(sorted_structures, organism, gff_url, bmtsv_url)
+        self.write(refined_structures, organism, gff_url, bmtsv_url)
 
     def populate(self):
         """Fill gene caches for all configured organisms
