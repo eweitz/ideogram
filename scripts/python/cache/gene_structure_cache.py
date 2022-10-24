@@ -246,6 +246,7 @@ def parse_mrna(raw_mrna, biotypes_list):
     name = raw_mrna[6]
     # gene_id = raw_mrna[7]
     biotype_compressed = str(biotypes_list.index(raw_mrna[8]))
+    if biotype_compressed == "0": biotype_compressed = ""
 
     # return [transcript_id, chr, start, length, name, gene_id, biotype]
     return [[transcript_id, name, biotype_compressed, strand], start]
@@ -264,7 +265,14 @@ def build_structures(structures_by_id):
 
         for structure_list in structure_lists[1:]:
             subpart = parse_transcript_subpart(structure_list, mrna_start)
-            structure += [";".join(subpart) ]
+            joined_subpart = ";".join(subpart)
+
+            # Almost all subparts are exons
+            # We can key these space-efficiently via absence of key
+            if joined_subpart[0:2] == "1;":
+                joined_subpart = joined_subpart[2:]
+
+            structure += [joined_subpart]
 
         structures.append(structure)
 
@@ -303,7 +311,7 @@ def parse_structures(canonical_ids, gff_path, gff_url):
             if feature == None:
                 continue
 
-            if (i % 10000 == 0):
+            if (i % 50000 == 0):
                 print(f"On entry {i}")
                 print(feature)
 
@@ -354,14 +362,27 @@ def sort_structures(structures, organism, canonical_ids):
     )
     structures_with_genes = structs
 
+
     # Sort genes by interest rank, and put unranked genes last
-    sorted_structures_with_genes = sorted(
+    trimmed_structs = sorted(
         structures_with_genes,
-        key=lambda x: ranks.index(x[0]) if x[0] in ranks else 1E10,
+        key=lambda s: ranks.index(s[0]) if s[0] in ranks else 1E10,
     )
 
+    # Omit strand for non-canonical transcripts
+    tmp_structs = []
+    strands_by_gene = {}
+    for structure in trimmed_structs:
+        gene = structure[0]
+        if gene in strands_by_gene:
+            structure[4] = ''
+        else:
+            strands_by_gene[gene] = structure[4]
+        tmp_structs.append(structure)
+    trimmed_structs = tmp_structs
+
     sorted_structures = []
-    for structure in sorted_structures_with_genes:
+    for structure in trimmed_structs:
         sorted_structures.append(structure[2:])
 
 
@@ -378,9 +399,38 @@ def sort_structures(structures, organism, canonical_ids):
 
 def compress_structures(structures):
     compressed_structures = []
+    tmp_structs = []
+
+    # Compress subpart start coordinates to be relative to previous subpart's
+    for (i, structure) in enumerate(structures):
+        compressed_structure = structure[0:3]
+        subparts = structure[3:]
+        for (j, subpart) in enumerate(subparts):
+            if j == 0:
+                compressed_structure.append(subpart)
+                continue
+            subpart = subpart.split(";")
+            prev_subpart = subparts[j - 1].split(";")
+            utr = len(subpart) == 3
+            start = int(subpart[0] if not utr else subpart[1])
+            length = int(subpart[1] if not utr else subpart[2])
+            prev_utr = len(prev_subpart) == 3
+            prev_start = int(prev_subpart[0] if not prev_utr else prev_subpart[1])
+            # prev_len = int(prev_subpart[1] if prev_utr else prev_subpart[2])
+            relative_start = start - prev_start
+            utr_prefix = "" if not utr else f"{subpart[0]};"
+            compressed_subpart = f"{utr_prefix}{relative_start};{length}"
+            compressed_structure.append(compressed_subpart)
+        tmp_structs.append(compressed_structure)
+    compressed_structures = tmp_structs
+
+
+    # Compress subparts to pointers, when subpart has been seen in current gene
     seen_parts = {}
     prev_gene = ''
-    for (i, structure) in enumerate(structures):
+    tmp_structs = []
+    for structure in compressed_structures:
+        i = 0
         compressed_structure = structure[0:3]
         subparts = structure[3:]
         gene = structure[0].split('-')[0]
@@ -392,13 +442,39 @@ def compress_structures(structures):
                     compressed_subpart = subpart
                     seen_parts[subpart] = str(i) + '_' + str(j)
                 compressed_structure.append(compressed_subpart)
+                i += 1
         else:
+            i = 0
             prev_gene = gene
             seen_parts = {}
             for (subpart, j) in enumerate(subparts):
                 seen_parts[subpart] = str(i) + '_' + str(j)
             compressed_structure = structure
-        compressed_structures.append(compressed_structure)
+        tmp_structs.append(compressed_structure)
+    compressed_structures = tmp_structs
+
+    # Trim non-canonical transcript names, e.g. ACE2-208 -> 8
+    gene_keys = {}
+    tmp_structs = []
+    for structure in compressed_structures:
+        split_tx_name = structure[0].split('-')
+        gene = "".join(split_tx_name[:-1])
+        tx_num = int(split_tx_name[-1]) # e.g. 208 in ACE2-208
+        if gene in gene_keys:
+            ref_tx_base_num = gene_keys[gene]
+            trimmed_tx_num = tx_num - ref_tx_base_num # e.g. 208 - 200
+            structure[0] = str(trimmed_tx_num) # e.g. 8
+        else:
+            str_tx_num = str(tx_num)
+            highest_digit = int(str_tx_num[0])
+            num_digits = len(str(tx_num))
+            ref_tx_base_num = highest_digit * (10 ** (num_digits - 1))
+            gene_keys[gene] = ref_tx_base_num # e.g. 200
+        tmp_structs.append(structure)
+    compressed_structures = tmp_structs
+
+
+
     return compressed_structures
 
 class GeneStructureCache():
