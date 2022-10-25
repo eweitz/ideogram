@@ -426,28 +426,60 @@ def compress_structures(structures):
 
 
     # Compress subparts to pointers, when subpart has been seen in current gene
+    # Among pointers, omit any that merely increment the previous
     seen_parts = {}
     prev_gene = ''
     tmp_structs = []
+    i = 0
     for structure in compressed_structures:
-        i = 0
         compressed_structure = structure[0:3]
         subparts = structure[3:]
         gene = structure[0].split('-')[0]
         if gene == prev_gene:
+            prev_compressed_subpart = None
+            sp_offset = 0
+            # Processing same gene
             for (j, subpart) in enumerate(subparts):
                 if subpart in seen_parts:
                     compressed_subpart = seen_parts[subpart]
+                    scs = compressed_subpart.split("_") # "*s*plit *c*ompressed *s*ubpart
+                    tx_i = int(scs[0]) # Transcript pointer
+                    sp_j = int(scs[1]) # Subpart pointer
+                    omit = False
+                    if prev_compressed_subpart:
+                        # p_tx_i: Previous transcript pointer
+                        # p_sp_j: Previous subpart pointer
+                        p_tx_i = int(prev_compressed_subpart[0])
+                        if sp_offset == 0:
+                            p_sp_j = int(prev_compressed_subpart[1])
+                        else:
+                            p_sp_j = sp_offset
+                        # if gene == "ACE2":
+                        #     print(
+                        #         "compressed_structure, prev_compressed_subpart, tx_i, p_tx_i, sp_j, p_sp_j, sp_offset",
+                        #         compressed_structure, prev_compressed_subpart, tx_i, p_tx_i, sp_j, p_sp_j, sp_offset
+                        #     )
+                        if tx_i - p_tx_i == 0 and sp_j - p_sp_j == 1:
+                            # Same transcipt and this subpart index is 1 more than prev subpart index
+                            sp_offset = sp_j
+                            compressed_subpart = ""
+                            omit = True
+                    if not omit:
+                        sp_offset = 0
+                        prev_compressed_subpart = scs
+
                 else:
+                    prev_compressed_subpart = None
+                    sp_offset = 0
                     compressed_subpart = subpart
                     seen_parts[subpart] = str(i) + '_' + str(j)
                 compressed_structure.append(compressed_subpart)
-                i += 1
         else:
+            # Processing new gene
             i = 0
             prev_gene = gene
             seen_parts = {}
-            for (subpart, j) in enumerate(subparts):
+            for (j, subpart) in enumerate(subparts):
                 seen_parts[subpart] = str(i) + '_' + str(j)
             compressed_structure = structure
         tmp_structs.append(compressed_structure)
