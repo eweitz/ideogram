@@ -424,6 +424,21 @@ def compress_structures(structures):
         tmp_structs.append(compressed_structure)
     compressed_structures = tmp_structs
 
+    # Compress UTR direction, e.g. 2;0;283 -> U0;283 and 0;186;48 -> U186;48
+    # 5' or 3' can be deduced via strand and presence of intervening CDS's
+    tmp_structs = []
+    for (i, structure) in enumerate(compressed_structures):
+        compressed_structure = structure[0:3]
+        subparts = structure[3:]
+        for (j, subpart) in enumerate(subparts):
+            split_subpart = subpart.split(";")
+            if len(split_subpart) == 3:
+                compressed_subpart = f"U{';'.join(split_subpart[1:])}"
+            else:
+                compressed_subpart = subpart
+            compressed_structure.append(compressed_subpart)
+        tmp_structs.append(compressed_structure)
+    compressed_structures = tmp_structs
 
     # Compress subparts to pointers, when subpart has been seen in current gene
     # Among pointers, omit any that merely increment the previous
