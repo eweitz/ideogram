@@ -547,6 +547,23 @@ def compress_structures(structures):
         tmp_structs.append(compressed_structure)
     compressed_structures = tmp_structs
 
+    print(
+        "Compress 0-start pointers, e.g. 0_3 -> _3",
+    )
+    tmp_structs = []
+    for (i, structure) in enumerate(compressed_structures):
+        compressed_structure = structure[0:3]
+        subparts = structure[3:]
+        for (j, subpart) in enumerate(subparts):
+            split_subpart = subpart.split("_")
+            if len(split_subpart) == 2 and split_subpart[0] == "0":
+                compressed_subpart = f"_{split_subpart[1]}"
+            else:
+                compressed_subpart = subpart
+            compressed_structure.append(compressed_subpart)
+        tmp_structs.append(compressed_structure)
+    compressed_structures = tmp_structs
+
     # Trim non-canonical transcript names, e.g. ACE2-208 -> 8
     gene_keys = {}
     tmp_structs = []
