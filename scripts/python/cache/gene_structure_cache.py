@@ -504,7 +504,7 @@ def compress_structures(structures):
         tmp_structs.append(compressed_structure)
     compressed_structures = tmp_structs
 
-    print("Compress coterminal exons and UTRs, e.g. 0;283  U0;283 -> EU0;283")
+    print("Compress coterminal exons and UTRs, e.g. 0;283  U0;283 -> E0;283")
     tmp_structs = []
     for (i, structure) in enumerate(compressed_structures):
         compressed_structure = structure[0:3]
@@ -523,7 +523,7 @@ def compress_structures(structures):
             # if gene == "ACE2": print("split_subpart, prev_subpart, utr_range", split_subpart, prev_subpart, utr_range)
             if prev_subpart == utr_range:
                 compressed_structure[-1] = ""
-                compressed_subpart = f"E{subpart}"
+                compressed_subpart = f"E{subpart[1:]}"
             else:
                 compressed_subpart = subpart
             compressed_structure.append(compressed_subpart)
@@ -548,7 +548,7 @@ def compress_structures(structures):
     compressed_structures = tmp_structs
 
     print(
-        "Compress 0-start pointers, e.g. 0_3 -> _3",
+        "Compress 0-start pointers, e.g. 0_3 -> _3 and 0_0 -> _",
     )
     tmp_structs = []
     for (i, structure) in enumerate(compressed_structures):
@@ -557,7 +557,10 @@ def compress_structures(structures):
         for (j, subpart) in enumerate(subparts):
             split_subpart = subpart.split("_")
             if len(split_subpart) == 2 and split_subpart[0] == "0":
-                compressed_subpart = f"_{split_subpart[1]}"
+                if split_subpart[1] == "0":
+                    compressed_subpart = "_"
+                else:
+                    compressed_subpart = f"_{split_subpart[1]}"
             else:
                 compressed_subpart = subpart
             compressed_structure.append(compressed_subpart)
