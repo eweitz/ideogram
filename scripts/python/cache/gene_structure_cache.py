@@ -401,7 +401,7 @@ def compress_structures(structures):
     compressed_structures = []
     tmp_structs = []
 
-    # Compress subpart start coordinates to be relative to previous subpart's
+    print("Compress subpart start coordinates to be relative to previous subpart's")
     for (i, structure) in enumerate(structures):
         compressed_structure = structure[0:3]
         subparts = structure[3:]
@@ -524,6 +524,23 @@ def compress_structures(structures):
             if prev_subpart == utr_range:
                 compressed_structure[-1] = ""
                 compressed_subpart = f"E{subpart}"
+            else:
+                compressed_subpart = subpart
+            compressed_structure.append(compressed_subpart)
+        tmp_structs.append(compressed_structure)
+    compressed_structures = tmp_structs
+
+    print(
+        "Compress 0-start coordinates, e.g. 0:283 -> 283",
+    )
+    tmp_structs = []
+    for (i, structure) in enumerate(compressed_structures):
+        compressed_structure = structure[0:3]
+        subparts = structure[3:]
+        for (j, subpart) in enumerate(subparts):
+            split_subpart = subpart.split(";")
+            if len(split_subpart) == 2 and split_subpart[0][-1] == "0":
+                compressed_subpart = split_subpart[0][:-1] + split_subpart[1]
             else:
                 compressed_subpart = subpart
             compressed_structure.append(compressed_subpart)
