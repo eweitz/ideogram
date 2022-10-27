@@ -12,6 +12,7 @@ import re
 import sys
 import urllib.request
 from urllib.parse import quote
+from base64 import b64encode
 
 # Enable importing local modules when directly calling as script
 if __name__ == "__main__":
@@ -397,6 +398,9 @@ def sort_structures(structures, organism, canonical_ids):
 
     return sorted_structures
 
+def int_to_bytes(x: int) -> bytes:
+    return x.to_bytes((x.bit_length() + 7) // 8, 'big')
+
 def compress_structures(structures):
     compressed_structures = []
     tmp_structs = []
@@ -563,6 +567,32 @@ def compress_structures(structures):
                     compressed_subpart = f"_{split_subpart[1]}"
             else:
                 compressed_subpart = subpart
+            compressed_structure.append(compressed_subpart)
+        tmp_structs.append(compressed_structure)
+    compressed_structures = tmp_structs
+
+    print(
+        "Encode integers in subparts in base 64",
+    )
+    tmp_structs = []
+    for (i, structure) in enumerate(compressed_structures):
+        compressed_structure = structure[0:3]
+        subparts = structure[3:]
+        for (j, subpart) in enumerate(subparts):
+            if len(subpart) == 0 or "_" in subpart:
+                compressed_subpart = subpart
+            else:
+                split_subpart = subpart.split(";")
+                compressed_subpart = []
+                for part in split_subpart:
+                    if part.isdigit():
+                        part = int(part)
+                        b64_part = b64encode(int_to_bytes(part)).decode()
+                        b64_part = b64_part.replace('=', '')
+                        compressed_subpart.append(b64_part)
+                    else:
+                        compressed_subpart.append(part)
+                compressed_subpart = ";".join(compressed_subpart)
             compressed_structure.append(compressed_subpart)
         tmp_structs.append(compressed_structure)
     compressed_structures = tmp_structs
