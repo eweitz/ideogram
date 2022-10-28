@@ -655,6 +655,15 @@ def compress_structures(structures):
         tmp_structs.append(structure)
     compressed_structures = tmp_structs
 
+    print('Compress "+" to "" in strand column')
+    tmp_structs = []
+    for structure in compressed_structures:
+        strand = structure[2]
+        if strand == '+': # Human protein coding genes: 9.9k +, 9.7k -
+            structure[2] = ''
+        tmp_structs.append(structure)
+    compressed_structures = tmp_structs
+
     # Trim canonical transcript names, e.g. ACE2-201 -> 201
     gene_keys = {}
     tmp_structs = []
