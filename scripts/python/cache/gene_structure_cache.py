@@ -519,7 +519,7 @@ def compress_structures(structures):
                 continue
             utr_range = subpart[1:] # e.g. U0:283 -> 0:283
             split_subpart = subpart.split(";")
-            gene = structure[0].split('-')[0]
+            # gene = structure[0].split('-')[0]
             # if gene == "ACE2": print("split_subpart, prev_subpart, utr_range", split_subpart, prev_subpart, utr_range)
             if prev_subpart == utr_range:
                 compressed_structure[-1] = ""
@@ -623,7 +623,47 @@ def compress_structures(structures):
         tmp_structs.append(structure)
     compressed_structures = tmp_structs
 
+    print("Compress coterminal post-exon UTR lengths, e.g. 10782;113  U113 -> 10782;113  U")
+    tmp_structs = []
+    for (i, structure) in enumerate(compressed_structures):
+        compressed_structure = structure[0:3]
+        subparts = structure[3:]
 
+        if len(subparts) < 2:
+            # print(f"Odd transcript at index {str(i)}, < 2 subparts", structure)
+            tmp_structs.append(compressed_structure)
+            continue
+
+        prev_subpart = subparts[-2]
+        subpart = subparts[-1]
+
+        if len(prev_subpart) > 0 and len(subpart) > 0 and subpart[0] == "U":
+            if ";" not in subpart:
+                utr_length = subpart[1:]
+            else:
+                utr_length = subpart.split(";")[1]
+            if ";" not in prev_subpart:
+                exon_length = prev_subpart[1:]
+            else:
+                exon_length = prev_subpart.split(";")[1]
+            if (
+                utr_length.isdigit() and exon_length.isdigit() and
+                int(utr_length) - int(exon_length) == 0
+            ):
+                subpart = "U"
+        structure[-1] = subpart
+        tmp_structs.append(structure)
+    compressed_structures = tmp_structs
+
+    # Trim canonical transcript names, e.g. ACE2-201 -> 201
+    gene_keys = {}
+    tmp_structs = []
+    for structure in compressed_structures:
+        split_tx_name = structure[0].split('-')
+        if len(split_tx_name) > 1:
+            structure[0] = f"!{split_tx_name[1]}"
+        tmp_structs.append(structure)
+    compressed_structures = tmp_structs
 
     return compressed_structures
 
