@@ -709,7 +709,7 @@ def compress_structures(structures):
                 run_length += 1
                 if not is_last_subpart:
                     continue
-            if ((not is_tab) or is_last_subpart) and prev_is_tab and run_length > 0:
+            if ((not is_tab) or is_last_subpart) and prev_is_tab and run_length > 1:
                 compressed_run = "t" + str(run_length)
                 compressed_subparts += [compressed_run, subpart]
                 run_length = 0
