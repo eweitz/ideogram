@@ -12,6 +12,7 @@ import re
 import sys
 import urllib.request
 from urllib.parse import quote
+import json
 
 # Enable importing local modules when directly calling as script
 if __name__ == "__main__":
@@ -398,6 +399,9 @@ def sort_structures(structures, organism, canonical_ids):
     return sorted_structures
 
 def compress_structures(structures):
+
+    # structures = structures[0:20]
+
     compressed_structures = []
     tmp_structs = []
 
@@ -655,6 +659,68 @@ def compress_structures(structures):
         tmp_structs.append(structure)
     compressed_structures = tmp_structs
 
+    print("Compress coterminal post-exon UTR lengths, e.g. 10782;113  U113 -> 10782;113  U")
+    tmp_structs = []
+    for (i, structure) in enumerate(compressed_structures):
+        compressed_structure = structure[0:3]
+        subparts = structure[3:]
+
+        if len(subparts) < 2:
+            # print(f"Odd transcript at index {str(i)}, < 2 subparts", structure)
+            tmp_structs.append(compressed_structure)
+            continue
+
+        prev_subpart = subparts[-2]
+        subpart = subparts[-1]
+
+        if len(prev_subpart) > 0 and len(subpart) > 0 and subpart[0] == "U":
+            if ";" not in subpart:
+                utr_length = subpart[1:]
+            else:
+                utr_length = subpart.split(";")[1]
+            if ";" not in prev_subpart:
+                exon_length = prev_subpart[1:]
+            else:
+                exon_length = prev_subpart.split(";")[1]
+            if (
+                utr_length.isdigit() and exon_length.isdigit() and
+                int(utr_length) - int(exon_length) == 0
+            ):
+                subpart = "U"
+        structure[-1] = subpart
+        tmp_structs.append(structure)
+    compressed_structures = tmp_structs
+
+    print("Compress runs of tabs, e.g. 3_         -> 3_t4")
+    tmp_structs = []
+    for (i, structure) in enumerate(compressed_structures):
+        compressed_structure = structure[0:3]
+        subparts = structure[3:]
+        compressed_subparts = []
+        run_length = 0
+        for (j, subpart) in enumerate(subparts):
+            if j == 0:
+                compressed_subparts.append(subpart)
+                continue
+            is_tab = subpart == ""
+            prev_is_tab = subparts[j - 1] == ""
+            is_last_subpart = j == len(subparts) - 1
+            if is_tab:
+                run_length += 1
+                if not is_last_subpart:
+                    continue
+            if ((not is_tab) or is_last_subpart) and prev_is_tab and run_length > 0:
+                compressed_run = "t" + str(run_length)
+                compressed_subparts += [compressed_run, subpart]
+                run_length = 0
+            else:
+                compressed_subparts.append(subpart)
+        compressed_structure += compressed_subparts
+        # print('original structure', structure, ' o')
+        # print('compressed_structure', compressed_structure)
+        tmp_structs.append(compressed_structure)
+    compressed_structures = tmp_structs
+
     print('Compress "+" to "" in strand column')
     tmp_structs = []
     for structure in compressed_structures:
@@ -665,6 +731,7 @@ def compress_structures(structures):
     compressed_structures = tmp_structs
 
     # Trim canonical transcript names, e.g. ACE2-201 -> 201
+    # Keep this last, and make index immediately before this compression
     gene_keys = {}
     tmp_structs = []
     for structure in compressed_structures:
@@ -747,14 +814,24 @@ class GeneStructureCache():
     def populate_by_org(self, organism):
         """Fill gene caches for a configured organism
         """
-        # [slim_transcripts, prefix] = self.fetch_slim_transcripts(organism)
-        [canonical_ids, bmtsv_url] = self.fetch_transcript_ids(organism)
+        # # [slim_transcripts, prefix] = self.fetch_slim_transcripts(organism)
+        # [canonical_ids, bmtsv_url] = self.fetch_transcript_ids(organism)
 
-        [gff_path, gff_url] = fetch_gff(organism, self.output_dir, True)
+        # [gff_path, gff_url] = fetch_gff(organism, self.output_dir, True)
 
-        structures = parse_structures(canonical_ids, gff_path, gff_url)
+        # structures = parse_structures(canonical_ids, gff_path, gff_url)
 
-        sorted_structures = sort_structures(structures, organism, canonical_ids)
+        # sorted_structures = sort_structures(structures, organism, canonical_ids)
+        # with open("sorted_structures.tmp", "w") as f:
+        #     structs_json_str = json.dumps(sorted_structures)
+        #     f.write(structs_json_str)
+
+        gff_url = "https://example.com"
+        bmtsv_url = "https://example.com"
+        with open("sorted_structures.tmp") as f:
+            content = f.read()
+            sorted_structures = json.loads(content)
+
         refined_structures = compress_structures(sorted_structures)
 
         # sorted_slim_genes = sort_by_interest(slim_genes, organism)
