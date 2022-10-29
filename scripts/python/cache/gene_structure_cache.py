@@ -122,7 +122,6 @@ def parse_feature(gff_row, canonical_ids):
     # that have an Ensembl accession beginning ENSG in human
     loose_transcript_types = [
         "mRNA", "five_prime_UTR", "three_prime_UTR", "exon"
-
         # TODO:
         # - Confirm these make sense to include
         # - Confirm handling
@@ -786,13 +785,7 @@ class GeneStructureCache():
         ])
 
         headers = "\n".join([
-            f"## Ideogram.js gene structure cache for {organism}",
-            f"## Derived from: {gff_url}",
-            f"## Filtered to only canonical transcripts using Ensembl BioMart: {bmtsv_url}",
-            f"## features: <subpart_compressed>;<start (transcript-relative)>;<end (transcript-relative)>",
-            f"## biotype keys: {biotype_keys}",
-            f"## subpart keys: 0 = 5'-UTR, 1 = exon, 2 = 3'-UTR",
-            f"# transcript_name\tbiotype_compressed\t\tstrand\tfeatures"
+            f"## Ideogram.js transcript cache for {organism}"
         ]) + "\n"
 
         # print('structures')
