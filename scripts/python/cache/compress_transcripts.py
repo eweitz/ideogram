@@ -1,3 +1,6 @@
+"""Compress transcripts, for more space-efficient data on gene structures
+"""
+
 def relative_start(structures):
     print("Compress subpart start coordinates to be relative to previous subpart's")
     compressed_structures = []
@@ -329,7 +332,10 @@ def canonical_names(compressed_structures):
 
 
 def compress_structures(structures):
+    """Compress a list of gene structures, i.e. transcripts
+    """
 
+    # Helpful for quick development / debugging
     # structures = structures[0:20]
 
     compressed_structures = relative_start(structures)

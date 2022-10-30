@@ -1,6 +1,9 @@
 """Convert Ensembl BMTSV files to minimal TSVs for Ideogram.js gene caches
 
 Ideogram uses cached gene data to drastically simplify and speed up rendering.
+
+Example call (including supplementary commands):
+time python3 cache/gene_structure_cache.py --output-dir ../../dist/data/cache/gene-structures-all-compressed/ --reuse-bmtsv; gzip -dkf ../../dist/data/cache/gene-structures-all-compressed/homo-sapiens-gene-structures.tsv.gz; tput bel
 """
 
 import argparse
@@ -463,27 +466,27 @@ class GeneStructureCache():
     def populate_by_org(self, organism):
         """Fill gene caches for a configured organism
         """
-        # # [slim_transcripts, prefix] = self.fetch_slim_transcripts(organism)
-        # [canonical_ids, bmtsv_url] = self.fetch_transcript_ids(organism)
+        [canonical_ids, bmtsv_url] = self.fetch_transcript_ids(organism)
 
-        # [gff_path, gff_url] = fetch_gff(organism, self.output_dir, True)
+        [gff_path, gff_url] = fetch_gff(organism, self.output_dir, True)
 
-        # structures = parse_structures(canonical_ids, gff_path, gff_url)
+        structures = parse_structures(canonical_ids, gff_path, gff_url)
+        sorted_structures = sort_structures(structures, organism, canonical_ids)
 
-        # sorted_structures = sort_structures(structures, organism, canonical_ids)
+        # Uncomment for fast dev if preceding code changes `sorted_structures`
         # with open("sorted_structures.tmp", "w") as f:
         #     structs_json_str = json.dumps(sorted_structures)
         #     f.write(structs_json_str)
 
-        gff_url = "https://example.com"
-        bmtsv_url = "https://example.com"
-        with open("sorted_structures.tmp") as f:
-            content = f.read()
-            sorted_structures = json.loads(content)
+        # Uncomment for quick development / debugging of compression
+        # gff_url = "https://example.com"
+        # bmtsv_url = "https://example.com"
+        # with open("sorted_structures.tmp") as f:
+        #     content = f.read()
+        #     sorted_structures = json.loads(content)
 
         refined_structures = compress_structures(sorted_structures)
 
-        # sorted_slim_genes = sort_by_interest(slim_genes, organism)
         self.write(refined_structures, organism, gff_url, bmtsv_url)
 
     def populate(self):
