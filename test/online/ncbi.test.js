@@ -32,20 +32,28 @@ describe('Ideogram NCBI', function() {
     };
   });
 
-  it('should support mitochondrial and chloroplast chromosomes', done => {
+  it('should support apicoplast and chloroplast chromosomes', done => {
     // Tests use case from ../examples/vanilla/eukaryotes.html
 
     function callback() {
       var chromosomes = Array.from(document.querySelectorAll('.chromosome'));
       var nonNuclearChrs = chromosomes.slice(-2);
-      assert.equal(chromosomes.length, 21);
-      assert.equal(nonNuclearChrs[0].id, 'chrCP-29760'); // chloroplast (CP)
-      assert.equal(nonNuclearChrs[1].id, 'chrMT-29760'); // mitochrondrion (MT)
+
+      assert.equal(chromosomes.length, 16);
+      assert.equal(nonNuclearChrs[0].id, 'chrAP-5833'); // apicoplast (AP)
+      assert.equal(nonNuclearChrs[1].id, 'chrMT-5833'); // mitochrondrion (MT)
+
+
+      // For previous test with wine grape (Vitis vinifera)
+      // assert.equal(chromosomes.length, 21);
+      // assert.equal(nonNuclearChrs[0].id, 'chrCP-29760'); // chloroplast (CP)
+      // assert.equal(nonNuclearChrs[1].id, 'chrMT-29760'); // mitochrondrion (MT)
       done();
     }
 
     var config = {
-      organism: 'vitis-vinifera', // grape
+      // organism: 'vitis-vinifera', // grape.  Disabled on 2022-11-02 due to upstream NCBI change.
+      organism: 'plasmodium-falciparum', // malaria parasite
       showNonNuclearChromosomes: true,
       onLoad: callback
     };
