@@ -370,7 +370,7 @@ function spliceOut(subparts) {
     // e.g. 5'-UTRs of OXTR
     const isOtherOverlap = i > 0 && start === prevRawStart;
 
-    // e.g. 3'-UTR of CD44
+    // e.g. 3'-UTR of LDLR, or 3'-UTR of CD44
     const isOther3UTROverlap = i > 0 && start <= prevRawStart + prevRawLength;
 
     let splicedStart;
