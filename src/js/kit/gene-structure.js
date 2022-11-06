@@ -362,13 +362,25 @@ function spliceOut(subparts) {
     const subpart = subparts[i];
     const [subpartType, start, length] = subpart;
     const isSpliceOverlap = start === prevStart;
-    const isOtherOverlap = i > 0 && start === subparts[i - 1][1];
+    let prevRawStart, prevRawLength;
+    if (i > 0) {
+      [, prevRawStart, prevRawLength] = subparts[i - 1];
+    }
+
+    // e.g. 5'-UTRs of OXTR
+    const isOtherOverlap = i > 0 && start === prevRawStart;
+
+    // e.g. 3'-UTR of LDLR, or 3'-UTR of CD44
+    const isOther3UTROverlap = i > 0 && start <= prevRawStart + prevRawLength;
+
     let splicedStart;
     if (isSpliceOverlap) {
       splicedStart = start;
     } else if (isOtherOverlap) {
       // e.g. 5'-UTRs of OXTR
       splicedStart = prevStart;
+    } else if (isOther3UTROverlap) {
+      splicedStart = prevStart + prevRawLength - length;
     } else {
       splicedStart = prevEnd;
     }

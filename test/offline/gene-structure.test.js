@@ -136,6 +136,25 @@ describe('Ideogram gene structure functionality', function() {
         const subparts = document.querySelectorAll('rect.subpart');
         assert.equal(subparts.length, 10); // includes introns
 
+        setTimeout(async function() {
+          // The last exon of gene LDLR includes both CDS and 3'-UTR
+          // There was a bug (see commit 7a43ba0) that caused drastically
+          // longer apparent CDS in these cases, whereas correct display
+          // has a relatively very small CDS compared to 3'-UTR.
+          const ldlrLabel = document.querySelector('#ideogramLabel__c18_a0');
+          ldlrLabel.dispatchEvent(new Event('mouseover'));
+
+          const lastExon = subparts[18];
+          const threePrimeUtr = subparts[19];
+
+          assert.equal(Math.round(lastExon.x.baseVal.value), 127);
+          assert.equal(Math.round(lastExon.width.baseVal.value), 123);
+
+          assert.equal(Math.round(threePrimeUtr.x.baseVal.value), 129);
+          assert.equal(Math.round(threePrimeUtr.width.baseVal.value), 121);
+
+        }, 500);
+
         done();
       }, 500);
     }
