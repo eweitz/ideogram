@@ -473,6 +473,7 @@ function toggleSplice(ideo) {
   d3.select('._ideoGeneStructure').selectAll('.subpart')
     .data(subparts)
     .transition()
+    .duration(750)
     .attr('x', (d, i) => subparts[i][3].x)
     .attr('width', (d, i) => subparts[i][3].width)
     .on('end', (d, i) => {
