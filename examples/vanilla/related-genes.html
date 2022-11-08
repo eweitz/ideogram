@@ -287,8 +287,14 @@
     }
 
     function displayError(error) {
-      document.querySelector('#ideogram-container').innerHTML =
-          `<div style="color:red; text-align: center;">${error}</div>`;
+      const container = document.querySelector('#ideogram-container');
+      container.style.visibility = 'hidden';
+      container.insertAdjacentHTML(
+        'beforeBegin',
+        `<div id="ideogram-error" style="color:red; text-align: center;">
+          ${error}
+        </div>`
+      );
     }
 
     // Process text input for the "Search" field.
@@ -303,6 +309,8 @@
       try {
         await ideogram.plotRelatedGenes(urlParams.q);
         document.querySelector('#ideogram-container').style.visibility = '';
+        const errorElement = document.querySelector('#ideogram-error');
+        if (errorElement) errorElement.remove();
       } catch(error) {
         displayError(error);
       }
@@ -313,6 +321,8 @@
         if ('q' in urlParams) {
           await ideogram.plotRelatedGenes(urlParams['q']);
           document.querySelector('#ideogram-container').style.visibility = '';
+          const errorElement = document.querySelector('#ideogram-error');
+          if (errorElement) errorElement.remove();
         } else {
           await ideogram.plotRelatedGenes();
         }
