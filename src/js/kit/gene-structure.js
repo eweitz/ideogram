@@ -684,9 +684,9 @@ function getGeneStructureSvg(gene, ideo, spliceExons=false) {
 
   const footerData =
     `<br/>Transcript name: ${geneStructure.transcriptName}<br/>` + [
-      `Exons: ${totalBySubpart['exon']}`,
-      `Biotype: ${geneStructure.biotype.replace(/_/g, ' ')}`,
-      `Strand: ${strand}`
+      `${totalBySubpart['exon']} exons`,
+      `${geneStructure.biotype.replace(/_/g, ' ')}`,
+      `${strand} strand`
     ].join(` ${pipe} `);
   const geneStructureSvg =
     `<svg class="_ideoGeneStructure" ` +
