@@ -267,6 +267,9 @@
     function displayError(error) {
       const container = document.querySelector('#ideogram-container');
       container.style.visibility = 'hidden';
+
+      const errorElement = document.querySelector('#ideogram-error');
+      if (errorElement) errorElement.remove();
       container.insertAdjacentHTML(
         'beforeBegin',
         `<div id="ideogram-error" style="color:red; text-align: center;">
