@@ -2,6 +2,10 @@ import {d3} from '../lib';
 
 const y = 15;
 
+
+// Subtle visual delimiter; separates horizontally adjacent fields in UI
+const pipe = `<span style='color: #CCC'>|</span>`;
+
 const heights = {
   "5'-UTR": 20,
   'exon': 20,
@@ -483,6 +487,7 @@ function drawIntrons(prelimSubparts, matureSubparts, ideo) {
   });
 
   document.querySelectorAll('.intron').forEach(subpartDOM => {
+
     addSubpartHoverListener(subpartDOM, ideo);
   });
 }
@@ -491,10 +496,8 @@ function toggleSplice(ideo) {
   ideo.spliceExons = !ideo.spliceExons;
   const spliceExons = ideo.spliceExons;
   const structure = getSelectedStructure(ideo);
-  console.log('structure')
-  console.log(structure)
   const [, prelimSubparts, matureSubparts] =
-    getGeneStructureSvg(structure, ideo, spliceExons);
+    getGeneStructureSvg(structure, spliceExons);
 
   const addedIntrons = document.querySelectorAll('.intron').length > 0;
   if (!spliceExons && !addedIntrons) {
@@ -562,6 +565,16 @@ function addPositions(subparts) {
   return subparts;
 }
 
+/** Get text shown below diagram upon hovering over an exon, intron, or UTR */
+function getSubpartSummary(subpartType, total, index, strand, lengthBp) {
+  if (strand === '-') index = total - index + 1;
+  const numOfTotal = total > 1 ? `${index} of ${total} ` : '';
+  const prettyType = subpartType[0].toUpperCase() + subpartType.slice(1);
+  const html = `${prettyType} ${numOfTotal}${pipe} ${lengthBp} bp`;
+  const summary = `data-subpart="${html}"`;
+  return summary;
+}
+
 function getSubpartBorderLine(subpart) {
   const subpartType = subpart[0];
   // Define subpart border
@@ -574,22 +587,20 @@ function getSubpartBorderLine(subpart) {
   return `<line class="subpart-line" ${lineAttrs} />`;
 }
 
-function getGeneStructureSvgList(gene, ideo, spliceExons=false) {
-  if (
-    'geneStructureCache' in ideo === false ||
-    gene in ideo.geneStructureCache === false
-  ) {
-    return [null];
-  }
+// function getGeneStructureSvgList(gene, ideo, spliceExons=false) {
+//   if (
+//     'geneStructureCache' in ideo === false ||
+//     gene in ideo.geneStructureCache === false
+//   ) {
+//     return [null];
+//   }
 
-  const svgList = ideo.geneStructureCache[gene].map(geneStructure => {
-    return getGeneStructureSvg(geneStructure, spliceExons);
-  });
+//   const svgList = ideo.geneStructureCache[gene].map(geneStructure => {
+//     return getGeneStructureSvg(geneStructure, spliceExons);
+//   });
 
-  // console.log('svgList')
-  // console.log(svgList)
-  return svgList;
-}
+//   return svgList;
+// }
 
 function getGeneStructureSvg(geneStructure, spliceExons=false) {
   const strand = geneStructure.strand;
@@ -629,7 +640,7 @@ function getGeneStructureSvg(geneStructure, spliceExons=false) {
   geneStructureArray.push(intronRect);
 
   // Set up counters for e.g. "Exon 2 of 4" ("<subpart> <num> of <total>")
-  const numBySubpart = {
+  const indexBySubpart = {
     "5'-UTR": 0,
     'exon': 0,
     'intron': 0,
@@ -647,9 +658,6 @@ function getGeneStructureSvg(geneStructure, spliceExons=false) {
     "3'-UTR": 'three-prime-utr',
     'intron': 'intron'
   };
-
-  // Subtle visual delimiter; separates horizontally adjacent fields in UI
-  const pipe = `<span style='color: #CCC'>|</span>`;
 
   const isPositiveStrand = strand === '+';
   subparts = swapUTRsForward(subparts, isPositiveStrand);
@@ -694,19 +702,15 @@ function getGeneStructureSvg(geneStructure, spliceExons=false) {
 
     // TODO: Handle introns better, refine CDS vs. UTR in exons
     const total = totalBySubpart[subpartType];
-    numBySubpart[subpartType] += 1;
-    let subpartNumber = numBySubpart[subpartType];
-    if (strand === '-') subpartNumber = total - subpartNumber + 1;
-    const numOfTotal = total > 1 ? `${subpartNumber} of ${total} ` : '';
-    const prettyType = subpartType[0].toUpperCase() + subpartType.slice(1);
-    const html = `${prettyType} ${numOfTotal}${pipe} ${lengthBp} bp`;
-    const summary = `data-subpart="${html}"`;
+    indexBySubpart[subpartType] += 1;
+    const subpartIndex = indexBySubpart[subpartType];
+    const summary =
+      getSubpartSummary(subpartType, total, subpartIndex, strand, lengthBp);
     if (!spliceExons) {
       prelimSubparts[i][3].summary = summary;
     } else if (subpartType !== 'intron') {
       matureSubparts[i][3].summary = summary;
     }
-
 
     const subpartSvg = (
       `<rect ${cls} rx="1.5" fill="${color}" ${pos} ${summary}/>` +
@@ -763,14 +767,21 @@ function getMenu(gene, ideo, selectedName) {
 
 export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
   let geneStructureHtml = '';
-  if (ideo.config.showGeneStructureInTooltip && !isParalogNeighborhood) {
+  const gene = annot.name;
+  if (
+    ideo.config.showGeneStructureInTooltip && !isParalogNeighborhood &&
+    !(
+      'geneStructureCache' in ideo === false ||
+      gene in ideo.geneStructureCache === false
+    )
+  ) {
     ideo.addedSubpartListeners = false;
     if ('spliceExons' in ideo === false) ideo.spliceExons = true;
     const spliceExons = ideo.spliceExons;
-    const gene = annot.name;
-    const svgList = getGeneStructureSvgList(gene, ideo, spliceExons)[0];
-    const menu = getMenu(gene, ideo, svgList[0]);
-    const geneStructureSvg = svgList[0];
+    const structure = ideo.geneStructureCache[gene][0];
+    const geneStructureSvg =
+      getGeneStructureSvg(structure, ideo, spliceExons)[0];
+    const menu = getMenu(gene, ideo, geneStructureSvg);
     if (geneStructureSvg) {
       const cls = 'class="_ideoGeneStructureContainer"';
       const toggle = getSpliceToggle(ideo);
