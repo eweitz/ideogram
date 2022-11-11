@@ -82,14 +82,22 @@ function writeGeneStructure(geneStructure, ideo) {
 }
 
 /** Get name of transcript currently selected in menu */
-function getSelectedStructure(ideo) {
+function getSelectedStructure(ideo, offset=0) {
   const menu = document.querySelector('#_ideoGeneStructureMenu');
-  const structureName = menu.options[menu.selectedIndex].value;
+  const numOptions = menu.options.length;
+  const baseIndex = menu.selectedIndex;
+  let selectedIndex = baseIndex + offset;
+  if (selectedIndex >= numOptions) {
+    selectedIndex = 0;
+  } else if (selectedIndex < 0) {
+    selectedIndex = numOptions - 1;
+  }
+  const structureName = menu.options[selectedIndex].value;
   const gene = structureName.split('-').slice(0, -1).join('-');
   const geneStructure =
     ideo.geneStructureCache[gene].find(gs => gs.name === structureName);
 
-  return geneStructure;
+  return [geneStructure, selectedIndex];
 }
 
 /**
@@ -109,8 +117,18 @@ function addMenuListeners(ideo) {
     }
   });
 
+  document.addEventListener('keydown', (event) => {
+    const key = event.key;
+    if (['ArrowDown', 'ArrowUp'].includes(key)) {
+      const offset = key === 'ArrowDown' ? 1 : -1;
+      const [structure, selectedIndex] = getSelectedStructure(ideo, offset);
+      menu.options[selectedIndex].selected = true;
+      writeGeneStructure(structure, ideo);
+    }
+  });
+
   menu.addEventListener('change', () => {
-    const structure = getSelectedStructure(ideo);
+    const structure = getSelectedStructure(ideo)[0];
     writeGeneStructure(structure, ideo);
   });
 }
@@ -508,7 +526,7 @@ function drawIntrons(prelimSubparts, matureSubparts, ideo) {
 function toggleSplice(ideo) {
   ideo.spliceExons = !ideo.spliceExons;
   const spliceExons = ideo.spliceExons;
-  const structure = getSelectedStructure(ideo);
+  const structure = getSelectedStructure(ideo)[0];
   const [, prelimSubparts, matureSubparts] =
     getGeneStructureSvg(structure, spliceExons);
 
