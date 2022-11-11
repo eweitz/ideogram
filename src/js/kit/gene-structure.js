@@ -60,10 +60,25 @@ const css =
   }
   </style>`;
 
-function changeGeneStructure(geneStructure, ideo) {
+/** Get DOM element for gene structure footer */
+function getFooter() {
+  return document.querySelector('._ideoGeneStructureFooter');
+}
+
+/** Write transcript details below the diagram */
+function writeFooter(container) {
+  const footer = getFooter();
+  const svgDOM = container.querySelector('svg');
+  const transcriptSummary = svgDOM.getAttribute('data-ideo-footer');
+  footer.innerHTML = `&nbsp;<br/>${transcriptSummary}`;
+}
+
+/** Write newly-selected gene structure diagram, header, and footer */
+function writeGeneStructure(geneStructure, ideo) {
   const svg = getGeneStructureSvg(geneStructure, ideo.spliceExons)[0];
   const container = document.querySelector('._ideoGeneStructureSvgContainer');
   container.innerHTML = svg;
+  writeFooter(container);
 }
 
 /** Get name of transcript currently selected in menu */
@@ -77,6 +92,11 @@ function getSelectedStructure(ideo) {
   return geneStructure;
 }
 
+/**
+ * Add event listeners to the transcript menu:
+ * - On click, block upstream listeners from closing tooltip
+ * - On change, write newly selected gene structure
+ */
 function addMenuListeners(ideo) {
   const menuId = '_ideoGeneStructureMenu';
   const menu = document.querySelector('#' + menuId);
@@ -90,8 +110,8 @@ function addMenuListeners(ideo) {
   });
 
   menu.addEventListener('change', () => {
-    const structureName = getSelectedStructure(ideo);
-    changeGeneStructure(structureName, ideo);
+    const structure = getSelectedStructure(ideo);
+    writeGeneStructure(structure, ideo);
   });
 }
 
@@ -289,10 +309,6 @@ function navigateSubparts(event) {
   event.preventDefault();
 }
 
-function getFooter() {
-  return document.querySelector('._ideoGeneStructureFooter');
-}
-
 function addSubpartHoverListener(subpartDOM, ideo) {
   const subpart = subpartDOM;
   // On hovering over subpart, highlight it and show details
@@ -338,15 +354,12 @@ function addHoverListeners(ideo) {
 
   const container = document.querySelector('._ideoGeneStructureContainer');
 
-  container.addEventListener('mouseenter', event => {
-    const footer = getFooter();
+  container.addEventListener('mouseenter', () => {
     // ideo.originalTooltipFooter = footer.textContent;
-    const svg = container.querySelector('svg');
-    const transcriptSummary = svg.getAttribute('data-ideo-footer');
-    footer.innerHTML = `&nbsp;<br/>${transcriptSummary}`;
+    writeFooter(container);
     document.addEventListener('keydown', navigateSubparts);
   });
-  container.addEventListener('mouseleave', event => {
+  container.addEventListener('mouseleave', () => {
     const footer = getFooter();
     footer.innerHTML = '';
     document.removeEventListener('keydown', navigateSubparts);
@@ -542,6 +555,7 @@ function toggleSplice(ideo) {
     });
 }
 
+/** Merge subpart type, pixel-x position, and pixel width to each subpart */
 function addPositions(subparts) {
   const lastSubpart = subparts.slice(-1)[0];
   const featureLengthBp = lastSubpart[1] + lastSubpart[2];
@@ -575,6 +589,7 @@ function getSubpartSummary(subpartType, total, index, strand, lengthBp) {
   return summary;
 }
 
+/** Get subtle line to visually demarcate subpart boundary */
 function getSubpartBorderLine(subpart) {
   const subpartType = subpart[0];
   // Define subpart border
@@ -607,10 +622,6 @@ function getGeneStructureSvg(geneStructure, spliceExons=false) {
 
   const rawSubparts = geneStructure.subparts;
   let subparts;
-  // let subparts = rawSubparts.sort((a, b) => {
-  //   return a[1] - b[1];
-  // });
-
 
   let prelimSubparts = spliceIn(rawSubparts);
   let matureSubparts = spliceOut(rawSubparts);
@@ -780,7 +791,7 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
     const spliceExons = ideo.spliceExons;
     const structure = ideo.geneStructureCache[gene][0];
     const geneStructureSvg =
-      getGeneStructureSvg(structure, ideo, spliceExons)[0];
+      getGeneStructureSvg(structure, spliceExons)[0];
     const menu = getMenu(gene, ideo, geneStructureSvg);
     if (geneStructureSvg) {
       const cls = 'class="_ideoGeneStructureContainer"';
