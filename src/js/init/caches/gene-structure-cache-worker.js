@@ -59,10 +59,10 @@ export function parseCache(rawTsv, perfTimes) {
     const splitLine = line.trim().split(/\t/);
 
     const [
-      transcriptName, biotypeCompressed, strand
+      name, biotypeCompressed, strand
     ] = splitLine.slice(0, 3);
 
-    const gene = transcriptName.split('-').slice(0, -1).join('-');
+    const gene = name.split('-').slice(0, -1).join('-');
 
     const rawSubparts = splitLine.slice(3);
     const subparts = deserializeSubparts(rawSubparts, subpartKeys);
@@ -71,13 +71,18 @@ export function parseCache(rawTsv, perfTimes) {
 
     // E.g. ACE2-201, protein_coding, -, <array of exon or UTR arrays>
     const feature = {
-      transcriptName,
+      name,
       biotype,
       strand,
       subparts
     };
 
-    featuresByGene[gene] = feature;
+    if (gene in featuresByGene) {
+      featuresByGene[gene].push(feature);
+    } else {
+      featuresByGene[gene] = [feature];
+    }
+
   };
   const t1 = performance.now();
   perfTimes.parseCacheLoop = Math.round(t1 - t0);

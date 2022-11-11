@@ -56,6 +56,40 @@ const css =
   }
   </style>`;
 
+function changeGeneStructure(geneStructure, ideo) {
+  const svg = getGeneStructureSvg(geneStructure, ideo.spliceExons)[0];
+  const container = document.querySelector('._ideoGeneStructureSvgContainer');
+  container.innerHTML = svg;
+}
+
+/** Get name of transcript currently selected in menu */
+function getSelectedStructure(ideo) {
+  const menu = document.querySelector('#_ideoGeneStructureMenu');
+  const structureName = menu.options[menu.selectedIndex].value;
+  const gene = structureName.split('-').slice(0, -1).join('-');
+  const geneStructure =
+    ideo.geneStructureCache[gene].find(gs => gs.name === structureName);
+
+  return geneStructure;
+}
+
+function addMenuListeners(ideo) {
+  const menuId = '_ideoGeneStructureMenu';
+  const menu = document.querySelector('#' + menuId);
+  const container = document.querySelector('._ideoGeneStructureContainer');
+
+  // Don't search this gene if clicking to expand the menu
+  container.addEventListener('click', (event) => {
+    if (event.target.id === menuId) {
+      event.stopPropagation();
+    }
+  });
+
+  menu.addEventListener('change', () => {
+    const structureName = getSelectedStructure(ideo);
+    changeGeneStructure(structureName, ideo);
+  });
+}
 
 function toggleSpliceByKeyboard(event) {
   if (event.key === 's') {
@@ -325,6 +359,7 @@ function addHoverListeners(ideo) {
 export function addGeneStructureListeners(ideo) {
   addSpliceToggleListeners(ideo);
   addHoverListeners(ideo);
+  addMenuListeners(ideo);
 }
 
 function getSpliceToggleHoverTitle(spliceExons) {
@@ -453,12 +488,13 @@ function drawIntrons(prelimSubparts, matureSubparts, ideo) {
 }
 
 function toggleSplice(ideo) {
-  const geneDom = document.querySelector('#ideo-related-gene');
-  const gene = geneDom.textContent;
   ideo.spliceExons = !ideo.spliceExons;
   const spliceExons = ideo.spliceExons;
-  const [svg, prelimSubparts, matureSubparts] =
-    getGeneStructureSvg(gene, ideo, spliceExons);
+  const structureName = getSelectedStructure(ideo);
+  // console.log('structureName')
+  // console.log(structureName)
+  const [, prelimSubparts, matureSubparts] =
+    getGeneStructureSvg(structureName, ideo, spliceExons);
 
   const addedIntrons = document.querySelectorAll('.intron').length > 0;
   if (!spliceExons && !addedIntrons) {
@@ -538,11 +574,7 @@ function getSubpartBorderLine(subpart) {
   return `<line class="subpart-line" ${lineAttrs} />`;
 }
 
-function getDataSubpartAttr() {
-
-}
-
-function getGeneStructureSvg(gene, ideo, spliceExons=false) {
+function getGeneStructureSvgList(gene, ideo, spliceExons=false) {
   if (
     'geneStructureCache' in ideo === false ||
     gene in ideo.geneStructureCache === false
@@ -550,7 +582,16 @@ function getGeneStructureSvg(gene, ideo, spliceExons=false) {
     return [null];
   }
 
-  const geneStructure = ideo.geneStructureCache[gene];
+  const svgList = ideo.geneStructureCache[gene].map(geneStructure => {
+    return getGeneStructureSvg(geneStructure, spliceExons);
+  });
+
+  // console.log('svgList')
+  // console.log(svgList)
+  return svgList;
+}
+
+function getGeneStructureSvg(geneStructure, spliceExons=false) {
   const strand = geneStructure.strand;
 
   const rawSubparts = geneStructure.subparts;
@@ -684,7 +725,7 @@ function getGeneStructureSvg(gene, ideo, spliceExons=false) {
   }
 
   const footerData =
-    `<br/>Transcript name: ${geneStructure.transcriptName}<br/>` + [
+    `<br/>Transcript name: ${geneStructure.name}<br/>` + [
       `${totalBySubpart['exon']} exons`,
       `${geneStructure.biotype.replace(/_/g, ' ')}`,
       `${strand} strand`
@@ -700,6 +741,26 @@ function getGeneStructureSvg(gene, ideo, spliceExons=false) {
   return [geneStructureSvg, prelimSubparts, matureSubparts];
 }
 
+function getMenu(gene, ideo, selectedName) {
+  if (
+    'geneStructureCache' in ideo === false ||
+    gene in ideo.geneStructureCache === false
+  ) {
+    return null;
+  }
+
+  const structures = ideo.geneStructureCache[gene];
+
+  const options = structures.map(structure => {
+    const name = structure.name;
+    return `<option value="${name}">${name}</option>`;
+  });
+
+  const id = '_ideoGeneStructureMenu';
+  const menu = `<select id="${id}" name="${id}">${options}</select>`;
+  return menu;
+}
+
 export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
   let geneStructureHtml = '';
   if (ideo.config.showGeneStructureInTooltip && !isParalogNeighborhood) {
@@ -707,7 +768,9 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
     if ('spliceExons' in ideo === false) ideo.spliceExons = true;
     const spliceExons = ideo.spliceExons;
     const gene = annot.name;
-    const geneStructureSvg = getGeneStructureSvg(gene, ideo, spliceExons)[0];
+    const svgList = getGeneStructureSvgList(gene, ideo, spliceExons)[0];
+    const menu = getMenu(gene, ideo, svgList[0]);
+    const geneStructureSvg = svgList[0];
     if (geneStructureSvg) {
       const cls = 'class="_ideoGeneStructureContainer"';
       const toggle = getSpliceToggle(ideo);
@@ -720,7 +783,10 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
         css +
         `<div ${cls}>` +
         `<div><span ${spanAttrs}>${name}</span>${toggle}</div>` +
-        `${geneStructureSvg}` +
+        menu +
+        `<span class="_ideoGeneStructureSvgContainer">` +
+          geneStructureSvg +
+        `</span>` +
         `<div class="_ideoGeneStructureFooter"></div>` +
         `</div>`;
     }
