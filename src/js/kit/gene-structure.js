@@ -363,7 +363,7 @@ export function addGeneStructureListeners(ideo) {
 }
 
 function getSpliceToggleHoverTitle(spliceExons) {
-  return spliceExons ? 'Insert introns (s)' : 'Splice exons (s)';
+  return spliceExons ? 'Unsplice exons (s)' : 'Splice exons (s)';
 }
 
 function getSpliceToggle(ideo) {
@@ -490,11 +490,11 @@ function drawIntrons(prelimSubparts, matureSubparts, ideo) {
 function toggleSplice(ideo) {
   ideo.spliceExons = !ideo.spliceExons;
   const spliceExons = ideo.spliceExons;
-  const structureName = getSelectedStructure(ideo);
-  // console.log('structureName')
-  // console.log(structureName)
+  const structure = getSelectedStructure(ideo);
+  console.log('structure')
+  console.log(structure)
   const [, prelimSubparts, matureSubparts] =
-    getGeneStructureSvg(structureName, ideo, spliceExons);
+    getGeneStructureSvg(structure, ideo, spliceExons);
 
   const addedIntrons = document.querySelectorAll('.intron').length > 0;
   if (!spliceExons && !addedIntrons) {
