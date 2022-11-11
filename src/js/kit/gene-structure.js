@@ -473,6 +473,7 @@ function toggleSplice(ideo) {
   d3.select('._ideoGeneStructure').selectAll('.subpart')
     .data(subparts)
     .transition()
+    .duration(750)
     .attr('x', (d, i) => subparts[i][3].x)
     .attr('width', (d, i) => subparts[i][3].width)
     .on('end', (d, i) => {
@@ -684,9 +685,9 @@ function getGeneStructureSvg(gene, ideo, spliceExons=false) {
 
   const footerData =
     `<br/>Transcript name: ${geneStructure.transcriptName}<br/>` + [
-      `Exons: ${totalBySubpart['exon']}`,
-      `Biotype: ${geneStructure.biotype.replace(/_/g, ' ')}`,
-      `Strand: ${strand}`
+      `${totalBySubpart['exon']} exons`,
+      `${geneStructure.biotype.replace(/_/g, ' ')}`,
+      `${strand} strand`
     ].join(` ${pipe} `);
   const geneStructureSvg =
     `<svg class="_ideoGeneStructure" ` +

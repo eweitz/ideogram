@@ -75,7 +75,7 @@ describe('Ideogram gene structure functionality', function() {
           exonText2,
           'Exon 2 of 4 | 66 bp' +
           'Transcript name: APOE-201' +
-          'Exons: 4 | Biotype: protein coding | Strand: +'
+          '4 exons | protein coding | + strand'
         );
 
         // Negative-stranded gene
@@ -100,7 +100,7 @@ describe('Ideogram gene structure functionality', function() {
           exon3Text,
           'Exon 3 of 4 | 157 bp' +
           'Transcript name: APOE-201' +
-          'Exons: 4 | Biotype: protein coding | Strand: +'
+          '4 exons | protein coding | + strand'
         );
         done();
       }, 500);
