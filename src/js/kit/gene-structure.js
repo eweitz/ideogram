@@ -91,6 +91,8 @@ function updateGeneStructure(ideo, offset=0) {
   container.innerHTML = svg;
   updateHeader(ideo.spliceExons, isCanonical);
   writeFooter(container);
+  ideo.addedSubpartListeners = false;
+  addHoverListeners(ideo);
 }
 
 /** Get name of transcript currently selected in menu */
@@ -283,6 +285,11 @@ function navigateSubparts(event) {
   if (subparts.length === 0) return; // E.g. paralog neighborhoods, lncRNA
   const cls = '_ideoHoveredSubpart';
   const subpart = document.querySelector(`.${cls}`);
+  if (!subpart) {
+    event.stopPropagation();
+    event.preventDefault();
+    return;
+  }
   let i;
   subparts.forEach((el, index) => {
     if (el.classList.contains(cls)) {
