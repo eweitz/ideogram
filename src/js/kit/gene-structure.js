@@ -839,15 +839,10 @@ function getMenu(gene, ideo, selectedName) {
   }).join('');
 
   const id = '_ideoGeneStructureMenu';
-  // const style = 'style="display: inline"';
-  const style = 'style="' +
-    'float: right; ' +
-    'position: relative; top: -3px;' +
-    '"';
   const menu =
     `<div style="margin-bottom: 8px; clear: both;">` +
-      `<label for="${id}" style="margin-right: 5px">Transcript:</label> ` +
-      `<select id="${id}" name="${id}" ${style}>${options}</select>` +
+      `<label for="${id}">Transcript:</label> ` +
+      `<select id="${id}" name="${id}">${options}</select>` +
     `</div>`;
   return menu;
 }
