@@ -86,13 +86,19 @@ function updateGeneStructure(ideo, offset=0) {
   const isCanonical = (selectedIndex === 0);
   const menu = document.querySelector('#_ideoGeneStructureMenu');
   menu.options[selectedIndex].selected = true;
-  const svg = getSvg(structure, ideo.spliceExons)[0];
+  const svg = getSvg(structure, ideo, ideo.spliceExons)[0];
   const container = document.querySelector('._ideoGeneStructureSvgContainer');
   container.innerHTML = svg;
   updateHeader(ideo.spliceExons, isCanonical);
   writeFooter(container);
   ideo.addedSubpartListeners = false;
   addHoverListeners(ideo);
+}
+
+/** Get gene symbol from transcript / gene structure name */
+function getGeneFromStructureName(structureName) {
+  const gene = structureName.split('-').slice(0, -1).join('-');
+  return gene;
 }
 
 /** Get name of transcript currently selected in menu */
@@ -107,7 +113,7 @@ function getSelectedStructure(ideo, offset=0) {
     selectedIndex = numOptions - 1;
   }
   const structureName = menu.options[selectedIndex].value;
-  const gene = structureName.split('-').slice(0, -1).join('-');
+  const gene = getGeneFromStructureName(structureName);
   const geneStructure =
     ideo.geneStructureCache[gene].find(gs => gs.name === structureName);
 
@@ -137,10 +143,6 @@ function addMenuListeners(ideo) {
       const offset = key === 'ArrowDown' ? 1 : -1;
       updateGeneStructure(ideo, offset);
     }
-  });
-
-  menu.addEventListener('change', () => {
-    updateGeneStructure(ideo);
   });
 }
 
@@ -286,6 +288,7 @@ function navigateSubparts(event) {
   const cls = '_ideoHoveredSubpart';
   const subpart = document.querySelector(`.${cls}`);
   if (!subpart) {
+    // Accounts for edge case when changing transcripts via menu
     event.stopPropagation();
     event.preventDefault();
     return;
@@ -311,6 +314,7 @@ function navigateSubparts(event) {
     key = 'right';
   }
 
+  // Don't fall off the end
   if (
     typeof key === 'undefined' ||
     nextIsOutOfSubpartBounds(i, subparts, key)
@@ -323,6 +327,8 @@ function navigateSubparts(event) {
   removeHighlights();
   const alt = event.altKey;
   const meta = event.metaKey;
+
+  // Jump forward or back by 1, 10, or all subparts
   if (event.key === left) { // Jump back
     subpart.dispatchEvent(mouseLeave);
     let index = i - 1;
@@ -358,7 +364,7 @@ function addSubpartHoverListener(subpartDOM, ideo) {
     const trimmedFoot =
       footer.innerHTML
         .replace('&nbsp;', '')
-        .replace('<br>Transcript name', 'Transcript name');
+        .replace('Transcript', '<br/>Transcript');
     footer.innerHTML = `<br/>${subpartText}${trimmedFoot}`;
   });
 
@@ -369,7 +375,6 @@ function addSubpartHoverListener(subpartDOM, ideo) {
     footer.innerHTML = ideo.originalTooltipFooter;
   });
 }
-
 
 /**
  * Add handlers for hover events in transcript container and beneath, e.g.:
@@ -389,13 +394,19 @@ function addHoverListeners(ideo) {
   const container = document.querySelector('._ideoGeneStructureContainer');
 
   container.addEventListener('mouseenter', () => {
-    // ideo.originalTooltipFooter = footer.textContent;
-    writeFooter(container);
     document.addEventListener('keydown', navigateSubparts);
+    if (ideo.addedMenuListeners) return;
+    ideo.addedMenuListeners = true;
+    writeFooter(container);
+    const tooltip = document.querySelector('._ideogramTooltip');
+    tooltip.addEventListener('change', () => {
+      updateGeneStructure(ideo);
+    });
   });
   container.addEventListener('mouseleave', () => {
     const footer = getFooter();
     footer.innerHTML = '';
+    ideo.addedMenuListeners = false;
     document.removeEventListener('keydown', navigateSubparts);
   });
 
@@ -562,7 +573,8 @@ function toggleSplice(ideo) {
   const spliceExons = ideo.spliceExons;
   const [structure, selectedIndex] = getSelectedStructure(ideo);
   const isCanonical = (selectedIndex === 0);
-  const [, prelimSubparts, matureSubparts] = getSvg(structure, spliceExons);
+  const [, prelimSubparts, matureSubparts] =
+    getSvg(structure, ideo, spliceExons);
 
   const addedIntrons = document.querySelectorAll('.intron').length > 0;
   if (!spliceExons && !addedIntrons) {
@@ -650,14 +662,14 @@ function getSubpartBorderLine(subpart) {
 //   }
 
 //   const svgList = ideo.geneStructureCache[gene].map(geneStructure => {
-//     return getSvg(geneStructure, spliceExons);
+//     return getSvg(geneStructure, ideo, spliceExons);
 //   });
 
 //   return svgList;
 // }
 
 /** Get SVG, and prelimnary and mature subparts for given gene structure */
-function getSvg(geneStructure, spliceExons=false) {
+function getSvg(geneStructure, ideo, spliceExons=false) {
   const strand = geneStructure.strand;
 
   const rawSubparts = geneStructure.subparts;
@@ -782,11 +794,13 @@ function getSvg(geneStructure, spliceExons=false) {
     footerDetails.push(biotypeText);
   }
 
-  const footerData =
-    `<br/>Transcript name: ${geneStructure.name}<br/>` +
-    footerDetails.join(` ${pipe} `);
+  const structureName = geneStructure.name;
+  const gene = getGeneFromStructureName(structureName);
+  const menu = getMenu(gene, ideo, structureName).replaceAll('"', '\'');
+  const footerData = menu + footerDetails.join(` ${pipe} `);
   const geneStructureSvg =
     `<svg class="_ideoGeneStructure" ` +
+      `data-ideo-gene-structure-name="${structureName}" ` +
       `data-ideo-strand="${strand}" data-ideo-footer="${footerData}" ` +
       `width="${(featureLengthPx + 20)}" height="40" ${transform}` +
     `>` +
@@ -808,11 +822,24 @@ function getMenu(gene, ideo, selectedName) {
 
   const options = structures.map(structure => {
     const name = structure.name;
-    return `<option value="${name}">${name}</option>`;
-  });
+    let selected = '';
+    if (selectedName && selectedName === structure.name) {
+      selected = ' selected';
+    }
+    return `<option value="${name}" ${selected}>${name}</option>`;
+  }).join('');
 
   const id = '_ideoGeneStructureMenu';
-  const menu = `<select id="${id}" name="${id}">${options}</select>`;
+  // const style = 'style="display: inline"';
+  const style = 'style="' +
+    'float: right; ' +
+    'position: relative; top: -3px;' +
+    '"';
+  const menu =
+    `<div style="margin-bottom: 8px; clear: both;">` +
+      `<label for="${id}" style="margin-right: 5px">Transcript:</label> ` +
+      `<select id="${id}" name="${id}" ${style}>${options}</select>` +
+    `</div>`;
   return menu;
 }
 
@@ -830,8 +857,7 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
     if ('spliceExons' in ideo === false) ideo.spliceExons = true;
     const spliceExons = ideo.spliceExons;
     const structure = ideo.geneStructureCache[gene][0];
-    const geneStructureSvg = getSvg(structure, spliceExons)[0];
-    const menu = getMenu(gene, ideo, geneStructureSvg);
+    const geneStructureSvg = getSvg(structure, ideo, spliceExons)[0];
     const cls = 'class="_ideoGeneStructureContainer"';
     const toggle = getSpliceToggle(ideo);
     const rnaClass = spliceExons ? '' : ' pre-mRNA';
@@ -843,7 +869,6 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
       css +
       `<div ${cls}>` +
       `<div><span ${spanAttrs}>${name}</span>${toggle}</div>` +
-      menu +
       `<span class="_ideoGeneStructureSvgContainer">` +
         geneStructureSvg +
       `</span>` +
