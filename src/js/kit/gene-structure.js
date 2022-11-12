@@ -103,19 +103,28 @@ function getGeneFromStructureName(structureName) {
 
 /** Get name of transcript currently selected in menu */
 function getSelectedStructure(ideo, offset=0) {
+  let selectedIndex, structureName;
+
   const menu = document.querySelector('#_ideoGeneStructureMenu');
-  const numOptions = menu.options.length;
-  const baseIndex = menu.selectedIndex;
-  let selectedIndex = baseIndex + offset;
-  if (selectedIndex >= numOptions) {
+  if (!menu) {
+    const svg = document.querySelector('._ideoGeneStructure');
+    structureName = svg.getAttribute('data-ideo-gene-structure-name');
     selectedIndex = 0;
-  } else if (selectedIndex < 0) {
-    selectedIndex = numOptions - 1;
+  } else {
+    const numOptions = menu.options.length;
+    const baseIndex = menu.selectedIndex;
+    selectedIndex = baseIndex + offset;
+    if (selectedIndex >= numOptions) {
+      selectedIndex = 0;
+    } else if (selectedIndex < 0) {
+      selectedIndex = numOptions - 1;
+    }
+    structureName = menu.options[selectedIndex].value;
   }
-  const structureName = menu.options[selectedIndex].value;
   const gene = getGeneFromStructureName(structureName);
   const geneStructure =
     ideo.geneStructureCache[gene].find(gs => gs.name === structureName);
+
 
   return [geneStructure, selectedIndex];
 }
