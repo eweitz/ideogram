@@ -26,6 +26,13 @@ const lineColors = {
   "3'-UTR": '#90C0B9'
 };
 
+const subpartClasses = {
+  "5'-UTR": 'five-prime-utr',
+  'exon': 'exon',
+  "3'-UTR": 'three-prime-utr',
+  'intron': 'intron'
+};
+
 const css =
   `<style>
   ._ideoGeneStructureContainerName {
@@ -74,10 +81,15 @@ function writeFooter(container) {
 }
 
 /** Write newly-selected gene structure diagram, header, and footer */
-function writeGeneStructure(geneStructure, ideo) {
-  const svg = getGeneStructureSvg(geneStructure, ideo.spliceExons)[0];
+function updateGeneStructure(ideo, offset=0) {
+  const [structure, selectedIndex] = getSelectedStructure(ideo, offset);
+  const isCanonical = (selectedIndex === 0);
+  const menu = document.querySelector('#_ideoGeneStructureMenu');
+  menu.options[selectedIndex].selected = true;
+  const svg = getSvg(structure, ideo.spliceExons)[0];
   const container = document.querySelector('._ideoGeneStructureSvgContainer');
   container.innerHTML = svg;
+  updateHeader(ideo.spliceExons, isCanonical);
   writeFooter(container);
 }
 
@@ -121,15 +133,12 @@ function addMenuListeners(ideo) {
     const key = event.key;
     if (['ArrowDown', 'ArrowUp'].includes(key)) {
       const offset = key === 'ArrowDown' ? 1 : -1;
-      const [structure, selectedIndex] = getSelectedStructure(ideo, offset);
-      menu.options[selectedIndex].selected = true;
-      writeGeneStructure(structure, ideo);
+      updateGeneStructure(ideo, offset);
     }
   });
 
   menu.addEventListener('change', () => {
-    const structure = getSelectedStructure(ideo)[0];
-    writeGeneStructure(structure, ideo);
+    updateGeneStructure(ideo);
   });
 }
 
@@ -483,15 +492,16 @@ function spliceIn(subparts) {
   return splicedPositionedSubparts;
 }
 
-function getSpliceStateText(spliceExons) {
+function getSpliceStateText(spliceExons, isCanonical=true) {
   let modifier = '';
   let titleMod = 'without';
   if (!spliceExons) {
     modifier = 'pre-';
     titleMod = 'with';
   }
-  const title = `Canonical transcript per Ensembl, ${titleMod} introns`;
-  const name = `Canonical ${modifier}mRNA`;
+  const canonOrAlt = isCanonical ? 'Canonical' : 'Alternative';
+  const title = `${canonOrAlt} transcript per Ensembl, ${titleMod} introns`;
+  const name = `${canonOrAlt} ${modifier}mRNA`;
   return {title, name};
 }
 
@@ -523,12 +533,29 @@ function drawIntrons(prelimSubparts, matureSubparts, ideo) {
   });
 }
 
+function updateHeader(spliceExons, isCanonical) {
+  // Update title for gene structure diagram
+  const nameDOM =
+  document.querySelector('._ideoGeneStructureContainerName');
+  const toggleDOM = document.querySelector('._ideoSpliceToggle');
+
+  if (nameDOM && toggleDOM) {
+    [nameDOM, toggleDOM].forEach(el => el.classList.remove('pre-mRNA'));
+    if (!spliceExons) {
+      [nameDOM, toggleDOM].forEach(el => el.classList.add('pre-mRNA'));
+    }
+    const {title, name} = getSpliceStateText(spliceExons, isCanonical);
+    nameDOM.textContent = name;
+    nameDOM.title = title;
+  }
+}
+
 function toggleSplice(ideo) {
   ideo.spliceExons = !ideo.spliceExons;
   const spliceExons = ideo.spliceExons;
-  const structure = getSelectedStructure(ideo)[0];
-  const [, prelimSubparts, matureSubparts] =
-    getGeneStructureSvg(structure, spliceExons);
+  const [structure, selectedIndex] = getSelectedStructure(ideo);
+  const isCanonical = (selectedIndex === 0);
+  const [, prelimSubparts, matureSubparts] = getSvg(structure, spliceExons);
 
   const addedIntrons = document.querySelectorAll('.intron').length > 0;
   if (!spliceExons && !addedIntrons) {
@@ -556,20 +583,7 @@ function toggleSplice(ideo) {
         subpartDOM.insertAdjacentHTML('afterend', line);
       });
 
-      // Update title for gene structure diagram
-      const nameDOM =
-        document.querySelector('._ideoGeneStructureContainerName');
-      const toggleDOM = document.querySelector('._ideoSpliceToggle');
-
-      if (nameDOM && toggleDOM) {
-        [nameDOM, toggleDOM].forEach(el => el.classList.remove('pre-mRNA'));
-        if (!spliceExons) {
-          [nameDOM, toggleDOM].forEach(el => el.classList.add('pre-mRNA'));
-        }
-        const {title, name} = getSpliceStateText(spliceExons);
-        nameDOM.textContent = name;
-        nameDOM.title = title;
-      }
+      updateHeader(spliceExons, isCanonical);
     });
 }
 
@@ -620,7 +634,7 @@ function getSubpartBorderLine(subpart) {
   return `<line class="subpart-line" ${lineAttrs} />`;
 }
 
-// function getGeneStructureSvgList(gene, ideo, spliceExons=false) {
+// function getSvgList(gene, ideo, spliceExons=false) {
 //   if (
 //     'geneStructureCache' in ideo === false ||
 //     gene in ideo.geneStructureCache === false
@@ -629,13 +643,14 @@ function getSubpartBorderLine(subpart) {
 //   }
 
 //   const svgList = ideo.geneStructureCache[gene].map(geneStructure => {
-//     return getGeneStructureSvg(geneStructure, spliceExons);
+//     return getSvg(geneStructure, spliceExons);
 //   });
 
 //   return svgList;
 // }
 
-function getGeneStructureSvg(geneStructure, spliceExons=false) {
+/** Get SVG, and prelimnary and mature subparts for given gene structure */
+function getSvg(geneStructure, spliceExons=false) {
   const strand = geneStructure.strand;
 
   const rawSubparts = geneStructure.subparts;
@@ -681,12 +696,6 @@ function getGeneStructureSvg(geneStructure, spliceExons=false) {
     'intron': 0,
     "3'-UTR": 0
   };
-  const classes = {
-    "5'-UTR": 'five-prime-utr',
-    'exon': 'exon',
-    "3'-UTR": 'three-prime-utr',
-    'intron': 'intron'
-  };
 
   const isPositiveStrand = strand === '+';
   subparts = swapUTRsForward(subparts, isPositiveStrand);
@@ -727,7 +736,7 @@ function getGeneStructureSvg(geneStructure, spliceExons=false) {
     const width = subpart[3].width;
 
     const pos = `x="${x}" width="${width}" y="${y}" height="${height}"`;
-    const cls = `class="subpart ${classes[subpartType]}" `;
+    const cls = `class="subpart ${subpartClasses[subpartType]}" `;
 
     // TODO: Handle introns better, refine CDS vs. UTR in exons
     const total = totalBySubpart[subpartType];
@@ -757,12 +766,18 @@ function getGeneStructureSvg(geneStructure, spliceExons=false) {
       `style="${sharedStyle} left: -10px;"`;
   }
 
+  const footerDetails = [
+    `${totalBySubpart['exon']} exons`,
+    `${strand} strand`
+  ];
+  const biotypeText = geneStructure.biotype.replace(/_/g, ' ');
+  if (biotypeText !== 'protein coding') {
+    footerDetails.push(biotypeText);
+  }
+
   const footerData =
-    `<br/>Transcript name: ${geneStructure.name}<br/>` + [
-      `${totalBySubpart['exon']} exons`,
-      `${geneStructure.biotype.replace(/_/g, ' ')}`,
-      `${strand} strand`
-    ].join(` ${pipe} `);
+    `<br/>Transcript name: ${geneStructure.name}<br/>` +
+    footerDetails.join(` ${pipe} `);
   const geneStructureSvg =
     `<svg class="_ideoGeneStructure" ` +
       `data-ideo-strand="${strand}" data-ideo-footer="${footerData}" ` +
@@ -808,28 +823,26 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
     if ('spliceExons' in ideo === false) ideo.spliceExons = true;
     const spliceExons = ideo.spliceExons;
     const structure = ideo.geneStructureCache[gene][0];
-    const geneStructureSvg =
-      getGeneStructureSvg(structure, spliceExons)[0];
+    const geneStructureSvg = getSvg(structure, spliceExons)[0];
     const menu = getMenu(gene, ideo, geneStructureSvg);
-    if (geneStructureSvg) {
-      const cls = 'class="_ideoGeneStructureContainer"';
-      const toggle = getSpliceToggle(ideo);
-      const rnaClass = spliceExons ? '' : ' pre-mRNA';
-      const spanClass = `class="_ideoGeneStructureContainerName${rnaClass}"`;
-      const {name, title} = getSpliceStateText(spliceExons);
-      const spanAttrs = `${spanClass} title="${title}"`;
-      geneStructureHtml =
-        '<br/><br/>' +
-        css +
-        `<div ${cls}>` +
-        `<div><span ${spanAttrs}>${name}</span>${toggle}</div>` +
-        menu +
-        `<span class="_ideoGeneStructureSvgContainer">` +
-          geneStructureSvg +
-        `</span>` +
-        `<div class="_ideoGeneStructureFooter"></div>` +
-        `</div>`;
-    }
+    const cls = 'class="_ideoGeneStructureContainer"';
+    const toggle = getSpliceToggle(ideo);
+    const rnaClass = spliceExons ? '' : ' pre-mRNA';
+    const spanClass = `class="_ideoGeneStructureContainerName${rnaClass}"`;
+    const {name, title} = getSpliceStateText(spliceExons);
+    const spanAttrs = `${spanClass} title="${title}"`;
+    geneStructureHtml =
+      '<br/><br/>' +
+      css +
+      `<div ${cls}>` +
+      `<div><span ${spanAttrs}>${name}</span>${toggle}</div>` +
+      menu +
+      `<span class="_ideoGeneStructureSvgContainer">` +
+        geneStructureSvg +
+      `</span>` +
+      `<div class="_ideoGeneStructureFooter"></div>` +
+      `</div>`;
+
   }
   return geneStructureHtml;
 }
