@@ -358,6 +358,10 @@ function navigateSubparts(event) {
   event.preventDefault();
 }
 
+function getMenuDOM() {
+  return document.querySelector('#_ideoGeneStructureMenu');
+}
+
 function addSubpartHoverListener(subpartDOM, ideo) {
   const subpart = subpartDOM;
   // On hovering over subpart, highlight it and show details
@@ -365,16 +369,15 @@ function addSubpartHoverListener(subpartDOM, ideo) {
     removeHighlights();
     // Highlight hovered subpart, adding an aura around it
     event.target.classList.add('_ideoHoveredSubpart');
-
     // Show details
     const footer = getFooter();
     ideo.originalTooltipFooter = footer.innerHTML;
     const subpartText = subpart.getAttribute('data-subpart');
-    const trimmedFoot =
-      footer.innerHTML
-        .replace('&nbsp;', '')
-        .replace('Transcript', '<br/>Transcript');
-    footer.innerHTML = `<br/>${subpartText}${trimmedFoot}`;
+    const trimmedFoot = footer.innerHTML.replace('&nbsp;', '');
+    footer.innerHTML =
+      `<div style="margin-bottom: -12px">${subpartText}</div>${trimmedFoot}`;
+    const menu = getMenuDOM();
+    menu.style.marginTop = '0px';
   });
 
   // On hovering out, de-highlight and hide details
@@ -382,6 +385,8 @@ function addSubpartHoverListener(subpartDOM, ideo) {
     event.target.classList.remove('_ideoHoveredSubpart');
     const footer = getFooter();
     footer.innerHTML = ideo.originalTooltipFooter;
+    const menu = getMenuDOM();
+    menu.style.marginTop = '2px';
   });
 }
 
@@ -581,6 +586,8 @@ function toggleSplice(ideo) {
   ideo.spliceExons = !ideo.spliceExons;
   const spliceExons = ideo.spliceExons;
   const [structure, selectedIndex] = getSelectedStructure(ideo);
+  console.log('structure')
+  console.log(structure)
   const isCanonical = (selectedIndex === 0);
   const [, prelimSubparts, matureSubparts] =
     getSvg(structure, ideo, spliceExons);
@@ -820,13 +827,6 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
 }
 
 function getMenu(gene, ideo, selectedName) {
-  if (
-    'geneStructureCache' in ideo === false ||
-    gene in ideo.geneStructureCache === false
-  ) {
-    return null;
-  }
-
   const structures = ideo.geneStructureCache[gene];
 
   const options = structures.map(structure => {
@@ -840,7 +840,7 @@ function getMenu(gene, ideo, selectedName) {
 
   const id = '_ideoGeneStructureMenu';
   const menu =
-    `<div style="margin-bottom: 8px; clear: both;">` +
+    `<div style="margin-bottom: 4px; margin-top: 2px; clear: both;">` +
       `<label for="${id}">Transcript:</label> ` +
       `<select id="${id}" name="${id}">${options}</select>` +
     `</div>`;
