@@ -358,8 +358,8 @@ function navigateSubparts(event) {
   event.preventDefault();
 }
 
-function getMenuDOM() {
-  return document.querySelector('#_ideoGeneStructureMenu');
+function getMenuContainer() {
+  return document.querySelector('#_ideoGeneStructureMenuContainer');
 }
 
 function addSubpartHoverListener(subpartDOM, ideo) {
@@ -375,9 +375,9 @@ function addSubpartHoverListener(subpartDOM, ideo) {
     const subpartText = subpart.getAttribute('data-subpart');
     const trimmedFoot = footer.innerHTML.replace('&nbsp;', '');
     footer.innerHTML =
-      `<div style="margin-bottom: -12px">${subpartText}</div>${trimmedFoot}`;
-    const menu = getMenuDOM();
-    menu.style.marginTop = '0px';
+      `<div style="margin-bottom: -10px">${subpartText}</div>${trimmedFoot}`;
+    const menuContainer = getMenuContainer();
+    menuContainer.style.marginTop = '';
   });
 
   // On hovering out, de-highlight and hide details
@@ -385,8 +385,8 @@ function addSubpartHoverListener(subpartDOM, ideo) {
     event.target.classList.remove('_ideoHoveredSubpart');
     const footer = getFooter();
     footer.innerHTML = ideo.originalTooltipFooter;
-    const menu = getMenuDOM();
-    menu.style.marginTop = '2px';
+    const menuContainer = getMenuContainer();
+    menuContainer.style.marginTop = '4px';
   });
 }
 
@@ -839,8 +839,10 @@ function getMenu(gene, ideo, selectedName) {
   }).join('');
 
   const id = '_ideoGeneStructureMenu';
+  const containerId = '_ideoGeneStructureMenuContainer';
+  const style = 'margin-bottom: 4px; margin-top: 4px; clear: both;';
   const menu =
-    `<div style="margin-bottom: 4px; margin-top: 2px; clear: both;">` +
+    `<div id="${containerId}" style="${style}">` +
       `<label for="${id}">Transcript:</label> ` +
       `<select id="${id}" name="${id}">${options}</select>` +
     `</div>`;
