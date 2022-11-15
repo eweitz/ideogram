@@ -159,6 +159,9 @@ function toggleSpliceByKeyboard(event) {
   if (event.key === 's') {
     const spliceToggle = document.querySelector('._ideoSpliceToggle input');
     if (!spliceToggle) return;
+
+    const subpartText = document.querySelector('#_ideoSubpartText')
+    if (subpartText) subpartText.innerHTML = '&nbsp;';
     spliceToggle.dispatchEvent(new MouseEvent('click'));
   }
 }
@@ -364,6 +367,7 @@ function getMenuContainer() {
 
 function addSubpartHoverListener(subpartDOM, ideo) {
   const subpart = subpartDOM;
+
   // On hovering over subpart, highlight it and show details
   subpart.addEventListener('mouseenter', event => {
     removeHighlights();
@@ -374,8 +378,10 @@ function addSubpartHoverListener(subpartDOM, ideo) {
     ideo.originalTooltipFooter = footer.innerHTML;
     const subpartText = subpart.getAttribute('data-subpart');
     const trimmedFoot = footer.innerHTML.replace('&nbsp;', '');
+    const style = 'style="margin-bottom: -10px"';
+    const id = 'id="_ideoSubpartText"';
     footer.innerHTML =
-      `<div style="margin-bottom: -10px">${subpartText}</div>${trimmedFoot}`;
+      `<div ${id} ${style}">${subpartText}</div>${trimmedFoot}`;
     const menuContainer = getMenuContainer();
     menuContainer.style.marginTop = '';
   });
@@ -586,8 +592,6 @@ function toggleSplice(ideo) {
   ideo.spliceExons = !ideo.spliceExons;
   const spliceExons = ideo.spliceExons;
   const [structure, selectedIndex] = getSelectedStructure(ideo);
-  console.log('structure')
-  console.log(structure)
   const isCanonical = (selectedIndex === 0);
   const [, prelimSubparts, matureSubparts] =
     getSvg(structure, ideo, spliceExons);
