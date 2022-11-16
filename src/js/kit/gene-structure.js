@@ -625,8 +625,9 @@ function toggleSplice(ideo) {
       updateHeader(spliceExons, isCanonical);
 
       const transcriptLengthBp = getTranscriptLengthBp(subparts, spliceExons);
+      const prettyLength = transcriptLengthBp.toLocaleString()
       const tlbpDOM = document.querySelector('#_ideoTranscriptLengthBp');
-      tlbpDOM.innerText = `${transcriptLengthBp} bp`;
+      tlbpDOM.innerText = `${prettyLength} bp`;
     });
 }
 
@@ -637,7 +638,7 @@ function getTranscriptLengthBp(subparts, spliceExons=false) {
   const lastSubpart = subparts.slice(-1)[0];
   const lastStart = lastSubpart[1];
   const lastLength = lastSubpart[2];
-  const exonFill = exons.length - 1;
+  const exonFill = spliceExons ? exons.length - 1 : 0;
 
   const transcriptLengthBp = lastStart + lastLength + exonFill;
   return transcriptLengthBp;
@@ -671,7 +672,8 @@ function getSubpartSummary(subpartType, total, index, strand, lengthBp) {
   if (strand === '-') index = total - index + 1;
   const numOfTotal = total > 1 ? `${index} of ${total} ` : '';
   const prettyType = subpartType[0].toUpperCase() + subpartType.slice(1);
-  const html = `${prettyType} ${numOfTotal}${pipe} ${lengthBp} bp`;
+  const prettyLength = lengthBp.toLocaleString();
+  const html = `${prettyType} ${numOfTotal}${pipe} ${prettyLength} bp`;
   const summary = `data-subpart="${html}"`;
   return summary;
 }
@@ -725,7 +727,7 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
     spliceToggle.title = title;
   }
 
-  const featureLengthPx = 250;
+  const featureLengthPx = 250 - 2; // Snip to avoid overextending
 
   const intronHeight = 1;
   const intronColor = 'black';
@@ -822,11 +824,11 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
   }
 
   const transcriptLengthBp = getTranscriptLengthBp(subparts, spliceExons);
-
+  const prettyLength = transcriptLengthBp.toLocaleString();
   const footerDetails = [
     `${totalBySubpart['exon']} exons`,
-    `<span id='_ideoTranscriptLengthBp'>${transcriptLengthBp} bp</span> `,
-    // `${strand} strand`
+    `<span id='_ideoTranscriptLengthBp'>${prettyLength} bp</span> `,
+    `${strand} strand`
   ];
   const biotypeText = geneStructure.biotype.replace(/_/g, ' ');
   if (biotypeText !== 'protein coding') {
