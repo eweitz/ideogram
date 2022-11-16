@@ -160,7 +160,7 @@ function toggleSpliceByKeyboard(event) {
     const spliceToggle = document.querySelector('._ideoSpliceToggle input');
     if (!spliceToggle) return;
 
-    const subpartText = document.querySelector('#_ideoSubpartText')
+    const subpartText = document.querySelector('#_ideoSubpartText');
     if (subpartText) subpartText.innerHTML = '&nbsp;';
     spliceToggle.dispatchEvent(new MouseEvent('click'));
   }
@@ -623,17 +623,33 @@ function toggleSplice(ideo) {
       });
 
       updateHeader(spliceExons, isCanonical);
+
+      const transcriptLengthBp = getTranscriptLengthBp(subparts, spliceExons);
+      const tlbpDOM = document.querySelector('#_ideoTranscriptLengthBp');
+      tlbpDOM.innerText = `${transcriptLengthBp} bp`;
     });
+}
+
+function getTranscriptLengthBp(subparts, spliceExons=false) {
+  const exons = subparts.filter(sp => sp[0] === 'exon');
+  if (spliceExons) subparts = exons;
+
+  const lastSubpart = subparts.slice(-1)[0];
+  const lastStart = lastSubpart[1];
+  const lastLength = lastSubpart[2];
+  const exonFill = exons.length - 1;
+
+  const transcriptLengthBp = lastStart + lastLength + exonFill;
+  return transcriptLengthBp;
 }
 
 /** Merge subpart type, pixel-x position, and pixel width to each subpart */
 function addPositions(subparts) {
-  const lastSubpart = subparts.slice(-1)[0];
-  const featureLengthBp = lastSubpart[1] + lastSubpart[2];
+  const transcriptLengthBp = getTranscriptLengthBp(subparts);
 
-  const featureLengthPx = 250;
+  const transcriptLengthPx = 250;
 
-  const bpPerPx = featureLengthBp / featureLengthPx;
+  const bpPerPx = transcriptLengthBp / transcriptLengthPx;
 
   for (let i = 0; i < subparts.length; i++) {
     const subpart = subparts[i];
@@ -805,9 +821,12 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
       `style="${sharedStyle} left: -10px;"`;
   }
 
+  const transcriptLengthBp = getTranscriptLengthBp(subparts, spliceExons);
+
   const footerDetails = [
     `${totalBySubpart['exon']} exons`,
-    `${strand} strand`
+    `<span id='_ideoTranscriptLengthBp'>${transcriptLengthBp} bp</span> `,
+    // `${strand} strand`
   ];
   const biotypeText = geneStructure.biotype.replace(/_/g, ' ');
   if (biotypeText !== 'protein coding') {
