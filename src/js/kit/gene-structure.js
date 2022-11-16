@@ -438,10 +438,18 @@ function addHoverListeners(ideo) {
   });
 }
 
+function writeStrandInFooter(ideo) {
+  const tooltipFooter = document.querySelector('._ideoTooltipFooter');
+  const structure = getSelectedStructure(ideo)[0];
+  tooltipFooter.innerText =
+    tooltipFooter.innerText.replace(')', `, ${structure.strand})`);
+}
+
 export function addGeneStructureListeners(ideo) {
   addSpliceToggleListeners(ideo);
   addHoverListeners(ideo);
   addMenuListeners(ideo);
+  writeStrandInFooter(ideo);
 }
 
 function getSpliceToggleHoverTitle(spliceExons) {
@@ -827,8 +835,7 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
   const prettyLength = transcriptLengthBp.toLocaleString();
   const footerDetails = [
     `${totalBySubpart['exon']} exons`,
-    `<span id='_ideoTranscriptLengthBp'>${prettyLength} bp</span> `,
-    `${strand} strand`
+    `<span id='_ideoTranscriptLengthBp'>${prettyLength} bp</span> `
   ];
   const biotypeText = geneStructure.biotype.replace(/_/g, ' ');
   if (biotypeText !== 'protein coding') {
