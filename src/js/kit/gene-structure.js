@@ -877,7 +877,9 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
 function getMenuArrows() {
 
   // Get attributes
-  const style = 'width: 12px; height: 12px; cursor: pointer;';
+  const style =
+    'width: 12px; height: 12px; cursor: pointer;' +
+    'user-select: none;'; // Prevent distracting highlight on quick clicks
   const downStyle = `style="${style}; margin-left: 5px;"`;
   const upStyle = `style="${style}; margin-left: 2px;"`;
   const cls = 'class="_ideoMenuArrow"';
