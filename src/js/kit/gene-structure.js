@@ -454,10 +454,11 @@ function addHoverListeners(ideo) {
 }
 
 function writeStrandInFooter(ideo) {
+  const strand = getSelectedStructure(ideo)[0].strand;
+  if (strand === '+') return; // Don't remark if strand is the default
   const tooltipFooter = document.querySelector('._ideoTooltipFooter');
-  const structure = getSelectedStructure(ideo)[0];
   tooltipFooter.innerText =
-    tooltipFooter.innerText.replace(')', `, ${structure.strand})`);
+    tooltipFooter.innerText.replace(')', `, ${strand})`);
 }
 
 export function addGeneStructureListeners(ideo) {
