@@ -1,4 +1,5 @@
 import {d3} from '../lib';
+import {getIcon} from '../annotations/legend'
 
 const y = 15;
 
@@ -136,7 +137,6 @@ function getSelectedStructure(ideo, offset=0) {
  */
 function addMenuListeners(ideo) {
   const menuId = '_ideoGeneStructureMenu';
-  const menu = document.querySelector('#' + menuId);
   const container = document.querySelector('._ideoGeneStructureContainer');
 
   // Don't search this gene if clicking to expand the menu
@@ -144,8 +144,23 @@ function addMenuListeners(ideo) {
     if (event.target.id === menuId) {
       event.stopPropagation();
     }
+
+    let svgMaybe = event.target;
+    if (svgMaybe.parentElement.tagName === 'svg') {
+      svgMaybe = svgMaybe.parentElement;
+    };
+
+    // Go to next transcript on clicking down arrow icon, previous on up
+    if (Array.from(svgMaybe.classList).includes('_ideoMenuArrow')) {
+      const menuArrow = event.target;
+      const direction = menuArrow.getAttribute('data-dir');
+      const offset = direction === 'down' ? 1 : -1;
+      updateGeneStructure(ideo, offset);
+      event.stopPropagation();
+    }
   });
 
+  // Go to next transcript on pressing down arrow key, previous on up
   document.addEventListener('keydown', (event) => {
     const key = event.key;
     if (['ArrowDown', 'ArrowUp'].includes(key)) {
@@ -858,6 +873,34 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
   return [geneStructureSvg, prelimSubparts, matureSubparts];
 }
 
+/** Get down and up arrows for one-click, carousel-like navigation for menu */
+function getMenuArrows() {
+
+  // Get attributes
+  const style = 'width: 12px; height: 12px; cursor: pointer;';
+  const downStyle = `style="${style}; margin-left: 5px;"`;
+  const upStyle = `style="${style}; margin-left: 2px;"`;
+  const cls = 'class="_ideoMenuArrow"';
+  const downTitle = `<title>Next transcript (down arrow)</title>`;
+  const upTitle = `<title>Previous transcript (up arrow)</title>`;
+  const downAttrs = `${downStyle} ${cls} data-dir="down"`;
+  const upAttrs = `${upStyle} ${cls} data-dir="up"`;
+
+  // Get SVG polygon elements
+  const down = getIcon(
+    {shape: 'triangle', color: '#888'},
+    {config: {orientation: 'down'}}
+  );
+  const up = getIcon({shape: 'triangle', color: '#888'}, {config: ''});
+
+  const downArrow = `<svg ${downAttrs}>${downTitle}${down}</svg>`;
+  const upArrow = `<svg ${upAttrs}>${upTitle}${up}</svg>`;
+  const menuArrows = downArrow + upArrow;
+
+  return menuArrows;
+}
+
+/** Get menu for all transcripts for this gene */
 function getMenu(gene, ideo, selectedName) {
   const structures = ideo.geneStructureCache[gene];
 
@@ -873,10 +916,14 @@ function getMenu(gene, ideo, selectedName) {
   const id = '_ideoGeneStructureMenu';
   const containerId = '_ideoGeneStructureMenuContainer';
   const style = 'margin-bottom: 4px; margin-top: 4px; clear: both;';
+
+  const menuArrows = getMenuArrows();
+
   const menu =
     `<div id="${containerId}" style="${style}">` +
       `<label for="${id}">Transcript:</label> ` +
       `<select id="${id}" name="${id}">${options}</select>` +
+      menuArrows +
     `</div>`;
   return menu;
 }

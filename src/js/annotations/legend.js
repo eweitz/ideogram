@@ -16,7 +16,7 @@ var legendStyle =
   '#_ideogramLegend li {float: none; margin: 0;}' +
   '#_ideogramLegend ul span {position: relative; left: -15px;} ';
 
-function getIcon(row, ideo) {
+export function getIcon(row, ideo) {
   var icon, triangleAttrs, circleAttrs, rectAttrs,
     fill = 'fill="' + row.color + '" style="stroke: #AAA;"',
     shape = row.shape;
@@ -33,6 +33,9 @@ function getIcon(row, ideo) {
       if (ideo.config.orientation === 'vertical') {
         // Orient arrows in legend as they are in annotations
         transform = ' transform="rotate(90, 7, 7)"';
+      }
+      if (ideo.config.orientation === 'down') {
+        transform = ' transform="rotate(180, 7, 7)"';
       }
       icon = '<path ' + triangleAttrs + transform + ' ' + fill + '></path>';
     }
