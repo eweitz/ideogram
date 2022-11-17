@@ -904,7 +904,17 @@ function getMenuArrows() {
 
 /** Get menu for all transcripts for this gene */
 function getMenu(gene, ideo, selectedName) {
+  const containerId = '_ideoGeneStructureMenuContainer';
+  const style = 'margin-bottom: 4px; margin-top: 4px; clear: both;';
+
   const structures = ideo.geneStructureCache[gene];
+
+  if (structures.length === 1) {
+    const name = structures[0].name;
+    const line =
+      `<div id="${containerId}" style="${style}">Transcript: ${name}</div>`;
+    return line;
+  }
 
   const options = structures.map(structure => {
     const name = structure.name;
@@ -916,8 +926,6 @@ function getMenu(gene, ideo, selectedName) {
   }).join('');
 
   const id = '_ideoGeneStructureMenu';
-  const containerId = '_ideoGeneStructureMenuContainer';
-  const style = 'margin-bottom: 4px; margin-top: 4px; clear: both;';
 
   const menuArrows = getMenuArrows();
 
