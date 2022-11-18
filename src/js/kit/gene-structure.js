@@ -398,7 +398,7 @@ function addSubpartHoverListener(subpartDOM, ideo) {
     footer.innerHTML =
       `<div ${id} ${style}">${subpartText}</div>${trimmedFoot}`;
     const menuContainer = getMenuContainer();
-    menuContainer.style.marginTop = '';
+    if (menuContainer) menuContainer.style.marginTop = '';
   });
 
   // On hovering out, de-highlight and hide details
@@ -407,7 +407,7 @@ function addSubpartHoverListener(subpartDOM, ideo) {
     const footer = getFooter();
     footer.innerHTML = ideo.originalTooltipFooter;
     const menuContainer = getMenuContainer();
-    menuContainer.style.marginTop = '4px';
+    if (menuContainer) menuContainer.style.marginTop = '4px';
   });
 }
 
@@ -648,9 +648,10 @@ function toggleSplice(ideo) {
 
       updateHeader(spliceExons, isCanonical);
 
-      const transcriptLengthBp = getTranscriptLengthBp(subparts, spliceExons);
-      const prettyLength = transcriptLengthBp.toLocaleString()
       const tlbpDOM = document.querySelector('#_ideoTranscriptLengthBp');
+      if (!tlbpDOM) return;
+      const transcriptLengthBp = getTranscriptLengthBp(subparts, spliceExons);
+      const prettyLength = transcriptLengthBp.toLocaleString();
       tlbpDOM.innerText = `${prettyLength} bp`;
     });
 }

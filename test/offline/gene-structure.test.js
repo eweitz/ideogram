@@ -50,6 +50,7 @@ describe('Ideogram gene structure functionality', function() {
 
       // Positive-stranded gene
       await ideogram.plotRelatedGenes('APOE');
+
       setTimeout(async function() {
         const apoeLabel = document.querySelector('#ideogramLabel__c18_a1');
         apoeLabel.dispatchEvent(new Event('mouseover'));
@@ -74,8 +75,9 @@ describe('Ideogram gene structure functionality', function() {
         assert.equal(
           exonText2,
           'Exon 2 of 4 | 66 bp' +
-          'Transcript name: APOE-201' +
-          '4 exons | protein coding | + strand'
+          'Transcript: APOE-201APOE-204APOE-203APOE-202' +
+          'Next transcript (down arrow)Previous transcript (up arrow)' +
+          '4 exons | 1,166 bp '
         );
 
         // Negative-stranded gene
@@ -95,13 +97,12 @@ describe('Ideogram gene structure functionality', function() {
 
         // Navigate subparts by pressing arrow key
         document.dispatchEvent(left);
-        const exon3Text = footer.textContent;
+        const exon3Text = footer.textContent.slice(0, 20);
         assert.equal(
           exon3Text,
-          'Exon 3 of 4 | 157 bp' +
-          'Transcript name: APOE-201' +
-          '4 exons | protein coding | + strand'
+          'Exon 3 of 4 | 157 bp'
         );
+
         done();
       }, 500);
     }
