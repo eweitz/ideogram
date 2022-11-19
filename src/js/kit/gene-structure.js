@@ -1,8 +1,7 @@
 import {d3} from '../lib';
-import {getIcon} from '../annotations/legend'
+import {getIcon} from '../annotations/legend';
 
 const y = 15;
-
 
 // Subtle visual delimiter; separates horizontally adjacent fields in UI
 const pipe = `<span style='color: #CCC'>|</span>`;
@@ -437,13 +436,20 @@ function addHoverListeners(ideo) {
     const tooltip = document.querySelector('._ideogramTooltip');
     tooltip.addEventListener('change', () => {
       updateGeneStructure(ideo);
+
+      // Without this, selecting a new transcript will close the tooltip if
+      // the selected <option> screen position is outside the tooltip (as
+      // is often the case in genes with many transcripts, like TP53).
+      ideo.oneTimeDelayTooltipHideMs = 2000; // wait 2.0 s instead of 0.25 s
     });
   });
   container.addEventListener('mouseleave', () => {
+    ideo.oneTimeDelayTooltipHideMs = 2000; // See "Without this..." note above
     const footer = getFooter();
     footer.innerHTML = '';
     ideo.addedMenuListeners = false;
     document.removeEventListener('keydown', navigateSubparts);
+
   });
 
   if (ideo.addedSubpartListeners) return;

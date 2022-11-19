@@ -38,10 +38,17 @@ function startHideAnnotTooltipTimeout() {
     return;
   }
 
+  // See "Without this..." note in gene-structure.js
+  const hideMs = ideo.oneTimeDelayTooltipHideMs ?? 250;
+  delete ideo.oneTimeDelayTooltipHideMs;
+
+  // Hide tooltip after `hideMs` milliseconds
   ideo.hideAnnotTooltipTimeout = window.setTimeout(function() {
     hideAnnotTooltip();
-  }, 250);
+  }, hideMs);
 
+  // Enable clients to not show tooltip immediately after clicking gene,
+  // e.g. in related genes kit
   ideo.isTooltipCooling = true;
   ideo.hideAnnotTooltipCounter = window.setTimeout(function() {
     ideo.isTooltipCooling = false;
@@ -113,34 +120,6 @@ function onClickAnnot(annot) {
 // /** Get list of annotation objects by names, e.g. ["BRCA1", "APOE"] */
 // function getAnnotsByName(annotNames, ideo) {
 //   return annotNames.map(name => getAnnotByName(name, ideo));
-// }
-
-// /** Briefly show a circle around specified annotations */
-// function pulseAnnots(annotNames, ideo, duration=2000) {
-//   const annots = getAnnotsByName(annotNames, ideo);
-//   const circle = getShapes(ideo.config.annotationHeight + 2).circle;
-//   const ids = annots.map(annot => annot.domId);
-
-//   d3.selectAll(ids).each(function() {
-//     d3.select('#' + this)
-//       .insert('path', ':first-child')
-//       .attr('class', '_ideogramAnnotPulse')
-//       .attr('d', circle)
-//       .attr('fill-opacity', 0.5)
-//       .attr('fill', 'yellow')
-//       .attr('stroke', 'orange');
-//   });
-
-//   const annotPulses = d3.selectAll('._ideogramAnnotPulse');
-//   annotPulses.transition()
-//     .duration(duration) // fade out for `duration` milliseconds
-//     .style('opacity', 0)
-//     .style('pointer-events', 'none')
-//     .on('end', function(d, i) {
-//       if (i === annotPulses.size() - 1) {
-//         annotPulses.remove();
-//       }
-//     });
 // }
 
 /**
