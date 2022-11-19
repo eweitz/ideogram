@@ -109,6 +109,7 @@ function getSelectedStructure(ideo, offset=0) {
   const menu = document.querySelector('#_ideoGeneStructureMenu');
   if (!menu) {
     const svg = document.querySelector('._ideoGeneStructure');
+    if (!svg) return null; // No gene structure is available, e.g. for miRNA
     structureName = svg.getAttribute('data-ideo-gene-structure-name');
     selectedIndex = 0;
   } else {
@@ -462,6 +463,8 @@ function writeStrandInFooter(ideo) {
 }
 
 export function addGeneStructureListeners(ideo) {
+  const structure = getSelectedStructure(ideo);
+  if (structure === null) return; // Bail for e.g. miRNA
   addSpliceToggleListeners(ideo);
   addHoverListeners(ideo);
   addMenuListeners(ideo);
