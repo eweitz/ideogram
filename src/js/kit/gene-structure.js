@@ -411,6 +411,17 @@ function addSubpartHoverListener(subpartDOM, ideo) {
   });
 }
 
+/** Did the mouse event occur inside the tooltip area? */
+function isMouseEventInTooltip(event) {
+  const tooltip = document.querySelector('._ideogramTooltip');
+  const box = tooltip.getBoundingClientRect();
+  const x = event.screenX;
+  const y = event.screenY;
+  const inTooltip =
+    (x > box.left && x < box.right && y > box.top && y < box.bottom);
+  return inTooltip;
+}
+
 /**
  * Add handlers for hover events in transcript container and beneath, e.g.:
  *
@@ -433,6 +444,8 @@ function addHoverListeners(ideo) {
     if (ideo.addedMenuListeners) return;
     ideo.addedMenuListeners = true;
     writeFooter(container);
+
+    // Listen for change of selected option in transcript menu
     const tooltip = document.querySelector('._ideogramTooltip');
     tooltip.addEventListener('change', () => {
       updateGeneStructure(ideo);
@@ -442,14 +455,24 @@ function addHoverListeners(ideo) {
       // is often the case in genes with many transcripts, like TP53).
       ideo.oneTimeDelayTooltipHideMs = 2000; // wait 2.0 s instead of 0.25 s
     });
+
   });
-  container.addEventListener('mouseleave', () => {
+  container.addEventListener('mouseleave', (event) => {
     ideo.oneTimeDelayTooltipHideMs = 2000; // See "Without this..." note above
-    const footer = getFooter();
-    footer.innerHTML = '';
+    const inTooltip = isMouseEventInTooltip(event);
+    if (inTooltip === true) {
+      // Only remove transcript footer if `mouseleave` event is from footer to
+      // another part of the tooltip.  If `mouseleave`-ing from footer to
+      // *outside* the tooltip -- e.g. when selecting a new transcript as in
+      // the "Without this..." scenario noted above -- then do not remove the
+      // footer.  This lets users always see the details in the footer for the
+      // transcript they just selected, rather than having the details
+      // frustratingly disappear immediately upon transcript selection.
+      const footer = getFooter();
+      footer.innerHTML = '';
+    }
     ideo.addedMenuListeners = false;
     document.removeEventListener('keydown', navigateSubparts);
-
   });
 
   if (ideo.addedSubpartListeners) return;
