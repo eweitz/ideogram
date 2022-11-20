@@ -50,6 +50,7 @@ describe('Ideogram gene structure functionality', function() {
 
       // Positive-stranded gene
       await ideogram.plotRelatedGenes('APOE');
+
       setTimeout(async function() {
         const apoeLabel = document.querySelector('#ideogramLabel__c18_a1');
         apoeLabel.dispatchEvent(new Event('mouseover'));
@@ -74,8 +75,9 @@ describe('Ideogram gene structure functionality', function() {
         assert.equal(
           exonText2,
           'Exon 2 of 4 | 66 bp' +
-          'Transcript name: APOE-201' +
-          'Exons: 4 | Biotype: protein coding | Strand: +'
+          'Transcript: APOE-201APOE-204APOE-203APOE-202' +
+          'Next transcript (down arrow)Previous transcript (up arrow)' +
+          '4 exons | 1,166 bp '
         );
 
         // Negative-stranded gene
@@ -95,13 +97,12 @@ describe('Ideogram gene structure functionality', function() {
 
         // Navigate subparts by pressing arrow key
         document.dispatchEvent(left);
-        const exon3Text = footer.textContent;
+        const exon3Text = footer.textContent.slice(0, 20);
         assert.equal(
           exon3Text,
-          'Exon 3 of 4 | 157 bp' +
-          'Transcript name: APOE-201' +
-          'Exons: 4 | Biotype: protein coding | Strand: +'
+          'Exon 3 of 4 | 157 bp'
         );
+
         done();
       }, 500);
     }
@@ -135,6 +136,25 @@ describe('Ideogram gene structure functionality', function() {
         document.dispatchEvent(sKeydown);
         const subparts = document.querySelectorAll('rect.subpart');
         assert.equal(subparts.length, 10); // includes introns
+
+        setTimeout(async function() {
+          // The last exon of gene LDLR includes both CDS and 3'-UTR
+          // There was a bug (see commit 7a43ba0) that caused drastically
+          // longer apparent CDS in these cases, whereas correct display
+          // has a relatively very small CDS compared to 3'-UTR.
+          const ldlrLabel = document.querySelector('#ideogramLabel__c18_a0');
+          ldlrLabel.dispatchEvent(new Event('mouseover'));
+
+          const lastExon = subparts[18];
+          const threePrimeUtr = subparts[19];
+
+          assert.equal(Math.round(lastExon.x.baseVal.value), 127);
+          assert.equal(Math.round(lastExon.width.baseVal.value), 123);
+
+          assert.equal(Math.round(threePrimeUtr.x.baseVal.value), 129);
+          assert.equal(Math.round(threePrimeUtr.width.baseVal.value), 121);
+
+        }, 500);
 
         done();
       }, 500);
