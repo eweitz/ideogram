@@ -1,18 +1,43 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Related genes | Ideogram</title>
+  <title>Gene leads | Ideogram</title>
   <style>
     body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;
     /* font-family: 'Montserrat', sans-serif; */
     }
+
+    h1, .control-container, .wrapper, .why, .by {
+      display: flex;
+      justify-content: center
+    }
+    h1 {
+      font-size: 32px;
+      margin: 100px auto 60px auto;
+    }
+    h1 small {
+      font-size: 60%;
+      color: #6f6f6f;
+      margin: 4px 0 0 15px;
+    }
+    .container {
+      width: 90%;
+      margin: 0 auto;
+    }
+    .control-container {
+      font-size: 14px;
+      margin-left: 130px;
+    }
+    .wrapper {
+      margin-left: -160px;
+      height: 250px;
+    }
+
     a, a:visited {text-decoration: none;}
     a:hover {text-decoration: underline;}
     a, a:hover, a:visited, a:active {color: #0366d6;}
 
     select#organism-menu, optgroup, option {float: left; font-size: 14px;}
-
-    #ideogram-container {z-index: -1}
 
     #search-container {
       height: 26px; float: left; position: relative; top: -4px; margin-left: 10px;
@@ -39,16 +64,12 @@
   <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
 </head>
 <body>
-  <h1>Related genes | Ideogram</h1>
   <a href="../">Overview</a> |
   <a href="annotations-heatmap">Previous</a> |
   <a href="differential-expression">Next</a> |
   <a href="https://github.com/eweitz/ideogram/blob/gh-pages/related-genes.html" target="_blank">Source</a>
-  <p>
-    Find interacting pathway genes and paralogs.
-    See also <a href="orthologs">Orthologs</a>.
-  </p>
-  <div>
+  <h1>Gene Leads<small>Enrich your gene search</small></h1>
+  <div class="control-container">
     <select id="organism-menu">
       <optgroup label="Model organisms">
         <option value="homo-sapiens" selected>Human (Homo sapiens)</option>
@@ -90,7 +111,6 @@
       </optgroup>
       -->
     </select>
-  </div>
   <div style="float: left; width: 350px;">
     <label for="search-genes" id="search-container">
       <input id="search-genes" autocomplete="off" placeholder="Search gene"/>
@@ -100,8 +120,11 @@
       <div id="examples" style="font-size: 12px"></div>
     </label>
   </div>
+</div>
   <br/><br/><br/>
-  <div id="ideogram-container" style="visibility: hidden;"></div>
+  <div class="wrapper">
+    <div id="ideogram-container" style="visibility: hidden;"></div>
+  </div>
   <script type="text/javascript">
 
     const examplesByOrganism = {
