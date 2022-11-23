@@ -31,16 +31,6 @@ const examplesByOrganism = {
   'plasmodium-falciparum': ['coxIII', 'PFBI', 'PFFE1']
 }
 
-document.querySelector(`[value="${organism}"]`).selected = true;
-document.querySelector('select').addEventListener('change', handleOrganism);
-
-if ('q' in urlParams) {
-  document.querySelector('#search-genes').value = urlParams['q'];
-}
-
-document.querySelector('#search-button').addEventListener('click', handleSearch);
-document.querySelector('#search-genes').addEventListener('keyup', handleSearch);
-
 
 function parseUrlParams() {
   let rawParams = document.location.search;

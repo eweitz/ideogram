@@ -10,7 +10,6 @@
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
 
   <!-- Code unique to Gene Leads example UI, which is less relevant for reuse -->
-  <script type="text/javascript" src="gene-leads-example-utils.js"></script>
   <link href="gene-leads-example-style.css" rel="stylesheet">
 
   <!-- Ideogram supports using third-party custom fonts -->
@@ -86,6 +85,8 @@
     <div><h3>Visual</h3> Engage users with interactive landmarks on a recognizable map of the genome.  Complement existing gene search in any web application.</div>
     <div><h3>Instant</h3> Browse in &lt; 50 ms.  Seamlessly navigate genes across pathways, evolution, and transcriptomics.  Eliminate distracting waits and focus on your science.</div>
   </div>
+  <!-- Code unique to Gene Leads example UI, which is less relevant for reuse -->
+  <script type="text/javascript" src="gene-leads-example-utils.js"></script>
   <script type="text/javascript">
     /**
      * Called immediately before displaying features along chromosomes
@@ -198,6 +199,16 @@
       const selector = '#ideogram-container #_ideogramInnerWrap'
       ideogram.plotRelatedGenes(annot.name);
     }
+
+    document.querySelector(`[value="${organism}"]`).selected = true;
+    document.querySelector('select').addEventListener('change', handleOrganism);
+
+    if ('q' in urlParams) {
+      document.querySelector('#search-genes').value = urlParams['q'];
+    }
+
+    document.querySelector('#search-button').addEventListener('click', handleSearch);
+    document.querySelector('#search-genes').addEventListener('keyup', handleSearch);
 
     // Ideogram configuration object
     config = {
