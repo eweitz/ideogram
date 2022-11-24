@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gene leads | Ideogram</title>
+  <style>
+    ._ideogramTooltip th, ._ideogramTooltip td {
+      text-align: left;
+    }
+  </style>
+  <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
+
+  <!-- Code unique to Gene Leads example UI, which is less relevant for reuse -->
+  <link href="gene-leads-example-style.css" rel="stylesheet">
+
+  <!-- Ideogram supports using third-party custom fonts -->
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css?family=Montserrat%3A100%2C100italic%2C200%2C200italic%2C300%2C300italic%2C400%2C400italic%2C500%2C500italic%2C600%2C600italic%2C700%2C700italic%2C800%2C800italic%2C900%2C900italic&display=swap&ver=5.7.1" rel="stylesheet">
+
+  <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
+</head>
+<body>
+  <a href="../">Overview</a> |
+  <a href="annotations-heatmap">Previous</a> |
+  <a href="differential-expression">Next</a> |
+  <a href="https://github.com/eweitz/ideogram/blob/gh-pages/gene-leads.html" target="_blank">Source</a>
+  <h1>Gene Leads<small>Enrich your gene search</small></h1>
+  <div class="control-container">
+    <select id="organism-menu">
+      <optgroup label="Model organisms">
+        <option value="homo-sapiens" selected>Human (Homo sapiens)</option>
+        <!-- <option value="tupaia-belangeri" selected>Tree shrew (Tupaia belangeri)</option> -->
+        <option value="mus-musculus">Mouse (Mus musculus)</option>
+        <option value="rattus-norvegicus">Rat (Rattus norvegicus)</option>
+        <option value="drosophila-melanogaster">Fly (Drosophila melanogaster)</option>
+        <option value="caenorhabditis-elegans">Worm (Caenorhabditis elegans)</option>
+        <option value="danio-rerio">Zebrafish (Danio rerio)</option>
+        <option value="arabidopsis-thaliana">Thale cress (Arabidopsis thaliana)</option>
+        <!-- <option value="saccharomyces-cerevisiae">Yeast (Saccharomyces cerevisiae)</option> -->
+      </optgroup>
+      <optgroup label="Vertebrates">
+        <option value="pan-troglodytes">Chimpanzee (Pan troglodytes)</option>
+        <option value="macaca-mulatta">Macaque (Macaca mulatta)</option>
+        <option value="macaca-fascicularis">Crab-eating macaque (Macaca fascicularis)</option>
+        <option value="felis-catus">Cat (Felis catus)</option>
+        <option value="canis-lupus-familiaris">Dog (Canis lupus familiaris)</option>
+        <option value="equus-caballus">Horse (Equus caballus)</option>
+        <option value="bos-taurus">Cow (Bos taurus)</option>
+        <option value="sus-scrofa">Pig (Sus scrofa)</option>
+        <!-- <option value="petromyzon-marinus">Lamprey (Petromyzon marinus)</option> -->
+      </optgroup>
+      <!--
+      <optgroup label="Plants">
+        <option value="zea-mays">Maize (Zea mays)</option>
+        <option value="oryza-sativa">Rice (Oryza sativa)</option>
+        <option value="solanum-lycopersicum">Tomato (Solanum lycopersicum)</option>
+        <option value="musa-acuminata">Banana (Musa acuminata)</option>
+        <option value="vitis-vinifera">Grape (Vitis vinifera)</option>
+        <option value="micromonas-commoda">Green algae (Micromonas commoda)</option>
+      </optgroup>
+      <optgroup label="Insects">
+        <option value="anopheles-gambiae">Mosquito (Anopheles gambiae)</option>
+      </optgroup>
+      <optgroup label="Protozoa">
+        <option value="plasmodium-falciparum">Malaria parasite (Plasmodium falciparum)</option>
+        <option value="leishmania-donovani">Leishmania parasite (Leishmania donovani)</option>
+      </optgroup>
+      -->
+    </select>
+  <div style="float: left; width: 350px;">
+    <label for="search-genes" id="search-container">
+      <input id="search-genes" autocomplete="off" placeholder="Search gene"/>
+      <span id="search-button">
+        <svg width="12" height="13"><g stroke-width="2" stroke="#FFF" fill="none"><path d="M11.29 11.71l-4-4"/><circle cx="5" cy="5" r="4"/></g></svg>
+      </span>
+      <div id="examples" style="font-size: 12px"></div>
+    </label>
+  </div>
+</div>
+  <br/><br/><br/>
+  <div class="wrapper">
+    <div id="ideogram-container" style="visibility: hidden;"></div>
+  </div>
+  <div class="why">
+    <div><h3>Easy</h3> Provide an effortless way to discover interesting genes to search.  Show related genes to foster exploration.  Drop-in code that is minimal, free, and maintained.</div>
+    <div><h3>Visual</h3> Engage users with interactive landmarks on a recognizable map of the genome.  Complement existing gene search in any web application.</div>
+    <div><h3>Instant</h3> Browse in &lt; 50 ms.  Seamlessly navigate genes across pathways, evolution, and transcriptomics.  Eliminate distracting waits and focus on your science.</div>
+  </div>
+  <!-- Code unique to Gene Leads example UI, which is less relevant for reuse -->
+  <script type="text/javascript" src="gene-leads-example-utils.js"></script>
+  <script type="text/javascript">
+    /**
+     * Called immediately before displaying features along chromosomes
+     */
+    function onDrawAnnots() {
+      const ideo = this;
+
+      if (ideo.config.relatedGenesMode !== 'leads') return;
+
+      // This whole function is only relevant for an experimental new feature.
+      const deInnerFields =
+        ideo.rawAnnots.innerKeysByField['differentialExpression'];
+
+      const chrAnnots = ideo.annots;
+
+      for (let i = 0; i < chrAnnots.length; i++) {
+        const annots = chrAnnots[i].annots;
+
+        for (let j = 0; j < annots.length; j++) {
+          const annot = annots[j];
+          ideo.annotDescriptions.annots[annot.name].description =
+            parseDE(annot.differentialExpression, deInnerFields);
+        }
+      }
+    }
+
+    /** Swap genomes upon selecting a new organism */
+    async function handleOrganism() {
+      const newOrganism = getOrganism();
+      const newGene = getGene();
+
+      urlParams.org = newOrganism;
+      document.querySelector('#ideogram-container').style.visibility = 'hidden';
+      if (typeof newGene === 'undefined') {
+        delete urlParams.q;
+      } else {
+        urlParams.q = newGene;
+      }
+      updateUrl();
+      updateExamples(newOrganism);
+
+      config.organism = urlParams.org;
+
+      delete ideogram;
+      ideogram = Ideogram.initRelatedGenes(config);
+    }
+
+    /** Hide ideogram and show error message if problem is encountered */
+    function displayError(error) {
+      const container = document.querySelector('#ideogram-container');
+      container.style.visibility = 'hidden';
+
+      const errorElement = document.querySelector('#ideogram-error');
+      if (errorElement) errorElement.remove();
+      container.insertAdjacentHTML(
+        'beforeBegin',
+        `<div id="ideogram-error" style="color:red; text-align: center;">
+          ${error}
+        </div>`
+      );
+    }
+
+    /** Process text input for the "Search" field. */
+    async function handleSearch(event) {
+      // Ignore non-"Enter" keyups
+      if (event.type === 'keyup' && event.keyCode !== 13) return;
+
+      urlParams.org = getOrganism();
+      urlParams.q = getGene();
+      updateUrl();
+
+      // Ideogram reports error if gene symbol is invalid
+      try {
+        await ideogram.plotRelatedGenes(urlParams.q);
+        document.querySelector('#ideogram-container').style.visibility = '';
+        const errorElement = document.querySelector('#ideogram-error');
+        if (errorElement) errorElement.remove();
+      } catch(error) {
+        displayError(error);
+      }
+    }
+
+    /** Enables driving gene leads ideogram via URL */
+    async function plotGeneFromUrl() {
+      try {
+        if ('q' in urlParams) {
+          await ideogram.plotRelatedGenes(urlParams['q']);
+          document.querySelector('#ideogram-container').style.visibility = '';
+          const errorElement = document.querySelector('#ideogram-error');
+          if (errorElement) errorElement.remove();
+        } else {
+          await ideogram.plotRelatedGenes();
+        }
+      } catch(error) {
+        displayError(error);
+      }
+    }
+
+    /** Ideogram has no 3rd party analytics, but lets you easily hook in your own */
+    function reportRelatedGenes() {
+      console.log(this.relatedGenesAnalytics)
+    }
+
+    /** Upon clicking a triangular annotation or tooltip, plot that gene */
+    function onClickAnnot(annot) {
+      document.querySelector('#search-genes').value = annot.name;
+      urlParams['q'] = annot.name;
+      updateUrl();
+
+      const selector = '#ideogram-container #_ideogramInnerWrap'
+      ideogram.plotRelatedGenes(annot.name);
+    }
+
+    document.querySelector(`[value="${organism}"]`).selected = true;
+    document.querySelector('select').addEventListener('change', handleOrganism);
+
+    if ('q' in urlParams) {
+      document.querySelector('#search-genes').value = urlParams['q'];
+    }
+
+    document.querySelector('#search-button').addEventListener('click', handleSearch);
+    document.querySelector('#search-genes').addEventListener('keyup', handleSearch);
+
+    // Ideogram configuration object
+    config = {
+      organism: organism,
+      container: '#ideogram-container',
+      // fontFamily: "'Montserrat', sans-serif",
+      onLoad: plotGeneFromUrl,
+      onPlotRelatedGenes: reportRelatedGenes,
+      showGeneStructureInTooltip: true,
+      onClickAnnot
+    }
+
+    // If you don't want certain genes displayed, do this:
+    // annotsInList = ['CDK9', 'CDK19', 'CDK1'];
+    // let ideogram = Ideogram.initRelatedGenes(config, annotsInList)
+
+    let ideogram;
+
+    // A switch to expose internal timing data, to aid performance engineering
+    if ('debug' in urlParams) config.debug = true;
+
+    if ('q' in urlParams) {
+      ideogram = Ideogram.initRelatedGenes(config);
+    } else {
+      config.legendName = 'Gene leads'
+
+      // An experimental feature
+      if ('default-hints' in urlParams) {
+        config.annotationsPath = urlParams['default-hints'];
+      }
+
+      if ('org' in urlParams) {
+        // Show genome for the organism specified via URL
+        if (urlParams.org === 'homo-sapiens') {
+          if ('gene-leads' in urlParams) {
+            config.onDrawAnnots = onDrawAnnots
+            ideogram = Ideogram.initGeneLeads(config);
+          } else {
+            ideogram = Ideogram.initGeneHints(config);
+          }
+        } else {
+          ideogram = Ideogram.initRelatedGenes(config);
+        }
+
+      } else {
+        if ('gene-leads' in urlParams) {
+            config.onDrawAnnots = onDrawAnnots
+            ideogram = Ideogram.initGeneLeads(config);
+        }
+        ideogram = Ideogram.initGeneHints(config);
+      }
+    }
+  </script>
+</body>
+</html>

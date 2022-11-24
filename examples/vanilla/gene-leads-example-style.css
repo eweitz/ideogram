@@ -1,0 +1,61 @@
+
+/** Code unique to Gene Leads example UI, and extraneous to reuse */
+
+body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;
+/* font-family: 'Montserrat', sans-serif; */
+}
+
+h1, .control-container, .wrapper, .why, .by {
+  display: flex;
+  justify-content: center
+}
+h1 {
+  font-size: 32px;
+  margin: 60px auto 60px auto;
+}
+h1 small {
+  font-size: 60%;
+  color: #6f6f6f;
+  margin: 4px 0 0 15px;
+}
+.container {
+  width: 90%;
+  margin: 0 auto;
+}
+.control-container {
+  font-size: 14px;
+  margin-left: 130px;
+}
+.wrapper {
+  margin-left: -160px;
+  height: 250px;
+}
+.why h3 {
+  color: #333;
+}
+.why div {
+  font-size: 16px;
+  text-align: center;
+  color: #6f6f6f;
+  margin: 40px 60px 0 60px;
+}
+
+a, a:visited {text-decoration: none;}
+a:hover {text-decoration: underline;}
+a, a:hover, a:visited, a:active {color: #0366d6;}
+
+select#organism-menu, optgroup, option {float: left; font-size: 14px;}
+
+#search-container {
+  height: 26px; float: left; position: relative; top: -4px; margin-left: 10px;
+}
+
+#search-genes {
+  padding-left: 3px; width: 200px; height: 20px; font-size: 14px; border-radius: 3px; border: 1px solid #888;
+}
+
+#search-button {
+  height: 23px; width: 23px; font-size: 24px; background: #58F; color: #FFF; display: inline-block;
+  position: relative; top: 2px; left: -25px; padding-top: 1px;
+  border-radius: 3px; text-align: center; cursor: pointer;
+}
