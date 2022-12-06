@@ -6,6 +6,9 @@ const y = 15;
 // Subtle visual delimiter; separates horizontally adjacent fields in UI
 const pipe = `<span style='color: #CCC'>|</span>`;
 
+const utr5 = "5'-UTR";
+const utr3 = "3'-UTR";
+
 const heights = {
   "5'-UTR": 20,
   'exon': 20,
@@ -217,14 +220,24 @@ function nextIsOutOfSubpartBounds(i, subparts, key) {
  */
 function swapUTRsForward(subparts, isPositiveStrand) {
   const swappedSubparts = subparts.slice();
+
+  // Account for edge case in certain nonsense-mediated-decay transcripts
+  const utr = isPositiveStrand ? utr3 : utr5;
+  const hasUtr = subparts.some(subpart => subpart[0] === utr);
+
   subparts.forEach((subpart, i) => {
     if (i === 0) return;
     const prevSubpart = subparts[i - 1];
-    const utr5 = "5'-UTR";
-    const utr3 = "3'-UTR";
+
+    const prevIsUtr3 = prevSubpart[0] === utr3;
+    const prevIsUtr5 = prevSubpart[0] === utr5;
+    const isExon = subpart[0] === 'exon';
+
     if (
-      !isPositiveStrand && prevSubpart[0] === utr3 && subpart[0] === 'exon' ||
-      isPositiveStrand && prevSubpart[0] === utr5 && subpart[0] === 'exon'
+      isExon && hasUtr && (
+        !isPositiveStrand && prevIsUtr3 ||
+        isPositiveStrand && prevIsUtr5
+      )
     ) {
       swappedSubparts[i] = prevSubpart;
       swappedSubparts[i - 1] = subpart;
@@ -234,25 +247,42 @@ function swapUTRsForward(subparts, isPositiveStrand) {
   return swappedSubparts;
 }
 
-function has(element, cls) {
+window.swapUTRsForward = swapUTRsForward;
+
+function is(element, cls) {
   return element.classList.contains(cls);
 }
 
-function shouldSwapBackDOM(subpart, nextSubpart, isPositiveStrand) {
+// isExon && (
+//   !isPositiveStrand && prevIsUtr3 ||
+//   isPositiveStrand && prevIsUtr5
+// )
+
+function shouldSwapBackDOM(subpart, nextSubpart, isPositiveStrand, hasUtr) {
   const utr5 = 'five-prime-utr';
   const utr3 = 'three-prime-utr';
+  const nextIsUtr5 = is(nextSubpart, utr5);
+  const nextIsUtr3 = is(nextSubpart, utr3);
+  const isNotUtr3 = !is(subpart, utr3);
+  const isNotUtr5 = !is(subpart, utr5);
   return (
-    !isPositiveStrand && has(nextSubpart, utr3) && !has(subpart, utr3) ||
-    isPositiveStrand && has(nextSubpart, utr5) && !has(subpart, utr5)
+    hasUtr && (
+      !isPositiveStrand && nextIsUtr3 && isNotUtr3 ||
+      isPositiveStrand && nextIsUtr5 && isNotUtr5
+    )
   );
 }
 
-function shouldSwapBackData(subpart, nextSubpart, isPositiveStrand) {
-  const utr5 = "5'-UTR";
-  const utr3 = "3'-UTR";
+function shouldSwapBackData(subpart, nextSubpart, isPositiveStrand, hasUtr) {
+  const nextIsUtr5 = nextSubpart[0] === utr5;
+  const nextIsUtr3 = nextSubpart[0] === utr3;
+  const isNotUtr3 = subpart[0] !== utr3;
+  const isNotUtr5 = subpart[0] !== utr5;
   return (
-    !isPositiveStrand && nextSubpart[0] === utr3 && subpart[0] !== utr3 ||
-    isPositiveStrand && nextSubpart[0] === utr5 && subpart[0] !== utr5
+    hasUtr && (
+      !isPositiveStrand && nextIsUtr3 && isNotUtr3 ||
+      isPositiveStrand && nextIsUtr5 && isNotUtr5
+    )
   );
 }
 
@@ -263,32 +293,35 @@ function shouldSwapBackData(subpart, nextSubpart, isPositiveStrand) {
  */
 function swapUTRsBack(subparts, isPositiveStrand) {
   const swappedSubparts = subparts.slice();
+  const isRaw = Array.isArray(subparts[0]);
+
+  // Account for edge case in animating exon splice for
+  // nonsense-mediated-decay transcripts that lack an annotated UTR,
+  // e.g. SREBF-204
+  let hasUtr;
+  if (isRaw) {
+    const utr = isPositiveStrand ? utr3 : utr5;
+    hasUtr = subparts.some(subpart => subpart[0] === utr);
+  } else {
+    const utr5 = 'five-prime-utr';
+    const utr3 = 'three-prime-utr';
+    const utr = isPositiveStrand ? utr3 : utr5;
+    hasUtr = subparts.some(subpart => is(subpart, utr));
+  }
+
   subparts.forEach((subpart, i) => {
     if (i === swappedSubparts.length - 1) return;
     const nextSubpart = subparts[i + 1];
-    let shouldSwapBack = shouldSwapBackDOM;
-    if (Array.isArray(nextSubpart)) {
-      shouldSwapBack = shouldSwapBackData;
-    }
-    if (shouldSwapBack(subpart, nextSubpart, isPositiveStrand)) {
+    const shouldSwapBackFn = isRaw ? shouldSwapBackData : shouldSwapBackDOM;
+    const shouldSwapBack =
+      shouldSwapBackFn(subpart, nextSubpart, isPositiveStrand, hasUtr);
+    if (shouldSwapBack) {
       swappedSubparts.splice(i, 1, nextSubpart);
       swappedSubparts.splice(i + 1, 1, subpart);
     }
   });
   return swappedSubparts;
 }
-// function swapUTRsBack(subparts, isPositiveStrand) {
-//   const subpart2 = subparts[1];
-//   if (
-//     !isPositiveStrand && subpart2.classList.contains('three-prime-utr') ||
-//     isPositiveStrand && subpart2.classList.contains('five-prime-utr')
-//   ) {
-//     const subpart1 = subparts[0];
-//     subparts.splice(0, 1, subpart2);
-//     subparts.splice(1, 1, subpart1);
-//   }
-//   return subparts;
-// }
 
 /**
  * Remove any hover stroke outlines, for subpart highlight edge cases like
@@ -672,7 +705,8 @@ function toggleSplice(ideo) {
       if (i !== subparts.length - 1) return;
 
       // Restore subpart boundary lines
-      document.querySelectorAll('.subpart').forEach((subpartDOM, i) => {
+      const subpartDOMs = document.querySelectorAll('.subpart')
+      subpartDOMs.forEach((subpartDOM, i) => {
         const subpart = subparts[i];
         const line = getSubpartBorderLine(subpart);
         subpartDOM.insertAdjacentHTML('afterend', line);

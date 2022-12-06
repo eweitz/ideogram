@@ -172,4 +172,52 @@ describe('Ideogram gene structure functionality', function() {
     const ideogram = Ideogram.initRelatedGenes(config);
   });
 
+  it('animates splice for unannotated 5\'-UTR trancscript', done => {
+    async function callback() {
+      await ideogram.plotRelatedGenes('SREBF1');
+      setTimeout(async function() {
+        const srebf1Label = document.querySelector('#ideogramLabel__c16_a1');
+        srebf1Label.dispatchEvent(new Event('mouseover'));
+
+        // Mimic real user action
+        const container =
+          document.querySelector('._ideoGeneStructureContainer');
+        container.dispatchEvent(new Event('mouseenter'));
+
+        container.dispatchEvent(new Event('mouseenter'));
+        const menu = document.querySelector('#_ideoGeneStructureMenu');
+        menu.options[4].selected = true;
+        menu.dispatchEvent(new Event('change', {'bubbles': true}));
+
+        document.querySelector('._ideoSpliceToggle').click();
+
+        setTimeout(async function() {
+          let subparts = document.querySelectorAll('rect.subpart');
+          subparts = Array.from(subparts).reverse();
+          const subpart1 = subparts[0];
+          const x = subpart1.getAttribute('x');
+          const width = subpart1.getAttribute('width');
+          const color = subpart1.getAttribute('color');
+          assert.equal(Math.round(x), 247);
+          assert.equal(Math.round(width), 3);
+          assert.equal(color, '#DAA521');
+
+        }, 1000);
+
+        done();
+      }, 500);
+    }
+
+    var config = {
+      organism: 'Homo sapiens', // Also tests standard, non-slugged name
+      onLoad: callback,
+      dataDir: '/dist/data/bands/native/',
+      cacheDir: '/dist/data/cache/',
+      showGeneStructureInTooltip: true,
+      showParalogNeighborhoods: true
+    };
+
+    const ideogram = Ideogram.initRelatedGenes(config);
+  });
+
 });
