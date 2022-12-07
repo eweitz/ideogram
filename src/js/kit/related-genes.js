@@ -49,6 +49,8 @@ function setRelatedAnnotDomIds(ideo) {
     return chr.name;
   });
 
+  ideo.relatedAnnots = applyAnnotsIncludeList(ideo.relatedAnnots, ideo);
+
   // Count two related annots for same gene as one.
   // E.g. gene Foo can both interact with and be paralog of gene Bar
   // Instead of count Foo interacting annot and Foo paralog annot as two,
@@ -573,6 +575,8 @@ async function fetchParalogPositionsFromMyGeneInfo(
 
 function overplotParalogs(annots, ideo) {
   if (!ideo.config.showParalogNeighborhoods) return;
+
+  annots = applyAnnotsIncludeList(annots, ideo);
 
   if (annots.length < 2) return;
 
