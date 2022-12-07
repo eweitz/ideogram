@@ -574,6 +574,8 @@ async function fetchParalogPositionsFromMyGeneInfo(
 function overplotParalogs(annots, ideo) {
   if (!ideo.config.showParalogNeighborhoods) return;
 
+  annots = applyAnnotsIncludeList(annots, ideo);
+
   if (annots.length < 2) return;
 
   // Arrays of paralogs within 10 Mbp of each other
