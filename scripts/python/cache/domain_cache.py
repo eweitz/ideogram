@@ -315,7 +315,10 @@ class DomainCache():
             f"## Ideogram.js domain cache for {organism}"
         ]) + "\n"
 
-        headers += 'names_by_id: ' + json.dumps(names_by_id) + "\n"
+        domain_keys = []
+        for id in names_by_id:
+            domain_keys.append(f"{id} = {names_by_id[id]}")
+        headers += "## domain keys: " + "; ".join(domain_keys) + "\n"
         # print('domains')
         # print(domains)
         domain_lines = "\n".join(["\t".join(s) for s in domains])
