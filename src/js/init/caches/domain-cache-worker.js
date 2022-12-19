@@ -1,11 +1,11 @@
-import {fetchAndParse, inspectWorker} from './cache-lib';
+import {fetchAndParse, inspectWorker, getFullId} from './cache-lib';
 
 /** Parse compressed domains to more easily computable format */
 function deserializeDomains(rawDomains, domainKeys) {
   const domains = [];
   for (let i = 0; i < rawDomains.length; i++) {
     const rawDomain = rawDomains[i].split(';');
-    const domainID = 'IPR' + rawDomain[0];
+    const domainID = getFullId('IPR', rawDomain[0], 6);
     const domainType = domainKeys[rawDomain[0]];
     const start = parseInt(rawDomain[1]);
     const length = parseInt(rawDomain[2]);

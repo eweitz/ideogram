@@ -228,7 +228,7 @@ def parse_domains(domains_path, gff_path, gff_url):
                 missing_transcripts.append(transcript_id)
                 continue
             transcript_name = transcript_names_by_id[transcript_id]
-            domain_id = domain[1][3:]
+            domain_id = trim_id(domain[1], "IPR")
             domain_name = domain[3]
             [start, stop] = domain[4:6]
             length = str(int(stop) - int(start))
