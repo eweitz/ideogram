@@ -25,6 +25,7 @@ if __name__ == "__main__":
 from lib import download
 from gene_cache import trim_id, detect_prefix, fetch_gff, parse_gff_info_field, fetch_interesting_genes
 from gene_structure_cache import fetch_canonical_transcript_ids
+from compress_transcripts import noncanonical_names
 
 # Organisms configured for gene caching, and their genome assembly names
 assemblies_by_org = {
@@ -339,6 +340,7 @@ class DomainCache():
 
         [domains, names_by_id] = parse_domains(domains_path, gff_path, gff_url)
         sorted_domains = sort_domains(domains, organism, canonical_ids)
+        sorted_domains = noncanonical_names(sorted_domains)
 
         # print('domains')
         # print(domains)

@@ -6,10 +6,10 @@ function deserializeDomains(rawDomains, domainKeys) {
   for (let i = 0; i < rawDomains.length; i++) {
     const rawDomain = rawDomains[i].split(';');
     const domainID = getFullId('IPR', rawDomain[0], 6);
-    const domainType = domainKeys[rawDomain[0]];
+    const domainName = domainKeys[rawDomain[0]];
     const start = parseInt(rawDomain[1]);
     const length = parseInt(rawDomain[2]);
-    const domain = [domainType, domainID, start, length];
+    const domain = [domainName, domainID, start, length];
     domains.push(domain);
   }
   return domains;
@@ -39,6 +39,8 @@ export function parseCache(rawTsv, perfTimes) {
   let domainKeys;
 
   t0 = performance.now();
+
+  let gene = null;
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (line === '') continue; // Skip empty lines
@@ -57,14 +59,16 @@ export function parseCache(rawTsv, perfTimes) {
     }
     const splitLine = line.trim().split(/\t/);
 
-    const transcriptName = splitLine[0];
-
-    const gene = transcriptName.split('-').slice(0, -1).join('-');
+    let transcriptName = splitLine[0];
+    if (isNaN(transcriptName)) {
+      gene = transcriptName.split('-').slice(0, -1).join('-');
+      transcriptName = gene + transcriptName;
+    }
 
     const rawDomains = splitLine.slice(1);
     const domains = deserializeDomains(rawDomains, domainKeys);
 
-    // E.g. ACE2-201, <array of domains <domain type, domain ID, start, length>>
+    // E.g. ACE2-201, <array of domains <domain name, domain ID, start, length>>
     const feature = {
       transcriptName,
       domains
