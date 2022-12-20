@@ -1,5 +1,6 @@
 import {d3} from '../lib';
 import {getIcon} from '../annotations/legend';
+import { getDomainSvg } from './domain';
 
 const y = 15;
 
@@ -736,7 +737,7 @@ function getTranscriptLengthBp(subparts, spliceExons=false) {
 }
 
 /** Merge subpart type, pixel-x position, and pixel width to each subpart */
-function addPositions(subparts) {
+export function addPositions(subparts) {
   const transcriptLengthBp = getTranscriptLengthBp(subparts);
 
   const transcriptLengthPx = 250;
@@ -804,6 +805,7 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
   const rawSubparts = geneStructure.subparts;
   let subparts;
 
+  // Add pixel coordinates to subparts, and pre-mRNA and mRNA sets
   let prelimSubparts = spliceIn(rawSubparts);
   let matureSubparts = spliceOut(rawSubparts);
   if (spliceExons) {
@@ -929,6 +931,9 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
   const gene = getGeneFromStructureName(structureName);
   const menu = getMenu(gene, ideo, structureName).replaceAll('"', '\'');
   const footerData = menu + footerDetails.join(` ${pipe} `);
+
+  const domainSvg = getDomainSvg(gene, structureName, ideo);
+
   const geneStructureSvg =
     `<svg class="_ideoGeneStructure" ` +
       `data-ideo-gene-structure-name="${structureName}" ` +
@@ -936,6 +941,7 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
       `width="${(featureLengthPx + 20)}" height="40" ${transform}` +
     `>` +
       geneStructureArray.join('') +
+      domainSvg +
     '</svg>';
 
   return [geneStructureSvg, prelimSubparts, matureSubparts];

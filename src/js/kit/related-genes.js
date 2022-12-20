@@ -27,7 +27,9 @@ import {
   initAnalyzeRelatedGenes, analyzePlotTimes, analyzeRelatedGenes, timeDiff,
   getRelatedGenesByType, getRelatedGenesTooltipAnalytics
 } from './analyze-related-genes';
-import {getGeneStructureHtml, addGeneStructureListeners} from './gene-structure';
+import {
+  getGeneStructureHtml, addGeneStructureListeners
+} from './gene-structure';
 
 import {
   sortAnnotsByRank, applyRankCutoff, setAnnotRanks,

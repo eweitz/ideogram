@@ -5,11 +5,11 @@ function deserializeDomains(rawDomains, domainKeys) {
   const domains = [];
   for (let i = 0; i < rawDomains.length; i++) {
     const rawDomain = rawDomains[i].split(';');
-    const domainID = getFullId('IPR', rawDomain[0], 6);
+    // const domainID = getFullId('IPR', rawDomain[0], 6);
     const domainName = domainKeys[rawDomain[0]];
     const start = parseInt(rawDomain[1]);
     const length = parseInt(rawDomain[2]);
-    const domain = [domainName, domainID, start, length];
+    const domain = [domainName, start, length];
     domains.push(domain);
   }
   return domains;
