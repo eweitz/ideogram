@@ -1,5 +1,23 @@
 import {addPositions, getGeneFromStructureName} from './gene-structure';
 
+/** Get subtle line to visually demarcate domain boundary */
+function getDomainBorderLines(x, y, width, lineColor) {
+  const height = 10;
+  const lineHeight = y + height;
+  const lineStroke = `stroke="${lineColor}"`;
+  const leftLineAttrs =
+    `x1="${x}" x2="${x}" y1="${y}" y2="${lineHeight}" ${lineStroke}`;
+
+  const x2 = x + width;
+  const rightLineAttrs =
+    `x1="${x2}" x2="${x2}" y1="${y}" y2="${lineHeight}" ${lineStroke}`;
+
+  const startBorder = `<line class="subpart-line" ${leftLineAttrs} />`;
+  const endBorder = `<line class="subpart-line" ${rightLineAttrs} />`;
+
+  return startBorder + endBorder;
+}
+
 /** Get start pixel and pixel length for coding sequence (CDS) */
 function getCdsCoordinates(subparts, isPositiveStrand) {
   if (!isPositiveStrand) subparts = subparts.reverse();
@@ -53,7 +71,6 @@ export function getDomainSvg(structureName, subparts, isPositiveStrand, ideo) {
       const domain = domains[i];
       // const position = positions[i];
       const domainType = domain[0];
-      let color = '#CAA';
       // if (subpartType in colors) {
       //   color = colors[subpartType];
       // }
@@ -64,8 +81,13 @@ export function getDomainSvg(structureName, subparts, isPositiveStrand, ideo) {
       const lengthBp = domain[2];
       let x = cds.px.start + domain[3].x;
       const width = domain[3].width;
-      if (!isPositiveStrand) x = cds.px.length - domain[3].x - domain[3].width + cds.px.start;
+      if (!isPositiveStrand) {
+        x = cds.px.length - domain[3].x - domain[3].width + cds.px.start
+      };
       console.log('x', x)
+
+      const color = '#CAA';
+      const lineColor = '#866';
 
       // console.log('domain', domain)
       console.log('domain[3]', domain[3])
@@ -75,13 +97,16 @@ export function getDomainSvg(structureName, subparts, isPositiveStrand, ideo) {
       // const locus = `data-locus="Start: ${domain[1]}, length: ${domain[2]}"`;
       // const data = title + ' ' + locus;
       const data = title;
-      const pos = `x="${x}" width="${width}" y="40" height="${height}"`;
+      const y = 40;
+      const pos = `x="${x}" width="${width}" y="${y}" height="${height}"`;
       const cls = `class="subpart domain" `;
 
-      const rect =
-        `<rect ${cls} rx="1.5" fill="${color}" ${pos} ${data}/>`;
+      const line = getDomainBorderLines(x, y, width, lineColor);
+      const svg =
+        `<rect ${cls} rx="1.5" fill="${color}" ${pos} ${data}/>` +
+        line;
 
-      domainArray.push(rect);
+      domainArray.push(svg);
 
     }
 
