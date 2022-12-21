@@ -71,6 +71,19 @@ def sort_domains(domains, organism, canonical_ids):
     print('canonical_ids[0:3]')
     print(list(canonical_ids)[0:3])
 
+    # Sort domains by position, not lowest InterPro ID
+    domains_inner_sorted = []
+    for domain_container in domains:
+        unsorted_domain_list = domain_container[2:]
+        sorted_domain_list = sorted(
+            unsorted_domain_list,
+            key=lambda d: int(d.split(';')[1])
+        )
+        domains_inner_sorted.append(
+            domain_container[:2] + sorted_domain_list
+        )
+    domains = domains_inner_sorted
+
     domains_with_genes = []
     for domain in domains:
         # E.g. FOO-BAR-404 -> FOO-BAR
