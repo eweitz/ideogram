@@ -100,7 +100,7 @@ function updateGeneStructure(ideo, offset=0) {
 }
 
 /** Get gene symbol from transcript / gene structure name */
-function getGeneFromStructureName(structureName) {
+export function getGeneFromStructureName(structureName) {
   const gene = structureName.split('-').slice(0, -1).join('-');
   return gene;
 }
@@ -736,27 +736,25 @@ function getTranscriptLengthBp(subparts, spliceExons=false) {
   return transcriptLengthBp;
 }
 
-/** Merge subpart type, pixel-x position, and pixel width to each subpart */
-export function addPositions(subparts) {
-  const transcriptLengthBp = getTranscriptLengthBp(subparts);
+/** Merge feature type, pixel-x position, and pixel width to each feature */
+export function addPositions(features, totalLengthPx=250) {
+  const totalLengthBp = getTranscriptLengthBp(features);
 
-  const transcriptLengthPx = 250;
+  const bpPerPx = totalLengthBp / totalLengthPx;
 
-  const bpPerPx = transcriptLengthBp / transcriptLengthPx;
-
-  for (let i = 0; i < subparts.length; i++) {
-    const subpart = subparts[i];
-    if (subpart.length !== 3) continue;
+  for (let i = 0; i < features.length; i++) {
+    const feature = features[i];
+    if (feature.length !== 3) continue;
     // Define subpart position, tooltip footer
-    const lengthBp = subpart[2];
-    const x = subpart[1] / bpPerPx;
+    const lengthBp = feature[2];
+    const x = feature[1] / bpPerPx;
     const width = lengthBp / bpPerPx;
-    const type = subpart[0];
+    const type = feature[0];
 
-    subparts[i].push({type, x, width});
+    features[i].push({type, x, width});
   }
 
-  return subparts;
+  return features;
 }
 
 /** Get text shown below diagram upon hovering over an exon, intron, or UTR */
@@ -932,13 +930,17 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
   const menu = getMenu(gene, ideo, structureName).replaceAll('"', '\'');
   const footerData = menu + footerDetails.join(` ${pipe} `);
 
-  const domainSvg = getDomainSvg(gene, structureName, ideo);
+  const domainSvg = getDomainSvg(
+    structureName, subparts, isPositiveStrand, ideo
+  );
+
+  const svgHeight = domainSvg === '' ? '40' : '60';
 
   const geneStructureSvg =
     `<svg class="_ideoGeneStructure" ` +
       `data-ideo-gene-structure-name="${structureName}" ` +
       `data-ideo-strand="${strand}" data-ideo-footer="${footerData}" ` +
-      `width="${(featureLengthPx + 20)}" height="40" ${transform}` +
+      `width="${(featureLengthPx + 20)}" height="${svgHeight}" ${transform}` +
     `>` +
       geneStructureArray.join('') +
       domainSvg +
