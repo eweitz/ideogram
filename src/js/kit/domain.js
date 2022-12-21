@@ -3,27 +3,29 @@ import {addPositions, getGeneFromStructureName} from './gene-structure';
 /** Get start pixel and pixel length for coding sequence (CDS) */
 function getCdsCoordinates(subparts, isPositiveStrand) {
   if (!isPositiveStrand) subparts = subparts.reverse();
-  const lastUtr5 = subparts.filter(s => s[0] === "5'-UTR").slice(-1)[0];
-  console.log('lastUtr5', lastUtr5);
   let startPx;
   if (!isPositiveStrand) {
-    startPx = 250 - lastUtr5[3].x + lastUtr5[3].width;
+    const lastUtr3 = subparts.filter(s => s[0] === "3'-UTR").slice(-1)[0];
+    startPx = lastUtr3[3].x + lastUtr3[3].width;
+    console.log('lastUtr3[3]', lastUtr3[3])
   } else {
+    const lastUtr5 = subparts.filter(s => s[0] === "5'-UTR").slice(-1)[0];
     startPx = lastUtr5[3].x + lastUtr5[3].width;
+    console.log('lastUtr5[3]', lastUtr5[3])
   }
-  console.log('lastUtr5[3]', lastUtr5[3])
   console.log('startPx', startPx);
   const firstUtr3 = subparts.find(s => s[0] === "3'-UTR");
   console.log('firstUtr3[3]', firstUtr3[3]);
   let stopPx = firstUtr3[3].x;
   let lengthPx;
   if (!isPositiveStrand) {
-    // stopPx = stopPx + firstUtr3[3].width;
-    lengthPx = 225;
+    lengthPx = 250 - stopPx - firstUtr3[3].width;
+    // lengthPx = 225;
   } else {
     lengthPx = stopPx - startPx;
   }
   // startPx = 15;
+  console.log('lengthPx', lengthPx)
   const cdsCoordinates = {px: {start: startPx, length: lengthPx}};
   console.log('subparts', subparts);
   console.log('cdsCoordinates', cdsCoordinates);
@@ -62,18 +64,22 @@ export function getDomainSvg(structureName, subparts, isPositiveStrand, ideo) {
       const lengthBp = domain[2];
       let x = cds.px.start + domain[3].x;
       const width = domain[3].width;
-      if (!isPositiveStrand) x = x + width - cds.px.length;
+      if (!isPositiveStrand) x = cds.px.length - domain[3].x - domain[3].width + cds.px.start;
       console.log('x', x)
 
-      console.log('domain', domain)
+      // console.log('domain', domain)
       console.log('domain[3]', domain[3])
-      console.log('width', width)
-      const title = `data-subpart="${domainType}"`
+      // console.log('width', width)
+      const locus = `${domain[1]}-${domain[1] + domain[2]}`;
+      const title = `data-subpart="${domainType} (${locus})"`;
+      // const locus = `data-locus="Start: ${domain[1]}, length: ${domain[2]}"`;
+      // const data = title + ' ' + locus;
+      const data = title;
       const pos = `x="${x}" width="${width}" y="40" height="${height}"`;
       const cls = `class="subpart domain" `;
 
       const rect =
-        `<rect ${cls} rx="1.5" fill="${color}" ${pos} ${title}/>`;
+        `<rect ${cls} rx="1.5" fill="${color}" ${pos} ${data}/>`;
 
       domainArray.push(rect);
 
