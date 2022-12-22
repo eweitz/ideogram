@@ -18,36 +18,40 @@ function getDomainBorderLines(x, y, width, lineColor) {
   return startBorder + endBorder;
 }
 
-/** Get start pixel and pixel length for coding sequence (CDS) */
+/** Get start and length for coding sequence (CDS), in pixels and base pairs */
 function getCdsCoordinates(subparts, isPositiveStrand) {
   if (!isPositiveStrand) subparts = subparts.reverse();
-  let startPx;
-  if (!isPositiveStrand) {
-    const lastUtr3 = subparts.filter(s => s[0] === "3'-UTR").slice(-1)[0];
-    startPx = lastUtr3[3].x + lastUtr3[3].width;
-    console.log('lastUtr3[3]', lastUtr3[3])
-  } else {
-    const lastUtr5 = subparts.filter(s => s[0] === "5'-UTR").slice(-1)[0];
-    startPx = lastUtr5[3].x + lastUtr5[3].width;
-    console.log('lastUtr5[3]', lastUtr5[3])
-  }
+
+  const lastUtrType = isPositiveStrand ? "5'-UTR" : "3'-UTR";
+
+  const lastUtr = subparts.filter(s => s[0] === lastUtrType).slice(-1)[0];
+  const startPx = lastUtr[3].x + lastUtr[3].width;
+  const startBp = lastUtr[1] + lastUtr[2];
+  console.log('lastUtr[3]', lastUtr[3])
+
   console.log('startPx', startPx)
-  const firstUtr3 = subparts.find(s => s[0] === "3'-UTR");
-  console.log('firstUtr3[3]', firstUtr3[3]);
-  const stopPx = firstUtr3[3].x;
+  const firstUtrType = isPositiveStrand ? "3'-UTR" : "5'-UTR";
+  const firstUtr = subparts.find(s => s[0] === firstUtrType);
+  console.log('firstUtr3[3]', firstUtr[3]);
+  const stopPx = firstUtr[3].x;
+  const stopBp = firstUtr[1];
   let lengthPx;
-  if (!isPositiveStrand) {
-    lengthPx = 250 - stopPx - firstUtr3[3].width;
-    // lengthPx = 225;
-  } else {
-    lengthPx = stopPx - startPx;
-  }
+  let lengthBp = stopBp - startBp;
+  lengthPx = stopPx - startPx;
+  // if (!isPositiveStrand) {
+  //   lengthPx = stopPx - firstUtr[3].width;
+  //   // lengthBp = lengthBp * -1;
+  //   // lengthPx = 225;
+  // } else {
+  //   lengthPx = stopPx - startPx;
+  // }
   // startPx = 15;
-  console.log('startPx', startPx)
-  console.log('stopPx', stopPx)
-  console.log('lengthPx', lengthPx)
-  console.log('subparts', subparts)
-  const cdsCoordinates = {px: {start: startPx, length: lengthPx}};
+  console.log('startPx, stopPx, lengthPx', startPx, stopPx, lengthPx)
+  console.log('startBp, stopBp, lengthBp', startBp, stopBp, lengthBp)
+  const cdsCoordinates = {
+    px: {start: startPx, length: lengthPx},
+    bp: {start: startBp, length: lengthBp}
+  };
   return cdsCoordinates;
 }
 
@@ -67,7 +71,9 @@ export function getDomainSvg(structureName, subparts, isPositiveStrand, ideo) {
     const strandPad = isPositiveStrand ? 0 : -10;
     const rawDomains = ideo.domainCache[gene][0].domains;
     const cds = getCdsCoordinates(subparts, isPositiveStrand);
-    const domains = addPositions(rawDomains, cds.px.length);
+    // 3 nt per aa.  Last 3 nucleotides are a stop codon, not an amino acid.
+    const cdsLengthAa = (cds.bp.length / 3) - 1;
+    const domains = addPositions(rawDomains, cds.px.length, cdsLengthAa);
     for (let i = 0; i < domains.length; i++) {
       const domain = domains[i];
       // const position = positions[i];
