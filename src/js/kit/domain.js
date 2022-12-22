@@ -1,4 +1,4 @@
-import {addPositions, getGeneFromStructureName} from './gene-structure';
+import {addPositions, getGeneFromStructureName, pipe} from './gene-structure';
 
 /** Get subtle line to visually demarcate domain boundary */
 function getDomainBorderLines(x, y, width, lineColor) {
@@ -31,10 +31,10 @@ function getCdsCoordinates(subparts, isPositiveStrand) {
     startPx = lastUtr5[3].x + lastUtr5[3].width;
     console.log('lastUtr5[3]', lastUtr5[3])
   }
-  console.log('startPx', startPx);
+  console.log('startPx', startPx)
   const firstUtr3 = subparts.find(s => s[0] === "3'-UTR");
   console.log('firstUtr3[3]', firstUtr3[3]);
-  let stopPx = firstUtr3[3].x;
+  const stopPx = firstUtr3[3].x;
   let lengthPx;
   if (!isPositiveStrand) {
     lengthPx = 250 - stopPx - firstUtr3[3].width;
@@ -43,10 +43,11 @@ function getCdsCoordinates(subparts, isPositiveStrand) {
     lengthPx = stopPx - startPx;
   }
   // startPx = 15;
+  console.log('startPx', startPx)
+  console.log('stopPx', stopPx)
   console.log('lengthPx', lengthPx)
+  console.log('subparts', subparts)
   const cdsCoordinates = {px: {start: startPx, length: lengthPx}};
-  console.log('subparts', subparts);
-  console.log('cdsCoordinates', cdsCoordinates);
   return cdsCoordinates;
 }
 
@@ -82,18 +83,19 @@ export function getDomainSvg(structureName, subparts, isPositiveStrand, ideo) {
       let x = cds.px.start + domain[3].x;
       const width = domain[3].width;
       if (!isPositiveStrand) {
-        x = cds.px.length - domain[3].x - domain[3].width + cds.px.start
+        x = cds.px.length - domain[3].x - domain[3].width + cds.px.start;
       };
-      console.log('x', x)
+      console.log('x, width', x, width)
 
       const color = '#CAA';
       const lineColor = '#866';
 
       // console.log('domain', domain)
+      console.log('domain', domain)
       console.log('domain[3]', domain[3])
       // console.log('width', width)
-      const locus = `${domain[1]}-${domain[1] + domain[2]}`;
-      const title = `data-subpart="${domainType} (${locus})"`;
+      const lengthAa = `${domain[2]} aa`;
+      const title = `data-subpart="${domainType} ${pipe} ${lengthAa}"`;
       // const locus = `data-locus="Start: ${domain[1]}, length: ${domain[2]}"`;
       // const data = title + ' ' + locus;
       const data = title;

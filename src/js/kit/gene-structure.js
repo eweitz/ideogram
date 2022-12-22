@@ -5,7 +5,7 @@ import { getDomainSvg } from './domain';
 const y = 15;
 
 // Subtle visual delimiter; separates horizontally adjacent fields in UI
-const pipe = `<span style='color: #CCC'>|</span>`;
+export const pipe = `<span style='color: #CCC'>|</span>`;
 
 const utr5 = "5'-UTR";
 const utr3 = "3'-UTR";
@@ -737,10 +737,10 @@ function getTranscriptLengthBp(subparts, spliceExons=false) {
 }
 
 /** Merge feature type, pixel-x position, and pixel width to each feature */
-export function addPositions(features, totalLengthPx=250) {
-  const totalLengthBp = getTranscriptLengthBp(features);
+export function addPositions(features, totalLengthPx=250, totalLength) {
+  if (!totalLength) totalLength = getTranscriptLengthBp(features);
 
-  const bpPerPx = totalLengthBp / totalLengthPx;
+  const bpPerPx = totalLength / totalLengthPx;
 
   for (let i = 0; i < features.length; i++) {
     const feature = features[i];
