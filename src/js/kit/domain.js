@@ -43,78 +43,67 @@ function getCdsCoordinates(subparts, isPositiveStrand) {
   return cdsCoordinates;
 }
 
-export function getDomainSvg(structureName, subparts, isPositiveStrand, ideo) {
+/** Get SVG for an inidividual protein domain */
+function getDomainSvg(domain, cds, isPositiveStrand) {
+  const domainType = domain[0];
+  const domainPx = domain[3];
 
-  const domainArray = [];
-  const gene = getGeneFromStructureName(structureName);
+  let x = cds.px.start + domainPx.x;
+  const width = domainPx.width;
+  if (!isPositiveStrand) {
+    x = cds.px.length - domainPx.x - domainPx.width + cds.px.start;
+  };
 
-  if (
+  const y = 40;
+  const height = 10;
+  const color = '#CAA';
+  const lineColor = '#866';
+
+  const lengthAa = `${domain[2]}&nbsp;aa`;
+  const title = `data-subpart="${domainType} ${pipe} ${lengthAa}"`;
+  const data = title;
+
+  const pos = `x="${x}" width="${width}" y="${y}" height="${height}"`;
+  const cls = `class="subpart domain" `;
+
+  const line = getDomainBorderLines(x, y, width, lineColor);
+  const domainSvg =
+    `<rect ${cls} rx="1.5" fill="${color}" ${pos} ${data}/>` +
+    line;
+
+  return domainSvg;
+}
+
+/** Return whether domain SVG should be shown */
+function isEligibleforDomainSvg(gene, ideo) {
+  return (
     ideo.config.showDomainInTooltip &&
     !(
       'domainCache' in ideo === false ||
       gene in ideo.domainCache === false ||
       ('spliceExons' in ideo === false || ideo.spliceExons === false)
     )
-  ) {
-    const strandPad = isPositiveStrand ? 0 : -10;
-    const rawDomains = ideo.domainCache[gene][0].domains;
-    const cds = getCdsCoordinates(subparts, isPositiveStrand);
-    // 3 nt per aa.  Last 3 nucleotides are a stop codon, not an amino acid.
-    const cdsLengthAa = (cds.bp.length / 3) - 1;
-    const domains = addPositions(rawDomains, cds.px.length, cdsLengthAa);
-    for (let i = 0; i < domains.length; i++) {
-      const domain = domains[i];
-      // const position = positions[i];
-      const domainType = domain[0];
-      // if (subpartType in colors) {
-      //   color = colors[subpartType];
-      // }
+  );
+}
 
-      const height = 10;
+export function getDomainsSvg(structureName, subparts, isPositiveStrand, ideo) {
+  const domainArray = [];
+  const gene = getGeneFromStructureName(structureName, ideo);
 
-      // Define subpart position, tooltip footer
-      const lengthBp = domain[2];
-      let x = cds.px.start + domain[3].x;
-      const width = domain[3].width;
-      if (!isPositiveStrand) {
-        x = cds.px.length - domain[3].x - domain[3].width + cds.px.start;
-      };
-      console.log('x, width', x, width)
+  const isEligible = isEligibleforDomainSvg(gene, ideo);
+  if (!isEligible) return '';
 
-      const color = '#CAA';
-      const lineColor = '#866';
+  const rawDomains = ideo.domainCache[gene][0].domains;
+  const cds = getCdsCoordinates(subparts, isPositiveStrand);
 
-      // console.log('domain', domain)
-      console.log('domain', domain)
-      console.log('domain[3]', domain[3])
-      // console.log('width', width)
-      const lengthAa = `${domain[2]}&nbsp;aa`;
-      const title = `data-subpart="${domainType} ${pipe} ${lengthAa}"`;
-      // const locus = `data-locus="Start: ${domain[1]}, length: ${domain[2]}"`;
-      // const data = title + ' ' + locus;
-      const data = title;
-      const y = 40;
-      const pos = `x="${x}" width="${width}" y="${y}" height="${height}"`;
-      const cls = `class="subpart domain" `;
+  // 3 nt per aa.  Last 3 nucleotides are a stop codon, not an amino acid.
+  const cdsLengthAa = (cds.bp.length / 3) - 1;
 
-      const line = getDomainBorderLines(x, y, width, lineColor);
-      const svg =
-        `<rect ${cls} rx="1.5" fill="${color}" ${pos} ${data}/>` +
-        line;
-
-      domainArray.push(svg);
-
-    }
-
-    // const domainSvg = getSvg(domains, ideo)[0];
-
-    // const domainHtml =
-    //   `<span class="_ideoDomainSvgContainer">` +
-    //     domainSvg +
-    //   `</span>` +
-    //   `<div class="_ideoDomainFooter"></div>` +
-    //   `</div>`;
-
+  const domains = addPositions(rawDomains, cds.px.length, cdsLengthAa);
+  for (let i = 0; i < domains.length; i++) {
+    const domain = domains[i];
+    const domainSvg = getDomainSvg(domain, cds, isPositiveStrand);
+    domainArray.push(domainSvg);
   }
 
   const domainSvg = domainArray.join('');

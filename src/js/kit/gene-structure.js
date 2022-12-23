@@ -1,6 +1,6 @@
 import {d3} from '../lib';
 import {getIcon} from '../annotations/legend';
-import { getDomainSvg } from './domain';
+import {getDomainsSvg } from './domain';
 
 const y = 15;
 
@@ -930,7 +930,7 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
   const menu = getMenu(gene, ideo, structureName).replaceAll('"', '\'');
   const footerData = menu + footerDetails.join(` ${pipe} `);
 
-  const domainSvg = getDomainSvg(
+  const domainSvg = getDomainsSvg(
     structureName, subparts, isPositiveStrand, ideo
   );
 
