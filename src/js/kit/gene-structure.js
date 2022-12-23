@@ -427,7 +427,7 @@ function addSubpartHoverListener(subpartDOM, ideo) {
     ideo.originalTooltipFooter = footer.innerHTML;
     const subpartText = subpart.getAttribute('data-subpart');
     const trimmedFoot = footer.innerHTML.replace('&nbsp;', '');
-    const style = 'style="margin-bottom: -10px"';
+    const style = 'style="margin-bottom: -10px; max-width: 260px;"';
     const id = 'id="_ideoSubpartText"';
     footer.innerHTML =
       `<div ${id} ${style}">${subpartText}</div>${trimmedFoot}`;

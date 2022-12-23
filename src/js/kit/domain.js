@@ -88,7 +88,7 @@ export function getDomainSvg(structureName, subparts, isPositiveStrand, ideo) {
       console.log('domain', domain)
       console.log('domain[3]', domain[3])
       // console.log('width', width)
-      const lengthAa = `${domain[2]} aa`;
+      const lengthAa = `${domain[2]}&nbsp;aa`;
       const title = `data-subpart="${domainType} ${pipe} ${lengthAa}"`;
       // const locus = `data-locus="Start: ${domain[1]}, length: ${domain[2]}"`;
       // const data = title + ' ' + locus;
