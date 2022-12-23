@@ -1,6 +1,6 @@
 import {d3} from '../lib';
 import {getIcon} from '../annotations/legend';
-import {getDomainsSvg } from './domain';
+import {getProteinSvg} from './protein';
 
 const y = 15;
 
@@ -930,11 +930,11 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
   const menu = getMenu(gene, ideo, structureName).replaceAll('"', '\'');
   const footerData = menu + footerDetails.join(` ${pipe} `);
 
-  const domainSvg = getDomainsSvg(
+  const proteinSvg = getProteinSvg(
     structureName, subparts, isPositiveStrand, ideo
   );
 
-  const svgHeight = domainSvg === '' ? '40' : '60';
+  const svgHeight = proteinSvg === '' ? '40' : '60';
 
   const geneStructureSvg =
     `<svg class="_ideoGeneStructure" ` +
@@ -943,7 +943,7 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
       `width="${(featureLengthPx + 20)}" height="${svgHeight}" ${transform}` +
     `>` +
       geneStructureArray.join('') +
-      domainSvg +
+      proteinSvg +
     '</svg>';
 
   return [geneStructureSvg, prelimSubparts, matureSubparts];

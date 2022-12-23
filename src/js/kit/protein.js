@@ -23,15 +23,17 @@ function getCdsCoordinates(subparts, isPositiveStrand) {
   // Test case: XRCC3 (-, multiple 5'-UTRs), RAD51D (big 3'-UTR)
   if (!isPositiveStrand) subparts = subparts.reverse();
 
-  const lastUtrType = isPositiveStrand ? "5'-UTR" : "3'-UTR";
-  const lastUtr = subparts.filter(s => s[0] === lastUtrType).slice(-1)[0];
-  const startPx = lastUtr[3].x + lastUtr[3].width;
-  const startBp = lastUtr[1] + lastUtr[2];
+  // Start of CDS is end of last 5'-UTR, for default case (positive strand)
+  const startUtr = isPositiveStrand ? "5'-UTR" : "3'-UTR";
+  const lastStartUtr = subparts.filter(s => s[0] === startUtr).slice(-1)[0];
+  const startPx = lastStartUtr[3].x + lastStartUtr[3].width;
+  const startBp = lastStartUtr[1] + lastStartUtr[2];
 
-  const firstUtrType = isPositiveStrand ? "3'-UTR" : "5'-UTR";
-  const firstUtr = subparts.filter(s => s[0] === firstUtrType).slice(-1)[0];
-  const stopPx = firstUtr[3].x;
-  const stopBp = firstUtr[1];
+  // End of CDS is start of first 3'-UTR, for default case
+  const endUtr = isPositiveStrand ? "3'-UTR" : "5'-UTR";
+  const firstEndUtr = subparts.filter(s => s[0] === endUtr).slice(-1)[0];
+  const stopPx = firstEndUtr[3].x;
+  const stopBp = firstEndUtr[1];
 
   const lengthBp = stopBp - startBp;
   const lengthPx = stopPx - startPx;
@@ -74,8 +76,8 @@ function getDomainSvg(domain, cds, isPositiveStrand) {
   return domainSvg;
 }
 
-/** Return whether domain SVG should be shown */
-function isEligibleforDomainSvg(gene, ideo) {
+/** Return whether protein SVG should be shown */
+function isEligibleforProteinSvg(gene, ideo) {
   return (
     ideo.config.showDomainInTooltip &&
     !(
@@ -86,11 +88,12 @@ function isEligibleforDomainSvg(gene, ideo) {
   );
 }
 
-export function getDomainsSvg(structureName, subparts, isPositiveStrand, ideo) {
-  const domainArray = [];
+/** Get SVG showing 2D protein features, e.g. domains from InterPro */
+export function getProteinSvg(structureName, subparts, isPositiveStrand, ideo) {
+  const features = [];
   const gene = getGeneFromStructureName(structureName, ideo);
 
-  const isEligible = isEligibleforDomainSvg(gene, ideo);
+  const isEligible = isEligibleforProteinSvg(gene, ideo);
   if (!isEligible) return '';
 
   const rawDomains = ideo.domainCache[gene][0].domains;
@@ -103,10 +106,10 @@ export function getDomainsSvg(structureName, subparts, isPositiveStrand, ideo) {
   for (let i = 0; i < domains.length; i++) {
     const domain = domains[i];
     const domainSvg = getDomainSvg(domain, cds, isPositiveStrand);
-    domainArray.push(domainSvg);
+    features.push(domainSvg);
   }
 
-  const domainSvg = domainArray.join('');
+  const proteinSvg = features.join('');
 
-  return domainSvg;
+  return proteinSvg;
 }
