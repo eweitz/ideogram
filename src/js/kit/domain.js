@@ -20,34 +20,22 @@ function getDomainBorderLines(x, y, width, lineColor) {
 
 /** Get start and length for coding sequence (CDS), in pixels and base pairs */
 function getCdsCoordinates(subparts, isPositiveStrand) {
+  // Test case: XRCC3 (-, multiple 5'-UTRs), RAD51D (big 3'-UTR)
   if (!isPositiveStrand) subparts = subparts.reverse();
 
   const lastUtrType = isPositiveStrand ? "5'-UTR" : "3'-UTR";
-
   const lastUtr = subparts.filter(s => s[0] === lastUtrType).slice(-1)[0];
   const startPx = lastUtr[3].x + lastUtr[3].width;
   const startBp = lastUtr[1] + lastUtr[2];
-  console.log('lastUtr[3]', lastUtr[3])
 
-  console.log('startPx', startPx)
   const firstUtrType = isPositiveStrand ? "3'-UTR" : "5'-UTR";
-  const firstUtr = subparts.find(s => s[0] === firstUtrType);
-  console.log('firstUtr3[3]', firstUtr[3]);
+  const firstUtr = subparts.filter(s => s[0] === firstUtrType).slice(-1)[0];
   const stopPx = firstUtr[3].x;
   const stopBp = firstUtr[1];
-  let lengthPx;
-  let lengthBp = stopBp - startBp;
-  lengthPx = stopPx - startPx;
-  // if (!isPositiveStrand) {
-  //   lengthPx = stopPx - firstUtr[3].width;
-  //   // lengthBp = lengthBp * -1;
-  //   // lengthPx = 225;
-  // } else {
-  //   lengthPx = stopPx - startPx;
-  // }
-  // startPx = 15;
-  console.log('startPx, stopPx, lengthPx', startPx, stopPx, lengthPx)
-  console.log('startBp, stopBp, lengthBp', startBp, stopBp, lengthBp)
+
+  const lengthBp = stopBp - startBp;
+  const lengthPx = stopPx - startPx;
+
   const cdsCoordinates = {
     px: {start: startPx, length: lengthPx},
     bp: {start: startBp, length: lengthBp}
