@@ -685,6 +685,9 @@ function toggleSplice(ideo) {
   const isCanonical = (selectedIndex === 0);
   const [, prelimSubparts, matureSubparts] =
     getSvg(structure, ideo, spliceExons);
+  const proteinSvg = document.querySelector('#_ideoProtein');
+
+  if (!spliceExons) proteinSvg.style.display = 'none';
 
   const addedIntrons = document.querySelectorAll('.intron').length > 0;
   if (!spliceExons && !addedIntrons) {
@@ -692,7 +695,7 @@ function toggleSplice(ideo) {
   } else {
     document.querySelectorAll('.intron').forEach(el => el.remove());
   }
-  document.querySelectorAll('.subpart-line').forEach(el => el.remove());
+  document.querySelectorAll('.subpart-line.rna').forEach(el => el.remove());
 
   const subparts = spliceExons ? matureSubparts : prelimSubparts;
 
@@ -704,9 +707,10 @@ function toggleSplice(ideo) {
     .attr('width', (d, i) => subparts[i][3].width)
     .on('end', (d, i) => {
       if (i !== subparts.length - 1) return;
+      if (spliceExons) proteinSvg.style.display = '';
 
       // Restore subpart boundary lines
-      const subpartDOMs = document.querySelectorAll('.subpart')
+      const subpartDOMs = document.querySelectorAll('.subpart:not(.domain)');
       subpartDOMs.forEach((subpartDOM, i) => {
         const subpart = subparts[i];
         const line = getSubpartBorderLine(subpart);
@@ -778,7 +782,7 @@ function getSubpartBorderLine(subpart) {
   const lineStroke = `stroke="${lineColors[subpartType]}"`;
   const lineAttrs = // "";
     `x1="${x}" x2="${x}" y1="${y}" y2="${lineHeight}" ${lineStroke}`;
-  return `<line class="subpart-line" ${lineAttrs} />`;
+  return `<line class="subpart-line rna" ${lineAttrs} />`;
 }
 
 // function getSvgList(gene, ideo, spliceExons=false) {

@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Functions to render 2D protein structure, i.e. linear domains
+ *
+ * The protein diagrams are shown in the Gene Leads tooltip.
+ */
+
 import {addPositions, getGeneFromStructureName, pipe} from './gene-structure';
 
 /** Get subtle line to visually demarcate domain boundary */
@@ -56,10 +62,11 @@ function getDomainSvg(domain, cds, isPositiveStrand) {
     x = cds.px.length - domainPx.x - domainPx.width + cds.px.start;
   };
 
+  // Perhaps make these configurable, later
   const y = 40;
   const height = 10;
-  const color = '#CAA';
-  const lineColor = '#866';
+  const color = '#CAA'; // Light red
+  const lineColor = '#866'; // Dark red
 
   const lengthAa = `${domain[2]}&nbsp;aa`;
   const title = `data-subpart="${domainType} ${pipe} ${lengthAa}"`;
@@ -109,7 +116,8 @@ export function getProteinSvg(structureName, subparts, isPositiveStrand, ideo) {
     features.push(domainSvg);
   }
 
-  const proteinSvg = features.join('');
+  const proteinSvg =
+    `<g id="_ideoProtein">${features.join('')}</g>`;
 
   return proteinSvg;
 }
