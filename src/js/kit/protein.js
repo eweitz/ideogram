@@ -103,7 +103,11 @@ export function getProteinSvg(structureName, subparts, isPositiveStrand, ideo) {
   const isEligible = isEligibleforProteinSvg(gene, ideo);
   if (!isEligible) return '';
 
-  const rawDomains = ideo.domainCache[gene][0].domains;
+
+  const entry = ideo.domainCache[gene].find(d => {
+    return d.transcriptName === structureName;
+  });
+  const rawDomains = entry.domains;
   const cds = getCdsCoordinates(subparts, isPositiveStrand);
 
   // 3 nt per aa.  Last 3 nucleotides are a stop codon, not an amino acid.

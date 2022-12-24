@@ -41,6 +41,7 @@ export function parseCache(rawTsv, perfTimes) {
   t0 = performance.now();
 
   let gene = null;
+  let refTxBaseNum;
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (line === '') continue; // Skip empty lines
@@ -61,8 +62,15 @@ export function parseCache(rawTsv, perfTimes) {
 
     let transcriptName = splitLine[0];
     if (isNaN(transcriptName)) {
-      gene = transcriptName.split('-').slice(0, -1).join('-');
-      transcriptName = gene + transcriptName;
+      const splitTxName = transcriptName.split('-');
+      const txNum = splitTxName.slice(-1)[0]; // e.g. 208 in ACE2-208
+      const highestDigit = parseInt(txNum[0]); // e.g. 2 in 208
+      const numDigits = txNum.length;
+      refTxBaseNum = highestDigit * (10 ** (numDigits - 1));
+      gene = splitTxName.slice(0, -1).join('-');
+    } else {
+      transcriptName = refTxBaseNum + parseInt(transcriptName);
+      transcriptName = gene + '-' + transcriptName;
     }
 
     const rawDomains = splitLine.slice(1);
