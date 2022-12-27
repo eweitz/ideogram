@@ -32,15 +32,29 @@ function getCdsCoordinates(subparts, isPositiveStrand) {
   // Start of CDS is end of last 5'-UTR, for default case (positive strand)
   const startUtr = isPositiveStrand ? "5'-UTR" : "3'-UTR";
   const lastStartUtr = subparts.filter(s => s[0] === startUtr).slice(-1)[0];
-  const startPx = lastStartUtr[3].x + lastStartUtr[3].width;
-  const startBp = lastStartUtr[1] + lastStartUtr[2];
+  let startPx, startBp;
+  if (lastStartUtr) {
+    startPx = lastStartUtr[3].x + lastStartUtr[3].width;
+    startBp = lastStartUtr[1] + lastStartUtr[2];
+  } else {
+    // For transcipts without an annotated start UTR, e.g. EGFR-205
+    startPx = 0;
+    startBp = 0;
+  }
 
   // End of CDS is start of first 3'-UTR, for default case
   const endUtr = isPositiveStrand ? "3'-UTR" : "5'-UTR";
-  let firstEndUtr = subparts.filter(s => s[0] === endUtr).slice(-1)[0];
-  if (!firstEndUtr) firstEndUtr = subparts.slice(-1)[0];
-  const stopPx = firstEndUtr[3].x;
-  const stopBp = firstEndUtr[1];
+  const firstEndUtr = subparts.filter(s => s[0] === endUtr).slice(-1)[0];
+  let stopPx, stopBp;
+  if (firstEndUtr) {
+    stopPx = firstEndUtr[3].x;
+    stopBp = firstEndUtr[1];
+  } else {
+    // For transcipts without an annotated last UTR, e.g. EGFR-205
+    const lastSubpart = subparts.slice(-1)[0];
+    stopPx = lastSubpart[3].x + lastSubpart[3].width;
+    stopBp = lastSubpart[1] + lastSubpart[2];
+  }
 
   const lengthBp = stopBp - startBp;
   const lengthPx = stopPx - startPx;
@@ -113,6 +127,7 @@ export function getProteinSvg(structureName, subparts, isPositiveStrand, ideo) {
   const cds = getCdsCoordinates(subparts, isPositiveStrand);
 
   const domains = addPositions(subparts, rawDomains);
+
   for (let i = 0; i < domains.length; i++) {
     const domain = domains[i];
     const domainSvg = getDomainSvg(domain, cds, isPositiveStrand);
