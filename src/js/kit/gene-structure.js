@@ -741,10 +741,15 @@ function getTranscriptLengthBp(subparts, spliceExons=false) {
 }
 
 /** Merge feature type, pixel-x position, and pixel width to each feature */
-export function addPositions(features, totalLengthPx=250, totalLength) {
-  if (!totalLength) totalLength = getTranscriptLengthBp(features);
+export function addPositions(subparts, domains=null) {
+  const transcriptLengthPx = 250;
 
-  const bpPerPx = totalLength / totalLengthPx;
+  const totalLengthBp = getTranscriptLengthBp(subparts);
+
+  const factor = domains ? 3 : 1; // 3 nt per aa
+  const bpPerPx = (totalLengthBp / transcriptLengthPx) / factor;
+
+  const features = domains ?? subparts;
 
   for (let i = 0; i < features.length; i++) {
     const feature = features[i];

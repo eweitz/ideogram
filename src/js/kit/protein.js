@@ -27,7 +27,7 @@ function getDomainBorderLines(x, y, width, lineColor) {
 /** Get start and length for coding sequence (CDS), in pixels and base pairs */
 function getCdsCoordinates(subparts, isPositiveStrand) {
   // Test case: XRCC3 (-, multiple 5'-UTRs), RAD51D (big 3'-UTR)
-  if (!isPositiveStrand) subparts = subparts.reverse();
+  if (!isPositiveStrand) subparts = subparts.slice().reverse();
 
   // Start of CDS is end of last 5'-UTR, for default case (positive strand)
   const startUtr = isPositiveStrand ? "5'-UTR" : "3'-UTR";
@@ -37,7 +37,8 @@ function getCdsCoordinates(subparts, isPositiveStrand) {
 
   // End of CDS is start of first 3'-UTR, for default case
   const endUtr = isPositiveStrand ? "3'-UTR" : "5'-UTR";
-  const firstEndUtr = subparts.filter(s => s[0] === endUtr).slice(-1)[0];
+  let firstEndUtr = subparts.filter(s => s[0] === endUtr).slice(-1)[0];
+  if (!firstEndUtr) firstEndUtr = subparts.slice(-1)[0];
   const stopPx = firstEndUtr[3].x;
   const stopBp = firstEndUtr[1];
 
@@ -59,7 +60,7 @@ function getDomainSvg(domain, cds, isPositiveStrand) {
   let x = cds.px.start + domainPx.x;
   const width = domainPx.width;
   if (!isPositiveStrand) {
-    x = cds.px.length - domainPx.x - domainPx.width + cds.px.start;
+    x = cds.px.length + cds.px.start - (domainPx.x + domainPx.width);
   };
 
   // Perhaps make these configurable, later
@@ -107,13 +108,11 @@ export function getProteinSvg(structureName, subparts, isPositiveStrand, ideo) {
   const entry = ideo.domainCache[gene].find(d => {
     return d.transcriptName === structureName;
   });
+  if (!entry) return '<br/>';
   const rawDomains = entry.domains;
   const cds = getCdsCoordinates(subparts, isPositiveStrand);
 
-  // 3 nt per aa.  Last 3 nucleotides are a stop codon, not an amino acid.
-  const cdsLengthAa = (cds.bp.length / 3) - 1;
-
-  const domains = addPositions(rawDomains, cds.px.length, cdsLengthAa);
+  const domains = addPositions(subparts, rawDomains);
   for (let i = 0; i < domains.length; i++) {
     const domain = domains[i];
     const domainSvg = getDomainSvg(domain, cds, isPositiveStrand);
