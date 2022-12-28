@@ -687,7 +687,7 @@ function toggleSplice(ideo) {
     getSvg(structure, ideo, spliceExons);
   const proteinSvg = document.querySelector('#_ideoProtein');
 
-  if (!spliceExons) proteinSvg.style.display = 'none';
+  if (proteinSvg && !spliceExons) proteinSvg.style.display = 'none';
 
   const addedIntrons = document.querySelectorAll('.intron').length > 0;
   if (!spliceExons && !addedIntrons) {
@@ -707,7 +707,7 @@ function toggleSplice(ideo) {
     .attr('width', (d, i) => subparts[i][3].width)
     .on('end', (d, i) => {
       if (i !== subparts.length - 1) return;
-      if (spliceExons) proteinSvg.style.display = '';
+      if (proteinSvg && spliceExons) proteinSvg.style.display = '';
 
       // Restore subpart boundary lines
       const subpartDOMs = document.querySelectorAll('.subpart:not(.domain)');
