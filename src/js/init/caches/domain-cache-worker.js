@@ -1,10 +1,10 @@
 import {fetchAndParse, inspectWorker, getFullId} from './cache-lib';
 
-/** Parse compressed domains to more easily computable format */
-function deserializeDomains(rawDomains, domainKeys) {
+/** Parse compressed protein to more easily computable format */
+function deserializeProtein(rawProtein, domainKeys) {
   const domains = [];
-  for (let i = 0; i < rawDomains.length; i++) {
-    const rawDomain = rawDomains[i].split(';');
+  for (let i = 0; i < rawProtein.length; i++) {
+    const rawDomain = rawProtein[i].split(';');
     // const domainID = getFullId('IPR', rawDomain[0], 6);
     const domainName = domainKeys[rawDomain[0]];
     const start = parseInt(rawDomain[1]);
@@ -28,7 +28,7 @@ function parseMetainformationHeader(line) {
   return [metaHeader, keys];
 }
 
-/** Parse a domain cache TSV file, return array of useful transforms */
+/** Parse a protein cache TSV file, return array of useful transforms */
 export function parseCache(rawTsv, perfTimes) {
   const featuresByGene = {};
 
@@ -73,13 +73,13 @@ export function parseCache(rawTsv, perfTimes) {
       transcriptName = gene + '-' + transcriptName;
     }
 
-    const rawDomains = splitLine.slice(1);
-    const domains = deserializeDomains(rawDomains, domainKeys);
+    const rawProtein = splitLine.slice(1);
+    const protein = deserializeProtein(rawProtein, domainKeys);
 
-    // E.g. ACE2-201, <array of domains <domain name, domain ID, start, length>>
+    // E.g. ACE2-201, <array of proteins <protein name, protein ID, start, length>>
     const feature = {
       transcriptName,
-      domains
+      protein
     };
 
     if (gene in featuresByGene) {
@@ -97,9 +97,9 @@ export function parseCache(rawTsv, perfTimes) {
 
 // Uncomment when workers work outside localhost
 // addEventListener('message', async event => {
-//   console.time('domainCacheWorker');
+//   console.time('proteinCacheWorker');
 //   const [cacheUrl, perfTimes, debug] = event.data;
 //   const result = await fetchAndParse(cacheUrl, perfTimes, parseCache);
 //   postMessage(result);
-//   if (debug) inspectWorker('domainStructure', result[0]);
+//   if (debug) inspectWorker('proteinStructure', result[0]);
 // });

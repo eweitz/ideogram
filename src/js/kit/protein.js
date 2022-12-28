@@ -103,8 +103,8 @@ function isEligibleforProteinSvg(gene, ideo) {
   return (
     ideo.config.showDomainInTooltip &&
     !(
-      'domainCache' in ideo === false ||
-      gene in ideo.domainCache === false ||
+      'proteinCache' in ideo === false ||
+      gene in ideo.proteinCache === false ||
       ('spliceExons' in ideo === false || ideo.spliceExons === false)
     )
   );
@@ -119,14 +119,14 @@ export function getProteinSvg(structureName, subparts, isPositiveStrand, ideo) {
   if (!isEligible) return '';
 
 
-  const entry = ideo.domainCache[gene].find(d => {
+  const entry = ideo.proteinCache[gene].find(d => {
     return d.transcriptName === structureName;
   });
   if (!entry) return '<br/>';
-  const rawDomains = entry.domains;
+  const protein = entry.protein;
   const cds = getCdsCoordinates(subparts, isPositiveStrand);
 
-  const domains = addPositions(subparts, rawDomains);
+  const domains = addPositions(subparts, protein);
 
   for (let i = 0; i < domains.length; i++) {
     const domain = domains[i];

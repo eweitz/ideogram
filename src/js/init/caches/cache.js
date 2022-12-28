@@ -20,7 +20,7 @@ import {parseCache as parseInteractionCache} from './interaction-cache-worker';
 import {
   parseCache as parseGeneStructureCache
 } from './gene-structure-cache-worker';
-import {parseCache as parseDomainCache} from './domain-cache-worker';
+import {parseCache as parseProteinCache} from './domain-cache-worker';
 
 /**
  * Populates in-memory content caches from on-disk service worker (SW) caches.
@@ -61,7 +61,7 @@ export async function initCaches(ideo) {
 
     if (config.showGeneStructureInTooltip) {
       cacheFactory('geneStructure', organism, ideo, cacheDir);
-      cacheFactory('domain', organism, ideo, cacheDir);
+      cacheFactory('protein', organism, ideo, cacheDir);
     }
 
     return cachePromise;
@@ -72,7 +72,7 @@ export async function initCaches(ideo) {
     cacheFactory('interaction', organism, ideo, cacheDir);
     if (config.showGeneStructureInTooltip) {
       cacheFactory('geneStructure', organism, ideo, cacheDir);
-      cacheFactory('domain', organism, ideo, cacheDir);
+      cacheFactory('protein', organism, ideo, cacheDir);
     }
   }
 }
@@ -102,11 +102,11 @@ const allCacheProps = {
     // worker: geneStructureCacheWorker // Uncomment when workers work
     parseFn: parseGeneStructureCache // Remove when workers work
   },
-  domain: {
-    metadata: 'Domain', dir: 'domains',
-    fn: setDomainCache,
-    // worker: domainCacheWorker // Uncomment when workers work
-    parseFn: parseDomainCache // Remove when workers work
+  protein: {
+    metadata: 'Protein', dir: 'proteins',
+    fn: setProteinCache,
+    // worker: proteinCacheWorker // Uncomment when workers work
+    parseFn: parseProteinCache // Remove when workers work
   }
 };
 
@@ -145,8 +145,8 @@ function setGeneStructureCache(parsedCache, ideo) {
   ideo.geneStructureCache = featuresByGene;
 }
 
-function setDomainCache(parsedCache, ideo) {
-  ideo.domainCache = parsedCache;
+function setProteinCache(parsedCache, ideo) {
+  ideo.proteinCache = parsedCache;
 }
 
 async function cacheFactory(cacheName, orgName, ideo, cacheDir=null) {

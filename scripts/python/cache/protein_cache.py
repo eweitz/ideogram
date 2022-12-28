@@ -1,9 +1,9 @@
-"""Convert Ensembl BMTSV files to minimal TSVs for Ideogram.js domain caches
+"""Convert Ensembl BMTSV files to minimal TSVs for Ideogram.js protein caches
 
 Ideogram uses cached gene data to drastically simplify and speed up rendering.
 
 Example call (including supplementary commands):
-time python3 cache/domain_cache.py --output-dir ../../dist/data/cache/gene-domains-all-compressed/ --reuse-bmtsv; gzip -dkf ../../dist/data/cache/gene-domains-all-compressed/homo-sapiens-gene-domains.tsv.gz; tput bel
+time python3 cache/protein_cache.py --output-dir ../../dist/data/cache/proteins/ --reuse-bmtsv; gzip -dkf ../../dist/data/cache/proteins/homo-sapiens-proteins.tsv.gz; tput bel
 """
 
 import argparse
@@ -61,47 +61,47 @@ biotypes = {}
 #     "Anopheles gambiae".AgamP4.51.bmtsv.gz  "
 # }
 
-def sort_domains(domains, organism, canonical_ids):
+def sort_proteins(proteins, organism, canonical_ids):
     ranks = fetch_interesting_genes(organism)
     print('ranks[0:10]')
     print(ranks[0:10])
-    print('domains[0:10]')
-    print(domains[0:10])
-    sorted_domains = []
+    print('proteins[0:10]')
+    print(proteins[0:10])
+    sorted_proteins = []
     print('canonical_ids[0:3]')
     print(list(canonical_ids)[0:3])
 
-    # Sort domains by position, not lowest InterPro ID
-    domains_inner_sorted = []
-    for domain_container in domains:
-        unsorted_domain_list = domain_container[2:]
-        sorted_domain_list = sorted(
-            unsorted_domain_list,
+    # Sort proteins by position, not lowest InterPro ID
+    proteins_inner_sorted = []
+    for protein_container in proteins:
+        unsorted_protein_list = protein_container[2:]
+        sorted_protein_list = sorted(
+            unsorted_protein_list,
             key=lambda d: int(d.split(';')[1])
         )
-        domains_inner_sorted.append(
-            domain_container[:2] + sorted_domain_list
+        proteins_inner_sorted.append(
+            protein_container[:2] + sorted_protein_list
         )
-    domains = domains_inner_sorted
+    proteins = proteins_inner_sorted
 
-    domains_with_genes = []
-    for domain in domains:
+    proteins_with_genes = []
+    for protein in proteins:
         # E.g. FOO-BAR-404 -> FOO-BAR
-        gene = "".join(domain[1].split('-')[:-1])
-        domains_with_genes.append([gene] + domain)
+        gene = "".join(protein[1].split('-')[:-1])
+        proteins_with_genes.append([gene] + protein)
 
 
-    doms = domains_with_genes
+    doms = proteins_with_genes
     doms = sorted(
         doms,
         key=lambda d: d[1] in canonical_ids, reverse=True
     )
-    domains_with_genes = doms
+    proteins_with_genes = doms
 
 
     # Sort genes by interest rank, and put unranked genes last
-    trimmed_domains = sorted(
-        domains_with_genes,
+    trimmed_proteins = sorted(
+        proteins_with_genes,
         key=lambda d: ranks.index(d[0]) if d[0] in ranks else 1E10,
     )
 
@@ -111,17 +111,17 @@ def sort_domains(domains, organism, canonical_ids):
     #     structs = sorted(structs, key=lambda s: s[0] in canonical_ids)
     #     structs = sorted(structs, key=lambda s: s[0] in canonical_ids)
 
-    sorted_domains = []
-    for domain in trimmed_domains:
-        sorted_domains.append(domain[2:])
+    sorted_proteins = []
+    for protein in trimmed_proteins:
+        sorted_proteins.append(protein[2:])
 
-    print('sorted_domains[0:10]')
-    print(sorted_domains[0:10])
+    print('sorted_proteins[0:10]')
+    print(sorted_proteins[0:10])
 
-    return sorted_domains
+    return sorted_proteins
 
-def get_domains_url(organism):
-    """Get URL to domains TSV file, from Ensembl BioMart
+def get_proteins_url(organism):
+    """Get URL to proteins TSV file, from Ensembl BioMart
     E.g. https://www.ensembl.org/biomart/martservice?query=%3C%21DOCTYPE%20Query%3E%0A%3CQuery%20%20virtualSchemaName%20%3D%20%22default%22%20formatter%20%3D%20%22TSV%22%20header%20%3D%20%220%22%20uniqueRows%20%3D%20%220%22%20count%20%3D%20%22%22%20datasetConfigVersion%20%3D%20%220.6%22%20%3E%0A%09%09%09%0A%09%3CDataset%20name%20%3D%20%22hsapiens_gene_ensembl%22%20interface%20%3D%20%22default%22%20%3E%0A%09%09%3CFilter%20name%20%3D%20%22with_interpro%22%20excluded%20%3D%20%220%22%2F%3E%0A%09%09%3CAttribute%20name%20%3D%20%22ensembl_transcript_id%22%20%2F%3E%0A%09%09%3CAttribute%20name%20%3D%20%22interpro%22%20%2F%3E%0A%09%09%3CAttribute%20name%20%3D%20%22interpro_short_description%22%20%2F%3E%0A%09%09%3CAttribute%20name%20%3D%20%22interpro_description%22%20%2F%3E%0A%09%09%3CAttribute%20name%20%3D%20%22interpro_start%22%20%2F%3E%0A%09%09%3CAttribute%20name%20%3D%20%22interpro_end%22%20%2F%3E%0A%09%3C%2FDataset%3E%0A%3C%2FQuery%3E
 
     """
@@ -148,12 +148,12 @@ def get_domains_url(organism):
     url = f"https://www.ensembl.org/biomart/martservice?query={query}"
     return url
 
-def parse_domain(row):
-    """Return parsed transcript-related domain from CSV-reader-split row of GFF file"""
+def parse_protein(row):
+    """Return parsed transcript-related protein from CSV-reader-split row of GFF file"""
     feat_type = row[2]
 
 
-    return domain
+    return protein
 
 def parse_bmtsv(bmtsv_path):
     """Parse BMTSV into a set of Ensembl canonical transcript IDs
@@ -186,8 +186,8 @@ subpart_map = {
     'three_prime_UTR': '2',
 }
 
-def parse_domains(domains_path, gff_path, gff_url):
-    """Parse proteins domains from InterPro data in TSV file
+def parse_proteins(proteins_path, gff_path, gff_url):
+    """Parse proteins proteins from InterPro data in TSV file
     """
 
     transcript_names_by_id = {}
@@ -208,11 +208,11 @@ def parse_domains(domains_path, gff_path, gff_url):
 
 
     missing_transcripts = []
-    domain_names_by_id = {}
-    domains_by_transcript = {}
-    prev_domain = None
+    protein_names_by_id = {}
+    proteins_by_transcript = {}
+    prev_protein = None
     i = 0
-    with open(domains_path) as file:
+    with open(proteins_path) as file:
         reader = csv.reader(file, delimiter="\t")
         for row in reader:
             i += 1
@@ -221,40 +221,40 @@ def parse_domains(domains_path, gff_path, gff_url):
                 # Skip header
                 continue
 
-            # domain = parse_domain(row)
-            domain = row
+            # protein = parse_protein(row)
+            protein = row
 
-            if domain == None:
+            if protein == None:
                 continue
 
-            # print('domain', domain)
+            # print('protein', protein)
 
             if (i % 50000 == 0):
                 print(f"On entry {i}")
-                print(domain)
+                print(protein)
 
             # if i > 100000:
-            #     # return domains_by_transcript
+            #     # return proteins_by_transcript
             #     break
 
-            transcript_id = domain[0]
+            transcript_id = protein[0]
             if transcript_id not in transcript_names_by_id:
                 missing_transcripts.append(transcript_id)
                 continue
             transcript_name = transcript_names_by_id[transcript_id]
-            domain_id = trim_id(domain[1], "IPR")
-            domain_name = domain[3]
-            [start, stop] = domain[4:6]
+            protein_id = trim_id(protein[1], "IPR")
+            protein_name = protein[3]
+            [start, stop] = protein[4:6]
             length = str(int(stop) - int(start))
-            if domain_id not in domain_names_by_id:
-                domain_names_by_id[domain_id] = domain_name
+            if protein_id not in protein_names_by_id:
+                protein_names_by_id[protein_id] = protein_name
 
-            parsed_domain = ';'.join([domain_id, start, length])
+            parsed_protein = ';'.join([protein_id, start, length])
 
-            if transcript_name in domains_by_transcript:
-                domains_by_transcript[transcript_name].append(parsed_domain)
+            if transcript_name in proteins_by_transcript:
+                proteins_by_transcript[transcript_name].append(parsed_protein)
             else:
-                domains_by_transcript[transcript_name] = [parsed_domain]
+                proteins_by_transcript[transcript_name] = [parsed_protein]
 
             # [chr, start, stop, transcript, symbol, desc] = parsed_gene
             # length = str(int(stop) - int(start))
@@ -270,20 +270,20 @@ def parse_domains(domains_path, gff_path, gff_url):
 
     tx_ids_by_name = {v: k for k, v in transcript_names_by_id.items()}
 
-    domains = []
-    for transcript in domains_by_transcript:
-        tx_domains = domains_by_transcript[transcript]
+    proteins = []
+    for transcript in proteins_by_transcript:
+        tx_proteins = proteins_by_transcript[transcript]
         transcript_id = tx_ids_by_name[transcript]
-        tx_domains.insert(0, transcript)
-        tx_domains.insert(0, transcript_id)
-        domains.append(tx_domains)
+        tx_proteins.insert(0, transcript)
+        tx_proteins.insert(0, transcript_id)
+        proteins.append(tx_proteins)
 
-    print('domains[0:10]')
-    print(domains[0:10])
-    return [domains, domain_names_by_id]
+    print('proteins[0:10]')
+    print(proteins[0:10])
+    return [proteins, protein_names_by_id]
 
 
-class DomainCache():
+class ProteinCache():
     """Convert Ensembl BioMart TSVs to compact TSVs for Ideogram.js caches
     """
 
@@ -299,25 +299,25 @@ class DomainCache():
         if not os.path.exists(self.tmp_dir):
             os.makedirs(self.tmp_dir)
 
-    def fetch_domains_tsv(self, organism):
-        """Download an organism's domains TSV file from Ensembl BioMart
+    def fetch_proteins_tsv(self, organism):
+        """Download an organism's proteins TSV file from Ensembl BioMart
         """
         print(f"Fetching via Ensembl BioMart TSV for {organism}")
-        url = get_domains_url(organism)
-        domains_dir = self.tmp_dir + "domains/"
-        if not os.path.exists(domains_dir):
-            os.makedirs(domains_dir)
+        url = get_proteins_url(organism)
+        proteins_dir = self.tmp_dir + "proteins/"
+        if not os.path.exists(proteins_dir):
+            os.makedirs(proteins_dir)
         org_lch = organism.lower().replace(" ", "-")
-        domains_path = domains_dir + org_lch + "-domains.tsv"
+        proteins_path = proteins_dir + org_lch + "-proteins.tsv"
         try:
-            download(url, domains_path, cache=self.reuse_bmtsv)
+            download(url, proteins_path, cache=self.reuse_bmtsv)
         except urllib.error.HTTPError:
             # E.g. for C. elegans
             url = url.replace("chr.", "")
-            download(url, domains_path, cache=self.reuse_bmtsv)
-        return [domains_path, url]
+            download(url, proteins_path, cache=self.reuse_bmtsv)
+        return [proteins_path, url]
 
-    def write(self, domains, organism, names_by_id):
+    def write(self, proteins, organism, names_by_id):
         """Save fetched and transformed gene data to cache file
         """
         # biotypes_list = list(biotypes.keys())
@@ -326,39 +326,39 @@ class DomainCache():
         # ])
 
         headers = "\n".join([
-            f"## Ideogram.js domain cache for {organism}"
+            f"## Ideogram.js protein cache for {organism}"
         ]) + "\n"
 
-        domain_keys = []
+        protein_keys = []
         for id in names_by_id:
-            domain_keys.append(f"{id} = {names_by_id[id]}")
-        headers += "## domain keys: " + "; ".join(domain_keys) + "\n"
-        # print('domains')
-        # print(domains)
-        domain_lines = "\n".join(["\t".join(s) for s in domains])
-        content = headers + domain_lines
+            protein_keys.append(f"{id} = {names_by_id[id]}")
+        headers += "## domain keys: " + "; ".join(protein_keys) + "\n"
+        # print('proteins')
+        # print(proteins)
+        protein_lines = "\n".join(["\t".join(s) for s in proteins])
+        content = headers + protein_lines
 
         org_lch = organism.lower().replace(" ", "-")
-        output_path = f"{self.output_dir}{org_lch}-domains.tsv.gz"
+        output_path = f"{self.output_dir}{org_lch}-proteins.tsv.gz"
         with gzip.open(output_path, "wt") as f:
             f.write(content)
-        print(f"Wrote gene domain cache: {output_path}")
+        print(f"Wrote gene protein cache: {output_path}")
 
     def populate_by_org(self, organism):
         """Fill gene caches for a configured organism
         """
         [canonical_ids, bmtsv_url] = fetch_canonical_transcript_ids(organism)
         [gff_path, gff_url] = fetch_gff(organism, self.output_dir, True)
-        [domains_path, domains_url] = self.fetch_domains_tsv(organism)
+        [proteins_path, proteins_url] = self.fetch_proteins_tsv(organism)
 
-        [domains, names_by_id] = parse_domains(domains_path, gff_path, gff_url)
-        sorted_domains = sort_domains(domains, organism, canonical_ids)
-        sorted_domains = noncanonical_names(sorted_domains)
+        [proteins, names_by_id] = parse_proteins(proteins_path, gff_path, gff_url)
+        sorted_proteins = sort_proteins(proteins, organism, canonical_ids)
+        sorted_proteins = noncanonical_names(sorted_proteins)
 
-        # print('domains')
-        # print(domains)
+        # print('proteins')
+        # print(proteins)
 
-        self.write(sorted_domains, organism, names_by_id)
+        self.write(sorted_proteins, organism, names_by_id)
 
     def populate(self):
         """Fill gene caches for all configured organisms
@@ -393,4 +393,4 @@ if __name__ == "__main__":
     output_dir = args.output_dir
     reuse_bmtsv = args.reuse_bmtsv
 
-    DomainCache(output_dir, reuse_bmtsv).populate()
+    ProteinCache(output_dir, reuse_bmtsv).populate()
