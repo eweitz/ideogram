@@ -101,7 +101,7 @@ function getDomainSvg(domain, cds, isPositiveStrand) {
 /** Return whether protein SVG should be shown */
 function isEligibleforProteinSvg(gene, ideo) {
   return (
-    ideo.config.showDomainInTooltip &&
+    ideo.config.showProteinInTooltip &&
     !(
       'proteinCache' in ideo === false ||
       gene in ideo.proteinCache === false ||
