@@ -20,7 +20,7 @@ import {parseCache as parseInteractionCache} from './interaction-cache-worker';
 import {
   parseCache as parseGeneStructureCache
 } from './gene-structure-cache-worker';
-import {parseCache as parseProteinCache} from './domain-cache-worker';
+import {parseCache as parseProteinCache} from './protein-cache-worker';
 
 /**
  * Populates in-memory content caches from on-disk service worker (SW) caches.
