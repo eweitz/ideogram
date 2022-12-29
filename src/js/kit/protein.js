@@ -66,6 +66,88 @@ function getCdsCoordinates(subparts, isPositiveStrand) {
   return cdsCoordinates;
 }
 
+
+// Default
+const grey = '#BBB';
+const greyLines = '#666';
+
+const magenta = '#922D5E';
+const magentaLines = '#B24D7E';
+const red = '#F00';
+const redLines = '#D00';
+const faintRed = '#CAA';
+const faintRedLines = '#866';
+const blue = '#88F';
+const blueLines = '#88D';
+const deepBlue = '#55A';
+const deepBlueLines = '#AAF';
+const green = '#8D8';
+const greenLines = '#6B6';
+const seafoam = '#93E9BE';
+const seafoamLines = '#53AC7E';
+const orange = '#FFA500';
+const orangeLines = '#DD8000';
+
+// Purples
+const darkPurple = '#51087E';
+const darkPurpleLine = '#8138AE';
+const purple = '#880ED4';
+const purpleLine = '#5800A4';
+const lightPurple = '#B24BF3';
+const lightPurpleLine = '#921BC3';
+const veryLightPurple = '#D7A1F9';
+const veryLightPurpleLine = '#A771C9';
+
+const pink = '#FFC0CB';
+const pinkLine = '#CF909B';
+
+function getColors(domainType) {
+  if (domainType.includes('conserved site')) {
+    // https://www.google.com/search?q=pymol+conserved+site+color&tbm=isch
+    return [magenta, magentaLines];
+  } else if (domainType.includes('active site')) {
+    return [red, redLines];
+  } else if (
+    domainType.includes('catalytic domain') ||
+    domainType.includes('kinase domain')
+  ) {
+    return [faintRed, faintRedLines];
+  } else if (domainType.includes('binding site')) {
+    return [blue, blueLines];
+  } else if (
+    domainType.includes('binding domain') ||
+    domainType.includes('zinc-binding') ||
+    domainType.includes('DNA-binding') ||
+    domainType === 'G protein-coupled receptor, rhodopsin-like' ||
+    domainType.includes('Homeobox domain') ||
+    domainType.includes('Ion transport domain')
+  ) {
+    return [deepBlue, deepBlueLines];
+  } else if (domainType === 'SH2 domain') {
+    return [green, greenLines];
+  } else if (domainType === 'SH3 domain') {
+    return [seafoam, seafoamLines];
+  }
+
+  else if (domainType === 'Immunoglobulin-like domain') {
+    return [pink, pinkLine];
+  } else if (domainType === 'Immunoglobulin') {
+    return [veryLightPurple, veryLightPurpleLine];
+  } else if (domainType === 'Immunoglobulin C1-set') {
+    return [lightPurple, lightPurpleLine];
+  } else if (domainType === 'Immunoglobulin C2-set') {
+    return [purple, purpleLine];
+  } else if (domainType === 'Immunoglobulin V-set domain') {
+    return [darkPurple, darkPurpleLine];
+  }
+
+  else if (domainType.includes('repeat')) {
+    return [orange, orangeLines];
+  }
+
+  return [grey, greyLines];
+}
+
 /** Get SVG for an inidividual protein domain */
 function getDomainSvg(domain, cds, isPositiveStrand) {
   const domainType = domain[0];
@@ -80,8 +162,6 @@ function getDomainSvg(domain, cds, isPositiveStrand) {
   // Perhaps make these configurable, later
   const y = 40;
   const height = 10;
-  const color = '#CAA'; // Light red
-  const lineColor = '#866'; // Dark red
 
   const lengthAa = `${domain[2]}&nbsp;aa`;
   const title = `data-subpart="${domainType} ${pipe} ${lengthAa}"`;
@@ -89,6 +169,8 @@ function getDomainSvg(domain, cds, isPositiveStrand) {
 
   const pos = `x="${x}" width="${width}" y="${y}" height="${height}"`;
   const cls = `class="subpart domain" `;
+
+  const [color, lineColor] = getColors(domainType);
 
   const line = getDomainBorderLines(x, y, width, lineColor);
   const domainSvg =
