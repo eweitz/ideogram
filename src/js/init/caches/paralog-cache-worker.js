@@ -1,4 +1,4 @@
-import {fetchAndParse, getEnsemblId, inspectWorker} from './cache-lib';
+import {fetchAndParse, getFullId, inspectWorker} from './cache-lib';
 
 /** Parse a paralog cache TSV file, return array of useful transforms */
 export function parseCache(rawTsv, perfTimes) {
@@ -27,20 +27,20 @@ export function parseCache(rawTsv, perfTimes) {
     if (columns[2][0] === '_') {
       const pointer = columns[2].slice(1).toUpperCase();
       const paralogSuperList = paralogsByName[pointer];
-      const geneId = getEnsemblId(ensemblPrefix, geneSlimId);
+      const geneId = getFullId(ensemblPrefix, geneSlimId);
       for (let j = 0; j < paralogSuperList.length; j++) {
         const id = paralogSuperList[j];
         if (id !== geneId) {
           paralogs.push(id);
         }
       }
-      paralogs.unshift(getEnsemblId(ensemblPrefix, columns[3]));
+      paralogs.unshift(getFullId(ensemblPrefix, columns[3]));
     } else {
       const slimEnsemblIds = columns.slice(2);
       for (let j = 0; j < slimEnsemblIds.length; j++) {
         const slimId = slimEnsemblIds[j];
         if (slimId !== geneSlimId) {
-          paralogs.push(getEnsemblId(ensemblPrefix, slimId));
+          paralogs.push(getFullId(ensemblPrefix, slimId));
         }
       }
     }

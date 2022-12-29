@@ -45,6 +45,36 @@ describe('Ideogram gene structure functionality', function() {
     const ideogram = Ideogram.initRelatedGenes(config);
   });
 
+  it('shows basic protein domain organization', done => {
+    async function callback() {
+      await ideogram.plotRelatedGenes('APOE');
+      setTimeout(async function() {
+        const apobLabel = document.querySelector('#ideogramLabel__c1_a0');
+        apobLabel.dispatchEvent(new Event('mouseover'));
+        const subparts = document.querySelectorAll('rect.subpart');
+        assert.equal(subparts.length, 36); // RNA subparts and domains
+        done();
+      }, 500);
+    }
+
+    function onClickAnnot(annot) {
+      ideogram.plotRelatedGenes(annot.name);
+    }
+
+    var config = {
+      organism: 'Homo sapiens', // Also tests standard, non-slugged name
+      onLoad: callback,
+      dataDir: '/dist/data/bands/native/',
+      cacheDir: '/dist/data/cache/',
+      onClickAnnot,
+      showGeneStructureInTooltip: true,
+      showProteinInTooltip: true,
+      showParalogNeighborhoods: true
+    };
+
+    const ideogram = Ideogram.initRelatedGenes(config);
+  });
+
   it('supports mouse-highlighting and keyboard-navigating subparts', done => {
     async function callback() {
 

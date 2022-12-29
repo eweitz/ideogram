@@ -60,10 +60,10 @@ biotypes = {}
 #     "Anopheles gambiae".AgamP4.51.bmtsv.gz  "
 # }
 
-def fetch_slim_transcript_ids(organism, output_dir="data/", reuse_bmtsv=True):
+def fetch_canonical_transcript_ids(organism, output_dir="data/", reuse_bmtsv=True):
     gscache = GeneStructureCache(output_dir, reuse_bmtsv)
-    slim_transcripts = gscache.fetch_transcripts(organism)
-    return slim_transcripts
+    canonical_ids = gscache.fetch_transcript_ids(organism)
+    return canonical_ids
 
 def get_bmtsv_url(organism):
     """Get URL to BMTSV file
