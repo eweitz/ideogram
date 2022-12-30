@@ -75,13 +75,15 @@ const darkGrey = '#888';
 const darkGreyLine = '#AAA';
 
 const magenta = '#922D5E';
-const magentaLines = '#B24D7E';
+const magentaLines = '#D26D9E';
 const red = '#F00';
 const redLines = '#D00';
 const faintRed = '#CAA';
 const faintRedLines = '#866';
-const blue = '#AAF';
-const blueLines = '#33D';
+const blue = '#99D';
+const blueLines = '#22C';
+const lightBlue = '#CCF';
+const lightBlueLine = '#33D';
 const deepBlue = '#55A';
 const deepBlueLines = '#AAF';
 const green = '#7D7';
@@ -130,7 +132,9 @@ function getColors(domainType) {
     domainType.includes('CUB domain') ||
     domainType === 'Transforming growth factor-beta, C-terminal' ||
     domainType === 'C-5 cytosine methyltransferase' ||
-    domainType.includes('(G-protein), alpha subunit')
+    domainType.includes('(G-protein), alpha subunit') ||
+    domainType === 'SCAN domain' ||
+    domainType === 'Cyclin, C-terminal domain'
   ) {
     return [faintRed, faintRedLines];
   } else if (
@@ -140,9 +144,16 @@ function getColors(domainType) {
     domainType.includes('Serpin domain') ||
     domainType === 'Peptidase C14,  p20 domain' ||
     domainType === 'PWWP domain' ||
-    domainType === 'GPCR, rhodopsin-like, 7TM'
+    domainType === 'GPCR, rhodopsin-like, 7TM' ||
+    domainType === 'Peptidoglycan binding-like'
   ) {
     return [blue, blueLines];
+  } else if (
+    domainType.includes('dehydrogenase, molybdopterin binding') ||
+    domainType === 'Zinc finger CCHC HIVEP-type' ||
+    domainType === 'Cyclin, N-terminal'
+  ) {
+    return [lightBlue, lightBlueLine];
   } else if (
     domainType.includes('binding domain') ||
     domainType.includes('zinc-binding') ||
@@ -156,7 +167,8 @@ function getColors(domainType) {
     domainType === 'Laminin G domain' ||
     domainType === 'Peptidase C14, caspase non-catalytic subunit p10' ||
     domainType === 'ADD domain' ||
-    domainType === 'PDZ domain'
+    domainType === 'PDZ domain' ||
+    domainType === 'Krueppel-associated box'
   ) {
     return [deepBlue, deepBlueLines];
   } else if (
@@ -168,7 +180,10 @@ function getColors(domainType) {
     domainType.includes('EGF domain') ||
     domainType === 'Basic leucine zipper domain, Maf-type' ||
     domainType.includes('Interleukin') && domainType.includes('propeptide') ||
-    domainType === 'Sirtuin family'
+    domainType === 'Sirtuin family' ||
+    domainType === 'Amino acid/polyamine transporter I' ||
+    domainType === 'Peptidase M10, metallopeptidase' ||
+    domainType === 'Zinc finger C2H2-type'
   ) {
     return [green, greenLines];
   } else if (
@@ -179,23 +194,34 @@ function getColors(domainType) {
     domainType.includes('Coagulation factor 5/8') ||
     domainType === 'Basic-leucine zipper domain' ||
     domainType.includes('Interleukin') && domainType.includes('family') ||
-    domainType === 'Sirtuin family, catalytic core domain'
+    domainType === 'Sirtuin family, catalytic core domain' ||
+    domainType === 'Cationic amino acid transporter, C-terminal' ||
+    domainType === 'Amine oxidase'
   ) {
     return [seafoam, seafoamLines];
   }
 
-  else if (domainType === 'Immunoglobulin-like domain') {
+  else if (
+    domainType === 'Immunoglobulin-like domain' ||
+    domainType === 'Major facilitator superfamily domain'
+  ) {
     return [pink, pinkLine];
   } else if (
     domainType === 'Immunoglobulin' ||
     domainType === 'Calponin homology domain' ||
     domainType.includes('ATPase') ||
-    domainType.includes('globular domain')
+    domainType.includes('globular domain') ||
+    domainType === 'Mitochondrial substrate/solute carrier' ||
+    domainType === 'Major facilitator,  sugar transporter-like' ||
+    domainType === 'Sodium:neurotransmitter symporter' ||
+    domainType === 'Fibronectin type III'
   ) {
     return [veryLightPurple, veryLightPurpleLine];
   } else if (
     domainType === 'Immunoglobulin C1-set' ||
-    domainType.includes('GTPase')
+    domainType.includes('GTPase') ||
+    domainType === 'Major facilitator superfamily' ||
+    domainType === 'Fibronectin type II domain'
   ) {
     return [lightPurple, lightPurpleLine];
   } else if (
@@ -213,7 +239,6 @@ function getColors(domainType) {
   else if (
     domainType.includes('repeat') ||
     domainType === 'Armadillo' ||
-    domainType === 'Fibronectin type III' ||
     domainType.includes('Apple domain')
   ) {
     return [orange, orangeLines];
