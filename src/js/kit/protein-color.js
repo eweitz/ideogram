@@ -201,7 +201,8 @@ export function getColors(domainType) {
     // Repeats
     domainType === 'Armadillo' ||
     domainType.includes('Apple domain') ||
-    domainType === 'Protocadherin' // Cytoplasmic
+    domainType === 'Protocadherin' || // Cytoplasmic
+    domainType.endsWith('merisation domain') // e.g. di- / tetramerisation
   ) {
     return [orange, orangeLines];
   } else if (
