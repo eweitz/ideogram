@@ -5,6 +5,7 @@
  */
 
 import {addPositions, getGeneFromStructureName, pipe} from './gene-structure';
+import {getColors} from './protein-color';
 
 /** Get subtle line to visually demarcate domain boundary */
 function getDomainBorderLines(x, y, width, lineColor) {
@@ -80,8 +81,6 @@ function getDomainSvg(domain, cds, isPositiveStrand) {
   // Perhaps make these configurable, later
   const y = 40;
   const height = 10;
-  const color = '#CAA'; // Light red
-  const lineColor = '#866'; // Dark red
 
   const lengthAa = `${domain[2]}&nbsp;aa`;
   const title = `data-subpart="${domainType} ${pipe} ${lengthAa}"`;
@@ -89,6 +88,8 @@ function getDomainSvg(domain, cds, isPositiveStrand) {
 
   const pos = `x="${x}" width="${width}" y="${y}" height="${height}"`;
   const cls = `class="subpart domain" `;
+
+  const [color, lineColor] = getColors(domainType);
 
   const line = getDomainBorderLines(x, y, width, lineColor);
   const domainSvg =
