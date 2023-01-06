@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gene leads | Ideogram</title>
+  <style>
+    ._ideogramTooltip th, ._ideogramTooltip td {
+      text-align: left;
+    }
+    pre {
+      position: relative;
+      top: 200px;
+    }
+  </style>
+  <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
+
+  <!-- Code unique to Gene Leads example UI, which is less relevant for reuse -->
+  <link href="gene-leads-example-style.css" rel="stylesheet">
+
+  <!-- Ideogram supports using third-party custom fonts -->
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css?family=Montserrat%3A100%2C100italic%2C200%2C200italic%2C300%2C300italic%2C400%2C400italic%2C500%2C500italic%2C600%2C600italic%2C700%2C700italic%2C800%2C800italic%2C900%2C900italic&display=swap&ver=5.7.1" rel="stylesheet">
+
+  <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
+</head>
+<body>
+  <a href="gene-leads">Back to main Gene Leads</a>
+  <h1>Gene Leads Lite<small>Minimal <a href="https://github.com/eweitz/ideogram/blob/gh-pages/gene-leads-lite.html" target="_blank">example code</a></small></h1>
+  <div class="wrapper">
+    <div id="ideogram-container" style="visibility: hidden;"></div>
+    <div>
+      <pre>
+        /** Upon clicking a triangular annotation or tooltip, plot that gene */
+        function onClickAnnot(annot) {
+          ideogram.plotRelatedGenes(annot.name);
+        }
+
+        // Ideogram configuration object
+        config = {
+          organism: 'homo-sapiens',
+          container: '#ideogram-container',
+          legendName: 'Gene leads',
+          showGeneStructureInTooltip: true,
+          showProteinInTooltip: true,
+          onClickAnnot
+        }
+
+        const ideogram = Ideogram.initGeneHints(config);
+      </pre>
+    </div>
+  </div>
+  <script type="text/javascript">
+    /** Upon clicking a triangular annotation or tooltip, plot that gene */
+    function onClickAnnot(annot) {
+      ideogram.plotRelatedGenes(annot.name);
+    }
+
+    // Ideogram configuration object
+    config = {
+      organism: 'homo-sapiens',
+      container: '#ideogram-container',
+      legendName: 'Gene leads',
+      showGeneStructureInTooltip: true,
+      showProteinInTooltip: true,
+      onClickAnnot
+    }
+
+    const ideogram = Ideogram.initGeneHints(config);
+  </script>
+</body>
+</html>
