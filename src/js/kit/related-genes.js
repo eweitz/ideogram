@@ -1517,35 +1517,7 @@ function _initRelatedGenes(config, annotsInList) {
 }
 
 /**
- * Wrapper for Ideogram constructor, with generic "Related genes" options
- *
- * This function is made available as a static method on Ideogram.
- *
- * @param {Object} config Ideogram configuration object
- */
-function _initGeneHints(config, annotsInList) {
-  delete config.onPlotFoundGenes;
-
-  if (config.legendName) {
-    citedLegend[0].name = getLegendName(config.legendName);
-  }
-
-  config.legend = citedLegend;
-
-  const kitDefaults = Object.assign({
-    relatedGenesMode: 'hints',
-    chrMargin: -4,
-    annotationsPath: getDir('cache/homo-sapiens-top-genes.tsv'),
-    // annotationsPath: getDir('annotations/gene_leads.tsv'),
-    onDrawAnnots: plotGeneHints,
-    useCache: true
-  }, globalKitDefaults);
-
-  return initSearchIdeogram(kitDefaults, config, annotsInList);
-}
-
-/**
- * Wrapper for Ideogram constructor, with generic "Related genes" options
+ * Wrapper for Ideogram constructor, with generic "Gene leads" options
  *
  * This function is made available as a static method on Ideogram.
  *
@@ -1560,11 +1532,20 @@ function _initGeneHints(config, annotsInList) {
 
   config.legend = citedLegend;
 
+  let rawPath, mode;
+  if (config.geneLeadsDE) {
+    mode = 'leads';
+    rawPath = 'annotations/gene_leads.tsv';
+  } else {
+    mode = 'hints';
+    rawPath = 'cache/homo-sapiens-top-genes.tsv';
+  }
+
   const kitDefaults = Object.assign({
-    relatedGenesMode: 'leads',
+    relatedGenesMode: mode,
     chrMargin: -4,
     // annotationsPath: getDir('cache/homo-sapiens-top-genes.tsv'),
-    annotationsPath: getDir('annotations/gene_leads.tsv'),
+    annotationsPath: getDir(rawPath),
     onDrawAnnots: plotGeneHints,
     useCache: true
   }, globalKitDefaults);
@@ -1643,6 +1624,6 @@ function initSearchIdeogram(kitDefaults, config, annotsInList) {
 }
 
 export {
-  _initGeneHints, _initGeneLeads, _initRelatedGenes,
+  _initGeneLeads, _initRelatedGenes,
   plotRelatedGenes, getRelatedGenesByType
 };

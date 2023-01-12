@@ -251,22 +251,22 @@
       if ('org' in urlParams) {
         // Show genome for the organism specified via URL
         if (urlParams.org === 'homo-sapiens') {
-          if ('gene-leads' in urlParams) {
+          if ('gene-leads-de' in urlParams) {
             config.onDrawAnnots = onDrawAnnots
-            ideogram = Ideogram.initGeneLeads(config);
-          } else {
-            ideogram = Ideogram.initGeneHints(config);
+            config.geneLeadsDE = true
           }
+          ideogram = Ideogram.initGeneLeads(config);
+
         } else {
           ideogram = Ideogram.initRelatedGenes(config);
         }
 
       } else {
-        if ('gene-leads' in urlParams) {
-            config.onDrawAnnots = onDrawAnnots
-            ideogram = Ideogram.initGeneLeads(config);
+        if ('gene-leads-de' in urlParams) {
+          config.onDrawAnnots = onDrawAnnots
+          config.geneLeadsDE = true
         }
-        ideogram = Ideogram.initGeneHints(config);
+        ideogram = Ideogram.initGeneLeads(config);
       }
     }
   </script>
