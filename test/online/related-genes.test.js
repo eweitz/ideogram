@@ -384,7 +384,7 @@ describe('Ideogram related genes kit', function() {
       annotationsPath: annotsPath
     };
 
-    Ideogram.initGeneHints(config);
+    Ideogram.initGeneLeads(config);
   });
 
 });

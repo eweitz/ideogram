@@ -64,7 +64,7 @@ import {
 } from './views/chromosome-labels.js';
 
 import {
-  _initGeneHints, _initGeneLeads, _initRelatedGenes,
+  _initGeneLeads, _initRelatedGenes,
   plotRelatedGenes, getRelatedGenesByType
 } from './kit/related-genes';
 
@@ -331,21 +331,13 @@ export default class Ideogram {
     return _initRelatedGenes(config, annotsInList);
   }
 
-  /**
-   * Wrapper for Ideogram constructor, with generic "Related genes" options
-   *
-   * @param {Object} config Ideogram configuration object
-   */
-  static initGeneHints(config, annotsInList='all') {
-    return _initGeneHints(config, annotsInList);
-  }
 
-    /**
-   * Wrapper for Ideogram constructor, with generic "Related genes" options
+  /**
+   * Wrapper for Ideogram constructor, with generic "Gene leads" options
    *
    * @param {Object} config Ideogram configuration object
-   */
-     static initGeneLeads(config, annotsInList='all') {
-      return _initGeneLeads(config, annotsInList);
-    }
+  */
+  static initGeneLeads(config, annotsInList='all') {
+    return _initGeneLeads(config, annotsInList);
+  }
 }

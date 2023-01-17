@@ -84,7 +84,10 @@ export function getColors(domainType) {
     domainType.includes('(G-protein), alpha subunit') ||
     domainType === 'SCAN domain' ||
     domainType === 'Apolipoprotein A/E' ||
-    domainType.includes('SMAD domain')
+    domainType.includes('SMAD domain') ||
+    domainType === 'PLAC' ||
+    domainType.endsWith('tripeptidyl peptidase II') ||
+    domainType === 'Prohormone convertase enzyme'
   ) {
     return [faintRed, faintRedLines];
   } else if (
@@ -124,7 +127,8 @@ export function getColors(domainType) {
     domainType === 'ADD domain' ||
     domainType === 'PDZ domain' ||
     domainType === 'Krueppel-associated box' ||
-    domainType === 'Ets domain'
+    domainType === 'Ets domain' ||
+    domainType === 'P domain'
   ) {
     return [deepBlue, deepBlueLines];
   } else if (
@@ -182,7 +186,8 @@ export function getColors(domainType) {
     domainType === 'Major facilitator superfamily' ||
     domainType === 'Fibronectin type II domain' ||
     domainType.includes('ectodomain') ||
-    domainType.endsWith('receptor domain')
+    domainType.endsWith('receptor domain') ||
+    domainType.endsWith('receptor domain 4')
   ) {
     return [lightPurple, lightPurpleLine];
   } else if (
