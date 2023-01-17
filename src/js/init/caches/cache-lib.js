@@ -29,19 +29,19 @@ export function getCacheUrl(orgName, cacheDir, cacheType, fileType='tsv') {
 }
 
 /**
- * Build full Ensembl ID from prefix (e.g. ENSG) and slim ID (e.g. 223972)
+ * Build full ID from prefix (e.g. ENSG or IPR) and slim ID (e.g. 223972)
  *
  * Example output ID: ENSG00000223972
  * */
-export function getEnsemblId(ensemblPrefix, slimEnsemblId) {
+export function getFullId(prefix, slimId, fullNumLength=11) {
 
   // C. elegans (prefix: WBGene) has special IDs, e.g. WBGene00197333
-  const padLength = ensemblPrefix === 'WBGene' ? 8 : 11;
+  if (prefix === 'WBGene') fullNumLength = 8;
 
   // Zero-pad the slim ID, e.g. 223972 -> 00000223972
-  const zeroPaddedId = slimEnsemblId.padStart(padLength, '0');
+  const zeroPaddedId = slimId.padStart(fullNumLength, '0');
 
-  return ensemblPrefix + zeroPaddedId;
+  return prefix + zeroPaddedId;
 }
 
 export async function cacheFetch(url) {

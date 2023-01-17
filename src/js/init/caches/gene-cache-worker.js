@@ -1,4 +1,4 @@
-import {fetchAndParse, getEnsemblId, inspectWorker} from './cache-lib';
+import {fetchAndParse, getFullId, inspectWorker} from './cache-lib';
 
 /**
  * Convert pre-annotation arrays to annotation objects
@@ -63,7 +63,7 @@ export function parseCache(rawTsv, perfTimes) {
     const fullName = decodeURIComponent(rawFullName);
     const start = parseInt(rawStart);
     const stop = start + parseInt(rawLength);
-    const ensemblId = getEnsemblId(ensemblPrefix, slimEnsemblId);
+    const ensemblId = getFullId(ensemblPrefix, slimEnsemblId);
     preAnnots.push([chromosome, start, stop, ensemblId, gene, fullName]);
     const locus = [chromosome, start, stop];
 

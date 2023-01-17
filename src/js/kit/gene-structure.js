@@ -1,10 +1,11 @@
 import {d3} from '../lib';
 import {getIcon} from '../annotations/legend';
+import {getProteinSvg} from './protein';
 
 const y = 15;
 
 // Subtle visual delimiter; separates horizontally adjacent fields in UI
-const pipe = `<span style='color: #CCC'>|</span>`;
+export const pipe = `<span style='color: #CCC'>|</span>`;
 
 const utr5 = "5'-UTR";
 const utr3 = "3'-UTR";
@@ -99,7 +100,7 @@ function updateGeneStructure(ideo, offset=0) {
 }
 
 /** Get gene symbol from transcript / gene structure name */
-function getGeneFromStructureName(structureName) {
+export function getGeneFromStructureName(structureName) {
   const gene = structureName.split('-').slice(0, -1).join('-');
   return gene;
 }
@@ -426,7 +427,7 @@ function addSubpartHoverListener(subpartDOM, ideo) {
     ideo.originalTooltipFooter = footer.innerHTML;
     const subpartText = subpart.getAttribute('data-subpart');
     const trimmedFoot = footer.innerHTML.replace('&nbsp;', '');
-    const style = 'style="margin-bottom: -10px"';
+    const style = 'style="margin-bottom: -10px; max-width: 260px;"';
     const id = 'id="_ideoSubpartText"';
     footer.innerHTML =
       `<div ${id} ${style}">${subpartText}</div>${trimmedFoot}`;
@@ -684,6 +685,9 @@ function toggleSplice(ideo) {
   const isCanonical = (selectedIndex === 0);
   const [, prelimSubparts, matureSubparts] =
     getSvg(structure, ideo, spliceExons);
+  const proteinSvg = document.querySelector('#_ideoProtein');
+
+  if (proteinSvg && !spliceExons) proteinSvg.style.display = 'none';
 
   const addedIntrons = document.querySelectorAll('.intron').length > 0;
   if (!spliceExons && !addedIntrons) {
@@ -691,7 +695,7 @@ function toggleSplice(ideo) {
   } else {
     document.querySelectorAll('.intron').forEach(el => el.remove());
   }
-  document.querySelectorAll('.subpart-line').forEach(el => el.remove());
+  document.querySelectorAll('.subpart-line.rna').forEach(el => el.remove());
 
   const subparts = spliceExons ? matureSubparts : prelimSubparts;
 
@@ -703,9 +707,10 @@ function toggleSplice(ideo) {
     .attr('width', (d, i) => subparts[i][3].width)
     .on('end', (d, i) => {
       if (i !== subparts.length - 1) return;
+      if (proteinSvg && spliceExons) proteinSvg.style.display = '';
 
       // Restore subpart boundary lines
-      const subpartDOMs = document.querySelectorAll('.subpart')
+      const subpartDOMs = document.querySelectorAll('.subpart:not(.domain)');
       subpartDOMs.forEach((subpartDOM, i) => {
         const subpart = subparts[i];
         const line = getSubpartBorderLine(subpart);
@@ -735,27 +740,30 @@ function getTranscriptLengthBp(subparts, spliceExons=false) {
   return transcriptLengthBp;
 }
 
-/** Merge subpart type, pixel-x position, and pixel width to each subpart */
-function addPositions(subparts) {
-  const transcriptLengthBp = getTranscriptLengthBp(subparts);
-
+/** Merge feature type, pixel-x position, and pixel width to each feature */
+export function addPositions(subparts, domains=null) {
   const transcriptLengthPx = 250;
 
-  const bpPerPx = transcriptLengthBp / transcriptLengthPx;
+  const totalLengthBp = getTranscriptLengthBp(subparts);
 
-  for (let i = 0; i < subparts.length; i++) {
-    const subpart = subparts[i];
-    if (subpart.length !== 3) continue;
+  const factor = domains ? 3 : 1; // 3 nt per aa
+  const bpPerPx = (totalLengthBp / transcriptLengthPx) / factor;
+
+  const features = domains ?? subparts;
+
+  for (let i = 0; i < features.length; i++) {
+    const feature = features[i];
+    if (feature.length !== 3) continue;
     // Define subpart position, tooltip footer
-    const lengthBp = subpart[2];
-    const x = subpart[1] / bpPerPx;
+    const lengthBp = feature[2];
+    const x = feature[1] / bpPerPx;
     const width = lengthBp / bpPerPx;
-    const type = subpart[0];
+    const type = feature[0];
 
-    subparts[i].push({type, x, width});
+    features[i].push({type, x, width});
   }
 
-  return subparts;
+  return features;
 }
 
 /** Get text shown below diagram upon hovering over an exon, intron, or UTR */
@@ -779,7 +787,7 @@ function getSubpartBorderLine(subpart) {
   const lineStroke = `stroke="${lineColors[subpartType]}"`;
   const lineAttrs = // "";
     `x1="${x}" x2="${x}" y1="${y}" y2="${lineHeight}" ${lineStroke}`;
-  return `<line class="subpart-line" ${lineAttrs} />`;
+  return `<line class="subpart-line rna" ${lineAttrs} />`;
 }
 
 // function getSvgList(gene, ideo, spliceExons=false) {
@@ -804,6 +812,7 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
   const rawSubparts = geneStructure.subparts;
   let subparts;
 
+  // Add pixel coordinates to subparts, and pre-mRNA and mRNA sets
   let prelimSubparts = spliceIn(rawSubparts);
   let matureSubparts = spliceOut(rawSubparts);
   if (spliceExons) {
@@ -929,13 +938,21 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
   const gene = getGeneFromStructureName(structureName);
   const menu = getMenu(gene, ideo, structureName).replaceAll('"', '\'');
   const footerData = menu + footerDetails.join(` ${pipe} `);
+
+  const proteinSvg = getProteinSvg(
+    structureName, subparts, isPositiveStrand, ideo
+  );
+
+  const svgHeight = proteinSvg === '' ? '40' : '60';
+
   const geneStructureSvg =
     `<svg class="_ideoGeneStructure" ` +
       `data-ideo-gene-structure-name="${structureName}" ` +
       `data-ideo-strand="${strand}" data-ideo-footer="${footerData}" ` +
-      `width="${(featureLengthPx + 20)}" height="40" ${transform}` +
+      `width="${(featureLengthPx + 20)}" height="${svgHeight}" ${transform}` +
     `>` +
       geneStructureArray.join('') +
+      proteinSvg +
     '</svg>';
 
   return [geneStructureSvg, prelimSubparts, matureSubparts];

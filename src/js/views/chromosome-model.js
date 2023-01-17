@@ -101,7 +101,7 @@ function getChrModelScaffold(chr, bands, chrName, ideo) {
   var hasBands = (typeof bands !== 'undefined');
 
   if (hasBands) {
-    const lastBand = bands[bands.length - 1];
+    const lastBand = bands.slice(-1)[0];
     chr.name = chrName;
     chr.length = lastBand[ideo.coordinateSystem].stop;
 

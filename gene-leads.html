@@ -81,7 +81,7 @@
     <div id="ideogram-container" style="visibility: hidden;"></div>
   </div>
   <div class="why">
-    <div><h3>Easy</h3> Provide an effortless way to discover interesting genes to search.  Show related genes to foster exploration.  Drop-in code that is minimal, free, and maintained.</div>
+    <div><h3>Easy</h3> Provide an effortless way to discover interesting genes to search.  Show related genes to foster exploration.  Drop-in code that is <!--<a href="gene-leads-lite">-->minimal<!--</a>-->, free, and maintained.</div>
     <div><h3>Visual</h3> Engage users with interactive landmarks on a recognizable map of the genome.  Complement existing gene search in any web application.</div>
     <div><h3>Instant</h3> Browse in &lt; 50 ms.  Seamlessly navigate genes across pathways, evolution, and transcriptomics.  Eliminate distracting waits and focus on your science.</div>
   </div>
@@ -218,6 +218,7 @@
       onLoad: plotGeneFromUrl,
       onPlotRelatedGenes: reportRelatedGenes,
       showGeneStructureInTooltip: true,
+      showProteinInTooltip: true,
       onClickAnnot
     }
 
@@ -250,22 +251,22 @@
       if ('org' in urlParams) {
         // Show genome for the organism specified via URL
         if (urlParams.org === 'homo-sapiens') {
-          if ('gene-leads' in urlParams) {
+          if ('gene-leads-de' in urlParams) {
             config.onDrawAnnots = onDrawAnnots
-            ideogram = Ideogram.initGeneLeads(config);
-          } else {
-            ideogram = Ideogram.initGeneHints(config);
+            config.geneLeadsDE = true
           }
+          ideogram = Ideogram.initGeneLeads(config);
+
         } else {
           ideogram = Ideogram.initRelatedGenes(config);
         }
 
       } else {
-        if ('gene-leads' in urlParams) {
-            config.onDrawAnnots = onDrawAnnots
-            ideogram = Ideogram.initGeneLeads(config);
+        if ('gene-leads-de' in urlParams) {
+          config.onDrawAnnots = onDrawAnnots
+          config.geneLeadsDE = true
         }
-        ideogram = Ideogram.initGeneHints(config);
+        ideogram = Ideogram.initGeneLeads(config);
       }
     }
   </script>
