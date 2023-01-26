@@ -226,6 +226,11 @@ function swapUTRsForward(subparts, isPositiveStrand) {
   const utr = isPositiveStrand ? utr3 : utr5;
   const hasUtr = subparts.some(subpart => subpart[0] === utr);
 
+  if (subparts[0][0] === 'exon' && subparts[1][0] === utr3) {
+    // Accounts for edge case in e.g. canonical transcript SCARB1-201
+    return swappedSubparts;
+  }
+
   subparts.forEach((subpart, i) => {
     if (i === 0) return;
     const prevSubpart = subparts[i - 1];
@@ -656,7 +661,6 @@ function drawIntrons(prelimSubparts, matureSubparts, ideo) {
   });
 
   document.querySelectorAll('.intron').forEach(subpartDOM => {
-
     addSubpartHoverListener(subpartDOM, ideo);
   });
 }
