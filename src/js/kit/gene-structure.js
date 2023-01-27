@@ -226,9 +226,15 @@ function swapUTRsForward(subparts, isPositiveStrand) {
   const utr = isPositiveStrand ? utr3 : utr5;
   const hasUtr = subparts.some(subpart => subpart[0] === utr);
 
-  if (subparts[0][0] === 'exon' && subparts[1][0] === utr3) {
-    // Accounts for edge case in e.g. canonical transcript SCARB1-201
-    return swappedSubparts;
+  if (subparts[0][0] === 'exon') {
+    const rawUtr = isPositiveStrand ? utr5 : utr3;
+    if (subparts[1][0] === rawUtr) {
+      // Accounts for uncommon case in e.g. canonical transcript SCARB1-201
+      // and alternative transcript MAOA-204 in which the first UTR subpart
+      // is exactly equal in length to the first exon, and that exon subpart
+      // is ordered first among subparts in the transcript.
+      return swappedSubparts;
+    }
   }
 
   subparts.forEach((subpart, i) => {
