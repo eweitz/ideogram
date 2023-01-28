@@ -160,13 +160,13 @@ describe('Ideogram gene structure functionality', function() {
       setTimeout(async function() {
         const apoeLabel = document.querySelector('#ideogramLabel__c18_a1');
         apoeLabel.dispatchEvent(new Event('mouseover'));
-
         // Press "s" key, to toggle exon splicing
         const sKeydown = new KeyboardEvent('keydown', {key: 's'});
         document.dispatchEvent(sKeydown);
-        const subparts = document.querySelectorAll('rect.subpart');
+        let subparts = document.querySelectorAll('rect.subpart');
         assert.equal(subparts.length, 10); // includes introns
 
+        document.dispatchEvent(sKeydown);
         setTimeout(async function() {
           // The last exon of gene LDLR includes both CDS and 3'-UTR
           // There was a bug (see commit 7a43ba0) that caused drastically
@@ -174,6 +174,7 @@ describe('Ideogram gene structure functionality', function() {
           // has a relatively very small CDS compared to 3'-UTR.
           const ldlrLabel = document.querySelector('#ideogramLabel__c18_a0');
           ldlrLabel.dispatchEvent(new Event('mouseover'));
+          subparts = document.querySelectorAll('rect.subpart');
 
           const lastExon = subparts[18];
           const threePrimeUtr = subparts[19];
@@ -184,9 +185,27 @@ describe('Ideogram gene structure functionality', function() {
           assert.equal(Math.round(threePrimeUtr.x.baseVal.value), 129);
           assert.equal(Math.round(threePrimeUtr.width.baseVal.value), 121);
 
-        }, 500);
+          // Label for MAOA gene
+          const maoaLabel = document.querySelector('#ideogramLabel__c22_a0');
+          maoaLabel.dispatchEvent(new Event('mouseover'));
+          const container =
+            document.querySelector('._ideoGeneStructureContainer');
+          container.dispatchEvent(new Event('mouseenter'));
 
-        done();
+          const menu = document.querySelector('#_ideoGeneStructureMenu');
+          // MAOA-204, uncommon case of exon before first UTR in Ideogram data
+          menu.options[1].selected = true;
+          menu.dispatchEvent(new Event('change', {'bubbles': true}));
+
+          document.dispatchEvent(sKeydown);
+          setTimeout(async function() {
+            const firstUtr = document.querySelector('.five-prime-utr');
+            assert.equal(firstUtr.x.baseVal.value, 0);
+            assert.equal(Math.round(firstUtr.width.baseVal.value), 4);
+            assert.equal(firstUtr.getAttribute('fill'), '#155069');
+            done();
+          }, 1000);
+        }, 1000);
       }, 500);
     }
 
@@ -231,10 +250,8 @@ describe('Ideogram gene structure functionality', function() {
           assert.equal(Math.round(x), 247);
           assert.equal(Math.round(width), 3);
           assert.equal(color, '#DAA521');
-
+          done();
         }, 1000);
-
-        done();
       }, 500);
     }
 
