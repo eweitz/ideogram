@@ -246,9 +246,9 @@ describe('Ideogram gene structure functionality', function() {
           const subpart1 = subparts[0];
           const x = subpart1.getAttribute('x');
           const width = subpart1.getAttribute('width');
-          const color = subpart1.getAttribute('color');
-          assert.equal(Math.round(x), 247);
-          assert.equal(Math.round(width), 3);
+          const color = subpart1.getAttribute('fill');
+          assert.equal(Math.round(parseFloat(x)), 247);
+          assert.equal(Math.round(parseFloat(width)), 3);
           assert.equal(color, '#DAA521');
           done();
         }, 1000);
