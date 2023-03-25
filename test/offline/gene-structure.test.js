@@ -193,7 +193,9 @@ describe('Ideogram gene structure functionality', function() {
           container.dispatchEvent(new Event('mouseenter'));
 
           const menu = document.querySelector('#_ideoGeneStructureMenu');
-          // MAOA-204, uncommon case of exon before first UTR in Ideogram data
+          // MAOA-204, case of exon before first UTR in Ideogram data
+          // Happens in 4-10% of transcripts
+          // Context: https://github.com/eweitz/ideogram/pull/337
           menu.options[1].selected = true;
           menu.dispatchEvent(new Event('change', {'bubbles': true}));
 
