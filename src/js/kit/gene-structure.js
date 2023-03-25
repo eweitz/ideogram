@@ -239,7 +239,7 @@ function swapUTRsForward(subparts, isPositiveStrand) {
         !isPositiveStrand && prevIsUtr3 ||
         isPositiveStrand && prevIsUtr5 && (
           // Account for multi-part UTRs, as in e.g.
-          // canonicals for FAM111B and SCARB1, andd alternative MAOA-204
+          // canonicals for FAM111B and SCARB1, and alternative MAOA-204
           subpart[1] !== prevSubpart[1] + prevSubpart[2] - 1
         )
       )
