@@ -226,22 +226,6 @@ function swapUTRsForward(subparts, isPositiveStrand) {
   const utr = isPositiveStrand ? utr3 : utr5;
   const hasUtr = subparts.some(subpart => subpart[0] === utr);
 
-  if (
-    subparts.length >= 3 &&
-    subparts[0][0] === 'exon' && subparts[2][0] === 'exon'
-  ) {
-    const rawUtr = isPositiveStrand ? utr5 : utr3;
-    if (subparts[1][0] === rawUtr) {
-      // Accounts for uncommon case in e.g. canonical transcript SCARB1-201
-      // and alternative transcript MAOA-204 in which the first UTR subpart
-      // is exactly equal in length to the first exon, and that exon subpart
-      // is ordered first among subparts in the transcript.
-      // The subparts[2][0] clause accounts for cases like APOE-201, which
-      // have multi-subpart first UTRs.
-      return swappedSubparts;
-    }
-  }
-
   subparts.forEach((subpart, i) => {
     if (i === 0) return;
     const prevSubpart = subparts[i - 1];
@@ -253,7 +237,11 @@ function swapUTRsForward(subparts, isPositiveStrand) {
     if (
       isExon && hasUtr && (
         !isPositiveStrand && prevIsUtr3 ||
-        isPositiveStrand && prevIsUtr5
+        isPositiveStrand && prevIsUtr5 && (
+          // Account for multi-part UTRs, as in e.g.
+          // canonicals for FAM111B and SCARB1, andd alternative MAOA-204
+          subpart[1] !== prevSubpart[1] + prevSubpart[2] - 1
+        )
       )
     ) {
       swappedSubparts[i] = prevSubpart;
@@ -648,7 +636,6 @@ function getSpliceStateText(spliceExons, isCanonical=true) {
   const name = `${canonOrAlt} ${modifier}mRNA`;
   return {title, name};
 }
-
 
 /** Draw introns in initial splice toggle from mRNA to pre-mRNA */
 function drawIntrons(prelimSubparts, matureSubparts, ideo) {
