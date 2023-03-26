@@ -20,7 +20,7 @@
     "start": "webpack-dev-server --mode development"
   },
   "husky": {
-    "hooks": {
+    "hooks_unused_since_2023-03-26": {
       "pre-commit": "./node_modules/.bin/eslint src/ test/ --quiet",
       "pre-push": "npm test"
     }
