@@ -45,8 +45,17 @@ export function getFullId(prefix, slimId, fullNumLength=11) {
 }
 
 export async function cacheFetch(url) {
+  const currentIdeogram = `ideogram-${version}`;
 
-  const cache = await caches.open(`ideogram-${version}`);
+  // Delete other versions of Ideogram cache; there should be 1 per dodmain
+  const cacheNames = await caches.keys();
+  cacheNames.forEach(name => {
+    if (name.startsWith('ideogram-') && name !== currentIdeogram) {
+      caches.delete(name);
+    }
+  });
+
+  const cache = await caches.open(currentIdeogram);
 
   const decompressedUrl = url.replace('.gz', '');
   const response = await cache.match(decompressedUrl);
