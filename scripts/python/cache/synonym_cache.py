@@ -122,7 +122,7 @@ def sort_by_interest(slim_genes, organism):
     return sorted_genes
 
 
-class GeneSynonymCache():
+class SynonymCache():
     """Convert BioMart TSV files to minimal TSVs
     """
 
@@ -145,7 +145,7 @@ class GeneSynonymCache():
         if not os.path.exists(bmtsv_dir):
             os.makedirs(bmtsv_dir)
         org_lch = organism.lower().replace(" ", "-") # LowerCase & Hyphen
-        bmtsv_path = bmtsv_dir + org_lch + "-gene-synonyms.tsv"
+        bmtsv_path = bmtsv_dir + org_lch + "-synonyms.tsv"
         try:
             download(url, bmtsv_path, cache=self.reuse_bmtsv)
         except urllib.error.HTTPError:
@@ -154,7 +154,7 @@ class GeneSynonymCache():
             download(url, bmtsv_path, cache=self.reuse_bmtsv)
         return [bmtsv_path, url]
 
-    def parse_gene_synonyms(self, bmtsv_path):
+    def parse_synonyms(self, bmtsv_path):
         synonyms_by_gene = {}
         with open(bmtsv_path) as file:
             reader = csv.reader(file, delimiter="\t")
@@ -181,15 +181,15 @@ class GeneSynonymCache():
                 unique_synonyms_by_gene[gene] = unique_synonyms
         synonyms_by_gene = unique_synonyms_by_gene
 
-        gene_synonyms = [[gene] + syns for (gene, syns) in synonyms_by_gene.items()]
-        return gene_synonyms
+        synonyms = [[gene] + syns for (gene, syns) in synonyms_by_gene.items()]
+        return synonyms
 
-    def fetch_gene_synonyms(self, organism):
+    def fetch_synonyms(self, organism):
         [bmtsv_path, bmtsv_url] = self.fetch_ensembl_biomart_tsv(organism)
-        gene_synonyms = self.parse_gene_synonyms(bmtsv_path)
-        return [gene_synonyms, bmtsv_url]
+        synonyms = self.parse_synonyms(bmtsv_path)
+        return [synonyms, bmtsv_url]
 
-    def write(self, gene_synonyms, organism):
+    def write(self, synonyms, organism):
         """Save fetched and transformed gene data to cache file
         """
 
@@ -197,11 +197,11 @@ class GeneSynonymCache():
             f"## Ideogram.js gene synonym cache for {organism}\n" +
             f"# symbol\tsynonyms\n"
         )
-        lines = "\n".join(["\t".join(s) for s in gene_synonyms])
+        lines = "\n".join(["\t".join(s) for s in synonyms])
         content = headers + lines
 
         org_lch = organism.lower().replace(" ", "-")
-        output_path = f"{self.output_dir}{org_lch}-gene-synonyms.tsv.gz"
+        output_path = f"{self.output_dir}{org_lch}-synonyms.tsv.gz"
         with gzip.open(output_path, "wt") as f:
             f.write(content)
         print(f"Wrote gene synonyms cache: {output_path}")
@@ -209,8 +209,8 @@ class GeneSynonymCache():
     def populate_by_org(self, organism):
         """Fill gene caches for a configured organism
         """
-        [gene_synonyms, bmtsv_url] = self.fetch_gene_synonyms(organism)
-        sorted_slim_genes = sort_by_interest(gene_synonyms, organism)
+        [synonyms, bmtsv_url] = self.fetch_synonyms(organism)
+        sorted_slim_genes = sort_by_interest(synonyms, organism)
         self.write(sorted_slim_genes, organism)
 
     def populate(self):
@@ -246,4 +246,4 @@ if __name__ == "__main__":
     output_dir = args.output_dir
     reuse_bmtsv = args.reuse_bmtsv
 
-    GeneSynonymCache(output_dir, reuse_bmtsv).populate()
+    SynonymCache(output_dir, reuse_bmtsv).populate()

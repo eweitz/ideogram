@@ -21,6 +21,7 @@ import {
   parseCache as parseGeneStructureCache
 } from './gene-structure-cache-worker';
 import {parseCache as parseProteinCache} from './protein-cache-worker';
+import {parseCache as parseSynonymCache} from './synonym-cache-worker';
 
 /**
  * Populates in-memory content caches from on-disk service worker (SW) caches.
@@ -62,6 +63,7 @@ export async function initCaches(ideo) {
     if (config.showGeneStructureInTooltip) {
       cacheFactory('geneStructure', organism, ideo, cacheDir);
       cacheFactory('protein', organism, ideo, cacheDir);
+      cacheFactory('synonym', organism, ideo, cacheDir);
     }
 
     return cachePromise;
@@ -73,6 +75,7 @@ export async function initCaches(ideo) {
     if (config.showGeneStructureInTooltip) {
       cacheFactory('geneStructure', organism, ideo, cacheDir);
       cacheFactory('protein', organism, ideo, cacheDir);
+      cacheFactory('synonym', organism, ideo, cacheDir);
     }
   }
 }
@@ -107,6 +110,12 @@ const allCacheProps = {
     fn: setProteinCache,
     // worker: proteinCacheWorker // Uncomment when workers work
     parseFn: parseProteinCache // Remove when workers work
+  },
+  synonym: {
+    metadata: 'Synonym', dir: 'synonyms',
+    fn: setSynonymCache,
+    // worker: synonymCacheWorker // Uncomment when workers work
+    parseFn: parseSynonymCache // Remove when workers work
   }
 };
 
@@ -147,6 +156,10 @@ function setGeneStructureCache(parsedCache, ideo) {
 
 function setProteinCache(parsedCache, ideo) {
   ideo.proteinCache = parsedCache;
+}
+
+function setSynonymCache(parsedCache, ideo) {
+  ideo.synonymCache = parsedCache;
 }
 
 async function cacheFactory(cacheName, orgName, ideo, cacheDir=null) {
