@@ -2,7 +2,8 @@ import {fetchAndParse, inspectWorker} from './cache-lib';
 
 /** Parse synonym cache TSV data, return array of useful transforms */
 export function parseCache(rawTsv, perfTimes) {
-  const synonymsByGene = {};
+  const byGene = {};
+  // const nameCaseMap = {};
 
   let t0 = performance.now();
   const lines = rawTsv.split(/\r\n|\n/);
@@ -18,12 +19,15 @@ export function parseCache(rawTsv, perfTimes) {
     const gene = splitLine[0];
     const synonyms = splitLine.slice(1);
 
-    synonymsByGene[gene] = synonyms;
+    byGene[gene] = synonyms;
+
+    // For now, initialization is JITed in related-genes.js, as use is rare.
+    // nameCaseMap[gene.toLowerCase()] = synonyms.map(s => s.toLowerCase());
   };
   const t1 = performance.now();
   perfTimes.parseCacheLoop = Math.round(t1 - t0);
 
-  return synonymsByGene;
+  return {byGene};
 }
 
 // Uncomment when workers work outside localhost
