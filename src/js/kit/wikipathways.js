@@ -252,7 +252,7 @@ export function detailAllInteractions(gene, searchedGene, pathwayIds, gpmls) {
 
 /** Get IDs and data element objects for searched or interacting gene */
 function getMatches(gpml, label) {
-  // Bail if GPML not yet fetched.  Sometimes occurs on hover quickly after
+  // Bail if GPML not yet fetched.  Sometimes occurs on hover immediately afters
   // search.  This mitigation ensures at least a basic tooltip is shown.
   if (typeof gpml === 'undefined') return [[], []];
 
@@ -301,6 +301,10 @@ async function fetchGpml(pathwayId) {
   const pathwayFile = `${pathwayId}.xml.gz`;
   const gpmlUrl = `https://cdn.jsdelivr.net/npm/ixn2/${pathwayFile}`;
   const response = await fetch(gpmlUrl);
+  if (!response.ok) {
+    console.log(`Gracefully degrading as request failed for: ${gpmlUrl}`);
+    return '';
+  }
   const blob = await response.blob();
   const uint8Array = new Uint8Array(await blob.arrayBuffer());
   const rawGpml = strFromU8(decompressSync(uint8Array));
