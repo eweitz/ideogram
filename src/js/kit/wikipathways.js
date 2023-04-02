@@ -387,7 +387,11 @@ function parseInteractionGraphic(graphic, graphIds) {
         if (searchedGeneIndex === null) {
           searchedGeneIndex = isStart ? 0 : 1;
         }
-        ixnType = interactionArrowMap[arrowHead][isStart ? 0 : 1];
+        try {
+          ixnType = interactionArrowMap[arrowHead][isStart ? 0 : 1];
+        } catch (e) {
+          // TODO: Handle e.g. HGF, where arrowHead is very rare ReceptorSquare
+        }
       }
     }
   });
