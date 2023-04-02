@@ -1,7 +1,7 @@
 import {fetchAndParse, inspectWorker} from './cache-lib';
 
 /** Parse synonym cache TSV data, return array of useful transforms */
-export function parseCache(rawTsv, perfTimes) {
+export function parseSynonymCache(rawTsv, perfTimes) {
   const byGene = {};
   // const nameCaseMap = {};
 
