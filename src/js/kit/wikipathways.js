@@ -252,6 +252,9 @@ export function detailAllInteractions(gene, searchedGene, pathwayIds, gpmls) {
 
 /** Get IDs and data element objects for searched or interacting gene */
 function getMatches(gpml, label) {
+  // Bail if GPML not yet fetched.  Sometimes occurs on hover quickly after
+  // search.  This mitigation ensures at least a basic tooltip is shown.
+  if (typeof gpml === 'undefined') return [[], []];
 
   const nodes = Array.from(gpml.querySelectorAll(
     `DataNode[TextLabel="${label}"]`
@@ -445,6 +448,7 @@ export async function fetchPathwayInteractions(searchedGene, pathwayId, ideo) {
  * interactions between the two genes.
  */
 function detailInteractions(interactingGene, searchedGene, gpml) {
+  if (typeof gpml === 'undefined') return []; // Bail if GPML not yet fetched
 
   // Gets IDs and elements for searched gene and interacting gene, and,
   // if they're in any groups, the IDs of those groups
