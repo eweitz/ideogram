@@ -1,4 +1,7 @@
 """Convert Ensembl BioMart files to TSVs for Ideogram.js gene synonym caches
+
+Example:
+python3 cache/synonym_cache.py --output-dir ../../dist/data/cache/synonyms/ --reuse-bmtsv; gzip -dkf ../../dist/data/cache/synonyms/homo-sapiens-synonyms.tsv.gz; ls -latrh ../../dist/data/cache/synonyms/
 """
 
 import argparse

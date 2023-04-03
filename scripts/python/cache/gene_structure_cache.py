@@ -3,7 +3,7 @@
 Ideogram uses cached gene data to drastically simplify and speed up rendering.
 
 Example call (including supplementary commands):
-python3 cache/gene_synonym_cache.py --output-dir ../../dist/data/cache/gene_synonyms/ --reuse-bmtsv; gzip -dkf ../../dist/data/cache/gene_synonyms/homo-sapiens-gene-synonyms.tsv.gz; ls -latrh ../../dist/data/cache/gene_synonyms/
+time python3 cache/gene_structure_cache.py --output-dir ../../dist/data/cache/gene-structures-all-compressed/ --reuse-bmtsv; gzip -dkf ../../dist/data/cache/gene-structures-all-compressed/homo-sapiens-gene-structures.tsv.gz; tput bel
 """
 
 import argparse

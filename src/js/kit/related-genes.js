@@ -364,7 +364,7 @@ function throwGeneNotFound(geneSymbol, ideo) {
 /**
  * Lookup genes by synonym, a.k.a. alias
  *
- * E.g. fetchGeneBySynonym("p53", ideo) returns "TP53"
+ * E.g. getGeneBySynonym("p53", ideo) returns "TP53"
  */
 function getGeneBySynonym(name, ideo) {
   if (!ideo.synonymCache) return null;
