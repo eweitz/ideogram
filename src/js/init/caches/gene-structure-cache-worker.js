@@ -28,7 +28,7 @@ function parseMetainformationHeader(line) {
 }
 
 /** Parse a gene structure cache TSV file, return array of useful transforms */
-export function parseCache(rawTsv, perfTimes) {
+export function parseGeneStructureCache(rawTsv, perfTimes) {
   const featuresByGene = {};
 
   let t0 = performance.now();

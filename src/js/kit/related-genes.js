@@ -362,6 +362,39 @@ function throwGeneNotFound(geneSymbol, ideo) {
 }
 
 /**
+ * Lookup genes by synonym, a.k.a. alias
+ *
+ * E.g. getGeneBySynonym("p53", ideo) returns "TP53"
+ */
+function getGeneBySynonym(name, ideo) {
+  if (!ideo.synonymCache) return null;
+
+  const nameLc = name.toLowerCase();
+
+  if (!ideo.synonymCache?.nameCaseMap) {
+    // JIT initialization of canonicalized synonym lookup data.
+    // Done only once.
+    const nameCaseMap = {};
+    for (const gene in ideo.synonymCache.byGene) {
+      const synonyms = ideo.synonymCache.byGene[gene];
+      nameCaseMap[gene.toLowerCase()] = synonyms.map(s => s.toLowerCase());
+    }
+    ideo.synonymCache.nameCaseMap = nameCaseMap;
+  }
+
+  const nameCaseMap = ideo.synonymCache.nameCaseMap;
+  for (const geneLc in nameCaseMap) {
+    const synonymsLc = nameCaseMap[geneLc];
+    if (synonymsLc.includes(nameLc)) {
+      // Got a hit!  Return standard gene symbol, e.g. "tp53" -> "TP53".
+      return ideo.geneCache.nameCaseMap[geneLc];
+    }
+  }
+
+  return null;
+}
+
+/**
  * Fetch genes from cache
  * Construct objects that match format of MyGene.info API response
  */
@@ -375,7 +408,11 @@ function fetchGenesFromCache(names, type, ideo) {
 
     const nameLc = name.toLowerCase();
 
-    if (!locusMap[name] && !cache.nameCaseMap[nameLc]) {
+    if (
+      !locusMap[name] &&
+      !cache.nameCaseMap[nameLc] &&
+      !getGeneBySynonym(name, ideo)
+    ) {
       if (isSymbol) {
         throwGeneNotFound(name, ideo);
       } else {
@@ -383,12 +420,21 @@ function fetchGenesFromCache(names, type, ideo) {
       }
     }
 
+    let isSynonym = false;
+    let synonym = null;
+
     // Canonicalize name if it is mistaken in upstream data source.
     // This can sometimes happen in WikiPathways, e.g. when searching
     // interactions for rat Pten, it includes a result for "PIK3CA".
     // In that case, this would correct PIK3CA to be Pik3ca.
-    if (isSymbol && !locusMap[name] && cache.nameCaseMap[nameLc]) {
-      name = cache.nameCaseMap[nameLc];
+    if (isSymbol && !locusMap[name]) {
+      if (cache.nameCaseMap[nameLc]) {
+        name = cache.nameCaseMap[nameLc];
+      } else {
+        synonym = name;
+        name = getGeneBySynonym(synonym, ideo);
+        isSynonym = true;
+      }
     }
 
     const locus = locusMap[name];
@@ -405,7 +451,9 @@ function fetchGenesFromCache(names, type, ideo) {
         start: locus[1],
         end: locus[2],
         ensemblgene: ensemblId
-      }
+      },
+      isSynonym,
+      synonym
     };
 
     return hit;
@@ -481,10 +529,18 @@ async function fetchGenes(names, type, ideo) {
     hits.forEach((hit) => {
       const symbol = hit.symbol;
       const fullName = hit.name;
+      const isSynonym = hit.isSynonym;
+      const synonym = hit.synonym;
       if (symbol in ideo.annotDescriptions.annots) {
         ideo.annotDescriptions.annots[symbol].name = fullName;
+        ideo.annotDescriptions.annots[symbol].isSynonym = hit.isSynonym;
+        ideo.annotDescriptions.annots[symbol].synonym = hit.synonym;
       } else {
-        ideo.annotDescriptions.annots[symbol] = {name: fullName};
+        ideo.annotDescriptions.annots[symbol] = {
+          name: fullName,
+          isSynonym,
+          synonym
+        };
       }
     });
 
@@ -1372,6 +1428,23 @@ function decorateAnnot(annot) {
     fullNameAndRank = `<span title="${rank}">${fullName}</span>`;
   }
 
+  let synonyms = '';
+  if (descObj?.isSynonym) {
+    const queriedSynonym = descObj.synonym;
+    const synList = ideo.synonymCache.byGene[annot.name];
+    const litSyns = synList.map(s => {
+      // Emphasize ("highlight") any synonyms that match the user's query
+      if (s.toLowerCase() === queriedSynonym.toLowerCase()) {
+        const style = 'style="font-weight: bold; text-decoration: underline"';
+        return `<span ${style}>${s}</span>`;
+      }
+      return s;
+    });
+    const synText = 'Synonyms: ' + litSyns.join(', ') + '<br/>';
+    const synStyle = 'style="color: #666;"'; // Minimum WCAG AA contrast
+    synonyms = `<span ${synStyle}>${synText}</span>`;
+  }
+
   const isParalogNeighborhood = annot.name.includes('paralogNeighborhood');
 
   const geneStructureHtml = getGeneStructureHtml(
@@ -1381,6 +1454,7 @@ function decorateAnnot(annot) {
   let originalDisplay =
     `<span id="ideo-related-gene" ${style}>${annot.name}</span><br/>` +
     `${fullNameAndRank}<br/>` +
+    synonyms +
     description +
     geneStructureHtml +
     `<br/>`;

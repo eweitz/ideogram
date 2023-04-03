@@ -158,6 +158,10 @@
       urlParams.q = getGene();
       updateUrl();
 
+      if (!ideogram) {
+        ideogram = Ideogram.initRelatedGenes(config);
+      }
+
       // Ideogram reports error if gene symbol is invalid
       try {
         await ideogram.plotRelatedGenes(urlParams.q);
@@ -238,35 +242,37 @@
     // A switch to expose internal timing data, to aid performance engineering
     if ('debug' in urlParams) config.debug = true;
 
-    if ('q' in urlParams) {
-      ideogram = Ideogram.initRelatedGenes(config);
-    } else {
-      config.legendName = 'Gene leads'
+    if ('cold' in urlParams === false) {
+      if ('q' in urlParams) {
+        ideogram = Ideogram.initRelatedGenes(config);
+      } else {
+        config.legendName = 'Gene leads'
 
-      // An experimental feature
-      if ('default-hints' in urlParams) {
-        config.annotationsPath = urlParams['default-hints'];
-      }
+        // An experimental feature
+        if ('default-hints' in urlParams) {
+          config.annotationsPath = urlParams['default-hints'];
+        }
 
-      if ('org' in urlParams) {
-        // Show genome for the organism specified via URL
-        if (urlParams.org === 'homo-sapiens') {
+        if ('org' in urlParams) {
+          // Show genome for the organism specified via URL
+          if (urlParams.org === 'homo-sapiens') {
+            if ('gene-leads-de' in urlParams) {
+              config.onDrawAnnots = onDrawAnnots
+              config.geneLeadsDE = true
+            }
+            ideogram = Ideogram.initGeneLeads(config);
+
+          } else {
+            ideogram = Ideogram.initRelatedGenes(config);
+          }
+
+        } else {
           if ('gene-leads-de' in urlParams) {
             config.onDrawAnnots = onDrawAnnots
             config.geneLeadsDE = true
           }
           ideogram = Ideogram.initGeneLeads(config);
-
-        } else {
-          ideogram = Ideogram.initRelatedGenes(config);
         }
-
-      } else {
-        if ('gene-leads-de' in urlParams) {
-          config.onDrawAnnots = onDrawAnnots
-          config.geneLeadsDE = true
-        }
-        ideogram = Ideogram.initGeneLeads(config);
       }
     }
   </script>

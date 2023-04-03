@@ -7,7 +7,7 @@ const urlParams = parseUrlParams();
 const organism = 'org' in urlParams ? urlParams.org : 'homo-sapiens';
 
 const examplesByOrganism = {
-  'homo-sapiens': ['RAD51', 'CD4', 'APOE'],
+  'homo-sapiens': ['RAD51', 'CD4', 'APOE', 'p53'],
   'tupaia-belangeri': ['RAD51', 'CD4', 'APOE'],
   'mus-musculus': ['Pten', 'Rad51', 'Sox2'],
   'rattus-norvegicus': ['Rad51', 'Pten', 'Sox2'],

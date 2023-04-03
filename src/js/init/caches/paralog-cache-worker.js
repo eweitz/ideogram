@@ -1,7 +1,7 @@
 import {fetchAndParse, getFullId, inspectWorker} from './cache-lib';
 
 /** Parse a paralog cache TSV file, return array of useful transforms */
-export function parseCache(rawTsv, perfTimes) {
+export function parseParalogCache(rawTsv, perfTimes) {
   const paralogsByName = {};
   let ensemblPrefix;
 
