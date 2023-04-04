@@ -240,9 +240,10 @@ function swapUTRsForward(subparts, isPositiveStrand) {
           !isPositiveStrand && prevIsUtr3 ||
           isPositiveStrand && prevIsUtr5
         ) && (
-          // Account for multi-part UTRs, as in e.g.
+          // Account for splice toggle in multi-part UTRs, as in e.g.
           // canonicals for FAM111B and SCARB1, and alternative MAOA-204
-          subpart[1] !== prevSubpart[1] + prevSubpart[2] - 1
+          subpart[1] !== prevSubpart[1] + prevSubpart[2] - 1 &&
+          prevSubpart[2] !== 2 // Handle canonicals for RAD51 and RAD51B
         )
       )
     ) {
