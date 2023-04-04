@@ -1428,21 +1428,23 @@ function decorateAnnot(annot) {
     fullNameAndRank = `<span title="${rank}">${fullName}</span>`;
   }
 
-  let synonyms = '';
+  let synonym = '';
   if (descObj?.isSynonym) {
     const queriedSynonym = descObj.synonym;
-    const synList = ideo.synonymCache.byGene[annot.name];
-    const litSyns = synList.map(s => {
-      // Emphasize ("highlight") any synonyms that match the user's query
-      if (s.toLowerCase() === queriedSynonym.toLowerCase()) {
-        const style = 'style="font-weight: bold; text-decoration: underline"';
-        return `<span ${style}>${s}</span>`;
-      }
-      return s;
-    });
-    const synText = 'Synonyms: ' + litSyns.join(', ') + '<br/>';
-    const synStyle = 'style="color: #666;"'; // Minimum WCAG AA contrast
-    synonyms = `<span ${synStyle}>${synText}</span>`;
+    const synStyle = 'style="font-style: italic"'
+    synonym = `<div ${synStyle}>Synonym: ${queriedSynonym}</div>`;
+    // const synList = ideo.synonymCache.byGene[annot.name];
+    // const litSyns = synList.map(s => {
+    //   // Emphasize ("highlight") any synonyms that match the user's query
+    //   if (s.toLowerCase() === queriedSynonym.toLowerCase()) {
+    //     const style = 'style="font-weight: bold; text-decoration: underline"';
+    //     return `<span ${style}>${s}</span>`;
+    //   }
+    //   return s;
+    // });
+    // const synText = 'Synonyms: ' + litSyns.join(', ') + '<br/>';
+    // const synStyle = 'style="max-width: 300px; color: #666;"'; // Minimum WCAG AA contrast
+    // synonyms = `<div ${synStyle}>${synText}</div>`;
   }
 
   const isParalogNeighborhood = annot.name.includes('paralogNeighborhood');
@@ -1454,7 +1456,7 @@ function decorateAnnot(annot) {
   let originalDisplay =
     `<span id="ideo-related-gene" ${style}>${annot.name}</span><br/>` +
     `${fullNameAndRank}<br/>` +
-    synonyms +
+    synonym +
     description +
     geneStructureHtml +
     `<br/>`;
