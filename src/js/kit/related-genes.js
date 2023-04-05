@@ -1431,7 +1431,7 @@ function decorateAnnot(annot) {
   let synonym = '';
   if (descObj?.isSynonym) {
     const queriedSynonym = descObj.synonym;
-    const synStyle = 'style="font-style: italic"'
+    const synStyle = 'style="font-style: italic"';
     synonym = `<div ${synStyle}>Synonym: ${queriedSynonym}</div>`;
     // const synList = ideo.synonymCache.byGene[annot.name];
     // const litSyns = synList.map(s => {

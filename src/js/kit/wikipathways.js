@@ -397,7 +397,7 @@ function parseInteractionGraphic(graphic, graphIds) {
   });
 
   if (numMatchingPoints >= 2 && isConnectedToSourceGene) {
-    if (searchedGeneIndex === null) {
+    if (searchedGeneIndex === null || ixnType === null) {
       ixnType = 'interacts with';
     }
     ixnType = ixnType[0].toUpperCase() + ixnType.slice(1);
