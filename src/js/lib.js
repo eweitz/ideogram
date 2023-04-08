@@ -396,6 +396,11 @@ function deepCopy(array) {
   return JSON.parse(JSON.stringify(array));
 }
 
+/** Naively pluralizes a word, if count is > 1 */
+export function pluralize(word, count) {
+  return word + (count > 1 ? 's' : '');
+}
+
 export {
   assemblyIsAccession, hasNonGenBankAssembly, hasGenBankAssembly, getDataDir,
   getDir, round, formatSiPrefix, onDidRotate, getSvg, d3, getEarlyTaxid,

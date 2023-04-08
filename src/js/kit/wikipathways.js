@@ -298,6 +298,7 @@ function getMatches(gpml, label) {
 }
 
 async function fetchGpml(pathwayId) {
+  if (!navigator.onLine) return '';
   const pathwayFile = `${pathwayId}.xml.gz`;
   const gpmlUrl = `https://cdn.jsdelivr.net/npm/ixn2/${pathwayFile}`;
   const response = await fetch(gpmlUrl);
@@ -329,7 +330,6 @@ async function fetchGpml(pathwayId) {
  * data for biochemical pathways.
  */
 export function fetchGpmls(ideo) {
-
   const pathwayIdsByInteractingGene = {};
   Object.entries(ideo.annotDescriptions.annots)
     .forEach(([annotName, descObj]) => {

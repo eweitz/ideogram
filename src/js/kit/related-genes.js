@@ -36,7 +36,7 @@ import {
 } from '../annotations/annotations';
 import {writeLegend} from '../annotations/legend';
 import {getAnnotDomId} from '../annotations/process';
-import {getDir, deepCopy, slug} from '../lib';
+import {getDir, deepCopy, slug, pluralize} from '../lib';
 import {
   fetchGpmls, summarizeInteractions, fetchPathwayInteractions
 } from './wikipathways';
@@ -306,6 +306,19 @@ function parseNameAndEnsemblIdFromMgiGene(gene) {
 //   return descriptionObj;
 // }
 
+/** Limit number of shown interaction links, and enable toggling full list */
+function trimInteractionLinks(links) {
+  if (links.length > 5) {
+    // Seen in e.g. interacting gene AKT1 for MTOR searched gene
+    const numMore = links.length - 5;
+    links = links.slice(0, 5);
+    const moreText = `${numMore} more ${pluralize('pathway', numMore)}`;
+    const attrs = 'id="_ideogramToggle" style="font-style: italic"';
+    links.push(`<span ${attrs}>${moreText}</span>`);
+  }
+  return links;
+}
+
 /**
  * Summarizes interactions for a gene
  *
@@ -318,7 +331,7 @@ function describeInteractions(gene, ixns, searchedGene) {
 
   if (typeof ixns !== 'undefined') {
     // ixns is undefined when querying e.g. CDKN1B in human
-    const links = ixns.map(ixn => {
+    let links = ixns.map(ixn => {
       // pathwayIds.push(ixn.pathwayId);
       // pathwayNames.push(ixn.name);
       // const attrs =
@@ -340,7 +353,18 @@ function describeInteractions(gene, ixns, searchedGene) {
         `target="_blank" ` +
         `href="${url}"`;
       return `<a ${attrs}>${ixn.name}</a>`;
-    }).join('<br/>');
+    });
+
+    if (links.length > 5) {
+      // Seen in e.g. interacting gene AKT1 for MTOR searched gene
+      const numMore = links.length - 5;
+      links = links.slice(0, 5);
+      const moreText = `${numMore} more ${pluralize('pathway', numMore)}`;
+      const attrs = 'id="_ideogramMorePathways" style="font-style: italic"';
+      links.push(`<span ${attrs}>${moreText}</span>`);
+    }
+
+    links = links.join('<br/>');
 
     ixnsDescription =
       `Interacts with ${searchedGene.name} in:<br/>${links}`;
@@ -1437,13 +1461,15 @@ function decorateAnnot(annot) {
     // const litSyns = synList.map(s => {
     //   // Emphasize ("highlight") any synonyms that match the user's query
     //   if (s.toLowerCase() === queriedSynonym.toLowerCase()) {
-    //     const style = 'style="font-weight: bold; text-decoration: underline"';
+    //     const style =
+    //       'style="font-weight: bold; text-decoration: underline"';
     //     return `<span ${style}>${s}</span>`;
     //   }
     //   return s;
     // });
     // const synText = 'Synonyms: ' + litSyns.join(', ') + '<br/>';
-    // const synStyle = 'style="max-width: 300px; color: #666;"'; // Minimum WCAG AA contrast
+    // const synStyle =
+    //   'style="max-width: 300px; color: #666;"'; // Minimum WCAG AA contrast
     // synonyms = `<div ${synStyle}>${synText}</div>`;
   }
 
