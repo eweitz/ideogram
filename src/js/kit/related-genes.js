@@ -306,18 +306,23 @@ function parseNameAndEnsemblIdFromMgiGene(gene) {
 //   return descriptionObj;
 // }
 
-/** Limit number of shown interaction links, and enable toggling full list */
-function trimInteractionLinks(links) {
-  if (links.length > 5) {
-    // Seen in e.g. interacting gene AKT1 for MTOR searched gene
-    const numMore = links.length - 5;
-    links = links.slice(0, 5);
-    const moreText = `${numMore} more ${pluralize('pathway', numMore)}`;
-    const attrs = 'id="_ideogramToggle" style="font-style: italic"';
-    links.push(`<span ${attrs}>${moreText}</span>`);
-  }
-  return links;
-}
+// /** Limit number of shown interaction links, and enable toggling full list */
+// function limitInteractionLinks(links) {
+//   if (links.length > 5) {
+//     // Seen in e.g. interacting gene AKT1 for MTOR searched gene
+//     const numMore = links.length - 5;
+//     links = links.slice(0, 5);
+//     const moreText = `${numMore} more ${pluralize('pathway', numMore)}`;
+//     const attrs = 'id="_ideoIxnLinkToggler" style="font-style: italic"';
+//     const toggler = `<span ${attrs}>${moreText}</span>`;
+//     links.push(`<span ${attrs}>${moreText}</span>`);
+//   }
+//   return links;
+// }
+
+// function toggleInteractionLinks() {
+//   const ixnLinkToggler = document.querySelector('._ideoIxnLinkToggler');
+// }
 
 /**
  * Summarizes interactions for a gene
@@ -355,14 +360,7 @@ function describeInteractions(gene, ixns, searchedGene) {
       return `<a ${attrs}>${ixn.name}</a>`;
     });
 
-    if (links.length > 5) {
-      // Seen in e.g. interacting gene AKT1 for MTOR searched gene
-      const numMore = links.length - 5;
-      links = links.slice(0, 5);
-      const moreText = `${numMore} more ${pluralize('pathway', numMore)}`;
-      const attrs = 'id="_ideogramMorePathways" style="font-style: italic"';
-      links.push(`<span ${attrs}>${moreText}</span>`);
-    }
+    // links = limitInteractionLinks(links);
 
     links = links.join('<br/>');
 
@@ -1354,6 +1352,19 @@ export function handleTooltipClick(ideo) {
 
       ideo.onClickAnnot(annot);
     });
+
+    // const ixnLinkToggler = document.querySelector('#_ideoIxnLinkToggler');
+    // if (ixnLinkToggler) {
+    //   ixnLinkToggler.addEventListener('click', (event) => {
+    //     const isOpen = !ixnLinkToggler.classList.contains('closed');
+    //     const newToggleClass = isOpen ? 'closed' : '';
+    //     if (isOpen) {
+    //       ixnLinkToggler
+    //     } else {
+
+    //     }
+    //   });
+    // }
 
     // Ensures handler isn't added redundantly.  This is used because
     // addEventListener options like {once: true} don't suffice
