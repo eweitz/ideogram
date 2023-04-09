@@ -210,7 +210,7 @@ export function getColors(domainType) {
     domainType === 'Immunoglobulin C2-set' ||
     domainType.includes('immunoglobulin C2-set') ||
     domainType.includes('protein interaction') ||
-    domainType.endsWith('interacting domain')
+    domainType.includes('interacting')
   ) {
     return [purple, purpleLine];
   } else if (domainType === 'Immunoglobulin V-set domain') {
@@ -255,7 +255,8 @@ export function getColors(domainType) {
     domainType === 'Death effector domain' ||
     domainType === 'Death domain' ||
     domainType === 'Ubiquitin-associated domain' ||
-    domainType.includes('UBA domain')
+    domainType.includes('UBA domain') ||
+    domainType.includes('unknown function')
   ) {
     return [darkGrey, darkGreyLine];
   } else if (
@@ -265,7 +266,8 @@ export function getColors(domainType) {
     return [orange, orangeLines];
   } else if (
     domainType.includes('inhibit') ||
-    domainType.includes('central')
+    domainType.includes('central') ||
+    domainType === '[2Fe-2S]-binding'
   ) {
     return [seafoam, seafoamLines];
   } else if (
@@ -274,7 +276,9 @@ export function getColors(domainType) {
   ) {
     return [blue, blueLines];
   } else if (
-    domainType.toLowerCase().includes('zinc finger')
+    domainType.toLowerCase().includes('zinc finger') ||
+    domainType.toLowerCase().includes('transcription factor') ||
+    domainType.includes('FAD-binding')
   ) {
     return [green, greenLines];
   } else if (
