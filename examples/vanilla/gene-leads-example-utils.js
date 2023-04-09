@@ -73,8 +73,10 @@ function parseDE(items) {
   const head =
     '<thead><th>Group</th><th>log2(FC)</th><th>Adj. p-value</th><th>Rank in group</th></thead>';
 
-  const summary = 'summary="Differential expression"'
-  const result = '<table>' + head + rows + '</table>'
+  // const summary = 'summary="Differential expression"';
+  const summary = "<div>Differential expression</div>"
+  const style = 'style="border-collapse: collapse; margin: 0 auto;"';
+  const result = `${summary}<table ${style}>${head}${rows}</table>`;
 
   return result;
 }

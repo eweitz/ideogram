@@ -114,7 +114,8 @@ export function getColors(domainType) {
     domainType === 'Sodium ion transport-associated' ||
     domainType.endsWith('head') ||
     domainType.endsWith('C2 domain') ||
-    domainType === 'Pleckstrin homology domain'
+    domainType === 'Pleckstrin homology domain' ||
+    domainType === 'Post-SET domain'
   ) {
     return [lightBlue, lightBlueLine];
   } else if (
@@ -152,7 +153,8 @@ export function getColors(domainType) {
     domainType === 'Peptidase M10, metallopeptidase' ||
     domainType === 'Zinc finger C2H2-type' ||
     domainType === 'Zinc finger, PARP-type' ||
-    domainType.endsWith('tail domain')
+    domainType.endsWith('tail domain') ||
+    domainType === 'SET domain'
   ) {
     return [green, greenLines];
   } else if (
@@ -167,7 +169,8 @@ export function getColors(domainType) {
     domainType === 'Amine oxidase' ||
     domainType.includes('lid domain') ||
     domainType.includes('prodomain') ||
-    domainType.endsWith('tail')
+    domainType.endsWith('tail') ||
+    domainType === 'Pre-SET domain'
   ) {
     return [seafoam, seafoamLines];
   }
@@ -199,13 +202,15 @@ export function getColors(domainType) {
     domainType.includes('ectodomain') ||
     domainType.endsWith('receptor domain') ||
     domainType.endsWith('receptor domain 4') ||
-    domainType.endsWith('extracellular')
+    domainType.endsWith('extracellular') ||
+    domainType === 'WW domain'
   ) {
     return [lightPurple, lightPurpleLine];
   } else if (
     domainType === 'Immunoglobulin C2-set' ||
     domainType.includes('immunoglobulin C2-set') ||
-    domainType.includes('protein interaction')
+    domainType.includes('protein interaction') ||
+    domainType.endsWith('interacting domain')
   ) {
     return [purple, purpleLine];
   } else if (domainType === 'Immunoglobulin V-set domain') {
