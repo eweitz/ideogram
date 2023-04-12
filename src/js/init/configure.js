@@ -101,6 +101,9 @@ function configureOrganisms(config, ideo) {
 function configureCallbacks(config, ideo) {
   if (config.onLoad) ideo.onLoadCallback = config.onLoad;
   if (config.onLoadAnnots) ideo.onLoadAnnotsCallback = config.onLoadAnnots;
+  if (config.onBeforeDrawAnnots) {
+    ideo.onBeforeDrawAnnotsCallback = config.onBeforeDrawAnnots;
+  }
   if (config.onDrawAnnots) ideo.onDrawAnnotsCallback = config.onDrawAnnots;
   if (config.onBrushMove) ideo.onBrushMoveCallback = config.onBrushMove;
   if (config.onBrushEnd) ideo.onBrushEndCallback = config.onBrushEnd;

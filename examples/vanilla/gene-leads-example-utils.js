@@ -58,7 +58,6 @@ function updateUrl() {
 
 /** Parse differential expression items, return as table for tooltip */
 function parseDE(items) {
-
   if (items.length < 1) return '';
 
   const rows = '<tbody><tr>' + items.map(item => {

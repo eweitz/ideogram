@@ -109,8 +109,16 @@
 
         for (let j = 0; j < annots.length; j++) {
           const annot = annots[j];
-          ideo.annotDescriptions.annots[annot.name].description =
+          const differentialExpression =
             parseDE(annot.differentialExpression, deInnerFields);
+          const numMentions = annot.publicationMentions;
+          let publication = '';
+          if (numMentions > 0) {
+            publication = `${numMentions} mentions in publication<br/><br/>`;
+          }
+          ideo.annotDescriptions.annots[annot.name].description =
+            publication +
+            differentialExpression
         }
       }
     }

@@ -216,6 +216,11 @@ function drawAnnotsByLayoutType(layout, annots, ideo) {
 function drawProcessedAnnots(annots, layout, keep=false) {
   var ideo = this;
 
+  if (ideo.onBeforeDrawAnnotsCallback) {
+    console.log('in drawProcessedAnnots, ideo.onBeforeDrawAnnotsCallback === true')
+    ideo.onBeforeDrawAnnotsCallback();
+  }
+
   if (!keep) {
     d3.selectAll(ideo.selector + ' .annot').remove();
   }

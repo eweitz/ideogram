@@ -98,12 +98,13 @@ export class TsvParser {
         }
       }
 
-
       const annot = [name, chr, start, length].concat(customValues);
+      annot.push(i); // Rank in initial file
 
       annots[chrIndex].annots.push(annot);
     };
 
+    headers.push('initRank');
     const rawAnnots = {keys: headers, annots, innerKeysByField};
     return rawAnnots;
   }

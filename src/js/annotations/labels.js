@@ -423,7 +423,7 @@ function fillAnnotLabels(sortedAnnots=[]) {
     spacedLayouts.push(layout);
   });
 
-  let numLabels = 10;
+  let numLabels = 20;
   const config = ideo.config;
   if ('relatedGenesMode' in config && config.relatedGenesMode === 'hints') {
     numLabels = 20;
