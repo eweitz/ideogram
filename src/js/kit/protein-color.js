@@ -203,7 +203,8 @@ export function getColors(domainType) {
     domainType.endsWith('receptor domain') ||
     domainType.endsWith('receptor domain 4') ||
     domainType.endsWith('extracellular') ||
-    domainType === 'WW domain'
+    domainType === 'WW domain' ||
+    domainType.includes('MHC class II') && !domainType.includes('C-terminal')
   ) {
     return [lightPurple, lightPurpleLine];
   } else if (
@@ -213,7 +214,10 @@ export function getColors(domainType) {
     domainType.includes('interacting')
   ) {
     return [purple, purpleLine];
-  } else if (domainType === 'Immunoglobulin V-set domain') {
+  } else if (
+    domainType === 'Immunoglobulin V-set domain' ||
+    domainType.includes('MHC class I') && !domainType.includes('C-terminal')
+  ) {
     return [darkPurple, darkPurpleLine];
   } else if (domainType === 'Immunoglobulin I-set') {
     return [purple2, purple2Line];
@@ -256,7 +260,8 @@ export function getColors(domainType) {
     domainType === 'Death domain' ||
     domainType === 'Ubiquitin-associated domain' ||
     domainType.includes('UBA domain') ||
-    domainType.includes('unknown function')
+    domainType.includes('unknown function') ||
+    domainType === 'Ubiquitin-like domain'
   ) {
     return [darkGrey, darkGreyLine];
   } else if (
