@@ -217,7 +217,6 @@ function drawProcessedAnnots(annots, layout, keep=false) {
   var ideo = this;
 
   if (ideo.onBeforeDrawAnnotsCallback) {
-    console.log('in drawProcessedAnnots, ideo.onBeforeDrawAnnotsCallback === true')
     ideo.onBeforeDrawAnnotsCallback();
   }
 

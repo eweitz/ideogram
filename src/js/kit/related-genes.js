@@ -120,9 +120,6 @@ function setRelatedAnnotDomIds(ideo) {
     updated.push(updatedAnnots[chr]);
   });
 
-
-
-  console.log('ideo.annots', ideo.annots)
   ideo.annots = updated;
 }
 
@@ -932,7 +929,7 @@ export function sortByRelatedType(a, b) {
     [bName, bColor] = [b[0], b[3]];
   }
 
-  if ('initRank' in a === 'false') {
+  if ('initRank' in a === false) {
     // Rank red (searched gene) highest
     if (aColor === 'red') return -1;
     if (bColor === 'red') return 1;
@@ -972,9 +969,8 @@ function mergeDescriptions(annot, desc, ideo) {
   ideo.annotDescriptions.annots[annot.name] = mergedDesc;
 }
 
+/** Combines paralogs and interacting gene, if name matches */
 function mergeAnnots(unmergedAnnots) {
-  console.log('unmergedAnnots', unmergedAnnots)
-
   const seenAnnots = {};
   let mergedAnnots = [];
 
@@ -991,35 +987,24 @@ function mergeAnnots(unmergedAnnots) {
     }
   });
 
-  console.log('mergedAnnots');
   return mergedAnnots;
 }
 
 function onBeforeDrawAnnots() {
   const ideo = this;
-  console.log('onBeforeDrawAnnots')
   setRelatedAnnotDomIds(ideo);
-
-  let annots = deepCopy(ideo.annots);
-
-  annots = applyAnnotsIncludeList(annots, ideo);
-  // annots = mergeAnnots(annots);
-
-  // // annots = applyRankCutoff(annots, 40, ideo);
-  // ideo.annots = mergeAnnots(annots);
-  // ideo.relatedAnnots = applyRankCutoff(annots, 40, ideo);
-  // annots.sort(sortByRelatedType);
-  // ideo.annots.sort(ideo.annotSortFunction);
 }
 
 /** Filter, sort, draw annots.  Move legend. */
 function finishPlotRelatedGenes(type, ideo) {
 
-  const annots = ideo.relatedAnnots;
+  let annots = ideo.relatedAnnots;
 
   if (annots.length > 1 && ideo.onFindGenesCallback) {
     ideo.onFindGenesCallback();
   }
+
+  annots = mergeAnnots(annots);
 
   ideo.drawAnnots(annots);
 
@@ -1598,7 +1583,6 @@ const globalKitDefaults = {
 
 
 function plotGeneHints() {
-  // debugger;
   const ideo = this;
 
   if (!ideo || 'annotDescriptions' in ideo) return;
@@ -1620,27 +1604,16 @@ function plotGeneHints() {
     };
   });
 
-  // debugger;
   adjustPlaceAndVisibility(ideo);
   moveLegend();
-  // ideo.fillAnnotLabels([]);
+
   const container = ideo.config.container;
   document.querySelector(container).style.visibility = '';
-  // ideo.relatedAnnots = [];
-  // console.log('ideo.annots', ideo.annots)
-  // ideo.annots.forEach(chrAnnots => {
-  //   ideo.relatedAnnots = ideo.relatedAnnots.concat(chrAnnots.annots)
-  // });
-  // console.log('ideo.relatedAnnots', ideo.relatedAnnots);
-  // setRelatedAnnotDomIds(ideo);
-  // debugger;
-  // const annots = ideo.relatedAnnots;
-  // ideo.drawAnnots(ideo.annots);
+
   if (ideo.config.showAnnotLabels) {
     const sortedAnnots = ideo.flattenAnnots().sort((a, b) => {
       return ideo.annotSortFunction(a, b);
     });
-    console.log('in plotGeneHints sortedAnnots', sortedAnnots)
     ideo.fillAnnotLabels(sortedAnnots);
   }
 }

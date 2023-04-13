@@ -423,13 +423,16 @@ function fillAnnotLabels(sortedAnnots=[]) {
     spacedLayouts.push(layout);
   });
 
-  let numLabels = 20;
+  let numLabels = 10;
   const config = ideo.config;
-  if ('relatedGenesMode' in config && config.relatedGenesMode === 'hints') {
-    numLabels = 20;
+  if (
+    'relatedGenesMode' in config &&
+    ['hints', 'leads'].includes(config.relatedGenesMode)
+  ) {
+    numLabels = 10;
   }
   // spacedAnnots = applyRankCutoff(spacedAnnots, numLabels, ideo);
-  spacedAnnots = spacedAnnots.sort(ideo.annotSortFunction).slice(0, numLabels)
+  spacedAnnots = spacedAnnots.sort(ideo.annotSortFunction).slice(0, numLabels);
 
 
   // Ensure highest-ranked annots are ordered last in SVG,
