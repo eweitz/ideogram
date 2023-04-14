@@ -844,10 +844,10 @@ function parseAnnotFromMgiGene(gene, ideo, color='red') {
   return annot;
 }
 
-function moveLegend() {
+function moveLegend(extraPad=0) {
   const ideoInnerDom = document.querySelector('#_ideogramInnerWrap');
   const decorPad = setRelatedDecorPad({}).legendPad;
-  const left = decorPad + 20;
+  const left = decorPad + 20 + extraPad;
   const legendStyle = `position: absolute; top: 15px; left: ${left}px`;
   const legend = document.querySelector('#_ideogramLegend');
   ideoInnerDom.prepend(legend);
@@ -1227,7 +1227,6 @@ async function plotRelatedGenes(geneSymbol=null) {
   const ideo = this;
 
   if (!geneSymbol) {
-    // debugger;
     return plotGeneHints(ideo);
   }
 
@@ -1518,13 +1517,15 @@ function decorateAnnot(annot) {
 
 const shape = 'triangle';
 
-function getLegendName(nameText) {
+function getLegendName(nameText, legendContent=null) {
   const legendHeaderStyle =
     `font-size: 14px; font-weight: bold; font-color: #333;`;
 
+  let content = `<div style="${legendHeaderStyle}">${nameText}</div>`;
+  if (legendContent) content = legendContent;
   return `
     <div style="position: relative; left: 30px;">
-      <div style="${legendHeaderStyle}">${nameText}</div>
+      ${content}
       <i>Click gene to search</i>
     </div>
   `;
@@ -1605,7 +1606,7 @@ function plotGeneHints() {
   });
 
   adjustPlaceAndVisibility(ideo);
-  moveLegend();
+  moveLegend(-60);
 
   const container = ideo.config.container;
   document.querySelector(container).style.visibility = '';
@@ -1655,7 +1656,28 @@ function _initRelatedGenes(config, annotsInList) {
   delete config.onPlotFoundGenes;
 
   if (config.legendName) {
-    citedLegend[0].name = getLegendName(config.legendName);
+    if (config.legendContent) {
+      citedLegend[0].name = getLegendName(
+        config.legendName, config.legendContent
+      );
+    } else if (config.geneLeadsDE) {
+      // citedLegend[0].name = getLegendName(config.legendName);
+      const content =
+        '<span style="font-size: 14px; font-weight: bold; left: 0">Gene leads</span> from<br/>' +
+        // `<div style="margin-top: 10px; padding: 3px 6px; border: 1px solid #4D72AA; border-radius: 3px; color: #3D629A;">${fileIcon} <span style="margin-left: 20px; position: relative; top: -1px;">Publication</span></div>` +
+        // `<div style="margin-top: 5px; margin-bottom: 0px; padding: 3px 6px; border: 1px solid #4D72AA; border-radius: 3px; color: #3D629A;">${deltaIcon} <span style="margin-left: 20px;">Differential expression</span></div><br/>`;
+        `<div style="margin-top: 10px; padding: 3px 6px; font-size: 14px; font-weight: bold; color: #3D629A;">${fileIcon} <span style="margin-left: 20px; position: relative; top: -1px;">Publication</span></div>` +
+        // `<div style="margin-top: 5px; margin-bottom: -5px; font-size: 14px; font-weight: bold; padding: 3px 6px; color: #3D629A;">${deltaIcon} <span style="margin-left: 20px;">Differential expression</span></div><br/>`;
+        `<div style="margin-top: 3px; margin-bottom: -10px; font-size: 14px; padding: 3px 6px;">${deltaIcon} <span style="margin-left: 20px;">Differential expression</span></div><br/>`;
+        // `<div>Publication</div>` +
+        // `<div>Differential expression</div>`;
+
+      citedLegend[0].name = getLegendName(
+        config.legendName, content
+      );
+    } else {
+      citedLegend[0].name = getLegendName(config.legendName);
+    }
   }
 
   config.legend = citedLegend;

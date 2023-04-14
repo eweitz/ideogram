@@ -96,7 +96,7 @@
     function onDrawAnnots() {
       const ideo = this;
 
-      if (ideo.config.relatedGenesMode !== 'leads') return;
+      if (ideo.config.relatedGenesMode !== 'leads' || urlParams.q) return;
 
       // This whole function is only relevant for an experimental new feature.
       const deInnerFields =
@@ -258,6 +258,7 @@
         ideogram = Ideogram.initRelatedGenes(config);
       } else {
         config.legendName = 'Gene leads'
+        // config.legendContent = ''
 
         // An experimental feature
         if ('default-hints' in urlParams) {

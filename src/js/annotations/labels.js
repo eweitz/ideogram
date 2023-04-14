@@ -427,9 +427,9 @@ function fillAnnotLabels(sortedAnnots=[]) {
   const config = ideo.config;
   if (
     'relatedGenesMode' in config &&
-    ['hints', 'leads'].includes(config.relatedGenesMode)
+    ['hints'].includes(config.relatedGenesMode)
   ) {
-    numLabels = 10;
+    numLabels = 20;
   }
   // spacedAnnots = applyRankCutoff(spacedAnnots, numLabels, ideo);
   spacedAnnots = spacedAnnots.sort(ideo.annotSortFunction).slice(0, numLabels);
