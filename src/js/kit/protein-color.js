@@ -103,7 +103,8 @@ export function getColors(domainType) {
     domainType === 'GPCR, rhodopsin-like, 7TM' ||
     domainType === 'Peptidoglycan binding-like' ||
     domainType === 'MAD homology 1, Dwarfin-type' ||
-    domainType === 'F-actin binding'
+    domainType === 'F-actin binding' ||
+    domainType.includes('Glycoside hydrolase') && domainType.endsWith('domain')
   ) {
     return [blue, blueLines];
   } else if (
@@ -115,7 +116,8 @@ export function getColors(domainType) {
     domainType.endsWith('head') ||
     domainType.endsWith('C2 domain') ||
     domainType === 'Pleckstrin homology domain' ||
-    domainType === 'Post-SET domain'
+    domainType === 'Post-SET domain' ||
+    domainType.includes('Glycoside hydrolase')
   ) {
     return [lightBlue, lightBlueLine];
   } else if (
@@ -228,7 +230,8 @@ export function getColors(domainType) {
     domainType === 'Armadillo' ||
     domainType.includes('Apple domain') ||
     domainType === 'Protocadherin' || // Cytoplasmic
-    domainType.endsWith('merisation domain') // e.g. di- / tetramerisation
+    domainType.endsWith('merisation domain') || // e.g. di- / tetramerisation
+    domainType === 'Ferritin-like diiron domain'
   ) {
     return [orange, orangeLines];
   } else if (
@@ -239,7 +242,8 @@ export function getColors(domainType) {
     domainType.includes('(PIK) domain') ||
     domainType === 'LDLR class B repeat' ||
     domainType === 'Cadherin-like' ||
-    domainType === 'Actin family'
+    domainType === 'Actin family' ||
+    domainType === 'Ferritin/DPS protein domain'
   ) {
     return [lightBrown, lightBrownLine];
   } else if (
@@ -248,12 +252,11 @@ export function getColors(domainType) {
     domainType.includes('Transmembrane protein') ||
     domainType.includes('Collectrin') ||
     domainType.includes('cytoplasmic domain') ||
+    domainType.includes('membrane glycoprotein') ||
     domainType === 'CD36 family'
   ) {
     return [brown, brownLine];
-  }
-
-  else if (
+  } else if (
     // Death, ubiquitination
     domainType === 'CARD domain' ||
     domainType === 'Death effector domain' ||
@@ -261,7 +264,8 @@ export function getColors(domainType) {
     domainType === 'Ubiquitin-associated domain' ||
     domainType.includes('UBA domain') ||
     domainType.includes('unknown function') ||
-    domainType === 'Ubiquitin-like domain'
+    domainType === 'Ubiquitin-like domain' ||
+    domainType.includes('necrosis')
   ) {
     return [darkGrey, darkGreyLine];
   } else if (
