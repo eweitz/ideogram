@@ -1057,6 +1057,7 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
       `<span class="_ideoGeneStructureSvgContainer">` +
         geneStructureSvg +
       `</span>` +
+      '<div><i>Hover for details</i></div>' +
       `<div class="_ideoGeneStructureFooter"></div>` +
       `</div>`;
 
