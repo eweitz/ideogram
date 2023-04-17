@@ -69,7 +69,12 @@ const css =
   ._ideoHoveredSubpart {
     stroke: #D0D0DD !important; stroke-width: 3px;
   }
+  #_ideoGeneStructureTip {
+    font-style: italic;
+  }
   </style>`;
+
+const hoverTip = '<span id="_ideoGeneStructureTip">Hover for details</span>';
 
 /** Get DOM element for gene structure footer */
 function getFooter() {
@@ -510,7 +515,7 @@ function addHoverListeners(ideo) {
       // transcript they just selected, rather than having the details
       // frustratingly disappear immediately upon transcript selection.
       const footer = getFooter();
-      footer.innerHTML = '';
+      footer.innerHTML = hoverTip;
     }
     ideo.addedMenuListeners = false;
     document.removeEventListener('keydown', navigateSubparts);
@@ -1057,8 +1062,9 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
       `<span class="_ideoGeneStructureSvgContainer">` +
         geneStructureSvg +
       `</span>` +
-      '<div><i>Hover for details</i></div>' +
-      `<div class="_ideoGeneStructureFooter"></div>` +
+      `<div class="_ideoGeneStructureFooter">` +
+        hoverTip +
+      `</div>` +
       `</div>`;
 
   }
