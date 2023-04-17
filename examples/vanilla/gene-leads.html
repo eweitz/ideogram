@@ -104,13 +104,22 @@
 
       const chrAnnots = ideo.annots;
 
+
       for (let i = 0; i < chrAnnots.length; i++) {
         const annots = chrAnnots[i].annots;
 
         for (let j = 0; j < annots.length; j++) {
           const annot = annots[j];
-          const differentialExpression =
-            parseDE(annot.differentialExpression, deInnerFields);
+
+          if (ideo.config.colorMap && annot.differentialExpression?.length) {
+            const colorMap = ideo.config.colorMap;
+            const group = annot.differentialExpression[0].group;
+            annot.color = colorMap[group];
+            ideo.annots[i].annots[j] = annot
+            console.log('annot', annot)
+          }
+
+          const differentialExpression = parseDE(annot.differentialExpression);
           const numMentions = annot.publicationMentions;
           let publication = '';
           if (numMentions > 0) {
@@ -271,9 +280,10 @@
             if ('gene-leads-de' in urlParams) {
               config.onDrawAnnots = onDrawAnnots
               config.geneLeadsDE = true
-            }
+              config.colorMap = colorMap;
+            console.log('pre')
             ideogram = Ideogram.initGeneLeads(config);
-
+            }
           } else {
             ideogram = Ideogram.initRelatedGenes(config);
           }
@@ -282,6 +292,8 @@
           if ('gene-leads-de' in urlParams) {
             config.onDrawAnnots = onDrawAnnots
             config.geneLeadsDE = true
+
+            config.colorMap = colorMap
           }
           ideogram = Ideogram.initGeneLeads(config);
         }

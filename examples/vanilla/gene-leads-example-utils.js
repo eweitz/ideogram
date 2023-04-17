@@ -67,6 +67,19 @@ function updateUrl() {
   history.pushState(null, null, '?' + params);
 }
 
+const colorMap = {
+  'LC2': '#bb99ff', // '#999999',
+  'LC1': '#9986a5', // '#f781bf',
+  'neutrophils': '#d8a499', // '#66c2a5',
+  'T cells': '#81a88d', // '#fc8d62',
+  'eosinophils': '#d9d0d3', // '#984ea3',
+  'dendritic cells': '#c6cdf7', // '#4daf4a',
+  'GPMNB macrophages': '#ee46a6', // '#a65628',
+  'CSN1S1 macrophages': '#e6a0c4',
+  'fibroblasts': '#5eb668', // '#ff7f00'
+  'B cells': '#7294d4'
+}
+
 /** Parse differential expression items, return as table for tooltip */
 function parseDE(items) {
   if (items.length < 1) return '';

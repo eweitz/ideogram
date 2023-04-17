@@ -993,6 +993,23 @@ function mergeAnnots(unmergedAnnots) {
 function onBeforeDrawAnnots() {
   const ideo = this;
   setRelatedAnnotDomIds(ideo);
+
+  const chrAnnots = ideo.annots;
+
+  for (let i = 0; i < chrAnnots.length; i++) {
+    const annots = chrAnnots[i].annots;
+
+    for (let j = 0; j < annots.length; j++) {
+      const annot = annots[j];
+
+      if (ideo.config.colorMap && annot.differentialExpression?.length) {
+        const colorMap = ideo.config.colorMap;
+        const group = annot.differentialExpression[0].group;
+        annot.color = colorMap[group];
+        ideo.annots[i].annots[j] = annot;
+      }
+    }
+  }
 }
 
 /** Filter, sort, draw annots.  Move legend. */
@@ -1737,8 +1754,8 @@ function initSearchIdeogram(kitDefaults, config, annotsInList) {
     delete config[key];
   }
 
-  if ('onDrawAnnots' in config) {
-    const key = 'onDrawAnnots';
+  if ('onBeforeDrawAnnots' in config) {
+    const key = 'onBeforeDrawAnnots';
     const clientFn = config[key];
     const defaultFn = kitDefaults[key];
     const newFunction = function() {
@@ -1749,8 +1766,8 @@ function initSearchIdeogram(kitDefaults, config, annotsInList) {
     delete config[key];
   }
 
-  if ('onBeforeDrawAnnots' in config) {
-    const key = 'onBeforeDrawAnnots';
+  if ('onDrawAnnots' in config) {
+    const key = 'onDrawAnnots';
     const clientFn = config[key];
     const defaultFn = kitDefaults[key];
     const newFunction = function() {
