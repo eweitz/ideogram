@@ -117,7 +117,8 @@ export function getColors(domainType) {
     domainType.endsWith('C2 domain') ||
     domainType === 'Pleckstrin homology domain' ||
     domainType === 'Post-SET domain' ||
-    domainType.includes('Glycoside hydrolase')
+    domainType.includes('Glycoside hydrolase') ||
+    domainType === 'Pyridoxal phosphate-dependent decarboxylase'
   ) {
     return [lightBlue, lightBlueLine];
   } else if (
@@ -264,7 +265,7 @@ export function getColors(domainType) {
     domainType === 'Ubiquitin-associated domain' ||
     domainType.includes('UBA domain') ||
     domainType.includes('unknown function') ||
-    domainType === 'Ubiquitin-like domain' ||
+    domainType.toLowerCase().includes('ubiquitin-like domain') ||
     domainType.includes('necrosis')
   ) {
     return [darkGrey, darkGreyLine];
@@ -276,7 +277,9 @@ export function getColors(domainType) {
   } else if (
     domainType.includes('inhibit') ||
     domainType.includes('central') ||
-    domainType === '[2Fe-2S]-binding'
+    domainType === '[2Fe-2S]-binding' ||
+    domainType.startsWith('Interleukin') && domainType.endsWith('family') ||
+    /Interleukin-\d+$/.test(domainType)
   ) {
     return [seafoam, seafoamLines];
   } else if (
