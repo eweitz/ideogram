@@ -1,4 +1,4 @@
-import {d3, getFont, getTextSize, deepCopy} from '../lib';
+import {d3, getFont, getTextSize, deepCopy, hexToRgb} from '../lib';
 
 import {sortAnnotsByRank} from './annotations';
 
@@ -80,6 +80,28 @@ function triggerAnnotEvent(event, ideo) {
   }
 }
 
+/**
+ * If hex color is low contrast with white, then darken it.
+ *
+ * @param {String} color Initial color that fills the shape, in hex
+ */
+function ensureContrast(color) {
+  if (color[0] !== '#') return color; // preserve non-hex color, e.g. "purple"
+  const rgb = hexToRgb(color);
+
+  // If low contrast, darken
+  if (rgb.r > 150 && rgb.g > 150 && rgb.b > 150) {
+    color = `rgb(${rgb.r - 30}, ${rgb.g - 30}, ${rgb.b - 30})`;
+  }
+
+  // If lower contrast, darken more
+  if (rgb.r > 200 && rgb.g > 200 && rgb.b > 200) {
+    color = `rgb(${rgb.r - 50}, ${rgb.g - 50}, ${rgb.b - 50})`;
+  }
+
+  return color;
+}
+
 function renderLabel(annot, style, ideo) {
 
   if (!ideo.didSetLabelStyle) {
@@ -92,7 +114,9 @@ function renderLabel(annot, style, ideo) {
 
   const font = getFont(ideo);
 
-  const fill = annot.color === 'pink' ? '#CF406B' : annot.color;
+  let fill = annot.color === 'pink' ? '#CF406B' : annot.color;
+
+  fill = ensureContrast(fill);
 
   d3.select('#_ideogram').append('text')
     .attr('id', id)
