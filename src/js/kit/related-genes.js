@@ -32,11 +32,11 @@ import {
 } from './gene-structure';
 
 import {
-  sortAnnotsByRank, applyRankCutoff, setAnnotRanks,
+  sortAnnotsByRank, applyRankCutoff, setAnnotRanks
 } from '../annotations/annotations';
 import {writeLegend} from '../annotations/legend';
 import {getAnnotDomId} from '../annotations/process';
-import {getDir, deepCopy, slug} from '../lib';
+import {getDir, deepCopy, slug, pluralize} from '../lib';
 import {
   fetchGpmls, summarizeInteractions, fetchPathwayInteractions
 } from './wikipathways';
@@ -51,66 +51,76 @@ function setRelatedAnnotDomIds(ideo) {
     return chr.name;
   });
 
-  ideo.relatedAnnots = applyAnnotsIncludeList(ideo.relatedAnnots, ideo);
+  if ('relatedAnnots' in ideo) {
+    ideo.relatedAnnots = applyAnnotsIncludeList(ideo.relatedAnnots, ideo);
 
-  // Count two related annots for same gene as one.
-  // E.g. gene Foo can both interact with and be paralog of gene Bar
-  // Instead of count Foo interacting annot and Foo paralog annot as two,
-  // only count it as one as they are merged in downstream UI.
-  //
-  // Searching STAT3 without this block shows the problem this fixes.
-  const seenNames = {};
-  ideo.relatedAnnots = ideo.relatedAnnots.filter(annot => {
-    if (annot.name in seenNames) {
-      return false;
-    }
-    seenNames[annot.name] = 1;
-    return true;
-  });
+    // Count two related annots for same gene as one.
+    // E.g. gene Foo can both interact with and be paralog of gene Bar
+    // Instead of count Foo interacting annot and Foo paralog annot as two,
+    // only count it as one as they are merged in downstream UI.
+    //
+    // Searching STAT3 without this block shows the problem this fixes.
+    const seenNames = {};
+    ideo.relatedAnnots = ideo.relatedAnnots.filter(annot => {
+      if (annot.name in seenNames) {
+        return false;
+      }
+      seenNames[annot.name] = 1;
+      return true;
+    });
+  }
 
   // Arrange related annots by chromosome
   const annotsByChr = {};
-  ideo.relatedAnnots.forEach((annot) => {
-    if (annot.chr in annotsByChr) {
-      annotsByChr[annot.chr].push(annot);
-    } else {
-      annotsByChr[annot.chr] = [annot];
-    }
+  ideo.annots.forEach((annot) => {
+    // if (annot.chr in annotsByChr) {
+      // annotsByChr[annot.chr].push(annot);
+    // } else {
+
+    const relevanceSortedAnnots = annot.annots.sort((a, b) => {
+      return -ideo.annotSortFunction(a, b);
+    });
+    annotsByChr[annot.chr] = relevanceSortedAnnots;
+    // }
   });
 
-  // Sort related annots by relevance within each chromosome
-  const relevanceSortedAnnotsNamesByChr = {};
-  Object.entries(annotsByChr).map(([chr, annots]) => {
 
-    annots = setAnnotRanks(annots, ideo);
+  // // Sort related annots by relevance within each chromosome
+  // const relevanceSortedAnnotsNamesByChr = {};
+  // Object.entries(annotsByChr).map(([chr, annots]) => {
 
-    // Sort so first annots are drawn last, and thus at top layer
-    annots.sort((a, b) => -ideo.annotSortFunction(a, b));
+  //   if ('annots' in annots) annots = annots.annots;
+  //   annots = setAnnotRanks(annots, ideo);
 
-    const annotNames = annots.map((annot) => annot.name);
-    relevanceSortedAnnotsNamesByChr[chr] = annotNames;
-  });
+  //   // Sort so first annots are drawn last, and thus at top layer
+  //   annots = annots.sort((a, b) => ideo.annotSortFunction(a, b));
+
+  //   const annotNames = annots.map((annot) => annot.name);
+  //   relevanceSortedAnnotsNamesByChr[chr] = annotNames;
+  // });
 
   // annotsByChr.annots.sort((a, b) => {
   //   // Reverse-sort, so first annots are drawn last, and thus at top layer
   //   return -ideo.annotSortFunction(a, b);
   // });
 
-  ideo.relatedAnnots.forEach((annot) => {
+  const updatedAnnots = {};
+  Object.entries(annotsByChr).forEach(([chr, annots]) => {
+    updatedAnnots[chr] = {chr, annots: []};
+    annots.forEach((annot, annotIndex) => {
+      // Annots have DOM IDs keyed by chromosome index and annotation index.
+      // We reconstruct those here using structures built in two blocks above.
+      const chrIndex = sortedChrNames.indexOf(chr);
+      // const annotIndex =
+      //   relevanceSortedAnnotsNamesByChr[chr].indexOf(annot.name);
 
-    const chr = annot.chr;
-
-    // Annots have DOM IDs keyed by chromosome index and annotation index.
-    // We reconstruct those here using structures built in two blocks above.
-    const chrIndex = sortedChrNames.indexOf(chr);
-    const annotIndex =
-      relevanceSortedAnnotsNamesByChr[chr].indexOf(annot.name);
-
-    annot.domId = getAnnotDomId(chrIndex, annotIndex);
-    updated.push(annot);
+      annot.domId = getAnnotDomId(chrIndex, annotIndex);
+      updatedAnnots[chr].annots.push(annot);
+    });
+    updated.push(updatedAnnots[chr]);
   });
 
-  ideo.relatedAnnots = updated;
+  ideo.annots = updated;
 }
 
 /**
@@ -306,6 +316,24 @@ function parseNameAndEnsemblIdFromMgiGene(gene) {
 //   return descriptionObj;
 // }
 
+// /** Limit number of shown interaction links, and enable toggling full list */
+// function limitInteractionLinks(links) {
+//   if (links.length > 5) {
+//     // Seen in e.g. interacting gene AKT1 for MTOR searched gene
+//     const numMore = links.length - 5;
+//     links = links.slice(0, 5);
+//     const moreText = `${numMore} more ${pluralize('pathway', numMore)}`;
+//     const attrs = 'id="_ideoIxnLinkToggler" style="font-style: italic"';
+//     const toggler = `<span ${attrs}>${moreText}</span>`;
+//     links.push(`<span ${attrs}>${moreText}</span>`);
+//   }
+//   return links;
+// }
+
+// function toggleInteractionLinks() {
+//   const ixnLinkToggler = document.querySelector('._ideoIxnLinkToggler');
+// }
+
 /**
  * Summarizes interactions for a gene
  *
@@ -318,7 +346,7 @@ function describeInteractions(gene, ixns, searchedGene) {
 
   if (typeof ixns !== 'undefined') {
     // ixns is undefined when querying e.g. CDKN1B in human
-    const links = ixns.map(ixn => {
+    let links = ixns.map(ixn => {
       // pathwayIds.push(ixn.pathwayId);
       // pathwayNames.push(ixn.name);
       // const attrs =
@@ -340,7 +368,11 @@ function describeInteractions(gene, ixns, searchedGene) {
         `target="_blank" ` +
         `href="${url}"`;
       return `<a ${attrs}>${ixn.name}</a>`;
-    }).join('<br/>');
+    });
+
+    // links = limitInteractionLinks(links);
+
+    links = links.join('<br/>');
 
     ixnsDescription =
       `Interacts with ${searchedGene.name} in:<br/>${links}`;
@@ -812,10 +844,10 @@ function parseAnnotFromMgiGene(gene, ideo, color='red') {
   return annot;
 }
 
-function moveLegend() {
+function moveLegend(extraPad=0) {
   const ideoInnerDom = document.querySelector('#_ideogramInnerWrap');
   const decorPad = setRelatedDecorPad({}).legendPad;
-  const left = decorPad + 20;
+  const left = decorPad + 20 + extraPad;
   const legendStyle = `position: absolute; top: 15px; left: ${left}px`;
   const legend = document.querySelector('#_ideogramLegend');
   ideoInnerDom.prepend(legend);
@@ -897,13 +929,15 @@ export function sortByRelatedType(a, b) {
     [bName, bColor] = [b[0], b[3]];
   }
 
-  // Rank red (searched gene) highest
-  if (aColor === 'red') return -1;
-  if (bColor === 'red') return 1;
+  if ('initRank' in a === false) {
+    // Rank red (searched gene) highest
+    if (aColor === 'red') return -1;
+    if (bColor === 'red') return 1;
 
-  // Rank purple (interacting gene) above pink (paralogous gene)
-  if (aColor === 'purple' && bColor === 'pink') return -1;
-  if (bColor === 'purple' && aColor === 'pink') return 1;
+    // Rank purple (interacting gene) above pink (paralogous gene)
+    if (aColor === 'purple' && bColor === 'pink') return -1;
+    if (bColor === 'purple' && aColor === 'pink') return 1;
+  }
 
   return a.rank - b.rank;
 
@@ -935,8 +969,8 @@ function mergeDescriptions(annot, desc, ideo) {
   ideo.annotDescriptions.annots[annot.name] = mergedDesc;
 }
 
+/** Combines paralogs and interacting gene, if name matches */
 function mergeAnnots(unmergedAnnots) {
-
   const seenAnnots = {};
   let mergedAnnots = [];
 
@@ -956,36 +990,46 @@ function mergeAnnots(unmergedAnnots) {
   return mergedAnnots;
 }
 
-/** Filter, sort, draw annots.  Move legend. */
-function finishPlotRelatedGenes(type, ideo) {
+function onBeforeDrawAnnots() {
+  const ideo = this;
   setRelatedAnnotDomIds(ideo);
 
-  let annots = deepCopy(ideo.relatedAnnots);
+  const chrAnnots = ideo.annots;
 
-  annots = applyAnnotsIncludeList(annots, ideo);
-  annots = mergeAnnots(annots);
+  for (let i = 0; i < chrAnnots.length; i++) {
+    const annots = chrAnnots[i].annots;
 
-  // annots = applyRankCutoff(annots, 40, ideo);
-  ideo.relatedAnnots = mergeAnnots(annots);
-  // ideo.relatedAnnots = applyRankCutoff(annots, 40, ideo);
-  // annots.sort(sortByRelatedType);
-  ideo.relatedAnnots.sort(ideo.annotSortFunction);
+    for (let j = 0; j < annots.length; j++) {
+      const annot = annots[j];
 
-  // ideo.relatedAnnots = ideo.relatedAnnots.slice(0, 40);
+      if (ideo.config.colorMap && annot.differentialExpression?.length) {
+        const colorMap = ideo.config.colorMap;
+        const group = annot.differentialExpression[0].group;
+        annot.color = colorMap[group];
+        ideo.annots[i].annots[j] = annot;
+      }
+    }
+  }
+}
+
+/** Filter, sort, draw annots.  Move legend. */
+function finishPlotRelatedGenes(type, ideo) {
+
+  let annots = ideo.relatedAnnots;
 
   if (annots.length > 1 && ideo.onFindGenesCallback) {
     ideo.onFindGenesCallback();
   }
 
+  annots = mergeAnnots(annots);
+
   ideo.drawAnnots(annots);
-  // const idsToRemove = annots.slice(40).map(a => a.domId);
-  // if (idsToRemove.length > 0) {
-  //   const selector = '#' + idsToRemove.join(',#')
-  //   document.querySelectorAll(selector).forEach(el => el.remove());
-  // }
 
   if (ideo.config.showAnnotLabels) {
-    ideo.fillAnnotLabels(ideo.relatedAnnots);
+    const sortedAnnots = ideo.flattenAnnots().sort((a, b) => {
+      return ideo.annotSortFunction(a, b);
+    });
+    ideo.fillAnnotLabels(sortedAnnots);
   }
 
   moveLegend();
@@ -1331,6 +1375,19 @@ export function handleTooltipClick(ideo) {
       ideo.onClickAnnot(annot);
     });
 
+    // const ixnLinkToggler = document.querySelector('#_ideoIxnLinkToggler');
+    // if (ixnLinkToggler) {
+    //   ixnLinkToggler.addEventListener('click', (event) => {
+    //     const isOpen = !ixnLinkToggler.classList.contains('closed');
+    //     const newToggleClass = isOpen ? 'closed' : '';
+    //     if (isOpen) {
+    //       ixnLinkToggler
+    //     } else {
+
+    //     }
+    //   });
+    // }
+
     // Ensures handler isn't added redundantly.  This is used because
     // addEventListener options like {once: true} don't suffice
     ideo.addedTooltipClickHandler = true;
@@ -1428,21 +1485,25 @@ function decorateAnnot(annot) {
     fullNameAndRank = `<span title="${rank}">${fullName}</span>`;
   }
 
-  let synonyms = '';
+  let synonym = '';
   if (descObj?.isSynonym) {
     const queriedSynonym = descObj.synonym;
-    const synList = ideo.synonymCache.byGene[annot.name];
-    const litSyns = synList.map(s => {
-      // Emphasize ("highlight") any synonyms that match the user's query
-      if (s.toLowerCase() === queriedSynonym.toLowerCase()) {
-        const style = 'style="font-weight: bold; text-decoration: underline"';
-        return `<span ${style}>${s}</span>`;
-      }
-      return s;
-    });
-    const synText = 'Synonyms: ' + litSyns.join(', ') + '<br/>';
-    const synStyle = 'style="color: #666;"'; // Minimum WCAG AA contrast
-    synonyms = `<span ${synStyle}>${synText}</span>`;
+    const synStyle = 'style="font-style: italic"';
+    synonym = `<div ${synStyle}>Synonym: ${queriedSynonym}</div>`;
+    // const synList = ideo.synonymCache.byGene[annot.name];
+    // const litSyns = synList.map(s => {
+    //   // Emphasize ("highlight") any synonyms that match the user's query
+    //   if (s.toLowerCase() === queriedSynonym.toLowerCase()) {
+    //     const style =
+    //       'style="font-weight: bold; text-decoration: underline"';
+    //     return `<span ${style}>${s}</span>`;
+    //   }
+    //   return s;
+    // });
+    // const synText = 'Synonyms: ' + litSyns.join(', ') + '<br/>';
+    // const synStyle =
+    //   'style="max-width: 300px; color: #666;"'; // Minimum WCAG AA contrast
+    // synonyms = `<div ${synStyle}>${synText}</div>`;
   }
 
   const isParalogNeighborhood = annot.name.includes('paralogNeighborhood');
@@ -1454,7 +1515,7 @@ function decorateAnnot(annot) {
   let originalDisplay =
     `<span id="ideo-related-gene" ${style}>${annot.name}</span><br/>` +
     `${fullNameAndRank}<br/>` +
-    synonyms +
+    synonym +
     description +
     geneStructureHtml +
     `<br/>`;
@@ -1473,13 +1534,15 @@ function decorateAnnot(annot) {
 
 const shape = 'triangle';
 
-function getLegendName(nameText) {
+function getLegendName(nameText, legendContent=null) {
   const legendHeaderStyle =
     `font-size: 14px; font-weight: bold; font-color: #333;`;
 
+  let content = `<div style="${legendHeaderStyle}">${nameText}</div>`;
+  if (legendContent) content = legendContent;
   return `
     <div style="position: relative; left: 30px;">
-      <div style="${legendHeaderStyle}">${nameText}</div>
+      ${content}
       <i>Click gene to search</i>
     </div>
   `;
@@ -1528,12 +1591,14 @@ const globalKitDefaults = {
   legend: relatedLegend,
   chrBorderColor: '#333',
   chrLabelColor: '#333',
+  onBeforeDrawAnnots,
   onWillShowAnnotTooltip: decorateAnnot,
   onDidShowAnnotTooltip,
   showTools: true,
   showAnnotLabels: true,
   chrFillColor: {centromere: '#DAAAAA'}
 };
+
 
 function plotGeneHints() {
   const ideo = this;
@@ -1553,15 +1618,22 @@ function plotGeneHints() {
     description = description.join('<br/><br/>');
     ideo.annotDescriptions.annots[annot.name] = {
       description,
-      name: annot.fullName
+      name: decodeURIComponent(annot.fullName)
     };
   });
 
   adjustPlaceAndVisibility(ideo);
-  moveLegend();
-  ideo.fillAnnotLabels([]);
+  moveLegend(-60);
+
   const container = ideo.config.container;
   document.querySelector(container).style.visibility = '';
+
+  if (ideo.config.showAnnotLabels) {
+    const sortedAnnots = ideo.flattenAnnots().sort((a, b) => {
+      return ideo.annotSortFunction(a, b);
+    });
+    ideo.fillAnnotLabels(sortedAnnots);
+  }
 }
 
 /**
@@ -1601,7 +1673,28 @@ function _initRelatedGenes(config, annotsInList) {
   delete config.onPlotFoundGenes;
 
   if (config.legendName) {
-    citedLegend[0].name = getLegendName(config.legendName);
+    if (config.legendContent) {
+      citedLegend[0].name = getLegendName(
+        config.legendName, config.legendContent
+      );
+    } else if (config.geneLeadsDE) {
+      // citedLegend[0].name = getLegendName(config.legendName);
+      const content =
+        '<span style="font-size: 14px; font-weight: bold; left: 0">Gene leads</span> from<br/>' +
+        // `<div style="margin-top: 10px; padding: 3px 6px; border: 1px solid #4D72AA; border-radius: 3px; color: #3D629A;">${fileIcon} <span style="margin-left: 20px; position: relative; top: -1px;">Publication</span></div>` +
+        // `<div style="margin-top: 5px; margin-bottom: 0px; padding: 3px 6px; border: 1px solid #4D72AA; border-radius: 3px; color: #3D629A;">${deltaIcon} <span style="margin-left: 20px;">Differential expression</span></div><br/>`;
+        `<div style="margin-top: 10px; padding: 3px 6px; font-size: 14px; font-weight: bold; color: #3D629A;">${fileIcon} <span style="margin-left: 20px; position: relative; top: -1px;">Publication</span></div>` +
+        // `<div style="margin-top: 5px; margin-bottom: -5px; font-size: 14px; font-weight: bold; padding: 3px 6px; color: #3D629A;">${deltaIcon} <span style="margin-left: 20px;">Differential expression</span></div><br/>`;
+        `<div style="margin-top: 3px; margin-bottom: -10px; font-size: 14px; padding: 3px 6px;">${deltaIcon} <span style="margin-left: 20px;">Differential expression</span></div><br/>`;
+        // `<div>Publication</div>` +
+        // `<div>Differential expression</div>`;
+
+      citedLegend[0].name = getLegendName(
+        config.legendName, content
+      );
+    } else {
+      citedLegend[0].name = getLegendName(config.legendName);
+    }
   }
 
   config.legend = citedLegend;
@@ -1656,6 +1749,18 @@ function initSearchIdeogram(kitDefaults, config, annotsInList) {
       annot = defaultFunction.bind(this)(annot);
       annot = clientFn.bind(this)(annot);
       return annot;
+    };
+    kitDefaults[key] = newFunction;
+    delete config[key];
+  }
+
+  if ('onBeforeDrawAnnots' in config) {
+    const key = 'onBeforeDrawAnnots';
+    const clientFn = config[key];
+    const defaultFn = kitDefaults[key];
+    const newFunction = function() {
+      if (defaultFn) defaultFn.bind(this)();
+      clientFn.bind(this)();
     };
     kitDefaults[key] = newFunction;
     delete config[key];

@@ -29,8 +29,19 @@ const examplesByOrganism = {
   'oryza-sativa': ['psbA', 'ndhE', 'rps19'],
   'anopheles-gambiae': ['ND1', 'CYTB', 'ATP6'],
   'plasmodium-falciparum': ['coxIII', 'PFBI', 'PFFE1']
-}
+};
 
+
+const fileIcon =
+`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-text" viewBox="0 0 16 16">
+  <path d="M5 4a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1H5zm-.5 2.5A.5.5 0 0 1 5 6h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5zM5 8a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1H5zm0 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1H5z"/>
+  <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z"/>
+</svg>`;
+
+const deltaIcon =
+`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-triangle" viewBox="0 0 16 16">
+<path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.146.146 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.163.163 0 0 1-.054.06.116.116 0 0 1-.066.017H1.146a.115.115 0 0 1-.066-.017.163.163 0 0 1-.054-.06.176.176 0 0 1 .002-.183L7.884 2.073a.147.147 0 0 1 .054-.057zm1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566z"/>
+</svg>`;
 
 function parseUrlParams() {
   let rawParams = document.location.search;
@@ -56,9 +67,21 @@ function updateUrl() {
   history.pushState(null, null, '?' + params);
 }
 
+const colorMap = {
+  'LC2': '#bb99ff', // '#999999',
+  'LC1': '#9986a5', // '#f781bf',
+  'neutrophils': '#d8a499', // '#66c2a5',
+  'T cells': '#81a88d', // '#fc8d62',
+  'eosinophils': '#d9d0d3', // '#984ea3',
+  'dendritic cells': '#c6cdf7', // '#4daf4a',
+  'GPMNB macrophages': '#ee46a6', // '#a65628',
+  'CSN1S1 macrophages': '#e6a0c4',
+  'fibroblasts': '#5eb668', // '#ff7f00'
+  'B cells': '#7294d4'
+}
+
 /** Parse differential expression items, return as table for tooltip */
 function parseDE(items) {
-
   if (items.length < 1) return '';
 
   const rows = '<tbody><tr>' + items.map(item => {
@@ -73,8 +96,10 @@ function parseDE(items) {
   const head =
     '<thead><th>Group</th><th>log2(FC)</th><th>Adj. p-value</th><th>Rank in group</th></thead>';
 
-  const summary = 'summary="Differential expression"'
-  const result = '<table>' + head + rows + '</table>'
+  // const summary = 'summary="Differential expression"';
+  const summary = "<div>Differential expression</div>"
+  const style = 'style="border-collapse: collapse; margin: 0 auto;"';
+  const result = `${summary}<table ${style}>${head}${rows}</table>`;
 
   return result;
 }

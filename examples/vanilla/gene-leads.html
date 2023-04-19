@@ -5,6 +5,8 @@
   <style>
     ._ideogramTooltip th, ._ideogramTooltip td {
       text-align: left;
+      padding: 2px 10px;
+      border: 1px solid #DDD;
     }
   </style>
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
@@ -94,7 +96,7 @@
     function onDrawAnnots() {
       const ideo = this;
 
-      if (ideo.config.relatedGenesMode !== 'leads') return;
+      if (ideo.config.relatedGenesMode !== 'leads' || urlParams.q) return;
 
       // This whole function is only relevant for an experimental new feature.
       const deInnerFields =
@@ -102,13 +104,29 @@
 
       const chrAnnots = ideo.annots;
 
+
       for (let i = 0; i < chrAnnots.length; i++) {
         const annots = chrAnnots[i].annots;
 
         for (let j = 0; j < annots.length; j++) {
           const annot = annots[j];
+
+          if (ideo.config.colorMap && annot.differentialExpression?.length) {
+            const colorMap = ideo.config.colorMap;
+            const group = annot.differentialExpression[0].group;
+            annot.color = colorMap[group];
+            ideo.annots[i].annots[j] = annot
+          }
+
+          const differentialExpression = parseDE(annot.differentialExpression);
+          const numMentions = annot.publicationMentions;
+          let publication = '';
+          if (numMentions > 0) {
+            publication = `${numMentions} mentions in publication<br/><br/>`;
+          }
           ideo.annotDescriptions.annots[annot.name].description =
-            parseDE(annot.differentialExpression, deInnerFields);
+            publication +
+            differentialExpression
         }
       }
     }
@@ -200,6 +218,7 @@
       urlParams['q'] = annot.name;
       updateUrl();
 
+      ideogram.config.relatedGenesMode = 'related';
       const selector = '#ideogram-container #_ideogramInnerWrap'
       ideogram.plotRelatedGenes(annot.name);
     }
@@ -247,6 +266,7 @@
         ideogram = Ideogram.initRelatedGenes(config);
       } else {
         config.legendName = 'Gene leads'
+        // config.legendContent = ''
 
         // An experimental feature
         if ('default-hints' in urlParams) {
@@ -259,9 +279,9 @@
             if ('gene-leads-de' in urlParams) {
               config.onDrawAnnots = onDrawAnnots
               config.geneLeadsDE = true
-            }
+              config.colorMap = colorMap;
             ideogram = Ideogram.initGeneLeads(config);
-
+            }
           } else {
             ideogram = Ideogram.initRelatedGenes(config);
           }
@@ -270,6 +290,8 @@
           if ('gene-leads-de' in urlParams) {
             config.onDrawAnnots = onDrawAnnots
             config.geneLeadsDE = true
+
+            config.colorMap = colorMap
           }
           ideogram = Ideogram.initGeneLeads(config);
         }
