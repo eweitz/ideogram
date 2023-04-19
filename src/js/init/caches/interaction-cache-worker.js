@@ -1,7 +1,7 @@
 import {fetchAndParse, inspectWorker} from './cache-lib';
 
 /** Parse an interaction cache JSON file, return array of useful transforms */
-export function parseCache(rawJson, perfTimes, orgName) {
+export function parseInteractionCache(rawJson, perfTimes, orgName) {
   let t0 = performance.now();
   const interactionsByName = {};
   const tmp = orgName.replace('-', ' ');

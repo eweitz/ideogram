@@ -14,13 +14,12 @@ import {supportsCache, getCacheUrl, fetchAndParse} from './cache-lib';
 //   new URL('./gene-structure-cache-worker.js', import.meta.url), {type: 'module'}
 // );
 
-import {parseCache as parseGeneCache} from './gene-cache-worker';
-import {parseCache as parseParalogCache} from './paralog-cache-worker';
-import {parseCache as parseInteractionCache} from './interaction-cache-worker';
-import {
-  parseCache as parseGeneStructureCache
-} from './gene-structure-cache-worker';
-import {parseCache as parseProteinCache} from './protein-cache-worker';
+import {parseGeneCache} from './gene-cache-worker';
+import {parseParalogCache} from './paralog-cache-worker';
+import {parseInteractionCache} from './interaction-cache-worker';
+import {parseGeneStructureCache} from './gene-structure-cache-worker';
+import {parseProteinCache} from './protein-cache-worker';
+import {parseSynonymCache} from './synonym-cache-worker';
 
 /**
  * Populates in-memory content caches from on-disk service worker (SW) caches.
@@ -32,6 +31,8 @@ import {parseCache as parseProteinCache} from './protein-cache-worker';
  *
  * And, optionally:
  * - Gene structure cache: gene symbol -> canonical transcript, exons, UTRs
+ * - Protein cache: gene symbol -> protein domains & families, per transcript
+ * - Synonym cache: gene symbol -> list of synonyms, a.k.a. aliases
  *
  * Used for related genes kit now, likely worth generalizing in the future.
  *
@@ -56,7 +57,8 @@ export async function initCaches(ideo) {
     const cachePromise = Promise.all([
       cacheFactory('gene', organism, ideo, cacheDir),
       cacheFactory('paralog', organism, ideo, cacheDir),
-      cacheFactory('interaction', organism, ideo, cacheDir)
+      cacheFactory('interaction', organism, ideo, cacheDir),
+      cacheFactory('synonym', organism, ideo, cacheDir)
     ]);
 
     if (config.showGeneStructureInTooltip) {
@@ -70,9 +72,11 @@ export async function initCaches(ideo) {
     cacheFactory('gene', organism, ideo, cacheDir);
     cacheFactory('paralog', organism, ideo, cacheDir);
     cacheFactory('interaction', organism, ideo, cacheDir);
+    cacheFactory('synonym', organism, ideo, cacheDir);
     if (config.showGeneStructureInTooltip) {
       cacheFactory('geneStructure', organism, ideo, cacheDir);
       cacheFactory('protein', organism, ideo, cacheDir);
+      cacheFactory('synonym', organism, ideo, cacheDir);
     }
   }
 }
@@ -107,6 +111,12 @@ const allCacheProps = {
     fn: setProteinCache,
     // worker: proteinCacheWorker // Uncomment when workers work
     parseFn: parseProteinCache // Remove when workers work
+  },
+  synonym: {
+    metadata: 'Synonym', dir: 'synonyms',
+    fn: setSynonymCache,
+    // worker: synonymCacheWorker // Uncomment when workers work
+    parseFn: parseSynonymCache // Remove when workers work
   }
 };
 
@@ -147,6 +157,10 @@ function setGeneStructureCache(parsedCache, ideo) {
 
 function setProteinCache(parsedCache, ideo) {
   ideo.proteinCache = parsedCache;
+}
+
+function setSynonymCache(parsedCache, ideo) {
+  ideo.synonymCache = parsedCache;
 }
 
 async function cacheFactory(cacheName, orgName, ideo, cacheDir=null) {

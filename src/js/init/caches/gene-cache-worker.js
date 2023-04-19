@@ -31,7 +31,7 @@ function parseAnnots(preAnnots) {
 }
 
 /** Parse a gene cache TSV file, return array of useful transforms */
-export function parseCache(rawTsv, perfTimes) {
+export function parseGeneCache(rawTsv, perfTimes) {
   const names = [];
   const nameCaseMap = {};
   const namesById = {};

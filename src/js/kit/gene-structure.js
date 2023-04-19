@@ -69,7 +69,12 @@ const css =
   ._ideoHoveredSubpart {
     stroke: #D0D0DD !important; stroke-width: 3px;
   }
+  #_ideoGeneStructureTip {
+    font-style: italic;
+  }
   </style>`;
+
+const hoverTip = '<span id="_ideoGeneStructureTip">Hover for details</span>';
 
 /** Get DOM element for gene structure footer */
 function getFooter() {
@@ -236,8 +241,15 @@ function swapUTRsForward(subparts, isPositiveStrand) {
 
     if (
       isExon && hasUtr && (
-        !isPositiveStrand && prevIsUtr3 ||
-        isPositiveStrand && prevIsUtr5
+        (
+          !isPositiveStrand && prevIsUtr3 ||
+          isPositiveStrand && prevIsUtr5
+        ) && (
+          // Account for splice toggle in multi-part UTRs, as in e.g.
+          // canonicals for FAM111B and SCARB1, and alternative MAOA-204
+          subpart[1] !== prevSubpart[1] + prevSubpart[2] - 1 &&
+          prevSubpart[2] !== 2 // Handle canonicals for RAD51 and RAD51B
+        )
       )
     ) {
       swappedSubparts[i] = prevSubpart;
@@ -503,7 +515,7 @@ function addHoverListeners(ideo) {
       // transcript they just selected, rather than having the details
       // frustratingly disappear immediately upon transcript selection.
       const footer = getFooter();
-      footer.innerHTML = '';
+      footer.innerHTML = hoverTip;
     }
     ideo.addedMenuListeners = false;
     document.removeEventListener('keydown', navigateSubparts);
@@ -633,7 +645,6 @@ function getSpliceStateText(spliceExons, isCanonical=true) {
   return {title, name};
 }
 
-
 /** Draw introns in initial splice toggle from mRNA to pre-mRNA */
 function drawIntrons(prelimSubparts, matureSubparts, ideo) {
   // Hypothetical example data, in shorthand
@@ -656,7 +667,6 @@ function drawIntrons(prelimSubparts, matureSubparts, ideo) {
   });
 
   document.querySelectorAll('.intron').forEach(subpartDOM => {
-
     addSubpartHoverListener(subpartDOM, ideo);
   });
 }
@@ -1052,7 +1062,9 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
       `<span class="_ideoGeneStructureSvgContainer">` +
         geneStructureSvg +
       `</span>` +
-      `<div class="_ideoGeneStructureFooter"></div>` +
+      `<div class="_ideoGeneStructureFooter">` +
+        hoverTip +
+      `</div>` +
       `</div>`;
 
   }

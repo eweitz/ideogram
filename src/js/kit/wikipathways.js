@@ -252,6 +252,9 @@ export function detailAllInteractions(gene, searchedGene, pathwayIds, gpmls) {
 
 /** Get IDs and data element objects for searched or interacting gene */
 function getMatches(gpml, label) {
+  // Bail if GPML not yet fetched.  Sometimes occurs on hover immediately afters
+  // search.  This mitigation ensures at least a basic tooltip is shown.
+  if (typeof gpml === 'undefined' || gpml === '') return [[], []];
 
   const nodes = Array.from(gpml.querySelectorAll(
     `DataNode[TextLabel="${label}"]`
@@ -295,9 +298,14 @@ function getMatches(gpml, label) {
 }
 
 async function fetchGpml(pathwayId) {
+  if (!navigator.onLine) return '';
   const pathwayFile = `${pathwayId}.xml.gz`;
   const gpmlUrl = `https://cdn.jsdelivr.net/npm/ixn2/${pathwayFile}`;
   const response = await fetch(gpmlUrl);
+  if (!response.ok) {
+    console.log(`Gracefully degrading as request failed for: ${gpmlUrl}`);
+    return '';
+  }
   const blob = await response.blob();
   const uint8Array = new Uint8Array(await blob.arrayBuffer());
   const rawGpml = strFromU8(decompressSync(uint8Array));
@@ -322,7 +330,6 @@ async function fetchGpml(pathwayId) {
  * data for biochemical pathways.
  */
 export function fetchGpmls(ideo) {
-
   const pathwayIdsByInteractingGene = {};
   Object.entries(ideo.annotDescriptions.annots)
     .forEach(([annotName, descObj]) => {
@@ -380,13 +387,17 @@ function parseInteractionGraphic(graphic, graphIds) {
         if (searchedGeneIndex === null) {
           searchedGeneIndex = isStart ? 0 : 1;
         }
-        ixnType = interactionArrowMap[arrowHead][isStart ? 0 : 1];
+        try {
+          ixnType = interactionArrowMap[arrowHead][isStart ? 0 : 1];
+        } catch (e) {
+          // TODO: Handle e.g. HGF, where arrowHead is very rare ReceptorSquare
+        }
       }
     }
   });
 
   if (numMatchingPoints >= 2 && isConnectedToSourceGene) {
-    if (searchedGeneIndex === null) {
+    if (searchedGeneIndex === null || ixnType === null) {
       ixnType = 'interacts with';
     }
     ixnType = ixnType[0].toUpperCase() + ixnType.slice(1);
@@ -445,6 +456,9 @@ export async function fetchPathwayInteractions(searchedGene, pathwayId, ideo) {
  * interactions between the two genes.
  */
 function detailInteractions(interactingGene, searchedGene, gpml) {
+  if (typeof gpml === 'undefined' || gpml === '') {
+    return []; // Bail if GPML not yet fetched
+  }
 
   // Gets IDs and elements for searched gene and interacting gene, and,
   // if they're in any groups, the IDs of those groups

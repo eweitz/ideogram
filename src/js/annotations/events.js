@@ -2,10 +2,14 @@ import {d3, formatSiPrefix} from '../lib';
 // import {getShapes} from './draw';
 
 /**
- * Optional callback, invoked when annotations are drawn
+ * Optional callback, invoked when annotations are loaded
  */
 function onLoadAnnots() {
   call(this.onLoadAnnotsCallback);
+}
+
+function onBeforeDrawAnnots() {
+  call(this.onBeforeDrawAnnotsCallback);
 }
 
 /**
@@ -168,7 +172,7 @@ function showAnnotTooltip(annot, context) {
 }
 
 export {
-  onLoadAnnots, onDrawAnnots, startHideAnnotTooltipTimeout,
+  onLoadAnnots, onBeforeDrawAnnots, onDrawAnnots, startHideAnnotTooltipTimeout,
   onWillShowAnnotTooltip, showAnnotTooltip, onClickAnnot,
   onDidShowAnnotTooltip
 };

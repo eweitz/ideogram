@@ -285,18 +285,26 @@ export function applyRankCutoff(annots, cutoff, ideo) {
 }
 
 export function setAnnotRanks(annots, ideo) {
-  if ('geneCache' in ideo === false) return annots;
+  if (annots.length === 0) return annots;
+  if ('initRank' in annots[0] === false) {
+    if ('geneCache' in ideo === false) return annots;
 
-  const ranks = ideo.geneCache.interestingNames;
+    const ranks = ideo.geneCache.interestingNames;
 
-  return annots.map(annot => {
-    if (ranks.includes(annot.name)) {
-      annot.rank = ranks.indexOf(annot.name) + 1;
-    } else {
-      annot.rank = 1E10;
-    }
-    return annot;
-  });
+    return annots.map(annot => {
+      if (ranks.includes(annot.name)) {
+        annot.rank = ranks.indexOf(annot.name) + 1;
+      } else {
+        annot.rank = 1E10;
+      }
+      return annot;
+    });
+  } else {
+    return annots.map(annot => {
+      annot.rank = annot.initRank;
+      return annot;
+    });
+  }
 }
 
 export function sortAnnotsByRank(annots, ideo) {

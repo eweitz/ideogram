@@ -29,7 +29,7 @@ function parseMetainformationHeader(line) {
 }
 
 /** Parse a protein cache TSV file, return array of useful transforms */
-export function parseCache(rawTsv, perfTimes) {
+export function parseProteinCache(rawTsv, perfTimes) {
   const featuresByGene = {};
 
   let t0 = performance.now();
