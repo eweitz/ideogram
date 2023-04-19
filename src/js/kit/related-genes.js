@@ -1618,7 +1618,7 @@ function plotGeneHints() {
     description = description.join('<br/><br/>');
     ideo.annotDescriptions.annots[annot.name] = {
       description,
-      name: annot.fullName
+      name: decodeURIComponent(annot.fullName)
     };
   });
 

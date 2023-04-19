@@ -116,7 +116,6 @@
             const group = annot.differentialExpression[0].group;
             annot.color = colorMap[group];
             ideo.annots[i].annots[j] = annot
-            console.log('annot', annot)
           }
 
           const differentialExpression = parseDE(annot.differentialExpression);
@@ -281,7 +280,6 @@
               config.onDrawAnnots = onDrawAnnots
               config.geneLeadsDE = true
               config.colorMap = colorMap;
-            console.log('pre')
             ideogram = Ideogram.initGeneLeads(config);
             }
           } else {
