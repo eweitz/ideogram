@@ -252,6 +252,13 @@ var organismMetadata = {
     assemblies: {
       default: 'GCF_000710875.1'
     }
+  },
+  3694: {
+    commonName: 'black cottonwood',
+    scientificName: 'Populus trichocarpa',
+    assemblies: {
+      default: 'GCF_000002775.5'
+    }
   }
 };
 
