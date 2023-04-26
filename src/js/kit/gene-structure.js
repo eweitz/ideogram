@@ -1,6 +1,7 @@
 import {d3} from '../lib';
 import {getIcon} from '../annotations/legend';
 import {getProteinSvg} from './protein';
+import {miniTooltipStyle, getMiniTooltip} from '../mini-tooltip';
 
 const y = 15;
 
@@ -72,6 +73,7 @@ const css =
   #_ideoGeneStructureTip {
     font-style: italic;
   }
+  ${miniTooltipStyle}
   </style>`;
 
 const hoverTip = '<span id="_ideoGeneStructureTip">Hover for details</span>';
@@ -569,7 +571,8 @@ function getSpliceToggle(ideo) {
 
   // Scissors icon
   const label = `<label ${attrs}><input ${inputAttrs} />&#x2702;</label>`;
-  return label;
+  const wrappedLabel = getMiniTooltip(label, text);
+  return wrappedLabel;
 }
 
 /** Splice exons in transcript, removing introns; add positions */
