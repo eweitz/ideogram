@@ -59,6 +59,7 @@ const orangeLines = '#DD8000';
 export function getColors(domainType) {
   if (
     domainType.includes('conserved site') || // https://www.google.com/search?q=pymol+conserved+site+color&tbm=isch
+    domainType.includes('conserved domain') ||
     domainType === 'WGR domain'
   ) {
     return [magenta, magentaLines];
@@ -187,6 +188,7 @@ export function getColors(domainType) {
     domainType === 'Pre-SET domain' ||
     domainType.includes('transactivation domain') ||
     domainType === 'Thioesterase' ||
+    domainType.includes('esterase') ||
     domainType.endsWith('Claudin superfamily')
   ) {
     return [seafoam, seafoamLines];
@@ -274,7 +276,10 @@ export function getColors(domainType) {
     domainType === 'PAS fold-3' ||
     domainType === 'Polyketide synthase, ketoreductase domain' ||
     domainType.startsWith('Heat shock protein') && domainType.endsWith('family') ||
-    domainType === 'MCM domain'
+    domainType === 'MCM domain' ||
+    domainType.endsWith('reductase-like') ||
+    domainType === 'Lipase' ||
+    domainType === 'Phospholipase A2 domain'
   ) {
     return [lightBrown, lightBrownLine];
   } else if (
@@ -288,7 +293,8 @@ export function getColors(domainType) {
     domainType == 'Hypoxia-inducible factor, alpha subunit' ||
     domainType === 'PKD domain' ||
     domainType.includes('regulatory domain') ||
-    domainType.endsWith('E2 domain')
+    domainType.endsWith('E2 domain') ||
+    domainType === 'PLAT/LH2 domain'
   ) {
     return [brown, brownLine];
   } else if (
@@ -330,6 +336,10 @@ export function getColors(domainType) {
     domainType.includes('FAD-binding')
   ) {
     return [green, greenLines];
+  } else if (
+    domainType.endsWith('receptor')
+  ) {
+    return [lightPurple, lightPurpleLine];
   } else if (
     // C-terminal regions are typically colored red in e.g. PyMol rainbow
     domainType.includes('C-termin') ||
