@@ -420,7 +420,6 @@ export function hexToRgb(hex) {
   } : null;
 }
 
-
 export {
   assemblyIsAccession, hasNonGenBankAssembly, hasGenBankAssembly, getDataDir,
   getDir, round, formatSiPrefix, onDidRotate, getSvg, d3, getEarlyTaxid,

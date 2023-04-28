@@ -1,7 +1,10 @@
+import tippy from 'tippy.js';
+import { tippyCss, tippyLightCss } from './tippy-styles';
+// import 'tippy.js/themes/light.css';
+
 import {d3} from '../lib';
 import {getIcon} from '../annotations/legend';
 import {getProteinSvg} from './protein';
-import {miniTooltipStyle, getMiniTooltip} from '../mini-tooltip';
 
 const y = 15;
 
@@ -73,7 +76,8 @@ const css =
   #_ideoGeneStructureTip {
     font-style: italic;
   }
-  ${miniTooltipStyle}
+  ${tippyCss}
+  ${tippyLightCss}
   </style>`;
 
 const hoverTip = '<span id="_ideoGeneStructureTip">Hover for details</span>';
@@ -539,6 +543,12 @@ function writeStrandInFooter(ideo) {
     tooltipFooter.innerText.replace(')', `, ${strand})`);
 }
 
+function initTippy(ideo) {
+  ideo.tippy = tippy('[data-tippy-content]', {
+    theme: 'light-border'
+  });
+}
+
 export function addGeneStructureListeners(ideo) {
   const structure = getSelectedStructure(ideo);
   if (structure === null) return; // Bail for e.g. miRNA
@@ -546,6 +556,7 @@ export function addGeneStructureListeners(ideo) {
   addHoverListeners(ideo);
   addMenuListeners(ideo);
   writeStrandInFooter(ideo);
+  initTippy(ideo);
 }
 
 function getSpliceToggleHoverTitle(spliceExons) {
@@ -558,7 +569,7 @@ function getSpliceToggle(ideo) {
   const cls = `class="_ideoSpliceToggle ${modifier}mRNA"`;
   const checked = spliceExons ? 'checked' : '';
   const text = getSpliceToggleHoverTitle(spliceExons);
-  const title = `title="${text}"`;
+  const title = `data-tippy-content="${text}"`;
   const inputAttrs =
     `type="checkbox" ${checked} ` +
     `style="display: none;"`;
@@ -571,8 +582,7 @@ function getSpliceToggle(ideo) {
 
   // Scissors icon
   const label = `<label ${attrs}><input ${inputAttrs} />&#x2702;</label>`;
-  const wrappedLabel = getMiniTooltip(label, text);
-  return wrappedLabel;
+  return label;
 }
 
 /** Splice exons in transcript, removing introns; add positions */
@@ -712,6 +722,8 @@ function toggleSplice(ideo) {
 
   const subparts = spliceExons ? matureSubparts : prelimSubparts;
 
+  initTippy(ideo);
+
   d3.select('._ideoGeneStructure').selectAll('.subpart')
     .data(subparts)
     .transition()
@@ -837,7 +849,9 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
   const spliceToggle = document.querySelector('._ideoSpliceToggle');
   if (spliceToggle) {
     const title = getSpliceToggleHoverTitle(spliceExons);
-    spliceToggle.title = title;
+    // spliceToggle.title = title;
+    // spliceToggle.setAttribute('data-tippy-content', title);
+    // tippy('._ideoSpliceToggle', {content: title});
   }
 
   const featureLengthPx = 250 - 2; // Snip to avoid overextending
@@ -1056,7 +1070,7 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
     const rnaClass = spliceExons ? '' : ' pre-mRNA';
     const spanClass = `class="_ideoGeneStructureContainerName${rnaClass}"`;
     const {name, title} = getSpliceStateText(spliceExons);
-    const spanAttrs = `${spanClass} title="${title}"`;
+    const spanAttrs = `${spanClass} data-tippy-content="${title}"`;
     geneStructureHtml =
       '<br/><br/>' +
       css +
