@@ -749,6 +749,8 @@ function toggleSplice(ideo) {
       const transcriptLengthBp = getTranscriptLengthBp(subparts, spliceExons);
       const prettyLength = transcriptLengthBp.toLocaleString();
       tlbpDOM.innerText = `${prettyLength} bp`;
+
+      ideo.tippy[0].show();
     });
 }
 
@@ -849,9 +851,8 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
   const spliceToggle = document.querySelector('._ideoSpliceToggle');
   if (spliceToggle) {
     const title = getSpliceToggleHoverTitle(spliceExons);
-    // spliceToggle.title = title;
-    // spliceToggle.setAttribute('data-tippy-content', title);
-    // tippy('._ideoSpliceToggle', {content: title});
+    spliceToggle.setAttribute('data-tippy-content', title);
+    initTippy(ideo);
   }
 
   const featureLengthPx = 250 - 2; // Snip to avoid overextending
@@ -1070,7 +1071,7 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
     const rnaClass = spliceExons ? '' : ' pre-mRNA';
     const spanClass = `class="_ideoGeneStructureContainerName${rnaClass}"`;
     const {name, title} = getSpliceStateText(spliceExons);
-    const spanAttrs = `${spanClass} data-tippy-content="${title}"`;
+    const spanAttrs = `${spanClass} title="${title}"`;
     geneStructureHtml =
       '<br/><br/>' +
       css +
