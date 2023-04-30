@@ -60,7 +60,8 @@ export function getColors(domainType) {
   if (
     domainType.includes('conserved site') || // https://www.google.com/search?q=pymol+conserved+site+color&tbm=isch
     domainType.includes('conserved domain') ||
-    domainType === 'WGR domain'
+    domainType === 'WGR domain' ||
+    domainType === 'R3H domain'
   ) {
     return [magenta, magentaLines];
   } else if (
@@ -129,7 +130,8 @@ export function getColors(domainType) {
     domainType === 'Pyridoxal phosphate-dependent decarboxylase' ||
     domainType.includes('OB1') ||
     domainType.includes('OB3') ||
-    domainType.includes('OB domain')
+    domainType.includes('OB domain') ||
+    domainType === 'Fork head domain'
   ) {
     return [lightBlue, lightBlueLine];
   } else if (
@@ -189,7 +191,8 @@ export function getColors(domainType) {
     domainType.includes('transactivation domain') ||
     domainType === 'Thioesterase' ||
     domainType.includes('esterase') ||
-    domainType.endsWith('Claudin superfamily')
+    domainType.endsWith('Claudin superfamily') ||
+    domainType === 'Retinoblastoma-associated protein, A-box'
   ) {
     return [seafoam, seafoamLines];
   }
@@ -207,6 +210,7 @@ export function getColors(domainType) {
     return [pink, pinkLine];
   } else if (
     domainType === 'Immunoglobulin' ||
+    domainType === 'CD20-like family' ||
     domainType === 'Calponin homology domain' ||
     domainType.includes('ATPase') ||
     domainType.includes('globular domain') ||
@@ -216,7 +220,8 @@ export function getColors(domainType) {
     domainType === 'Fibronectin type III' ||
     domainType === 'Myosin head, motor domain' ||
     domainType.startsWith('Methyltransferase') ||
-    domainType.startsWith('Thyroglobulin')
+    domainType.startsWith('Thyroglobulin') ||
+    domainType === 'Retinoblastoma-associated protein, B-box'
   ) {
     return [veryLightPurple, veryLightPurpleLine];
   } else if (
@@ -229,7 +234,8 @@ export function getColors(domainType) {
     domainType.endsWith('receptor domain 4') ||
     domainType.endsWith('extracellular') ||
     domainType === 'WW domain' ||
-    domainType.includes('MHC class II') && !domainType.includes('C-terminal')
+    domainType.includes('MHC class II') && !domainType.includes('C-terminal') ||
+    domainType === 'TNFR/NGFR cysteine-rich region'
   ) {
     return [lightPurple, lightPurpleLine];
   } else if (
@@ -260,7 +266,8 @@ export function getColors(domainType) {
     domainType === 'Ferritin-like diiron domain' ||
     domainType === 'PAS domain' ||
     domainType === 'PAS fold' ||
-    domainType === 'Polyketide synthase, dehydratase domain'
+    domainType === 'Polyketide synthase, dehydratase domain' ||
+    domainType === 'G-patch domain'
   ) {
     return [orange, orangeLines];
   } else if (
@@ -322,7 +329,8 @@ export function getColors(domainType) {
     domainType.startsWith('Interleukin') && domainType.endsWith('family') ||
     /Interleukin-\d+$/.test(domainType) ||
     domainType.endsWith('tail') ||
-    domainType.endsWith('helical domain')
+    domainType.endsWith('helical domain') ||
+    domainType.endsWith('coiled-coil domain')
   ) {
     return [seafoam, seafoamLines];
   } else if (
@@ -351,6 +359,7 @@ export function getColors(domainType) {
   } else if (
     // N-terminal regions are typically colored blue in e.g. PyMol rainbow
     domainType.includes('N-termin') ||
+    domainType.includes('N-teminal') || // Typo in "CTNNB1 binding, N-teminal"
     domainType.includes('N termin')
   ) {
     return [lightBlue, lightBlueLine];
