@@ -1,5 +1,5 @@
-import tippy from 'tippy.js';
-import { tippyCss, tippyLightCss } from './tippy-styles';
+import tippy, {hideAll} from 'tippy.js';
+import {tippyCss, tippyLightCss} from './tippy-styles';
 // import 'tippy.js/themes/light.css';
 
 import {d3} from '../lib';
@@ -108,6 +108,7 @@ function updateGeneStructure(ideo, offset=0) {
   writeFooter(container);
   ideo.addedSubpartListeners = false;
   addHoverListeners(ideo);
+  initTippy(ideo);
 }
 
 /** Get gene symbol from transcript / gene structure name */
@@ -432,6 +433,12 @@ function getMenuContainer() {
   return document.querySelector('#_ideoGeneStructureMenuContainer');
 }
 
+function updateFooter(content, ideo) {
+  const footer = getFooter();
+  footer.innerHTML = content;
+  initTippy(ideo);
+}
+
 function addSubpartHoverListener(subpartDOM, ideo) {
   const subpart = subpartDOM;
 
@@ -447,8 +454,8 @@ function addSubpartHoverListener(subpartDOM, ideo) {
     const trimmedFoot = footer.innerHTML.replace('&nbsp;', '');
     const style = 'style="margin-bottom: -10px; max-width: 260px;"';
     const id = 'id="_ideoSubpartText"';
-    footer.innerHTML =
-      `<div ${id} ${style}">${subpartText}</div>${trimmedFoot}`;
+    const content = `<div ${id} ${style}">${subpartText}</div>${trimmedFoot}`;
+    updateFooter(content, ideo);
     const menuContainer = getMenuContainer();
     if (menuContainer) menuContainer.style.marginTop = '';
   });
@@ -456,8 +463,7 @@ function addSubpartHoverListener(subpartDOM, ideo) {
   // On hovering out, de-highlight and hide details
   subpart.addEventListener('mouseleave', event => {
     event.target.classList.remove('_ideoHoveredSubpart');
-    const footer = getFooter();
-    footer.innerHTML = ideo.originalTooltipFooter;
+    updateFooter(ideo.originalTooltipFooter, ideo);
     const menuContainer = getMenuContainer();
     if (menuContainer) menuContainer.style.marginTop = '4px';
   });
@@ -507,7 +513,6 @@ function addHoverListeners(ideo) {
       // is often the case in genes with many transcripts, like TP53).
       ideo.oneTimeDelayTooltipHideMs = 2000; // wait 2.0 s instead of 0.25 s
     });
-
   });
   container.addEventListener('mouseleave', (event) => {
     ideo.oneTimeDelayTooltipHideMs = 2000; // See "Without this..." note above
@@ -520,8 +525,8 @@ function addHoverListeners(ideo) {
       // footer.  This lets users always see the details in the footer for the
       // transcript they just selected, rather than having the details
       // frustratingly disappear immediately upon transcript selection.
-      const footer = getFooter();
-      footer.innerHTML = hoverTip;
+
+      updateFooter(hoverTip, ideo);
     }
     ideo.addedMenuListeners = false;
     document.removeEventListener('keydown', navigateSubparts);
@@ -544,8 +549,14 @@ function writeStrandInFooter(ideo) {
 }
 
 function initTippy(ideo) {
+
   ideo.tippy = tippy('[data-tippy-content]', {
-    theme: 'light-border'
+    theme: 'light-border',
+    onShow: function() {
+      // Ensure only 1 tippy tooltip is displayed at a time
+      document.querySelectorAll('[data-tippy-root]')
+        .forEach(tippyNode => tippyNode.remove());
+    }
   });
 }
 
@@ -721,8 +732,6 @@ function toggleSplice(ideo) {
   document.querySelectorAll('.subpart-line.rna').forEach(el => el.remove());
 
   const subparts = spliceExons ? matureSubparts : prelimSubparts;
-
-  initTippy(ideo);
 
   d3.select('._ideoGeneStructure').selectAll('.subpart')
     .data(subparts)
@@ -996,10 +1005,13 @@ function getMenuArrows() {
   const downStyle = `style="${style}; margin-left: 5px;"`;
   const upStyle = `style="${style}; margin-left: 2px;"`;
   const cls = 'class="_ideoMenuArrow"';
-  const downTitle = `<title>Next transcript (down arrow)</title>`;
-  const upTitle = `<title>Previous transcript (up arrow)</title>`;
-  const downAttrs = `${downStyle} ${cls} data-dir="down"`;
-  const upAttrs = `${upStyle} ${cls} data-dir="up"`;
+  const tippyPlace = 'data-tippy-placement="bottom-start"';
+  const downContent = 'Next transcript (down arrow)';
+  const downTippy = `data-tippy-content="${downContent}" ${tippyPlace}`;
+  const upContent = 'Previous transcript (up arrow)';
+  const upTippy = `data-tippy-content="${upContent}" ${tippyPlace}`;
+  const downAttrs = `${downStyle} ${cls} data-dir="down" ${downTippy}`;
+  const upAttrs = `${upStyle} ${cls} data-dir="up" ${upTippy}`;
 
   // Get SVG polygon elements
   const down = getIcon(
@@ -1008,8 +1020,8 @@ function getMenuArrows() {
   );
   const up = getIcon({shape: 'triangle', color: '#888'}, {config: ''});
 
-  const downArrow = `<svg ${downAttrs}>${downTitle}${down}</svg>`;
-  const upArrow = `<svg ${upAttrs}>${upTitle}${up}</svg>`;
+  const downArrow = `<svg ${downAttrs}>${down}</svg>`;
+  const upArrow = `<svg ${upAttrs}>${up}</svg>`;
   const menuArrows = downArrow + upArrow;
 
   return menuArrows;
