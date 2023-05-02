@@ -548,16 +548,34 @@ function writeStrandInFooter(ideo) {
     tooltipFooter.innerText.replace(')', `, ${strand})`);
 }
 
-function initTippy(ideo) {
-
-  ideo.tippy = tippy('[data-tippy-content]', {
+function getTippyConfig(fallbackPlacements) {
+  return {
     theme: 'light-border',
+    popperOptions: {
+      modifiers: [
+        {
+          name: 'flip',
+          options: {
+            fallbackPlacements // Defined via argument to this function
+          }
+        }
+      ]
+    },
     onShow: function() {
       // Ensure only 1 tippy tooltip is displayed at a time
       document.querySelectorAll('[data-tippy-root]')
         .forEach(tippyNode => tippyNode.remove());
     }
-  });
+  };
+}
+
+function initTippy(ideo) {
+  const toggle = getTippyConfig(['top-start', 'top']);
+  ideo.tippy = tippy('._ideoSpliceToggle[data-tippy-content]', toggle);
+
+  const arrow = getTippyConfig(['bottom']);
+  const updownTips = tippy('._ideoMenuArrow[data-tippy-content]', arrow);
+  ideo.tippy = ideo.tippy.concat(updownTips);
 }
 
 export function addGeneStructureListeners(ideo) {
@@ -580,7 +598,8 @@ function getSpliceToggle(ideo) {
   const cls = `class="_ideoSpliceToggle ${modifier}mRNA"`;
   const checked = spliceExons ? 'checked' : '';
   const text = getSpliceToggleHoverTitle(spliceExons);
-  const title = `data-tippy-content="${text}"`;
+  const tPlace = 'data-tippy-placement="right"';
+  const title = `data-tippy-content="${text}" ${tPlace}`;
   const inputAttrs =
     `type="checkbox" ${checked} ` +
     `style="display: none;"`;
@@ -860,6 +879,8 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
   const spliceToggle = document.querySelector('._ideoSpliceToggle');
   if (spliceToggle) {
     const title = getSpliceToggleHoverTitle(spliceExons);
+    spliceToggle.setAttribute('data-tippy-placement', 'right');
+    // spliceToggle.setAttribute('data-tippy-placement-fallback', 'top-end');
     spliceToggle.setAttribute('data-tippy-content', title);
     initTippy(ideo);
   }
