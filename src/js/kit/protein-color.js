@@ -151,7 +151,8 @@ export function getColors(domainType) {
     domainType === 'Krueppel-associated box' ||
     domainType === 'Ets domain' ||
     domainType === 'P domain' ||
-    domainType.includes('bHLH')
+    domainType.includes('bHLH') ||
+    domainType === 'Ras-associating (RA) domain'
   ) {
     return [deepBlue, deepBlueLines];
   } else if (
@@ -167,6 +168,7 @@ export function getColors(domainType) {
     domainType === 'Sirtuin family' ||
     domainType === 'Amino acid/polyamine transporter I' ||
     domainType === 'Peptidase M10, metallopeptidase' ||
+    domainType === 'Metallothionein' ||
     domainType === 'Zinc finger C2H2-type' ||
     domainType === 'Zinc finger, PARP-type' ||
     domainType.endsWith('tail domain') ||
@@ -192,7 +194,8 @@ export function getColors(domainType) {
     domainType === 'Thioesterase' ||
     domainType.includes('esterase') ||
     domainType.endsWith('Claudin superfamily') ||
-    domainType === 'Retinoblastoma-associated protein, A-box'
+    domainType === 'Retinoblastoma-associated protein, A-box' ||
+    domainType.includes('Between PH and SH2')
   ) {
     return [seafoam, seafoamLines];
   }
@@ -220,6 +223,7 @@ export function getColors(domainType) {
     domainType === 'Fibronectin type III' ||
     domainType === 'Myosin head, motor domain' ||
     domainType.startsWith('Methyltransferase') ||
+    domainType === 'Rhodanese-like domain' ||
     domainType.startsWith('Thyroglobulin') ||
     domainType === 'Retinoblastoma-associated protein, B-box'
   ) {
