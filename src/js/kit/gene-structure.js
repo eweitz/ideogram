@@ -78,6 +78,14 @@ const css =
   }
   ${tippyCss}
   ${tippyLightCss}
+
+  .tippy-box {
+    font-size: 12px;
+  }
+
+  .tippy-content {
+    padding: 3px 7px;
+  }
   </style>`;
 
 const hoverTip = '<span id="_ideoGeneStructureTip">Hover for details</span>';
@@ -551,8 +559,8 @@ function writeStrandInFooter(ideo) {
 function getTippyConfig(fallbackPlacements) {
   return {
     theme: 'light-border',
-    popperOptions: {
-      modifiers: [
+    popperOptions: { // Docs: https://atomiks.github.io/tippyjs/v6/all-props/#popperoptions
+      modifiers: [ // Docs: https://popper.js.org/docs/v2/modifiers
         {
           name: 'flip',
           options: {
@@ -574,6 +582,12 @@ function initTippy(ideo) {
   ideo.tippy = tippy('._ideoSpliceToggle[data-tippy-content]', toggle);
 
   const arrow = getTippyConfig(['bottom']);
+  arrow.popperOptions.modifiers.push({
+    name: 'offset',
+    options: {
+      offset: [-5, 20]
+    }
+  });
   const updownTips = tippy('._ideoMenuArrow[data-tippy-content]', arrow);
   ideo.tippy = ideo.tippy.concat(updownTips);
 }
