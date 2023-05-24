@@ -106,7 +106,6 @@ describe('Ideogram gene structure functionality', function() {
           exonText2,
           'Exon 2 of 4 | 66 bp' +
           'Transcript: APOE-201APOE-204APOE-203APOE-202' +
-          'Next transcript (down arrow)Previous transcript (up arrow)' +
           '4 exons | 1,166 bp '
         );
 

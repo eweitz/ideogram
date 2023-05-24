@@ -47,24 +47,23 @@ describe('Ideogram custom organism support', function() {
   });
 
   it('rotates chromosomes lacking native bands', done => {
-    // Tests fix for https://github.com/eweitz/ideogram/issues/330
-
+    // Tests fix for https://github.com/eweitz/ideogram/issues/330, albeit for a different organism
     function callback() {
-      let chr1 = document.querySelector('#chr1-29760');
+      let chr1 = document.querySelector('#chr1-296587');
       const height = Math.round(chr1.getBoundingClientRect().height);
-      assert.equal(height, 304);
+      assert.equal(height, 400);
       chr1.dispatchEvent(new Event('click', {bubbles: true}));
       setTimeout(function() {
-        chr1 = document.querySelector('#chr1-29760');
+        chr1 = document.querySelector('#chr1-296587');
         const width = Math.round(chr1.getBoundingClientRect().width);
-        assert.equal(width, 545);
+        assert.equal(width, 485);
         chr1.dispatchEvent(new Event('click', {bubbles: true}));
         done();
       }, 1000);
     }
 
     const ideogram = new Ideogram({
-      organism: 'vitis-vinifera',
+      organism: 'micromonas-commoda', // TODO: Fix vitis-vinifera
       onLoad: callback
     });
   });

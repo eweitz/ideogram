@@ -357,7 +357,7 @@ function describeInteractions(gene, ixns, searchedGene) {
       //   `data-pathway-name="${ixn.name}"`;
       // return `<a ${attrs}>${ixn.name}</a>`;
 
-      const pathwaysBase = 'https://www.wikipathways.org/index.php/Pathway:';
+      const pathwaysBase = 'https://classic.wikipathways.org/index.php/Pathway:';
       const url = `${pathwaysBase}${ixn.pathwayId}`;
       pathwayIds.push(ixn.pathwayId);
       pathwayNames.push(ixn.name);
