@@ -666,7 +666,10 @@ async function fetchParalogPositionsFromMyGeneInfo(
 function overplotParalogs(annots, ideo) {
   if (!ideo.config.showParalogNeighborhoods) return;
 
+  const searchedAnnot = ideo.relatedAnnots[0];
   annots = applyAnnotsIncludeList(annots, ideo);
+
+  annots.unshift(searchedAnnot);
 
   if (annots.length < 2) return;
 
@@ -702,7 +705,7 @@ function overplotParalogs(annots, ideo) {
   // Big enough to see and hover
   const overlayAnnotLength = 15_000_000;
 
-  const searchedGene = getSearchedFromDescriptions(ideo);
+  const searchedGene = searchedAnnot.name;
 
   const neighborhoodAnnots =
     Object.entries(neighborhoods).map(([chr, neighborhood], index) => {
@@ -713,12 +716,19 @@ function overplotParalogs(annots, ideo) {
         return {paralogs};
       }
 
+      let includesSearched = false;
+      if (paralogs[0].name === searchedAnnot.name) {
+        paralogs = paralogs.slice(1);
+        includesSearched = true;
+      }
+
       // paralogs.map(paralog => {
       //   console.log(paralog);
       // })
 
+      const paralogsText = pluralize('paralog', paralogs.length)
       const description =
-        `${paralogs.length} nearby paralogs of ${searchedGene}`;
+        `${paralogs.length} nearby ${paralogsText} of ${searchedGene}`;
 
       const chrLength = ideo.chromosomes[ideo.config.taxid][chr].bpLength;
       let annotStart = start - overlayAnnotLength/2;
@@ -751,12 +761,13 @@ function overplotParalogs(annots, ideo) {
         description,
         paralogs,
         type: 'paralog neighborhood',
-        displayCoordinates
+        displayCoordinates,
+        includesSearched
       };
 
       ideo.annotDescriptions.annots[annot.name] = annot;
       return annot;
-    }).filter(n => n.paralogs.length > 1);
+    }).filter(n => n.paralogs.length > 1 || n.includesSearched);
 
   if (neighborhoodAnnots.length > 0) {
     // console.log('neighborhoodAnnots')
@@ -1653,7 +1664,7 @@ function _initRelatedGenes(config, annotsInList) {
   };
 
   const kitDefaults = Object.assign({
-    showParalogNeighborhoods: isHuman,
+    showParalogNeighborhoods: true,
     relatedGenesMode: 'related',
     useCache: true,
     awaitCache: true
