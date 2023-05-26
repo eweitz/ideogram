@@ -436,11 +436,6 @@ function fetchGenesFromCache(names, type, ideo) {
   const locusMap = isSymbol ? cache.lociByName : cache.lociById;
   const nameMap = isSymbol ? cache.idsByName : cache.namesById;
 
-  console.log('in fetchGenesFromCache, locusMap', locusMap)
-  console.log('in fetchGenesFromCache, names', names)
-  window.locusMap = locusMap
-  console.log('in fetchGenesFromCache, nameMap', nameMap)
-
   const hits = names.map(name => {
 
     const nameLc = name.toLowerCase();
@@ -495,8 +490,6 @@ function fetchGenesFromCache(names, type, ideo) {
 
     return hit;
   });
-
-  console.log('in fetchGenesFromCache, hits 2', hits)
 
   const hitsWithGenomicPos = hits.filter(hit => hit !== undefined);
 
@@ -562,8 +555,6 @@ async function fetchGenes(names, type, ideo) {
 
   if (ideo.geneCache) {
     const hits = fetchGenesFromCache(names, type, ideo);
-    console.log('in fetchGenes, names', names)
-    console.log('in fetchGenes, hits', hits)
 
     // Asynchronously fetch full name, but don't await the response, because
     // full names are only shown upon hovering over an annotation.
@@ -613,7 +604,6 @@ async function fetchInteractionAnnots(interactions, searchedGene, ideo) {
 
   if (symbols.length === 0) return annots;
 
-  console.log('in fetchInteractionAnnots')
   const data = await fetchGenes(symbols, 'symbol', ideo);
 
   data.hits.forEach(gene => {
@@ -652,9 +642,7 @@ async function fetchParalogPositionsFromMyGeneInfo(
 
   const cached = homologs.length && typeof homologs[0] === 'string';
   const ensemblIds = cached ? homologs : homologs.map(homolog => homolog.id);
-  console.log('in fetchParalogPositionsFromMyGeneInfo')
   const data = await fetchGenes(ensemblIds, 'ensemblgene', ideo);
-  console.log('data 0', data)
 
   data.hits.forEach(gene => {
 
@@ -684,13 +672,16 @@ function overplotParalogs(annots, ideo) {
   if (!ideo.config.showParalogNeighborhoods) return;
 
   if (ideo.neighborhoodAnnots?.length > 0) {
+    ideo.neighborhoodAnnots.forEach(annot => {
+      ideo.annotDescriptions.annots[annot.name] = annot;
+    });
+
     drawNeighborhoods(ideo.neighborhoodAnnots, ideo);
     return;
   }
 
   const searchedAnnot = ideo.relatedAnnots[0];
   annots = applyAnnotsIncludeList(annots, ideo);
-  console.log('annots', annots)
 
   annots.unshift(searchedAnnot);
 
@@ -730,8 +721,6 @@ function overplotParalogs(annots, ideo) {
 
   const searchedGene = searchedAnnot.name;
 
-  console.log('neighborhoods', neighborhoods)
-
   const neighborhoodAnnots =
     Object.entries(neighborhoods).map(([chr, neighborhood], index) => {
       const start = parseInt(Object.keys(neighborhood)[0]);
@@ -743,7 +732,6 @@ function overplotParalogs(annots, ideo) {
 
       let includesSearched = false;
       if (paralogs[0].name === searchedAnnot.name) {
-        console.log('paralogs', paralogs)
         paralogs = paralogs.slice(1);
         includesSearched = true;
       }
@@ -795,8 +783,6 @@ function overplotParalogs(annots, ideo) {
       return annot;
     }).filter(n => n.paralogs.length > 1 || n.includesSearched);
 
-  console.log('neighborhoodAnnots', neighborhoodAnnots)
-
   ideo.neighborhoodAnnots = neighborhoodAnnots;
 
   if (neighborhoodAnnots.length > 0) {
@@ -830,11 +816,10 @@ async function fetchParalogs(annot, ideo) {
     homologs = ensemblHomologs.data[0].homologies;
   }
 
-  console.log('homologs', homologs)
   // Fetch positions of paralogs
   let annots =
     await fetchParalogPositionsFromMyGeneInfo(homologs, annot, ideo);
-  console.log('annots 0', annots)
+
   // Omit genes named like "AC113554.1", which is an "accession.version".
   // Such accVers are raw and poorly suited here.
   annots = annots.filter(annot => {
@@ -1080,7 +1065,6 @@ function finishPlotRelatedGenes(type, ideo) {
 async function processSearchedGene(geneSymbol, ideo) {
   const t0 = performance.now();
 
-  console.log('in processSearchedGene')
   const data = await fetchGenes(geneSymbol, 'symbol', ideo);
 
   if (data.hits.length === 0) {
