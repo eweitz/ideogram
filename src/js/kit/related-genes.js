@@ -663,10 +663,27 @@ async function fetchParalogPositionsFromMyGeneInfo(
   return annots;
 }
 
+function drawNeighborhoods(neighborhoodAnnots, ideo) {
+  ideo.drawAnnots(neighborhoodAnnots, 'overlay', true, true);
+  moveLegend();
+}
+
 function overplotParalogs(annots, ideo) {
   if (!ideo.config.showParalogNeighborhoods) return;
 
+  if (ideo.neighborhoodAnnots?.length > 0) {
+    ideo.neighborhoodAnnots.forEach(annot => {
+      ideo.annotDescriptions.annots[annot.name] = annot;
+    });
+
+    drawNeighborhoods(ideo.neighborhoodAnnots, ideo);
+    return;
+  }
+
+  const searchedAnnot = ideo.relatedAnnots[0];
   annots = applyAnnotsIncludeList(annots, ideo);
+
+  annots.unshift(searchedAnnot);
 
   if (annots.length < 2) return;
 
@@ -702,7 +719,7 @@ function overplotParalogs(annots, ideo) {
   // Big enough to see and hover
   const overlayAnnotLength = 15_000_000;
 
-  const searchedGene = getSearchedFromDescriptions(ideo);
+  const searchedGene = searchedAnnot.name;
 
   const neighborhoodAnnots =
     Object.entries(neighborhoods).map(([chr, neighborhood], index) => {
@@ -713,12 +730,19 @@ function overplotParalogs(annots, ideo) {
         return {paralogs};
       }
 
+      let includesSearched = false;
+      if (paralogs[0].name === searchedAnnot.name) {
+        paralogs = paralogs.slice(1);
+        includesSearched = true;
+      }
+
       // paralogs.map(paralog => {
       //   console.log(paralog);
       // })
 
+      const paralogsText = pluralize('paralog', paralogs.length)
       const description =
-        `${paralogs.length} nearby paralogs of ${searchedGene}`;
+        `${paralogs.length} nearby ${paralogsText} of ${searchedGene}`;
 
       const chrLength = ideo.chromosomes[ideo.config.taxid][chr].bpLength;
       let annotStart = start - overlayAnnotLength/2;
@@ -734,6 +758,14 @@ function overplotParalogs(annots, ideo) {
       if ('geneCache' in ideo) {
         paralogs = paralogs.map(paralog => {
           paralog.fullName = ideo.geneCache.fullNamesById[paralog.id];
+
+          const ranks = ideo.geneCache.interestingNames;
+          if (ranks.includes(paralog.name)) {
+            paralog.rank = ranks.indexOf(paralog.name) + 1;
+          } else {
+            paralog.rank = 1E10;
+          }
+
           return paralog;
         });
       }
@@ -751,18 +783,18 @@ function overplotParalogs(annots, ideo) {
         description,
         paralogs,
         type: 'paralog neighborhood',
-        displayCoordinates
+        displayCoordinates,
+        includesSearched
       };
 
       ideo.annotDescriptions.annots[annot.name] = annot;
       return annot;
-    }).filter(n => n.paralogs.length > 1);
+    }).filter(n => n.paralogs.length > 1 || n.includesSearched);
+
+  ideo.neighborhoodAnnots = neighborhoodAnnots;
 
   if (neighborhoodAnnots.length > 0) {
-    // console.log('neighborhoodAnnots')
-    // console.log(neighborhoodAnnots.map(na => na));
-    ideo.drawAnnots(neighborhoodAnnots, 'overlay', true, true);
-    moveLegend();
+    drawNeighborhoods(neighborhoodAnnots, ideo);
   }
 }
 
@@ -791,7 +823,6 @@ async function fetchParalogs(annot, ideo) {
     const ensemblHomologs = await Ideogram.fetchEnsembl(path);
     homologs = ensemblHomologs.data[0].homologies;
   }
-
 
   // Fetch positions of paralogs
   let annots =
@@ -880,6 +911,7 @@ function processInteractions(annot, ideo) {
     finishPlotRelatedGenes('interacting', ideo);
 
     ideo.time.rg.interactions = timeDiff(t0);
+    overplotParalogs(annots, ideo);
 
     resolve();
   });
@@ -1269,6 +1301,7 @@ async function plotRelatedGenes(geneSymbol=null) {
   adjustPlaceAndVisibility(ideo);
 
   ideo.relatedAnnots = [];
+  ideo.neighborhoodAnnots = [];
 
   // Fetch positon of searched gene
   const annot = await processSearchedGene(geneSymbol, ideo);
@@ -1427,8 +1460,8 @@ function decorateParalogNeighborhood(annot, descObj, style) {
   // annotation, and is often also labeled.
   const sortedParalogs =
     descObj.paralogs.sort((a, b) => a.rank - b.rank);
-  const firstRanked = sortedParalogs.shift(); // Take off first
-  sortedParalogs.push(firstRanked); // Make it last
+  // const firstRanked = sortedParalogs.shift(); // Take off first
+  // sortedParalogs.push(firstRanked); // Make it last
 
   const originalDisplay =
     'Paralog neighborhood<br/>' +
@@ -1645,15 +1678,13 @@ function plotGeneHints() {
  */
 function _initRelatedGenes(config, annotsInList) {
 
-  const isHuman = slug(config.organism) === 'homo-sapiens';
-
   if (config.relatedGenesMode === 'leads') {
     delete config.onDrawAnnots;
     delete config.relatedGenesMode;
   };
 
   const kitDefaults = Object.assign({
-    showParalogNeighborhoods: isHuman,
+    showParalogNeighborhoods: true,
     relatedGenesMode: 'related',
     useCache: true,
     awaitCache: true
