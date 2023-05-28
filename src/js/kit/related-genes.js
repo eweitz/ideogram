@@ -1301,6 +1301,7 @@ async function plotRelatedGenes(geneSymbol=null) {
   adjustPlaceAndVisibility(ideo);
 
   ideo.relatedAnnots = [];
+  ideo.neighborhoodAnnots = [];
 
   // Fetch positon of searched gene
   const annot = await processSearchedGene(geneSymbol, ideo);
