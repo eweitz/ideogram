@@ -758,6 +758,14 @@ function overplotParalogs(annots, ideo) {
       if ('geneCache' in ideo) {
         paralogs = paralogs.map(paralog => {
           paralog.fullName = ideo.geneCache.fullNamesById[paralog.id];
+
+          const ranks = ideo.geneCache.interestingNames;
+          if (ranks.includes(paralog.name)) {
+            paralog.rank = ranks.indexOf(paralog.name) + 1;
+          } else {
+            paralog.rank = 1E10;
+          }
+
           return paralog;
         });
       }
@@ -1451,8 +1459,8 @@ function decorateParalogNeighborhood(annot, descObj, style) {
   // annotation, and is often also labeled.
   const sortedParalogs =
     descObj.paralogs.sort((a, b) => a.rank - b.rank);
-  const firstRanked = sortedParalogs.shift(); // Take off first
-  sortedParalogs.push(firstRanked); // Make it last
+  // const firstRanked = sortedParalogs.shift(); // Take off first
+  // sortedParalogs.push(firstRanked); // Make it last
 
   const originalDisplay =
     'Paralog neighborhood<br/>' +
