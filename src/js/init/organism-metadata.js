@@ -26,6 +26,8 @@ var organismMetadata = {
     hasGeneCache: true,
     hasParalogCache: true,
     hasInteractionCache: true,
+    hasGeneStructureCache: true,
+    hasProteinCache: true,
     hasSynonymCache: true
   },
   9598: {
