@@ -60,6 +60,11 @@ def fetch_slim_transcript_ids(organism, output_dir="data/", reuse_bmtsv=True):
     slim_transcripts = gscache.fetch_transcripts(organism)
     return slim_transcripts
 
+def fetch_canonical_transcript_ids(organism, output_dir="data/", reuse_bmtsv=True):
+    gscache = GeneStructureCache(output_dir, reuse_bmtsv)
+    canonical_ids = gscache.fetch_transcript_ids(organism)
+    return canonical_ids
+
 def get_bmtsv_url(organism):
     """Get URL to BMTSV file
     E.g. https://www.ensembl.org/biomart/martservice?query=%3C%21DOCTYPE%20Query%3E%3CQuery%20formatter%3D%22TSV%22%20header%3D%220%22%20uniqueRows%3D%220%22%20count%3D%22%22%20datasetConfigVersion%3D%220.6%22%3E%3CDataset%20name%3D%22hsapiens_gene_ensembl%22%20interface%3D%22default%22%3E%3CFilter%20name%3D%22transcript_is_canonical%22%20excluded%3D%220%22/%3E%3CAttribute%20name%3D%22ensembl_transcript_id%22%20/%3E%3C/Dataset%3E%3C/Query%3E
@@ -491,8 +496,7 @@ class GeneStructureCache():
         Consider parallelizing this.
         """
         # for organism in assemblies_by_org:
-        # for organism in ["Homo sapiens"]:
-        for organism in ["Mus musculus"]:
+        for organism in ["Homo sapiens", "Mus musculus"]:
             self.populate_by_org(organism)
 
 # Command-line handler
