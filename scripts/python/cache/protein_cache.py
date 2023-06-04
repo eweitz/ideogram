@@ -16,13 +16,14 @@ import sys
 import urllib.request
 from urllib.parse import quote
 import json
+import xml.etree.ElementTree as ET
 
 # Enable importing local modules when directly calling as script
 if __name__ == "__main__":
     cur_dir = os.path.join(os.path.dirname(__file__))
     sys.path.append(cur_dir + "/..")
 
-from lib import download
+from lib import download, download_gzip
 from gene_cache import trim_id, detect_prefix, fetch_gff, parse_gff_info_field, fetch_interesting_genes
 from gene_structure_cache import fetch_canonical_transcript_ids
 from compress_transcripts import noncanonical_names
@@ -60,6 +61,30 @@ biotypes = {}
 # metazoa = {
 #     "Anopheles gambiae".AgamP4.51.bmtsv.gz  "
 # }
+
+def fetch_interpro_map(proteins_dir, reuse=True):
+    """Download dump of all InterPro entries, extract relevant data
+
+    @return {dict} List of name, type, and Pfam ID by InterPro ID
+    """
+    interpro_map = {}
+    url = 'https://ftp.ebi.ac.uk/pub/databases/interpro/current_release/interpro.xml.gz'
+    interpro_path = proteins_dir + 'interpro.xml'
+    download_gzip(url, interpro_path, cache=reuse)
+    print(f"Parsing {interpro_path}")
+    tree = ET.parse(interpro_path)
+    root = tree.getroot()
+    entries = root.findall('interpro')
+    for entry in entries:
+        interpro_id = entry.attrib['id']
+        type = entry.attrib['type']
+        name = entry.find('name').text
+        pfam = entry.find('member_list').find('db_xref[@db="PFAM"]')
+        if pfam is None:
+            continue
+        pfam_id = pfam.attrib['dbkey']
+        interpro_map[interpro_id] = [name, type, pfam_id]
+    return interpro_map
 
 def sort_proteins(proteins, organism, canonical_ids):
     ranks = fetch_interesting_genes(organism)
