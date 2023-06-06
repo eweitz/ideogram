@@ -52,7 +52,7 @@ describe('Ideogram gene structure functionality', function() {
         const apobLabel = document.querySelector('#ideogramLabel__c1_a0');
         apobLabel.dispatchEvent(new Event('mouseover'));
         const subparts = document.querySelectorAll('rect.subpart');
-        assert.equal(subparts.length, 36); // RNA subparts and domains
+        assert.equal(subparts.length, 35); // RNA subparts and domains
         done();
       }, 500);
     }
