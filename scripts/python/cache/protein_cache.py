@@ -16,13 +16,14 @@ import sys
 import urllib.request
 from urllib.parse import quote
 import json
+import xml.etree.ElementTree as ET
 
 # Enable importing local modules when directly calling as script
 if __name__ == "__main__":
     cur_dir = os.path.join(os.path.dirname(__file__))
     sys.path.append(cur_dir + "/..")
 
-from lib import download
+from lib import download, download_gzip
 from gene_cache import trim_id, detect_prefix, fetch_gff, parse_gff_info_field, fetch_interesting_genes
 from gene_structure_cache import fetch_canonical_transcript_ids
 from compress_transcripts import noncanonical_names
@@ -60,6 +61,71 @@ biotypes = {}
 # metazoa = {
 #     "Anopheles gambiae".AgamP4.51.bmtsv.gz  "
 # }
+
+def merge_pfam_unintegrated(interpro_map):
+    """Recover data on Pfam entries lacking InterPro IDs
+
+    E.g. "PF14670" is "Coagulation Factor Xa inhibitory site", a domain in the
+    canonical transcript of human LDLR (ENSG00000130164 / ENST00000558518 / ENSP00000454071)
+
+    These Pfam entries lack names in the default `interpro.xml` export, and BioMart,
+    and thus require this separate data source.
+
+    To re-generate the manually-downloaded file, if needed:
+    * Go to https://www.ebi.ac.uk/interpro/result/download/#/entry/unintegrated/pfam/|tsv
+    * Click "Generate", wait ~30 seconds
+    * Click "Download"
+    * Move `~/Downloads/export.tsv` to `pfam_unintegrated.tsv` in this directory
+    """
+
+    with open('cache/pfam_unintegrated.tsv') as f:
+       lines = f.readlines()
+    for line in lines[1:]:
+        columns = line.strip().split('\t')
+        pfam_id, name, db, type = columns[0:4]
+        interpro_map[pfam_id] = [name, type, '']
+    return interpro_map
+
+def fetch_interpro_map(proteins_dir, reuse=True):
+    """Download dump of all InterPro entries, extract relevant data
+
+    @return {dict} List of name, type, and Interpro ID by Pfam ID
+    """
+    interpro_map = {}
+
+    # Read cache and skip processing, if applicable and available
+    cache_path = f"{proteins_dir}interpro_map.json"
+    if reuse and os.path.exists(cache_path):
+        with open(cache_path) as f:
+            interpro_map = json.load(f)
+        interpro_map = merge_pfam_unintegrated(interpro_map)
+        return interpro_map
+
+    # Download and transform to dict
+    url = 'https://ftp.ebi.ac.uk/pub/databases/interpro/current_release/interpro.xml.gz'
+    interpro_path = proteins_dir + 'interpro.xml'
+    download_gzip(url, interpro_path, cache=reuse)
+    print(f"Parsing {interpro_path}")
+    tree = ET.parse(interpro_path)
+    root = tree.getroot()
+    entries = root.findall('interpro')
+    for entry in entries:
+        interpro_id = entry.attrib['id']
+        type = entry.attrib['type']
+        name = entry.find('name').text
+        pfam = entry.find('member_list').find('db_xref[@db="PFAM"]')
+        if pfam is None:
+            continue
+        pfam_id = pfam.attrib['dbkey']
+        interpro_map[pfam_id] = [name, type, interpro_id]
+
+    # Write cache
+    content = json.dumps(interpro_map)
+    with open(cache_path, "w") as f:
+        f.write(content)
+
+    interpro_map = merge_pfam_unintegrated(interpro_map)
+    return interpro_map
 
 def sort_proteins(proteins, organism, canonical_ids):
     ranks = fetch_interesting_genes(organism)
@@ -122,8 +188,7 @@ def sort_proteins(proteins, organism, canonical_ids):
 
 def get_proteins_url(organism):
     """Get URL to proteins TSV file, from Ensembl BioMart
-    E.g. https://www.ensembl.org/biomart/martservice?query=%3C%21DOCTYPE%20Query%3E%0A%3CQuery%20%20virtualSchemaName%20%3D%20%22default%22%20formatter%20%3D%20%22TSV%22%20header%20%3D%20%220%22%20uniqueRows%20%3D%20%220%22%20count%20%3D%20%22%22%20datasetConfigVersion%20%3D%20%220.6%22%20%3E%0A%09%09%09%0A%09%3CDataset%20name%20%3D%20%22hsapiens_gene_ensembl%22%20interface%20%3D%20%22default%22%20%3E%0A%09%09%3CFilter%20name%20%3D%20%22with_interpro%22%20excluded%20%3D%20%220%22%2F%3E%0A%09%09%3CAttribute%20name%20%3D%20%22ensembl_transcript_id%22%20%2F%3E%0A%09%09%3CAttribute%20name%20%3D%20%22interpro%22%20%2F%3E%0A%09%09%3CAttribute%20name%20%3D%20%22interpro_short_description%22%20%2F%3E%0A%09%09%3CAttribute%20name%20%3D%20%22interpro_description%22%20%2F%3E%0A%09%09%3CAttribute%20name%20%3D%20%22interpro_start%22%20%2F%3E%0A%09%09%3CAttribute%20name%20%3D%20%22interpro_end%22%20%2F%3E%0A%09%3C%2FDataset%3E%0A%3C%2FQuery%3E
-
+    E.g. https://www.ensembl.org/biomart/martservice?query=%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%3C%21DOCTYPE%20Query%3E%3CQuery%20virtualSchemaName%20%3D%20%22default%22%20formatter%20%3D%20%22TSV%22%20header%20%3D%20%220%22%20uniqueRows%20%3D%20%220%22%20count%20%3D%20%22%22%20datasetConfigVersion%20%3D%20%220.6%22%20%3E%3CDataset%20name%20%3D%20%22hsapiens_gene_ensembl%22%20interface%20%3D%20%22default%22%20%3E%3CFilter%20name%20%3D%20%22with_interpro%22%20excluded%20%3D%20%220%22/%3E%3CAttribute%20name%20%3D%20%22ensembl_transcript_id%22%20/%3E%3CAttribute%20name%20%3D%20%22pfam%22%20/%3E%3CAttribute%20name%20%3D%20%22pfam_start%22%20/%3E%3CAttribute%20name%20%3D%20%22pfam_end%22%20/%3E%3C/Dataset%3E%3C/Query%3E
     """
 
     # E.g. "Homo sapiens" -> "hsapiens"
@@ -137,15 +202,14 @@ def get_proteins_url(organism):
           '<Dataset name = "' + brief_org + '_gene_ensembl" interface = "default" >' +
             '<Filter name = "with_interpro" excluded = "0"/>' +
             '<Attribute name = "ensembl_transcript_id" />' +
-            '<Attribute name = "interpro" />' +
-            '<Attribute name = "interpro_short_description" />' +
-            '<Attribute name = "interpro_description" />' +
-            '<Attribute name = "interpro_start" />' +
-            '<Attribute name = "interpro_end" />' +
+            '<Attribute name = "pfam" />' +
+            '<Attribute name = "pfam_start" />' +
+            '<Attribute name = "pfam_end" />' +
         '</Dataset>' +
         '</Query>'
     ).encode("utf-8"))
     url = f"https://www.ensembl.org/biomart/martservice?query={query}"
+    print('url', url)
     return url
 
 def parse_protein(row):
@@ -186,10 +250,11 @@ subpart_map = {
     'three_prime_UTR': '2',
 }
 
-def parse_proteins(proteins_path, gff_path, gff_url):
+def parse_proteins(proteins_path, gff_path, interpro_map):
     """Parse proteins proteins from InterPro data in TSV file
     """
 
+    pfams_not_in_interpro = {}
     transcript_names_by_id = {}
     with open(gff_path) as file:
         reader = csv.reader(file, delimiter="\t")
@@ -221,40 +286,49 @@ def parse_proteins(proteins_path, gff_path, gff_url):
                 # Skip header
                 continue
 
-            # protein = parse_protein(row)
-            protein = row
+            feature = row
 
-            if protein == None:
+            if feature == None or len(feature) == 1 or feature[1] == '':
                 continue
 
             # print('protein', protein)
 
             if (i % 50000 == 0):
                 print(f"On entry {i}")
-                print(protein)
+                print(feature)
 
             # if i > 100000:
             #     # return proteins_by_transcript
             #     break
 
-            transcript_id = protein[0]
+            transcript_id = feature[0]
             if transcript_id not in transcript_names_by_id:
                 missing_transcripts.append(transcript_id)
                 continue
             transcript_name = transcript_names_by_id[transcript_id]
-            protein_id = trim_id(protein[1], "IPR")
-            protein_name = protein[3]
-            [start, stop] = protein[4:6]
-            length = str(int(stop) - int(start))
-            if protein_id not in protein_names_by_id:
-                protein_names_by_id[protein_id] = protein_name
+            pfam_id = feature[1]
+            if pfam_id not in interpro_map:
+                pfams_not_in_interpro[pfam_id] = 1
+                continue
+            feat_name, feat_type, interpro_id = interpro_map[pfam_id]
+            if interpro_id != '':
+                feat_id = trim_id(interpro_id, "IPR")
+            else:
+                # Handles unintegrated Pfam entries, like
+                # LDLR-201's "PF14670" (Coagulation Factor Xa inhibitory site)
+                feat_id = pfam_id
 
-            parsed_protein = ';'.join([protein_id, start, length])
+            [start, stop] = feature[2:4]
+            length = str(int(stop) - int(start))
+            if feat_id not in protein_names_by_id:
+                protein_names_by_id[feat_id] = feat_name
+
+            parsed_feat = ';'.join([feat_id, start, length])
 
             if transcript_name in proteins_by_transcript:
-                proteins_by_transcript[transcript_name].append(parsed_protein)
+                proteins_by_transcript[transcript_name].append(parsed_feat)
             else:
-                proteins_by_transcript[transcript_name] = [parsed_protein]
+                proteins_by_transcript[transcript_name] = [parsed_feat]
 
             # [chr, start, stop, transcript, symbol, desc] = parsed_gene
             # length = str(int(stop) - int(start))
@@ -264,6 +338,8 @@ def parse_proteins(proteins_path, gff_path, gff_url):
             # slim_transcript = trim_transcript(transcript, prefix)
 
             # slim_genes.append([chr, start, length, slim_transcript, symbol, desc])
+    pfams_not_in_interpro = list(pfams_not_in_interpro)
+    print('Pfam IDs with no mapped InterPro entry:', pfams_not_in_interpro)
 
     num_missing = str(len(missing_transcripts))
     print('Number of transcript IDs lacking names:' + num_missing)
@@ -299,14 +375,19 @@ class ProteinCache():
         if not os.path.exists(self.tmp_dir):
             os.makedirs(self.tmp_dir)
 
+        proteins_dir = self.tmp_dir + "proteins/"
+        if not os.path.exists(proteins_dir):
+            os.makedirs(proteins_dir)
+        self.proteins_dir = proteins_dir
+
+        self.interpro_map = fetch_interpro_map(proteins_dir, reuse_bmtsv)
+
     def fetch_proteins_tsv(self, organism):
         """Download an organism's proteins TSV file from Ensembl BioMart
         """
         print(f"Fetching via Ensembl BioMart TSV for {organism}")
         url = get_proteins_url(organism)
-        proteins_dir = self.tmp_dir + "proteins/"
-        if not os.path.exists(proteins_dir):
-            os.makedirs(proteins_dir)
+        proteins_dir = self.proteins_dir
         org_lch = organism.lower().replace(" ", "-")
         proteins_path = proteins_dir + org_lch + "-proteins.tsv"
         try:
@@ -351,7 +432,8 @@ class ProteinCache():
         [gff_path, gff_url] = fetch_gff(organism, self.output_dir, True)
         [proteins_path, proteins_url] = self.fetch_proteins_tsv(organism)
 
-        [proteins, names_by_id] = parse_proteins(proteins_path, gff_path, gff_url)
+        interpro_map = self.interpro_map
+        [proteins, names_by_id] = parse_proteins(proteins_path, gff_path, interpro_map)
         sorted_proteins = sort_proteins(proteins, organism, canonical_ids)
         sorted_proteins = noncanonical_names(sorted_proteins)
 
@@ -367,6 +449,8 @@ class ProteinCache():
         """
         # for organism in assemblies_by_org:
         for organism in ["Homo sapiens", "Mus musculus"]:
+        # for organism in ["Homo sapiens"]:
+        # for organism in ["Mus musculus"]:
             self.populate_by_org(organism)
 
 # Command-line handler

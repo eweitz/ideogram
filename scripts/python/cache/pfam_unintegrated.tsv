@@ -1,0 +1,561 @@
+Accession	Name	Source Database	Type	Integrated Into	Integrated Signatures	GO Terms
+PF00122	E1-E2 ATPase	pfam	family
+PF00304	Gamma-thionin family	pfam	domain
+PF00406	Adenylate kinase	pfam	domain
+PF00428	60s Acidic ribosomal protein	pfam	family
+PF00606	Herpesvirus Glycoprotein B ectodomain	pfam	domain
+PF00666	Cathelicidin	pfam	domain
+PF00702	haloacid dehalogenase-like hydrolase	pfam	domain
+PF00706	Anenome neurotoxin	pfam	domain
+PF00864	ATP P2X receptor	pfam	family
+PF00922	Vesiculovirus phosphoprotein	pfam	family
+PF01019	Gamma-glutamyltranspeptidase	pfam	domain
+PF01102	Glycophorin A	pfam	family
+PF01135	Protein-L-isoaspartate(D-aspartate) O-methyltransferase (PCMT)	pfam	family
+PF01148	Cytidylyltransferase family	pfam	family
+PF01163	RIO1 family	pfam	family
+PF01190	Pollen protein Ole e 1 like	pfam	family
+PF01209	ubiE/COQ5 methyltransferase family	pfam	family
+PF01257	Thioredoxin-like [2Fe-2S] ferredoxin	pfam	family
+PF01564	Spermine/spermidine synthase domain	pfam	domain
+PF01583	Adenylylsulphate kinase	pfam	domain
+PF01633	Choline/ethanolamine kinase	pfam	family
+PF01715	IPP transferase	pfam	domain
+PF01745	Isopentenyl transferase	pfam	domain
+PF01946	Thi4 family	pfam	family
+PF02030	Hypothetical lipoprotein (MG045 family)	pfam	family
+PF02065	Melibiase	pfam	family
+PF02071	Aromatic-di-Alanine (AdAR) repeat	pfam	repeat
+PF02089	Palmitoyl protein thioesterase	pfam	domain
+PF02239	Cytochrome D1 heme domain	pfam	repeat
+PF02274	Arginine deiminase	pfam	family
+PF02353	Mycolic acid cyclopropane synthetase	pfam	family
+PF02389	Cornifin (SPRR) family	pfam	unknown
+PF02410	Ribosomal silencing factor during starvation	pfam	family
+PF02458	Transferase family	pfam	family
+PF02466	Tim17/Tim22/Tim23/Pmp24 family	pfam	family
+PF02489	Herpesvirus glycoprotein H main domain	pfam	domain
+PF02672	CP12 domain	pfam	family
+PF02948	Amelogenin	pfam	family
+PF03054	tRNA methyl transferase HUP domain	pfam	domain
+PF03121	Herpesviridae UL52/UL70 DNA primase	pfam	family
+PF03142	Chitin synthase	pfam	family
+PF03148	Tektin family	pfam	family
+PF03215	Rad17 P-loop domain	pfam	domain
+PF03232	Ubiquinone biosynthesis protein COQ7	pfam	domain
+PF03237	Terminase large subunit, T4likevirus-type, N-terminal	pfam	domain
+PF03308	Methylmalonyl Co-A mutase-associated GTPase MeaB	pfam	domain
+PF03351	DOMON domain	pfam	domain
+PF03368	Dicer dimerisation domain	pfam	domain
+PF03403	Platelet-activating factor acetylhydrolase, isoform II	pfam	domain
+PF03452	Anp1	pfam	family
+PF03486	HI0933-like protein	pfam	family
+PF03535	Paxillin family	pfam	family
+PF03568	Peptidase family C50	pfam	family
+PF03602	Conserved hypothetical protein 95	pfam	family
+PF03656	Pam16	pfam	family
+PF03670	Uncharacterised protein family (UPF0184)	pfam	unknown
+PF03954	Hepatic lectin, N-terminal domain	pfam	family
+PF03995	Peptidase inhibitor family I36	pfam	domain
+PF03999	Microtubule associated protein (MAP65/ASE1 family)	pfam	family
+PF04078	Cell differentiation family, Rcd1-like	pfam	repeat
+PF04195	Putative gypsy type transposon	pfam	family
+PF04246	Positive regulator of sigma(E), RseC/MucC	pfam	family
+PF04257	Exodeoxyribonuclease V, gamma subunit	pfam	family
+PF04503	Single-stranded DNA binding protein, SSDP	pfam	family
+PF04615	Utp14 protein	pfam	family
+PF04641	Rtf2 RING-finger	pfam	family
+PF04666	N-Acetylglucosaminyltransferase-IV (GnT-IV) conserved region	pfam	family
+PF04669	Polysaccharide biosynthesis	pfam	family
+PF04733	Coatomer epsilon subunit	pfam	repeat
+PF05110	AF-4 proto-oncoprotein N-terminal region	pfam	family
+PF05142	Domain of unknown function (DUF702)	pfam	family
+PF05187	Electron transfer flavoprotein-ubiquinone oxidoreductase, 4Fe-4S	pfam	family
+PF05205	COMPASS (Complex proteins associated with Set1p) component shg1	pfam	family
+PF05217	STOP protein	pfam	family
+PF05240	APOBEC-like C-terminal domain	pfam	domain
+PF05241	EXPERA (EXPanded EBP superfamily)	pfam	family
+PF05328	CybS, succinate dehydrogenase cytochrome B small subunit	pfam	family
+PF05345	Putative Ig domain	pfam	domain
+PF05450	Nicastrin	pfam	family
+PF05462	Slime mold cyclic AMP receptor	pfam	family
+PF05473	UL45 protein, carbohydrate-binding C-type lectin-like	pfam	family
+PF05588	Clostridium botulinum HA-17 domain	pfam	domain
+PF05753	Translocon-associated protein beta (TRAPB)	pfam	family
+PF05804	Kinesin-associated protein (KAP)	pfam	family
+PF05806	Noggin	pfam	family
+PF05808	Podoplanin	pfam	family
+PF05833	NFACT N-terminal and middle domains	pfam	family
+PF05834	Lycopene cyclase protein	pfam	family
+PF05879	Root hair defective 3 GTP-binding protein (RHD3) GTPase domain	pfam	domain
+PF05906	Herpesvirus-7 repeat of unknown function (DUF865)	pfam	repeat
+PF05954	Phage tail baseplate hub (GPD)	pfam	family
+PF05980	Toxin 7	pfam	family
+PF06079	Apyrase	pfam	family
+PF06293	Lipopolysaccharide kinase (Kdo/WaaP) family	pfam	family
+PF06325	Ribosomal protein L11 methyltransferase (PrmA)	pfam	family
+PF06346	Formin Homology Region 1	pfam	repeat
+PF06525	Sulfocyanin (SoxE) domain	pfam	domain
+PF06552	Plant specific mitochondrial import receptor subunit TOM20	pfam	repeat
+PF06589	Circumsporozoite-related antigen (CRA)	pfam	family
+PF06664	Wnt-binding factor required for Wnt secretion	pfam	family
+PF06723	MreB/Mbl protein	pfam	family
+PF06726	Bladder cancer-related protein BC10	pfam	family
+PF06728	GPI transamidase subunit PIG-U	pfam	family
+PF06790	Uncharacterised protein family (UPF0259)	pfam	family
+PF06818	Fez1	pfam	unknown
+PF06833	Malonate decarboxylase gamma subunit (MdcE)	pfam	family
+PF06840	Protein of unknown function (DUF1241)	pfam	family
+PF06910	Male enhanced antigen 1 (MEA1)	pfam	family
+PF07078	Forty-two-three protein	pfam	family
+PF07264	Etoposide-induced protein 2.4 (EI24)	pfam	family
+PF07554	FIVAR domain	pfam	domain
+PF07591	Pretoxin HINT domain	pfam	family
+PF07931	Chloramphenicol phosphotransferase-like protein	pfam	domain
+PF08036	Diapausin family of antimicrobial peptide	pfam	family
+PF08175	Small acid-soluble spore protein O family	pfam	family
+PF08182	Pedibin/Hym-346 family	pfam	family
+PF08258	WWamide peptide	pfam	family
+PF08261	Carcinustatin peptide	pfam	family
+PF08282	haloacid dehalogenase-like hydrolase	pfam	domain
+PF08284	Retroviral aspartyl protease	pfam	domain
+PF08428	Rib domain	pfam	domain
+PF08477	Ras of Complex, Roc, domain of DAPkinase	pfam	domain
+PF08616	Stabilization of polarity axis	pfam	family
+PF08647	BRE1 E3 ubiquitin ligase	pfam	family
+PF08700	Vps51/Vps67	pfam	family
+PF08816	Inhibitor of vertebrate lysozyme (Ivy)	pfam	family
+PF09136	Glucodextranase, domain B	pfam	domain
+PF09301	Domain of unknown function (DUF1970)	pfam	domain
+PF09670	CRISPR-associated protein (Cas_Cas02710)	pfam	family
+PF09742	Dyggve-Melchior-Clausen syndrome protein	pfam	family
+PF10199	Alpha and gamma adaptin binding protein p34	pfam	family
+PF10462	Peptidase M66	pfam	family
+PF10492	Nrf1 activator activation site binding domain	pfam	domain
+PF11044	Plectrovirus spv1-c74 ORF 12 transmembrane protein	pfam	family
+PF11362	Protein of unknown function (DUF3161)	pfam	family
+PF11414	Adenomatous polyposis coli tumour suppressor protein	pfam	family
+PF11474	Telomerase reverse transcriptase TEN domain	pfam	family
+PF11488	Transcriptional regulatory protein LGE1	pfam	family
+PF11523	Protein of unknown function (DUF3223)	pfam	family
+PF11578	Protein of unknown function (DUF3237)	pfam	family
+PF11594	Mediator complex subunit 28	pfam	family
+PF11600	Chromatin assembly factor 1 complex p150 subunit, N-terminal	pfam	unknown
+PF11715	Nucleoporin Nup120/160	pfam	repeat
+PF11726	Inovirus Gp2	pfam	family
+PF11918	N-terminal domain of Peptidase_S41 in eukaryotic IRBP	pfam	domain
+PF11969	Scavenger mRNA decapping enzyme C-term binding	pfam	family
+PF12014	Cyclin D1 binding domain	pfam	domain
+PF12298	Eukaryotic mitochondrial regulator protein	pfam	family
+PF12330	Haspin like kinase domain	pfam	family
+PF12352	Snare region anchored in the vesicle membrane C-terminus	pfam	domain
+PF12454	GPI-anchored cell wall organization protein	pfam	family
+PF12535	Hydrolase of X-linked nucleoside diphosphate N terminal	pfam	family
+PF12622	mRNA biogenesis factor	pfam	domain
+PF12639	DNase/tRNase domain of colicin-like bacteriocin	pfam	domain
+PF12669	FeoB-associated Cys-rich membrane protein	pfam	family
+PF12710	haloacid dehalogenase-like hydrolase	pfam	family
+PF12730	ABC-2 family transporter protein	pfam	family
+PF12749	Eukaryotic metallothionein	pfam	family
+PF12754	Blt1 N-terminal domain	pfam	domain
+PF12755	Vacuolar 14 Fab1-binding region	pfam	repeat
+PF12768	Cortical protein marker for cell polarity	pfam	family
+PF12775	P-loop containing dynein motor region	pfam	domain
+PF12784	PD-(D/E)XK nuclease family transposase	pfam	domain
+PF12789	Phage tail repeat like	pfam	repeat
+PF12810	Glycine rich protein	pfam	family
+PF12815	Spt5 C-terminal nonapeptide repeat binding Spt4	pfam	repeat
+PF12824	Mitochondrial ribosomal protein subunit L20	pfam	domain
+PF12831	FAD dependent oxidoreductase	pfam	family
+PF12836	Helix-hairpin-helix motif	pfam	domain
+PF12840	Helix-turn-helix domain	pfam	domain
+PF12846	AAA-like domain	pfam	domain
+PF12847	Methyltransferase domain	pfam	domain
+PF12860	PAS fold	pfam	domain
+PF12874	Zinc-finger of C2H2 type	pfam	domain
+PF12895	Anaphase-promoting complex, cyclosome, subunit 3	pfam	repeat
+PF12917	5'-deoxynucleotidase YfbR-like	pfam	family
+PF12974	ABC transporter, phosphonate, periplasmic substrate-binding protein	pfam	family
+PF13083	KH domain	pfam	domain
+PF13103	TonB C terminal	pfam	family
+PF13155	Toprim-like	pfam	family
+PF13177	DNA polymerase III, delta subunit	pfam	domain
+PF13189	Cytidylate kinase-like family	pfam	domain
+PF13207	AAA domain	pfam	domain
+PF13233	Complex1_LYR-like	pfam	family
+PF13238	AAA domain	pfam	domain
+PF13241	Putative NAD(P)-binding	pfam	domain
+PF13242	HAD-hyrolase-like	pfam	domain
+PF13245	AAA domain	pfam	domain
+PF13246	Cation transport ATPase (P-type)	pfam	family
+PF13248	zinc-ribbon domain	pfam	domain
+PF13263	PHP-associated	pfam	domain
+PF13275	S4 domain	pfam	domain
+PF13279	Thioesterase-like superfamily	pfam	domain
+PF13290	Chitobiase/beta-hexosaminidase C-terminal domain	pfam	domain
+PF13324	Grap2 and cyclin-D-interacting	pfam	family
+PF13328	HD domain	pfam	family
+PF13343	Bacterial extracellular solute-binding protein	pfam	family
+PF13347	MFS/sugar transport protein	pfam	family
+PF13353	4Fe-4S single cluster domain	pfam	domain
+PF13365	Trypsin-like peptidase domain	pfam	domain
+PF13370	4Fe-4S single cluster domain of Ferredoxin I	pfam	domain
+PF13371	Tetratricopeptide repeat	pfam	repeat
+PF13374	Tetratricopeptide repeat	pfam	repeat
+PF13376	Bacteriocin-protection, YdeI or OmpD-Associated	pfam	family
+PF13379	NMT1-like family	pfam	family
+PF13384	Homeodomain-like domain	pfam	domain
+PF13385	Concanavalin A-like lectin/glucanases superfamily	pfam	domain
+PF13394	4Fe-4S single cluster domain	pfam	domain
+PF13398	Peptidase M50B-like	pfam	family
+PF13410	Glutathione S-transferase, C-terminal domain	pfam	domain
+PF13412	Winged helix-turn-helix DNA-binding	pfam	domain
+PF13413	Helix-turn-helix domain	pfam	domain
+PF13414	TPR repeat	pfam	repeat
+PF13415	Galactose oxidase, central domain	pfam	repeat
+PF13418	Galactose oxidase, central domain	pfam	repeat
+PF13420	Acetyltransferase (GNAT) domain	pfam	domain
+PF13424	Tetratricopeptide repeat	pfam	repeat
+PF13425	O-antigen ligase like membrane protein	pfam	family
+PF13428	Tetratricopeptide repeat	pfam	repeat
+PF13429	Tetratricopeptide repeat	pfam	repeat
+PF13431	Tetratricopeptide repeat	pfam	repeat
+PF13432	Tetratricopeptide repeat	pfam	repeat
+PF13433	Periplasmic binding protein domain	pfam	domain
+PF13437	HlyD family secretion protein	pfam	family
+PF13440	Polysaccharide biosynthesis protein	pfam	family
+PF13444	Acetyltransferase (GNAT) domain	pfam	domain
+PF13447	Seven times multi-haem cytochrome CxxCH	pfam	domain
+PF13450	NAD(P)-binding Rossmann-like domain	pfam	domain
+PF13455	Meiotically up-regulated gene 113	pfam	family
+PF13459	4Fe-4S single cluster domain	pfam	domain
+PF13465	Zinc-finger double domain	pfam	domain
+PF13469	Sulfotransferase family	pfam	domain
+PF13479	AAA domain	pfam	domain
+PF13481	AAA domain	pfam	domain
+PF13483	Beta-lactamase superfamily domain	pfam	domain
+PF13484	4Fe-4S double cluster binding domain	pfam	domain
+PF13487	HD domain	pfam	domain
+PF13489	Methyltransferase domain	pfam	domain
+PF13500	AAA domain	pfam	domain
+PF13507	CobB/CobQ-like glutamine amidotransferase domain	pfam	domain
+PF13510	2Fe-2S iron-sulfur cluster binding domain	pfam	domain
+PF13512	Tetratricopeptide repeat	pfam	repeat
+PF13513	HEAT-like repeat	pfam	repeat
+PF13515	Fusaric acid resistance protein-like	pfam	family
+PF13518	Helix-turn-helix domain	pfam	domain
+PF13522	Glutamine amidotransferase domain	pfam	domain
+PF13523	Acetyltransferase (GNAT) domain	pfam	domain
+PF13524	Glycosyl transferases group 1	pfam	domain
+PF13527	Acetyltransferase (GNAT) domain	pfam	domain
+PF13528	Glycosyl transferase family 1	pfam	domain
+PF13531	Bacterial extracellular solute-binding protein	pfam	family
+PF13534	4Fe-4S dicluster domain	pfam	domain
+PF13535	ATP-grasp domain	pfam	domain
+PF13540	Regulator of chromosome condensation (RCC1) repeat	pfam	repeat
+PF13541	Subunit ChlI of Mg-chelatase	pfam	domain
+PF13549	ATP-grasp domain	pfam	domain
+PF13551	Winged helix-turn helix	pfam	domain
+PF13555	P-loop containing region of AAA domain	pfam	domain
+PF13558	SbcC/RAD50-like, Walker B motif	pfam	domain
+PF13560	Helix-turn-helix domain	pfam	domain
+PF13561	Enoyl-(Acyl carrier protein) reductase	pfam	domain
+PF13563	2'-5' RNA ligase superfamily	pfam	family
+PF13565	Homeodomain-like domain	pfam	domain
+PF13574	Metallo-peptidase family M12B Reprolysin-like	pfam	domain
+PF13578	Methyltransferase domain	pfam	domain
+PF13582	Metallo-peptidase family M12B Reprolysin-like	pfam	domain
+PF13583	Metallo-peptidase family M12B Reprolysin-like	pfam	domain
+PF13585	CHU_C Type IX secretion signal domain	pfam	domain
+PF13589	Histidine kinase-, DNA gyrase B-, and HSP90-like ATPase	pfam	domain
+PF13591	MerR HTH family regulatory protein	pfam	domain
+PF13596	PAS domain	pfam	domain
+PF13602	Zinc-binding dehydrogenase	pfam	domain
+PF13604	AAA domain	pfam	domain
+PF13616	PPIC-type PPIASE domain	pfam	domain
+PF13620	Carboxypeptidase regulatory-like domain	pfam	domain
+PF13622	Thioesterase-like superfamily	pfam	domain
+PF13623	SurA N-terminal domain	pfam	domain
+PF13624	SurA N-terminal domain	pfam	domain
+PF13641	Glycosyltransferase like family 2	pfam	domain
+PF13646	HEAT repeats	pfam	repeat
+PF13650	Aspartyl protease	pfam	domain
+PF13653	Glycerophosphoryl diester phosphodiesterase family	pfam	domain
+PF13668	Ferritin-like domain	pfam	domain
+PF13669	Glyoxalase/Bleomycin resistance protein/Dioxygenase superfamily	pfam	family
+PF13671	AAA domain	pfam	domain
+PF13672	Protein phosphatase 2C	pfam	family
+PF13688	Metallo-peptidase family M12	pfam	family
+PF13692	Glycosyl transferases group 1	pfam	domain
+PF13704	Glycosyl transferase family 2	pfam	family
+PF13710	ACT domain	pfam	domain
+PF13712	Glycosyltransferase like family	pfam	family
+PF13714	Phosphoenolpyruvate phosphomutase	pfam	domain
+PF13715	CarboxypepD_reg-like domain	pfam	domain
+PF13727	CoA-binding domain	pfam	domain
+PF13730	Helix-turn-helix domain	pfam	domain
+PF13738	Pyridine nucleotide-disulphide oxidoreductase	pfam	family
+PF13740	ACT domain	pfam	domain
+PF13743	Thioredoxin	pfam	domain
+PF13771	PHD-like zinc-binding domain	pfam	domain
+PF13772	AIG2-like family	pfam	family
+PF13794	tRNA-(MS[2]IO[6]A)-hydroxylase (MiaE)-like	pfam	domain
+PF13831	PHD-finger	pfam	family
+PF13832	PHD-zinc-finger like domain	pfam	domain
+PF13838	Clathrin-H-link	pfam	repeat
+PF13848	Thioredoxin-like domain	pfam	domain
+PF13854	Kelch motif	pfam	repeat
+PF13883	Pyridoxamine 5'-phosphate oxidase	pfam	domain
+PF13893	RNA recognition motif. (a.k.a. RRM, RBD, or RNP domain)	pfam	domain
+PF13894	C2H2-type zinc finger	pfam	domain
+PF13895	Immunoglobulin domain	pfam	domain
+PF13896	Glycosyl-transferase for dystroglycan	pfam	domain
+PF13899	Thioredoxin-like	pfam	domain
+PF13909	C2H2-type zinc-finger domain	pfam	domain
+PF13912	C2H2-type zinc finger	pfam	domain
+PF13913	zinc-finger of a C2HC-type	pfam	domain
+PF13917	Zinc knuckle	pfam	domain
+PF13920	Zinc finger, C3HC4 type (RING finger)	pfam	domain
+PF13921	Myb-like DNA-binding domain	pfam	domain
+PF13923	Zinc finger, C3HC4 type (RING finger)	pfam	domain
+PF13927	Immunoglobulin domain	pfam	domain
+PF13964	Kelch motif	pfam	repeat
+PF13975	gag-polyprotein putative aspartyl protease	pfam	domain
+PF14090	Helix-turn-helix domain	pfam	domain
+PF14223	gag-polypeptide of LTR copia-type	pfam	family
+PF14354	Restriction alleviation protein Lar	pfam	family
+PF14381	Ethylene-responsive protein kinase Le-CTR1	pfam	family
+PF14447	Prokaryotic RING finger family 4	pfam	family
+PF14450	Cell division protein FtsA	pfam	domain
+PF14477	Membrane-polarising domain of Mso1	pfam	domain
+PF14516	AAA-like domain	pfam	family
+PF14518	Iron-containing redox enzyme	pfam	family
+PF14520	Helix-hairpin-helix domain	pfam	domain
+PF14549	DNA-binding transcriptional regulator Cro	pfam	domain
+PF14555	UBA-like domain	pfam	domain
+PF14559	Tetratricopeptide repeat	pfam	repeat
+PF14561	Tetratricopeptide repeat	pfam	repeat
+PF14566	Inositol hexakisphosphate	pfam	domain
+PF14567	SMI1-KNR4 cell-wall	pfam	domain
+PF14568	SMI1-KNR4 cell-wall	pfam	domain
+PF14570	RING/Ubox like zinc-binding domain	pfam	domain
+PF14580	Leucine-rich repeat	pfam	repeat
+PF14595	Thioredoxin	pfam	family
+PF14597	Metallo-beta-lactamase superfamily	pfam	domain
+PF14598	PAS domain	pfam	domain
+PF14605	Nup53/35/40-type RNA recognition motif	pfam	domain
+PF14608	RNA-binding, Nab2-type zinc finger	pfam	domain
+PF14651	Lipocalin / cytosolic fatty-acid binding protein family	pfam	domain
+PF14670	Coagulation Factor Xa inhibitory site	pfam	domain
+PF14681	Uracil phosphoribosyltransferase	pfam	domain
+PF14696	Hydroxyphenylpyruvate dioxygenase, HPPD, N-terminal	pfam	domain
+PF14697	4Fe-4S dicluster domain	pfam	domain
+PF14707	C-terminal region of aryl-sulfatase	pfam	domain
+PF14709	double strand RNA binding domain from DEAD END PROTEIN 1	pfam	domain
+PF14741	N-terminal glycosyl-hydrolase-114-associated domain	pfam	domain
+PF14776	Cation-channel complex subunit UNC-79	pfam	family
+PF14787	GAG-polyprotein viral zinc-finger	pfam	domain
+PF14790	Tetrahydrodipicolinate N-succinyltransferase N-terminal	pfam	domain
+PF14801	tRNA methyltransferase complex GCD14 subunit N-term	pfam	domain
+PF14848	DNA-binding domain	pfam	domain
+PF14874	Flagellar-associated PapD-like	pfam	domain
+PF14890	Intein splicing domain	pfam	family
+PF14897	EpsG family	pfam	family
+PF14924	Protein of unknown function (DUF4497)	pfam	family
+PF14927	Neurensin	pfam	family
+PF14938	Soluble NSF attachment protein, SNAP	pfam	repeat
+PF14965	Negative regulator of p53/TP53	pfam	family
+PF14979	Transmembrane 52	pfam	family
+PF15035	Ciliary rootlet component, centrosome cohesion	pfam	family
+PF15083	Colipase-like	pfam	family
+PF15176	Leucine-rich repeat family 19 TM domain	pfam	domain
+PF15227	zinc finger of C3HC4-type, RING	pfam	domain
+PF15229	POM121 family	pfam	family
+PF15330	SHP2-interacting transmembrane adaptor protein, SIT	pfam	family
+PF15345	Transmembrane protein 51	pfam	family
+PF15365	Proline-rich nuclear receptor coactivator motif	pfam	conserved_site
+PF15385	Specifically androgen-regulated gene protein	pfam	family
+PF15402	MELT motif	pfam	conserved_site
+PF15411	Pleckstrin homology domain	pfam	domain
+PF15413	Pleckstrin homology domain	pfam	domain
+PF15458	Nineteen complex-related protein 2	pfam	family
+PF15632	ATP-grasp in the biosynthetic pathway with Ter operon	pfam	domain
+PF15692	NF-kappa-B-activating protein	pfam	family
+PF15695	Rec (regulator of expression encoded by corf) of HERV-K-113	pfam	family
+PF15714	Stage V sporulation protein T C-terminal, transcription factor	pfam	domain
+PF15720	Domain of unknown function (DUF4675)	pfam	family
+PF15827	UPF0730 unknown protein family	pfam	family
+PF15869	TolB-like 6-blade propeller-like	pfam	repeat
+PF15892	BNR repeat-containing family member	pfam	repeat
+PF15905	Hyaluronan mediated motility receptor N-terminal	pfam	unknown
+PF15967	Nucleoporin FG repeated region	pfam	family
+PF16015	Promethin	pfam	family
+PF16025	Calcium-dependent calmodulin binding	pfam	family
+PF16031	TonB polyproline region	pfam	unknown
+PF16057	Domain of unknown function (DUF4800)	pfam	family
+PF16101	Proline-rich membrane anchor 1	pfam	family
+PF16184	Cadherin-like	pfam	domain
+PF16189	Creatinase/Prolidase N-terminal domain	pfam	domain
+PF16285	Domain of unknown function (DUF4931)	pfam	family
+PF16300	Type of WD40 repeat	pfam	repeat
+PF16385	Domain of unknown function	pfam	family
+PF16389	Domain of unknown function	pfam	family
+PF16412	Domain of unknown function (DUF5020)	pfam	family
+PF16578	Interleukin 17 receptor D	pfam	domain
+PF16588	C2H2 zinc-finger	pfam	domain
+PF16596	Disordered region downstream of MFMR	pfam	unknown
+PF16597	Thyroglobulin_1 repeat associated disordered domain	pfam	unknown
+PF16598	Linker region of enhancer of mRNA-decapping protein 3	pfam	family
+PF16599	Unstructured linker region on PTN13 protein between PDZ	pfam	family
+PF16601	Rabosyn-5 repeating NPF sequence-motif	pfam	unknown
+PF16602	Linker region of USP19 deubiquitinase	pfam	unknown
+PF16605	LSM-interacting associated unstructured	pfam	unknown
+PF16606	Unstructured conserved, between two C2H2-type zinc-fingers	pfam	unknown
+PF16607	Phosphorylation region of CYLD, unstructured	pfam	unknown
+PF16609	SH3-RhoGEF linking unstructured region	pfam	unknown
+PF16610	Unstructured region between two PDZ domains on Dlg5	pfam	unknown
+PF16611	Unstructured region between RBD and GoLoco	pfam	unknown
+PF16612	C-terminal unstructured region of RGS12	pfam	unknown
+PF16613	Unstructured region of RGS12	pfam	unknown
+PF16614	Unstructured region two on RhoGEF 6 and 7	pfam	unknown
+PF16615	Unstructured region one on RhoGEF 6 and 7	pfam	unknown
+PF16616	Unstructured region on Polyhomeotic-like protein 1 and 2	pfam	unknown
+PF16618	Linker region between SH3 and WW domains on ARHGAP12	pfam	unknown
+PF16619	Unstructured region C-term to UIM in Ataxin3	pfam	unknown
+PF16620	Unstructured linker between I-set domains 2 and 3 on MYLCK	pfam	unknown
+PF16623	Unstructured linker region between on GAS7 protein	pfam	unknown
+PF16624	Unstructured region upstream of a zinc-finger	pfam	unknown
+PF16625	Unstructured linking region I-set and fnIII on Brother of CDO	pfam	unknown
+PF16626	Linking region between Kunitz_BPTI and I-set on papilin	pfam	unknown
+PF16627	Unstructured region between BRX_N and BRX domain	pfam	unknown
+PF16628	Unstructured region on maltose acetyltransferase	pfam	unknown
+PF16629	Armadillo-associated region on APC	pfam	unknown
+PF16630	Unstructured region on APC between 1st and 2nd catenin-bdg motifs	pfam	unknown
+PF16631	Unstructured region 4 on terminal uridylyltransferase 7	pfam	unknown
+PF16633	Unstructured region on APC between 1st two creatine-rich regions	pfam	unknown
+PF16634	Unstructured region on APC between APC_crr and SAMP	pfam	unknown
+PF16635	Unstructured region on APC between SAMP and APC_crr	pfam	unknown
+PF16636	Unstructured region on APC between APC_crr regions 5 and 6	pfam	unknown
+PF16637	Putative zinc-finger between two C2H2 zinc-fingers on Patz	pfam	unknown
+PF16638	Unstructured region on methyltransferase between zinc-fingers	pfam	unknown
+PF16642	Unstructured region on Potassium channel subunit alpha KvLQT2	pfam	unknown
+PF16643	Unstructured region on cNMP-binding protein	pfam	unknown
+PF16645	Unstructured region on Pneumococcal histidine triad protein	pfam	unknown
+PF16648	Unstructured region on Calpain-3	pfam	unknown
+PF16650	Unstructured region on SPEG complex protein	pfam	unknown
+PF16660	PHD finger protein 20-like protein 1	pfam	unknown
+PF16662	FLYWCH-type zinc finger-containing protein 1	pfam	unknown
+PF16663	Unstructured region on MAGI	pfam	unknown
+PF16664	Unstructured on SH3 and cysteine-rich domain-containing protein 2	pfam	unknown
+PF16665	Unstructured region on nuclear receptor coactivator protein	pfam	unknown
+PF16666	Unstructured region on MAGI	pfam	unknown
+PF16681	Ig-like domain on T-cell surface glycoprotein CD3 epsilon chain	pfam	domain
+PF16709	Ig domain of plant-specific actin-binding protein	pfam	domain
+PF16807	Domain of unknown function (DUF5072)	pfam	domain
+PF16907	Proline rich region of Caskin proteins	pfam	family
+PF16913	Purine nucleobase transmembrane transport	pfam	family
+PF16975	Ly6/PLAUR domain-containing protein 6, Lypd6	pfam	domain
+PF16999	Vacuolar (H+)-ATPase G subunit	pfam	unknown
+PF17069	Arginine/Serine-Rich protein 1	pfam	family
+PF17120	RING/Ubox like zinc-binding domain	pfam	domain
+PF17132	alpha-L-rhamnosidase	pfam	family
+PF17170	6-bladed beta-propeller	pfam	repeat
+PF17181	Epidermal patterning factor proteins	pfam	family
+PF17183	Get5 carboxyl domain	pfam	domain
+PF17186	Lipocalin-like domain	pfam	domain
+PF17242	Disordered region of unknown function (DUF5315)	pfam	family
+PF17316	Perilipin protein	pfam	family
+PF17380	Family of unknown function (DUF5401)	pfam	family
+PF17411	Type II site-specific deoxyribonuclease	pfam	family
+PF17499	Ant venom peptides	pfam	family
+PF17615	Family of unknown function	pfam	family
+PF17660	Bacterial tandem repeat domain 1	pfam	domain
+PF17733	Family of unknown function (DUF5572)	pfam	family
+PF17775	UPF0225 domain	pfam	domain
+PF17814	LisH-like dimerisation domain	pfam	domain
+PF17818	Keratinocyte-associated gene product	pfam	family
+PF17858	Platypus intermediate defensin-like peptide	pfam	domain
+PF17924	Tetracyclin repressor-like, C-terminal domain	pfam	domain
+PF17957	Bacterial Ig domain	pfam	domain
+PF17963	Bacterial Ig domain	pfam	domain
+PF18017	SAM domain (Sterile alpha motif)	pfam	domain
+PF18022	Ricin-type beta-trefoil lectin C-terminal domain	pfam	domain
+PF18056	Penicillin Binding Protein 3 Domain	pfam	domain
+PF18094	DNA polymerase beta N-terminal domain	pfam	domain
+PF18109	Ferredoxin I 4Fe-4S cluster domain	pfam	domain
+PF18143	HAD domain in Swiss Army Knife RNA repair proteins	pfam	family
+PF18144	Second Messenger Oligonucleotide or Dinucleotide Synthetase domain	pfam	domain
+PF18155	pPIWI RE three-gene island domain Z	pfam	domain
+PF18159	SMODS-associating 4TM effector domain	pfam	domain
+PF18204	PGF-CTERM motif	pfam	conserved_site
+PF18285	Tetracycline repressor LuxT C-terminal domain	pfam	domain
+PF18297	NFACT protein RNA binding domain	pfam	domain
+PF18333	Non-canonical single-stranded DNA-binding domain	pfam	domain
+PF18344	Carbohydrate binding module family 32	pfam	domain
+PF18345	Zinc finger domain	pfam	domain
+PF18414	C2H2 type zinc-finger	pfam	domain
+PF18428	BRCA1 C Terminus (BRCT) domain	pfam	domain
+PF18449	Delta endotoxin	pfam	domain
+PF18483	Bacterial lectin	pfam	domain
+PF18487	Thrombospondin type 1 repeat	pfam	repeat
+PF18506	RelB Antitoxin alpha helical domain	pfam	domain
+PF18570	NUP57/Nup54 C-terminal domain	pfam	unknown
+PF18647	Alpha-galactosyl-binding fungal lectin	pfam	domain
+PF18740	EC042_2821-lke REase	pfam	domain
+PF18741	REase_MTES_1575	pfam	domain
+PF18742	REase_DpnII-MboI	pfam	domain
+PF18745	Secreted Novel AID/APOBEC-like Deaminase 2	pfam	family
+PF18750	Secreted Novel AID/APOBEC-like Deaminase 4	pfam	family
+PF18760	ADP-Ribosyltransferase in polyvalent proteins	pfam	family
+PF18767	Activation induced deaminase	pfam	family
+PF18769	APOBEC1	pfam	family
+PF18772	APOBEC2	pfam	family
+PF18775	APOBEC4	pfam	family
+PF18778	Novel AID APOBEC clade 1	pfam	family
+PF18782	Novel AID APOBEC clade 2	pfam	family
+PF18785	Invertebrate-AID/APOBEC-deaminase	pfam	family
+PF18801	response regulator aspartate phosphatase H, N terminal	pfam	family
+PF18815	Bacterial antifreeze protein repeat	pfam	repeat
+PF18863	AbiJ N-terminal domain 4	pfam	domain
+PF18884	Bacterial TSP3 repeat	pfam	domain
+PF18889	Beta helix repeat	pfam	repeat
+PF18911	PKD domain	pfam	domain
+PF18933	PsbP-like protein	pfam	domain
+PF18953	SAP domain-containing new25	pfam	domain
+PF19030	Thrombospondin type 1 domain	pfam	domain
+PF19056	WD40 repeated domain	pfam	repeat
+PF19057	PH domain	pfam	domain
+PF19086	Terpene synthase family 2, C-terminal metal binding	pfam	domain
+PF19198	RsaA N-terminal domain	pfam	domain
+PF19239	GIY-YIG domain-containing protein	pfam	domain
+PF19278	Hydantoinase/oxoprolinase C-terminal domain	pfam	domain
+PF19302	Domain of unknown function (DUF5915)	pfam	domain
+PF19308	CRISPR Cas6 N-terminal domain	pfam	domain
+PF19345	Mycobacterial methylenetetrahydrofolate reductase	pfam	domain
+PF19409	Thiopeptide-type bacteriocin precursor	pfam	family
+PF19420	N,N dimethylarginine dimethylhydrolase, eukaryotic	pfam	family
+PF19521	Anaphase-promoting complex subunit 1 N-terminal	pfam	domain
+PF19619	Family of unknown function (DUF6124)	pfam	family
+PF19620	Family of unknown function (DUF6125)	pfam	family
+PF19785	Family of unknown function (UPF0738)	pfam	family
+PF19795	Family of unknown function (DUF6279)	pfam	family
+PF19798	Sulfotransferase domain	pfam	domain
+PF19859	Family of unknown function (DUF6333)	pfam	family
+PF19928	Domain of unknown function (DUF6391)	pfam	domain
+PF19981	Family of unknown function (DUF6417)	pfam	family
+PF19991	Heavy metal associated domain 2	pfam	domain
+PF20012	GTPase-associated protein 1, N-terminal domain type 1	pfam	domain
+PF20015	vWA-MoxR associated protein middle region (VMAP-M) 12	pfam	family
+PF20017	vWA-MoxR associated protein middle region (VMAP-M) 15	pfam	family
+PF20019	vWA-MoxR associated protein middle region 20	pfam	family
+PF20021	vWA-MoxR associated protein middle region (VMAP-M) 18	pfam	family
+PF20052	GTPase-associated protein 1, C-terminal domain	pfam	domain
+PF20055	Family of unknown function (DUF6454)	pfam	family
+PF20067	Strictosidine synthase-like, N-terminal	pfam	repeat
+PF20077	CcmD family protein	pfam	family
+PF20095	Domain of unknown function (DUF6485)	pfam	domain
+PF20143	ATP-NAD kinase C-terminal domain	pfam	domain
+PF20168	Sister chromatid cohesion protein PDS5 protein	pfam	repeat
+PF20242	Emfourin	pfam	family
+PF20434	BD-FAE	pfam	family
+PF20618	Bacterial GPD, NAD-dependent C-terminal	pfam	domain
