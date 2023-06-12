@@ -62,6 +62,9 @@ biotypes = {}
 #     "Anopheles gambiae".AgamP4.51.bmtsv.gz  "
 # }
 
+# def merge_uniprot(transcript_ids):
+
+
 def merge_pfam_unintegrated(interpro_map):
     """Recover data on Pfam entries lacking InterPro IDs
 
@@ -202,6 +205,7 @@ def get_proteins_url(organism):
           '<Dataset name = "' + brief_org + '_gene_ensembl" interface = "default" >' +
             '<Filter name = "with_interpro" excluded = "0"/>' +
             '<Attribute name = "ensembl_transcript_id" />' +
+            '<Attribute name = "ensembl_peptide_id" />' +
             '<Attribute name = "pfam" />' +
             '<Attribute name = "pfam_start" />' +
             '<Attribute name = "pfam_end" />' +
@@ -211,13 +215,6 @@ def get_proteins_url(organism):
     url = f"https://www.ensembl.org/biomart/martservice?query={query}"
     print('url', url)
     return url
-
-def parse_protein(row):
-    """Return parsed transcript-related protein from CSV-reader-split row of GFF file"""
-    feat_type = row[2]
-
-
-    return protein
 
 def parse_bmtsv(bmtsv_path):
     """Parse BMTSV into a set of Ensembl canonical transcript IDs
@@ -273,9 +270,8 @@ def parse_proteins(proteins_path, gff_path, interpro_map):
 
 
     missing_transcripts = []
-    protein_names_by_id = {}
-    proteins_by_transcript = {}
-    prev_protein = None
+    feature_names_by_id = {}
+    features_by_transcript = {}
     i = 0
     with open(proteins_path) as file:
         reader = csv.reader(file, delimiter="\t")
@@ -306,7 +302,8 @@ def parse_proteins(proteins_path, gff_path, interpro_map):
                 missing_transcripts.append(transcript_id)
                 continue
             transcript_name = transcript_names_by_id[transcript_id]
-            pfam_id = feature[1]
+            protein_id = feature[1]
+            pfam_id = feature[2]
             if pfam_id not in interpro_map:
                 pfams_not_in_interpro[pfam_id] = 1
                 continue
@@ -318,17 +315,17 @@ def parse_proteins(proteins_path, gff_path, interpro_map):
                 # LDLR-201's "PF14670" (Coagulation Factor Xa inhibitory site)
                 feat_id = pfam_id
 
-            [start, stop] = feature[2:4]
+            [start, stop] = feature[3:5]
             length = str(int(stop) - int(start))
-            if feat_id not in protein_names_by_id:
-                protein_names_by_id[feat_id] = feat_name
+            if feat_id not in feature_names_by_id:
+                feature_names_by_id[feat_id] = feat_name
 
             parsed_feat = ';'.join([feat_id, start, length])
 
-            if transcript_name in proteins_by_transcript:
-                proteins_by_transcript[transcript_name].append(parsed_feat)
+            if transcript_name in features_by_transcript:
+                features_by_transcript[transcript_name].append(parsed_feat)
             else:
-                proteins_by_transcript[transcript_name] = [parsed_feat]
+                features_by_transcript[transcript_name] = [parsed_feat]
 
             # [chr, start, stop, transcript, symbol, desc] = parsed_gene
             # length = str(int(stop) - int(start))
@@ -347,8 +344,8 @@ def parse_proteins(proteins_path, gff_path, interpro_map):
     tx_ids_by_name = {v: k for k, v in transcript_names_by_id.items()}
 
     proteins = []
-    for transcript in proteins_by_transcript:
-        tx_proteins = proteins_by_transcript[transcript]
+    for transcript in features_by_transcript:
+        tx_proteins = features_by_transcript[transcript]
         transcript_id = tx_ids_by_name[transcript]
         tx_proteins.insert(0, transcript)
         tx_proteins.insert(0, transcript_id)
@@ -356,7 +353,7 @@ def parse_proteins(proteins_path, gff_path, interpro_map):
 
     print('proteins[0:10]')
     print(proteins[0:10])
-    return [proteins, protein_names_by_id]
+    return [proteins, feature_names_by_id]
 
 
 class ProteinCache():
@@ -448,8 +445,8 @@ class ProteinCache():
         Consider parallelizing this.
         """
         # for organism in assemblies_by_org:
-        for organism in ["Homo sapiens", "Mus musculus"]:
-        # for organism in ["Homo sapiens"]:
+        # for organism in ["Homo sapiens", "Mus musculus"]:
+        for organism in ["Homo sapiens"]:
         # for organism in ["Mus musculus"]:
             self.populate_by_org(organism)
 
