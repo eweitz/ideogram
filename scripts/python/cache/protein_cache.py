@@ -62,7 +62,67 @@ biotypes = {}
 #     "Anopheles gambiae".AgamP4.51.bmtsv.gz  "
 # }
 
-# def merge_uniprot(transcript_ids):
+def merge_uniprot(features_by_transcript, transcript_names_by_id, feature_names_by_id):
+    """
+
+    SELECT ?protein ?transcript ?description ?begin ?end
+    WHERE
+    {
+        # Find all proteins in Homo sapiens (taxonomy ID 9606)
+        ?protein a up:Protein .
+        ?protein up:organism taxon:9606 .
+
+        # Among those, collect elements with an "rdfs:seeAlso" from Ensembl that are transcripts
+        ?protein rdfs:seeAlso ?transcript .
+        ?transcript up:database <http://purl.uniprot.org/database/Ensembl> .
+        ?transcript a up:Transcript_Resource .
+
+        # Among human proteins, get annotations that are for transmembrane or topology features
+        ?protein up:annotation ?annotation . # Among human proteins
+        VALUES ?tmOrTd { up:Transmembrane_Annotation up:Topological_Domain_Annotation }
+        ?annotation a ?tmOrTd .
+        ?annotation rdfs:comment ?description .
+
+        # And for those annotations, get their start and stop coordinates
+        ?annotation up:range ?range .
+        ?range faldo:begin/faldo:position ?begin .
+        ?range faldo:end/faldo:position ?end
+    }
+
+    """
+    uniprot_not_in_biomart = []
+    uniprot_not_in_digest = []
+
+    with open('data/proteins/homo-sapiens-topology-uniprot.tsv') as f:
+       lines = f.readlines()
+    i = 0
+    for line in lines[1:]:
+        i += 1
+        columns = line.strip().split('\t')
+        uniprot_id, transcript_id, name, start, stop = columns[0:5] # TODO: See if uniprot_id is omittable
+        transcript_id = transcript_id.split('.')[0] # E.g. ENST00000678548.1 -> ENST00000678548
+        if i < 10:
+            print('transcript_id ' + transcript_id)
+        if transcript_id not in transcript_names_by_id:
+            uniprot_not_in_biomart.append(transcript_id)
+            continue
+        transcript_name = transcript_names_by_id[transcript_id]
+        if transcript_name not in features_by_transcript:
+            uniprot_not_in_digest.append(transcript_name)
+            continue
+
+        name = name.replace(';', ' ---')
+        parsed_feat, feature_names_by_id = parse_feature(
+            name, start, stop, name, feature_names_by_id
+        )
+
+        features_by_transcript[transcript_name].append(parsed_feat)
+
+    # print(features_by_transcript)
+    # print('^ features_by_transcript')
+    print(f"# transcript IDs in UniProt results but not BioMart: {len(uniprot_not_in_biomart)}")
+    print(f"# transcript names in UniProt results but not digest: {len(uniprot_not_in_digest)}")
+    return features_by_transcript, feature_names_by_id
 
 
 def merge_pfam_unintegrated(interpro_map):
@@ -247,6 +307,15 @@ subpart_map = {
     'three_prime_UTR': '2',
 }
 
+def parse_feature(id, start, stop, name, names_by_id):
+    length = str(int(stop) - int(start))
+    if id not in names_by_id:
+        names_by_id[id] = name
+
+    parsed_feat = ';'.join([id, start, length])
+
+    return parsed_feat, names_by_id
+
 def parse_proteins(proteins_path, gff_path, interpro_map):
     """Parse proteins proteins from InterPro data in TSV file
     """
@@ -272,6 +341,7 @@ def parse_proteins(proteins_path, gff_path, interpro_map):
     missing_transcripts = []
     feature_names_by_id = {}
     features_by_transcript = {}
+    tx_by_protein_id = {}
     i = 0
     with open(proteins_path) as file:
         reader = csv.reader(file, delimiter="\t")
@@ -303,6 +373,7 @@ def parse_proteins(proteins_path, gff_path, interpro_map):
                 continue
             transcript_name = transcript_names_by_id[transcript_id]
             protein_id = feature[1]
+            tx_by_protein_id[transcript_id] = protein_id
             pfam_id = feature[2]
             if pfam_id not in interpro_map:
                 pfams_not_in_interpro[pfam_id] = 1
@@ -316,11 +387,10 @@ def parse_proteins(proteins_path, gff_path, interpro_map):
                 feat_id = pfam_id
 
             [start, stop] = feature[3:5]
-            length = str(int(stop) - int(start))
-            if feat_id not in feature_names_by_id:
-                feature_names_by_id[feat_id] = feat_name
 
-            parsed_feat = ';'.join([feat_id, start, length])
+            parsed_feat, feature_names_by_id = parse_feature(
+                feat_id, start, stop, feat_name, feature_names_by_id
+            )
 
             if transcript_name in features_by_transcript:
                 features_by_transcript[transcript_name].append(parsed_feat)
@@ -340,6 +410,10 @@ def parse_proteins(proteins_path, gff_path, interpro_map):
 
     num_missing = str(len(missing_transcripts))
     print('Number of transcript IDs lacking names:' + num_missing)
+
+    features_by_transcript, feature_names_by_id = merge_uniprot(
+        features_by_transcript, transcript_names_by_id, feature_names_by_id
+    )
 
     tx_ids_by_name = {v: k for k, v in transcript_names_by_id.items()}
 
