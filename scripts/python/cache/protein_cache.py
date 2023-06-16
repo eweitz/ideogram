@@ -64,31 +64,41 @@ biotypes = {}
 
 def merge_uniprot(features_by_transcript, transcript_names_by_id, feature_names_by_id):
     """
+    To reproduce "homo-sapiens-topology-uniprot.tsv":
 
-    SELECT ?protein ?transcript ?description ?begin ?end
-    WHERE
-    {
-        # Find all proteins in Homo sapiens (taxonomy ID 9606)
-        ?protein a up:Protein .
-        ?protein up:organism taxon:9606 .
+    1.  Go to https://sparql.uniprot.org
+    2.  Enter following SPARQL query:
 
-        # Among those, collect elements with an "rdfs:seeAlso" from Ensembl that are transcripts
-        ?protein rdfs:seeAlso ?transcript .
-        ?transcript up:database <http://purl.uniprot.org/database/Ensembl> .
-        ?transcript a up:Transcript_Resource .
+        SELECT ?protein ?transcript ?description ?begin ?end
+        WHERE
+        {
+            # Find all proteins in Homo sapiens (taxonomy ID 9606)
+            ?protein a up:Protein .
+            ?protein up:organism taxon:9606 .
 
-        # Among human proteins, get annotations that are for transmembrane or topology features
-        ?protein up:annotation ?annotation . # Among human proteins
-        VALUES ?tmOrTd { up:Transmembrane_Annotation up:Topological_Domain_Annotation }
-        ?annotation a ?tmOrTd .
-        ?annotation rdfs:comment ?description .
+            # Among those, collect elements with an "rdfs:seeAlso" from Ensembl that are transcripts
+            ?protein rdfs:seeAlso ?transcript .
+            ?transcript up:database <http://purl.uniprot.org/database/Ensembl> .
+            ?transcript a up:Transcript_Resource .
 
-        # And for those annotations, get their start and stop coordinates
-        ?annotation up:range ?range .
-        ?range faldo:begin/faldo:position ?begin .
-        ?range faldo:end/faldo:position ?end
-    }
+            # Among human proteins, get annotations that are for transmembrane or topology features
+            ?protein up:annotation ?annotation . # Among human proteins
+            VALUES ?tmOrTd { up:Transmembrane_Annotation up:Topological_Domain_Annotation }
+            ?annotation a ?tmOrTd .
+            ?annotation rdfs:comment ?description .
 
+            # And for those annotations, get their start and stop coordinates
+            ?annotation up:range ?range .
+            ?range faldo:begin/faldo:position ?begin .
+            ?range faldo:end/faldo:position ?end
+        }
+
+    3.  Click "Submit Query"
+    4.  Click "CSV"
+    5.  Remove various repetitive URLs and data types from CSV
+    6.  Upload CSV to Google Sheets
+    7.  Download as TSV
+    8.  Rename to "homo-sapiens-topology-uniprot.tsv", put in ideogram/scripts/python/data/proteins/
     """
     uniprot_not_in_biomart = []
     uniprot_not_in_digest = []
@@ -118,8 +128,6 @@ def merge_uniprot(features_by_transcript, transcript_names_by_id, feature_names_
 
         features_by_transcript[transcript_name].append(parsed_feat)
 
-    # print(features_by_transcript)
-    # print('^ features_by_transcript')
     print(f"# transcript IDs in UniProt results but not BioMart: {len(uniprot_not_in_biomart)}")
     print(f"# transcript names in UniProt results but not digest: {len(uniprot_not_in_digest)}")
     return features_by_transcript, feature_names_by_id
@@ -411,9 +419,10 @@ def parse_proteins(proteins_path, gff_path, interpro_map):
     num_missing = str(len(missing_transcripts))
     print('Number of transcript IDs lacking names:' + num_missing)
 
-    features_by_transcript, feature_names_by_id = merge_uniprot(
-        features_by_transcript, transcript_names_by_id, feature_names_by_id
-    )
+    if "homo-sapiens" in gff_path:
+        features_by_transcript, feature_names_by_id = merge_uniprot(
+            features_by_transcript, transcript_names_by_id, feature_names_by_id
+        )
 
     tx_ids_by_name = {v: k for k, v in transcript_names_by_id.items()}
 
@@ -519,8 +528,8 @@ class ProteinCache():
         Consider parallelizing this.
         """
         # for organism in assemblies_by_org:
-        # for organism in ["Homo sapiens", "Mus musculus"]:
-        for organism in ["Homo sapiens"]:
+        for organism in ["Homo sapiens", "Mus musculus"]:
+        # for organism in ["Homo sapiens"]:
         # for organism in ["Mus musculus"]:
             self.populate_by_org(organism)
 
