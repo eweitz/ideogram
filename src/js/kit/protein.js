@@ -8,8 +8,7 @@ import {addPositions, getGeneFromStructureName, pipe} from './gene-structure';
 import {getColors} from './protein-color';
 
 /** Get subtle line to visually demarcate domain boundary */
-function getDomainBorderLines(x, y, width, lineColor) {
-  const height = 10;
+function getDomainBorderLines(x, y, width, height, lineColor) {
   const lineHeight = y + height;
   const lineStroke = `stroke="${lineColor}"`;
   const leftLineAttrs =
@@ -69,7 +68,7 @@ function getCdsCoordinates(subparts, isPositiveStrand) {
 
 /** Get SVG for an inidividual protein domain */
 function getDomainSvg(domain, cds, isPositiveStrand) {
-  const domainType = domain[0];
+  let domainType = domain[0];
   const domainPx = domain[3];
 
   let x = cds.px.start + domainPx.x;
@@ -79,8 +78,14 @@ function getDomainSvg(domain, cds, isPositiveStrand) {
   };
 
   // Perhaps make these configurable, later
-  const y = 40;
-  const height = 10;
+  let y = 45;
+  let height = 10;
+  if (domainType.startsWith('_UT_')) {
+    domainType = domainType.slice(4);
+    y = 40;
+    height = 20;
+    // return;
+  }
 
   const lengthAa = `${domain[2]}&nbsp;aa`;
   const title = `data-subpart="${domainType} ${pipe} ${lengthAa}"`;
@@ -91,7 +96,7 @@ function getDomainSvg(domain, cds, isPositiveStrand) {
 
   const [color, lineColor] = getColors(domainType);
 
-  const line = getDomainBorderLines(x, y, width, lineColor);
+  const line = getDomainBorderLines(x, y, width, height, lineColor);
   const domainSvg =
     `<rect ${cls} rx="1.5" fill="${color}" ${pos} ${data}/>` +
     line;

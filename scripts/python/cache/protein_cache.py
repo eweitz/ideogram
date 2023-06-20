@@ -122,6 +122,7 @@ def merge_uniprot(features_by_transcript, transcript_names_by_id, feature_names_
             continue
 
         name = name.replace(';', ' ---')
+        name = "_UT_" + name
         parsed_feat, feature_names_by_id = parse_feature(
             name, start, stop, name, feature_names_by_id
         )
@@ -419,7 +420,7 @@ def parse_proteins(proteins_path, gff_path, interpro_map):
     num_missing = str(len(missing_transcripts))
     print('Number of transcript IDs lacking names:' + num_missing)
 
-    if "homo-sapiens" in gff_path:
+    if "Homo_sapiens" in gff_path:
         features_by_transcript, feature_names_by_id = merge_uniprot(
             features_by_transcript, transcript_names_by_id, feature_names_by_id
         )
@@ -528,8 +529,8 @@ class ProteinCache():
         Consider parallelizing this.
         """
         # for organism in assemblies_by_org:
-        for organism in ["Homo sapiens", "Mus musculus"]:
-        # for organism in ["Homo sapiens"]:
+        # for organism in ["Homo sapiens", "Mus musculus"]:
+        for organism in ["Homo sapiens"]:
         # for organism in ["Mus musculus"]:
             self.populate_by_org(organism)
 
