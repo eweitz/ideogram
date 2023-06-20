@@ -7,21 +7,35 @@
 import {addPositions, getGeneFromStructureName, pipe} from './gene-structure';
 import {getColors} from './protein-color';
 
-/** Get subtle line to visually demarcate domain boundary */
-function getDomainBorderLines(x, y, width, height, lineColor) {
-  const lineHeight = y + height;
+/** Get subtle line to visually demarcate feature boundary */
+function getFeatureBorderLines(
+  x, y, width, baseHeight, lineColor, addTopBottom=false
+) {
+  const height = y + baseHeight;
   const lineStroke = `stroke="${lineColor}"`;
   const leftLineAttrs =
-    `x1="${x}" x2="${x}" y1="${y}" y2="${lineHeight}" ${lineStroke}`;
+    `x1="${x}" x2="${x}" y1="${y}" y2="${height}" ${lineStroke}`;
 
   const x2 = x + width;
   const rightLineAttrs =
-    `x1="${x2}" x2="${x2}" y1="${y}" y2="${lineHeight}" ${lineStroke}`;
+    `x1="${x2}" x2="${x2}" y1="${y}" y2="${height}" ${lineStroke}`;
 
   const startBorder = `<line class="subpart-line" ${leftLineAttrs} />`;
   const endBorder = `<line class="subpart-line" ${rightLineAttrs} />`;
 
-  return startBorder + endBorder;
+  // Added to feature if any part of protein has topology data
+  let topBorder = '';
+  let bottomBorder = '';
+  if (addTopBottom) {
+    const topLineAttrs =
+      `x1="${x}" x2="${x2}" y1="${y}" y2="${y}" ${lineStroke}`;
+    const bottomLineAttrs =
+      `x1="${x}" x2="${x2}" y1="${height}" y2="${height}" ${lineStroke}`;
+    topBorder = `<line class="subpart-line" ${topLineAttrs} />`;
+    bottomBorder = `<line class="subpart-line" ${bottomLineAttrs} />`;
+  }
+
+  return startBorder + endBorder + topBorder + bottomBorder;
 }
 
 /** Get start and length for coding sequence (CDS), in pixels and base pairs */
@@ -66,37 +80,43 @@ function getCdsCoordinates(subparts, isPositiveStrand) {
   return cdsCoordinates;
 }
 
-/** Get SVG for an inidividual protein domain */
-function getDomainSvg(domain, cds, isPositiveStrand) {
-  let domainType = domain[0];
-  const domainPx = domain[3];
+function isTopologyFeature(feature) {
+  return feature[0].startsWith('_UT_');
+}
 
-  let x = cds.px.start + domainPx.x;
-  const width = domainPx.width;
+/** Get SVG for an inidividual protein domain */
+function getFeatureSvg(feature, cds, isPositiveStrand) {
+  let featureType = feature[0];
+  const featurePx = feature[3];
+
+  let x = cds.px.start + featurePx.x;
+  const width = featurePx.width;
   if (!isPositiveStrand) {
-    x = cds.px.length + cds.px.start - (domainPx.x + domainPx.width);
+    x = cds.px.length + cds.px.start - (featurePx.x + featurePx.width);
   };
 
   // Perhaps make these configurable, later
   let y = 45;
   let height = 10;
-  if (domainType.startsWith('_UT_')) {
-    domainType = domainType.slice(4);
+  const isTopology = isTopologyFeature(feature);
+  if (isTopology) {
+    featureType = featureType.slice(4);
     y = 40;
     height = 20;
     // return;
   }
 
-  const lengthAa = `${domain[2]}&nbsp;aa`;
-  const title = `data-subpart="${domainType} ${pipe} ${lengthAa}"`;
+  const lengthAa = `${feature[2]}&nbsp;aa`;
+  const title = `data-subpart="${featureType} ${pipe} ${lengthAa}"`;
   const data = title;
 
   const pos = `x="${x}" width="${width}" y="${y}" height="${height}"`;
   const cls = `class="subpart domain" `;
 
-  const [color, lineColor] = getColors(domainType);
+  const [color, lineColor] = getColors(featureType);
 
-  const line = getDomainBorderLines(x, y, width, height, lineColor);
+  const line =
+    getFeatureBorderLines(x, y, width, height, lineColor, !isTopology);
   const domainSvg =
     `<rect ${cls} rx="1.5" fill="${color}" ${pos} ${data}/>` +
     line;
@@ -118,7 +138,7 @@ function isEligibleforProteinSvg(gene, ideo) {
 
 /** Get SVG showing 2D protein features, e.g. domains from InterPro */
 export function getProteinSvg(structureName, subparts, isPositiveStrand, ideo) {
-  const features = [];
+  let features = [];
   const gene = getGeneFromStructureName(structureName, ideo);
 
   const isEligible = isEligibleforProteinSvg(gene, ideo);
@@ -134,11 +154,18 @@ export function getProteinSvg(structureName, subparts, isPositiveStrand, ideo) {
 
   const domains = addPositions(subparts, protein);
 
+  // const hasTopology = domains.some(d => isTopologyFeature(d));
+
   for (let i = 0; i < domains.length; i++) {
     const domain = domains[i];
-    const domainSvg = getDomainSvg(domain, cds, isPositiveStrand);
-    features.push(domainSvg);
+    const isTopology = isTopologyFeature(domain);
+    const svg = getFeatureSvg(domain, cds, isPositiveStrand);
+    features.push([svg, isTopology]);
   }
+
+  // Sort non-topology features last, so they're on top
+  features =
+    features.sort((a, b) => (a[1] === b[1])? 0 : a[1]? -1 : 1).map(e => e[0]);
 
   const proteinSvg =
     `<g id="_ideoProtein">${features.join('')}</g>`;
