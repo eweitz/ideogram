@@ -85,7 +85,7 @@ function isTopologyFeature(feature) {
 }
 
 /** Get SVG for an inidividual protein domain */
-function getFeatureSvg(feature, cds, isPositiveStrand) {
+function getFeatureSvg(feature, cds, isPositiveStrand, hasTopology) {
   let featureType = feature[0];
   const featurePx = feature[3];
 
@@ -96,14 +96,17 @@ function getFeatureSvg(feature, cds, isPositiveStrand) {
   };
 
   // Perhaps make these configurable, later
-  let y = 45;
+  let y = 40;
   let height = 10;
   const isTopology = isTopologyFeature(feature);
-  if (isTopology) {
-    featureType = featureType.slice(4);
-    y = 40;
-    height = 20;
-    // return;
+  if (hasTopology) {
+    y = 50;
+    if (isTopology) {
+      featureType = featureType.slice(4);
+      y = 40;
+      height = 30;
+      // return;
+    }
   }
 
   const lengthAa = `${feature[2]}&nbsp;aa`;
@@ -115,8 +118,9 @@ function getFeatureSvg(feature, cds, isPositiveStrand) {
 
   const [color, lineColor] = getColors(featureType);
 
+  const addTopBottom = hasTopology && !isTopology;
   const line =
-    getFeatureBorderLines(x, y, width, height, lineColor, !isTopology);
+    getFeatureBorderLines(x, y, width, height, lineColor, addTopBottom);
   const domainSvg =
     `<rect ${cls} rx="1.5" fill="${color}" ${pos} ${data}/>` +
     line;
@@ -137,13 +141,14 @@ function isEligibleforProteinSvg(gene, ideo) {
 }
 
 /** Get SVG showing 2D protein features, e.g. domains from InterPro */
-export function getProteinSvg(structureName, subparts, isPositiveStrand, ideo) {
+export function getProteinSvg(
+  structureName, subparts, isPositiveStrand, ideo
+) {
   let features = [];
   const gene = getGeneFromStructureName(structureName, ideo);
 
   const isEligible = isEligibleforProteinSvg(gene, ideo);
   if (!isEligible) return '';
-
 
   const entry = ideo.proteinCache[gene].find(d => {
     return d.transcriptName === structureName;
@@ -154,12 +159,12 @@ export function getProteinSvg(structureName, subparts, isPositiveStrand, ideo) {
 
   const domains = addPositions(subparts, protein);
 
-  // const hasTopology = domains.some(d => isTopologyFeature(d));
+  const hasTopology = domains.some(d => isTopologyFeature(d));
 
   for (let i = 0; i < domains.length; i++) {
     const domain = domains[i];
     const isTopology = isTopologyFeature(domain);
-    const svg = getFeatureSvg(domain, cds, isPositiveStrand);
+    const svg = getFeatureSvg(domain, cds, isPositiveStrand, hasTopology);
     features.push([svg, isTopology]);
   }
 
@@ -170,5 +175,5 @@ export function getProteinSvg(structureName, subparts, isPositiveStrand, ideo) {
   const proteinSvg =
     `<g id="_ideoProtein">${features.join('')}</g>`;
 
-  return proteinSvg;
+  return [proteinSvg, hasTopology];
 }
