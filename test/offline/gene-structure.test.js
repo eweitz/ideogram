@@ -45,14 +45,14 @@ describe('Ideogram gene structure functionality', function() {
     const ideogram = Ideogram.initRelatedGenes(config);
   });
 
-  it('shows basic protein domain organization', done => {
+  it('shows basic protein feature organization', done => {
     async function callback() {
       await ideogram.plotRelatedGenes('APOE');
       setTimeout(async function() {
-        const apobLabel = document.querySelector('#ideogramLabel__c1_a0');
-        apobLabel.dispatchEvent(new Event('mouseover'));
-        const subparts = document.querySelectorAll('rect.subpart');
-        assert.equal(subparts.length, 35); // RNA subparts and domains
+        const ldlrLabel = document.querySelector('#ideogramLabel__c18_a0');
+        ldlrLabel.dispatchEvent(new Event('mouseover'));
+        const subparts = document.querySelectorAll('rect.subpart.domain');
+        assert.equal(subparts.length, 21); // Protein features
         done();
       }, 500);
     }
