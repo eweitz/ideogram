@@ -107,13 +107,18 @@ function getFeatureSvg(feature, cds, isPositiveStrand, hasTopology) {
       y = 40;
       height = 30;
       if (
-        // E.g. SCARB1-201 protein isoform, C-terminal cytoplasmic domain
+        // E.g. EGF-206 alternative isoform, C-terminal cytoplasmic domain
+        isPositiveStrand && featurePx.x + featurePx.width > cds.px.length + 3 ||
+
+        // E.g. SCARB1-201 canonical isoform, C-terminal cytoplasmic domain
         !isPositiveStrand && featurePx.x + featurePx.width > cds.px.length + 3
       ) {
         const featureDigest = `${feature[0]} ${feature[1]} ${feature[2]}`;
         console.log(`Truncate protein topology feature: ${featureDigest}`);
-        width = width - ((featurePx.x + featurePx.width) - cds.px.length);
-        x += width;
+        width -= (featurePx.x + featurePx.width) - cds.px.length;
+        if (!isPositiveStrand) {
+          x += width;
+        }
       }
       topoAttr = 'data-topology="true"';
     }
