@@ -90,7 +90,7 @@ function getFeatureSvg(feature, cds, isPositiveStrand, hasTopology) {
   const featurePx = feature[3];
 
   let x = cds.px.start + featurePx.x;
-  const width = featurePx.width;
+  let width = featurePx.width;
   if (!isPositiveStrand) {
     x = cds.px.length + cds.px.start - (featurePx.x + featurePx.width);
   };
@@ -99,13 +99,23 @@ function getFeatureSvg(feature, cds, isPositiveStrand, hasTopology) {
   let y = 40;
   let height = 10;
   const isTopology = isTopologyFeature(feature);
+  let topoAttr = '';
   if (hasTopology) {
     y = 50;
     if (isTopology) {
       featureType = featureType.slice(4);
       y = 40;
       height = 30;
-      // return;
+      if (
+        // E.g. SCARB1-201 protein isoform, C-terminal cytoplasmic domain
+        !isPositiveStrand && featurePx.x + featurePx.width > cds.px.length + 3
+      ) {
+        const featureDigest = `${feature[0]} ${feature[1]} ${feature[2]}`;
+        console.log(`Truncate protein topology feature: ${featureDigest}`);
+        width = width - ((featurePx.x + featurePx.width) - cds.px.length);
+        x += width;
+      }
+      topoAttr = 'data-topology="true"';
     }
   }
 
@@ -122,7 +132,7 @@ function getFeatureSvg(feature, cds, isPositiveStrand, hasTopology) {
   const line =
     getFeatureBorderLines(x, y, width, height, lineColor, addTopBottom);
   const domainSvg =
-    `<rect ${cls} rx="1.5" fill="${color}" ${pos} ${data}/>` +
+    `<rect ${cls} rx="1.5" fill="${color}" ${pos} ${data} ${topoAttr}/>` +
     line;
 
   return domainSvg;
