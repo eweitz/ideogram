@@ -62,6 +62,78 @@ biotypes = {}
 #     "Anopheles gambiae".AgamP4.51.bmtsv.gz  "
 # }
 
+def merge_uniprot(features_by_transcript, transcript_names_by_id, feature_names_by_id):
+    """
+    To reproduce "homo-sapiens-topology-uniprot.tsv":
+
+    1.  Go to https://sparql.uniprot.org
+    2.  Enter following SPARQL query:
+
+        SELECT ?protein ?transcript ?description ?begin ?end
+        WHERE
+        {
+            # Find all proteins in Homo sapiens (taxonomy ID 9606)
+            ?protein a up:Protein .
+            ?protein up:organism taxon:9606 .
+
+            # Among those, collect elements with an "rdfs:seeAlso" from Ensembl that are transcripts
+            ?protein rdfs:seeAlso ?transcript .
+            ?transcript up:database <http://purl.uniprot.org/database/Ensembl> .
+            ?transcript a up:Transcript_Resource .
+
+            # Among human proteins, get annotations that are for transmembrane or topology features
+            ?protein up:annotation ?annotation . # Among human proteins
+            VALUES ?tmOrTd { up:Transmembrane_Annotation up:Topological_Domain_Annotation }
+            ?annotation a ?tmOrTd .
+            ?annotation rdfs:comment ?description .
+
+            # And for those annotations, get their start and stop coordinates
+            ?annotation up:range ?range .
+            ?range faldo:begin/faldo:position ?begin .
+            ?range faldo:end/faldo:position ?end
+        }
+
+    3.  Click "Submit Query"
+    4.  Click "CSV"
+    5.  Remove various repetitive URLs and data types from CSV
+    6.  Upload CSV to Google Sheets
+    7.  Download as TSV
+    8.  Rename to "homo-sapiens-topology-uniprot.tsv", put in ideogram/scripts/python/data/proteins/
+    """
+    uniprot_not_in_biomart = []
+    uniprot_not_in_digest = []
+
+    with open('data/proteins/homo-sapiens-topology-uniprot.tsv') as f:
+       lines = f.readlines()
+    i = 0
+    for line in lines[1:]:
+        i += 1
+        columns = line.strip().split('\t')
+        uniprot_id, transcript_id, name, start, stop = columns[0:5] # TODO: See if uniprot_id is omittable
+        transcript_id = transcript_id.split('.')[0] # E.g. ENST00000678548.1 -> ENST00000678548
+        if i < 10:
+            print('transcript_id ' + transcript_id)
+        if transcript_id not in transcript_names_by_id:
+            uniprot_not_in_biomart.append(transcript_id)
+            continue
+        transcript_name = transcript_names_by_id[transcript_id]
+        if transcript_name not in features_by_transcript:
+            uniprot_not_in_digest.append(transcript_name)
+            continue
+
+        name = name.replace(';', ' ---')
+        name = "_UT_" + name
+        parsed_feat, feature_names_by_id = parse_feature(
+            name, start, stop, name, feature_names_by_id
+        )
+
+        features_by_transcript[transcript_name].append(parsed_feat)
+
+    print(f"# transcript IDs in UniProt results but not BioMart: {len(uniprot_not_in_biomart)}")
+    print(f"# transcript names in UniProt results but not digest: {len(uniprot_not_in_digest)}")
+    return features_by_transcript, feature_names_by_id
+
+
 def merge_pfam_unintegrated(interpro_map):
     """Recover data on Pfam entries lacking InterPro IDs
 
@@ -202,6 +274,7 @@ def get_proteins_url(organism):
           '<Dataset name = "' + brief_org + '_gene_ensembl" interface = "default" >' +
             '<Filter name = "with_interpro" excluded = "0"/>' +
             '<Attribute name = "ensembl_transcript_id" />' +
+            '<Attribute name = "ensembl_peptide_id" />' +
             '<Attribute name = "pfam" />' +
             '<Attribute name = "pfam_start" />' +
             '<Attribute name = "pfam_end" />' +
@@ -211,13 +284,6 @@ def get_proteins_url(organism):
     url = f"https://www.ensembl.org/biomart/martservice?query={query}"
     print('url', url)
     return url
-
-def parse_protein(row):
-    """Return parsed transcript-related protein from CSV-reader-split row of GFF file"""
-    feat_type = row[2]
-
-
-    return protein
 
 def parse_bmtsv(bmtsv_path):
     """Parse BMTSV into a set of Ensembl canonical transcript IDs
@@ -250,6 +316,15 @@ subpart_map = {
     'three_prime_UTR': '2',
 }
 
+def parse_feature(id, start, stop, name, names_by_id):
+    length = str(int(stop) - int(start))
+    if id not in names_by_id:
+        names_by_id[id] = name
+
+    parsed_feat = ';'.join([id, start, length])
+
+    return parsed_feat, names_by_id
+
 def parse_proteins(proteins_path, gff_path, interpro_map):
     """Parse proteins proteins from InterPro data in TSV file
     """
@@ -273,9 +348,9 @@ def parse_proteins(proteins_path, gff_path, interpro_map):
 
 
     missing_transcripts = []
-    protein_names_by_id = {}
-    proteins_by_transcript = {}
-    prev_protein = None
+    feature_names_by_id = {}
+    features_by_transcript = {}
+    tx_by_protein_id = {}
     i = 0
     with open(proteins_path) as file:
         reader = csv.reader(file, delimiter="\t")
@@ -306,7 +381,9 @@ def parse_proteins(proteins_path, gff_path, interpro_map):
                 missing_transcripts.append(transcript_id)
                 continue
             transcript_name = transcript_names_by_id[transcript_id]
-            pfam_id = feature[1]
+            protein_id = feature[1]
+            tx_by_protein_id[transcript_id] = protein_id
+            pfam_id = feature[2]
             if pfam_id not in interpro_map:
                 pfams_not_in_interpro[pfam_id] = 1
                 continue
@@ -318,17 +395,16 @@ def parse_proteins(proteins_path, gff_path, interpro_map):
                 # LDLR-201's "PF14670" (Coagulation Factor Xa inhibitory site)
                 feat_id = pfam_id
 
-            [start, stop] = feature[2:4]
-            length = str(int(stop) - int(start))
-            if feat_id not in protein_names_by_id:
-                protein_names_by_id[feat_id] = feat_name
+            [start, stop] = feature[3:5]
 
-            parsed_feat = ';'.join([feat_id, start, length])
+            parsed_feat, feature_names_by_id = parse_feature(
+                feat_id, start, stop, feat_name, feature_names_by_id
+            )
 
-            if transcript_name in proteins_by_transcript:
-                proteins_by_transcript[transcript_name].append(parsed_feat)
+            if transcript_name in features_by_transcript:
+                features_by_transcript[transcript_name].append(parsed_feat)
             else:
-                proteins_by_transcript[transcript_name] = [parsed_feat]
+                features_by_transcript[transcript_name] = [parsed_feat]
 
             # [chr, start, stop, transcript, symbol, desc] = parsed_gene
             # length = str(int(stop) - int(start))
@@ -344,11 +420,16 @@ def parse_proteins(proteins_path, gff_path, interpro_map):
     num_missing = str(len(missing_transcripts))
     print('Number of transcript IDs lacking names:' + num_missing)
 
+    if "Homo_sapiens" in gff_path:
+        features_by_transcript, feature_names_by_id = merge_uniprot(
+            features_by_transcript, transcript_names_by_id, feature_names_by_id
+        )
+
     tx_ids_by_name = {v: k for k, v in transcript_names_by_id.items()}
 
     proteins = []
-    for transcript in proteins_by_transcript:
-        tx_proteins = proteins_by_transcript[transcript]
+    for transcript in features_by_transcript:
+        tx_proteins = features_by_transcript[transcript]
         transcript_id = tx_ids_by_name[transcript]
         tx_proteins.insert(0, transcript)
         tx_proteins.insert(0, transcript_id)
@@ -356,7 +437,7 @@ def parse_proteins(proteins_path, gff_path, interpro_map):
 
     print('proteins[0:10]')
     print(proteins[0:10])
-    return [proteins, protein_names_by_id]
+    return [proteins, feature_names_by_id]
 
 
 class ProteinCache():
@@ -448,8 +529,8 @@ class ProteinCache():
         Consider parallelizing this.
         """
         # for organism in assemblies_by_org:
-        for organism in ["Homo sapiens", "Mus musculus"]:
-        # for organism in ["Homo sapiens"]:
+        # for organism in ["Homo sapiens", "Mus musculus"]:
+        for organism in ["Homo sapiens"]:
         # for organism in ["Mus musculus"]:
             self.populate_by_org(organism)
 

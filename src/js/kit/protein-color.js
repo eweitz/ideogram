@@ -29,6 +29,8 @@ const blue = '#99D';
 const blueLines = '#22C';
 const lightBlue = '#CCF';
 const lightBlueLine = '#33D';
+const veryLightBlue = '#EEF';
+const veryLightBlueLine = '#AAF';
 const deepBlue = '#55A';
 const deepBlueLines = '#AAF';
 
@@ -56,8 +58,31 @@ const lightBrownLine = '#BAAB9A';
 const orange = '#FFA500';
 const orangeLines = '#DD8000';
 
+const yellow = '#FFFACD';
+const yellowLine = '#CCC89A';
+
+const lightOrange = '#FFEA66';
+const lightOrangeLine = '#FFB466';
+
 export function getColors(domainType) {
-  if (
+
+  if (domainType === 'Extracellular') {
+    return [veryLightBlue, veryLightBlueLine];
+  } else if (domainType === 'Cytoplasmic') {
+    return [yellow, yellowLine];
+  } else if (
+    domainType === 'Helical' ||
+    domainType.startsWith('Helical ---')
+  ) {
+    return [lightBrown, lightBrownLine];
+  } else if (
+    domainType === 'Lumenal'
+  ) {
+    return [lightOrange, lightOrangeLine];
+  }
+
+
+  else if (
     domainType.includes('conserved site') || // https://www.google.com/search?q=pymol+conserved+site+color&tbm=isch
     domainType.includes('conserved domain') ||
     domainType === 'WGR domain' ||

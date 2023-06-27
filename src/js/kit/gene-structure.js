@@ -1011,11 +1011,11 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
   const menu = getMenu(gene, ideo, structureName).replaceAll('"', '\'');
   const footerData = menu + footerDetails.join(` ${pipe} `);
 
-  const proteinSvg = getProteinSvg(
-    structureName, subparts, isPositiveStrand, ideo
-  );
+  const [proteinSvg, hasTopology] =
+    getProteinSvg(structureName, subparts, isPositiveStrand, ideo);
 
-  const svgHeight = proteinSvg === '' ? '40' : '60';
+  let svgHeight = proteinSvg === '' ? '40' : '60';
+  if (hasTopology) svgHeight = '70';
 
   const geneStructureSvg =
     `<svg class="_ideoGeneStructure" ` +
