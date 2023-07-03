@@ -809,8 +809,9 @@ function getTranscriptLengthBp(subparts, spliceExons=false) {
   return transcriptLengthBp;
 }
 
-/** Merge feature type, pixel-x position, and pixel width to each feature */
+/** Merge feature type, pixel-x position, and pixel width into each feature */
 export function addPositions(subparts, domains=null) {
+  console.log('subparts', subparts)
   const transcriptLengthPx = 250;
 
   const totalLengthBp = getTranscriptLengthBp(subparts);
@@ -843,6 +844,7 @@ function getSubpartSummary(subpartType, total, index, strand, lengthBp) {
   const prettyLength = lengthBp.toLocaleString();
   const html = `${prettyType} ${numOfTotal}${pipe} ${prettyLength} bp`;
   const summary = `data-subpart="${html}"`;
+  console.log('summary', summary)
   return summary;
 }
 
@@ -851,7 +853,7 @@ function getSubpartBorderLine(subpart) {
   const subpartType = subpart[0];
   // Define subpart border
   const x = subpart[3].x;
-  const height = heights[subpartType];
+  const height = heights[subpartType] ??= 20;
   const lineHeight = y + height;
   const lineStroke = `stroke="${lineColors[subpartType]}"`;
   const lineAttrs = // "";
@@ -957,7 +959,7 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
       color = colors[subpartType];
     }
 
-    const height = heights[subpartType];
+    const height = heights[subpartType] ??= 20;
 
     // Define subpart position, tooltip footer
     const lengthBp = subpart[2];

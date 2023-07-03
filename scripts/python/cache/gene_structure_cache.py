@@ -86,6 +86,28 @@ def get_bmtsv_url(organism):
     url = f"https://www.ensembl.org/biomart/martservice?query={query}"
     return url
 
+def get_mtar_bmtsv_url():
+    """Get URL to BMTSV file for miRNA target regions
+
+    This data is only available for human.
+    """
+
+    query = quote((
+        '<!DOCTYPE Query>' +
+        '<Query formatter="TSV" header="0" uniqueRows="0" count="" datasetConfigVersion="0.6">' +
+        '<Dataset name = "hsapiens_mirna_target_feature" interface = "default" >'
+            '<Attribute name = "display_label" />'
+            '<Attribute name = "gene_stable_id" />'
+            '<Attribute name = "chromosome_strand" />'
+            '<Attribute name = "chromosome_name" />'
+            '<Attribute name = "chromosome_start" />'
+            '<Attribute name = "chromosome_end" />'
+        '</Dataset>'
+        '</Query>'
+    ).encode("utf-8"))
+    url = f"https://www.ensembl.org/biomart/martservice?query={query}"
+    return url
+
 def parse_bmtsv_info_field(info):
     """Parse a BMTSV "INFO" field into a dictionary
     Example INFO field:
@@ -236,6 +258,34 @@ def parse_transcript_subpart(raw_subpart, mrna_start):
 
     return [subpart_type_compressed, start, length]
 
+# def parse_mtar_subpart(mtars_by_gene_id, gene_id):
+def parse_mtar_subpart(raw_mtar_subpart, mrna_start):
+    """
+    mtar = [mtar_name, chr, start, stop]
+    """
+    # mtar_structures = []
+    # [mrna, mrna_start, gene_id] = full_mrna
+    # if gene_id not in mtars_by_gene_id:
+    #     return full_mrna
+
+    # mtars = mtars_by_gene_id[gene_id]
+    # # for mtar in mtars:
+
+    # subpart_type_compressed = ""
+    # subpart_type = raw_subpart[1]
+    # if subpart_type in subpart_map:
+    #     subpart_type_compressed = subpart_map[subpart_type]
+    # else:
+    #     print('subpart_type: ', subpart_type)
+
+    # Use mRNA-relative start coordinate
+    start = get_length(mrna_start, raw_mtar_subpart[2])
+
+    # Length of this exon
+    length = get_length(raw_mtar_subpart[2], raw_mtar_subpart[3])
+
+    return [raw_mtar_subpart[0], start, length]
+
 def parse_mrna(raw_mrna, biotypes_list):
     # transcript_id, feat_type, chr, start, stop, strand, name, gene_id, biotype, transcript_support_level
     # ENST00000616016 mRNA    1       925741  944581  SAMD11-210      ENSG00000187634 protein_coding  5
@@ -249,33 +299,78 @@ def parse_mrna(raw_mrna, biotypes_list):
     strand = raw_mrna[5]
 
     name = raw_mrna[6]
-    # gene_id = raw_mrna[7]
+    gene_id = raw_mrna[7]
     biotype_compressed = str(biotypes_list.index(raw_mrna[8]))
 
     # return [transcript_id, chr, start, length, name, gene_id, biotype]
-    return [[transcript_id, name, biotype_compressed, strand], start]
+    return [[transcript_id, name, biotype_compressed, strand], start, gene_id]
 
-def build_structures(structures_by_id):
+def parse_microrna_targets(mtar_path):
+    """Parse TSV file of miRNA target regions (mtars) into mtars_by_gene_id
+
+    From https://grch37.ensembl.org/info/genome/funcgen/regulation_other.html
+    "microRNA target predictions using Diana TarBase"
+    """
+    mtars_by_gene_id = {}
+
+    with open(mtar_path) as f:
+        lines = f.readlines()
+
+    for line in lines[1:]:
+        # First 2 lines:
+        # miRNA identifier	Ensembl gene ID	Strand	Chromosome/scaffold name	Start (bp)	End (bp)
+        # hsa-let-7a-5p	ENSG00000002834	1	17	38921341	38921364
+        columns = line.strip().split("\t")
+        mtar_name = columns[0]
+        gene_id = columns[1]
+        [chr, start, stop] = columns[3:6]
+        mtar = [mtar_name, chr, start, stop]
+        # print('mtar', mtar)
+        if gene_id in mtars_by_gene_id:
+            mtars_by_gene_id[gene_id].append(mtar)
+        else:
+            mtars_by_gene_id[gene_id] = [mtar]
+    # print('mtars_by_gene_id.keys()')
+    # print(mtars_by_gene_id.keys())
+    print("mtars_by_gene_id['ENSG00000141510']")
+    print(mtars_by_gene_id['ENSG00000141510'])
+
+    # exit()
+    return mtars_by_gene_id
+
+
+
+def build_structures(structures_by_id, mtars_by_gene_id):
+
     biotypes_list = list(biotypes.keys())
 
+    # Get basic features for transcript
     structures = []
     for id in structures_by_id:
         structure_lists = structures_by_id[id]
         if structure_lists[0][1] != "mRNA":
             continue
         structure = []
-        [mrna, mrna_start] = parse_mrna(structure_lists[0], biotypes_list)
+        full_mrna = parse_mrna(structure_lists[0], biotypes_list)
+        [mrna, mrna_start, gene_id] = full_mrna
         structure += mrna
+        # gene_ids_by_transcript_id[id] = full_mrna
 
         for structure_list in structure_lists[1:]:
             subpart = parse_transcript_subpart(structure_list, mrna_start)
             structure += [";".join(subpart) ]
 
+        if gene_id in mtars_by_gene_id:
+            mtar_structure_lists = mtars_by_gene_id[gene_id]
+            for mtar_structure_list in mtar_structure_lists:
+                mtar_subpart = parse_mtar_subpart(mtar_structure_list, mrna_start)
+                structure += [";".join(mtar_subpart)]
+
         structures.append(structure)
 
     return structures
 
-def parse_structures(canonical_ids, gff_path, gff_url):
+def parse_structures(canonical_ids, gff_path, mtar_path):
     """Parse gene structures from transcripts in GFF file
 
     Genes usually have multiple transcripts, one of which is "canonical",
@@ -287,7 +382,7 @@ def parse_structures(canonical_ids, gff_path, gff_url):
         * 3'-UTR: Three prime untranslated region; start region
         * 5'-UTR: Fix prime untranslated region; end region
 
-    (Introns are the regions between 3'- and 5'-UTRs that are not exons.
+    (Introns are the regions in the transcript that are not exons.
     These are implied in the structure, and not modeled explicitly.)
     """
 
@@ -333,8 +428,10 @@ def parse_structures(canonical_ids, gff_path, gff_url):
             # slim_id = trim_id(id, prefix)
 
             # slim_genes.append([chr, start, length, slim_id, symbol, desc])
-
-    structures = build_structures(structures_by_id)
+    mtars_by_gene_id = {}
+    if mtar_path != "":
+        mtars_by_gene_id = parse_microrna_targets(mtar_path)
+    structures = build_structures(structures_by_id, mtars_by_gene_id)
     return structures
 
 def sort_structures(structures, organism, canonical_ids):
@@ -440,6 +537,22 @@ class GeneStructureCache():
             download(url, bmtsv_path, cache=self.reuse_bmtsv)
         return [bmtsv_path, url]
 
+    def fetch_mtar_ensembl_biomart_tsv(self, organism):
+        """Download an organism's miRNA target TSV file from Ensembl BioMart
+        """
+        print(f"Fetching miRNA target Ensembl BioMart TSV for {organism}")
+        url = get_mtar_bmtsv_url()
+        mtar_dir = self.tmp_dir + "mtar/"
+        if not os.path.exists(mtar_dir):
+            os.makedirs(mtar_dir)
+        org_lch = organism.lower().replace(" ", "-")
+        mtar_path = mtar_dir + org_lch + "-mirna.tsv"
+        try:
+            download(url, mtar_path, cache=self.reuse_bmtsv)
+        except urllib.error.HTTPError:
+            download(url, mtar_path, cache=self.reuse_bmtsv)
+        return [mtar_path, url]
+
     def write(self, structures, organism, gff_url, bmtsv_url):
         """Save fetched and transformed gene data to cache file
         """
@@ -482,7 +595,11 @@ class GeneStructureCache():
 
         [gff_path, gff_url] = fetch_gff(organism, self.output_dir, True)
 
-        structures = parse_structures(canonical_ids, gff_path, gff_url)
+        mtar_path = ''
+        if "sapiens" in organism:
+            [mtar_path, mtar_url] = self.fetch_mtar_ensembl_biomart_tsv(organism)
+
+        structures = parse_structures(canonical_ids, gff_path, mtar_path)
 
         sorted_structures = sort_structures(structures, organism, canonical_ids)
         refined_structures = compress_structures(sorted_structures)
@@ -496,7 +613,8 @@ class GeneStructureCache():
         Consider parallelizing this.
         """
         # for organism in assemblies_by_org:
-        for organism in ["Homo sapiens", "Mus musculus"]:
+        # for organism in ["Homo sapiens", "Mus musculus"]:
+        for organism in ["Homo sapiens"]:
             self.populate_by_org(organism)
 
 # Command-line handler

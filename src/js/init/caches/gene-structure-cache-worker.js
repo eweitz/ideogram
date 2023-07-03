@@ -5,12 +5,15 @@ function deserializeSubparts(rawSubparts, subpartKeys) {
   const subparts = [];
   for (let i = 0; i < rawSubparts.length; i++) {
     const rawSubpart = rawSubparts[i].split(';');
-    const subpartType = subpartKeys[parseInt(rawSubpart[0])];
+    const keyIndex = parseInt(rawSubpart[0]);
+    const subpartType =
+      !isNaN(keyIndex) ? subpartKeys[keyIndex] : rawSubpart[0];
     const start = parseInt(rawSubpart[1]);
     const length = parseInt(rawSubpart[2]);
     const subpart = [subpartType, start, length];
     subparts.push(subpart);
   }
+  // console.log('subparts', subparts)
   return subparts;
 }
 
