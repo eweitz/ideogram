@@ -62,7 +62,7 @@ biotypes = {}
 #     "Anopheles gambiae".AgamP4.51.bmtsv.gz  "
 # }
 
-def merge_uniprot(features_by_transcript, transcript_names_by_id, feature_names_by_id):
+def merge_uniprot(organism, features_by_transcript, transcript_names_by_id, feature_names_by_id):
     """
     To reproduce "homo-sapiens-topology-uniprot.tsv":
 
@@ -100,10 +100,12 @@ def merge_uniprot(features_by_transcript, transcript_names_by_id, feature_names_
     7.  Download as TSV
     8.  Rename to "homo-sapiens-topology-uniprot.tsv", put in ideogram/scripts/python/data/proteins/
     """
+    print(f"Merging UniPro features for {organism}")
     uniprot_not_in_biomart = []
     uniprot_not_in_digest = []
 
-    with open('data/proteins/homo-sapiens-topology-uniprot.tsv') as f:
+    org_lch = organism.lower().replace(" ", "-")
+    with open(f'data/proteins/{org_lch}-topology-uniprot.tsv') as f:
        lines = f.readlines()
     i = 0
     for line in lines[1:]:
@@ -325,7 +327,7 @@ def parse_feature(id, start, stop, name, names_by_id):
 
     return parsed_feat, names_by_id
 
-def parse_proteins(proteins_path, gff_path, interpro_map):
+def parse_proteins(proteins_path, gff_path, interpro_map, organism):
     """Parse proteins proteins from InterPro data in TSV file
     """
 
@@ -420,9 +422,9 @@ def parse_proteins(proteins_path, gff_path, interpro_map):
     num_missing = str(len(missing_transcripts))
     print('Number of transcript IDs lacking names:' + num_missing)
 
-    if "Homo_sapiens" in gff_path:
+    if "Homo_sapiens" in gff_path or "Mus_musculus" in gff_path:
         features_by_transcript, feature_names_by_id = merge_uniprot(
-            features_by_transcript, transcript_names_by_id, feature_names_by_id
+            organism, features_by_transcript, transcript_names_by_id, feature_names_by_id
         )
 
     tx_ids_by_name = {v: k for k, v in transcript_names_by_id.items()}
@@ -514,7 +516,7 @@ class ProteinCache():
         [proteins_path, proteins_url] = self.fetch_proteins_tsv(organism)
 
         interpro_map = self.interpro_map
-        [proteins, names_by_id] = parse_proteins(proteins_path, gff_path, interpro_map)
+        [proteins, names_by_id] = parse_proteins(proteins_path, gff_path, interpro_map, organism)
         sorted_proteins = sort_proteins(proteins, organism, canonical_ids)
         sorted_proteins = noncanonical_names(sorted_proteins)
 
@@ -529,8 +531,8 @@ class ProteinCache():
         Consider parallelizing this.
         """
         # for organism in assemblies_by_org:
-        # for organism in ["Homo sapiens", "Mus musculus"]:
-        for organism in ["Homo sapiens"]:
+        for organism in ["Homo sapiens", "Mus musculus"]:
+        # for organism in ["Homo sapiens"]:
         # for organism in ["Mus musculus"]:
             self.populate_by_org(organism)
 
