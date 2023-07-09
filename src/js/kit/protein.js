@@ -155,6 +155,20 @@ function isEligibleforProteinSvg(gene, ideo) {
   );
 }
 
+function getProteinRect(cds, hasTopology) {
+  const y = hasTopology ? '53.5' : '43.5';
+  const fill = hasTopology ? 'BBB' : 'DDD';
+  const stroke = hasTopology ? '555' : 'CCC';
+  const proteinRect =
+    `<rect class="_ideoProteinLine"` +
+      `x="${cds.px.start}" width="${cds.px.length}" ` +
+      `y="${y}" height="3" ` +
+      `fill="#${fill}" ` +
+      `stroke="#${stroke}" ` +
+    `/>`;
+  return proteinRect;
+}
+
 /** Get SVG showing 2D protein features, e.g. domains from InterPro */
 export function getProteinSvg(
   structureName, subparts, isPositiveStrand, ideo
@@ -176,16 +190,24 @@ export function getProteinSvg(
 
   const hasTopology = domains.some(d => isTopologyFeature(d));
 
+  const topologies = [];
   for (let i = 0; i < domains.length; i++) {
     const domain = domains[i];
     const isTopology = isTopologyFeature(domain);
     const svg = getFeatureSvg(domain, cds, isPositiveStrand, hasTopology);
-    features.push([svg, isTopology]);
+    if (isTopology) {
+      topologies.push(svg);
+    } else {
+      features.push(svg);
+    }
   }
 
-  // Sort non-topology features last, so they're on top
-  features =
-    features.sort((a, b) => (a[1] === b[1])? 0 : a[1]? -1 : 1).map(e => e[0]);
+  // Order SVG so protein domains, sites, etc. are in front,
+  // then unannotated protein,
+  // then protein topology features
+  const proteinRect = getProteinRect(cds, hasTopology);
+  topologies.push(proteinRect);
+  features = topologies.concat(features);
 
   const proteinSvg =
     `<g id="_ideoProtein">${features.join('')}</g>`;
