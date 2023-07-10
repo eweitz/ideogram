@@ -177,6 +177,7 @@ export function getColors(domainType) {
     domainType.endsWith('head') ||
     domainType.endsWith('C2 domain') ||
     domainType === 'Pleckstrin homology domain' ||
+    domainType === 'DEP domain' ||
     domainType === 'Post-SET domain' ||
     domainType.includes('Glycoside hydrolase') ||
     domainType === 'Pyridoxal phosphate-dependent decarboxylase' ||
@@ -242,7 +243,6 @@ export function getColors(domainType) {
     domainType === 'Variant SH3 domain' ||
     domainType.includes('copper-binding') ||
     domainType === 'Sushi/SCR/CCP domain' ||
-    domainType.includes('Receptor L-domain') ||
     domainType.includes('Coagulation factor 5/8') ||
     domainType === 'Basic-leucine zipper domain' ||
     domainType.includes('Interleukin') && domainType.includes('family') ||
@@ -259,12 +259,11 @@ export function getColors(domainType) {
     domainType === 'Retinoblastoma-associated protein, A-box' ||
     domainType.includes('Between PH and SH2') ||
     domainType === 'Chromogranin A/B/C' ||
-    domainType.includes('Helicase')
+    domainType.includes('Helicase') ||
+    domainType.endsWith('pro-domain')
   ) {
     return [seafoam, seafoamLines];
-  }
-
-  else if (
+  } else if (
     // Immunoglobulin domains are colored in the pink-purple spectrum
     domainType === 'Immunoglobulin-like domain' ||
     domainType === 'Major facilitator superfamily domain' ||
@@ -274,11 +273,14 @@ export function getColors(domainType) {
     domainType === 'Myosin tail' ||
     domainType === 'Acyl transferase' ||
     domainType === 'Sodium/solute symporter' ||
-    domainType.includes('foci domain')
+    domainType.includes('foci domain') ||
+    domainType.includes('Receptor L-domain') ||
+    domainType === 'Wnt'
   ) {
     return [pink, pinkLine];
   } else if (
     domainType === 'Immunoglobulin' ||
+    domainType === 'Immunoglobulin domain' ||
     domainType === 'CD20-like family' ||
     domainType === 'Calponin homology domain' ||
     domainType.includes('ATPase') ||
@@ -288,7 +290,6 @@ export function getColors(domainType) {
     domainType === 'Major facilitator,  sugar transporter-like' ||
     domainType === 'Major facilitator, sugar transporter-like' ||
     domainType === 'Sodium:neurotransmitter symporter' ||
-    domainType === 'Fibronectin type III' ||
     domainType === 'Myosin head, motor domain' ||
     domainType.startsWith('Methyltransferase') ||
     domainType === 'Rhodanese-like domain' ||
@@ -317,15 +318,18 @@ export function getColors(domainType) {
   ) {
     return [lightPurple, lightPurpleLine];
   } else if (
+    domainType === 'Fibronectin type III' ||
     domainType === 'Immunoglobulin C2-set' ||
     domainType.includes('immunoglobulin C2-set') ||
     domainType.includes('protein interaction') ||
-    domainType.includes('interacting')
+    domainType.includes('interacting') ||
+    domainType === 'Dishevelled protein domain'
   ) {
     return [purple, purpleLine];
   } else if (
     domainType === 'Immunoglobulin V-set domain' ||
-    domainType.includes('MHC class I') && !domainType.includes('C-terminal')
+    domainType.includes('MHC class I') && !domainType.includes('C-terminal') ||
+    domainType === 'Frizzled/Smoothened, 7TM'
   ) {
     return [darkPurple, darkPurpleLine];
   } else if (domainType === 'Immunoglobulin I-set') {
@@ -341,6 +345,7 @@ export function getColors(domainType) {
     domainType.startsWith('von Willebrand factor') ||
     domainType.endsWith('merisation domain') || // e.g. di- / tetramerisation
     domainType.endsWith('merisation motif') || // e.g. di- / tetramerisation
+    domainType === 'DIX domain' ||
     domainType === 'Ferritin-like diiron domain' ||
     domainType === 'PAS domain' ||
     domainType === 'PAS fold' ||
@@ -349,7 +354,8 @@ export function getColors(domainType) {
     domainType === 'G-patch domain' ||
     domainType === 'GPCR, rhodopsin-like, 7TM' ||
     domainType === 'GPCR, family 2, secretin-like' ||
-    domainType === 'Chromo domain'
+    domainType === 'Chromo domain' ||
+    domainType === 'Cytochrome P450'
   ) {
     return [orange, orangeLines];
   } else if (
