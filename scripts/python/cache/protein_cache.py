@@ -18,6 +18,46 @@ from urllib.parse import quote
 import json
 import xml.etree.ElementTree as ET
 
+# Some Pfam IDs in BioMart aren't in the UniProt export.
+# The IDs are in UniProt website, and almost all have notes like " Imported from IPR001841",
+# so seem valid nonetheless.  These IDs were manually mapped by going to e.g.
+# https://www.ebi.ac.uk/interpro/entry/pfam/PF02210/
+# and copying the feature's name to here.
+manual_pfam_map = {
+  "PF02210": "Laminin G domain", "PF12796": "Ankyrin repeats (3 copies)", "PF13181": "Tetratricopeptide repeat",
+  "PF12937": "F-box-like", "PF13606": "Ankyrin repeat", 'PF07647': "SAM domain (Sterile alpha motif)",
+  'PF13857': "Ankyrin repeats (many copies)", 'PF13833': "EF-hand domain pair", 'PF13499': 'EF-hand domain pair',
+  'PF14634': 'zinc-RING finger domain', 'PF13855': 'Leucine rich repeat', 'PF13716': 'Divergent CRAL/TRIO domain',
+  'PF17121': 'Zinc finger, C3HC4 type (RING finger)', 'PF13426': 'PAS domain', 'PF13516': 'Leucine Rich repeat',
+  'PF16457': 'Pleckstrin homology domain', 'PF14604': 'Variant SH3 domain', 'PF07653': 'Variant SH3 domain',
+  'PF16652': 'Pleckstrin homology domain', 'PF07648': 'Kazal-type serine protease inhibitor domain', 'PF19193': 'Tectonin domain',
+  'PF12698': 'ABC-2 family transporter protein', 'PF13304': 'AAA domain, putative AbiEii toxin, Type IV TA system', 'PF13202': 'EF hand',
+  'PF16746': 'BAR domain of APPL family', 'PF13405': 'EF-hand domain',
+  'PF09011': 'HMG-box domain', 'PF13517': 'FG-GAP-like repeat', 'PF07716': 'Basic region leucine zipper',
+  'PF16497': 'MHC-I family domain', 'PF13417': 'Glutathione S-transferase, N-terminal domain', 'PF13409': 'Glutathione S-transferase, N-terminal domain',
+  'PF16367': 'RNA recognition motif', 'PF16866': 'PHD-finger', 'PF17123': 'RING-like zinc finger',
+  'PF14719': 'Phosphotyrosine interaction domain (PTB/PID)', 'PF14497': 'Glutathione S-transferase, C-terminal domain', 'PF13885': 'Keratin, high sulfur B2 protein',
+  'PF16363': 'GDP-mannose 4,6 dehydratase', 'PF13185': 'GAF domain', 'PF13176': 'Tetratricopeptide repeat',
+  'PF13679': 'Methyltransferase domain', 'PF13638': 'PIN domain', 'PF13768': 'von Willebrand factor type A domain',
+  'PF14523': 'Syntaxin-like protein', 'PF13847': 'Methyltransferase domain', 'PF13903': 'PMP-22/EMP/MP20/Claudin tight junction',
+  'PF13537': 'Glutamine amidotransferase domain', 'PF06472': 'ABC transporter transmembrane region 2', 'PF01108': 'Tissue factor',
+  'PF11789': 'Zinc-finger of the MIZ type in Nse subunit', 'PF13676': 'TIR domain', 'PF12706': 'Beta-lactamase superfamily domain',
+  'PF16589': 'BRCT domain, a BRCA1 C-terminus domain', 'PF13905': 'Thioredoxin-like', 'PF15910': 'ICOS V-set domain',
+  'PF13519': 'von Willebrand factor type A domain', 'PF05225': 'helix-turn-helix, Psq domain', 'PF13023': 'HD domain',
+  'PF16661': 'Metallo-beta-lactamase superfamily domain', 'PF16045': 'LisH', 'PF13180': 'PDZ domain',
+  'PF13392': 'HNH endonuclease', 'PF13673': 'Acetyltransferase (GNAT) domain', 'PF17172': 'Glutathione S-transferase N-terminal domain',
+  'PF13897': 'Golgi-dynamics membrane-trafficking', 'PF12697': 'Alpha/beta hydrolase family', 'PF15966': 'F-box',
+  'PF15965': 'TRAF-like zinc-finger', 'PF15985': 'KH domain', 'PF17135': 'Ribosomal protein 60S L18 and 50S L18e',
+  'PF12738': 'twin BRCT domain', 'PF13041': 'PPR repeat family', 'PF13812': 'Pentatricopeptide repeat domain',
+  'PF05826': 'Phospholipase A2', 'PF14622': 'Ribonuclease-III-like', 'PF07724': 'AAA domain (Cdc48 subfamily)',
+  'PF13570': 'PQQ-like domain', 'PF13360': 'PQQ-like domain', 'PF16770': 'Regulator of Ty1 transposition protein 107 BRCT domain',
+  'PF14560': 'Ubiquitin-like domain', 'PF08007': 'JmjC domain', 'PF13599': 'Pentapeptide repeats (9 copies)',
+  'PF16794': 'Fibronectin-III type domain', 'PF07228': 'Stage II sporulation protein E (SpoIIE)', 'PF12718': 'Tropomyosin like',
+  'PF13757': 'Vault protein inter-alpha-trypsin domain', 'PF12838': '4Fe-4S dicluster domain', 'PF04909': 'Amidohydrolase',
+  'PF13718': 'GNAT acetyltransferase 2', 'PF08212': 'Lipocalin-like domain', 'PF13302': 'Acetyltransferase (GNAT) domain',
+  'PF15899': 'BNR-Asp box repeat', 'PF13564': 'DoxX-like family'
+}
+
 # Enable importing local modules when directly calling as script
 if __name__ == "__main__":
     cur_dir = os.path.join(os.path.dirname(__file__))
@@ -100,7 +140,7 @@ def merge_uniprot(organism, features_by_transcript, transcript_names_by_id, feat
     7.  Download as TSV
     8.  Rename to "homo-sapiens-topology-uniprot.tsv", put in ideogram/scripts/python/data/proteins/
     """
-    print(f"Merging UniPro features for {organism}")
+    print(f"Merging UniProt features for {organism}")
     uniprot_not_in_biomart = []
     uniprot_not_in_digest = []
 
@@ -113,8 +153,8 @@ def merge_uniprot(organism, features_by_transcript, transcript_names_by_id, feat
         columns = line.strip().split('\t')
         uniprot_id, transcript_id, name, start, stop = columns[0:5] # TODO: See if uniprot_id is omittable
         transcript_id = transcript_id.split('.')[0] # E.g. ENST00000678548.1 -> ENST00000678548
-        if i < 10:
-            print('transcript_id ' + transcript_id)
+        # if i < 10:
+        #     print('transcript_id ' + transcript_id)
         if transcript_id not in transcript_names_by_id:
             uniprot_not_in_biomart.append(transcript_id)
             continue
@@ -379,6 +419,7 @@ def parse_proteins(proteins_path, gff_path, interpro_map, organism):
             #     break
 
             transcript_id = feature[0]
+
             if transcript_id not in transcript_names_by_id:
                 missing_transcripts.append(transcript_id)
                 continue
@@ -386,10 +427,14 @@ def parse_proteins(proteins_path, gff_path, interpro_map, organism):
             protein_id = feature[1]
             tx_by_protein_id[transcript_id] = protein_id
             pfam_id = feature[2]
-            if pfam_id not in interpro_map:
+            if pfam_id not in interpro_map and pfam_id not in manual_pfam_map:
                 pfams_not_in_interpro[pfam_id] = 1
                 continue
-            feat_name, feat_type, interpro_id = interpro_map[pfam_id]
+            if pfam_id in interpro_map:
+                feat_name, feat_type, interpro_id = interpro_map[pfam_id]
+            else:
+                interpro_id = ''
+                feat_name = manual_pfam_map[pfam_id]
             if interpro_id != '':
                 feat_id = trim_id(interpro_id, "IPR")
             else:
@@ -439,6 +484,7 @@ def parse_proteins(proteins_path, gff_path, interpro_map, organism):
 
     print('proteins[0:10]')
     print(proteins[0:10])
+
     return [proteins, feature_names_by_id]
 
 
