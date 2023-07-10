@@ -97,11 +97,11 @@ function getFeatureSvg(feature, cds, isPositiveStrand, hasTopology) {
 
   // Perhaps make these configurable, later
   let y = 40;
-  let height = 10;
+  let height = 14;
   const isTopology = isTopologyFeature(feature);
   let topoAttr = '';
   if (hasTopology) {
-    y = 50;
+    y = 48;
     if (isTopology) {
       featureType = featureType.slice(4);
       y = 40;
@@ -133,7 +133,7 @@ function getFeatureSvg(feature, cds, isPositiveStrand, hasTopology) {
 
   const [color, lineColor] = getColors(featureType);
 
-  const addTopBottom = hasTopology && !isTopology;
+  const addTopBottom = !isTopology;
   const line =
     getFeatureBorderLines(x, y, width, height, lineColor, addTopBottom);
   const domainSvg =
@@ -156,13 +156,13 @@ function isEligibleforProteinSvg(gene, ideo) {
 }
 
 function getProteinRect(cds, hasTopology) {
-  const y = hasTopology ? '53.5' : '43.5';
+  const y = hasTopology ? '53' : '45';
   const fill = hasTopology ? 'BBB' : 'DDD';
-  const stroke = hasTopology ? '555' : 'CCC';
+  const stroke = hasTopology ? '555' : '777';
   const proteinRect =
     `<rect class="_ideoProteinLine"` +
       `x="${cds.px.start}" width="${cds.px.length}" ` +
-      `y="${y}" height="3" ` +
+      `y="${y}" height="4" ` +
       `fill="#${fill}" ` +
       `stroke="#${stroke}" ` +
     `/>`;

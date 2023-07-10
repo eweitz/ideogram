@@ -17,7 +17,7 @@ const darkGrey = '#888';
 const darkGreyLine = '#AAA';
 
 const red = '#F00';
-const redLines = '#D00';
+const redLines = '#800';
 const magenta = '#922D5E';
 const magentaLines = '#D26D9E';
 const faintRed = '#CAA';
@@ -35,7 +35,7 @@ const deepBlue = '#55A';
 const deepBlueLines = '#AAF';
 
 const green = '#7D7';
-const greenLines = '#5B5';
+const greenLines = '#393';
 const seafoam = '#93E9BE';
 const seafoamLines = '#53AC7E';
 
@@ -47,7 +47,7 @@ const purpleLine = '#5800A4';
 const purple2 = '#A020F0';
 const purple2Line = '#7000C0';
 const lightPurple = '#B24BF3';
-const lightPurpleLine = '#921BC3';
+const lightPurpleLine = '#520B83';
 const veryLightPurple = '#D7A1F9';
 const veryLightPurpleLine = '#A771C9';
 
@@ -130,7 +130,6 @@ export function getColors(domainType) {
     domainType.includes('OB C-terminal domain') ||
     domainType === 'Cationic amino acid transporter, C-terminal' ||
     domainType === 'High mobility group box domain' ||
-    domainType.includes('Peptidase M2') ||
     domainType.includes('CUB domain') ||
     domainType === 'C-5 cytosine methyltransferase' ||
     domainType.includes('(G-protein), alpha subunit') ||
@@ -165,7 +164,8 @@ export function getColors(domainType) {
     domainType === 'Rad52 family' ||
     domainType === 'Oxidoreductase FAD/NAD(P)-binding' ||
     domainType.includes('Bromo adjacent') ||
-    domainType === 'HARP domain'
+    domainType === 'HARP domain' ||
+    domainType === 'FATC domain'
   ) {
     return [blue, blueLines];
   } else if (
@@ -210,7 +210,8 @@ export function getColors(domainType) {
     domainType ===
       'Calcium/calmodulin-dependent protein kinase II, association-domain' ||
     domainType === 'Bromodomain' ||
-    domainType === 'SLIDE domain'
+    domainType === 'SLIDE domain' ||
+    domainType === 'Peptidase M24'
   ) {
     return [deepBlue, deepBlueLines];
   } else if (
