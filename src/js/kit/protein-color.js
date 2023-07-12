@@ -91,11 +91,11 @@ export function getColors(domainType) {
   } else if (
     domainType === 'Mitochondrial matrix'
   ) {
-    return [lightGreen, lightGreenLine];
+    return [veryLightGreen, veryLightGreenLine];
   } else if (
     domainType === 'Mitochondrial intermembrane'
   ) {
-    return [veryLightGreen, veryLightGreenLine];
+    return [lightGreen, lightGreenLine];
   }
 
 
