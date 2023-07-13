@@ -75,7 +75,13 @@ const veryLightGreenLine = '#CDC';
 
 export function getColors(domainType) {
 
-  if (domainType === 'Extracellular') {
+  // Signal peptides
+  if (domainType === '_SP') {
+    return ['#5D5', '#B60'];
+  }
+
+  // Topological features
+  else if (domainType === 'Extracellular') {
     return [veryLightBlue, veryLightBlueLine];
   } else if (domainType === 'Cytoplasmic') {
     return [yellow, yellowLine];
@@ -98,7 +104,7 @@ export function getColors(domainType) {
     return [lightGreen, lightGreenLine];
   }
 
-
+  // Sites, domains, features, and other entries
   else if (
     domainType.includes('conserved site') || // https://www.google.com/search?q=pymol+conserved+site+color&tbm=isch
     domainType.includes('conserved domain') ||
