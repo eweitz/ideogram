@@ -77,7 +77,7 @@ export function getColors(domainType) {
 
   // Signal peptides
   if (domainType === '_SP') {
-    return ['#5D5', '#B60'];
+    return ['#5D5', '#F90'];
   }
 
   // Topological features
@@ -174,7 +174,8 @@ export function getColors(domainType) {
     domainType.includes('Bromo adjacent') ||
     domainType === 'HARP domain' ||
     domainType === 'FATC domain' ||
-    domainType.startsWith('XRN2-binding')
+    domainType.startsWith('XRN2-binding') ||
+    domainType === 'SRCR-like domain'
   ) {
     return [blue, blueLines];
   } else if (
@@ -417,6 +418,7 @@ export function getColors(domainType) {
     domainType.includes('Collectrin') ||
     domainType.includes('cytoplasmic domain') ||
     domainType.includes('membrane glycoprotein') ||
+    domainType === 'SEA domain' ||
     domainType === 'CD36 family' ||
     domainType === 'Hypoxia-inducible factor, alpha subunit' ||
     domainType === 'Hypoxia-inducible factor, alpha subunit-like' ||
