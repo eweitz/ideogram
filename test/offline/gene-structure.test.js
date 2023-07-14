@@ -52,7 +52,7 @@ describe('Ideogram gene structure functionality', function() {
         const ldlrLabel = document.querySelector('#ideogramLabel__c18_a0');
         ldlrLabel.dispatchEvent(new Event('mouseover'));
         const subparts = document.querySelectorAll('rect.subpart.domain');
-        assert.equal(subparts.length, 21); // Protein features
+        assert.equal(subparts.length, 22); // Protein features
         done();
       }, 500);
     }

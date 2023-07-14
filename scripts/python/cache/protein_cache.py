@@ -102,6 +102,44 @@ biotypes = {}
 #     "Anopheles gambiae".AgamP4.51.bmtsv.gz  "
 # }
 
+def merge_signalp(
+    signalp_path, features_by_transcript, transcript_names_by_id, feature_names_by_id
+):
+    print(f"Merging SignalP features from {signalp_path}")
+    num_txs_with_signal_peptides = 0
+    transcript_ids_not_found = []
+    transcript_names_not_found = []
+    with open(signalp_path) as file:
+        reader = csv.reader(file, delimiter="\t")
+        for signalp_row in reader:
+            if signalp_row[0][0] == "#":
+                # Skip header
+                continue
+            print('signalp_row', signalp_row)
+            transcript_id, protein_id, tm_or_notm, start, stop = signalp_row
+            if tm_or_notm == '':
+                continue
+            if transcript_id not in transcript_names_by_id:
+                transcript_ids_not_found.append(transcript_id)
+                continue
+            transcript_name = transcript_names_by_id[transcript_id]
+            if transcript_name not in features_by_transcript:
+                transcript_names_not_found.append(transcript_id)
+                continue
+            name = '_SP'
+            parsed_feat, feature_names_by_id = parse_feature(
+                name, start, stop, name, feature_names_by_id
+            )
+
+            features_by_transcript[transcript_name].append(parsed_feat)
+            num_txs_with_signal_peptides += 1
+
+
+    print('Transcripts with signal peptides:', num_txs_with_signal_peptides)
+    print('Transcripts with SignalP but unfound transcript_id:', len(transcript_ids_not_found))
+    print('Transcripts with SignalP but unfound transcript_name:', len(transcript_names_not_found))
+    return features_by_transcript, feature_names_by_id
+
 def merge_uniprot(organism, features_by_transcript, transcript_names_by_id, feature_names_by_id):
     """
     To reproduce "homo-sapiens-topology-uniprot.tsv":
@@ -300,6 +338,33 @@ def sort_proteins(proteins, organism, canonical_ids):
 
     return sorted_proteins
 
+def get_signalp_url(organism):
+    """Get URL to SignalP TSV file, from Ensembl BioMart
+    E.g. https://www.ensembl.org/biomart/martservice?query=%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%3C%21DOCTYPE%20Query%3E%3CQuery%20virtualSchemaName%20%3D%20%22default%22%20formatter%20%3D%20%22TSV%22%20header%20%3D%20%220%22%20uniqueRows%20%3D%20%220%22%20count%20%3D%20%22%22%20datasetConfigVersion%20%3D%20%220.6%22%20%3E%3CDataset%20name%20%3D%20%22hsapiens_gene_ensembl%22%20interface%20%3D%20%22default%22%20%3E%3CFilter%20name%20%3D%20%22with_interpro%22%20excluded%20%3D%20%220%22/%3E%3CAttribute%20name%20%3D%20%22ensembl_transcript_id%22%20/%3E%3CAttribute%20name%20%3D%20%22ensembl_peptide_id%22%20/%3E%3CAttribute%20name%20%3D%20%22signalp%22%20/%3E%3CAttribute%20name%20%3D%20%22signalp_start%22%20/%3E%3CAttribute%20name%20%3D%20%22signalp_end%22%20/%3E%3C/Dataset%3E%3C/Query%3E
+    """
+
+    # E.g. "Homo sapiens" -> "hsapiens"
+    split_org = organism.split()
+    brief_org = (split_org[0][0] + split_org[1]).lower()
+
+    query = quote((
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<!DOCTYPE Query>'
+        '<Query virtualSchemaName = "default" formatter = "TSV" header = "0" uniqueRows = "0" count = "" datasetConfigVersion = "0.6" >' +
+          '<Dataset name = "' + brief_org + '_gene_ensembl" interface = "default" >' +
+            '<Filter name = "with_interpro" excluded = "0"/>' +
+            '<Attribute name = "ensembl_transcript_id" />' +
+            '<Attribute name = "ensembl_peptide_id" />' +
+            '<Attribute name = "signalp" />' +
+            '<Attribute name = "signalp_start" />' +
+            '<Attribute name = "signalp_end" />' +
+        '</Dataset>' +
+        '</Query>'
+    ).encode("utf-8"))
+    url = f"https://www.ensembl.org/biomart/martservice?query={query}"
+    print('url', url)
+    return url
+
 def get_proteins_url(organism):
     """Get URL to proteins TSV file, from Ensembl BioMart
     E.g. https://www.ensembl.org/biomart/martservice?query=%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%3C%21DOCTYPE%20Query%3E%3CQuery%20virtualSchemaName%20%3D%20%22default%22%20formatter%20%3D%20%22TSV%22%20header%20%3D%20%220%22%20uniqueRows%20%3D%20%220%22%20count%20%3D%20%22%22%20datasetConfigVersion%20%3D%20%220.6%22%20%3E%3CDataset%20name%20%3D%20%22hsapiens_gene_ensembl%22%20interface%20%3D%20%22default%22%20%3E%3CFilter%20name%20%3D%20%22with_interpro%22%20excluded%20%3D%20%220%22/%3E%3CAttribute%20name%20%3D%20%22ensembl_transcript_id%22%20/%3E%3CAttribute%20name%20%3D%20%22pfam%22%20/%3E%3CAttribute%20name%20%3D%20%22pfam_start%22%20/%3E%3CAttribute%20name%20%3D%20%22pfam_end%22%20/%3E%3C/Dataset%3E%3C/Query%3E
@@ -367,7 +432,7 @@ def parse_feature(id, start, stop, name, names_by_id):
 
     return parsed_feat, names_by_id
 
-def parse_proteins(proteins_path, gff_path, interpro_map, organism):
+def parse_proteins(proteins_path, gff_path, interpro_map, signalp_path, organism):
     """Parse proteins proteins from InterPro data in TSV file
     """
 
@@ -387,7 +452,6 @@ def parse_proteins(proteins_path, gff_path, interpro_map, organism):
             transcript_id = info["ID"].split('transcript:')[1]
             transcript_name = info["Name"]
             transcript_names_by_id[transcript_id] = transcript_name
-
 
     missing_transcripts = []
     feature_names_by_id = {}
@@ -472,6 +536,10 @@ def parse_proteins(proteins_path, gff_path, interpro_map, organism):
             organism, features_by_transcript, transcript_names_by_id, feature_names_by_id
         )
 
+    features_by_transcript, feature_names_by_id = merge_signalp(
+        signalp_path, features_by_transcript, transcript_names_by_id, feature_names_by_id
+    )
+
     tx_ids_by_name = {v: k for k, v in transcript_names_by_id.items()}
 
     proteins = []
@@ -527,6 +595,22 @@ class ProteinCache():
             download(url, proteins_path, cache=self.reuse_bmtsv)
         return [proteins_path, url]
 
+    def fetch_signalp_tsv(self, organism):
+        """Download an organism's SignalP TSV file from Ensembl BioMart
+        """
+        print(f"Fetching SignalP (signal peptides) via BioMart for {organism}")
+        url = get_signalp_url(organism)
+        proteins_dir = self.proteins_dir
+        org_lch = organism.lower().replace(" ", "-")
+        signalp_path = proteins_dir + org_lch + "-signalp.tsv"
+        try:
+            download(url, signalp_path, cache=self.reuse_bmtsv)
+        except urllib.error.HTTPError:
+            # E.g. for C. elegans
+            url = url.replace("chr.", "")
+            download(url, signalp_path, cache=self.reuse_bmtsv)
+        return [signalp_path, url]
+
     def write(self, proteins, organism, names_by_id):
         """Save fetched and transformed gene data to cache file
         """
@@ -560,9 +644,12 @@ class ProteinCache():
         [canonical_ids, bmtsv_url] = fetch_canonical_transcript_ids(organism)
         [gff_path, gff_url] = fetch_gff(organism, self.output_dir, True)
         [proteins_path, proteins_url] = self.fetch_proteins_tsv(organism)
+        [signalp_path, signalp_url] = self.fetch_signalp_tsv(organism)
 
         interpro_map = self.interpro_map
-        [proteins, names_by_id] = parse_proteins(proteins_path, gff_path, interpro_map, organism)
+        [proteins, names_by_id] = parse_proteins(
+            proteins_path, gff_path, interpro_map, signalp_path, organism
+        )
         sorted_proteins = sort_proteins(proteins, organism, canonical_ids)
         sorted_proteins = noncanonical_names(sorted_proteins)
 

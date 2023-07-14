@@ -84,6 +84,10 @@ function isTopologyFeature(feature) {
   return feature[0].startsWith('_UT_');
 }
 
+function isSignalPeptideFeature(feature) {
+  return feature[0].startsWith('_SP');
+}
+
 /** Get SVG for an inidividual protein domain */
 function getFeatureSvg(feature, cds, isPositiveStrand, hasTopology) {
   let featureType = feature[0];
@@ -99,6 +103,7 @@ function getFeatureSvg(feature, cds, isPositiveStrand, hasTopology) {
   let y = 40;
   let height = 14;
   const isTopology = isTopologyFeature(feature);
+  const isSignal = isSignalPeptideFeature(feature);
   let topoAttr = '';
   if (hasTopology) {
     y = 48;
@@ -124,14 +129,20 @@ function getFeatureSvg(feature, cds, isPositiveStrand, hasTopology) {
     }
   }
 
+  const [color, lineColor] = getColors(featureType);
+
+  if (isSignal) {
+    featureType = 'Signal peptide';
+    height = 8;
+    y += 3;
+  }
+
   const lengthAa = `${feature[2]}&nbsp;aa`;
   const title = `data-subpart="${featureType} ${pipe} ${lengthAa}"`;
   const data = title;
 
   const pos = `x="${x}" width="${width}" y="${y}" height="${height}"`;
   const cls = `class="subpart domain" `;
-
-  const [color, lineColor] = getColors(featureType);
 
   const addTopBottom = !isTopology;
   const line =
