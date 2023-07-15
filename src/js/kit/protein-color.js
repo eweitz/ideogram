@@ -81,7 +81,8 @@ export function getColors(domainType) {
   if (domainType === '_SP') {
     // return ['#F90', '#5D5'];
     // return ['#F90', '#090'];
-    return ['#F90', '#A30'];
+    // return ['#FF2', '#F99'];
+    return ['#FF2', '#F99'];
   }
 
   // Topological features
@@ -157,6 +158,10 @@ export function getColors(domainType) {
     domainType === 'Osteopontin'
   ) {
     return [faintRed, faintRedLines];
+  } else if (
+    domainType === 'EGF-like calcium-binding domain'
+  ) {
+    return [green, greenLines];
   } else if (
     // Binding sites, and smaller binding regions
     domainType.includes('binding site') ||
@@ -241,7 +246,6 @@ export function getColors(domainType) {
     domainType.includes('heparin-binding') ||
     domainType === 'SRCR domain' ||
     domainType === 'EGF-like domain' ||
-    domainType.includes('EGF domain') ||
     domainType === 'Basic leucine zipper domain, Maf-type' ||
     domainType.startsWith('Leucine zipper') ||
     domainType.includes('Interleukin') && domainType.includes('propeptide') ||
@@ -265,7 +269,8 @@ export function getColors(domainType) {
     domainType === 'Fibroblast growth factor family' ||
     domainType === 'Nerve growth factor-related' ||
     domainType === 'Transforming growth factor-beta, C-terminal' ||
-    domainType === 'Telomere-length maintenance and DNA damage repair'
+    domainType === 'Telomere-length maintenance and DNA damage repair' ||
+    domainType === 'PDGF/VEGF domain'
   ) {
     return [darkGreen, darkGreenLines];
   } else if (
@@ -277,7 +282,6 @@ export function getColors(domainType) {
     domainType.includes('Coagulation factor 5/8') ||
     domainType === 'Basic-leucine zipper domain' ||
     domainType === 'Basic region leucine zipper' ||
-    domainType.includes('Interleukin') && domainType.includes('family') ||
     domainType === 'Sirtuin family, catalytic core domain' ||
     domainType === 'Amine oxidase' ||
     domainType.includes('peroxidase') ||
@@ -293,7 +297,11 @@ export function getColors(domainType) {
     domainType === 'Chromogranin A/B/C' ||
     domainType.includes('Helicase') ||
     domainType.endsWith('pro-domain') ||
-    domainType === 'Brix domain'
+    domainType === 'Brix domain' ||
+    domainType === 'Coagulation Factor Xa inhibitory site' ||
+    domainType === 'Trypsin Inhibitor-like, cysteine rich domain' ||
+    domainType === 'EGF domain' ||
+    domainType === 'Peptidase M2, peptidyl-dipeptidase A'
   ) {
     return [seafoam, seafoamLines];
   } else if (
@@ -317,7 +325,9 @@ export function getColors(domainType) {
     domainType === 'PIK-related kinase, FAT' ||
     domainType.startsWith('von Willebrand factor, type A') ||
     domainType === 'Reeler domain' ||
-    domainType === 'BMP/retinoic acid-inducible neural-specific protein'
+    domainType === 'BMP/retinoic acid-inducible neural-specific protein' ||
+    domainType === 'Low-density lipoprotein (LDL) receptor class A repeat' ||
+    domainType === 'TILa domain'
   ) {
     return [pink, pinkLine];
   } else if (
@@ -339,7 +349,6 @@ export function getColors(domainType) {
     domainType === 'Retinoblastoma-associated protein, B-box' ||
     domainType === 'C-type lectin-like' ||
     domainType === 'VWFC domain' || // von Willebrand
-    domainType.startsWith('von Willebrand factor') ||
     domainType.endsWith('domain 1') ||
     domainType === 'Cadherin-like' ||
     domainType === ('BTB/Kelch-associated') // associated with BTB/POZ
@@ -363,7 +372,9 @@ export function getColors(domainType) {
     domainType === 'Netrin module, non-TIMP type' ||
     domainType === 'CFTR regulator domain' ||
     domainType.endsWith('domain 2') ||
-    domainType === 'GNAT domain'
+    domainType === 'GNAT domain' ||
+    domainType === 'NIDO domain' ||
+    domainType === 'von Willebrand domain, type D domain'
   ) {
     return [lightPurple, lightPurpleLine];
   } else if (
@@ -414,7 +425,8 @@ export function getColors(domainType) {
     domainType === 'G-protein coupled receptor' ||
     domainType === 'Chromo domain' ||
     domainType === 'Cytochrome P450' ||
-    domainType === 'Potassium channel domain'
+    domainType === 'Potassium channel domain' ||
+    domainType === 'G2 nidogen/fibulin G2F'
   ) {
     return [orange, orangeLines];
   } else if (
@@ -489,16 +501,16 @@ export function getColors(domainType) {
     return [darkGrey, darkGreyLine];
   } else if (
     domainType.includes('repeat') ||
-    domainType === 'Vitellinogen, open beta-sheet'
+    domainType === 'Vitellinogen, open beta-sheet' ||
+    domainType.includes('Interleukin') && domainType.includes('family') ||
+    /Interleukin-\d+$/.test(domainType) ||
+    domainType === 'Chemokine interleukin-8-like domain'
   ) {
     return [orange, orangeLines];
   } else if (
     domainType.includes('inhibit') ||
     domainType.includes('central') ||
     domainType === '[2Fe-2S]-binding' ||
-    domainType.startsWith('Interleukin') && domainType.endsWith('family') ||
-    /Interleukin-\d+$/.test(domainType) ||
-    domainType === 'Chemokine interleukin-8-like domain' ||
     domainType.endsWith('tail') ||
     domainType.endsWith('helical domain') ||
     domainType.endsWith('coiled-coil domain') ||
@@ -523,6 +535,10 @@ export function getColors(domainType) {
     domainType.includes('cysteine rich')
   ) {
     return [lightPurple, lightPurpleLine];
+  } else if (
+    domainType.startsWith('von Willebrand factor')
+  ) {
+    return [purple, purpleLine];
   } else if (
     // C-terminal regions are typically colored red in e.g. PyMol rainbow
     domainType.includes('C-termin') ||
