@@ -162,6 +162,10 @@ def parse_feature(gff_row, canonical_ids):
     if feat_type == "mRNA":
         # + (forward) or - (reverse)
         strand = gff_row[6]
+        # print('info', info)
+        if "Name" not in info:
+            # Seen with e.g. ENSG00000285629
+            return None
         name = info["Name"]
         gene_id = info["Parent"].split("gene:")[1]
         biotype = info["biotype"]
@@ -496,7 +500,8 @@ class GeneStructureCache():
         Consider parallelizing this.
         """
         # for organism in assemblies_by_org:
-        for organism in ["Homo sapiens", "Mus musculus"]:
+        # for organism in ["Homo sapiens", "Mus musculus"]:
+        for organism in ["Homo sapiens"]:
             self.populate_by_org(organism)
 
 # Command-line handler

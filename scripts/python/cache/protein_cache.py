@@ -450,6 +450,8 @@ def parse_proteins(proteins_path, gff_path, interpro_map, signalp_path, organism
             info = gff_row[8]
             info = parse_gff_info_field(info)
             transcript_id = info["ID"].split('transcript:')[1]
+            if "Name" not in info:
+                continue
             transcript_name = info["Name"]
             transcript_names_by_id[transcript_id] = transcript_name
 
@@ -664,8 +666,8 @@ class ProteinCache():
         Consider parallelizing this.
         """
         # for organism in assemblies_by_org:
-        for organism in ["Homo sapiens", "Mus musculus"]:
-        # for organism in ["Homo sapiens"]:
+        # for organism in ["Homo sapiens", "Mus musculus"]:
+        for organism in ["Homo sapiens"]:
         # for organism in ["Mus musculus"]:
             self.populate_by_org(organism)
 

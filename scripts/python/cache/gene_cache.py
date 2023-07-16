@@ -61,7 +61,7 @@ def get_gff_url(organism):
     """Get URL to GFF file
     E.g. https://ftp.ensembl.org/pub/release-102/gff3/homo_sapiens/Homo_sapiens.GRCh38.102.gff3.gz
     """
-    release = "102"
+    release = "109"
     base = f"https://ftp.ensembl.org/pub/release-{release}/gff3/"
     asm = assemblies_by_org[organism]
     org_us = organism.replace(" ", "_")
