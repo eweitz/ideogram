@@ -102,7 +102,7 @@ def merge_centromeres(bands_by_chr, centromeres, logger_obj):
             new_bands[chr].insert(pcen_index, pcen)
     return new_bands
 
-def parse_centromeres(bands_by_chr, logger_obj):
+def parse_centromeres(bands_by_chr, logger_obj, org):
     """Adds p and q arms to cytobands, by parsing embedded centromere bands.
 
     This is a special case for assigning cytogenetic arms to certain organisms
@@ -115,7 +115,7 @@ def parse_centromeres(bands_by_chr, logger_obj):
     """
     global logger
     logger = logger_obj
-    logger.info('Entering parse_centromeres')
+    logger.info(f'Entering parse_centromeres for {org}')
 
     # If centromeres aren't embedded in the input banding data,
     # then simply return the input without modification.

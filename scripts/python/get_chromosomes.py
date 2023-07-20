@@ -18,7 +18,7 @@ import fetch_chromosomes.utils as utils
 
 output_dir = '../../data/bands/native/'
 
-logger = settings.get_logger(output_dir, 'get_chromosomes')
+logger = settings.get_logger('get_chromosomes')
 
 if os.path.exists(output_dir) == False:
     os.mkdir(output_dir)
@@ -381,6 +381,9 @@ logger.info('Assembly UIDs returned in search results: ' + str(len(top_uid_list)
 
 non_ncbi_manifest = fetch_cytobands_from_dbs.main()
 
+logger.info('in get_chromosomes.py, non_ncbi_manifest')
+logger.info(non_ncbi_manifest)
+
 # TODO: Make this configurable
 num_threads = 1
 
@@ -389,14 +392,15 @@ uid_lists = chunkify(top_uid_list, num_threads)
 with ThreadPoolExecutor(max_workers=num_threads) as pool:
     pool.map(pool_processing, uid_lists)
 
-logger.info('manifest')
-logger.info(manifest)
 # logger.info('non_ncbi_manifest')
 # logger.info(non_ncbi_manifest)
 
-#non_ncbi_manifest.update(manifest)
+non_ncbi_manifest.update(manifest)
 
-#manifest = non_ncbi_manifest
+manifest = non_ncbi_manifest
+
+logger.info('manifest')
+logger.info(manifest)
 
 # Write a manifest of organisms for which we have cytobands.
 # This enables Ideogram.js to more quickly load those organisms.
@@ -404,8 +408,10 @@ pp = pprint.PrettyPrinter(indent=4)
 manifest = pp.pformat(manifest)
 manifest = "assemblyManifest = " + manifest
 
+manifest_path = '../../src/js/assembly-manifest.js'
 with open('../../src/js/assembly-manifest.js', 'w') as f:
     f.write(manifest)
+print(f'Wrote {manifest_path}')
 
 logger.info('Calling convert_band_data.py')
 convert_band_data.main()

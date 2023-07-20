@@ -9,11 +9,10 @@ def get_ensembl_cursor():
         user='anonymous',
         port=4157
     )
-    logger.info('Connected to Ensembl Genomes database')
     cursor = connection.cursor()
     return cursor
 
-def get_ensembl_chr_ids(cursor):
+def get_ensembl_chr_ids(cursor, db):
     """Get a map of Ensembl seq_region_ids to familiar chromosome names.
     Helper function for query_ensembl_karyotype_db.
 
@@ -22,7 +21,7 @@ def get_ensembl_chr_ids(cursor):
     """
 
     chr_ids = {}
-    logger.info('Started get_ensembl_chr_ids')
+    logger.info(f'Started get_ensembl_chr_ids, db: {db}')
     cursor.execute('''
       SELECT coord_system_id FROM coord_system
       WHERE name="chromosome" AND attrib="default_version"
@@ -43,7 +42,7 @@ def get_ensembl_chr_ids(cursor):
     return chr_ids
 
 def get_ensembl_asm_data(cursor, rows, db):
-    chr_ids = get_ensembl_chr_ids(cursor)
+    chr_ids = get_ensembl_chr_ids(cursor, db)
     if chr_ids == None:
         return None
 
@@ -75,6 +74,11 @@ def query_ensembl_karyotype_db(db_tuples_list):
     """
     cursor = get_ensembl_cursor()
     pq_results = []
+
+    logger.info(
+        'Connected to Ensembl Genomes MySQL server, ' +
+        f'querying for karyotypes in {len(db_tuples_list)} databases'
+    )
 
     for db_tuple in db_tuples_list:
         db, name_slug = db_tuple
@@ -152,6 +156,8 @@ def fetch_from_ensembl_genomes(times_obj, logger_obj):
 
     cursor.close()
 
+    logger.info('In ensembly.py, db_tuples:')
+    logger.info(db_tuples)
     org_map = pool_fetch_org_map(db_tuples)
 
     logger.info('before exiting with clause')
