@@ -1,11 +1,11 @@
-"""Converts cytogenetic band data from TSV to JSONP
+"""Converts cytogenetic band data from TSV to JSON
 
 Example:
 cd python/scripts
 python3 convert_band_data.py
 
 NCBI provides cytogenetic band data as a TSV file.
-This script parses those TSVs into JSONP, and assigns that to
+This script parses those TSVs into JSON, and assigns that to
 a global variable in any HTML document that includes the output
 file.
 
@@ -31,43 +31,49 @@ from os import walk
 # look up these local data files when assembly accession is specified in the
 # Ideogram constructor
 output_mappings = {
-    'ideogram_9606_GCF_000001305.14_850_V1': [
+    'ideogram_9606_GCF_000001305.14_850_V1': [ # Primary assembly unit for human GRCh38 / hg38
         'homo-sapiens',
-        'homo-sapiens-GCF_000001405.26'
+        'homo-sapiens-GCF_000001405.26' # Genome assembly for GRCh38 (contains primary assembly unit + more)
     ],
-    'ideogram_9606_GCF_000001305.14_550_V1': [
+    'ideogram_9606_GCF_000001305.14_550_V1': [ # Human, GRCh38 / hg38
         'homo-sapiens-550',
         'homo-sapiens-GCF_000001405.26-550'
     ],
-    'ideogram_9606_GCF_000001305.14_400_V1': [
+    'ideogram_9606_GCF_000001305.14_400_V1': [ # Human, GRCh38 / hg38
         'homo-sapiens-400',
         'homo-sapiens-GCF_000001405.26-400'
     ],
-    'ideogram_9606_GCF_000001305.13_850_V1': [
+    'ideogram_9606_GCF_009914755.1_850_V1': [ # Human, T2T-CHM13v2.0
+        'homo-sapiens-GCF_009914755.1'
+    ],
+    'ideogram_9606_GCF_000001305.13_850_V1': [ # Human, GRCh37 / hg19
         'homo-sapiens-GCF_000001405.13',
         'homo-sapiens-GCF_000001405.13-850'
     ],
-    'ideogram_9606_GCF_000001305.13_550_V1': [
+    'ideogram_9606_GCF_000001305.13_550_V1': [ # Human, GRCh37 / hg19
         'homo-sapiens-GCF_000001405.13-550'
     ],
-    'ideogram_9606_GCF_000001305.12_1200_V1': [
+    'ideogram_9606_GCF_000001305.12_1200_V1': [ # Human, NCBI36
         'homo-sapiens-GCF_000001405.12-1200'
     ],
-    'ideogram_9606_GCF_000001305.12_850_V1': [
+    'ideogram_9606_GCF_000001305.12_850_V1': [ # Human, NCBI36
         'homo-sapiens-GCF_000001405.12',
         'homo-sapiens-GCF_000001405.12-850'
     ],
-    'ideogram_9606_GCF_000001305.12_550_V1': [
+    'ideogram_9606_GCF_000001305.12_550_V1': [ # Human, NCBI36
         'homo-sapiens-GCF_000001405.12-550'
     ],
-    'ideogram_9606_GCF_000001305.12_400_V1': [
+    'ideogram_9606_GCF_000001305.12_400_V1': [ # Human, NCBI36
         'homo-sapiens-GCF_000001405.12-400'
     ],
-    'ideogram_10090_GCF_000000055.19_NA_V2': [
+    'ideogram_10090_GCF_000000055.20_NA_V2.tsv': [ # Mouse, GRCm39
         'mus-musculus',
+        'mus-musculus-GCF_000001635.27'
+    ],
+    'ideogram_10090_GCF_000000055.19_NA_V2': [ # Mouse, GRCm38
         'mus-musculus-GCF_000001635.20'
     ],
-    'ideogram_10116_GCF_000000225.4_NA_V1': [
+    'ideogram_10116_GCF_000000225.4_NA_V1': [ # Rat, Rnor_6.0 / rn6
         'rattus-norvegicus',
         'rattus-norvegicus-GCF_000001895.5'
     ]
