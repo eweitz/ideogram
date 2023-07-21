@@ -1,6 +1,7 @@
 """Download AGPs from NCBI and format chromosome data, including centromeres"""
 
 import urllib.request as request
+import urllib.error
 from urllib.parse import quote
 import ftplib
 import os
@@ -195,6 +196,7 @@ def write_centromere_data(organism, asm_name, asm_acc, output_dir, chrs):
 
 
 def download_genome_agp(ftp, asm):
+    logger.info('Entering download_genome_agp')
 
     agp_ftp_wd = asm['agp_ftp_wd']
     asm_acc = asm['acc']
@@ -211,6 +213,7 @@ def download_genome_agp(ftp, asm):
 
     status = change_ftp_dir(ftp, agp_ftp_wd)
     if status == 1:
+        logger.info('Error on change_ftp_dir, returning')
         return
 
     file_names = ftp.nlst()
@@ -225,7 +228,7 @@ def download_genome_agp(ftp, asm):
         # Example full URL of file:
         # 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF_000001515.7_Pan_tro_3.0/GCF_000001515.7_Pan_tro_3.0_assembly_structure/Primary_Assembly/assembled_chromosomes/AGP/chr1.agp.gz'
         logger.info(
-            'Retrieving from FTP (' + asm_name + ', ' + asm_acc + '): ' +
+            f'Retrieving from FTP ({organism}, {asm_name}, {asm_acc}): ' +
             file_name
         )
 
@@ -273,7 +276,7 @@ def download_genome_agp(ftp, asm):
 def find_genomes_with_centromeres(ftp, asm_summary_response):
     data = asm_summary_response
 
-    logger.info('numbers of keys in asm_summary_response:')
+    logger.info('In find_genomes_with_centromeres, numbers of keys in asm_summary_response:')
     logger.info(len(data['result'].keys()))
 
     for uid in data['result']:
@@ -340,16 +343,30 @@ def pool_processing(uid_list):
 
     asm_summary = esummary + '&db=assembly&id=' + uid_list
 
-    logger.info('Fetching ' + asm_summary)
+    logger.info('In get_chromosomes.py pool_processing.  Now fetching ' + asm_summary)
+    # breakpoint()
     # Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?retmode=json&db=assembly&id=733711
-    with request.urlopen(asm_summary) as response:
-        data = json.loads(response.read().decode('utf-8'))
+    try:
+        with request.urlopen(asm_summary) as response:
+            logger.info('response.status')
+            logger.info(response.status)
+            esummary_data = json.loads(response.read().decode('utf-8'))
+    except urllib.error.HTTPError as e:
+        # msg = (
+        #     f"Encountered HTTP error status code {response.status} "
+        #     f"in request for {asm_summary}"
+        # )
+        logger.error(e)
+        raise ValueError(e)
     time.sleep(3) # Delay for 3 seconds
+
+    # logger.info('In get_chromosomes.py, esummary_data:')
+    # logger.info(esummary_data)
 
     ftp = ftplib.FTP(ftp_domain)
     ftp.login()
 
-    find_genomes_with_centromeres(ftp, data)
+    find_genomes_with_centromeres(ftp, esummary_data)
 
     ftp.quit()
 
@@ -385,7 +402,7 @@ logger.info('in get_chromosomes.py, non_ncbi_manifest')
 logger.info(non_ncbi_manifest)
 
 # TODO: Make this configurable
-num_threads = 1
+num_threads = 3
 
 uid_lists = chunkify(top_uid_list, num_threads)
 
