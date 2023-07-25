@@ -10,6 +10,7 @@ import gzip
 import io
 from concurrent.futures import ThreadPoolExecutor
 import time
+import traceback
 import pprint
 
 import fetch_chromosomes.settings as settings
@@ -349,8 +350,15 @@ def chunkify(lst, n):
 
 
 def pool_processing(uid_list):
-    num_uids = len(uid_list)
+    logger.info(f'In get_chromosomes.py pool_processing.  raw uid_list:')
+    logger.info(uid_list)
+
+    # If uid_list is nested list, as with chunked use case in multi-thread mode
+    if hasattr(uid_list[0], '__len__') and (not isinstance(uid_list[0], str)):
+        uid_list = uid_list[0]
     uid_list = ','.join(uid_list)
+    num_uids = len(uid_list)
+
 
     asm_summary = esummary + '&db=assembly&id=' + uid_list
 
@@ -418,7 +426,14 @@ num_threads = 3
 uid_lists = chunkify(top_uid_list, num_threads)
 
 with ThreadPoolExecutor(max_workers=num_threads) as pool:
-    pool.map(pool_processing, uid_lists)
+    future = pool.submit(pool_processing, uid_lists)
+    try:
+        future.result()
+    except Exception as e:
+        logger.error('In main, error:')
+        logger.error(e)
+        trace = "".join(traceback.TracebackException.from_exception(e).format())
+        logger.error(trace)
 
 # logger.info('non_ncbi_manifest')
 # logger.info(non_ncbi_manifest)
