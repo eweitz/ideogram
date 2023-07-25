@@ -218,7 +218,7 @@ def download_genome_agp(ftp, asm):
 
     file_names = ftp.nlst()
 
-    logger.info('List of files in FTP working directory')
+    logger.info(f'List of files in FTP working directory for ({organism}, {asm_name})')
     logger.info(file_names)
     for file_name in file_names:
         # Download each chromomsome's compressed AGP file
@@ -276,8 +276,18 @@ def download_genome_agp(ftp, asm):
 def find_genomes_with_centromeres(ftp, asm_summary_response):
     data = asm_summary_response
 
-    logger.info('In find_genomes_with_centromeres, numbers of keys in asm_summary_response:')
+    logger.info('In find_genomes_with_centromeres, number of keys in asm_summary_response:')
     logger.info(len(data['result'].keys()))
+
+    organisms = []
+    for uid in data['result']:
+        if uid == 'uids':
+            continue
+        result = data['result'][uid]
+        organism = result['speciesname'].lower().replace(' ', '-').strip()
+        organisms.append(organism)
+    logger.info('In find_genomes_with_centromeres, organisms:')
+    logger.info(organisms)
 
     for uid in data['result']:
 
@@ -339,11 +349,12 @@ def chunkify(lst, n):
 
 
 def pool_processing(uid_list):
+    num_uids = len(uid_list)
     uid_list = ','.join(uid_list)
 
     asm_summary = esummary + '&db=assembly&id=' + uid_list
 
-    logger.info('In get_chromosomes.py pool_processing.  Now fetching ' + asm_summary)
+    logger.info(f'In get_chromosomes.py pool_processing.  Now fetching {num_uids} UIDs: {asm_summary}')
     # breakpoint()
     # Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?retmode=json&db=assembly&id=733711
     try:

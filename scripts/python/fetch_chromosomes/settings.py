@@ -15,7 +15,7 @@ def get_logger(file_name):
     ch = logging.StreamHandler()
     ch.setLevel(logging.ERROR)
     # create formatter and add it to the handlers
-    format = f'%(asctime)s - %(levelname)s - {file_name} - %(message)s'
+    format = f'%(asctime)s - %(levelname)s - {file_name} - %(thread)d - %(message)s'
     formatter = logging.Formatter(format)
     fh.setFormatter(formatter)
     ch.setFormatter(formatter)

@@ -500,8 +500,8 @@ class GeneStructureCache():
         Consider parallelizing this.
         """
         # for organism in assemblies_by_org:
-        # for organism in ["Homo sapiens", "Mus musculus"]:
-        for organism in ["Homo sapiens"]:
+        for organism in ["Homo sapiens", "Mus musculus"]:
+        # for organism in ["Homo sapiens"]:
             self.populate_by_org(organism)
 
 # Command-line handler
