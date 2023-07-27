@@ -120,7 +120,8 @@ export function getColors(domainType) {
     domainType.includes('catalytic domain') ||
     domainType === 'Proteasome component (PCI) domain' ||
     domainType === 'Sterol-sensing domain' ||
-    domainType === 'Erythropoietin/thrombopoietin'
+    domainType === 'Erythropoietin/thrombopoietin' ||
+    domainType === 'SPRY domain'
   ) {
     return [magenta, magentaLines];
   } else if (
@@ -155,7 +156,8 @@ export function getColors(domainType) {
     domainType.endsWith('tripeptidyl peptidase II') ||
     domainType === 'Prohormone convertase enzyme' ||
     domainType.includes('rod domain') ||
-    domainType === 'Osteopontin'
+    domainType === 'Osteopontin' ||
+    domainType === 'SPRY-associated'
   ) {
     return [faintRed, faintRedLines];
   } else if (
@@ -166,6 +168,7 @@ export function getColors(domainType) {
     // Binding sites, and smaller binding regions
     domainType.includes('binding site') ||
     domainType === 'EF-hand domain' ||
+    domainType.includes('EF hand-like') ||
     domainType === 'Zinc finger, nuclear hormone receptor-type' ||
     domainType.includes('Serpin domain') ||
     domainType === 'Peptidase C14,  p20 domain' ||
@@ -242,6 +245,7 @@ export function getColors(domainType) {
     return [deepBlue, deepBlueLines];
   } else if (
     domainType === 'SH2 domain' ||
+    domainType.includes('SH2-like domain') ||
     domainType.includes('Furin-like') ||
     domainType.includes('heparin-binding') ||
     domainType === 'SRCR domain' ||
@@ -270,7 +274,8 @@ export function getColors(domainType) {
     domainType === 'Nerve growth factor-related' ||
     domainType === 'Transforming growth factor-beta, C-terminal' ||
     domainType === 'Telomere-length maintenance and DNA damage repair' ||
-    domainType === 'PDGF/VEGF domain'
+    domainType === 'PDGF/VEGF domain' ||
+    domainType.includes('SH3-RhoGEF')
   ) {
     return [darkGreen, darkGreenLines];
   } else if (
@@ -294,6 +299,7 @@ export function getColors(domainType) {
     domainType.endsWith('Claudin superfamily') ||
     domainType === 'Retinoblastoma-associated protein, A-box' ||
     domainType.includes('Between PH and SH2') ||
+    domainType.includes('inter-SH2') ||
     domainType === 'Chromogranin A/B/C' ||
     domainType.includes('Helicase') ||
     domainType.endsWith('pro-domain') ||
@@ -313,6 +319,7 @@ export function getColors(domainType) {
     domainType === 'Class I myosin tail homology domain' ||
     domainType === 'Myosin tail' ||
     domainType === 'Acyl transferase' ||
+    domainType.startsWith('Acyl-CoA') ||
     domainType === 'JAK, FERM F2 lobe domain' ||
     domainType === 'Sodium/solute symporter' ||
     domainType.includes('foci domain') ||
@@ -390,14 +397,18 @@ export function getColors(domainType) {
     return [purple, purpleLine];
   } else if (
     domainType === 'Immunoglobulin V-set domain' ||
+    domainType.includes('V-set domain') ||
     domainType.includes('MHC class I') && !domainType.includes('C-terminal') ||
     domainType === 'Frizzled/Smoothened, 7TM' ||
     domainType.endsWith('domain 4') ||
     domainType === 'Integrin alpha-2' ||
-    domainType === 'Calcium-activated potassium channel BK, alpha subunit'
+    domainType === 'Calcium-activated potassium channel BK, alpha subunit' ||
+    domainType.includes('Dbl homology (DH) domain')
   ) {
     return [darkPurple, darkPurpleLine];
-  } else if (domainType === 'Immunoglobulin I-set') {
+  } else if (
+    domainType === 'Immunoglobulin I-set'
+  ) {
     return [purple2, purple2Line];
   }
 
@@ -524,6 +535,7 @@ export function getColors(domainType) {
     return [blue, blueLines];
   } else if (
     domainType.toLowerCase().includes('zinc finger') ||
+    domainType.includes('RING finger') ||
     domainType.toLowerCase().includes('transcription factor') ||
     domainType === 'BRK domain' ||
     domainType.includes('FAD-binding')
@@ -539,6 +551,11 @@ export function getColors(domainType) {
     domainType.startsWith('von Willebrand factor')
   ) {
     return [purple, purpleLine];
+  } else if (
+    domainType.toLowerCase().includes('golgi') ||
+    domainType === 'GOLD domain'
+  ) {
+    return [magenta, magentaLines];
   } else if (
     // C-terminal regions are typically colored red in e.g. PyMol rainbow
     domainType.includes('C-termin') ||
