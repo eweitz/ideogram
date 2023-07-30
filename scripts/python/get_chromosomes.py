@@ -217,6 +217,9 @@ def write_centromere_data(organism, asm_name, asm_acc, output_dir, chrs):
     with open(long_output_path, 'w') as f:
         f.write(js_chrs)
 
+
+    logger.info(f"Wrote Ideogram bands for {organism} to output_path: {output_path}")
+    logger.info(f"Wrote Ideogram bands for {organism} to long_output_path: {long_output_path}")
     manifest[organism] = [asm_acc, asm_name]
 
 
@@ -287,6 +290,10 @@ def download_genome_agp(ftp, asm):
         if "centromere" in str(agp):
             has_centromere_data = True
             orgs_with_centromere_data[organism] = 1
+            logger.info(
+                'Found centromere data in AGP for ' + organism + ' ' +
+                'in ' + file_name
+            )
         else:
             chr_name = file_name.split(".")[0]
             logger.info(
@@ -312,6 +319,10 @@ def download_genome_agp(ftp, asm):
                             chr2['centromere'] = centromeres[chr]
 
     if has_centromere_data:
+        logger.info(
+            'Writing centromeres for ' + organism + ' ' +
+            'genome assembly ' + asm_name
+        )
         write_centromere_data(organism, asm_name, asm_acc, output_dir, chrs)
 
 
@@ -389,7 +400,8 @@ def find_genomes_with_centromeres(asm_summary_response):
         try:
             download_genome_agp(ftp, asm)
         except Exception as e:
-            logger.warning(f'Caught Exception; sleep then reconnect FTP')
+            logger.warning(f'Caught Exception; sleep then reconnect FTP.  Exception')
+            logger.warning(e)
             ftp = ftplib.FTP(ftp_domain)
             ftp.login()
             download_genome_agp(ftp, asm)
