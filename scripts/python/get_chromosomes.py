@@ -221,6 +221,7 @@ def write_centromere_data(organism, asm_name, asm_acc, output_dir, chrs):
 
 
 def download_genome_agp(ftp, asm):
+    global orgs_with_centromere_data
     logger.info('Entering download_genome_agp')
 
     agp_ftp_wd = asm['agp_ftp_wd']
@@ -271,6 +272,12 @@ def download_genome_agp(ftp, asm):
 
         chr = get_chromosome_object(agp)
 
+        if (organism in ['homo-sapiens', 'mus-musculus']):
+            logger.info('in download_genome_agp. organism, chr, agp:')
+            logger.info(organism)
+            logger.info(chr)
+            logger.info(agp)
+
         chr_acc = chr['accession']
         if chr_acc not in chrs_seen:
             chr['name'] = file_name.split('.')[0].split('chr')[1]
@@ -308,8 +315,12 @@ def download_genome_agp(ftp, asm):
         write_centromere_data(organism, asm_name, asm_acc, output_dir, chrs)
 
 
-def find_genomes_with_centromeres(ftp, asm_summary_response):
+def find_genomes_with_centromeres(asm_summary_response):
     global asms
+
+    ftp = ftplib.FTP(ftp_domain)
+    ftp.login()
+
     data = asm_summary_response
 
     logger.info('In find_genomes_with_centromeres, number of keys in asm_summary_response:')
@@ -375,9 +386,17 @@ def find_genomes_with_centromeres(ftp, asm_summary_response):
             'regions_ftp': regions_ftp
         }
 
-        download_genome_agp(ftp, asm)
+        try:
+            download_genome_agp(ftp, asm)
+        except Exception as e:
+            logger.warning(f'Caught Exception; sleep then reconnect FTP')
+            ftp = ftplib.FTP(ftp_domain)
+            ftp.login()
+            download_genome_agp(ftp, asm)
 
         asms.append(asm)
+
+    ftp.quit()
 
 
 def chunkify(lst, n):
@@ -385,15 +404,18 @@ def chunkify(lst, n):
 
 
 def pool_processing(uid_list):
-    logger.info(f'In get_chromosomes.py pool_processing.  raw uid_list:')
+    logger.info(f'In get_chromosomes.py pool_processing.  len(uid_list): {len(uid_list)}, raw uid_list:')
     logger.info(uid_list)
 
     # If uid_list is nested list, as with chunked use case in multi-thread mode
     if hasattr(uid_list[0], '__len__') and (not isinstance(uid_list[0], str)):
         uid_list = uid_list[0]
+
+    logger.info(f'In get_chromosomes.py pool_processing.  processed len(uid_list): {len(uid_list)}, processed uid_list:')
+    logger.info(uid_list)
+
     uid_list = ','.join(uid_list)
     num_uids = len(uid_list)
-
 
     asm_summary = get_eutils_urls()['esummary'] + '&db=assembly&id=' + uid_list
 
@@ -416,21 +438,11 @@ def pool_processing(uid_list):
 
     # logger.info('In get_chromosomes.py, esummary_data:')
     # logger.info(esummary_data)
-
-    ftp = ftplib.FTP(ftp_domain)
-    ftp.login()
-
     try:
-        find_genomes_with_centromeres(ftp, esummary_data)
-    except EOFError as e:
-        logger.warning(f'Caught EOFError; sleep then reconnect FTP')
-        time.sleep(30)
-        ftp = ftplib.FTP(ftp_domain)
-        ftp.login()
-        find_genomes_with_centromeres(ftp, esummary_data)
-        ftp.quit()
-
-    ftp.quit()
+        find_genomes_with_centromeres(esummary_data)
+    except Exception as e:
+        logger.error('Error in pool_processing, find_genomes_with_centromeres.  e:')
+        logger.error(e)
 
 def main():
     global manifest
@@ -458,19 +470,20 @@ def main():
     logger.info(non_ncbi_manifest)
 
     # TODO: Make this configurable
-    num_threads = 3
+    num_threads = 5
 
     uid_lists = chunkify(top_uid_list, num_threads)
 
     with ThreadPoolExecutor(max_workers=num_threads) as pool:
-        future = pool.submit(pool_processing, uid_lists)
-        try:
-            future.result()
-        except Exception as e:
-            logger.error('In main, error:')
-            logger.error(e)
-            trace = "".join(traceback.TracebackException.from_exception(e).format())
-            logger.error(trace)
+        pool.map(pool_processing, uid_lists)
+        # future = pool.submit(pool_processing, uid_lists)
+        # try:
+        #     future.result()
+        # except Exception as e:
+        #     logger.error('In main, error:')
+        #     logger.error(e)
+        #     trace = "".join(traceback.TracebackException.from_exception(e).format())
+        #     logger.error(trace)
 
     # logger.info('non_ncbi_manifest')
     # logger.info(non_ncbi_manifest)
