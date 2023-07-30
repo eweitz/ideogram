@@ -197,7 +197,8 @@ export function getColors(domainType) {
     domainType.startsWith('XRN2-binding') ||
     domainType === 'SRCR-like domain' ||
     domainType === 'Gamma-carboxyglutamic acid-rich (GLA) domain' ||
-    domainType === 'Pterin-binding domain'
+    domainType === 'Pterin-binding domain' ||
+    domainType === 'Receptor, ligand binding region'
   ) {
     return [blue, blueLines];
   } else if (
@@ -249,7 +250,7 @@ export function getColors(domainType) {
     domainType === 'Peptidase M24' ||
     domainType === 'Pentraxin-related' ||
     domainType.includes('Notch ligand') ||
-    domainType.includes('factor-binding protein') // as in IGFBP3
+    domainType.includes('factor-binding protein') // as in IGFBP3'
   ) {
     return [deepBlue, deepBlueLines];
   } else if (
@@ -440,7 +441,8 @@ export function getColors(domainType) {
     domainType === 'Spectrin repeat' ||
     domainType.endsWith('TED domain') ||
     domainType === 'Polyadenylate-binding protein/Hyperplastic disc protein' ||
-    domainType.includes(' cap domain')
+    domainType.includes(' cap domain') ||
+    domainType.toLowerCase().includes('agenet')
   ) {
     return [yellow, yellowLine];
   }
@@ -459,8 +461,10 @@ export function getColors(domainType) {
     domainType === 'G-patch domain' ||
     domainType === 'GPCR, rhodopsin-like, 7TM' ||
     domainType === 'GPCR, family 2, secretin-like' ||
+    domainType === 'GPCR, family 3, nine cysteines domain' ||
     domainType === 'G-protein coupled receptor' ||
     domainType === 'Chromo domain' ||
+    domainType.toLowerCase().includes('tudor') ||
     domainType === 'Cytochrome P450' ||
     domainType === 'Potassium channel domain' ||
     domainType === 'G2 nidogen/fibulin G2F' ||
@@ -565,7 +569,8 @@ export function getColors(domainType) {
     domainType.endsWith('coiled-coil domain') ||
     domainType.includes('zinc ribbon fold') ||
     domainType.includes('zinc-ribbon') ||
-    domainType === 'Macroglobulin domain'
+    domainType === 'Macroglobulin domain' ||
+    domainType.includes('KH0')
   ) {
     return [seafoam, seafoamLines];
   } else if (
@@ -584,7 +589,8 @@ export function getColors(domainType) {
     domainType.includes('MG3') ||
     domainType.toLowerCase().includes('polycomb') ||
     domainType.toLowerCase().includes('metallopeptidase') ||
-    domainType.toLowerCase().includes('metallo-peptidase')
+    domainType.toLowerCase().includes('metallo-peptidase') ||
+    domainType === 'K Homology domain, type 1'
   ) {
     return [green, greenLines];
   } else if (
@@ -602,7 +608,8 @@ export function getColors(domainType) {
   } else if (
     domainType.toLowerCase().includes('golgi') ||
     domainType === 'GOLD domain' ||
-    domainType.includes('deaminase')
+    domainType.includes('deaminase') ||
+    domainType.includes('C-terminal core')
   ) {
     return [magenta, magentaLines];
   } else if (
