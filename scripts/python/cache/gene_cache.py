@@ -42,7 +42,7 @@ assemblies_by_org = {
     "Sus scrofa": "Sscrofa11.1",
     # "Anopheles gambiae": "AgamP4.51",
     "Caenorhabditis elegans": "WBcel235",
-    "Drosophila melanogaster": "BDGP6.32"
+    "Drosophila melanogaster": "BDGP6.46"
 }
 
 ranked_genes_by_organism = {
@@ -61,7 +61,7 @@ def get_gff_url(organism):
     """Get URL to GFF file
     E.g. https://ftp.ensembl.org/pub/release-102/gff3/homo_sapiens/Homo_sapiens.GRCh38.102.gff3.gz
     """
-    release = "109"
+    release = "110"
     base = f"https://ftp.ensembl.org/pub/release-{release}/gff3/"
     asm = assemblies_by_org[organism]
     org_us = organism.replace(" ", "_")
