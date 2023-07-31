@@ -101,7 +101,7 @@ const allCacheProps = {
     parseFn: parseInteractionCache // Remove when workers work
   },
   geneStructure: {
-    metadata: 'GeneStructure', dir: 'gene-structures-all',
+    metadata: 'GeneStructure', dir: 'gene-structures',
     fn: setGeneStructureCache,
     // worker: geneStructureCacheWorker // Uncomment when workers work
     parseFn: parseGeneStructureCache // Remove when workers work

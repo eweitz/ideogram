@@ -9,23 +9,27 @@ def get_ensembl_cursor():
         user='anonymous',
         port=4157
     )
-    logger.info('Connected to Ensembl Genomes database')
     cursor = connection.cursor()
     return cursor
 
-def get_ensembl_chr_ids(cursor):
+def get_ensembl_chr_ids(cursor, db):
     """Get a map of Ensembl seq_region_ids to familiar chromosome names.
     Helper function for query_ensembl_karyotype_db.
 
     :param cursor: Cursor connected to Ensembl Genomes DB of interest
     :return: chr_id: Dictionary mapping seq_region_id to chromosome names
     """
+
+    chr_ids = {}
+    logger.info(f'Started get_ensembl_chr_ids, db: {db}')
     cursor.execute('''
       SELECT coord_system_id FROM coord_system
       WHERE name="chromosome" AND attrib="default_version"
     ''')
-    coord_system_id = str(cursor.fetchall()[0][0])
-    chr_ids = {}
+    fetched = cursor.fetchall()
+    if len(fetched) == 0:
+        return None
+    coord_system_id = str(fetched[0][0])
     cursor.execute(
         'SELECT name, seq_region_id FROM seq_region ' +
         'WHERE coord_system_id = ' + coord_system_id
@@ -38,7 +42,9 @@ def get_ensembl_chr_ids(cursor):
     return chr_ids
 
 def get_ensembl_asm_data(cursor, rows, db):
-    chr_ids = get_ensembl_chr_ids(cursor)
+    chr_ids = get_ensembl_chr_ids(cursor, db)
+    if chr_ids == None:
+        return None
 
     bands_by_chr = {}
 
@@ -69,6 +75,11 @@ def query_ensembl_karyotype_db(db_tuples_list):
     cursor = get_ensembl_cursor()
     pq_results = []
 
+    logger.info(
+        'Connected to Ensembl Genomes MySQL server, ' +
+        f'querying for karyotypes in {len(db_tuples_list)} databases'
+    )
+
     for db_tuple in db_tuples_list:
         db, name_slug = db_tuple
         # Example for debugging: "USE zea_mays_core_35_88_7;"
@@ -77,10 +88,16 @@ def query_ensembl_karyotype_db(db_tuples_list):
         # | karyotype_id | seq_region_id | seq_region_start | seq_region_end | band | stain |
         cursor.execute('SELECT * FROM karyotype')
         rows = cursor.fetchall()
-        # Omit assmblies that don't have cytoband data
+        # Omit assemblies that don't have cytoband data
         if len(rows) == 0:
             continue
         asm_data = get_ensembl_asm_data(cursor, rows, db)
+
+        # Omit cases that lack needed assembly data
+        if asm_data == None:
+            msg = f'Lacks needed assembly data for db "{db}", name_slug "{name_slug}"'
+            logger.info(msg)
+            asm_data = ['', '', {}]
         pq_results.append([name_slug, asm_data])
 
     return pq_results
@@ -139,6 +156,8 @@ def fetch_from_ensembl_genomes(times_obj, logger_obj):
 
     cursor.close()
 
+    logger.info('In ensembly.py, db_tuples:')
+    logger.info(db_tuples)
     org_map = pool_fetch_org_map(db_tuples)
 
     logger.info('before exiting with clause')

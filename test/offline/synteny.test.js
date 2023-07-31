@@ -197,8 +197,8 @@ describe('Ideogram synteny support', function() {
       var numSyntenicRegions = document.getElementsByClassName('syntenicRegion').length;
       assert.equal(numSyntenicRegions, 25);
 
-      var srID = '#chr1-10090_54516053_55989459___chr2-10090_114000000_123500000';
-      var otherSrID = '#chr1-10090_54516053_55989459___chr2-10090_108000000_117000000';
+      var srID = '#chr1-10090_54961724_56447175___chr2-10090_6000000_6500000';
+      var otherSrID = '#chr1-10090_54961724_56447175___chr2-10090_12000000_13000000';
 
       var sr = d3.select(srID);
       var otherSr = d3.select(otherSrID);

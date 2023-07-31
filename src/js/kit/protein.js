@@ -137,6 +137,14 @@ function getFeatureSvg(feature, cds, isPositiveStrand, hasTopology) {
     y += 3;
   }
 
+  if (isTopology) {
+    if (featureType === 'Helical') {
+      featureType = 'Transmembrane';
+    } else if (featureType.startsWith('Helical --- Name=')) {
+      featureType = featureType.replace('Helical --- Name=', 'Transmembrane: ');
+    }
+  }
+
   const lengthAa = `${feature[2]}&nbsp;aa`;
   const title = `data-subpart="${featureType} ${pipe} ${lengthAa}"`;
   const data = title;

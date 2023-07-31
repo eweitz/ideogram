@@ -28,21 +28,21 @@ def fetch_gff(organism, output_dir="data/", reuse_gff=True):
 # Organisms configured for gene caching, and their genome assembly names
 assemblies_by_org = {
     "Homo sapiens": "GRCh38",
-    "Mus musculus": "GRCm38",
+    "Mus musculus": "GRCm39",
     "Danio rerio": "GRCz11",
-    "Gallus gallus": "GRCg6a",
-    "Rattus norvegicus": "Rnor_6.0",
+    "Gallus gallus": "bGalGal1.mat.broiler.GRCg7b",
+    "Rattus norvegicus": "mRatBN7.2",
     "Pan troglodytes": "Pan_tro_3.0",
-    "Macaca fascicularis": "Macaca_fascicularis_5.0",
+    "Macaca fascicularis": "Macaca_fascicularis_6.0",
     "Macaca mulatta": "Mmul_10",
-    "Canis lupus familiaris": "CanFam3.1",
+    "Canis lupus familiaris": "ROS_Cfam_1.0",
     "Felis catus": "Felis_catus_9.0",
     "Equus caballus": "EquCab3.0",
     "Bos taurus": "ARS-UCD1.2",
     "Sus scrofa": "Sscrofa11.1",
     # "Anopheles gambiae": "AgamP4.51",
     "Caenorhabditis elegans": "WBcel235",
-    "Drosophila melanogaster": "BDGP6.28"
+    "Drosophila melanogaster": "BDGP6.46"
 }
 
 ranked_genes_by_organism = {
@@ -61,7 +61,7 @@ def get_gff_url(organism):
     """Get URL to GFF file
     E.g. https://ftp.ensembl.org/pub/release-102/gff3/homo_sapiens/Homo_sapiens.GRCh38.102.gff3.gz
     """
-    release = "102"
+    release = "110"
     base = f"https://ftp.ensembl.org/pub/release-{release}/gff3/"
     asm = assemblies_by_org[organism]
     org_us = organism.replace(" ", "_")
@@ -294,8 +294,8 @@ class GeneCache():
 
         Consider parallelizing this.
         """
-        # for organism in assemblies_by_org:
-        for organism in ["Homo sapiens"]:
+        for organism in assemblies_by_org:
+        # for organism in ["Homo sapiens"]:
             self.populate_by_org(organism)
 
 # Command-line handler

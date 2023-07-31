@@ -78,7 +78,7 @@ def db_connect(host, user=None, port=None):
 
     if fresh_run and fill_cache is False:
         # Production run, fast; needs Internet
-        return pymysql.connect(host, user=user, port=port)
+        return pymysql.connect(host=host, user=user, port=port)
 
     elif fresh_run and fill_cache:
         # Production run, slower; needs Internet

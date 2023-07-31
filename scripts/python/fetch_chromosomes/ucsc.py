@@ -15,7 +15,7 @@ def get_ucsc_cursor(logger):
     return cursor
 
 
-def query_accession_from_eutils(assembly_uid):
+def query_accession_from_eutils(assembly_uid, logger):
     """Requests esummary from NCBI Assembly DB, returns assembly accession
     """
     global esummary
@@ -23,7 +23,15 @@ def query_accession_from_eutils(assembly_uid):
     asm_summary = esummary + '&db=assembly&id=' + assembly_uid
 
     # Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?retmode=json&db=assembly&id=255628
-    data = json.loads(request(asm_summary))
+    response = request(asm_summary)
+    try:
+        data = json.loads(response)
+    except Exception as e:
+        logger.error('Exception in query_accession_from_eutils:')
+        logger.error(e)
+        logger.error('Response causing exception:')
+        logger.error(response)
+        raise e
     time.sleep(3)
     result = data['result'][assembly_uid]
     acc = result['assemblyaccession'] # Accession.version
@@ -51,10 +59,10 @@ def get_genbank_accession_from_ucsc_name(db, times, unfound_dbs, logger):
     id_list = data['esearchresult']['idlist']
     if len(id_list) > 0:
         assembly_uid = id_list[0]
-        acc = query_accession_from_eutils(assembly_uid)
+        acc = query_accession_from_eutils(assembly_uid, logger)
     else:
         unfound_dbs.append(db)
-        
+
     times['ncbi'] += time_ms() - t0
     return [acc, times, unfound_dbs]
 
@@ -92,7 +100,7 @@ def get_bands_by_chr(cursor):
             has_bands = True
     if has_bands is False:
         return None
-    
+
     return bands_by_chr
 
 def get_cytobandideo_table(cursor, db):
@@ -107,7 +115,7 @@ def get_cytobandideo_table(cursor, db):
         if row2[0] == 'cytoBandIdeo':
             cytobandideo_table = 1
             break
-    
+
     return cytobandideo_table
 
 
@@ -167,7 +175,7 @@ def pool_fetch_org_map(db_tuples, times, unfound_dbs, logger):
     db_tuples_lists = chunkify(db_tuples, num_threads)
     with ThreadPoolExecutor(max_workers=num_threads) as pool:
         results = pool.map(
-            partial(fetch_assembly_data, 
+            partial(fetch_assembly_data,
                 logger=logger, times=times, unfound_dbs=unfound_dbs),
             db_tuples_lists
         )
@@ -190,7 +198,7 @@ def fetch_from_ucsc(logger, times, unfound_dbs):
     """
     t0 = time_ms()
     cursor = get_ucsc_cursor(logger)
-    
+
     db_tuples = query_db_tuples(cursor, logger)
 
     org_map = pool_fetch_org_map(db_tuples, times, unfound_dbs, logger)

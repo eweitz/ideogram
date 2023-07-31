@@ -24,21 +24,21 @@ from gene_cache import trim_id, detect_prefix, fetch_gff, parse_gff_info_field, 
 # Organisms configured for gene caching, and their genome assembly names
 assemblies_by_org = {
     "Homo sapiens": "GRCh38",
-    "Mus musculus": "GRCm38",
+    "Mus musculus": "GRCm39",
     "Danio rerio": "GRCz11",
-    "Gallus gallus": "GRCg6a",
-    "Rattus norvegicus": "Rnor_6.0",
+    "Gallus gallus": "bGalGal1.mat.broiler.GRCg7b",
+    "Rattus norvegicus": "mRatBN7.2",
     "Pan troglodytes": "Pan_tro_3.0",
-    "Macaca fascicularis": "Macaca_fascicularis_5.0",
+    "Macaca fascicularis": "Macaca_fascicularis_6.0",
     "Macaca mulatta": "Mmul_10",
-    "Canis lupus familiaris": "CanFam3.1",
+    "Canis lupus familiaris": "ROS_Cfam_1.0",
     "Felis catus": "Felis_catus_9.0",
     "Equus caballus": "EquCab3.0",
     "Bos taurus": "ARS-UCD1.2",
     "Sus scrofa": "Sscrofa11.1",
     # "Anopheles gambiae": "AgamP4.51",
     "Caenorhabditis elegans": "WBcel235",
-    "Drosophila melanogaster": "BDGP6.28"
+    "Drosophila melanogaster": "BDGP6.46"
 }
 
 ranked_genes_by_organism = {
@@ -162,6 +162,10 @@ def parse_feature(gff_row, canonical_ids):
     if feat_type == "mRNA":
         # + (forward) or - (reverse)
         strand = gff_row[6]
+        # print('info', info)
+        if "Name" not in info:
+            # Seen with e.g. ENSG00000285629
+            return None
         name = info["Name"]
         gene_id = info["Parent"].split("gene:")[1]
         biotype = info["biotype"]
@@ -497,6 +501,7 @@ class GeneStructureCache():
         """
         # for organism in assemblies_by_org:
         for organism in ["Homo sapiens", "Mus musculus"]:
+        # for organism in ["Homo sapiens"]:
             self.populate_by_org(organism)
 
 # Command-line handler
