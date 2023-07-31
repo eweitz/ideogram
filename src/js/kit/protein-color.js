@@ -11,17 +11,19 @@
 
 // Default
 const grey = '#BBB';
-const greyLines = '#666';
+const greyLine = '#666';
 
 const darkGrey = '#888';
 const darkGreyLine = '#AAA';
 
-const red = '#F00';
-const redLines = '#800';
+// const red = '#F00';
+// const redLines = '#800';
+const red = '#F55';
+const redLine = '#855';
 const magenta = '#922D5E';
 const magentaLines = '#D26D9E';
 const faintRed = '#CAA';
-const faintRedLines = '#866';
+const faintRedLine = '#866';
 const pink = '#FFC0CB';
 const pinkLine = '#CF909B';
 
@@ -31,15 +33,15 @@ const lightBlue = '#CCF';
 const lightBlueLine = '#33D';
 const veryLightBlue = '#EEF';
 const veryLightBlueLine = '#AAF';
-const deepBlue = '#55A';
-const deepBlueLines = '#AAF';
+const darkBlue = '#55A';
+const darkBlueLine = '#AAF';
 
 const green = '#7D7';
-const greenLines = '#393';
+const greenLine = '#393';
 const darkGreen = '#3A3';
-const darkGreenLines = '#060';
+const darkGreenLine = '#060';
 const seafoam = '#93E9BE';
-const seafoamLines = '#53AC7E';
+const seafoamLine = '#53AC7E';
 
 // Purples
 const darkPurple = '#51087E';
@@ -139,7 +141,7 @@ export function getColors(domainType) {
       'Membrane attack complex component/perforin (MACPF) domain' ||
     domainType === 'Alpha-2-macroglobulin'
   ) {
-    return [red, redLines];
+    return [red, redLine];
   } else if (
     // Enzymatic domains, C-terminal regions, and miscellaneous
     domainType.includes('trypsin domain') ||
@@ -163,11 +165,11 @@ export function getColors(domainType) {
     domainType === 'OAR domain' ||
     domainType.includes('FTO, C-terminal')
   ) {
-    return [faintRed, faintRedLines];
+    return [faintRed, faintRedLine];
   } else if (
     domainType === 'EGF-like calcium-binding domain'
   ) {
-    return [darkGreen, darkGreenLines];
+    return [darkGreen, darkGreenLine];
   } else if (
     // Binding sites, and smaller binding regions
     domainType.includes('binding site') ||
@@ -252,7 +254,7 @@ export function getColors(domainType) {
     domainType.includes('Notch ligand') ||
     domainType.includes('factor-binding protein') // as in IGFBP3'
   ) {
-    return [deepBlue, deepBlueLines];
+    return [darkBlue, darkBlueLine];
   } else if (
     domainType === 'SH2 domain' ||
     domainType.includes('SH2-like domain') ||
@@ -277,7 +279,7 @@ export function getColors(domainType) {
     domainType === 'Multicopper oxidase, second cupredoxin domain' ||
     domainType === 'Helicase, C-terminal'
   ) {
-    return [green, greenLines];
+    return [green, greenLine];
   } else if (
     domainType === 'Insulin-like' ||
     domainType === 'Fibroblast growth factor family' ||
@@ -291,7 +293,7 @@ export function getColors(domainType) {
     domainType.includes('RING-type') ||
     domainType.startsWith('DEAD/DEAH')
   ) {
-    return [darkGreen, darkGreenLines];
+    return [darkGreen, darkGreenLine];
   } else if (
     domainType === 'SH3 domain' ||
     domainType === 'Variant SH3 domain' ||
@@ -324,7 +326,7 @@ export function getColors(domainType) {
     domainType === 'EGF domain' ||
     domainType === 'Peptidase M2, peptidyl-dipeptidase A'
   ) {
-    return [seafoam, seafoamLines];
+    return [seafoam, seafoamLine];
   } else if (
     // Immunoglobulin domains are colored in the pink-purple spectrum
     domainType === 'Immunoglobulin-like domain' ||
@@ -499,7 +501,8 @@ export function getColors(domainType) {
     domainType === 'Natriuretic peptide' ||
     domainType === 'EMI domain' ||
     domainType === 'Neurohypophysial hormone' ||
-    domainType === 'Synuclein'
+    domainType === 'Synuclein' ||
+    domainType.includes('Hydroxymethylglutaryl-CoA reductase')
   ) {
     return [lightBrown, lightBrownLine];
   } else if (
@@ -531,7 +534,8 @@ export function getColors(domainType) {
     domainType.includes('Ion transport domain') ||
     domainType.endsWith('Membrane transport protein MMPL domain') ||
     domainType.includes('Caveolin') ||
-    domainType === 'Band 7 domain'
+    domainType === 'Band 7 domain' ||
+    domainType === 'ABC-2 family transporter protein'
   ) {
     return [darkBrown, darkBrownLine];
   } else if (
@@ -572,7 +576,7 @@ export function getColors(domainType) {
     domainType === 'Macroglobulin domain' ||
     domainType.includes('KH0')
   ) {
-    return [seafoam, seafoamLines];
+    return [seafoam, seafoamLine];
   } else if (
     domainType.includes('Peptidase') ||
     domainType.includes('Ras-binding')
@@ -592,7 +596,7 @@ export function getColors(domainType) {
     domainType.toLowerCase().includes('metallo-peptidase') ||
     domainType === 'K Homology domain, type 1'
   ) {
-    return [green, greenLines];
+    return [green, greenLine];
   } else if (
     domainType.startsWith('Tyrosine-protein kinase receptor') ||
     domainType.endsWith('receptor') ||
@@ -615,11 +619,11 @@ export function getColors(domainType) {
   } else if (
     domainType.includes('binding domain')
   ) {
-    return [deepBlue, deepBlueLines];
+    return [darkBlue, darkBlueLine];
   } else if (
     domainType.includes('oxygenase')
   ) {
-    return [red, redLines];
+    return [red, red];
   } else if (
     // C-terminal regions are typically colored red in e.g. PyMol rainbow
     domainType.includes('C-termin') ||
@@ -627,7 +631,7 @@ export function getColors(domainType) {
     domainType.includes('kinase-type') ||
     domainType.includes('phosphatases domain')
   ) {
-    return [faintRed, faintRedLines];
+    return [faintRed, faintRedLine];
   } else if (
     // N-terminal regions are typically colored blue in e.g. PyMol rainbow
     domainType.includes('N-termin') ||
@@ -638,5 +642,5 @@ export function getColors(domainType) {
     return [lightBlue, lightBlueLine];
   }
 
-  return [grey, greyLines];
+  return [grey, greyLine];
 }

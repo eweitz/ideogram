@@ -20,8 +20,8 @@ describe('Ideogram gene structure functionality', function() {
     async function callback() {
       await ideogram.plotRelatedGenes('APOE');
       setTimeout(async function() {
-        const apoelLabel = document.querySelector('#ideogramLabel__c18_a1');
-        apoelLabel.dispatchEvent(new Event('mouseover'));
+        const apoeLabel = document.querySelector('#ideogramLabel__c18_a1');
+        apoeLabel.dispatchEvent(new Event('mouseover'));
         const subparts = document.querySelectorAll('rect.subpart');
         assert.equal(subparts.length, 7); // spliced, without introns
         done();
