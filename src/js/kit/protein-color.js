@@ -85,7 +85,7 @@ const veryLightGreenLine = '#CDC';
 export function getColors(domainType) {
 
   // Signal peptides
-  if (domainType === '_SP') {
+  if (domainType === 'S') {
     // return ['#F90', '#5D5'];
     // return ['#F90', '#090'];
     // return ['#FF2', '#F99'];

@@ -81,11 +81,24 @@ function getCdsCoordinates(subparts, isPositiveStrand) {
 }
 
 function isTopologyFeature(feature) {
-  return feature[0].startsWith('_UT_');
+  return feature[0][0] === '_';
 }
 
 function isSignalPeptideFeature(feature) {
-  return feature[0].startsWith('_SP');
+  return feature[0] === 'S';
+}
+
+const topologyFeatureMap = {
+  '_H': 'Helical',
+  '_E': 'Extracellular',
+  '_C': 'Cytoplasmic'
+};
+function decompressTopologyFeature(feature) {
+  if (feature in topologyFeatureMap) {
+    return topologyFeatureMap[feature];
+  } else {
+    return feature.slice(1);
+  }
 }
 
 /** Get SVG for an inidividual protein domain */
@@ -108,7 +121,7 @@ function getFeatureSvg(feature, cds, isPositiveStrand, hasTopology) {
   if (hasTopology) {
     y = 48;
     if (isTopology) {
-      featureType = featureType.slice(4);
+      featureType = decompressTopologyFeature(feature[0]);
       y = 40;
       height = 30;
       if (
