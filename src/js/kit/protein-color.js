@@ -31,7 +31,7 @@ const pink = '#FFC0CB';
 const pinkLine = '#CF909B';
 
 const blue = '#99D';
-const blueLines = '#22C';
+const blueLine = '#22C';
 const lightBlue = '#CCF';
 const lightBlueLine = '#33D';
 const veryLightBlue = '#EEF';
@@ -57,17 +57,19 @@ const lightPurple = '#B24BF3';
 const lightPurpleLine = '#520B83';
 const veryLightPurple = '#D7A1F9';
 const veryLightPurpleLine = '#A771C9';
+const ultraLightPurple = '#EEDDFF';
+const ultraLightPurpleLine = '#A771C9';
 
 const darkBrown = '#964B00';
 const darkBrownLine = '#660B00';
 const brown = '#C87D32';
 const brownLine = '#722810';
 const lightBrown = '#DACDBA';
-const lightBrownLine = '#BAAB9A';
+const lightBrownLine = '#A99A89';
 const orange = '#FFA500';
 const orangeLines = '#DD8000';
 const darkOrange = '#DD8300';
-const darkOrangeLines = '#CC6000';
+const darkOrangeLines = '#883000';
 
 const yellow = '#FF3';
 const yellowLine = '#AA0';
@@ -114,6 +116,13 @@ export function getColors(domainType) {
     domainType === 'Mitochondrial intermembrane'
   ) {
     return [lightGreen, lightGreenLine];
+  } else if (domainType === 'Perinuclear space') {
+    // E.g. TMEM43
+    return [ultraLightPurple, ultraLightPurpleLine];
+  } else if (domainType === 'Nuclear') {
+    return [veryLightPurple, veryLightPurpleLine];
+  } else if (domainType === 'Beta stranded') {
+    return [blue, blueLine];
   }
 
   // Sites, domains, features, and other entries
@@ -131,7 +140,14 @@ export function getColors(domainType) {
     domainType === 'Anaphylatoxin/fibulin' ||
     domainType === 'Tetratricopeptide repeat' ||
     domainType === 'Doublecortin domain' ||
-    domainType.includes('Glycosyl transferase')
+    domainType.includes('Glycosyl transferase') ||
+    (
+      domainType.toLowerCase().includes('lethal') &&
+      domainType.toLowerCase().includes('c-terminal')
+    ) ||
+    domainType.includes('PUB') ||
+    domainType.includes('Myogenic determination') ||
+    domainType === 'GPS motif'
   ) {
     return [magenta, magentaLines];
   } else if (
@@ -147,7 +163,8 @@ export function getColors(domainType) {
     domainType === 'Reverse transcriptase domain' ||
     domainType ===
       'Membrane attack complex component/perforin (MACPF) domain' ||
-    domainType === 'Alpha-2-macroglobulin'
+    domainType === 'Alpha-2-macroglobulin' ||
+    domainType === 'Kinesin motor domain'
   ) {
     return [red, redLine];
   } else if (
@@ -175,11 +192,15 @@ export function getColors(domainType) {
     domainType.includes('FTO, C-terminal') ||
     domainType.includes('Hint domain') ||
     domainType === 'Laminin IV' ||
-    domainType === 'NACHT-associated domain'
+    domainType === 'NACHT-associated domain' ||
+    domainType.includes('FANCD2') ||
+    domainType.startsWith('Acyl-CoA') && domainType.endsWith('C-terminal') ||
+    domainType === 'Kinesin-like'
   ) {
     return [faintRed, faintRedLine];
   } else if (
-    domainType === 'EGF-like calcium-binding domain'
+    domainType === 'EGF-like calcium-binding domain' ||
+    domainType.includes('PTX/LNS')
   ) {
     return [darkGreen, darkGreenLine];
   } else if (
@@ -202,6 +223,7 @@ export function getColors(domainType) {
     domainType === 'Pointed domain' ||
     domainType.includes('DNA binding') ||
     domainType === 'Helix-hairpin-helix domain' ||
+    domainType === 'Helix-hairpin-helix motif' ||
     domainType === 'MIR motif' ||
     domainType === 'Rad52 family' ||
     domainType === 'Oxidoreductase FAD/NAD(P)-binding' ||
@@ -214,9 +236,13 @@ export function getColors(domainType) {
     domainType === 'Gamma-carboxyglutamic acid-rich (GLA) domain' ||
     domainType === 'Pterin-binding domain' ||
     domainType === 'Receptor, ligand binding region' ||
-    domainType.includes('DHEX domain')
+    domainType.includes('DHEX domain') ||
+    domainType === 'SANT/Myb domain' ||
+    domainType.includes('Forkhead-associated') ||
+    domainType === 'Rap/Ran-GAP domain' ||
+    domainType.endsWith('C2 domain')
   ) {
-    return [blue, blueLines];
+    return [blue, blueLine];
   } else if (
     domainType.includes('dehydrogenase, molybdopterin binding') ||
     domainType === 'Zinc finger CCHC HIVEP-type' ||
@@ -225,8 +251,8 @@ export function getColors(domainType) {
     domainType === 'Sodium ion transport-associated' ||
     domainType === 'Sodium ion transport-associated domain' ||
     domainType.endsWith('head') ||
-    domainType.endsWith('C2 domain') ||
     domainType === 'Pleckstrin homology domain' ||
+    domainType === 'PH domain' ||
     domainType.endsWith('pleckstrin homology-like domain') ||
     domainType === 'DEP domain' ||
     domainType === 'Post-SET domain' ||
@@ -238,7 +264,8 @@ export function getColors(domainType) {
     domainType === 'Fork head domain' ||
     domainType === 'Histone deacetylase domain' ||
     domainType.includes('MG1') ||
-    domainType === 'Homocysteine-binding domain'
+    domainType === 'Homocysteine-binding domain' ||
+    domainType.startsWith('Acyl-CoA') && domainType.endsWith('N-terminal')
   ) {
     return [lightBlue, lightBlueLine];
   } else if (
@@ -259,6 +286,7 @@ export function getColors(domainType) {
     domainType === 'P domain' ||
     domainType.includes('bHLH') ||
     domainType === 'Ras-associating (RA) domain' ||
+    domainType === 'Ras-associating domain' ||
     domainType ===
       'Calcium/calmodulin-dependent protein kinase II, association-domain' ||
     domainType === 'Bromodomain' ||
@@ -269,6 +297,7 @@ export function getColors(domainType) {
     domainType.includes('Notch ligand') ||
     domainType === 'Anti-proliferative protein' ||
     domainType.includes('transpeptidase') ||
+    domainType === 'Ras-like guanine nucleotide exchange factor, N-terminal' ||
     domainType.includes('factor-binding protein') // as in IGFBP3'
   ) {
     return [darkBlue, darkBlueLine];
@@ -345,12 +374,18 @@ export function getColors(domainType) {
     domainType === 'EGF domain' ||
     domainType === 'Axin beta-catenin binding' ||
     domainType === 'Peptidase M2, peptidyl-dipeptidase A' ||
-    domainType.endsWith('phosphatase domain')
+    domainType.endsWith('phosphatase domain') ||
+    domainType === 'PIGA, GPI anchor biosynthesis' ||
+    domainType.startsWith('Acyl-CoA') && domainType.endsWith('middle domain') ||
+    domainType.includes('(COR)') ||
+    domainType.includes('Phox') ||
+    domainType.includes('PB1')
   ) {
     return [seafoam, seafoamLine];
   } else if (
     // Immunoglobulin domains are colored in the pink-purple spectrum
     domainType === 'Immunoglobulin-like domain' ||
+    domainType.toLowerCase().endsWith('immunoglobulin-like domain') ||
     domainType.endsWith('Ig domain') ||
     domainType === 'Major facilitator superfamily domain' ||
     domainType.includes('interface') ||
@@ -364,10 +399,12 @@ export function getColors(domainType) {
     domainType.includes('foci domain') ||
     domainType.includes('Receptor L-domain') ||
     domainType === 'Wnt' ||
+    domainType === 'R-spondin, Fu-CRD domain' ||
     domainType.endsWith('merisation domain') || // e.g. di- / tetramerisation
     domainType.endsWith('merisation motif') || // e.g. di- / tetramerisation
     domainType.endsWith('BTB/POZ domain') || // homodimerization domain
     domainType === 'DZF domain' || // domain associated with zinc fingers; dimerisation domain
+    domainType === 'GS domain' || // in kinase superfamily
     domainType.includes('kinase domain') ||
     domainType === 'PIK-related kinase, FAT' ||
     domainType.startsWith('von Willebrand factor, type A') ||
@@ -375,7 +412,8 @@ export function getColors(domainType) {
     domainType === 'BMP/retinoic acid-inducible neural-specific protein' ||
     domainType === 'Low-density lipoprotein (LDL) receptor class A repeat' ||
     domainType === 'TILa domain' ||
-    domainType.includes('chromosome condensation')
+    domainType.includes('chromosome condensation') ||
+    domainType === 'Kinesin-associated'
   ) {
     return [pink, pinkLine];
   } else if (
@@ -390,7 +428,6 @@ export function getColors(domainType) {
     domainType === 'Major facilitator,  sugar transporter-like' ||
     domainType === 'Major facilitator, sugar transporter-like' ||
     domainType === 'Sodium:neurotransmitter symporter' ||
-    domainType === 'Myosin head, motor domain' ||
     domainType.toLowerCase().includes('methyltransferase') ||
     domainType === 'Rhodanese-like domain' ||
     domainType.startsWith('Thyroglobulin') ||
@@ -405,6 +442,7 @@ export function getColors(domainType) {
     domainType === 'Cadherin-like' ||
     domainType === 'G-protein gamma-like domain' ||
     domainType === 'GoLoco motif' ||
+    domainType === 'MyTH4 domain' ||
     domainType === ('BTB/Kelch-associated') // associated with BTB/POZ
   ) {
     return [veryLightPurple, veryLightPurpleLine];
@@ -430,7 +468,9 @@ export function getColors(domainType) {
     domainType.endsWith('domain 2') ||
     domainType === 'GNAT domain' ||
     domainType === 'NIDO domain' ||
-    domainType === 'von Willebrand domain, type D domain'
+    domainType === 'Myosin head, motor domain' ||
+    domainType === 'von Willebrand domain, type D domain' ||
+    domainType === 'Kinesin-like KIF1-type'
   ) {
     return [lightPurple, lightPurpleLine];
   } else if (
@@ -440,6 +480,7 @@ export function getColors(domainType) {
     domainType.includes('immunoglobulin C2-set') ||
     domainType.includes('protein interaction') ||
     domainType.includes('interacting') ||
+    domainType === 'SWIRM domain' ||
     domainType.includes('(DSL) protein') ||
     domainType === 'Dishevelled protein domain' ||
     domainType.endsWith('domain 3') ||
@@ -454,7 +495,8 @@ export function getColors(domainType) {
     domainType.endsWith('domain 4') ||
     domainType === 'Integrin alpha-2' ||
     domainType === 'Calcium-activated potassium channel BK, alpha subunit' ||
-    domainType.includes('Dbl homology (DH) domain')
+    domainType.includes('Dbl homology (DH) domain') ||
+    domainType.includes('Glycine rich')
   ) {
     return [darkPurple, darkPurpleLine];
   } else if (
@@ -469,7 +511,9 @@ export function getColors(domainType) {
     domainType.endsWith('TED domain') ||
     domainType === 'Polyadenylate-binding protein/Hyperplastic disc protein' ||
     domainType.includes(' cap domain') ||
-    domainType.toLowerCase().includes('agenet')
+    domainType.toLowerCase().includes('agenet') ||
+    domainType.includes('TATA') ||
+    domainType.includes('Citron')
   ) {
     return [yellow, yellowLine];
   }
@@ -487,10 +531,6 @@ export function getColors(domainType) {
     domainType === 'Flavodoxin/nitric oxide synthase' ||
     domainType === 'Flavodoxin-like fold' ||
     domainType === 'G-patch domain' ||
-    domainType === 'GPCR, rhodopsin-like, 7TM' ||
-    domainType === 'GPCR, family 2, secretin-like' ||
-    domainType === 'GPCR, family 3, nine cysteines domain' ||
-    domainType === 'G-protein coupled receptor' ||
     domainType === 'Chromo domain' ||
     domainType.toLowerCase().includes('tudor') ||
     domainType === 'Cytochrome P450' ||
@@ -508,6 +548,8 @@ export function getColors(domainType) {
     domainType.includes('Kringle') ||
     domainType.includes('Peptidase M12A') ||
     domainType === 'TGF-beta, propeptide' ||
+    domainType.includes('autopeptidase') ||
+    domainType.includes('GAIN') ||
     domainType === 'PIK-related kinase' ||
     domainType.includes('(PIK) domain') ||
     domainType === 'LDLR class B repeat' ||
@@ -530,7 +572,9 @@ export function getColors(domainType) {
     domainType === 'EMI domain' ||
     domainType === 'Neurohypophysial hormone' ||
     domainType === 'Synuclein' ||
-    domainType.includes('Hydroxymethylglutaryl-CoA reductase')
+    domainType.includes('Hydroxymethylglutaryl-CoA reductase') ||
+    domainType.includes('Perilipin') ||
+    domainType.includes('lipase')
   ) {
     return [lightBrown, lightBrownLine];
   } else if (
@@ -538,7 +582,8 @@ export function getColors(domainType) {
     domainType === 'Cadherin, Y-type LIR-motif' ||
     domainType === 'Protein patched/dispatched' ||
     domainType.includes('membrane-proximal') ||
-    domainType === 'LicD family'
+    domainType === 'LicD family' ||
+    domainType.includes('MoaB/Mog')
   ) {
     return [brown, brownLine];
   } else if (
@@ -547,7 +592,6 @@ export function getColors(domainType) {
     domainType.includes('trans-membrane domain') ||
     domainType.includes('Transmembrane protein') ||
     domainType.includes('Collectrin') ||
-    domainType.includes('cytoplasmic domain') ||
     domainType.includes('membrane glycoprotein') ||
     domainType === 'SEA domain' ||
     domainType === 'CD36 family' ||
@@ -571,18 +615,19 @@ export function getColors(domainType) {
     return [darkBrown, darkBrownLine];
   } else if (
     // Death, ubiquitination, apoptosis, etc.
-    domainType === 'CARD domain' ||
     domainType === 'DAPIN domain' ||
     domainType === 'Death effector domain' ||
     domainType === 'Death domain' ||
+    domainType.includes('death protein') ||
+    domainType.toLowerCase().includes('lethal') ||
     domainType.includes('UBA domain') ||
     domainType.includes('HECT domain') ||
-    domainType.toLowerCase().includes('ubiquitin-like domain') ||
-    domainType.toLowerCase().includes('ubiquitin-associated domain') ||
+    domainType.toLowerCase().includes('ubiquitin') ||
     domainType.includes('necrosis') ||
     domainType.includes('Bcl-2') ||
-    domainType.includes('death protein') ||
-    domainType === 'Disintegrin domain'
+    domainType.includes('CIDE-N') ||
+    domainType === 'Disintegrin domain' ||
+    domainType.includes('TRAF')
   ) {
     return [darkGrey, darkGreyLine];
   } else if (
@@ -593,7 +638,18 @@ export function getColors(domainType) {
     return [lightGrey, lightGreyLine];
   } else if (
     domainType.toLowerCase().includes('leucine rich repeat') ||
-    domainType.includes('HIN')
+    domainType.includes('HIN') ||
+    domainType.includes('calcium') ||
+    domainType.includes('cytokine receptor') ||
+    domainType.includes('pore forming') ||
+    domainType.includes('RHIM') ||
+    domainType.includes('SWIB') ||
+
+    // GPCRs
+    domainType === 'GPCR, rhodopsin-like, 7TM' ||
+    domainType === 'GPCR, family 2, secretin-like' ||
+    domainType === 'GPCR, family 3, nine cysteines domain' ||
+    domainType === 'G-protein coupled receptor'
   ) {
     return [darkOrange, darkOrangeLines];
   } else if (
@@ -602,7 +658,8 @@ export function getColors(domainType) {
     domainType.includes('Interleukin') && domainType.includes('family') ||
     /Interleukin-\d+$/.test(domainType) ||
     domainType === 'Chemokine interleukin-8-like domain' ||
-    domainType.includes('beta-ribbon')
+    domainType.includes('beta-ribbon') ||
+    domainType.includes('cytoplasmic domain')
   ) {
     return [orange, orangeLines];
   } else if (
@@ -617,28 +674,33 @@ export function getColors(domainType) {
     domainType.includes('zinc-ribbon') ||
     domainType === 'Macroglobulin domain' ||
     domainType.includes('KH0') ||
-    domainType.includes('EGF')
+    domainType.includes('EGF') ||
+    domainType.toLowerCase().includes('olfact')
   ) {
     return [seafoam, seafoamLine];
   } else if (
     domainType.includes('Peptidase') ||
-    domainType.includes('Ras-binding')
+    domainType.includes('Ras-binding') ||
+    domainType.includes('CRIB domain')
   ) {
-    return [blue, blueLines];
+    return [blue, blueLine];
   } else if (
     domainType.toLowerCase().includes('zinc finger') ||
     domainType.toLowerCase().includes('zinc-finger') ||
     domainType.includes('RING finger') ||
     domainType.toLowerCase().includes('transcription factor') ||
     domainType === 'Paired domain' || // found in eukaryotic transcription regulatory proteins involved in embryogenesis
+    domainType === 'JmjC domain' ||
     domainType === 'BRK domain' ||
     domainType.includes('FAD-binding') ||
     domainType.includes('MG3') ||
     domainType.toLowerCase().includes('polycomb') ||
     domainType.toLowerCase().includes('metallopeptidase') ||
     domainType.toLowerCase().includes('metallo-peptidase') ||
+    domainType.toLowerCase().includes('metalloenzyme') ||
     domainType === 'K Homology domain, type 1' ||
-    domainType.includes('winged helix')
+    domainType.includes('winged helix') ||
+    domainType.toLowerCase().includes('dehydrogenase')
   ) {
     return [green, greenLine];
   } else if (
@@ -663,8 +725,11 @@ export function getColors(domainType) {
     domainType === 'Telethonin' ||
     domainType.includes('Sarcoglycan') ||
     domainType.includes('toxin') ||
+    domainType.includes('ShKT') ||
     domainType.includes('SAM') ||
-    domainType.includes('Sterile alpha motif')
+    domainType.includes('Sterile alpha motif') ||
+    domainType.includes('Unconventional myosin-X') ||
+    domainType === 'CARD domain'
   ) {
     return [magenta, magentaLines];
   } else if (
@@ -677,7 +742,12 @@ export function getColors(domainType) {
   ) {
     return [darkGreen, darkGreenLine];
   } else if (
-    domainType.includes('transferase')
+    domainType.includes('lectin')
+  ) {
+    return [veryLightPurple, veryLightPurpleLine];
+  } else if (
+    domainType.includes('transferase') ||
+    domainType.includes('merisation')
   ) {
     return [pink, pinkLine];
   } else if (
@@ -688,6 +758,10 @@ export function getColors(domainType) {
     domainType.includes('phosphatase')
   ) {
     return [seafoam, seafoamLine];
+  } else if (
+    domainType.includes('bind')
+  ) {
+    return [blue, blueLine];
   } else if (
     // C-terminal regions are typically colored red in e.g. PyMol rainbow
     domainType.includes('C-termin') ||
@@ -700,7 +774,8 @@ export function getColors(domainType) {
     domainType.includes('N-termin') ||
     domainType.includes('N-teminal') || // Typo in "CTNNB1 binding, N-teminal"
     domainType.includes('N termin') ||
-    domainType.toLowerCase().includes('decarboxylase')
+    domainType.toLowerCase().includes('decarboxylase') ||
+    domainType.toLowerCase().includes('hydrolase')
   ) {
     return [lightBlue, lightBlueLine];
   }
