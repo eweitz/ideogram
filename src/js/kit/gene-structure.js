@@ -176,7 +176,7 @@ function addMenuListeners(ideo) {
 
     // Go to next transcript on clicking down arrow icon, previous on up
     if (Array.from(svgMaybe.classList).includes('_ideoMenuArrow')) {
-      const menuArrow = event.target;
+      const menuArrow = svgMaybe;
       const direction = menuArrow.getAttribute('data-dir');
       const offset = direction === 'down' ? 1 : -1;
       updateGeneStructure(ideo, offset);
