@@ -489,10 +489,10 @@ class GeneStructureCache():
         structures = parse_structures(canonical_ids, gff_path, gff_url)
 
         sorted_structures = sort_structures(structures, organism, canonical_ids)
-        refined_structures = compress_structures(sorted_structures)
+        # refined_structures = compress_structures(sorted_structures)
 
         # sorted_slim_genes = sort_by_interest(slim_genes, organism)
-        self.write(refined_structures, organism, gff_url, bmtsv_url)
+        self.write(sorted_structures, organism, gff_url, bmtsv_url)
 
     def populate(self):
         """Fill gene caches for all configured organisms
