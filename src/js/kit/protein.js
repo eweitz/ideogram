@@ -209,12 +209,12 @@ export function getProteinSvg(
   const gene = getGeneFromStructureName(structureName, ideo);
 
   const isEligible = isEligibleforProteinSvg(gene, ideo);
-  if (!isEligible) return '';
+  if (!isEligible) return ['<br/>', false];
 
   const entry = ideo.proteinCache[gene].find(d => {
     return d.transcriptName === structureName;
   });
-  if (!entry) return '<br/>';
+  if (!entry) return ['<br/>', false];
   const protein = entry.protein;
   const cds = getCdsCoordinates(subparts, isPositiveStrand);
 
