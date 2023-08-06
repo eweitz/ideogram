@@ -47,6 +47,13 @@ function getContainerSvgClass(ideo) {
   return svgClass;
 }
 
+/** Hide tooltip upon pressing "esc" on keyboard */
+function handleEscape() {
+  const tooltip = document.querySelector('#_ideogramTooltip');
+  if (!tooltip) return;
+  tooltip.style.opacity = 0;
+}
+
 /**
  * Write tooltip div setup with default styling.
  */
@@ -64,6 +71,9 @@ function writeTooltipContainer(ideo) {
     .style('border-radius', '5px')
     .style('z-index', '1000')
     .style('margin-left', '-2px'); // Mitigate crowding, e.g. BRCA1 for RAD51
+
+  document.removeEventListener('keydown', handleEscape);
+  document.addEventListener('keydown', handleEscape);
 }
 
 function writeContainerDom(ideo) {
