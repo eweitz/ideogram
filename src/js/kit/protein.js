@@ -202,21 +202,33 @@ function getProteinRect(cds, hasTopology) {
 }
 
 /** Get SVG showing 2D protein features, e.g. domains from InterPro */
-export function getProteinSvg(
+export function getProtein(
   structureName, subparts, isPositiveStrand, ideo
 ) {
   let features = [];
   const gene = getGeneFromStructureName(structureName, ideo);
 
   const isEligible = isEligibleforProteinSvg(gene, ideo);
-  if (!isEligible) return ['<br/>', false];
+  if (!isEligible) return ['<br/>', false, null];
 
   const entry = ideo.proteinCache[gene].find(d => {
     return d.transcriptName === structureName;
   });
-  if (!entry) return ['<br/>', false];
+  if (!entry) return ['<br/>', false, null];
   const protein = entry.protein;
   const cds = getCdsCoordinates(subparts, isPositiveStrand);
+
+  // Number of amino acids in protein
+  //
+  // Some principles of molecular biology:
+  //   - Coding sequence (CDS) of mRNA specifies amino acids comprising protein
+  //   - Each amino acid is specified by 3 nucleotides (i.e. codon; 3 nt / aa)
+  //   - 1 codon -- the stop codon -- is not part of protein
+  //
+  // TODO: account for phase
+  //
+  // const proteinLengthAa = Math.floor(cds.bp.length/3) - 1;
+  const proteinLengthAa = null;
 
   const domains = addPositions(subparts, protein);
 
@@ -244,5 +256,5 @@ export function getProteinSvg(
   const proteinSvg =
     `<g id="_ideoProtein">${features.join('')}</g>`;
 
-  return [proteinSvg, hasTopology];
+  return [proteinSvg, hasTopology, proteinLengthAa];
 }

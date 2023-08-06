@@ -4,7 +4,7 @@ import {tippyCss, tippyLightCss} from './tippy-styles';
 
 import {d3} from '../lib';
 import {getIcon} from '../annotations/legend';
-import {getProteinSvg} from './protein';
+import {getProtein} from './protein';
 
 const y = 15;
 
@@ -995,24 +995,36 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
       `style="${sharedStyle} left: -10px;"`;
   }
 
+  const structureName = geneStructure.name;
+  const gene = getGeneFromStructureName(structureName);
+  const menu = getMenu(gene, ideo, structureName).replaceAll('"', '\'');
+
+  const [proteinSvg, hasTopology, proteinLengthAa] =
+    getProtein(structureName, subparts, isPositiveStrand, ideo);
+
   const transcriptLengthBp = getTranscriptLengthBp(subparts, spliceExons);
   const prettyLength = transcriptLengthBp.toLocaleString();
+
   const footerDetails = [
     `${totalBySubpart['exon']} exons`,
     `<span id='_ideoTranscriptLengthBp'>${prettyLength} bp</span> `
   ];
+
+  // Note protein length in amino acids (aa)
+  // TODO: This is a no-op; see note about phase in protein.js
+  if (proteinLengthAa) {
+    const prettyLengthAa = proteinLengthAa.toLocaleString();
+    footerDetails.push(
+      `<span id='_ideoProteinLengthAa'>${prettyLengthAa} aa</span> `
+    );
+  }
+
+  // Note if transcript is unusual type, e.g. nonsense mediated decay (NMD)
   const biotypeText = geneStructure.biotype.replace(/_/g, ' ');
   if (biotypeText !== 'protein coding') {
     footerDetails.push(biotypeText);
   }
-
-  const structureName = geneStructure.name;
-  const gene = getGeneFromStructureName(structureName);
-  const menu = getMenu(gene, ideo, structureName).replaceAll('"', '\'');
   const footerData = menu + footerDetails.join(` ${pipe} `);
-
-  const [proteinSvg, hasTopology] =
-    getProteinSvg(structureName, subparts, isPositiveStrand, ideo);
 
   let svgHeight = proteinSvg === '' ? '40' : '60';
   if (hasTopology) svgHeight = '70';
