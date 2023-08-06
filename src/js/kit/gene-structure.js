@@ -184,14 +184,14 @@ function addMenuListeners(ideo) {
     }
   });
 
-  // Go to next transcript on pressing down arrow key, previous on up
-  document.addEventListener('keydown', (event) => {
-    const key = event.key;
-    if (['ArrowDown', 'ArrowUp'].includes(key)) {
-      const offset = key === 'ArrowDown' ? 1 : -1;
-      updateGeneStructure(ideo, offset);
-    }
-  });
+  // // Go to next transcript on pressing down arrow key, previous on up
+  // document.addEventListener('keydown', (event) => {
+  //   const key = event.key;
+  //   if (['ArrowDown', 'ArrowUp'].includes(key)) {
+  //     const offset = key === 'ArrowDown' ? 1 : -1;
+  //     updateGeneStructure(ideo, offset);
+  //   }
+  // });
 }
 
 function toggleSpliceByKeyboard(event) {
@@ -1053,9 +1053,9 @@ function getMenuArrows() {
   const upStyle = `style="${style}; margin-left: 2px;"`;
   const cls = 'class="_ideoMenuArrow"';
   const tippyPlace = 'data-tippy-placement="bottom-start"';
-  const downContent = 'Next transcript (down arrow)';
+  const downContent = 'Next transcript';
   const downTippy = `data-tippy-content="${downContent}" ${tippyPlace}`;
-  const upContent = 'Previous transcript (up arrow)';
+  const upContent = 'Previous transcript';
   const upTippy = `data-tippy-content="${upContent}" ${tippyPlace}`;
   const downAttrs = `${downStyle} ${cls} data-dir="down" ${downTippy}`;
   const upAttrs = `${upStyle} ${cls} data-dir="up" ${upTippy}`;
