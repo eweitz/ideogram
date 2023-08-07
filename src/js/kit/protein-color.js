@@ -68,24 +68,27 @@ const brown = '#C87D32';
 const brownLine = '#722810';
 const lightBrown = '#DACDBA';
 const lightBrownLine = '#A99A89';
-const lightBrown2 = '#CABDAA';
-const lightBrown2Line = '#A99A89';
+
 const orange = '#FFA500';
 const orangeLines = '#DD8000';
 const darkOrange = '#DD8300';
 const darkOrangeLines = '#883000';
+
+const lightOrange = '#FFEA66';
+const lightOrangeLine = '#FFB466';
+
+const orangeBrown = '#EEBB00';
+const orangeBrownLine = '#A99A89';
 
 const yellow = '#FF3';
 const yellowLine = '#AA0';
 const lightYellow = '#FFFBCC';
 const lightYellowLine = '#CCC89A';
 
-const lightOrange = '#FFEA66';
-const lightOrangeLine = '#FFB466';
 
 const lightGreen = '#BCB';
 const lightGreenLine = '#9A9';
-const veryLightGreen = '#EFE';
+const veryLightGreen = '#DFD';
 const veryLightGreenLine = '#CDC';
 
 export function getColors(domainType) {
@@ -115,7 +118,7 @@ export function getColors(domainType) {
   } else if (
     domainType === 'Lumenal, melanosome' // e.g. in TYR
   ) {
-    return [lightBrown2, lightBrown2Line];
+    return [orangeBrown, orangeBrownLine];
   } else if (
     domainType === 'Mitochondrial matrix' // e.g. SDHC in ACMG
   ) {
@@ -225,7 +228,8 @@ export function getColors(domainType) {
     domainType.includes('PTX/LNS') ||
     domainType === 'HSR domain' ||
     domainType.includes('MutS, clamp') ||
-    domainType.includes('S5 domain 2-like') // e.g. MLH1 in ACMG
+    domainType.includes('S5 domain 2-like') || // e.g. MLH1 in ACMG
+    domainType.endsWith('CC1/2') // e.g. PRKDC
   ) {
     return [darkGreen, darkGreenLine];
   } else if (
@@ -357,7 +361,8 @@ export function getColors(domainType) {
     domainType.includes('transactivation domain 2') ||
     domainType === 'Phosphopantetheine binding ACP domain' ||
     domainType === 'Multicopper oxidase, second cupredoxin domain' ||
-    domainType === 'Helicase, C-terminal'
+    domainType === 'Helicase, C-terminal' ||
+    domainType.endsWith('CC3') // e.g. PRKDC
   ) {
     return [green, greenLine];
   } else if (
@@ -418,7 +423,8 @@ export function getColors(domainType) {
     domainType.includes('Phox') ||
     domainType.includes('PB1') ||
     domainType.includes('multifunctional domain') ||
-    domainType.includes('MutS, core')
+    domainType.includes('MutS, core') ||
+    domainType.endsWith('CC5') // e.g. PRKDC
   ) {
     return [seafoam, seafoamLine];
   } else if (
@@ -717,11 +723,12 @@ export function getColors(domainType) {
     domainType === 'Ryanodine receptor Ryr' ||
 
     // Associated with repeats
-    domainType.includes('Armadillo') || // e.g. in APC
+    domainType.includes('Armadillo') || // e.g. APC
     domainType === 'UME domain' || // overlaps Armadillo-type fold, e.g. ATR
     domainType.includes('WD40 domain') ||
 
     domainType === 'WSTF/Acf1/Cbp146' || // ATP-utilising chromatin assembly and remodeling factor
+    domainType.endsWith('repeat ring region') || // e.g. TRRAP
 
     // GPCRs
     domainType === 'GPCR, rhodopsin-like, 7TM' ||
