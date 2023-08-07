@@ -124,6 +124,9 @@ function getFeatureSvg(feature, cds, isPositiveStrand, hasTopology) {
       featureType = decompressTopologyFeature(feature[0]);
       y = 40;
       height = 30;
+
+      const featureDigest = `${feature[0]} ${feature[1]} ${feature[2]}`;
+
       if (
         // E.g. EGF-206 alternative isoform, C-terminal cytoplasmic domain
         isPositiveStrand && featurePx.x + featurePx.width > cds.px.length + 3 ||
@@ -131,7 +134,6 @@ function getFeatureSvg(feature, cds, isPositiveStrand, hasTopology) {
         // E.g. SCARB1-201 canonical isoform, C-terminal cytoplasmic domain
         !isPositiveStrand && featurePx.x + featurePx.width > cds.px.length + 3
       ) {
-        const featureDigest = `${feature[0]} ${feature[1]} ${feature[2]}`;
         console.log(`Truncate protein topology feature: ${featureDigest}`);
         width -= (featurePx.x + featurePx.width) - cds.px.length;
         if (!isPositiveStrand) {
@@ -139,6 +141,13 @@ function getFeatureSvg(feature, cds, isPositiveStrand, hasTopology) {
         }
       }
       topoAttr = 'data-topology="true"';
+
+      if (width < 0) {
+        // E.g. LDLR-202 alternative isoform, multiple features
+        const issue = 'Width < 0, omit protein topology feature';
+        console.log(`${issue}: ${featureDigest}`);
+        return '';
+      };
     }
   }
 
@@ -163,7 +172,8 @@ function getFeatureSvg(feature, cds, isPositiveStrand, hasTopology) {
   const data = title;
 
   const pos = `x="${x}" width="${width}" y="${y}" height="${height}"`;
-  const cls = `class="subpart domain" `;
+  const topoCls = isTopology ? ' topology' : '';
+  const cls = `class="subpart domain${topoCls}" `;
 
   const addTopBottom = !isTopology;
   const line =
