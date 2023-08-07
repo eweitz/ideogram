@@ -48,10 +48,12 @@ function getContainerSvgClass(ideo) {
 }
 
 /** Hide tooltip upon pressing "esc" on keyboard */
-function handleEscape() {
-  const tooltip = document.querySelector('#_ideogramTooltip');
-  if (!tooltip) return;
-  tooltip.style.opacity = 0;
+function handleEscape(event) {
+  if (event.keyCode === 27) { // "Escape" key pressed
+    const tooltip = document.querySelector('#_ideogramTooltip');
+    if (!tooltip) return;
+    tooltip.style.opacity = 0;
+  }
 }
 
 /**
