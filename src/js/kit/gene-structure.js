@@ -4,7 +4,7 @@ import {tippyCss, tippyLightCss} from './tippy-styles';
 
 import {d3} from '../lib';
 import {getIcon} from '../annotations/legend';
-import {getProteinSvg} from './protein';
+import {getProtein, getHasTopology} from './protein';
 
 const y = 15;
 
@@ -176,7 +176,7 @@ function addMenuListeners(ideo) {
 
     // Go to next transcript on clicking down arrow icon, previous on up
     if (Array.from(svgMaybe.classList).includes('_ideoMenuArrow')) {
-      const menuArrow = event.target;
+      const menuArrow = svgMaybe;
       const direction = menuArrow.getAttribute('data-dir');
       const offset = direction === 'down' ? 1 : -1;
       updateGeneStructure(ideo, offset);
@@ -184,14 +184,14 @@ function addMenuListeners(ideo) {
     }
   });
 
-  // Go to next transcript on pressing down arrow key, previous on up
-  document.addEventListener('keydown', (event) => {
-    const key = event.key;
-    if (['ArrowDown', 'ArrowUp'].includes(key)) {
-      const offset = key === 'ArrowDown' ? 1 : -1;
-      updateGeneStructure(ideo, offset);
-    }
-  });
+  // // Go to next transcript on pressing down arrow key, previous on up
+  // document.addEventListener('keydown', (event) => {
+  //   const key = event.key;
+  //   if (['ArrowDown', 'ArrowUp'].includes(key)) {
+  //     const offset = key === 'ArrowDown' ? 1 : -1;
+  //     updateGeneStructure(ideo, offset);
+  //   }
+  // });
 }
 
 function toggleSpliceByKeyboard(event) {
@@ -995,24 +995,38 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
       `style="${sharedStyle} left: -10px;"`;
   }
 
+  const structureName = geneStructure.name;
+  const gene = getGeneFromStructureName(structureName);
+  const menu = getMenu(gene, ideo, structureName).replaceAll('"', '\'');
+
+  const hasTopology = getHasTopology(gene, ideo);
+
+  const [proteinSvg, proteinLengthAa] =
+    getProtein(structureName, subparts, isPositiveStrand, hasTopology, ideo);
+
   const transcriptLengthBp = getTranscriptLengthBp(subparts, spliceExons);
   const prettyLength = transcriptLengthBp.toLocaleString();
+
   const footerDetails = [
     `${totalBySubpart['exon']} exons`,
     `<span id='_ideoTranscriptLengthBp'>${prettyLength} bp</span> `
   ];
+
+  // Note protein length in amino acids (aa)
+  // TODO: This is a no-op; see note about phase in protein.js
+  if (proteinLengthAa) {
+    const prettyLengthAa = proteinLengthAa.toLocaleString();
+    footerDetails.push(
+      `<span id='_ideoProteinLengthAa'>${prettyLengthAa} aa</span> `
+    );
+  }
+
+  // Note if transcript is unusual type, e.g. nonsense mediated decay (NMD)
   const biotypeText = geneStructure.biotype.replace(/_/g, ' ');
   if (biotypeText !== 'protein coding') {
     footerDetails.push(biotypeText);
   }
-
-  const structureName = geneStructure.name;
-  const gene = getGeneFromStructureName(structureName);
-  const menu = getMenu(gene, ideo, structureName).replaceAll('"', '\'');
   const footerData = menu + footerDetails.join(` ${pipe} `);
-
-  const [proteinSvg, hasTopology] =
-    getProteinSvg(structureName, subparts, isPositiveStrand, ideo);
 
   let svgHeight = proteinSvg === '' ? '40' : '60';
   if (hasTopology) svgHeight = '70';
@@ -1041,9 +1055,9 @@ function getMenuArrows() {
   const upStyle = `style="${style}; margin-left: 2px;"`;
   const cls = 'class="_ideoMenuArrow"';
   const tippyPlace = 'data-tippy-placement="bottom-start"';
-  const downContent = 'Next transcript (down arrow)';
+  const downContent = 'Next transcript';
   const downTippy = `data-tippy-content="${downContent}" ${tippyPlace}`;
-  const upContent = 'Previous transcript (up arrow)';
+  const upContent = 'Previous transcript';
   const upTippy = `data-tippy-content="${upContent}" ${tippyPlace}`;
   const downAttrs = `${downStyle} ${cls} data-dir="down" ${downTippy}`;
   const upAttrs = `${upStyle} ${cls} data-dir="up" ${upTippy}`;

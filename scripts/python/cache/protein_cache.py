@@ -126,7 +126,7 @@ def merge_signalp(
             if transcript_name not in features_by_transcript:
                 transcript_names_not_found.append(transcript_id)
                 continue
-            name = '_SP'
+            name = 'S'
             parsed_feat, feature_names_by_id = parse_feature(
                 name, start, stop, name, feature_names_by_id
             )
@@ -202,7 +202,13 @@ def merge_uniprot(organism, features_by_transcript, transcript_names_by_id, feat
             continue
 
         name = name.replace(';', ' ---')
-        name = "_UT_" + name
+        if name == 'Helical':
+            name = 'H'
+        elif name == 'Extracellular':
+            name = 'E'
+        elif name == 'Cytoplasmic':
+            name = 'C'
+        name = "_" + name
         parsed_feat, feature_names_by_id = parse_feature(
             name, start, stop, name, feature_names_by_id
         )

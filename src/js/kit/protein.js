@@ -81,11 +81,24 @@ function getCdsCoordinates(subparts, isPositiveStrand) {
 }
 
 function isTopologyFeature(feature) {
-  return feature[0].startsWith('_UT_');
+  return feature[0][0] === '_';
 }
 
 function isSignalPeptideFeature(feature) {
-  return feature[0].startsWith('_SP');
+  return feature[0] === 'S';
+}
+
+const topologyFeatureMap = {
+  '_H': 'Helical',
+  '_E': 'Extracellular',
+  '_C': 'Cytoplasmic'
+};
+function decompressTopologyFeature(feature) {
+  if (feature in topologyFeatureMap) {
+    return topologyFeatureMap[feature];
+  } else {
+    return feature.slice(1);
+  }
 }
 
 /** Get SVG for an inidividual protein domain */
@@ -108,9 +121,12 @@ function getFeatureSvg(feature, cds, isPositiveStrand, hasTopology) {
   if (hasTopology) {
     y = 48;
     if (isTopology) {
-      featureType = featureType.slice(4);
+      featureType = decompressTopologyFeature(feature[0]);
       y = 40;
       height = 30;
+
+      const featureDigest = `${feature[0]} ${feature[1]} ${feature[2]}`;
+
       if (
         // E.g. EGF-206 alternative isoform, C-terminal cytoplasmic domain
         isPositiveStrand && featurePx.x + featurePx.width > cds.px.length + 3 ||
@@ -118,7 +134,6 @@ function getFeatureSvg(feature, cds, isPositiveStrand, hasTopology) {
         // E.g. SCARB1-201 canonical isoform, C-terminal cytoplasmic domain
         !isPositiveStrand && featurePx.x + featurePx.width > cds.px.length + 3
       ) {
-        const featureDigest = `${feature[0]} ${feature[1]} ${feature[2]}`;
         console.log(`Truncate protein topology feature: ${featureDigest}`);
         width -= (featurePx.x + featurePx.width) - cds.px.length;
         if (!isPositiveStrand) {
@@ -126,6 +141,13 @@ function getFeatureSvg(feature, cds, isPositiveStrand, hasTopology) {
         }
       }
       topoAttr = 'data-topology="true"';
+
+      if (width < 0) {
+        // E.g. LDLR-202 alternative isoform, multiple features
+        const issue = 'Width < 0, omit protein topology feature';
+        console.log(`${issue}: ${featureDigest}`);
+        return '';
+      };
     }
   }
 
@@ -150,7 +172,8 @@ function getFeatureSvg(feature, cds, isPositiveStrand, hasTopology) {
   const data = title;
 
   const pos = `x="${x}" width="${width}" y="${y}" height="${height}"`;
-  const cls = `class="subpart domain" `;
+  const topoCls = isTopology ? ' topology' : '';
+  const cls = `class="subpart domain${topoCls}" `;
 
   const addTopBottom = !isTopology;
   const line =
@@ -188,26 +211,53 @@ function getProteinRect(cds, hasTopology) {
   return proteinRect;
 }
 
+/**
+ * Determine if any protein isoforms for this gene have topology features
+ *
+ * Helps ensure transcripts can be rapidly navigated via arrows in dropdown
+ * menu, even when some proteins of the gene have topology and some do not.
+ *
+ * Example: LDLR
+ */
+export function getHasTopology(gene, ideo) {
+  const hasTopology = ideo.proteinCache[gene].some(entry => {
+    return entry.protein.some(
+      feature => isTopologyFeature(feature)
+    );
+  });
+  return hasTopology;
+}
+
 /** Get SVG showing 2D protein features, e.g. domains from InterPro */
-export function getProteinSvg(
-  structureName, subparts, isPositiveStrand, ideo
+export function getProtein(
+  structureName, subparts, isPositiveStrand, hasTopology, ideo
 ) {
   let features = [];
   const gene = getGeneFromStructureName(structureName, ideo);
 
   const isEligible = isEligibleforProteinSvg(gene, ideo);
-  if (!isEligible) return '';
+  if (!isEligible) return ['<br/>', null];
 
   const entry = ideo.proteinCache[gene].find(d => {
     return d.transcriptName === structureName;
   });
-  if (!entry) return '<br/>';
+  if (!entry) return ['<br/>', null];
   const protein = entry.protein;
   const cds = getCdsCoordinates(subparts, isPositiveStrand);
 
-  const domains = addPositions(subparts, protein);
+  // Number of amino acids in protein
+  //
+  // Some principles of molecular biology:
+  //   - Coding sequence (CDS) of mRNA specifies amino acids comprising protein
+  //   - Each amino acid is specified by 3 nucleotides (i.e. codon; 3 nt / aa)
+  //   - 1 codon -- the stop codon -- is not part of protein
+  //
+  // TODO: account for phase
+  //
+  // const proteinLengthAa = Math.floor(cds.bp.length/3) - 1;
+  const proteinLengthAa = null;
 
-  const hasTopology = domains.some(d => isTopologyFeature(d));
+  const domains = addPositions(subparts, protein);
 
   const topologies = [];
   for (let i = 0; i < domains.length; i++) {
@@ -231,5 +281,5 @@ export function getProteinSvg(
   const proteinSvg =
     `<g id="_ideoProtein">${features.join('')}</g>`;
 
-  return [proteinSvg, hasTopology];
+  return [proteinSvg, proteinLengthAa];
 }
