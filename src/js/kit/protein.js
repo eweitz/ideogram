@@ -211,20 +211,37 @@ function getProteinRect(cds, hasTopology) {
   return proteinRect;
 }
 
+/**
+ * Determine if any protein isoforms for this gene have topology features
+ *
+ * Helps ensure transcripts can be rapidly navigated via arrows in dropdown
+ * menu, even when some proteins of the gene have topology and some do not.
+ *
+ * Example: LDLR
+ */
+export function getHasTopology(gene, ideo) {
+  const hasTopology = ideo.proteinCache[gene].some(entry => {
+    return entry.protein.some(
+      feature => isTopologyFeature(feature)
+    );
+  });
+  return hasTopology;
+}
+
 /** Get SVG showing 2D protein features, e.g. domains from InterPro */
 export function getProtein(
-  structureName, subparts, isPositiveStrand, ideo
+  structureName, subparts, isPositiveStrand, hasTopology, ideo
 ) {
   let features = [];
   const gene = getGeneFromStructureName(structureName, ideo);
 
   const isEligible = isEligibleforProteinSvg(gene, ideo);
-  if (!isEligible) return ['<br/>', false, null];
+  if (!isEligible) return ['<br/>', null];
 
   const entry = ideo.proteinCache[gene].find(d => {
     return d.transcriptName === structureName;
   });
-  if (!entry) return ['<br/>', false, null];
+  if (!entry) return ['<br/>', null];
   const protein = entry.protein;
   const cds = getCdsCoordinates(subparts, isPositiveStrand);
 
@@ -241,8 +258,6 @@ export function getProtein(
   const proteinLengthAa = null;
 
   const domains = addPositions(subparts, protein);
-
-  const hasTopology = domains.some(d => isTopologyFeature(d));
 
   const topologies = [];
   for (let i = 0; i < domains.length; i++) {
@@ -266,5 +281,5 @@ export function getProtein(
   const proteinSvg =
     `<g id="_ideoProtein">${features.join('')}</g>`;
 
-  return [proteinSvg, hasTopology, proteinLengthAa];
+  return [proteinSvg, proteinLengthAa];
 }

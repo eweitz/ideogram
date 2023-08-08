@@ -4,7 +4,7 @@ import {tippyCss, tippyLightCss} from './tippy-styles';
 
 import {d3} from '../lib';
 import {getIcon} from '../annotations/legend';
-import {getProtein} from './protein';
+import {getProtein, getHasTopology} from './protein';
 
 const y = 15;
 
@@ -999,8 +999,10 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
   const gene = getGeneFromStructureName(structureName);
   const menu = getMenu(gene, ideo, structureName).replaceAll('"', '\'');
 
-  const [proteinSvg, hasTopology, proteinLengthAa] =
-    getProtein(structureName, subparts, isPositiveStrand, ideo);
+  const hasTopology = getHasTopology(gene, ideo);
+
+  const [proteinSvg, proteinLengthAa] =
+    getProtein(structureName, subparts, isPositiveStrand, hasTopology, ideo);
 
   const transcriptLengthBp = getTranscriptLengthBp(subparts, spliceExons);
   const prettyLength = transcriptLengthBp.toLocaleString();
