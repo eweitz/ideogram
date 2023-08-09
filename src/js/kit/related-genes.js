@@ -876,43 +876,59 @@ function parseAnnotFromMgiGene(gene, ideo, color='red') {
   return annot;
 }
 
+/** Return type (interacting, paralogous, or searched) of legend entry */
+function getLegendType(li) {
+  const lcText = li.innerText.toLowerCase();
+
+  let type;
+  if (lcText.includes('interacting')) type = 'interacting';
+  if (lcText.includes('paralogous')) type = 'paralogous';
+  if (lcText.includes('searched')) type = 'searched';
+
+  return type;
+}
+
+/** Return color (purple, pink, or red) of legend entry */
+function getLegendEntryColor(li) {
+  const type = getLegendType(li);
+
+  const colorMap = {
+    'interacting': 'purple',
+    'paralogous': 'pink',
+    'searched': 'red'
+  };
+  const color = colorMap[type];
+
+  return color;
+}
+
+/** Highlight / filter upon hovering over legend entry */
 function highlightByType(event, ideo) {
   const li = event.target;
   li.style.color = '#00C';
   li.style.backgroundColor = '#EEF';
 
-  const type = li.innerText.toLowerCase();
-  const isInteracting = type.includes('interacting');
-  const isParalogous = type.includes('paralogous');
-  const isSearched = type.includes('searched');
+  const selectedColor = getLegendEntryColor(li);
 
   if (ideo.config.showAnnotLabels) {
     ideo.clearAnnotLabels();
 
-
     ideo.flattenAnnots().forEach(annot => {
-      if (
-        (isInteracting && annot.color !== 'purple') ||
-        (isParalogous && annot.color !== 'pink') ||
-        (isSearched && annot.color !== 'red')
-      ) {
+      if (annot.color !== selectedColor) {
         document.getElementById(annot.domId).style.display = 'none';
       }
     });
 
     const sortedAnnots = ideo.flattenAnnots().sort((a, b) => {
       return ideo.annotSortFunction(a, b);
-    })
-      .filter(annot => {
-        if (isInteracting) return annot.color === 'purple';
-        if (isParalogous) return annot.color === 'pink';
-        if (isSearched) return annot.color === 'red';
-      })
+    }).filter(annot => annot.color === selectedColor);
 
-    ideo.fillAnnotLabels(sortedAnnots, 20);
+    const numLabels = Math.min(sortedAnnots.length, 20);
+    ideo.fillAnnotLabels(sortedAnnots, numLabels);
   }
 }
 
+/** Remove highlight / filter upon hovering out of legend entry */
 function dehighlightAll(ideo) {
   document.querySelectorAll('#_ideogramLegend li').forEach(li => {
     li.style.color = 'black';
@@ -941,18 +957,24 @@ function moveLegend(ideo, extraPad=0) {
   ideoInnerDom.prepend(legend);
   legend.style = legendStyle;
 
+  // Highlight and filter annotations by type on hovering over legend entries
   function highlight(event) {
     return highlightByType(event, ideo);
   }
-
-  function dehighlight(event) {
+  function dehighlight() {
     dehighlightAll(ideo);
   }
-
   document.querySelectorAll('#_ideogramLegend li').forEach(li => {
     li.addEventListener('mouseenter', highlight);
     li.addEventListener('mouseleave', dehighlight);
-  })
+
+    const legendType = getLegendType(li);
+    const tippyContentMap = {
+      'interacting': '',
+      'paralogous': '',
+      'searched': ''
+    };
+  });
 }
 
 /** Filter annotations to only include those in configured list */
