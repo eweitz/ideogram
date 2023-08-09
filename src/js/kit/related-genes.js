@@ -665,9 +665,10 @@ async function fetchParalogPositionsFromMyGeneInfo(
 
 function drawNeighborhoods(neighborhoodAnnots, ideo) {
   ideo.drawAnnots(neighborhoodAnnots, 'overlay', true, true);
-  moveLegend();
+  moveLegend(ideo);
 }
 
+/** Plot paralog neighborhoods */
 function overplotParalogs(annots, ideo) {
   if (!ideo.config.showParalogNeighborhoods) return;
 
@@ -875,7 +876,63 @@ function parseAnnotFromMgiGene(gene, ideo, color='red') {
   return annot;
 }
 
-function moveLegend(extraPad=0) {
+function highlightByType(event, ideo) {
+  const li = event.target;
+  li.style.color = '#00C';
+  li.style.backgroundColor = '#EEF';
+
+  const type = li.innerText.toLowerCase();
+  const isInteracting = type.includes('interacting');
+  const isParalogous = type.includes('paralogous');
+  const isSearched = type.includes('searched');
+
+  if (ideo.config.showAnnotLabels) {
+    ideo.clearAnnotLabels();
+
+
+    ideo.flattenAnnots().forEach(annot => {
+      if (
+        (isInteracting && annot.color !== 'purple') ||
+        (isParalogous && annot.color !== 'pink') ||
+        (isSearched && annot.color !== 'red')
+      ) {
+        document.getElementById(annot.domId).style.display = 'none';
+      }
+    });
+
+    const sortedAnnots = ideo.flattenAnnots().sort((a, b) => {
+      return ideo.annotSortFunction(a, b);
+    })
+      .filter(annot => {
+        if (isInteracting) return annot.color === 'purple';
+        if (isParalogous) return annot.color === 'pink';
+        if (isSearched) return annot.color === 'red';
+      })
+
+    ideo.fillAnnotLabels(sortedAnnots, 20);
+  }
+}
+
+function dehighlightAll(ideo) {
+  document.querySelectorAll('#_ideogramLegend li').forEach(li => {
+    li.style.color = 'black';
+    li.style.backgroundColor = 'white';
+  });
+
+  ideo.flattenAnnots().forEach(annot => {
+    document.getElementById(annot.domId).style.display = null;
+  });
+
+  if (ideo.config.showAnnotLabels) {
+    const sortedAnnots = ideo.flattenAnnots().sort((a, b) => {
+      return ideo.annotSortFunction(a, b);
+    });
+
+    ideo.fillAnnotLabels(sortedAnnots);
+  }
+}
+
+function moveLegend(ideo, extraPad=0) {
   const ideoInnerDom = document.querySelector('#_ideogramInnerWrap');
   const decorPad = setRelatedDecorPad({}).legendPad;
   const left = decorPad + 20 + extraPad;
@@ -883,6 +940,19 @@ function moveLegend(extraPad=0) {
   const legend = document.querySelector('#_ideogramLegend');
   ideoInnerDom.prepend(legend);
   legend.style = legendStyle;
+
+  function highlight(event) {
+    return highlightByType(event, ideo);
+  }
+
+  function dehighlight(event) {
+    dehighlightAll(ideo);
+  }
+
+  document.querySelectorAll('#_ideogramLegend li').forEach(li => {
+    li.addEventListener('mouseenter', highlight);
+    li.addEventListener('mouseleave', dehighlight);
+  })
 }
 
 /** Filter annotations to only include those in configured list */
@@ -1064,7 +1134,7 @@ function finishPlotRelatedGenes(type, ideo) {
     ideo.fillAnnotLabels(sortedAnnots);
   }
 
-  moveLegend();
+  moveLegend(ideo);
 
   analyzePlotTimes(type, ideo);
 }
@@ -1240,7 +1310,7 @@ function adjustPlaceAndVisibility(ideo) {
 //   legendPathwayName = pathway.name;
 //   ideo.config.legend = pathwayLegend;
 //   writeLegend(ideo);
-//   moveLegend();
+//   moveLegend(ideo);
 
 //   ideo.relatedAnnots = [];
 
@@ -1310,7 +1380,7 @@ async function plotRelatedGenes(geneSymbol=null) {
 
   ideo.config.legend = relatedLegend;
   writeLegend(ideo);
-  moveLegend();
+  moveLegend(ideo);
 
   await Promise.all([
     processInteractions(annot, ideo),
@@ -1656,7 +1726,7 @@ function plotGeneHints() {
   });
 
   adjustPlaceAndVisibility(ideo);
-  moveLegend(-60);
+  moveLegend(ideo, -60);
 
   const container = ideo.config.container;
   document.querySelector(container).style.visibility = '';
