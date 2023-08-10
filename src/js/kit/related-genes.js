@@ -993,7 +993,10 @@ function moveLegend(ideo, extraPad=0) {
       'interacting': 'Adjacent in a biochemical pathway, per WikiPathways',
       'paralogous': 'Evolutionarily related by a duplication event, per Ensembl'
     };
-    const tippy = `data-tippy-content="${tippyContentMap[legendType]}"`;
+    // const placement = 'data-tippy-placement="top-end"';
+    const placement = '';
+    const tippy =
+      `data-tippy-content="${tippyContentMap[legendType]}" ${placement}`;
     const reset = 'position: inherit; left: inherit';
     // const glossary = 'text-decoration: underline dashed;';
     // const style = `style="${glossary} ${reset}`;
@@ -1009,7 +1012,6 @@ function moveLegend(ideo, extraPad=0) {
   const css =
     `<style>
     ${tippyCss}
-    ${tippyLightCss}
 
     .tippy-box {
       font-size: 12px;
@@ -1022,6 +1024,8 @@ function moveLegend(ideo, extraPad=0) {
   const legendDom = document.querySelector('#_ideogramLegend');
   legendDom.insertAdjacentHTML('afterBegin', css);
   const tippyConfig = getTippyConfig();
+  tippyConfig.maxWidth = 180;
+  tippyConfig.offset = [-30, 10];
   ideo.legendTippy =
     tippy('._ideoLegendEntry[data-tippy-content]', tippyConfig);
 }
