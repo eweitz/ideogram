@@ -22,6 +22,8 @@
  */
 
 import {decompressSync, strFromU8} from 'fflate';
+import tippy, {hideAll} from 'tippy.js';
+import {tippyCss, tippyLightCss} from './tippy-styles';
 
 import {
   initAnalyzeRelatedGenes, analyzePlotTimes, analyzeRelatedGenes, timeDiff,
@@ -36,7 +38,7 @@ import {
 } from '../annotations/annotations';
 import {writeLegend} from '../annotations/legend';
 import {getAnnotDomId} from '../annotations/process';
-import {getDir, deepCopy, slug, pluralize} from '../lib';
+import {getDir, pluralize} from '../lib';
 import {
   fetchGpmls, summarizeInteractions, fetchPathwayInteractions
 } from './wikipathways';
@@ -948,6 +950,24 @@ function dehighlightAll(ideo) {
   }
 }
 
+function getTippyConfig() {
+  return {
+    theme: 'light-border',
+    popperOptions: { // Docs: https://atomiks.github.io/tippyjs/v6/all-props/#popperoptions
+      modifiers: [ // Docs: https://popper.js.org/docs/v2/modifiers
+        {
+          name: 'flip'
+        }
+      ]
+    },
+    onShow: function() {
+      // Ensure only 1 tippy tooltip is displayed at a time
+      document.querySelectorAll('[data-tippy-root]')
+        .forEach(tippyNode => tippyNode.remove());
+    }
+  };
+}
+
 function moveLegend(ideo, extraPad=0) {
   const ideoInnerDom = document.querySelector('#_ideogramInnerWrap');
   const decorPad = setRelatedDecorPad({}).legendPad;
@@ -970,11 +990,40 @@ function moveLegend(ideo, extraPad=0) {
 
     const legendType = getLegendType(li);
     const tippyContentMap = {
-      'interacting': '',
-      'paralogous': '',
-      'searched': ''
+      'interacting': 'Adjacent in a biochemical pathway, per WikiPathways',
+      'paralogous': 'Evolutionarily related by a duplication event, per Ensembl'
     };
+    const tippy = `data-tippy-content="${tippyContentMap[legendType]}"`;
+    const reset = 'position: inherit; left: inherit';
+    // const glossary = 'text-decoration: underline dashed;';
+    // const style = `style="${glossary} ${reset}`;
+    const style = `style="${reset}"`;
+    const attrs = `class="_ideoLegendEntry" ${style} ${tippy}`;
+    if (legendType === 'paralogous') {
+      li.innerHTML = `<span ${attrs}>Paralogous genes</span>`;
+    } else if (legendType === 'interacting') {
+      li.innerHTML = `<span ${attrs}>Interacting genes</span>`;
+    }
   });
+
+  const css =
+    `<style>
+    ${tippyCss}
+    ${tippyLightCss}
+
+    .tippy-box {
+      font-size: 12px;
+    }
+
+    .tippy-content {
+      padding: 3px 7px;
+    }
+    </style>`;
+  const legendDom = document.querySelector('#_ideogramLegend');
+  legendDom.insertAdjacentHTML('afterBegin', css);
+  const tippyConfig = getTippyConfig();
+  ideo.legendTippy =
+    tippy('._ideoLegendEntry[data-tippy-content]', tippyConfig);
 }
 
 /** Filter annotations to only include those in configured list */
