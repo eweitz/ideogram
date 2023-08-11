@@ -671,7 +671,7 @@ function drawNeighborhoods(neighborhoodAnnots, ideo) {
 }
 
 /** Plot paralog neighborhoods */
-function overplotParalogs(annots, ideo) {
+function plotParalogNeighborhoods(annots, ideo) {
   if (!ideo.config.showParalogNeighborhoods) return;
 
   if (ideo.neighborhoodAnnots?.length > 0) {
@@ -965,15 +965,7 @@ function getTippyConfig() {
   };
 }
 
-function moveLegend(ideo, extraPad=0) {
-  const ideoInnerDom = document.querySelector('#_ideogramInnerWrap');
-  const decorPad = setRelatedDecorPad({}).legendPad;
-  const left = decorPad + 20 + extraPad;
-  const legendStyle = `position: absolute; top: 15px; left: ${left}px`;
-  const legend = document.querySelector('#_ideogramLegend');
-  ideoInnerDom.prepend(legend);
-  legend.style = legendStyle;
-
+function initInteractiveLegend(ideo) {
   // Highlight and filter annotations by type on hovering over legend entries
   function highlight(event) {
     const li = event.target;
@@ -1053,6 +1045,19 @@ function moveLegend(ideo, extraPad=0) {
     tippy('._ideoLegendEntry[data-tippy-content]', tippyConfig);
 }
 
+function moveLegend(ideo, extraPad=0) {
+  const ideoInnerDom = document.querySelector('#_ideogramInnerWrap');
+  const decorPad = setRelatedDecorPad({}).legendPad;
+  const left = decorPad + 20 + extraPad;
+  const legendStyle = `position: absolute; top: 15px; left: ${left}px`;
+
+  const legend = document.querySelector('#_ideogramLegend');
+  ideoInnerDom.prepend(legend);
+  legend.style = legendStyle;
+
+  initInteractiveLegend(ideo);
+}
+
 /** Filter annotations to only include those in configured list */
 function applyAnnotsIncludeList(annots, ideo) {
 
@@ -1079,7 +1084,7 @@ function processInteractions(annot, ideo) {
     finishPlotRelatedGenes('interacting', ideo);
 
     ideo.time.rg.interactions = timeDiff(t0);
-    overplotParalogs(annots, ideo);
+    plotParalogNeighborhoods(annots, ideo);
 
     resolve();
   });
@@ -1093,7 +1098,7 @@ function processParalogs(annot, ideo) {
     const annots = await fetchParalogs(annot, ideo);
     ideo.relatedAnnots.push(...annots);
     finishPlotRelatedGenes('paralogous', ideo);
-    overplotParalogs(annots, ideo);
+    plotParalogNeighborhoods(annots, ideo);
 
     ideo.time.rg.paralogs = timeDiff(t0);
 
@@ -1853,6 +1858,7 @@ function _initRelatedGenes(config, annotsInList) {
 
   const kitDefaults = Object.assign({
     showParalogNeighborhoods: true,
+    isLegendInteractive: true,
     relatedGenesMode: 'related',
     useCache: true,
     awaitCache: true

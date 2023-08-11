@@ -220,7 +220,7 @@ function getProteinRect(cds, hasTopology) {
  * Example: LDLR
  */
 export function getHasTopology(gene, ideo) {
-  const hasTopology = ideo.proteinCache[gene].some(entry => {
+  const hasTopology = ideo.proteinCache[gene]?.some(entry => {
     return entry.protein.some(
       feature => isTopologyFeature(feature)
     );
