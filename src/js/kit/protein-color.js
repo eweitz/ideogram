@@ -222,7 +222,8 @@ export function getColors(domainType) {
     domainType.includes('eIF-4 gamma, MA3') || // e.g. PDCD4
     domainType === 'Troponin' || // e.g. TNNT1
     domainType === 'SKI/SNO/DAC domain' || // SKIL gene
-    domainType.toLowerCase().includes('large ribosom') // RPLP0
+    domainType.toLowerCase().includes('large ribosom') || // RPLP0
+    domainType.includes('KA1') // e.g. MARK2
   ) {
     return [redderFaintRed, redderFaintRedLine];
   } else if (
@@ -365,6 +366,7 @@ export function getColors(domainType) {
     domainType === 'Phosphopantetheine binding ACP domain' ||
     domainType === 'Multicopper oxidase, second cupredoxin domain' ||
     domainType === 'Helicase, C-terminal' ||
+    domainType.includes('presequence') || // e.g. ALAS2
     domainType.endsWith('CC3') // e.g. PRKDC
   ) {
     return [green, greenLine];
@@ -404,6 +406,7 @@ export function getColors(domainType) {
     domainType.includes(' activation domain') ||
     domainType.includes('activating region') ||
     domainType === 'Thioesterase' ||
+    domainType.toLowerCase().includes('thiored') || // e.g. TXNDC12
     domainType.includes('esterase') ||
     domainType.endsWith('Claudin superfamily') ||
     domainType === 'Retinoblastoma-associated protein, A-box' ||
@@ -429,6 +432,7 @@ export function getColors(domainType) {
     domainType.includes('PB1') ||
     domainType.includes('multifunctional domain') ||
     domainType.includes('MutS, core') ||
+    domainType === 'RAP domain' || // RNA-binding, e.g. FASTK
     domainType.endsWith('CC5') // e.g. PRKDC
   ) {
     return [seafoam, seafoamLine];
@@ -837,7 +841,9 @@ export function getColors(domainType) {
   ) {
     return [magenta, magentaLines];
   } else if (
-    domainType.includes(' TM ') // transmembrane, as in e.g. RYR1
+    domainType.includes('TM') || // transmembrane, as in e.g. RYR1
+    domainType.toLowerCase().includes('transmembrane') ||
+    domainType.toLowerCase().includes('trans-membrane')
   ) {
     return [darkBrown, darkBrownLine];
   } else if (

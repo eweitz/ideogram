@@ -7,7 +7,7 @@
 import {d3, getTextSize, round} from '../lib';
 
 var legendStyle =
-  '#_ideogramLegend {font: 12px Arial; overflow: auto;} ' +
+  '#_ideogramLegend {font: 12px Arial; overflow: auto; cursor: default;} ' +
   '#_ideogramLegend svg {float: left;} ' +
   '#_ideogramLegend ul {' +
     'position: relative; left: -14px; list-style: none; float: left; ' +

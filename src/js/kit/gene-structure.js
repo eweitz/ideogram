@@ -77,7 +77,6 @@ const css =
     font-style: italic;
   }
   ${tippyCss}
-  ${tippyLightCss}
 
   .tippy-box {
     font-size: 12px;

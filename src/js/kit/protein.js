@@ -134,7 +134,7 @@ function getFeatureSvg(feature, cds, isPositiveStrand, hasTopology) {
         // E.g. SCARB1-201 canonical isoform, C-terminal cytoplasmic domain
         !isPositiveStrand && featurePx.x + featurePx.width > cds.px.length + 3
       ) {
-        console.log(`Truncate protein topology feature: ${featureDigest}`);
+        console.debug(`Truncate protein topology feature: ${featureDigest}`);
         width -= (featurePx.x + featurePx.width) - cds.px.length;
         if (!isPositiveStrand) {
           x += width;
@@ -145,7 +145,7 @@ function getFeatureSvg(feature, cds, isPositiveStrand, hasTopology) {
       if (width < 0) {
         // E.g. LDLR-202 alternative isoform, multiple features
         const issue = 'Width < 0, omit protein topology feature';
-        console.log(`${issue}: ${featureDigest}`);
+        console.debug(`${issue}: ${featureDigest}`);
         return '';
       };
     }
@@ -220,7 +220,7 @@ function getProteinRect(cds, hasTopology) {
  * Example: LDLR
  */
 export function getHasTopology(gene, ideo) {
-  const hasTopology = ideo.proteinCache[gene].some(entry => {
+  const hasTopology = ideo.proteinCache[gene]?.some(entry => {
     return entry.protein.some(
       feature => isTopologyFeature(feature)
     );

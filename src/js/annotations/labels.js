@@ -378,7 +378,7 @@ function getIsYOverlap(o, n, p) {
 }
 
 /** Label as many annotations as possible, without overlap */
-function fillAnnotLabels(sortedAnnots=[]) {
+function fillAnnotLabels(sortedAnnots=[], numLabels=10) {
   const ideo = this;
 
   sortedAnnots = deepCopy(sortedAnnots); // copy by value
@@ -447,7 +447,6 @@ function fillAnnotLabels(sortedAnnots=[]) {
     spacedLayouts.push(layout);
   });
 
-  let numLabels = 10;
   const config = ideo.config;
   if (
     'relatedGenesMode' in config &&
