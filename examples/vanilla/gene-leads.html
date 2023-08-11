@@ -208,8 +208,13 @@
     }
 
     /** Ideogram has no 3rd party analytics, but lets you easily hook in your own */
-    function reportRelatedGenes() {
+    function reportFoundGenes() {
       console.log(this.relatedGenesAnalytics)
+    }
+
+    /** Ideogram has no 3rd party analytics, but lets you easily hook in your own */
+    function reportLegendMetrics() {
+      console.log('Hovered legend')
     }
 
     /** Upon clicking a triangular annotation or tooltip, plot that gene */
@@ -239,7 +244,8 @@
       container: '#ideogram-container',
       // fontFamily: "'Montserrat', sans-serif",
       onLoad: plotGeneFromUrl,
-      onPlotRelatedGenes: reportRelatedGenes,
+      onPlotFoundGenes: reportFoundGenes,
+      onHoverLegend: reportLegendMetrics,
       showGeneStructureInTooltip: true,
       showProteinInTooltip: true,
       onClickAnnot

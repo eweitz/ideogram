@@ -906,8 +906,7 @@ function getLegendEntryColor(li) {
 
 /** Highlight / filter upon hovering over legend entry */
 function highlightByType(li, ideo) {
-  li.style.color = '#00C';
-  li.style.backgroundColor = '#EEF';
+  li.classList += ' active';
 
   const selectedColor = getLegendEntryColor(li);
 
@@ -932,8 +931,7 @@ function highlightByType(li, ideo) {
 /** Remove highlight / filter upon hovering out of legend entry */
 function dehighlightAll(ideo) {
   document.querySelectorAll('#_ideogramLegend li').forEach(li => {
-    li.style.color = 'black';
-    li.style.backgroundColor = 'white';
+    li.classList.remove('active');
   });
 
   ideo.flattenAnnots().forEach(annot => {
@@ -979,7 +977,10 @@ function moveLegend(ideo, extraPad=0) {
   // Highlight and filter annotations by type on hovering over legend entries
   function highlight(event) {
     const li = event.target;
-    return highlightByType(li, ideo);
+    highlightByType(li, ideo);
+    if (ideo.onHoverLegendCallback) {
+      ideo.onHoverLegendCallback();
+    }
   }
   // // Highlight and filter annotations by type on hovering over legend entries
   // WIP: 14373b18319e99febd91816fbc0c1b2e0f20f277
@@ -998,8 +999,12 @@ function moveLegend(ideo, extraPad=0) {
 
     const legendType = getLegendType(li);
     const tippyContentMap = {
-      'interacting': 'Adjacent in a biochemical pathway, per WikiPathways',
-      'paralogous': 'Evolutionarily related by a duplication event, per Ensembl'
+      'interacting':
+        'Adjacent to searched gene in a biochemical pathway, ' +
+        'per WikiPathways',
+      'paralogous':
+        'Evolutionarily related to searched gene ' +
+        'by a duplication event, per Ensembl'
     };
     // const placement = 'data-tippy-placement="top-end"';
     const placement = '';
@@ -1027,6 +1032,16 @@ function moveLegend(ideo, extraPad=0) {
 
     .tippy-content {
       padding: 3px 7px;
+    }
+
+    #_ideogramLegend li {
+      padding-left: 5px;
+      border-radius: 2px;
+    }
+
+    #_ideogramLegend li.active {
+      color: #00C;
+      background-color: #EEF;
     }
     </style>`;
   const legendDom = document.querySelector('#_ideogramLegend');
@@ -1975,6 +1990,11 @@ function initSearchIdeogram(kitDefaults, config, annotsInList) {
   // Called upon completing last plot, including all related genes
   if (config.onPlotFoundGenes) {
     ideogram.onPlotFoundGenesCallback = config.onPlotFoundGenes;
+  }
+
+  // Called upon completing last plot, including all related genes
+  if (config.onHoverLegend) {
+    ideogram.onHoverLegendCallback = config.onHoverLegend;
   }
 
   ideogram.getTooltipAnalytics = getRelatedGenesTooltipAnalytics;
