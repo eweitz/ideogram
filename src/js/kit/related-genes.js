@@ -929,43 +929,11 @@ function highlightByType(li, ideo) {
   }
 }
 
-/** Persist a legend entry highlight:
- *
- * On click of entry that isn't highlight, dehighlight all, highlight clicked, persist
- * On click of entry that is highlighted, dehighlight all, remove persist
- *
- * On mouseout of entry, dehighlight all, but re-highlight persisted
- */
-function toggleHighlightByType(li, ideo) {
-
-  if (!li.getAttribute('data-persist-highlight')) {
-    // Toggle on
-    const persisted = document.querySelector('[data-persist-highlight]');
-    if (persisted) persisted.removeAttribute('data-persist-highlight');
-    highlightByType(li, ideo);
-    li.setAttribute('data-persist-highlight', true);
-  } else {
-    // Toggle off
-    li.removeAttribute('data-persist-highlight');
-    // const persistTypegetLegendType(li)
-    dehighlightAll(ideo, true);
-  }
-}
-
 /** Remove highlight / filter upon hovering out of legend entry */
-function dehighlightAll(ideo, preservePersisted=false) {
-
-  let persistedType;
-  if (preservePersisted) {
-    const persistedLi = document.querySelector('[data-persist-highlight]');
-    persistedType = getLegendType(persistedLi);
-  }
-
+function dehighlightAll(ideo) {
   document.querySelectorAll('#_ideogramLegend li').forEach(li => {
-    if (preservePersisted) {
-      li.style.color = 'black';
-      li.style.backgroundColor = 'white';
-    }
+    li.style.color = 'black';
+    li.style.backgroundColor = 'white';
   });
 
   ideo.flattenAnnots().forEach(annot => {
@@ -1013,16 +981,18 @@ function moveLegend(ideo, extraPad=0) {
     const li = event.target;
     return highlightByType(li, ideo);
   }
-  // Highlight and filter annotations by type on hovering over legend entries
-  function toggleHighlight(event) {
-    const li = event.target;
-    return toggleHighlightByType(li, ideo);
-  }
+  // // Highlight and filter annotations by type on hovering over legend entries
+  // WIP: 14373b18319e99febd91816fbc0c1b2e0f20f277
+  // function toggleHighlight(event) {
+  //   const li = event.target;
+  //   return toggleHighlightByType(li, ideo);
+  // }
   function dehighlight() {
     dehighlightAll(ideo);
   }
   document.querySelectorAll('#_ideogramLegend li').forEach(li => {
-    li.addEventListener('click', toggleHighlight);
+    // li.addEventListener('click', toggleHighlight);
+    // WIP: 14373b18319e99febd91816fbc0c1b2e0f20f277
     li.addEventListener('mouseenter', highlight);
     li.addEventListener('mouseleave', dehighlight);
 
