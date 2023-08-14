@@ -72,13 +72,10 @@ function setRelatedAnnotDomIds(ideo) {
     });
   }
 
+  const relatedAnnotNames = ideo.relatedAnnots.map(annot => annot.name);
   // Arrange related annots by chromosome
   const annotsByChr = {};
   ideo.annots.forEach((annot) => {
-    // if (annot.chr in annotsByChr) {
-      // annotsByChr[annot.chr].push(annot);
-    // } else {
-
     const relevanceSortedAnnots = annot.annots.sort((a, b) => {
       return -ideo.annotSortFunction(a, b);
     });
@@ -110,6 +107,11 @@ function setRelatedAnnotDomIds(ideo) {
   Object.entries(annotsByChr).forEach(([chr, annots]) => {
     updatedAnnots[chr] = {chr, annots: []};
     annots.forEach((annot, annotIndex) => {
+
+      if ('relatedAnnots' in ideo && !relatedAnnotNames.includes(annot.name)) {
+        return;
+      }
+
       // Annots have DOM IDs keyed by chromosome index and annotation index.
       // We reconstruct those here using structures built in two blocks above.
       const chrIndex = sortedChrNames.indexOf(chr);
@@ -1060,7 +1062,6 @@ function moveLegend(ideo, extraPad=0) {
 
 /** Filter annotations to only include those in configured list */
 function applyAnnotsIncludeList(annots, ideo) {
-
   if (ideo.config.annotsInList === 'all') return annots;
 
   const includedAnnots = [];
@@ -1199,8 +1200,8 @@ function onBeforeDrawAnnots() {
   const ideo = this;
   setRelatedAnnotDomIds(ideo);
 
+  // Handle differential expression extension
   const chrAnnots = ideo.annots;
-
   for (let i = 0; i < chrAnnots.length; i++) {
     const annots = chrAnnots[i].annots;
 
@@ -1215,6 +1216,27 @@ function onBeforeDrawAnnots() {
       }
     }
   }
+
+  const updated = [];
+  const updatedAnnots = {};
+  ideo.annots.forEach(chrAnnots => {
+    const {chr, annots} = chrAnnots;
+    updatedAnnots[chr] = {chr, annots: []};
+    annots.forEach((annot) => {
+
+      const lcAnnotName = annot.name.toLowerCase();
+      const annotsInList = ideo.config.annotsInList;
+      if (
+        'relatedAnnots' in ideo && !annotsInList.includes(lcAnnotName)
+      ) {
+        return;
+      }
+
+      updatedAnnots[chr].annots.push(annot);
+    });
+    updated.push(updatedAnnots[chr]);
+  });
+  return updated;
 }
 
 /** Filter, sort, draw annots.  Move legend. */
@@ -1929,7 +1951,7 @@ function initSearchIdeogram(kitDefaults, config, annotsInList) {
   if (annotsInList !== 'all') {
     annotsInList = annotsInList.map(name => name.toLowerCase());
   }
-  kitDefaults.annotsInList = annotsInList;
+  config.annotsInList = annotsInList;
 
   kitDefaults.legendPad = kitDefaults.showAnnotLabels ? 80 : 30;
 
@@ -1998,7 +2020,7 @@ function initSearchIdeogram(kitDefaults, config, annotsInList) {
     ideogram.onPlotFoundGenesCallback = config.onPlotFoundGenes;
   }
 
-  // Called upon completing last plot, including all related genes
+  // Called upon hovering over a legend entry, e.g. "Interacting genes"
   if (config.onHoverLegend) {
     ideogram.onHoverLegendCallback = config.onHoverLegend;
   }

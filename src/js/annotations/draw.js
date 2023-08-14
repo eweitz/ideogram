@@ -217,7 +217,12 @@ function drawProcessedAnnots(annots, layout, keep=false) {
   var ideo = this;
 
   if (ideo.onBeforeDrawAnnotsCallback) {
-    ideo.onBeforeDrawAnnotsCallback();
+    // Apply the callback if set,
+    // and override annotations if callback updates them
+    const updatedAnnots = ideo.onBeforeDrawAnnotsCallback();
+    if (updatedAnnots) {
+      annots = updatedAnnots;
+    }
   }
 
   if (!keep) {
