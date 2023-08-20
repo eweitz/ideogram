@@ -46,6 +46,15 @@ function drawAnnots(friendlyAnnots, layout, keep=false, isOtherLayout=false) {
     ideo = this,
     chrs = ideo.chromosomes[ideo.config.taxid]; // TODO: multiorganism
 
+  if (friendlyAnnots.length === 0) {
+    console.log(
+      'friendlyAnnots, layout, keep, isOtherLayout',
+      friendlyAnnots, layout, keep, isOtherLayout
+    )
+    ideo.annots = [];
+    return;
+  }
+
   if (
     'annots' in friendlyAnnots[0] || // When filtering
     'values' in friendlyAnnots[0] // When drawing cached expression matrices
@@ -217,12 +226,7 @@ function drawProcessedAnnots(annots, layout, keep=false) {
   var ideo = this;
 
   if (ideo.onBeforeDrawAnnotsCallback) {
-    // Apply the callback if set,
-    // and override annotations if callback updates them
-    const updatedAnnots = ideo.onBeforeDrawAnnotsCallback();
-    if (updatedAnnots) {
-      annots = updatedAnnots;
-    }
+    ideo.onBeforeDrawAnnotsCallback();
   }
 
   if (!keep) {

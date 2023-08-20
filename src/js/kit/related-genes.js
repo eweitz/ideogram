@@ -72,7 +72,6 @@ function setRelatedAnnotDomIds(ideo) {
     });
   }
 
-  const relatedAnnotNames = ideo.relatedAnnots.map(annot => annot.name);
   // Arrange related annots by chromosome
   const annotsByChr = {};
   ideo.annots.forEach((annot) => {
@@ -107,10 +106,6 @@ function setRelatedAnnotDomIds(ideo) {
   Object.entries(annotsByChr).forEach(([chr, annots]) => {
     updatedAnnots[chr] = {chr, annots: []};
     annots.forEach((annot, annotIndex) => {
-
-      if ('relatedAnnots' in ideo && !relatedAnnotNames.includes(annot.name)) {
-        return;
-      }
 
       // Annots have DOM IDs keyed by chromosome index and annotation index.
       // We reconstruct those here using structures built in two blocks above.
@@ -668,6 +663,7 @@ async function fetchParalogPositionsFromMyGeneInfo(
 }
 
 function drawNeighborhoods(neighborhoodAnnots, ideo) {
+  neighborhoodAnnots = applyAnnotsIncludeList(neighborhoodAnnots, ideo);
   ideo.drawAnnots(neighborhoodAnnots, 'overlay', true, true);
   moveLegend(ideo);
 }
@@ -1060,7 +1056,11 @@ function moveLegend(ideo, extraPad=0) {
   initInteractiveLegend(ideo);
 }
 
-/** Filter annotations to only include those in configured list */
+/**
+ * Filter annotations to only include those in configured list
+ *
+ * @return {List<Object>} includedAnnots List of filtered annots objects
+ */
 function applyAnnotsIncludeList(annots, ideo) {
   if (ideo.config.annotsInList === 'all') return annots;
 
@@ -1071,6 +1071,33 @@ function applyAnnotsIncludeList(annots, ideo) {
     }
   });
   return includedAnnots;
+}
+
+function filterByAnnotsIncludeList(annots, ideo) {
+  if (ideo.config.annotsInList === 'all') return annots;
+
+  const annotsInList = ideo.config.annotsInList;
+
+  const updated = [];
+  const updatedAnnots = {};
+  ideo.annots.forEach(chrAnnots => {
+    const {chr, annots} = chrAnnots;
+    updatedAnnots[chr] = {chr, annots: []};
+    annots.forEach((annot) => {
+
+      const lcAnnotName = annot.name.toLowerCase();
+      if (
+        'relatedAnnots' in ideo &&
+        !annotsInList.includes(lcAnnotName)
+      ) {
+        return;
+      }
+
+      updatedAnnots[chr].annots.push(annot);
+    });
+    updated.push(updatedAnnots[chr]);
+  });
+  return updated;
 }
 
 /** Fetch and draw interacting genes, return Promise for annots */
@@ -1216,27 +1243,11 @@ function onBeforeDrawAnnots() {
       }
     }
   }
+}
 
-  const updated = [];
-  const updatedAnnots = {};
-  ideo.annots.forEach(chrAnnots => {
-    const {chr, annots} = chrAnnots;
-    updatedAnnots[chr] = {chr, annots: []};
-    annots.forEach((annot) => {
-
-      const lcAnnotName = annot.name.toLowerCase();
-      const annotsInList = ideo.config.annotsInList;
-      if (
-        'relatedAnnots' in ideo && !annotsInList.includes(lcAnnotName)
-      ) {
-        return;
-      }
-
-      updatedAnnots[chr].annots.push(annot);
-    });
-    updated.push(updatedAnnots[chr]);
-  });
-  return updated;
+function filterAndDrawAnnots(annots, ideo) {
+  annots = applyAnnotsIncludeList(annots, ideo);
+  ideo.drawAnnots(annots);
 }
 
 /** Filter, sort, draw annots.  Move legend. */
@@ -1250,7 +1261,7 @@ function finishPlotRelatedGenes(type, ideo) {
 
   annots = mergeAnnots(annots);
 
-  ideo.drawAnnots(annots);
+  filterAndDrawAnnots(annots, ideo);
 
   if (ideo.config.showAnnotLabels) {
     const sortedAnnots = ideo.flattenAnnots().sort((a, b) => {
