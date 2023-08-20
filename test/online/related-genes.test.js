@@ -357,6 +357,28 @@ describe('Ideogram related genes kit', function() {
     const ideogram = Ideogram.initRelatedGenes(config);
   });
 
+  // If an app only wants to render specific genes (per `annotsInList`),
+  // and more than those specific genes are found interacting or paralogous,
+  // then ensure Ideogram doesn't display the unspecified genes
+  it('can omit genes not in specified list', done => {
+
+    async function callback() {
+      await ideogram.plotRelatedGenes('CDK9');
+      const annots = document.querySelectorAll('.annot');
+      assert.equal(annots.length, 3);
+      done();
+    }
+
+    var config = {
+      organism: 'Homo sapiens',
+      onLoad: callback,
+      dataDir: '/dist/data/bands/native/'
+    };
+
+    const annotsInList = ['CDK9', 'CDK19', 'CDK1'];
+    const ideogram = Ideogram.initRelatedGenes(config, annotsInList);
+  });
+
   it('handles default display of highly cited genes', done => {
 
     function callback() {
