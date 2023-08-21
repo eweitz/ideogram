@@ -47,10 +47,6 @@ function drawAnnots(friendlyAnnots, layout, keep=false, isOtherLayout=false) {
     chrs = ideo.chromosomes[ideo.config.taxid]; // TODO: multiorganism
 
   if (friendlyAnnots.length === 0) {
-    console.log(
-      'friendlyAnnots, layout, keep, isOtherLayout',
-      friendlyAnnots, layout, keep, isOtherLayout
-    )
     ideo.annots = [];
     return;
   }
