@@ -166,10 +166,10 @@ describe('Ideogram', function() {
     function callback() {
       var numAnnots = document.getElementsByClassName('annot').length;
       assert.equal(numAnnots, 1000);
-      var numLegendRows = document.querySelectorAll('#_ideogramLegend li').length;
+      var numLegendRows = document.querySelectorAll('._ideoLegendEntry').length;
       assert.equal(numLegendRows, 3);
 
-      var legendNameDom = document.querySelector('#_ideogramLegend div');
+      var legendNameDom = document.querySelector('._ideoLegendName');
       const height = parseFloat(legendNameDom.style.height.replace('px', ''));
       const expectedHeight = 19.12;
       const heightDiff = Math.abs(expectedHeight - height);

@@ -52,7 +52,7 @@ function getListItems(labels, svg, list, nameHeight, ideo) {
 
   for (i = 0; i < list.rows.length; i++) {
     row = list.rows[i];
-    labels += '<li>' + row.name + '</li>';
+    labels += '<li class="_ideoLegendEntry">' + row.name + '</li>';
     y = lineHeight * (i - 1) + nameHeight + 1;
     if ('name' in list) y += lineHeight;
     icon = getIcon(row, ideo);
@@ -94,7 +94,8 @@ function writeLegend(ideo) {
         `left: -${nameHeight - 5}px;"`;
     }
     if ('name' in list) {
-      labels = `<div ${nameStyle}>` + list.name + `</div>`;
+      labels =
+        `<li class="_ideoLegendName" ${nameStyle}>` + list.name + `</li>`;
     }
     svg = '<svg id="_ideogramLegendSvg" width="' + lineHeight + '">';
     [labels, svg] = getListItems(labels, svg, list, nameHeight, ideo);

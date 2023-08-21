@@ -981,7 +981,8 @@ function initInteractiveLegend(ideo) {
   function dehighlight() {
     dehighlightAll(ideo);
   }
-  document.querySelectorAll('#_ideogramLegend li').forEach(li => {
+  const entrySelector = '#_ideogramLegend li._ideoLegendEntry';
+  document.querySelectorAll(entrySelector).forEach(li => {
     // li.addEventListener('click', toggleHighlight);
     // WIP: 14373b18319e99febd91816fbc0c1b2e0f20f277
     li.addEventListener('mouseenter', highlight);
