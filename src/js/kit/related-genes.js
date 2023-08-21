@@ -75,10 +75,6 @@ function setRelatedAnnotDomIds(ideo) {
   // Arrange related annots by chromosome
   const annotsByChr = {};
   ideo.annots.forEach((annot) => {
-    // if (annot.chr in annotsByChr) {
-      // annotsByChr[annot.chr].push(annot);
-    // } else {
-
     const relevanceSortedAnnots = annot.annots.sort((a, b) => {
       return -ideo.annotSortFunction(a, b);
     });
@@ -110,6 +106,7 @@ function setRelatedAnnotDomIds(ideo) {
   Object.entries(annotsByChr).forEach(([chr, annots]) => {
     updatedAnnots[chr] = {chr, annots: []};
     annots.forEach((annot, annotIndex) => {
+
       // Annots have DOM IDs keyed by chromosome index and annotation index.
       // We reconstruct those here using structures built in two blocks above.
       const chrIndex = sortedChrNames.indexOf(chr);
@@ -666,6 +663,7 @@ async function fetchParalogPositionsFromMyGeneInfo(
 }
 
 function drawNeighborhoods(neighborhoodAnnots, ideo) {
+  neighborhoodAnnots = applyAnnotsIncludeList(neighborhoodAnnots, ideo);
   ideo.drawAnnots(neighborhoodAnnots, 'overlay', true, true);
   moveLegend(ideo);
 }
@@ -983,7 +981,8 @@ function initInteractiveLegend(ideo) {
   function dehighlight() {
     dehighlightAll(ideo);
   }
-  document.querySelectorAll('#_ideogramLegend li').forEach(li => {
+  const entrySelector = '#_ideogramLegend li._ideoLegendEntry';
+  document.querySelectorAll(entrySelector).forEach(li => {
     // li.addEventListener('click', toggleHighlight);
     // WIP: 14373b18319e99febd91816fbc0c1b2e0f20f277
     li.addEventListener('mouseenter', highlight);
@@ -1058,9 +1057,12 @@ function moveLegend(ideo, extraPad=0) {
   initInteractiveLegend(ideo);
 }
 
-/** Filter annotations to only include those in configured list */
+/**
+ * Filter annotations to only include those in configured list
+ *
+ * @return {List<Object>} includedAnnots List of filtered annots objects
+ */
 function applyAnnotsIncludeList(annots, ideo) {
-
   if (ideo.config.annotsInList === 'all') return annots;
 
   const includedAnnots = [];
@@ -1070,6 +1072,33 @@ function applyAnnotsIncludeList(annots, ideo) {
     }
   });
   return includedAnnots;
+}
+
+function filterByAnnotsIncludeList(annots, ideo) {
+  if (ideo.config.annotsInList === 'all') return annots;
+
+  const annotsInList = ideo.config.annotsInList;
+
+  const updated = [];
+  const updatedAnnots = {};
+  ideo.annots.forEach(chrAnnots => {
+    const {chr, annots} = chrAnnots;
+    updatedAnnots[chr] = {chr, annots: []};
+    annots.forEach((annot) => {
+
+      const lcAnnotName = annot.name.toLowerCase();
+      if (
+        'relatedAnnots' in ideo &&
+        !annotsInList.includes(lcAnnotName)
+      ) {
+        return;
+      }
+
+      updatedAnnots[chr].annots.push(annot);
+    });
+    updated.push(updatedAnnots[chr]);
+  });
+  return updated;
 }
 
 /** Fetch and draw interacting genes, return Promise for annots */
@@ -1199,8 +1228,8 @@ function onBeforeDrawAnnots() {
   const ideo = this;
   setRelatedAnnotDomIds(ideo);
 
+  // Handle differential expression extension
   const chrAnnots = ideo.annots;
-
   for (let i = 0; i < chrAnnots.length; i++) {
     const annots = chrAnnots[i].annots;
 
@@ -1217,6 +1246,11 @@ function onBeforeDrawAnnots() {
   }
 }
 
+function filterAndDrawAnnots(annots, ideo) {
+  annots = applyAnnotsIncludeList(annots, ideo);
+  ideo.drawAnnots(annots);
+}
+
 /** Filter, sort, draw annots.  Move legend. */
 function finishPlotRelatedGenes(type, ideo) {
 
@@ -1228,7 +1262,7 @@ function finishPlotRelatedGenes(type, ideo) {
 
   annots = mergeAnnots(annots);
 
-  ideo.drawAnnots(annots);
+  filterAndDrawAnnots(annots, ideo);
 
   if (ideo.config.showAnnotLabels) {
     const sortedAnnots = ideo.flattenAnnots().sort((a, b) => {
@@ -1929,7 +1963,7 @@ function initSearchIdeogram(kitDefaults, config, annotsInList) {
   if (annotsInList !== 'all') {
     annotsInList = annotsInList.map(name => name.toLowerCase());
   }
-  kitDefaults.annotsInList = annotsInList;
+  config.annotsInList = annotsInList;
 
   kitDefaults.legendPad = kitDefaults.showAnnotLabels ? 80 : 30;
 
@@ -1998,7 +2032,7 @@ function initSearchIdeogram(kitDefaults, config, annotsInList) {
     ideogram.onPlotFoundGenesCallback = config.onPlotFoundGenes;
   }
 
-  // Called upon completing last plot, including all related genes
+  // Called upon hovering over a legend entry, e.g. "Interacting genes"
   if (config.onHoverLegend) {
     ideogram.onHoverLegendCallback = config.onHoverLegend;
   }

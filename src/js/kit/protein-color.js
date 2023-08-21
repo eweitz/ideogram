@@ -194,6 +194,7 @@ export function getColors(domainType) {
     domainType.includes('(G-protein), alpha subunit') ||
     domainType === 'SCAN domain' ||
     domainType === 'Apolipoprotein A/E' ||
+    domainType.includes('Clusterin') || // a.k.a. apolipoprotein J, e.g. CLU
     domainType.includes('SMAD domain') ||
     domainType === 'PLAC' ||
     domainType.endsWith('tripeptidyl peptidase II') ||
@@ -366,6 +367,7 @@ export function getColors(domainType) {
     domainType === 'Phosphopantetheine binding ACP domain' ||
     domainType === 'Multicopper oxidase, second cupredoxin domain' ||
     domainType === 'Helicase, C-terminal' ||
+    domainType.includes('Carboxylesterase') || // e.g. ACHE
     domainType.includes('presequence') || // e.g. ALAS2
     domainType.endsWith('CC3') // e.g. PRKDC
   ) {
@@ -588,6 +590,7 @@ export function getColors(domainType) {
     domainType.includes('TATA') ||
     domainType.includes('Citron') ||
     domainType === 'RIH domain' ||
+    domainType.toLowerCase().includes('sclerostin') || // e.g. SOSTDC1
     domainType === 'ZU5 domain' // e.g. TJP1
   ) {
     return [yellow, yellowLine];
@@ -601,6 +604,7 @@ export function getColors(domainType) {
     domainType === 'DIX domain' ||
     domainType === 'Ferritin-like diiron domain' ||
     domainType === '4Fe-4S dicluster domain' ||
+    domainType === 'Transferrin-like domain' || // iron-related, e.g. MELTF
     domainType === 'PAS domain' ||
     domainType === 'PAS fold' ||
     domainType === 'Polyketide synthase, dehydratase domain' ||
@@ -646,6 +650,7 @@ export function getColors(domainType) {
     domainType ===
       'VWF/SSPO/Zonadhesin-like, cysteine-rich domain' || // E.g. VWF
     domainType === 'Kappa casein' ||
+    domainType === 'Casein, alpha/beta' ||
     domainType === 'Natriuretic peptide' ||
     domainType === 'EMI domain' ||
     domainType === 'Neurohypophysial hormone' ||
@@ -696,6 +701,7 @@ export function getColors(domainType) {
     domainType.includes('Shisa') ||
     domainType === 'ABC-2 family transporter protein' ||
     domainType === 'Anoctamin' ||
+    domainType === 'Sodium-dependent phosphate transport protein' || // SLC34A2
     domainType.includes('MHC II-interacting') // e.g. CD74
   ) {
     return [darkBrown, darkBrownLine];
@@ -775,10 +781,12 @@ export function getColors(domainType) {
     domainType.endsWith('coiled-coil region') ||
     domainType.includes('zinc ribbon fold') ||
     domainType.includes('zinc-ribbon') ||
+    domainType.toLowerCase().includes('anhydrase') || // e.g. CA6
     domainType === 'Macroglobulin domain' ||
     domainType.includes('KH0') ||
     domainType.includes('EGF') ||
-    domainType.toLowerCase().includes('olfact')
+    domainType.toLowerCase().includes('olfact') ||
+    domainType.toLowerCase().includes('mucin') // e.g. CEL
   ) {
     return [seafoam, seafoamLine];
   } else if (
@@ -911,7 +919,8 @@ export function getColors(domainType) {
     domainType.toLowerCase().includes('decarboxylase') ||
     domainType.toLowerCase().includes('hydrolase') ||
     domainType.includes('PH domain') ||
-    domainType.includes('cytosolic')
+    domainType.includes('cytosolic') ||
+    domainType.toLowerCase().includes('homeobox')
   ) {
     return [lightBlue, lightBlueLine];
   }
