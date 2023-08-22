@@ -20,8 +20,8 @@ describe('Ideogram gene structure functionality', function() {
     async function callback() {
       await ideogram.plotRelatedGenes('APOE');
       setTimeout(async function() {
-        const apoelLabel = document.querySelector('#ideogramLabel__c18_a1');
-        apoelLabel.dispatchEvent(new Event('mouseover'));
+        const apoeLabel = document.querySelector('#ideogramLabel__c18_a1');
+        apoeLabel.dispatchEvent(new Event('mouseover'));
         const subparts = document.querySelectorAll('rect.subpart');
         assert.equal(subparts.length, 7); // spliced, without introns
         done();
@@ -45,14 +45,14 @@ describe('Ideogram gene structure functionality', function() {
     const ideogram = Ideogram.initRelatedGenes(config);
   });
 
-  it('shows basic protein domain organization', done => {
+  it('shows basic protein feature organization', done => {
     async function callback() {
       await ideogram.plotRelatedGenes('APOE');
       setTimeout(async function() {
-        const apobLabel = document.querySelector('#ideogramLabel__c1_a0');
-        apobLabel.dispatchEvent(new Event('mouseover'));
-        const subparts = document.querySelectorAll('rect.subpart');
-        assert.equal(subparts.length, 36); // RNA subparts and domains
+        const ldlrLabel = document.querySelector('#ideogramLabel__c18_a0');
+        ldlrLabel.dispatchEvent(new Event('mouseover'));
+        const subparts = document.querySelectorAll('rect.subpart.domain');
+        assert.equal(subparts.length, 22); // Protein features
         done();
       }, 500);
     }
@@ -106,7 +106,6 @@ describe('Ideogram gene structure functionality', function() {
           exonText2,
           'Exon 2 of 4 | 66 bp' +
           'Transcript: APOE-201APOE-204APOE-203APOE-202' +
-          'Next transcript (down arrow)Previous transcript (up arrow)' +
           '4 exons | 1,166 bp '
         );
 

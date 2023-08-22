@@ -7,22 +7,35 @@
 import {addPositions, getGeneFromStructureName, pipe} from './gene-structure';
 import {getColors} from './protein-color';
 
-/** Get subtle line to visually demarcate domain boundary */
-function getDomainBorderLines(x, y, width, lineColor) {
-  const height = 10;
-  const lineHeight = y + height;
+/** Get subtle line to visually demarcate feature boundary */
+function getFeatureBorderLines(
+  x, y, width, baseHeight, lineColor, addTopBottom=false
+) {
+  const height = y + baseHeight;
   const lineStroke = `stroke="${lineColor}"`;
   const leftLineAttrs =
-    `x1="${x}" x2="${x}" y1="${y}" y2="${lineHeight}" ${lineStroke}`;
+    `x1="${x}" x2="${x}" y1="${y}" y2="${height}" ${lineStroke}`;
 
   const x2 = x + width;
   const rightLineAttrs =
-    `x1="${x2}" x2="${x2}" y1="${y}" y2="${lineHeight}" ${lineStroke}`;
+    `x1="${x2}" x2="${x2}" y1="${y}" y2="${height}" ${lineStroke}`;
 
   const startBorder = `<line class="subpart-line" ${leftLineAttrs} />`;
   const endBorder = `<line class="subpart-line" ${rightLineAttrs} />`;
 
-  return startBorder + endBorder;
+  // Added to feature if any part of protein has topology data
+  let topBorder = '';
+  let bottomBorder = '';
+  if (addTopBottom) {
+    const topLineAttrs =
+      `x1="${x}" x2="${x2}" y1="${y}" y2="${y}" ${lineStroke}`;
+    const bottomLineAttrs =
+      `x1="${x}" x2="${x2}" y1="${height}" y2="${height}" ${lineStroke}`;
+    topBorder = `<line class="subpart-line" ${topLineAttrs} />`;
+    bottomBorder = `<line class="subpart-line" ${bottomLineAttrs} />`;
+  }
+
+  return startBorder + endBorder + topBorder + bottomBorder;
 }
 
 /** Get start and length for coding sequence (CDS), in pixels and base pairs */
@@ -67,33 +80,106 @@ function getCdsCoordinates(subparts, isPositiveStrand) {
   return cdsCoordinates;
 }
 
-/** Get SVG for an inidividual protein domain */
-function getDomainSvg(domain, cds, isPositiveStrand) {
-  const domainType = domain[0];
-  const domainPx = domain[3];
+function isTopologyFeature(feature) {
+  return feature[0][0] === '_';
+}
 
-  let x = cds.px.start + domainPx.x;
-  const width = domainPx.width;
+function isSignalPeptideFeature(feature) {
+  return feature[0] === 'S';
+}
+
+const topologyFeatureMap = {
+  '_H': 'Helical',
+  '_E': 'Extracellular',
+  '_C': 'Cytoplasmic'
+};
+function decompressTopologyFeature(feature) {
+  if (feature in topologyFeatureMap) {
+    return topologyFeatureMap[feature];
+  } else {
+    return feature.slice(1);
+  }
+}
+
+/** Get SVG for an inidividual protein domain */
+function getFeatureSvg(feature, cds, isPositiveStrand, hasTopology) {
+  let featureType = feature[0];
+  const featurePx = feature[3];
+
+  let x = cds.px.start + featurePx.x;
+  let width = featurePx.width;
   if (!isPositiveStrand) {
-    x = cds.px.length + cds.px.start - (domainPx.x + domainPx.width);
+    x = cds.px.length + cds.px.start - (featurePx.x + featurePx.width);
   };
 
   // Perhaps make these configurable, later
-  const y = 40;
-  const height = 10;
+  let y = 40;
+  let height = 14;
+  const isTopology = isTopologyFeature(feature);
+  const isSignal = isSignalPeptideFeature(feature);
+  let topoAttr = '';
+  if (hasTopology) {
+    y = 48;
+    if (isTopology) {
+      featureType = decompressTopologyFeature(feature[0]);
+      y = 40;
+      height = 30;
 
-  const lengthAa = `${domain[2]}&nbsp;aa`;
-  const title = `data-subpart="${domainType} ${pipe} ${lengthAa}"`;
+      const featureDigest = `${feature[0]} ${feature[1]} ${feature[2]}`;
+
+      if (
+        // E.g. EGF-206 alternative isoform, C-terminal cytoplasmic domain
+        isPositiveStrand && featurePx.x + featurePx.width > cds.px.length + 3 ||
+
+        // E.g. SCARB1-201 canonical isoform, C-terminal cytoplasmic domain
+        !isPositiveStrand && featurePx.x + featurePx.width > cds.px.length + 3
+      ) {
+        console.debug(`Truncate protein topology feature: ${featureDigest}`);
+        width -= (featurePx.x + featurePx.width) - cds.px.length;
+        if (!isPositiveStrand) {
+          x += width;
+        }
+      }
+      topoAttr = 'data-topology="true"';
+
+      if (width < 0) {
+        // E.g. LDLR-202 alternative isoform, multiple features
+        const issue = 'Width < 0, omit protein topology feature';
+        console.debug(`${issue}: ${featureDigest}`);
+        return '';
+      };
+    }
+  }
+
+  const [color, lineColor] = getColors(featureType);
+
+  if (isSignal) {
+    featureType = 'Signal peptide';
+    height = 8;
+    y += 3;
+  }
+
+  if (isTopology) {
+    if (featureType === 'Helical') {
+      featureType = 'Transmembrane';
+    } else if (featureType.startsWith('Helical --- Name=')) {
+      featureType = featureType.replace('Helical --- Name=', 'Transmembrane: ');
+    }
+  }
+
+  const lengthAa = `${feature[2]}&nbsp;aa`;
+  const title = `data-subpart="${featureType} ${pipe} ${lengthAa}"`;
   const data = title;
 
   const pos = `x="${x}" width="${width}" y="${y}" height="${height}"`;
-  const cls = `class="subpart domain" `;
+  const topoCls = isTopology ? ' topology' : '';
+  const cls = `class="subpart domain${topoCls}" `;
 
-  const [color, lineColor] = getColors(domainType);
-
-  const line = getDomainBorderLines(x, y, width, lineColor);
+  const addTopBottom = !isTopology;
+  const line =
+    getFeatureBorderLines(x, y, width, height, lineColor, addTopBottom);
   const domainSvg =
-    `<rect ${cls} rx="1.5" fill="${color}" ${pos} ${data}/>` +
+    `<rect ${cls} rx="1.5" fill="${color}" ${pos} ${data} ${topoAttr}/>` +
     line;
 
   return domainSvg;
@@ -111,32 +197,89 @@ function isEligibleforProteinSvg(gene, ideo) {
   );
 }
 
+function getProteinRect(cds, hasTopology) {
+  const y = hasTopology ? '53' : '45';
+  const fill = hasTopology ? 'BBB' : 'DDD';
+  const stroke = hasTopology ? '555' : '777';
+  const proteinRect =
+    `<rect class="_ideoProteinLine"` +
+      `x="${cds.px.start}" width="${cds.px.length}" ` +
+      `y="${y}" height="4" ` +
+      `fill="#${fill}" ` +
+      `stroke="#${stroke}" ` +
+    `/>`;
+  return proteinRect;
+}
+
+/**
+ * Determine if any protein isoforms for this gene have topology features
+ *
+ * Helps ensure transcripts can be rapidly navigated via arrows in dropdown
+ * menu, even when some proteins of the gene have topology and some do not.
+ *
+ * Example: LDLR
+ */
+export function getHasTopology(gene, ideo) {
+  const hasTopology = ideo.proteinCache[gene]?.some(entry => {
+    return entry.protein.some(
+      feature => isTopologyFeature(feature)
+    );
+  });
+  return hasTopology;
+}
+
 /** Get SVG showing 2D protein features, e.g. domains from InterPro */
-export function getProteinSvg(structureName, subparts, isPositiveStrand, ideo) {
-  const features = [];
+export function getProtein(
+  structureName, subparts, isPositiveStrand, hasTopology, ideo
+) {
+  let features = [];
   const gene = getGeneFromStructureName(structureName, ideo);
 
   const isEligible = isEligibleforProteinSvg(gene, ideo);
-  if (!isEligible) return '';
-
+  if (!isEligible) return ['<br/>', null];
 
   const entry = ideo.proteinCache[gene].find(d => {
     return d.transcriptName === structureName;
   });
-  if (!entry) return '<br/>';
+  if (!entry) return ['<br/>', null];
   const protein = entry.protein;
   const cds = getCdsCoordinates(subparts, isPositiveStrand);
 
+  // Number of amino acids in protein
+  //
+  // Some principles of molecular biology:
+  //   - Coding sequence (CDS) of mRNA specifies amino acids comprising protein
+  //   - Each amino acid is specified by 3 nucleotides (i.e. codon; 3 nt / aa)
+  //   - 1 codon -- the stop codon -- is not part of protein
+  //
+  // TODO: account for phase
+  //
+  // const proteinLengthAa = Math.floor(cds.bp.length/3) - 1;
+  const proteinLengthAa = null;
+
   const domains = addPositions(subparts, protein);
 
+  const topologies = [];
   for (let i = 0; i < domains.length; i++) {
     const domain = domains[i];
-    const domainSvg = getDomainSvg(domain, cds, isPositiveStrand);
-    features.push(domainSvg);
+    const isTopology = isTopologyFeature(domain);
+    const svg = getFeatureSvg(domain, cds, isPositiveStrand, hasTopology);
+    if (isTopology) {
+      topologies.push(svg);
+    } else {
+      features.push(svg);
+    }
   }
+
+  // Order SVG so protein domains, sites, etc. are in front,
+  // then unannotated protein,
+  // then protein topology features
+  const proteinRect = getProteinRect(cds, hasTopology);
+  topologies.push(proteinRect);
+  features = topologies.concat(features);
 
   const proteinSvg =
     `<g id="_ideoProtein">${features.join('')}</g>`;
 
-  return proteinSvg;
+  return [proteinSvg, proteinLengthAa];
 }

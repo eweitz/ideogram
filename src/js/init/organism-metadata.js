@@ -19,20 +19,24 @@ var organismMetadata = {
     commonName: 'Mouse',
     scientificName: 'Mus musculus',
     assemblies: {
-      default: 'GCF_000001635.20', // GRCm38
+      default: 'GCF_000001635.27', // GRCm39
+      GRCm39: 'GCF_000001635.27',
       GRCm38: 'GCF_000001635.20',
       MGSCv37: 'GCF_000001635.18'
     },
     hasGeneCache: true,
     hasParalogCache: true,
     hasInteractionCache: true,
+    hasGeneStructureCache: true,
+    hasProteinCache: true,
     hasSynonymCache: true
   },
   9598: {
     commonName: 'Chimpanzee',
     scientificName: 'Pan troglodytes',
     assemblies: {
-      'default': 'GCF_000001515.7',
+      'default': 'GCF_028858775.1',
+      'NHGRI_mPanTro3-v1.1-hic.freeze_pri': 'GCF_028858775.1',
       'Pan_tro 3.0': 'GCF_000001515.7'
     },
     hasGeneCache: true,
@@ -251,6 +255,13 @@ var organismMetadata = {
     scientificName: 'Capsicum annuum',
     assemblies: {
       default: 'GCF_000710875.1'
+    }
+  },
+  3694: {
+    commonName: 'black cottonwood',
+    scientificName: 'Populus trichocarpa',
+    assemblies: {
+      default: 'GCF_000002775.5'
     }
   }
 };

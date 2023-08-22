@@ -184,7 +184,7 @@ def refine_bands(org, bands_by_chr, maize_centromeres):
         bands_by_chr =\
             merge_centromeres(bands_by_chr, maize_centromeres, logger)
     else:
-        bands_by_chr = parse_centromeres(bands_by_chr, logger)
+        bands_by_chr = parse_centromeres(bands_by_chr, logger, org)
 
     return bands_by_chr
 
@@ -243,13 +243,23 @@ def main():
     logger.info(', '.join(unfound_dbs))
     logger.info('')
 
+    # logger.info('In fetch_cytobands_from_dbs, party_list: ', str(party_list))
+
     nr_org_map = get_nonredundant_organisms(party_list)
 
+    logger.info('In fetch_cytobands_from_dbs, list(nr_org_map.keys()):')
+    logger.info(str(list(nr_org_map.keys())))
     manifest = {}
 
     for org in nr_org_map:
         entry = write_chr_bands(org, nr_org_map, maize_centromeres)
+        logger.info('In fetch_cytobands_from_dbs. org, entry:')
+        logger.info(org)
+        logger.info(entry)
         manifest[org] = entry
+
+    logger.info('In fetch_cytobands_from_dbs, manifest: ')
+    logger.info(manifest)
 
     return manifest
 

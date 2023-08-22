@@ -46,6 +46,11 @@ function drawAnnots(friendlyAnnots, layout, keep=false, isOtherLayout=false) {
     ideo = this,
     chrs = ideo.chromosomes[ideo.config.taxid]; // TODO: multiorganism
 
+  if (friendlyAnnots.length === 0) {
+    ideo.annots = [];
+    return;
+  }
+
   if (
     'annots' in friendlyAnnots[0] || // When filtering
     'values' in friendlyAnnots[0] // When drawing cached expression matrices

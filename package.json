@@ -1,6 +1,6 @@
 {
   "name": "ideogram",
-  "version": "1.42.0",
+  "version": "1.44.0",
   "description": "Chromosome visualization for the web",
   "main": "src/js/index.js",
   "preferGlobal": true,
@@ -51,7 +51,8 @@
     "d3-fetch": "^2.0.0",
     "d3-format": "^2.0.0",
     "d3-scale": "^4.0.2",
-    "fflate": "^0.7.3"
+    "fflate": "^0.7.3",
+    "tippy.js": "6.3.7"
   },
   "devDependencies": {
     "@babel/core": "^7.16.0",

@@ -1,6 +1,10 @@
+import tippy, {hideAll} from 'tippy.js';
+import {tippyCss, tippyLightCss} from './tippy-styles';
+// import 'tippy.js/themes/light.css';
+
 import {d3} from '../lib';
 import {getIcon} from '../annotations/legend';
-import {getProteinSvg} from './protein';
+import {getProtein, getHasTopology} from './protein';
 
 const y = 15;
 
@@ -72,6 +76,15 @@ const css =
   #_ideoGeneStructureTip {
     font-style: italic;
   }
+  ${tippyCss}
+
+  .tippy-box {
+    font-size: 12px;
+  }
+
+  .tippy-content {
+    padding: 3px 7px;
+  }
   </style>`;
 
 const hoverTip = '<span id="_ideoGeneStructureTip">Hover for details</span>';
@@ -102,6 +115,7 @@ function updateGeneStructure(ideo, offset=0) {
   writeFooter(container);
   ideo.addedSubpartListeners = false;
   addHoverListeners(ideo);
+  initTippy(ideo);
 }
 
 /** Get gene symbol from transcript / gene structure name */
@@ -161,7 +175,7 @@ function addMenuListeners(ideo) {
 
     // Go to next transcript on clicking down arrow icon, previous on up
     if (Array.from(svgMaybe.classList).includes('_ideoMenuArrow')) {
-      const menuArrow = event.target;
+      const menuArrow = svgMaybe;
       const direction = menuArrow.getAttribute('data-dir');
       const offset = direction === 'down' ? 1 : -1;
       updateGeneStructure(ideo, offset);
@@ -169,14 +183,14 @@ function addMenuListeners(ideo) {
     }
   });
 
-  // Go to next transcript on pressing down arrow key, previous on up
-  document.addEventListener('keydown', (event) => {
-    const key = event.key;
-    if (['ArrowDown', 'ArrowUp'].includes(key)) {
-      const offset = key === 'ArrowDown' ? 1 : -1;
-      updateGeneStructure(ideo, offset);
-    }
-  });
+  // // Go to next transcript on pressing down arrow key, previous on up
+  // document.addEventListener('keydown', (event) => {
+  //   const key = event.key;
+  //   if (['ArrowDown', 'ArrowUp'].includes(key)) {
+  //     const offset = key === 'ArrowDown' ? 1 : -1;
+  //     updateGeneStructure(ideo, offset);
+  //   }
+  // });
 }
 
 function toggleSpliceByKeyboard(event) {
@@ -426,6 +440,12 @@ function getMenuContainer() {
   return document.querySelector('#_ideoGeneStructureMenuContainer');
 }
 
+function updateFooter(content, ideo) {
+  const footer = getFooter();
+  footer.innerHTML = content;
+  initTippy(ideo);
+}
+
 function addSubpartHoverListener(subpartDOM, ideo) {
   const subpart = subpartDOM;
 
@@ -441,8 +461,8 @@ function addSubpartHoverListener(subpartDOM, ideo) {
     const trimmedFoot = footer.innerHTML.replace('&nbsp;', '');
     const style = 'style="margin-bottom: -10px; max-width: 260px;"';
     const id = 'id="_ideoSubpartText"';
-    footer.innerHTML =
-      `<div ${id} ${style}">${subpartText}</div>${trimmedFoot}`;
+    const content = `<div ${id} ${style}">${subpartText}</div>${trimmedFoot}`;
+    updateFooter(content, ideo);
     const menuContainer = getMenuContainer();
     if (menuContainer) menuContainer.style.marginTop = '';
   });
@@ -450,8 +470,7 @@ function addSubpartHoverListener(subpartDOM, ideo) {
   // On hovering out, de-highlight and hide details
   subpart.addEventListener('mouseleave', event => {
     event.target.classList.remove('_ideoHoveredSubpart');
-    const footer = getFooter();
-    footer.innerHTML = ideo.originalTooltipFooter;
+    updateFooter(ideo.originalTooltipFooter, ideo);
     const menuContainer = getMenuContainer();
     if (menuContainer) menuContainer.style.marginTop = '4px';
   });
@@ -501,7 +520,6 @@ function addHoverListeners(ideo) {
       // is often the case in genes with many transcripts, like TP53).
       ideo.oneTimeDelayTooltipHideMs = 2000; // wait 2.0 s instead of 0.25 s
     });
-
   });
   container.addEventListener('mouseleave', (event) => {
     ideo.oneTimeDelayTooltipHideMs = 2000; // See "Without this..." note above
@@ -514,8 +532,8 @@ function addHoverListeners(ideo) {
       // footer.  This lets users always see the details in the footer for the
       // transcript they just selected, rather than having the details
       // frustratingly disappear immediately upon transcript selection.
-      const footer = getFooter();
-      footer.innerHTML = hoverTip;
+
+      updateFooter(hoverTip, ideo);
     }
     ideo.addedMenuListeners = false;
     document.removeEventListener('keydown', navigateSubparts);
@@ -537,6 +555,42 @@ function writeStrandInFooter(ideo) {
     tooltipFooter.innerText.replace(')', `, ${strand})`);
 }
 
+function getTippyConfig(fallbackPlacements) {
+  return {
+    theme: 'light-border',
+    popperOptions: { // Docs: https://atomiks.github.io/tippyjs/v6/all-props/#popperoptions
+      modifiers: [ // Docs: https://popper.js.org/docs/v2/modifiers
+        {
+          name: 'flip',
+          options: {
+            fallbackPlacements // Defined via argument to this function
+          }
+        }
+      ]
+    },
+    onShow: function() {
+      // Ensure only 1 tippy tooltip is displayed at a time
+      document.querySelectorAll('[data-tippy-root]')
+        .forEach(tippyNode => tippyNode.remove());
+    }
+  };
+}
+
+function initTippy(ideo) {
+  const toggle = getTippyConfig(['top-start', 'top']);
+  ideo.tippy = tippy('._ideoSpliceToggle[data-tippy-content]', toggle);
+
+  const arrow = getTippyConfig(['bottom']);
+  arrow.popperOptions.modifiers.push({
+    name: 'offset',
+    options: {
+      offset: [-5, 20]
+    }
+  });
+  const updownTips = tippy('._ideoMenuArrow[data-tippy-content]', arrow);
+  ideo.tippy = ideo.tippy.concat(updownTips);
+}
+
 export function addGeneStructureListeners(ideo) {
   const structure = getSelectedStructure(ideo);
   if (structure === null) return; // Bail for e.g. miRNA
@@ -544,6 +598,7 @@ export function addGeneStructureListeners(ideo) {
   addHoverListeners(ideo);
   addMenuListeners(ideo);
   writeStrandInFooter(ideo);
+  initTippy(ideo);
 }
 
 function getSpliceToggleHoverTitle(spliceExons) {
@@ -556,7 +611,8 @@ function getSpliceToggle(ideo) {
   const cls = `class="_ideoSpliceToggle ${modifier}mRNA"`;
   const checked = spliceExons ? 'checked' : '';
   const text = getSpliceToggleHoverTitle(spliceExons);
-  const title = `title="${text}"`;
+  const tPlace = 'data-tippy-placement="right"';
+  const title = `data-tippy-content="${text}" ${tPlace}`;
   const inputAttrs =
     `type="checkbox" ${checked} ` +
     `style="display: none;"`;
@@ -734,6 +790,8 @@ function toggleSplice(ideo) {
       const transcriptLengthBp = getTranscriptLengthBp(subparts, spliceExons);
       const prettyLength = transcriptLengthBp.toLocaleString();
       tlbpDOM.innerText = `${prettyLength} bp`;
+
+      ideo.tippy[0].show();
     });
 }
 
@@ -834,7 +892,10 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
   const spliceToggle = document.querySelector('._ideoSpliceToggle');
   if (spliceToggle) {
     const title = getSpliceToggleHoverTitle(spliceExons);
-    spliceToggle.title = title;
+    spliceToggle.setAttribute('data-tippy-placement', 'right');
+    // spliceToggle.setAttribute('data-tippy-placement-fallback', 'top-end');
+    spliceToggle.setAttribute('data-tippy-content', title);
+    initTippy(ideo);
   }
 
   const featureLengthPx = 250 - 2; // Snip to avoid overextending
@@ -933,27 +994,41 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
       `style="${sharedStyle} left: -10px;"`;
   }
 
+  const structureName = geneStructure.name;
+  const gene = getGeneFromStructureName(structureName);
+  const menu = getMenu(gene, ideo, structureName).replaceAll('"', '\'');
+
+  const hasTopology = getHasTopology(gene, ideo);
+
+  const [proteinSvg, proteinLengthAa] =
+    getProtein(structureName, subparts, isPositiveStrand, hasTopology, ideo);
+
   const transcriptLengthBp = getTranscriptLengthBp(subparts, spliceExons);
   const prettyLength = transcriptLengthBp.toLocaleString();
+
   const footerDetails = [
     `${totalBySubpart['exon']} exons`,
     `<span id='_ideoTranscriptLengthBp'>${prettyLength} bp</span> `
   ];
+
+  // Note protein length in amino acids (aa)
+  // TODO: This is a no-op; see note about phase in protein.js
+  if (proteinLengthAa) {
+    const prettyLengthAa = proteinLengthAa.toLocaleString();
+    footerDetails.push(
+      `<span id='_ideoProteinLengthAa'>${prettyLengthAa} aa</span> `
+    );
+  }
+
+  // Note if transcript is unusual type, e.g. nonsense mediated decay (NMD)
   const biotypeText = geneStructure.biotype.replace(/_/g, ' ');
   if (biotypeText !== 'protein coding') {
     footerDetails.push(biotypeText);
   }
-
-  const structureName = geneStructure.name;
-  const gene = getGeneFromStructureName(structureName);
-  const menu = getMenu(gene, ideo, structureName).replaceAll('"', '\'');
   const footerData = menu + footerDetails.join(` ${pipe} `);
 
-  const proteinSvg = getProteinSvg(
-    structureName, subparts, isPositiveStrand, ideo
-  );
-
-  const svgHeight = proteinSvg === '' ? '40' : '60';
+  let svgHeight = proteinSvg === '' ? '40' : '60';
+  if (hasTopology) svgHeight = '70';
 
   const geneStructureSvg =
     `<svg class="_ideoGeneStructure" ` +
@@ -978,10 +1053,13 @@ function getMenuArrows() {
   const downStyle = `style="${style}; margin-left: 5px;"`;
   const upStyle = `style="${style}; margin-left: 2px;"`;
   const cls = 'class="_ideoMenuArrow"';
-  const downTitle = `<title>Next transcript (down arrow)</title>`;
-  const upTitle = `<title>Previous transcript (up arrow)</title>`;
-  const downAttrs = `${downStyle} ${cls} data-dir="down"`;
-  const upAttrs = `${upStyle} ${cls} data-dir="up"`;
+  const tippyPlace = 'data-tippy-placement="bottom-start"';
+  const downContent = 'Next transcript';
+  const downTippy = `data-tippy-content="${downContent}" ${tippyPlace}`;
+  const upContent = 'Previous transcript';
+  const upTippy = `data-tippy-content="${upContent}" ${tippyPlace}`;
+  const downAttrs = `${downStyle} ${cls} data-dir="down" ${downTippy}`;
+  const upAttrs = `${upStyle} ${cls} data-dir="up" ${upTippy}`;
 
   // Get SVG polygon elements
   const down = getIcon(
@@ -990,8 +1068,8 @@ function getMenuArrows() {
   );
   const up = getIcon({shape: 'triangle', color: '#888'}, {config: ''});
 
-  const downArrow = `<svg ${downAttrs}>${downTitle}${down}</svg>`;
-  const upArrow = `<svg ${upAttrs}>${upTitle}${up}</svg>`;
+  const downArrow = `<svg ${downAttrs}>${down}</svg>`;
+  const upArrow = `<svg ${upAttrs}>${up}</svg>`;
   const menuArrows = downArrow + upArrow;
 
   return menuArrows;

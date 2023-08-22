@@ -1,9 +1,6 @@
 """Convert Ensembl BMTSV files to minimal TSVs for Ideogram.js gene caches
 
 Ideogram uses cached gene data to drastically simplify and speed up rendering.
-
-Example call (including supplementary commands):
-time python3 cache/gene_structure_cache.py --output-dir ../../dist/data/cache/gene-structures-all-compressed/ --reuse-bmtsv; gzip -dkf ../../dist/data/cache/gene-structures-all-compressed/homo-sapiens-gene-structures.tsv.gz; tput bel
 """
 
 import argparse
@@ -15,7 +12,6 @@ import re
 import sys
 import urllib.request
 from urllib.parse import quote
-import json
 
 # Enable importing local modules when directly calling as script
 if __name__ == "__main__":
@@ -24,26 +20,25 @@ if __name__ == "__main__":
 
 from lib import download
 from gene_cache import trim_id, detect_prefix, fetch_gff, parse_gff_info_field, fetch_interesting_genes
-from compress_transcripts import compress_structures
 
 # Organisms configured for gene caching, and their genome assembly names
 assemblies_by_org = {
     "Homo sapiens": "GRCh38",
-    "Mus musculus": "GRCm38",
+    "Mus musculus": "GRCm39",
     "Danio rerio": "GRCz11",
-    "Gallus gallus": "GRCg6a",
-    "Rattus norvegicus": "Rnor_6.0",
+    "Gallus gallus": "bGalGal1.mat.broiler.GRCg7b",
+    "Rattus norvegicus": "mRatBN7.2",
     "Pan troglodytes": "Pan_tro_3.0",
-    "Macaca fascicularis": "Macaca_fascicularis_5.0",
+    "Macaca fascicularis": "Macaca_fascicularis_6.0",
     "Macaca mulatta": "Mmul_10",
-    "Canis lupus familiaris": "CanFam3.1",
+    "Canis lupus familiaris": "ROS_Cfam_1.0",
     "Felis catus": "Felis_catus_9.0",
     "Equus caballus": "EquCab3.0",
     "Bos taurus": "ARS-UCD1.2",
     "Sus scrofa": "Sscrofa11.1",
     # "Anopheles gambiae": "AgamP4.51",
     "Caenorhabditis elegans": "WBcel235",
-    "Drosophila melanogaster": "BDGP6.28"
+    "Drosophila melanogaster": "BDGP6.46"
 }
 
 ranked_genes_by_organism = {
@@ -59,6 +54,11 @@ biotypes = {}
 # metazoa = {
 #     "Anopheles gambiae".AgamP4.51.bmtsv.gz  "
 # }
+
+def fetch_slim_transcript_ids(organism, output_dir="data/", reuse_bmtsv=True):
+    gscache = GeneStructureCache(output_dir, reuse_bmtsv)
+    slim_transcripts = gscache.fetch_transcripts(organism)
+    return slim_transcripts
 
 def fetch_canonical_transcript_ids(organism, output_dir="data/", reuse_bmtsv=True):
     gscache = GeneStructureCache(output_dir, reuse_bmtsv)
@@ -126,6 +126,7 @@ def parse_feature(gff_row, canonical_ids):
     # that have an Ensembl accession beginning ENSG in human
     loose_transcript_types = [
         "mRNA", "five_prime_UTR", "three_prime_UTR", "exon"
+
         # TODO:
         # - Confirm these make sense to include
         # - Confirm handling
@@ -161,6 +162,10 @@ def parse_feature(gff_row, canonical_ids):
     if feat_type == "mRNA":
         # + (forward) or - (reverse)
         strand = gff_row[6]
+        # print('info', info)
+        if "Name" not in info:
+            # Seen with e.g. ENSG00000285629
+            return None
         name = info["Name"]
         gene_id = info["Parent"].split("gene:")[1]
         biotype = info["biotype"]
@@ -250,7 +255,6 @@ def parse_mrna(raw_mrna, biotypes_list):
     name = raw_mrna[6]
     # gene_id = raw_mrna[7]
     biotype_compressed = str(biotypes_list.index(raw_mrna[8]))
-    if biotype_compressed == "0": biotype_compressed = ""
 
     # return [transcript_id, chr, start, length, name, gene_id, biotype]
     return [[transcript_id, name, biotype_compressed, strand], start]
@@ -269,14 +273,7 @@ def build_structures(structures_by_id):
 
         for structure_list in structure_lists[1:]:
             subpart = parse_transcript_subpart(structure_list, mrna_start)
-            joined_subpart = ";".join(subpart)
-
-            # Almost all subparts are exons
-            # We can key these space-efficiently via absence of key
-            if joined_subpart[0:2] == "1;":
-                joined_subpart = joined_subpart[2:]
-
-            structure += [joined_subpart]
+            structure += [";".join(subpart) ]
 
         structures.append(structure)
 
@@ -315,7 +312,7 @@ def parse_structures(canonical_ids, gff_path, gff_url):
             if feature == None:
                 continue
 
-            if (i % 50000 == 0):
+            if (i % 10000 == 0):
                 print(f"On entry {i}")
                 print(feature)
 
@@ -366,27 +363,14 @@ def sort_structures(structures, organism, canonical_ids):
     )
     structures_with_genes = structs
 
-
     # Sort genes by interest rank, and put unranked genes last
-    trimmed_structs = sorted(
+    sorted_structures_with_genes = sorted(
         structures_with_genes,
-        key=lambda s: ranks.index(s[0]) if s[0] in ranks else 1E10,
+        key=lambda x: ranks.index(x[0]) if x[0] in ranks else 1E10,
     )
 
-    # Omit strand for non-canonical transcripts
-    tmp_structs = []
-    strands_by_gene = {}
-    for structure in trimmed_structs:
-        gene = structure[0]
-        if gene in strands_by_gene:
-            structure[4] = ''
-        else:
-            strands_by_gene[gene] = structure[4]
-        tmp_structs.append(structure)
-    trimmed_structs = tmp_structs
-
     sorted_structures = []
-    for structure in trimmed_structs:
+    for structure in sorted_structures_with_genes:
         sorted_structures.append(structure[2:])
 
 
@@ -400,6 +384,31 @@ def sort_structures(structures, organism, canonical_ids):
     print(sorted_structures[0:10])
 
     return sorted_structures
+
+def compress_structures(structures):
+    compressed_structures = []
+    seen_parts = {}
+    prev_gene = ''
+    for (i, structure) in enumerate(structures):
+        compressed_structure = structure[0:3]
+        subparts = structure[3:]
+        gene = structure[0].split('-')[0]
+        if gene == prev_gene:
+            for (j, subpart) in enumerate(subparts):
+                if subpart in seen_parts:
+                    compressed_subpart = seen_parts[subpart]
+                else:
+                    compressed_subpart = subpart
+                    seen_parts[subpart] = str(i) + '_' + str(j)
+                compressed_structure.append(compressed_subpart)
+        else:
+            prev_gene = gene
+            seen_parts = {}
+            for (subpart, j) in enumerate(subparts):
+                seen_parts[subpart] = str(i) + '_' + str(j)
+            compressed_structure = structure
+        compressed_structures.append(compressed_structure)
+    return compressed_structures
 
 class GeneStructureCache():
     """Convert Ensembl BioMart TSVs to compact TSVs for Ideogram.js caches
@@ -444,7 +453,13 @@ class GeneStructureCache():
         ])
 
         headers = "\n".join([
-            f"## Ideogram.js transcript cache for {organism}"
+            f"## Ideogram.js gene structure cache for {organism}",
+            f"## Derived from: {gff_url}",
+            f"## Filtered to only canonical transcripts using Ensembl BioMart: {bmtsv_url}",
+            f"## features: <subpart_compressed>;<start (transcript-relative)>;<end (transcript-relative)>",
+            f"## biotype keys: {biotype_keys}",
+            f"## subpart keys: 0 = 5'-UTR, 1 = exon, 2 = 3'-UTR",
+            f"# transcript_name\tbiotype_compressed\t\tstrand\tfeatures"
         ]) + "\n"
 
         # print('structures')
@@ -466,28 +481,18 @@ class GeneStructureCache():
     def populate_by_org(self, organism):
         """Fill gene caches for a configured organism
         """
+        # [slim_transcripts, prefix] = self.fetch_slim_transcripts(organism)
         [canonical_ids, bmtsv_url] = self.fetch_transcript_ids(organism)
 
         [gff_path, gff_url] = fetch_gff(organism, self.output_dir, True)
 
         structures = parse_structures(canonical_ids, gff_path, gff_url)
+
         sorted_structures = sort_structures(structures, organism, canonical_ids)
+        # refined_structures = compress_structures(sorted_structures)
 
-        # Uncomment for fast dev if preceding code changes `sorted_structures`
-        # with open("sorted_structures.tmp", "w") as f:
-        #     structs_json_str = json.dumps(sorted_structures)
-        #     f.write(structs_json_str)
-
-        # Uncomment for quick development / debugging of compression
-        # gff_url = "https://example.com"
-        # bmtsv_url = "https://example.com"
-        # with open("sorted_structures.tmp") as f:
-        #     content = f.read()
-        #     sorted_structures = json.loads(content)
-
-        refined_structures = compress_structures(sorted_structures)
-
-        self.write(refined_structures, organism, gff_url, bmtsv_url)
+        # sorted_slim_genes = sort_by_interest(slim_genes, organism)
+        self.write(sorted_structures, organism, gff_url, bmtsv_url)
 
     def populate(self):
         """Fill gene caches for all configured organisms
@@ -495,7 +500,8 @@ class GeneStructureCache():
         Consider parallelizing this.
         """
         # for organism in assemblies_by_org:
-        for organism in ["Homo sapiens"]:
+        for organism in ["Homo sapiens", "Mus musculus"]:
+        # for organism in ["Homo sapiens"]:
             self.populate_by_org(organism)
 
 # Command-line handler

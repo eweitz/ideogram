@@ -1,6 +1,7 @@
 """Download AGPs from NCBI and format chromosome data, including centromeres"""
 
 import urllib.request as request
+import urllib.error
 from urllib.parse import quote
 import ftplib
 import os
@@ -9,6 +10,7 @@ import gzip
 import io
 from concurrent.futures import ThreadPoolExecutor
 import time
+import traceback
 import pprint
 
 import fetch_chromosomes.settings as settings
@@ -18,7 +20,7 @@ import fetch_chromosomes.utils as utils
 
 output_dir = '../../data/bands/native/'
 
-logger = settings.get_logger(output_dir, 'get_chromosomes')
+logger = settings.get_logger('get_chromosomes')
 
 if os.path.exists(output_dir) == False:
     os.mkdir(output_dir)
@@ -28,6 +30,22 @@ orgs_with_centromere_data = {}
 ftp_domain = 'ftp.ncbi.nlm.nih.gov'
 
 manifest = {}
+asms = []
+
+def get_eutils_urls():
+
+    api_key = '&api_key=7e33ac6a08a6955ec3b83d214d22b21a2808'
+
+    eutils = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
+    esearch = eutils + 'esearch.fcgi?retmode=json' + api_key
+    esummary = eutils + 'esummary.fcgi?retmode=json' + api_key
+    elink = eutils + 'elink.fcgi?retmode=json' + api_key
+
+    return {
+        'elink': elink,
+        'esummary': esummary,
+        'esearch': esearch
+    }
 
 def get_chromosome_object(agp):
     """Extracts centromere coordinates and chromosome length from AGP data,
@@ -69,9 +87,17 @@ def fetch_ftp(ftp, file_name):
         ftp.retrbinary('RETR ' + file_name, callback=handle_binary)
     except ftplib.error_temp as e:
         # E.g. "ftplib.error_temp: 425 EPSV: Address already in use"
-        logger.warning('Caught FTP error; retrying in 1 second')
+        logger.warning(
+            'Caught FTP error (ftplib.error_temp); ' +
+            f'retrying in 1 second for {file_name}'
+        )
         time.sleep(1)
         ftp.retrbinary('RETR ' + file_name, callback=handle_binary)
+    except EOFError as e:
+        logger.warning(
+            f'Raising FTP error (EOFError); for {file_name}'
+        )
+        raise e
 
     return bytesio_object
 
@@ -90,10 +116,10 @@ def change_ftp_dir(ftp, wd):
     logger.info('Changing FTP working directory to: ' + wd)
     try:
         ftp.cwd(wd)
-        return 0
-    except ftplib.error_perm as e:
-        logger.warning(e)
-        return 1
+    except Exception as e:
+        raise e
+
+
 
 
 # GRCh38 defines centromeres and heterochromatin in regions files, not AGP gaps
@@ -191,10 +217,15 @@ def write_centromere_data(organism, asm_name, asm_acc, output_dir, chrs):
     with open(long_output_path, 'w') as f:
         f.write(js_chrs)
 
+
+    logger.info(f"Wrote Ideogram bands for {organism} to output_path: {output_path}")
+    logger.info(f"Wrote Ideogram bands for {organism} to long_output_path: {long_output_path}")
     manifest[organism] = [asm_acc, asm_name]
 
 
 def download_genome_agp(ftp, asm):
+    global orgs_with_centromere_data
+    logger.info('Entering download_genome_agp')
 
     agp_ftp_wd = asm['agp_ftp_wd']
     asm_acc = asm['acc']
@@ -209,13 +240,17 @@ def download_genome_agp(ftp, asm):
 
     has_centromere_data = False
 
-    status = change_ftp_dir(ftp, agp_ftp_wd)
-    if status == 1:
+    try:
+        change_ftp_dir(ftp, agp_ftp_wd)
+    except Exception as e:
+        logger.warning(e)
+        logger.warning('Returning from change_ftp_dir due to error')
+        # time.sleep(3)
         return
 
     file_names = ftp.nlst()
 
-    logger.info('List of files in FTP working directory')
+    logger.info(f'List of files in FTP working directory for ({organism}, {asm_name})')
     logger.info(file_names)
     for file_name in file_names:
         # Download each chromomsome's compressed AGP file
@@ -223,15 +258,28 @@ def download_genome_agp(ftp, asm):
         # Former is more common, latter used for some organisms (e.g. platypus)
 
         # Example full URL of file:
-        # 'ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF_000001515.7_Pan_tro_3.0/GCF_000001515.7_Pan_tro_3.0_assembly_structure/Primary_Assembly/assembled_chromosomes/AGP/chr1.agp.gz'
+        # https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/515/GCF_000001515.7_Pan_tro_3.0/GCF_000001515.7_Pan_tro_3.0_assembly_structure/Primary_Assembly/assembled_chromosomes/AGP/chr1.agp.gz
         logger.info(
-            'Retrieving from FTP (' + asm_name + ', ' + asm_acc + '): ' +
+            f'Retrieving from FTP ({organism}, {asm_name}, {asm_acc}): ' +
             file_name
         )
 
-        agp = fetch_gzipped_ftp(ftp, file_name)
+        try:
+            agp = fetch_gzipped_ftp(ftp, file_name)
+        except EOFError as e:
+            logger.warning(
+                f'Raising error (EOFError) for ({organism}, {asm_name}, {asm_acc}): {file_name}'
+            )
+            raise e
+
 
         chr = get_chromosome_object(agp)
+
+        if (organism in ['homo-sapiens', 'mus-musculus']):
+            logger.info('in download_genome_agp. organism, chr, agp:')
+            logger.info(organism)
+            logger.info(chr)
+            logger.info(agp)
 
         chr_acc = chr['accession']
         if chr_acc not in chrs_seen:
@@ -242,6 +290,10 @@ def download_genome_agp(ftp, asm):
         if "centromere" in str(agp):
             has_centromere_data = True
             orgs_with_centromere_data[organism] = 1
+            logger.info(
+                'Found centromere data in AGP for ' + organism + ' ' +
+                'in ' + file_name
+            )
         else:
             chr_name = file_name.split(".")[0]
             logger.info(
@@ -267,14 +319,33 @@ def download_genome_agp(ftp, asm):
                             chr2['centromere'] = centromeres[chr]
 
     if has_centromere_data:
+        logger.info(
+            'Writing centromeres for ' + organism + ' ' +
+            'genome assembly ' + asm_name
+        )
         write_centromere_data(organism, asm_name, asm_acc, output_dir, chrs)
 
 
-def find_genomes_with_centromeres(ftp, asm_summary_response):
+def find_genomes_with_centromeres(asm_summary_response):
+    global asms
+
+    ftp = ftplib.FTP(ftp_domain)
+    ftp.login()
+
     data = asm_summary_response
 
-    logger.info('numbers of keys in asm_summary_response:')
+    logger.info('In find_genomes_with_centromeres, number of keys in asm_summary_response:')
     logger.info(len(data['result'].keys()))
+
+    organisms = []
+    for uid in data['result']:
+        if uid == 'uids':
+            continue
+        result = data['result'][uid]
+        organism = result['speciesname'].lower().replace(' ', '-').strip()
+        organisms.append(organism)
+    logger.info('In find_genomes_with_centromeres, organisms:')
+    logger.info(organisms)
 
     for uid in data['result']:
 
@@ -326,9 +397,18 @@ def find_genomes_with_centromeres(ftp, asm_summary_response):
             'regions_ftp': regions_ftp
         }
 
-        download_genome_agp(ftp, asm)
+        try:
+            download_genome_agp(ftp, asm)
+        except Exception as e:
+            logger.warning(f'Caught Exception; sleep then reconnect FTP.  Exception')
+            logger.warning(e)
+            ftp = ftplib.FTP(ftp_domain)
+            ftp.login()
+            download_genome_agp(ftp, asm)
 
         asms.append(asm)
+
+    ftp.quit()
 
 
 def chunkify(lst, n):
@@ -336,78 +416,112 @@ def chunkify(lst, n):
 
 
 def pool_processing(uid_list):
+    logger.info(f'In get_chromosomes.py pool_processing.  len(uid_list): {len(uid_list)}, raw uid_list:')
+    logger.info(uid_list)
+
+    # If uid_list is nested list, as with chunked use case in multi-thread mode
+    if hasattr(uid_list[0], '__len__') and (not isinstance(uid_list[0], str)):
+        uid_list = uid_list[0]
+
+    logger.info(f'In get_chromosomes.py pool_processing.  processed len(uid_list): {len(uid_list)}, processed uid_list:')
+    logger.info(uid_list)
+
     uid_list = ','.join(uid_list)
+    num_uids = len(uid_list)
 
-    asm_summary = esummary + '&db=assembly&id=' + uid_list
+    asm_summary = get_eutils_urls()['esummary'] + '&db=assembly&id=' + uid_list
 
-    logger.info('Fetching ' + asm_summary)
+    logger.info(f'In get_chromosomes.py pool_processing.  Now fetching {num_uids} UIDs: {asm_summary}')
+    # breakpoint()
     # Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?retmode=json&db=assembly&id=733711
-    with request.urlopen(asm_summary) as response:
-        data = json.loads(response.read().decode('utf-8'))
+    try:
+        with request.urlopen(asm_summary) as response:
+            logger.info('response.status')
+            logger.info(response.status)
+            esummary_data = json.loads(response.read().decode('utf-8'))
+    except urllib.error.HTTPError as e:
+        # msg = (
+        #     f"Encountered HTTP error status code {response.status} "
+        #     f"in request for {asm_summary}"
+        # )
+        logger.error(e)
+        raise ValueError(e)
     time.sleep(3) # Delay for 3 seconds
 
-    ftp = ftplib.FTP(ftp_domain)
-    ftp.login()
+    # logger.info('In get_chromosomes.py, esummary_data:')
+    # logger.info(esummary_data)
+    try:
+        find_genomes_with_centromeres(esummary_data)
+    except Exception as e:
+        logger.error('Error in pool_processing, find_genomes_with_centromeres.  e:')
+        logger.error(e)
 
-    find_genomes_with_centromeres(ftp, data)
+def main():
+    global manifest
 
-    ftp.quit()
+    term = quote(
+        '("latest refseq"[filter]) AND '
+        '("chromosome level"[filter] OR "complete genome"[filter]) AND ' +
+        '(animals[filter] OR plants[filter] OR fungi[filter] OR protists[filter])'
+    )
 
-api_key = '&api_key=7e33ac6a08a6955ec3b83d214d22b21a2808'
+    asm_search = get_eutils_urls()['esearch'] + '&db=assembly&term=' + term + '&retmax=10000'
 
-eutils = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
-esearch = eutils + 'esearch.fcgi?retmode=json' + api_key
-esummary = eutils + 'esummary.fcgi?retmode=json' + api_key
-elink = eutils + 'elink.fcgi?retmode=json' + api_key
+    # Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?retmode=json&db=assembly&term=("latest refseq"[filter] AND "chromosome level"[filter]) AND (animals[filter] OR plants[filter] OR fungi[filter] OR protists[filter])&retmax=10000
+    with request.urlopen(asm_search) as response:
+        data = json.loads(response.read().decode('utf-8'))
 
-asms = []
+    # Returns ~1000 ids
+    top_uid_list = data['esearchresult']['idlist']
 
-term = quote(
-    '("latest refseq"[filter]) AND '
-    '("chromosome level"[filter] OR "complete genome"[filter]) AND ' +
-    '(animals[filter] OR plants[filter] OR fungi[filter] OR protists[filter])'
-)
+    logger.info('Assembly UIDs returned in search results: ' + str(len(top_uid_list)))
 
-asm_search = esearch + '&db=assembly&term=' + term + '&retmax=10000'
+    non_ncbi_manifest = fetch_cytobands_from_dbs.main()
 
-# Example: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?retmode=json&db=assembly&term=("latest refseq"[filter] AND "chromosome level"[filter]) AND (animals[filter] OR plants[filter] OR fungi[filter] OR protists[filter])&retmax=10000
-with request.urlopen(asm_search) as response:
-    data = json.loads(response.read().decode('utf-8'))
+    logger.info('in get_chromosomes.py, non_ncbi_manifest')
+    logger.info(non_ncbi_manifest)
 
-# Returns ~1000 ids
-top_uid_list = data['esearchresult']['idlist']
+    # TODO: Make this configurable
+    num_threads = 5
 
-logger.info('Assembly UIDs returned in search results: ' + str(len(top_uid_list)))
+    uid_lists = chunkify(top_uid_list, num_threads)
 
-non_ncbi_manifest = fetch_cytobands_from_dbs.main()
+    with ThreadPoolExecutor(max_workers=num_threads) as pool:
+        pool.map(pool_processing, uid_lists)
+        # future = pool.submit(pool_processing, uid_lists)
+        # try:
+        #     future.result()
+        # except Exception as e:
+        #     logger.error('In main, error:')
+        #     logger.error(e)
+        #     trace = "".join(traceback.TracebackException.from_exception(e).format())
+        #     logger.error(trace)
 
-# TODO: Make this configurable
-num_threads = 1
+    # logger.info('non_ncbi_manifest')
+    # logger.info(non_ncbi_manifest)
 
-uid_lists = chunkify(top_uid_list, num_threads)
+    non_ncbi_manifest.update(manifest)
 
-with ThreadPoolExecutor(max_workers=num_threads) as pool:
-    pool.map(pool_processing, uid_lists)
+    manifest = non_ncbi_manifest
 
-logger.info('manifest')
-logger.info(manifest)
-# logger.info('non_ncbi_manifest')
-# logger.info(non_ncbi_manifest)
+    logger.info('manifest')
+    logger.info(manifest)
 
-#non_ncbi_manifest.update(manifest)
+    # Write a manifest of organisms for which we have cytobands.
+    # This enables Ideogram.js to more quickly load those organisms.
+    pp = pprint.PrettyPrinter(indent=4)
+    manifest = pp.pformat(manifest)
+    manifest = "assemblyManifest = " + manifest
 
-#manifest = non_ncbi_manifest
+    manifest_path = '../../src/js/assembly-manifest.js'
+    with open('../../src/js/assembly-manifest.js', 'w') as f:
+        f.write(manifest)
+    print(f'Wrote {manifest_path}')
 
-# Write a manifest of organisms for which we have cytobands.
-# This enables Ideogram.js to more quickly load those organisms.
-pp = pprint.PrettyPrinter(indent=4)
-manifest = pp.pformat(manifest)
-manifest = "assemblyManifest = " + manifest
+    logger.info('Calling convert_band_data.py')
+    convert_band_data.main()
 
-with open('../../src/js/assembly-manifest.js', 'w') as f:
-    f.write(manifest)
+    logger.info('Ending get_chromosomes.py')
 
-logger.info('Calling convert_band_data.py')
-convert_band_data.main()
-
-logger.info('Ending get_chromosomes.py')
+if __name__ == '__main__':
+    main()

@@ -22,6 +22,8 @@
  */
 
 import {decompressSync, strFromU8} from 'fflate';
+import tippy, {hideAll} from 'tippy.js';
+import {tippyCss, tippyLightCss} from './tippy-styles';
 
 import {
   initAnalyzeRelatedGenes, analyzePlotTimes, analyzeRelatedGenes, timeDiff,
@@ -36,7 +38,7 @@ import {
 } from '../annotations/annotations';
 import {writeLegend} from '../annotations/legend';
 import {getAnnotDomId} from '../annotations/process';
-import {getDir, deepCopy, slug, pluralize} from '../lib';
+import {getDir, pluralize} from '../lib';
 import {
   fetchGpmls, summarizeInteractions, fetchPathwayInteractions
 } from './wikipathways';
@@ -73,10 +75,6 @@ function setRelatedAnnotDomIds(ideo) {
   // Arrange related annots by chromosome
   const annotsByChr = {};
   ideo.annots.forEach((annot) => {
-    // if (annot.chr in annotsByChr) {
-      // annotsByChr[annot.chr].push(annot);
-    // } else {
-
     const relevanceSortedAnnots = annot.annots.sort((a, b) => {
       return -ideo.annotSortFunction(a, b);
     });
@@ -108,6 +106,7 @@ function setRelatedAnnotDomIds(ideo) {
   Object.entries(annotsByChr).forEach(([chr, annots]) => {
     updatedAnnots[chr] = {chr, annots: []};
     annots.forEach((annot, annotIndex) => {
+
       // Annots have DOM IDs keyed by chromosome index and annotation index.
       // We reconstruct those here using structures built in two blocks above.
       const chrIndex = sortedChrNames.indexOf(chr);
@@ -357,7 +356,7 @@ function describeInteractions(gene, ixns, searchedGene) {
       //   `data-pathway-name="${ixn.name}"`;
       // return `<a ${attrs}>${ixn.name}</a>`;
 
-      const pathwaysBase = 'https://www.wikipathways.org/index.php/Pathway:';
+      const pathwaysBase = 'https://classic.wikipathways.org/index.php/Pathway:';
       const url = `${pathwaysBase}${ixn.pathwayId}`;
       pathwayIds.push(ixn.pathwayId);
       pathwayNames.push(ixn.name);
@@ -663,10 +662,29 @@ async function fetchParalogPositionsFromMyGeneInfo(
   return annots;
 }
 
-function overplotParalogs(annots, ideo) {
+function drawNeighborhoods(neighborhoodAnnots, ideo) {
+  neighborhoodAnnots = applyAnnotsIncludeList(neighborhoodAnnots, ideo);
+  ideo.drawAnnots(neighborhoodAnnots, 'overlay', true, true);
+  moveLegend(ideo);
+}
+
+/** Plot paralog neighborhoods */
+function plotParalogNeighborhoods(annots, ideo) {
   if (!ideo.config.showParalogNeighborhoods) return;
 
+  if (ideo.neighborhoodAnnots?.length > 0) {
+    ideo.neighborhoodAnnots.forEach(annot => {
+      ideo.annotDescriptions.annots[annot.name] = annot;
+    });
+
+    drawNeighborhoods(ideo.neighborhoodAnnots, ideo);
+    return;
+  }
+
+  const searchedAnnot = ideo.relatedAnnots[0];
   annots = applyAnnotsIncludeList(annots, ideo);
+
+  annots.unshift(searchedAnnot);
 
   if (annots.length < 2) return;
 
@@ -702,7 +720,7 @@ function overplotParalogs(annots, ideo) {
   // Big enough to see and hover
   const overlayAnnotLength = 15_000_000;
 
-  const searchedGene = getSearchedFromDescriptions(ideo);
+  const searchedGene = searchedAnnot.name;
 
   const neighborhoodAnnots =
     Object.entries(neighborhoods).map(([chr, neighborhood], index) => {
@@ -713,12 +731,19 @@ function overplotParalogs(annots, ideo) {
         return {paralogs};
       }
 
+      let includesSearched = false;
+      if (paralogs[0].name === searchedAnnot.name) {
+        paralogs = paralogs.slice(1);
+        includesSearched = true;
+      }
+
       // paralogs.map(paralog => {
       //   console.log(paralog);
       // })
 
+      const paralogsText = pluralize('paralog', paralogs.length)
       const description =
-        `${paralogs.length} nearby paralogs of ${searchedGene}`;
+        `${paralogs.length} nearby ${paralogsText} of ${searchedGene}`;
 
       const chrLength = ideo.chromosomes[ideo.config.taxid][chr].bpLength;
       let annotStart = start - overlayAnnotLength/2;
@@ -734,6 +759,14 @@ function overplotParalogs(annots, ideo) {
       if ('geneCache' in ideo) {
         paralogs = paralogs.map(paralog => {
           paralog.fullName = ideo.geneCache.fullNamesById[paralog.id];
+
+          const ranks = ideo.geneCache.interestingNames;
+          if (ranks.includes(paralog.name)) {
+            paralog.rank = ranks.indexOf(paralog.name) + 1;
+          } else {
+            paralog.rank = 1E10;
+          }
+
           return paralog;
         });
       }
@@ -751,18 +784,18 @@ function overplotParalogs(annots, ideo) {
         description,
         paralogs,
         type: 'paralog neighborhood',
-        displayCoordinates
+        displayCoordinates,
+        includesSearched
       };
 
       ideo.annotDescriptions.annots[annot.name] = annot;
       return annot;
-    }).filter(n => n.paralogs.length > 1);
+    }).filter(n => n.paralogs.length > 1 || n.includesSearched);
+
+  ideo.neighborhoodAnnots = neighborhoodAnnots;
 
   if (neighborhoodAnnots.length > 0) {
-    // console.log('neighborhoodAnnots')
-    // console.log(neighborhoodAnnots.map(na => na));
-    ideo.drawAnnots(neighborhoodAnnots, 'overlay', true, true);
-    moveLegend();
+    drawNeighborhoods(neighborhoodAnnots, ideo);
   }
 }
 
@@ -791,7 +824,6 @@ async function fetchParalogs(annot, ideo) {
     const ensemblHomologs = await Ideogram.fetchEnsembl(path);
     homologs = ensemblHomologs.data[0].homologies;
   }
-
 
   // Fetch positions of paralogs
   let annots =
@@ -844,19 +876,193 @@ function parseAnnotFromMgiGene(gene, ideo, color='red') {
   return annot;
 }
 
-function moveLegend(extraPad=0) {
+/** Return type (interacting, paralogous, or searched) of legend entry */
+function getLegendType(li) {
+  const lcText = li.innerText.toLowerCase();
+
+  let type;
+  if (lcText.includes('interacting')) type = 'interacting';
+  if (lcText.includes('paralogous')) type = 'paralogous';
+  if (lcText.includes('searched')) type = 'searched';
+
+  return type;
+}
+
+/** Return color (purple, pink, or red) of legend entry */
+function getLegendEntryColor(li) {
+  const type = getLegendType(li);
+
+  const colorMap = {
+    'interacting': 'purple',
+    'paralogous': 'pink',
+    'searched': 'red'
+  };
+  const color = colorMap[type];
+
+  return color;
+}
+
+/** Highlight / filter upon hovering over legend entry */
+function highlightByType(li, ideo) {
+  li.classList += ' active';
+
+  const selectedColor = getLegendEntryColor(li);
+
+  if (ideo.config.showAnnotLabels) {
+    ideo.clearAnnotLabels();
+
+    ideo.flattenAnnots().forEach(annot => {
+      if (annot.color !== selectedColor) {
+        document.getElementById(annot.domId).style.display = 'none';
+      }
+    });
+
+    const sortedAnnots = ideo.flattenAnnots().sort((a, b) => {
+      return ideo.annotSortFunction(a, b);
+    }).filter(annot => annot.color === selectedColor);
+
+    const numLabels = Math.min(sortedAnnots.length, 20);
+    ideo.fillAnnotLabels(sortedAnnots, numLabels);
+  }
+}
+
+/** Remove highlight / filter upon hovering out of legend entry */
+function dehighlightAll(ideo) {
+  document.querySelectorAll('#_ideogramLegend li').forEach(li => {
+    li.classList.remove('active');
+  });
+
+  ideo.flattenAnnots().forEach(annot => {
+    document.getElementById(annot.domId).style.display = null;
+  });
+
+  if (ideo.config.showAnnotLabels) {
+    const sortedAnnots = ideo.flattenAnnots().sort((a, b) => {
+      return ideo.annotSortFunction(a, b);
+    });
+
+    ideo.fillAnnotLabels(sortedAnnots);
+  }
+}
+
+function getTippyConfig() {
+  return {
+    theme: 'light-border',
+    popperOptions: { // Docs: https://atomiks.github.io/tippyjs/v6/all-props/#popperoptions
+      modifiers: [ // Docs: https://popper.js.org/docs/v2/modifiers
+        {
+          name: 'flip'
+        }
+      ]
+    },
+    onShow: function() {
+      // Ensure only 1 tippy tooltip is displayed at a time
+      document.querySelectorAll('[data-tippy-root]')
+        .forEach(tippyNode => tippyNode.remove());
+    }
+  };
+}
+
+function initInteractiveLegend(ideo) {
+  // Highlight and filter annotations by type on hovering over legend entries
+  function highlight(event) {
+    const li = event.target;
+    highlightByType(li, ideo);
+    if (ideo.onHoverLegendCallback) {
+      ideo.onHoverLegendCallback();
+    }
+  }
+  // // Highlight and filter annotations by type on hovering over legend entries
+  // WIP: 14373b18319e99febd91816fbc0c1b2e0f20f277
+  // function toggleHighlight(event) {
+  //   const li = event.target;
+  //   return toggleHighlightByType(li, ideo);
+  // }
+  function dehighlight() {
+    dehighlightAll(ideo);
+  }
+  const entrySelector = '#_ideogramLegend li._ideoLegendEntry';
+  document.querySelectorAll(entrySelector).forEach(li => {
+    // li.addEventListener('click', toggleHighlight);
+    // WIP: 14373b18319e99febd91816fbc0c1b2e0f20f277
+    li.addEventListener('mouseenter', highlight);
+    li.addEventListener('mouseleave', dehighlight);
+
+    const legendType = getLegendType(li);
+    const tippyContentMap = {
+      'interacting':
+        'Adjacent to searched gene in a biochemical pathway, ' +
+        'per WikiPathways',
+      'paralogous':
+        'Evolutionarily related to searched gene ' +
+        'by a duplication event, per Ensembl'
+    };
+    // const placement = 'data-tippy-placement="top-end"';
+    const placement = '';
+    const tippy =
+      `data-tippy-content="${tippyContentMap[legendType]}" ${placement}`;
+    const reset = 'position: inherit; left: inherit';
+    // const glossary = 'text-decoration: underline dashed;';
+    // const style = `style="${glossary} ${reset}`;
+    const style = `style="${reset}"`;
+    const attrs = `class="_ideoLegendEntry" ${style} ${tippy}`;
+    if (legendType === 'paralogous') {
+      li.innerHTML = `<span ${attrs}>Paralogous genes</span>`;
+    } else if (legendType === 'interacting') {
+      li.innerHTML = `<span ${attrs}>Interacting genes</span>`;
+    }
+  });
+
+  const css =
+    `<style>
+    ${tippyCss}
+
+    .tippy-box {
+      font-size: 12px;
+    }
+
+    .tippy-content {
+      padding: 3px 7px;
+    }
+
+    #_ideogramLegend li {
+      padding-left: 5px;
+      border-radius: 2px;
+    }
+
+    #_ideogramLegend li.active {
+      color: #00C;
+      background-color: #EEF;
+    }
+    </style>`;
+  const legendDom = document.querySelector('#_ideogramLegend');
+  legendDom.insertAdjacentHTML('afterBegin', css);
+  const tippyConfig = getTippyConfig();
+  tippyConfig.maxWidth = 180;
+  tippyConfig.offset = [-30, 10];
+  ideo.legendTippy =
+    tippy('._ideoLegendEntry[data-tippy-content]', tippyConfig);
+}
+
+function moveLegend(ideo, extraPad=0) {
   const ideoInnerDom = document.querySelector('#_ideogramInnerWrap');
   const decorPad = setRelatedDecorPad({}).legendPad;
   const left = decorPad + 20 + extraPad;
   const legendStyle = `position: absolute; top: 15px; left: ${left}px`;
+
   const legend = document.querySelector('#_ideogramLegend');
   ideoInnerDom.prepend(legend);
   legend.style = legendStyle;
+
+  initInteractiveLegend(ideo);
 }
 
-/** Filter annotations to only include those in configured list */
+/**
+ * Filter annotations to only include those in configured list
+ *
+ * @return {List<Object>} includedAnnots List of filtered annots objects
+ */
 function applyAnnotsIncludeList(annots, ideo) {
-
   if (ideo.config.annotsInList === 'all') return annots;
 
   const includedAnnots = [];
@@ -866,6 +1072,33 @@ function applyAnnotsIncludeList(annots, ideo) {
     }
   });
   return includedAnnots;
+}
+
+function filterByAnnotsIncludeList(annots, ideo) {
+  if (ideo.config.annotsInList === 'all') return annots;
+
+  const annotsInList = ideo.config.annotsInList;
+
+  const updated = [];
+  const updatedAnnots = {};
+  ideo.annots.forEach(chrAnnots => {
+    const {chr, annots} = chrAnnots;
+    updatedAnnots[chr] = {chr, annots: []};
+    annots.forEach((annot) => {
+
+      const lcAnnotName = annot.name.toLowerCase();
+      if (
+        'relatedAnnots' in ideo &&
+        !annotsInList.includes(lcAnnotName)
+      ) {
+        return;
+      }
+
+      updatedAnnots[chr].annots.push(annot);
+    });
+    updated.push(updatedAnnots[chr]);
+  });
+  return updated;
 }
 
 /** Fetch and draw interacting genes, return Promise for annots */
@@ -880,6 +1113,7 @@ function processInteractions(annot, ideo) {
     finishPlotRelatedGenes('interacting', ideo);
 
     ideo.time.rg.interactions = timeDiff(t0);
+    plotParalogNeighborhoods(annots, ideo);
 
     resolve();
   });
@@ -893,7 +1127,7 @@ function processParalogs(annot, ideo) {
     const annots = await fetchParalogs(annot, ideo);
     ideo.relatedAnnots.push(...annots);
     finishPlotRelatedGenes('paralogous', ideo);
-    overplotParalogs(annots, ideo);
+    plotParalogNeighborhoods(annots, ideo);
 
     ideo.time.rg.paralogs = timeDiff(t0);
 
@@ -994,8 +1228,8 @@ function onBeforeDrawAnnots() {
   const ideo = this;
   setRelatedAnnotDomIds(ideo);
 
+  // Handle differential expression extension
   const chrAnnots = ideo.annots;
-
   for (let i = 0; i < chrAnnots.length; i++) {
     const annots = chrAnnots[i].annots;
 
@@ -1012,6 +1246,11 @@ function onBeforeDrawAnnots() {
   }
 }
 
+function filterAndDrawAnnots(annots, ideo) {
+  annots = applyAnnotsIncludeList(annots, ideo);
+  ideo.drawAnnots(annots);
+}
+
 /** Filter, sort, draw annots.  Move legend. */
 function finishPlotRelatedGenes(type, ideo) {
 
@@ -1023,7 +1262,7 @@ function finishPlotRelatedGenes(type, ideo) {
 
   annots = mergeAnnots(annots);
 
-  ideo.drawAnnots(annots);
+  filterAndDrawAnnots(annots, ideo);
 
   if (ideo.config.showAnnotLabels) {
     const sortedAnnots = ideo.flattenAnnots().sort((a, b) => {
@@ -1032,7 +1271,7 @@ function finishPlotRelatedGenes(type, ideo) {
     ideo.fillAnnotLabels(sortedAnnots);
   }
 
-  moveLegend();
+  moveLegend(ideo);
 
   analyzePlotTimes(type, ideo);
 }
@@ -1208,7 +1447,7 @@ function adjustPlaceAndVisibility(ideo) {
 //   legendPathwayName = pathway.name;
 //   ideo.config.legend = pathwayLegend;
 //   writeLegend(ideo);
-//   moveLegend();
+//   moveLegend(ideo);
 
 //   ideo.relatedAnnots = [];
 
@@ -1269,6 +1508,7 @@ async function plotRelatedGenes(geneSymbol=null) {
   adjustPlaceAndVisibility(ideo);
 
   ideo.relatedAnnots = [];
+  ideo.neighborhoodAnnots = [];
 
   // Fetch positon of searched gene
   const annot = await processSearchedGene(geneSymbol, ideo);
@@ -1277,7 +1517,7 @@ async function plotRelatedGenes(geneSymbol=null) {
 
   ideo.config.legend = relatedLegend;
   writeLegend(ideo);
-  moveLegend();
+  moveLegend(ideo);
 
   await Promise.all([
     processInteractions(annot, ideo),
@@ -1427,8 +1667,8 @@ function decorateParalogNeighborhood(annot, descObj, style) {
   // annotation, and is often also labeled.
   const sortedParalogs =
     descObj.paralogs.sort((a, b) => a.rank - b.rank);
-  const firstRanked = sortedParalogs.shift(); // Take off first
-  sortedParalogs.push(firstRanked); // Make it last
+  // const firstRanked = sortedParalogs.shift(); // Take off first
+  // sortedParalogs.push(firstRanked); // Make it last
 
   const originalDisplay =
     'Paralog neighborhood<br/>' +
@@ -1623,7 +1863,7 @@ function plotGeneHints() {
   });
 
   adjustPlaceAndVisibility(ideo);
-  moveLegend(-60);
+  moveLegend(ideo, -60);
 
   const container = ideo.config.container;
   document.querySelector(container).style.visibility = '';
@@ -1645,15 +1885,14 @@ function plotGeneHints() {
  */
 function _initRelatedGenes(config, annotsInList) {
 
-  const isHuman = slug(config.organism) === 'homo-sapiens';
-
   if (config.relatedGenesMode === 'leads') {
     delete config.onDrawAnnots;
     delete config.relatedGenesMode;
   };
 
   const kitDefaults = Object.assign({
-    showParalogNeighborhoods: isHuman,
+    showParalogNeighborhoods: true,
+    isLegendInteractive: true,
     relatedGenesMode: 'related',
     useCache: true,
     awaitCache: true
@@ -1724,7 +1963,7 @@ function initSearchIdeogram(kitDefaults, config, annotsInList) {
   if (annotsInList !== 'all') {
     annotsInList = annotsInList.map(name => name.toLowerCase());
   }
-  kitDefaults.annotsInList = annotsInList;
+  config.annotsInList = annotsInList;
 
   kitDefaults.legendPad = kitDefaults.showAnnotLabels ? 80 : 30;
 
@@ -1791,6 +2030,11 @@ function initSearchIdeogram(kitDefaults, config, annotsInList) {
   // Called upon completing last plot, including all related genes
   if (config.onPlotFoundGenes) {
     ideogram.onPlotFoundGenesCallback = config.onPlotFoundGenes;
+  }
+
+  // Called upon hovering over a legend entry, e.g. "Interacting genes"
+  if (config.onHoverLegend) {
+    ideogram.onHoverLegendCallback = config.onHoverLegend;
   }
 
   ideogram.getTooltipAnalytics = getRelatedGenesTooltipAnalytics;
