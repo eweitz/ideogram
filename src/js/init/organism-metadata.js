@@ -217,6 +217,16 @@ var organismMetadata = {
     hasParalogCache: true,
     hasSynonymCache: true
   },
+  9823: {
+    commonName: 'Pig',
+    scientificName: 'Sus scrofa',
+    assemblies: {
+      default: 'GCF_000003025.6'
+    },
+    hasGeneCache: true,
+    hasParalogCache: true,
+    hasSynonymCache: true
+  },
   4932: {
     commonName: 'Yeast',
     scientificName: 'Saccharomyces cerevisiae',
