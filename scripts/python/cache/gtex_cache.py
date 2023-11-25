@@ -33,14 +33,18 @@ for tissue in tissues:
     raw_top_genes = data['data']
     top_genes = []
     for gene in raw_top_genes:
-        # top_gene = [gene['geneSymbol'], round(gene['median'])]
-        top_gene = gene['geneSymbol']
+        top_gene = [gene['geneSymbol'], round(gene['median'], 2)]
+        # top_gene = gene['geneSymbol']
         top_genes.append(top_gene)
     top_genes_by_tissue[tissue_id] = top_genes
 
-output = {'genes': top_genes_by_tissue, 'tissues': tissues}
+output = {
+    'genes': top_genes_by_tissue,
+    'tissues': tissues,
+    'genes_key': ['gene_symbol', 'median_expression_tpm']
+}
 
-output_path = 'gtex_top_genes_by_tissue.json'
+output_path = 'cache/gtex_top_genes_by_tissue.json'
 with open(output_path, 'w') as f:
     output_json = json.dumps(output)
     f.write(output_json)
