@@ -8,6 +8,7 @@ import argparse
 import codecs
 import csv
 import gzip
+import json
 import os
 import re
 import sys
@@ -178,6 +179,33 @@ def trim_gff(gff_path):
 
     return [slim_genes, prefix]
 
+def add_gtex_tissue_top(slim_genes):
+    with open("cache/gtex_top_genes_by_tissue.json") as f:
+        raw_json = json.loads(f.read())
+        gtex_top_genes_by_tissue = raw_json["genes"]
+
+    tissues_by_gtex_top_genes = {}
+    for tissue in gtex_top_genes_by_tissue:
+        for top_gene in gtex_top_genes_by_tissue[tissue]:
+            # print('tissue, top_gene', tissue, top_gene)
+            if top_gene not in tissues_by_gtex_top_genes:
+                tissues_by_gtex_top_genes[top_gene] = []
+            tissues_by_gtex_top_genes[top_gene].append(tissue)
+
+    # print('tissues_by_gtex_top_genes')
+    # print(tissues_by_gtex_top_genes)
+    slim_genes_with_gtex = []
+    for slim_gene in slim_genes:
+        gene = slim_gene[4] # symbol index
+        tissues = ''
+        if gene in tissues_by_gtex_top_genes:
+            tissues = ';'.join(tissues_by_gtex_top_genes[gene])
+        slim_gene.append(tissues)
+        slim_genes_with_gtex.append(slim_gene)
+        # print('slim_genes_with_gtex')
+        # print(slim_genes_with_gtex)
+    return slim_genes_with_gtex
+
 def fetch_interesting_genes(organism):
     """Request interest-ranked gene data from Gene Hints"""
     interesting_genes = []
@@ -270,7 +298,7 @@ class GeneCache():
             f"## Ideogram.js gene cache for {organism}\n" +
             f"## Derived from {gff_url}\n"
             f"## prefix: {prefix}\n"
-            f"# chr\tstart\tlength\tslim_id\tsymbol\tdescription\n"
+            f"# chr\tstart\tlength\tslim_id\tsymbol\tdescription\tgtex_tissue_top"
         )
         gene_lines = "\n".join(["\t".join(g) for g in genes])
         content = headers + gene_lines
@@ -286,6 +314,8 @@ class GeneCache():
         """
         [gff_path, gff_url] = self.fetch_ensembl_gff(organism)
         [slim_genes, prefix] = trim_gff(gff_path)
+        if organism == 'Homo sapiens':
+            slim_genes = add_gtex_tissue_top(slim_genes)
         sorted_slim_genes = sort_by_interest(slim_genes, organism)
         self.write(sorted_slim_genes, organism, prefix, gff_url)
 
@@ -294,8 +324,8 @@ class GeneCache():
 
         Consider parallelizing this.
         """
-        for organism in assemblies_by_org:
-        # for organism in ["Homo sapiens"]:
+        # for organism in assemblies_by_org:
+        for organism in ["Homo sapiens"]:
             self.populate_by_org(organism)
 
 # Command-line handler

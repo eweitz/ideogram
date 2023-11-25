@@ -6,9 +6,6 @@ url = f'{base_url}/dataset/tissueSiteDetail?page=0&itemsPerPage=250'
 response = urllib.request.urlopen(url)
 data = json.loads(response.read().decode('utf-8'))
 
-# print('data')
-# print(data)
-
 raw_tissues = data['data']
 tissues = []
 for raw_tissue in raw_tissues:
@@ -42,8 +39,6 @@ for tissue in tissues:
     top_genes_by_tissue[tissue_id] = top_genes
 
 output = {'genes': top_genes_by_tissue, 'tissues': tissues}
-# print('top_genes_by_tissue')
-# print(top_genes_by_tissue)
 
 output_path = 'gtex_top_genes_by_tissue.json'
 with open(output_path, 'w') as f:
