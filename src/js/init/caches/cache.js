@@ -123,7 +123,7 @@ const allCacheProps = {
 function setGeneCache(parsedCache, ideo) {
   const [
     interestingNames, nameCaseMap, namesById, fullNamesById,
-    idsByName, lociByName, lociById
+    idsByName, lociByName, lociById, tissueIdsByName, tissueNames
     //, sortedAnnots
   ] = parsedCache;
 
@@ -134,7 +134,9 @@ function setGeneCache(parsedCache, ideo) {
     fullNamesById,
     idsByName,
     lociByName, // Object of gene positions, keyed by gene name
-    lociById
+    lociById,
+    tissueIdsByName,
+    tissueNames
     //, sortedAnnots // Ideogram annotations sorted by genomic position
   };
 }

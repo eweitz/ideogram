@@ -30,6 +30,11 @@ function parseAnnots(preAnnots) {
   return annotsSortedByPosition;
 }
 
+function parseTissueNames(rawTissuesString) {
+  const tissueNames = rawTissuesString.split(';');
+  return tissueNames;
+}
+
 /** Parse a gene cache TSV file, return array of useful transforms */
 export function parseGeneCache(rawTsv, perfTimes) {
   const names = [];
@@ -40,6 +45,12 @@ export function parseGeneCache(rawTsv, perfTimes) {
   const lociByName = {};
   const lociById = {};
   const preAnnots = [];
+  let tissueNames = [];
+
+  // If the gene has among top 2% expression in a tissue (per GTEx), that's
+  // tracked here.
+  const tissueIdsByName = {};
+
   let ensemblPrefix;
 
   let t0 = performance.now();
@@ -54,11 +65,15 @@ export function parseGeneCache(rawTsv, perfTimes) {
       if (line.slice(0, 9) === '## prefix') {
         ensemblPrefix = line.split('prefix: ')[1];
       }
+      if (line.slice(0, 10) === '## tissues') {
+        console.log(line.split('tissues: ')[1])
+        tissueNames = parseTissueNames(line.split('tissues: ')[1]);
+      }
       continue;
     }
     const [
-      chromosome, rawStart, rawLength, slimEnsemblId, gene
-      , rawFullName
+      chromosome, rawStart, rawLength, slimEnsemblId, gene,
+      rawFullName, tissueIds
     ] = line.trim().split(/\t/);
     const fullName = decodeURIComponent(rawFullName);
     const start = parseInt(rawStart);
@@ -74,6 +89,15 @@ export function parseGeneCache(rawTsv, perfTimes) {
     idsByName[gene] = ensemblId;
     lociByName[gene] = locus;
     lociById[ensemblId] = locus;
+
+    if (tissueIds !== undefined) {
+      const processedTissueIds = [];
+      const splitTissueIds = tissueIds.split(',');
+      for (let i = 0; i < splitTissueIds.length; i++) {
+        processedTissueIds.push(parseInt(splitTissueIds[i], 10));
+      }
+      tissueIdsByName[gene] = processedTissueIds;
+    }
   };
   const t1 = performance.now();
   perfTimes.parseCacheLoop = Math.round(t1 - t0);
@@ -84,7 +108,8 @@ export function parseGeneCache(rawTsv, perfTimes) {
   return [
     names, nameCaseMap, namesById,
     fullNamesById,
-    idsByName, lociByName, lociById
+    idsByName, lociByName, lociById,
+    tissueIdsByName, tissueNames
     // , sortedAnnots
   ];
 }

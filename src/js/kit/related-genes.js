@@ -1752,6 +1752,12 @@ function decorateAnnot(annot) {
     annot, ideo, isParalogNeighborhood
   );
 
+  let bar = '';
+  if (ideo.geneCache && annot.name in ideo.geneCache.tissueIdsByName) {
+    const topTissues = ideo.geneCache.tissueIdsByName[annot.name];
+
+  }
+
   let originalDisplay =
     `<span id="ideo-related-gene" ${style}>${annot.name}</span><br/>` +
     `${fullNameAndRank}<br/>` +
