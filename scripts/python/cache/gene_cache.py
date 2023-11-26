@@ -179,38 +179,33 @@ def trim_gff(gff_path):
 
     return [slim_genes, prefix]
 
-def add_gtex_tissue_top(slim_genes):
+def add_gtex_top_tissues(slim_genes):
     with open("cache/gtex_top_genes_by_tissue.json") as f:
         raw_json = json.loads(f.read())
-        gtex_top_genes_by_tissue = raw_json["genes"]
+        top_genes_by_tissue = raw_json["genes"]
 
     tissues_list = [tissue["id"] for tissue in raw_json["tissues"]]
 
-    tissues_by_gtex_top_genes = {}
-    for tissue in gtex_top_genes_by_tissue:
-        for entry in gtex_top_genes_by_tissue[tissue]:
-            # print('tissue, top_gene', tissue, top_gene)
+    tissues_by_top_genes = {}
+    for tissue in top_genes_by_tissue:
+        for entry in top_genes_by_tissue[tissue]:
             top_gene, median_expression_tpm = entry
-            if top_gene not in tissues_by_gtex_top_genes:
-                tissues_by_gtex_top_genes[top_gene] = []
+            if top_gene not in tissues_by_top_genes:
+                tissues_by_top_genes[top_gene] = []
             tissue_index = tissues_list.index(tissue)
-            tissues_by_gtex_top_genes[top_gene].append([str(tissue_index), median_expression_tpm])
+            tissues_by_top_genes[top_gene].append([str(tissue_index), median_expression_tpm])
 
-    # print('tissues_by_gtex_top_genes')
-    # print(tissues_by_gtex_top_genes)
     slim_genes_with_gtex = []
     for slim_gene in slim_genes:
-        gene = slim_gene[4] # symbol index
+        gene = slim_gene[4] # gene symbol index
         tissue_indexes = ''
-        if gene in tissues_by_gtex_top_genes:
-            entries = tissues_by_gtex_top_genes[gene]
+        if gene in tissues_by_top_genes:
+            entries = tissues_by_top_genes[gene]
             sorted_entries = sorted(entries, key=lambda e: e[1])
             sorted_tissues = [e[0] for e in sorted_entries]
             tissue_indexes = ','.join(sorted_tissues)
         slim_gene.append(tissue_indexes)
         slim_genes_with_gtex.append(slim_gene)
-        # print('slim_genes_with_gtex')
-        # print(slim_genes_with_gtex)
 
     return [slim_genes_with_gtex, tissues_list]
 
@@ -334,7 +329,7 @@ class GeneCache():
         [slim_genes, prefix] = trim_gff(gff_path)
         tissues = None
         if organism == 'Homo sapiens':
-            [slim_genes, tissues] = add_gtex_tissue_top(slim_genes)
+            [slim_genes, tissues] = add_gtex_top_tissues(slim_genes)
         sorted_slim_genes = sort_by_interest(slim_genes, organism)
         self.write(sorted_slim_genes, organism, prefix, gff_url, tissues)
 
