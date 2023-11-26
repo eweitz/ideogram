@@ -9,6 +9,11 @@ data = json.loads(response.read().decode('utf-8'))
 raw_tissues = data['data']
 tissues = []
 for raw_tissue in raw_tissues:
+    samples = raw_tissue['rnaSeqSampleSummary']['totalCount']
+    if samples < 70:
+        # Omit tissues that have relatively few samples,
+        # like GTEx Portal deprioritizes
+        continue
     tissue = {
         'id': raw_tissue['tissueSiteDetailId'],
         'abbr': raw_tissue['tissueSiteDetailAbbr'],
