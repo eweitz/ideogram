@@ -23,7 +23,6 @@ for raw_tissue in raw_tissues:
     }
     tissues.append(tissue)
 
-
 top_genes_by_tissue = {}
 for tissue in tissues:
     tissue_id = tissue['id']

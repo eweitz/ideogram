@@ -184,7 +184,7 @@ def add_gtex_top_tissues(slim_genes):
         raw_json = json.loads(f.read())
         top_genes_by_tissue = raw_json["genes"]
 
-    tissues_list = [tissue["id"] for tissue in raw_json["tissues"]]
+    tissues_names = [tissue["id"] for tissue in raw_json["tissues"]]
 
     tissues_by_top_genes = {}
     for tissue in top_genes_by_tissue:
@@ -192,7 +192,7 @@ def add_gtex_top_tissues(slim_genes):
             top_gene, median_expression_tpm = entry
             if top_gene not in tissues_by_top_genes:
                 tissues_by_top_genes[top_gene] = []
-            tissue_index = tissues_list.index(tissue)
+            tissue_index = tissues_names.index(tissue)
             tissues_by_top_genes[top_gene].append([str(tissue_index), median_expression_tpm])
 
     slim_genes_with_gtex = []
@@ -207,6 +207,9 @@ def add_gtex_top_tissues(slim_genes):
         slim_gene.append(tissue_indexes)
         slim_genes_with_gtex.append(slim_gene)
 
+    tissues_list = [
+        [tissue["id"], tissue["color"]] for tissue in raw_json["tissues"]
+    ]
     return [slim_genes_with_gtex, tissues_list]
 
 def fetch_interesting_genes(organism):
@@ -310,7 +313,8 @@ class GeneCache():
             column_headers
         ]
         if tissues:
-            tissues_header = f"## tissues: {';'.join(tissues)}"
+            tissues_str = [t[0] + ',' + t[1] for t in tissues]
+            tissues_header = f"## tissues: {';'.join(tissues_str)}"
             file_headers.insert(-2, tissues_header)
         header_lines = "\n".join(file_headers)
         gene_lines = "\n".join(["\t".join(g) for g in genes])
