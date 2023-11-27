@@ -1703,22 +1703,38 @@ function getTissueHtml(annot, ideo) {
   }
   const cache = ideo.geneCache;
   const tissueIds = cache.tissueIdsByName[annot.name];
-  const tissues = tissueIds.map(tissueId => {
-    return cache.tissueNames[tissueId].replace(/_/g, ' ');
+
+  const tissueNames = tissueIds.map(tissueId => {
+    let name = cache.tissueNames[tissueId];
+    name = name.replace(/_/g, ' ').toLowerCase();
+    name = name.replace('ba24', 'BA24');
+    name = name.replace('ba9', 'BA9');
+    return name;
   });
+
+  let joinedTissueNames = tissueNames[0];
+  if (tissueNames.length === 2) {
+    joinedTissueNames = tissueNames.join(' and ');
+  } else if (tissueNames.length > 2 && tissueNames.length < 5) {
+    joinedTissueNames =
+      tissueNames.slice(-1).join(', ') +
+      ', and ' + tissueNames.slice(-1)[0];
+  }
+
+
   const tissueColor = `#${cache.tissueColors[tissueIds[0]]}`;
-  const tissueText = `Among top 2% genes in ${tissues.join(', ')}`;
+  const tissueText = `Among top 2% genes in ${joinedTissueNames}`;
   const tissueTooltip = `data-tippy-content="${tissueText}"`;
   const tissueStyle =
     'style="float: right; border-radius: 4px; ' +
-    'margin-right: 8px; padding: 4px 0 4px 0;' +
+    'margin-right: 8px; padding: 4px 0 4px 0; ' +
     `border: 1px solid #CCC;"`;
   const tissueAttrs =
     `class="_ideoGeneTissues" ${tissueStyle} ${tissueTooltip}`;
   const innerStyle =
     `style="border: 1px solid ${tissueColor}; border-radius: 4px; ` +
     'background-color: #EEE; padding: 3px 8px; "';
-  const topTissueFirstLetter = tissues[0][0].toUpperCase();
+  const topTissueFirstLetter = tissueNames[0][0].toUpperCase();
   const tissueHtml =
     `<span ${tissueAttrs}>` +
       `<span ${innerStyle}>${topTissueFirstLetter}</span>` +
