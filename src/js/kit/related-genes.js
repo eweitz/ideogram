@@ -1707,17 +1707,22 @@ function getTissueHtml(annot, ideo) {
     return cache.tissueNames[tissueId].replace(/_/g, ' ');
   });
   const tissueColor = `#${cache.tissueColors[tissueIds[0]]}`;
-  console.log('tissueColor', tissueColor);
   const tissueText = `Among top 2% genes in ${tissues.join(', ')}`;
   const tissueTooltip = `data-tippy-content="${tissueText}"`;
   const tissueStyle =
-    'style="float: right; padding: 4px 7px; border-radius: 4px; ' +
-    'margin-right: 8px; ' +
-    `border: 1px solid ${tissueColor}; background-color: #EEE;"`;
+    'style="float: right; border-radius: 4px; ' +
+    'margin-right: 8px; padding: 4px 0 4px 0;' +
+    `border: 1px solid #CCC;"`;
   const tissueAttrs =
     `class="_ideoGeneTissues" ${tissueStyle} ${tissueTooltip}`;
+  const innerStyle =
+    `style="border: 1px solid ${tissueColor}; border-radius: 4px; ` +
+    'background-color: #EEE; padding: 3px 8px; "';
   const topTissueFirstLetter = tissues[0][0].toUpperCase();
-  const tissueHtml = `<span ${tissueAttrs}>${topTissueFirstLetter}</span>`;
+  const tissueHtml =
+    `<span ${tissueAttrs}>` +
+      `<span ${innerStyle}>${topTissueFirstLetter}</span>` +
+    '</span>';
   return tissueHtml;
 }
 
