@@ -38,7 +38,7 @@ import {
 } from '../annotations/annotations';
 import {writeLegend} from '../annotations/legend';
 import {getAnnotDomId} from '../annotations/process';
-import {getDir, pluralize} from '../lib';
+import {getDir, pluralize, getTextSize} from '../lib';
 import {
   fetchGpmls, summarizeInteractions, fetchPathwayInteractions
 } from './wikipathways';
@@ -1576,6 +1576,8 @@ function onDidShowAnnotTooltip() {
   const ideo = this;
   handleTooltipClick(ideo);
   addGeneStructureListeners(ideo);
+  ideo.legendTippy =
+    tippy('._ideoGeneTissues[data-tippy-content]', getTippyConfig());
 }
 
 /**
@@ -1695,6 +1697,26 @@ function decorateParalogNeighborhood(annot, descObj, style) {
   return [annot, originalDisplay];
 }
 
+function getTissueHtml(annot, ideo) {
+  if (!ideo.geneCache || !(annot.name in ideo.geneCache.tissueIdsByName)) {
+    return '';
+  }
+  const cache = ideo.geneCache;
+  const tissues = cache.tissueIdsByName[annot.name].map(tissueId => {
+    return cache.tissueNames[tissueId].replace(/_/g, ' ');
+  });
+  const tissueText = `Among top 2% genes in ${tissues.join(', ')}`;
+  const tissueTooltip = `data-tippy-content="${tissueText}"`;
+  const tissueStyle =
+    'style="float: right; padding: 4px 7px; border-radius: 4px; ' +
+    'margin-right: 8px; ' +
+    'border: 1px solid #CCC; background-color: #EEE;"';
+  const tissueAttrs =
+    `class="_ideoGeneTissues" ${tissueStyle} ${tissueTooltip}`;
+  const tissueHtml = `<span ${tissueAttrs}>T</span>`;
+  return tissueHtml;
+}
+
 /**
  * Enhance tooltip shown on hovering over gene annotation
  */
@@ -1717,7 +1739,7 @@ function decorateAnnot(annot) {
   const description =
     descObj.description.length > 0 ? `<br/>${descObj.description}` : '';
   const fullName = descObj.name;
-  const style = 'style="color: #0366d6; cursor: pointer;"';
+  const style = 'color: #0366d6; cursor: pointer;';
 
   let fullNameAndRank = fullName;
   if ('rank' in annot) {
@@ -1752,18 +1774,26 @@ function decorateAnnot(annot) {
     annot, ideo, isParalogNeighborhood
   );
 
-  let bar = '';
-  if (ideo.geneCache && annot.name in ideo.geneCache.tissueIdsByName) {
-    const topTissues = ideo.geneCache.tissueIdsByName[annot.name];
-
+  const tissueHtml = getTissueHtml(annot, ideo);
+  const barStyle =
+    'float:right; width: 0px; position: relative; z-index: 0;';
+  let nameDescStyle = '';
+  if (tissueHtml !== '') {
+    const textWidth = getTextSize(fullName, ideo).width;
+    const fullNameWidth =
+      textWidth - 240 > 0 ? `width: ${textWidth + 60}px;` : '';
+    nameDescStyle = `${fullNameWidth} float: left;`;
   }
 
   let originalDisplay =
-    `<span id="ideo-related-gene" ${style}>${annot.name}</span><br/>` +
+    `<div style="${barStyle}">${tissueHtml}</div>` +
+    `<div style="${nameDescStyle}">` +
+    `<span id="ideo-related-gene" style="${style}">${annot.name}</span><br/>` +
     `${fullNameAndRank}<br/>` +
     synonym +
     description +
     geneStructureHtml +
+    '</div>' +
     `<br/>`;
 
   if (isParalogNeighborhood) {
