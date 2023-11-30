@@ -8,6 +8,7 @@ import argparse
 import codecs
 import csv
 import gzip
+import json
 import os
 import re
 import sys
@@ -178,6 +179,39 @@ def trim_gff(gff_path):
 
     return [slim_genes, prefix]
 
+def add_gtex_top_tissues(slim_genes):
+    with open("cache/gtex_top_genes_by_tissue.json") as f:
+        raw_json = json.loads(f.read())
+        top_genes_by_tissue = raw_json["genes"]
+
+    tissues_names = [tissue["id"] for tissue in raw_json["tissues"]]
+
+    tissues_by_top_genes = {}
+    for tissue in top_genes_by_tissue:
+        for entry in top_genes_by_tissue[tissue]:
+            top_gene, median_expression_tpm = entry
+            if top_gene not in tissues_by_top_genes:
+                tissues_by_top_genes[top_gene] = []
+            tissue_index = tissues_names.index(tissue)
+            tissues_by_top_genes[top_gene].append([str(tissue_index), median_expression_tpm])
+
+    slim_genes_with_gtex = []
+    for slim_gene in slim_genes:
+        gene = slim_gene[4] # gene symbol index
+        tissue_indexes = ''
+        if gene in tissues_by_top_genes:
+            entries = tissues_by_top_genes[gene]
+            sorted_entries = sorted(entries, key=lambda e: e[1])
+            sorted_tissues = [e[0] for e in sorted_entries]
+            tissue_indexes = ','.join(sorted_tissues)
+        slim_gene.append(tissue_indexes)
+        slim_genes_with_gtex.append(slim_gene)
+
+    tissues_list = [
+        [tissue["id"], tissue["color"]] for tissue in raw_json["tissues"]
+    ]
+    return [slim_genes_with_gtex, tissues_list]
+
 def fetch_interesting_genes(organism):
     """Request interest-ranked gene data from Gene Hints"""
     interesting_genes = []
@@ -263,17 +297,28 @@ class GeneCache():
             download_gzip(url, gff_path, cache=self.reuse_gff)
         return [gff_path, url]
 
-    def write(self, genes, organism, prefix, gff_url):
+    def write(self, genes, organism, prefix, gff_url, tissues):
         """Save fetched and transformed gene data to cache file
         """
-        headers = (
-            f"## Ideogram.js gene cache for {organism}\n" +
-            f"## Derived from {gff_url}\n"
-            f"## prefix: {prefix}\n"
-            f"# chr\tstart\tlength\tslim_id\tsymbol\tdescription\n"
-        )
+
+        columns = ["# chr", "start", "length", "slim_id", "symbol", "description"]
+        if tissues:
+            columns.append("top_tissues")
+        column_headers = "\t".join(columns)
+
+        file_headers = [
+            f"## Ideogram.js gene cache for {organism}",
+            f"## Derived from {gff_url}",
+            f"## prefix: {prefix}",
+            column_headers
+        ]
+        if tissues:
+            tissues_str = [t[0] + ',' + t[1] for t in tissues]
+            tissues_header = f"## tissues: {';'.join(tissues_str)}"
+            file_headers.insert(-2, tissues_header)
+        header_lines = "\n".join(file_headers)
         gene_lines = "\n".join(["\t".join(g) for g in genes])
-        content = headers + gene_lines
+        content = header_lines + "\n" + gene_lines
 
         org_lch = organism.lower().replace(" ", "-")
         output_path = f"{self.output_dir}{org_lch}-genes.tsv.gz"
@@ -286,16 +331,19 @@ class GeneCache():
         """
         [gff_path, gff_url] = self.fetch_ensembl_gff(organism)
         [slim_genes, prefix] = trim_gff(gff_path)
+        tissues = None
+        if organism == 'Homo sapiens':
+            [slim_genes, tissues] = add_gtex_top_tissues(slim_genes)
         sorted_slim_genes = sort_by_interest(slim_genes, organism)
-        self.write(sorted_slim_genes, organism, prefix, gff_url)
+        self.write(sorted_slim_genes, organism, prefix, gff_url, tissues)
 
     def populate(self):
         """Fill gene caches for all configured organisms
 
         Consider parallelizing this.
         """
-        for organism in assemblies_by_org:
-        # for organism in ["Homo sapiens"]:
+        # for organism in assemblies_by_org:
+        for organism in ["Homo sapiens"]:
             self.populate_by_org(organism)
 
 # Command-line handler
