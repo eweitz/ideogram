@@ -1727,7 +1727,7 @@ function getTissueHtml(annot, ideo) {
   const tissueTooltip = `data-tippy-content="${tissueText}"`;
   const tissueStyle =
     'style="float: right; border-radius: 4px; ' +
-    'margin-right: 8px; padding: 4px 0 4px 0; ' +
+    'margin-right: 8px; padding: 4px 0 3.5px 0; ' +
     `border: 1px solid #CCC;"`;
   const tissueAttrs =
     `class="_ideoGeneTissues" ${tissueStyle} ${tissueTooltip}`;
@@ -1803,11 +1803,13 @@ function decorateAnnot(annot) {
   const barStyle =
     'float:right; width: 0px; position: relative; z-index: 0;';
   let nameDescStyle = '';
+  let tissueBreak = '';
   if (tissueHtml !== '') {
     const textWidth = getTextSize(fullName, ideo).width;
     const fullNameWidth =
       textWidth - 240 > 0 ? `width: ${textWidth + 60}px;` : '';
     nameDescStyle = `${fullNameWidth} float: left;`;
+    tissueBreak = '<br/><br/>';
   }
 
   let originalDisplay =
@@ -1818,6 +1820,7 @@ function decorateAnnot(annot) {
     synonym +
     description +
     geneStructureHtml +
+    tissueBreak +
     '</div>' +
     `<br/>`;
 
