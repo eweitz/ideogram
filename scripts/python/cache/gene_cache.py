@@ -184,6 +184,9 @@ def add_gtex_top_tissues(slim_genes):
         raw_json = json.loads(f.read())
         top_genes_by_tissue = raw_json["genes"]
 
+    with open("cache/gtex_top_tissues_by_gene.json") as f:
+        top_tissues_by_gene = json.loads(f.read())
+
     tissues_names = [tissue["id"] for tissue in raw_json["tissues"]]
 
     tissues_by_top_genes = {}
@@ -205,6 +208,10 @@ def add_gtex_top_tissues(slim_genes):
             sorted_tissues = [e[0] for e in sorted_entries]
             tissue_indexes = ','.join(sorted_tissues)
         slim_gene.append(tissue_indexes)
+        top_tissue_indexes = ''
+        if gene in top_tissues_by_gene:
+            top_tissue_indexes = ','.join(top_tissues_by_gene[gene])
+        slim_gene.append(top_tissue_indexes)
         slim_genes_with_gtex.append(slim_gene)
 
     tissues_list = [
@@ -304,6 +311,7 @@ class GeneCache():
         columns = ["# chr", "start", "length", "slim_id", "symbol", "description"]
         if tissues:
             columns.append("top_tissues")
+            columns.append("top_tissues_in_gene")
         column_headers = "\t".join(columns)
 
         file_headers = [

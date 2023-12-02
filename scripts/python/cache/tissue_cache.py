@@ -39,7 +39,7 @@ def fetch_tissues():
         tissue = {
             'id': raw_tissue['tissueSiteDetailId'],
             'abbr': raw_tissue['tissueSiteDetailAbbr'],
-            'ontologyId': raw_tissue['ontologyId'],
+            'ontology_id': raw_tissue['ontologyId'],
             'color': raw_tissue['colorHex'],
             'expressed_gene_count': raw_tissue['expressedGeneCount'],
         }
@@ -124,7 +124,7 @@ def process_top_tissues_by_gene():
             for j, median_expression in enumerate(expressions):
                 if median_expression > 0:
                     tissue_id = j
-                    tissue_expressions.append([tissue_id, median_expression])
+                    tissue_expressions.append([str(tissue_id), median_expression])
 
             sorted_tissue_expressions = sorted(tissue_expressions, key=lambda e: e[1])
             sorted_tissues = [e[0] for e in sorted_tissue_expressions]
@@ -135,6 +135,58 @@ def process_top_tissues_by_gene():
     output_path = 'cache/gtex_top_tissues_by_gene.json'
     write_json_file(top_tissues_by_gene, output_path)
 
+def merge_tissue_dimensions():
+    with open("cache/gtex_top_genes_by_tissue.json") as f:
+        raw_json = json.loads(f.read())
+        top_genes_by_tissue = raw_json["genes"]
+
+    with open("cache/gtex_top_tissues_by_gene.json") as f:
+        top_tissues_by_gene = json.loads(f.read())
+
+    tissues_names = [tissue["id"] for tissue in raw_json["tissues"]]
+
+    tissues_by_top_genes = {}
+    for tissue in top_genes_by_tissue:
+        for entry in top_genes_by_tissue[tissue]:
+            top_gene, median_expression_tpm = entry
+            if top_gene not in tissues_by_top_genes:
+                tissues_by_top_genes[top_gene] = []
+            tissue_index = tissues_names.index(tissue)
+            tissues_by_top_genes[top_gene].append([str(tissue_index), median_expression_tpm])
+
+    rows = []
+
+    for gene in top_tissues_by_gene:
+        row = [gene]
+
+        # Add top 3 tissues for each gene
+        top_tissue_indexes = ','.join(top_tissues_by_gene[gene])
+        row.append(top_tissue_indexes)
+
+        # If gene is among top 1% expressed in any tissues,
+        # then add up to 3 such tissues
+        if gene in tissues_by_top_genes:
+            entries = tissues_by_top_genes[gene]
+            sorted_entries = sorted(entries, key=lambda e: e[1])
+            sorted_tissues = [e[0] for e in sorted_entries]
+            sorted_top_tissues = sorted_tissues[:3]
+            tissue_indexes = ','.join(sorted_top_tissues)
+            row.append(tissue_indexes)
+
+        rows.append(row)
+
+    headers = '\t'.join(['# gene', 'top_tissues', 'top_gene_in_tissues'])
+    content = '\n'.join(['\t'.join(row) for row in rows])
+    output = headers + '\n' + content
+
+    output_path = 'cache/tissue_cache.tsv'
+    with open(output_path, 'w') as f:
+        f.write(output)
+    print(output_path)
+
+
 # process_top_genes_by_tissue()
 
-process_top_tissues_by_gene()
+# process_top_tissues_by_gene()
+
+merge_tissue_dimensions()

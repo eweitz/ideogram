@@ -1707,6 +1707,8 @@ function getTissueHtml(annot, ideo) {
   const tissueNames = tissueIds.map(tissueId => {
     let name = cache.tissueNames[tissueId];
     name = name.replace(/_/g, ' ').toLowerCase();
+
+    // Capitalize abbreviations of "Brodmann area", per convention
     name = name.replace('ba24', 'BA24');
     name = name.replace('ba9', 'BA9');
     return name;
@@ -1721,9 +1723,8 @@ function getTissueHtml(annot, ideo) {
       ', and ' + tissueNames.slice(-1)[0];
   }
 
-
   const tissueColor = `#${cache.tissueColors[tissueIds[0]]}`;
-  const tissueText = `Among top 2% genes in ${joinedTissueNames}`;
+  const tissueText = `Among top 1% genes in ${joinedTissueNames}`;
   const tissueTooltip = `data-tippy-content="${tissueText}"`;
   const tissueStyle =
     'style="float: right; border-radius: 4px; ' +
