@@ -1698,13 +1698,15 @@ function decorateParalogNeighborhood(annot, descObj, style) {
 }
 
 function getTissueHtml(annot, ideo) {
-  if (!ideo.geneCache || !(annot.name in ideo.geneCache.tissueIdsByName)) {
+  if (!ideo.tissueCache || !(annot.name in ideo.tissueCache.tissueIdsByName)) {
     return '';
   }
-  const cache = ideo.geneCache;
-  const tissueIds = cache.tissueIdsByName[annot.name];
+  const cache = ideo.tissueCache;
+  const tissueIds = cache.tissueIdsByName[annot.name][0];
+  console.log('tissueIds', tissueIds)
 
   const tissueNames = tissueIds.map(tissueId => {
+    console.log('tissueId')
     let name = cache.tissueNames[tissueId];
     name = name.replace(/_/g, ' ').toLowerCase();
 

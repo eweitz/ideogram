@@ -30,17 +30,6 @@ function parseAnnots(preAnnots) {
   return annotsSortedByPosition;
 }
 
-function parseTissueKeys(rawTissuesString) {
-  const tissueNames = [];
-  const tissueColors = [];
-  rawTissuesString.split(';').forEach(nameAndColor => {
-    nameAndColor = nameAndColor.split(',');
-    tissueNames.push(nameAndColor[0]);
-    tissueColors.push(nameAndColor[1]);
-  });
-  return [tissueNames, tissueColors];
-}
-
 /** Parse a gene cache TSV file, return array of useful transforms */
 export function parseGeneCache(rawTsv, perfTimes) {
   const names = [];
@@ -51,8 +40,6 @@ export function parseGeneCache(rawTsv, perfTimes) {
   const lociByName = {};
   const lociById = {};
   const preAnnots = [];
-  let tissueNames = [];
-  let tissueColors = [];
 
   // If the gene has among top 2% expression in a tissue (per GTEx), that's
   // tracked here.
@@ -71,12 +58,6 @@ export function parseGeneCache(rawTsv, perfTimes) {
     if (line[0] === '#') {
       if (line.slice(0, 9) === '## prefix') {
         ensemblPrefix = line.split('prefix: ')[1];
-      }
-      if (line.slice(0, 10) === '## tissues') {
-        console.log(line.split('tissues: ')[1])
-        const parsedTissueKeys = parseTissueKeys(line.split('tissues: ')[1]);
-        tissueNames = parsedTissueKeys[0];
-        tissueColors = parsedTissueKeys[1];
       }
       continue;
     }
@@ -117,8 +98,7 @@ export function parseGeneCache(rawTsv, perfTimes) {
   return [
     names, nameCaseMap, namesById,
     fullNamesById,
-    idsByName, lociByName, lociById,
-    tissueIdsByName, tissueNames, tissueColors
+    idsByName, lociByName, lociById
     // , sortedAnnots
   ];
 }
