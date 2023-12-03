@@ -174,7 +174,7 @@ def merge_tissue_dimensions():
         row = [gene]
 
         # Add top 3 tissues for each gene
-        top_tissue_indexes = ','.join(top_tissues_by_gene[gene])
+        top_tissue_indexes = ','.join(top_tissues_by_gene[gene][:3])
         if top_tissue_indexes == '':
             continue
         row.append(top_tissue_indexes)
