@@ -1737,9 +1737,10 @@ function getTissueHtml(annot, ideo) {
   //     tissueNames.slice(0, -1).join(', ') +
   //     ', and ' + tissueNames.slice(-1)[0];
   // }
+  const openLi = '<li style="list-style-type: inherit">';
   const joinedTissueNames =
-    '<ul>' +
-      '<li>' + tissueNames.join('</li><li>') + '</li>' +
+    '<ul style="padding-inline-start: 20px;">' +
+      `${openLi}${tissueNames.join(`</li>${openLi}`)}</li>` +
     '</ul>';
 
   const tissueColor = `#${cache.tissueColors[tissueIds[0]]}`;
