@@ -948,6 +948,7 @@ function dehighlightAll(ideo) {
 function getTippyConfig() {
   return {
     theme: 'light-border',
+    allowHTML: true,
     popperOptions: { // Docs: https://atomiks.github.io/tippyjs/v6/all-props/#popperoptions
       modifiers: [ // Docs: https://popper.js.org/docs/v2/modifiers
         {
@@ -1576,7 +1577,7 @@ function onDidShowAnnotTooltip() {
   const ideo = this;
   handleTooltipClick(ideo);
   addGeneStructureListeners(ideo);
-  ideo.legendTippy =
+  ideo.tissueTippy =
     tippy('._ideoGeneTissues[data-tippy-content]', getTippyConfig());
 }
 
@@ -1698,33 +1699,54 @@ function decorateParalogNeighborhood(annot, descObj, style) {
 }
 
 function getTissueHtml(annot, ideo) {
-  if (!ideo.geneCache || !(annot.name in ideo.geneCache.tissueIdsByName)) {
+  if (!ideo.tissueCache || !(annot.name in ideo.tissueCache.tissueIdsByName)) {
     return '';
   }
-  const cache = ideo.geneCache;
-  const tissueIds = cache.tissueIdsByName[annot.name];
+  const cache = ideo.tissueCache;
+  const tissueIds = cache.tissueIdsByName[annot.name][0];
 
   const tissueNames = tissueIds.map(tissueId => {
     let name = cache.tissueNames[tissueId];
     name = name.replace(/_/g, ' ').toLowerCase();
-    name = name.replace('ba24', 'BA24');
-    name = name.replace('ba9', 'BA9');
+
+    // Style abbreviations of "Brodmann area", and other terms
+    // per GTEx conventions
+    [
+      'ba24', 'ba9', 'basal ganglia', 'omentum', 'suprapubic', 'lower leg',
+      'cervical c-1'
+    ].forEach(term => name = name.replace(term, '(' + term + ')'));
+    ['ba24', 'ba9', 'ebv'].forEach(term => {
+      name = name.replace(term, term.toUpperCase());
+    });
+    [
+      'adipose', 'artery', 'brain', 'breast', 'cells', 'cervix', 'colon',
+      'heart', 'kidney', 'muscle', 'nerve', 'skin', 'small intestine'
+    ].forEach(term => {
+      name = name.replace(term, term + ' -');
+    });
+
+    name = name[0].toUpperCase() + name.slice(1);
     return name;
   });
 
-  let joinedTissueNames = tissueNames[0];
-  if (tissueNames.length === 2) {
-    joinedTissueNames = tissueNames.join(' and ');
-  } else if (tissueNames.length > 2 && tissueNames.length < 5) {
-    joinedTissueNames =
-      tissueNames.slice(-1).join(', ') +
-      ', and ' + tissueNames.slice(-1)[0];
-  }
-
+  // let joinedTissueNames = tissueNames[0];
+  // if (tissueNames.length === 2) {
+  //   joinedTissueNames = tissueNames.join(' and ');
+  // } else if (tissueNames.length > 2 && tissueNames.length < 5) {
+  //   joinedTissueNames =
+  //     tissueNames.slice(0, -1).join(', ') +
+  //     ', and ' + tissueNames.slice(-1)[0];
+  // }
+  const openLi = '<li style="list-style-type: inherit">';
+  const joinedTissueNames =
+    '<ul style="padding-inline-start: 20px;">' +
+      `${openLi}${tissueNames.join(`</li>${openLi}`)}</li>` +
+    '</ul>';
 
   const tissueColor = `#${cache.tissueColors[tissueIds[0]]}`;
-  const tissueText = `Among top 2% genes in ${joinedTissueNames}`;
-  const tissueTooltip = `data-tippy-content="${tissueText}"`;
+  const tissueText = `Most expressed in:${joinedTissueNames}`;
+  const tissueTooltip =
+    `data-tippy-content='${tissueText}' `;
   const tissueStyle =
     'style="float: right; border-radius: 4px; ' +
     'margin-right: 8px; padding: 4px 0 3.5px 0; ' +
