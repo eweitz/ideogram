@@ -24,7 +24,6 @@ function processIds(ids) {
 
 /** Parse a tissue cache TSV file */
 export function parseTissueCache(rawTsv, perfTimes) {
-  console.log('in parseTissueCache')
   const tissueIdsByName = {};
   let tissueNames;
   let tissueColors;

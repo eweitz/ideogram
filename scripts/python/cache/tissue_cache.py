@@ -120,20 +120,18 @@ def process_top_tissues_by_gene():
                 print('len(expressions)', len(expressions))
                 print('expressions for WASH7P:', expressions)
 
-
             for j, median_expression in enumerate(expressions):
                 if median_expression > 0:
                     tissue_id = j
                     tissue_expressions.append([str(tissue_id), median_expression])
 
             sorted_tissue_expressions = sorted(tissue_expressions, key=lambda e: e[1], reverse=True)
-            sorted_tissues = [e[0] for e in sorted_tissue_expressions]
 
             if gene_name == 'WASH7P':
                 print('tissue_expressions for WASH7P:', tissue_expressions)
                 print('sorted_tissue_expressions for WASH7P:', sorted_tissue_expressions)
 
-            top_tissues = sorted_tissues
+            top_tissues = sorted_tissue_expressions
 
             top_tissues_by_gene[gene_name] = top_tissues
 
@@ -155,7 +153,7 @@ def merge_tissue_dimensions():
             if gene == 'WASH7P':
                 print('raw_indexes for WASH7P', raw_indexes)
             top_tissue_indexes = list(
-                filter(lambda i: int(i) < len(tissues_names), raw_indexes)
+                filter(lambda e: int(e[0]) < len(tissues_names), raw_indexes)
             )
             top_tissues_by_gene[gene] = top_tissue_indexes
 
@@ -169,15 +167,23 @@ def merge_tissue_dimensions():
             tissues_by_top_genes[top_gene].append([str(tissue_index), median_expression_tpm])
 
     rows = []
+    detail_rows = []
 
     for gene in top_tissues_by_gene:
         row = [gene]
+        detail_row = [gene]
 
         # Add top 3 tissues for each gene
-        top_tissue_indexes = ','.join(top_tissues_by_gene[gene][:3])
+        tissue_entries = top_tissues_by_gene[gene]
+        tissue_indexes = [e[0] for e in tissue_entries]
+        top_tissue_indexes = ','.join(tissue_indexes[:3])
         if top_tissue_indexes == '':
             continue
+        top_tissue_entries = ','.join([';'.join([
+            str(round(f, 3)) if isinstance(f, float) else f for f in e
+        ]) for e in tissue_entries[:10]])
         row.append(top_tissue_indexes)
+        detail_row.append(top_tissue_entries)
 
         # If gene is among top 1% expressed in any tissues,
         # then add up to 3 such tissues
@@ -190,6 +196,7 @@ def merge_tissue_dimensions():
             row.append(tissue_indexes)
 
         rows.append(row)
+        detail_rows.append(detail_row)
 
     tissues_list = [
         [tissue["id"], tissue["color"]] for tissue in raw_json["tissues"]
@@ -200,13 +207,19 @@ def merge_tissue_dimensions():
     meta_info = f"## tissues: {';'.join(tissues_str)}"
     headers = '\t'.join(['# gene', 'top_tissues', 'top_gene_in_tissues'])
     content = '\n'.join(['\t'.join(row) for row in rows])
+    detail_content = '\n'.join(['\t'.join(row) for row in detail_rows])
     output = meta_info + '\n' + headers + '\n' + content
+    detail_output = meta_info + '\n' + headers + '\n' + detail_content
 
     output_path = 'cache/homo-sapiens-tissues.tsv'
     with open(output_path, 'w') as f:
         f.write(output)
     print(output_path)
 
+    detail_output_path = 'cache/homo-sapiens-tissues-detail.tsv'
+    with open(detail_output_path, 'w') as f:
+        f.write(detail_output)
+    print(detail_output_path)
 
 # process_top_genes_by_tissue()
 
