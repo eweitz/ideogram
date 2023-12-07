@@ -221,8 +221,32 @@ def merge_tissue_dimensions():
         f.write(detail_output)
     print(detail_output_path)
 
+def write_line_byte_index(filepath):
+    """Write byte-offset index file of each line in a file at filepath
+    """
+    line_offsets = [] # the byte offset of each line
+
+    with open(filepath) as file:
+        char = file.read(1)
+        offset = 0
+        while char != "": # end of file
+            if offset % 100_000 == 0:
+                print(f"Lines byte-indexed, so far: {len(line_offsets)}")
+            char = file.read(1)
+            if char == "\n":
+                line_offsets.append(offset)
+            offset += 1
+            file.seek(offset)
+            continue
+
+    with open(f"{filepath}.lbi", "w") as file:
+        file.write("\n".join([str(o) for o in line_offsets]))
+    print(f"Lines byte-indexed, total: {len(line_offsets)}")
+
 # process_top_genes_by_tissue()
 
 # process_top_tissues_by_gene()
 
-merge_tissue_dimensions()
+# merge_tissue_dimensions()
+
+write_line_byte_index('cache/homo-sapiens-tissues-detail.tsv')
