@@ -1,4 +1,7 @@
-import {fetchAndParse, getFullId, inspectWorker} from './cache-lib';
+import {
+  fetchAndParse, getFullId, inspectWorker,
+  cacheFetch, cacheRangeFetch
+} from './cache-lib';
 
 
 function parseTissueKeys(rawTissuesString) {
@@ -22,8 +25,23 @@ function processIds(ids) {
   return processedIds;
 }
 
+async function getTissueExpressions(gene, ideo) {
+  const byteRange = ideo.tissueCache.byteRangesByName[gene];
+
+  const geneDataLine = await cacheRangeFetch(
+    '/dist/data/cache/tissues/homo-sapiens-tissues.tsv',
+    byteRange
+  );
+
+  const [, tissueExpressions] = geneDataLine;
+
+  console.log('tissueExpressions', tissueExpressions)
+
+  return tissueExpressions;
+}
+
 /** Parse a tissue cache TSV file */
-export function parseTissueCache(rawTsv, perfTimes) {
+export function parseTissueCache(rawTsv, perfTimes, byteRangesByName) {
   const tissueIdsByName = {};
   let tissueNames;
   let tissueColors;
@@ -58,7 +76,8 @@ export function parseTissueCache(rawTsv, perfTimes) {
   perfTimes.parseCacheLoop = Math.round(t1 - t0);
 
   return {
-    tissueIdsByName,
+    getTissueExpressions,
+    byteRangesByName,
     tissueNames,
     tissueColors
   };

@@ -224,24 +224,43 @@ def merge_tissue_dimensions():
 def write_line_byte_index(filepath):
     """Write byte-offset index file of each line in a file at filepath
     """
-    line_offsets = [] # the byte offset of each line
+    header = "# gene\tline_byte_offset"
+    index = [header] # the byte offset of each line, and the gene it represents
+    genes = []
+
+    with open(filepath) as file:
+        lines = file.readlines()
+    for line in lines:
+        if line[0] == '#':
+            continue
+        gene = line.split('\t')[0]
+        genes.append(gene)
+
+    print('genes[0:3]', genes[0:3])
+    print('genes[-3:]', genes[-3:])
 
     with open(filepath) as file:
         char = file.read(1)
         offset = 0
         while char != "": # end of file
             if offset % 100_000 == 0:
-                print(f"Lines byte-indexed, so far: {len(line_offsets)}")
+                print(f"Lines byte-indexed, so far: {len(index)}")
             char = file.read(1)
             if char == "\n":
-                line_offsets.append(offset)
+                try:
+                    gene = genes[len(index) - 2]
+                except IndexError as e:
+                    print('len(genes)', len(genes))
+                    print('len(index)', len(index))
+                entry = f"{gene}\t{offset}"
+                index.append(entry)
             offset += 1
             file.seek(offset)
             continue
 
-    with open(f"{filepath}.lbi", "w") as file:
-        file.write("\n".join([str(o) for o in line_offsets]))
-    print(f"Lines byte-indexed, total: {len(line_offsets)}")
+    with open(f"{filepath}.li", "w") as file:
+        file.write("\n".join([str(o) for o in index]))
+    print(f"Lines byte-indexed, total: {len(index)}")
 
 # process_top_genes_by_tissue()
 

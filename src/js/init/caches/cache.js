@@ -1,4 +1,7 @@
-import {supportsCache, getCacheUrl, fetchAndParse} from './cache-lib';
+import {
+  supportsCache, getCacheUrl, fetchAndParse,
+  cacheFetch
+} from './cache-lib';
 
 // Uncomment when workers work outside localhost
 // const geneCacheWorker = new Worker(
