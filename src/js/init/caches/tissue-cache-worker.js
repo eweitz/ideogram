@@ -26,16 +26,23 @@ function processIds(ids) {
 }
 
 async function getTissueExpressions(gene, ideo) {
-  const byteRange = ideo.tissueCache.byteRangesByName[gene];
+  const cache = ideo.tissueCache;
+  const byteRange = cache.byteRangesByName[gene];
 
   const geneDataLine = await cacheRangeFetch(
     '/dist/data/cache/tissues/homo-sapiens-tissues.tsv',
     byteRange
   );
 
-  const [, tissueExpressions] = geneDataLine;
-
-  console.log('tissueExpressions', tissueExpressions)
+  const tissueExpressions = [];
+  const rawExpressions = geneDataLine.split('\t')[1].split(',');
+  for (let i = 0; i < rawExpressions.length; i++) {
+    const [tissueId, rawValue] = rawExpressions[i].split(';');
+    const medianExpression = parseFloat(rawValue);
+    const tissue = cache.tissueNames[tissueId];
+    const color = cache.tissueColors[tissueId];
+    tissueExpressions.push({tissue, medianExpression, color});
+  }
 
   return tissueExpressions;
 }

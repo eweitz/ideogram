@@ -134,8 +134,7 @@ const allCacheProps = {
 function setGeneCache(parsedCache, ideo) {
   const [
     interestingNames, nameCaseMap, namesById, fullNamesById,
-    idsByName, lociByName, lociById,
-    tissueIdsByName, tissueNames, tissueColors
+    idsByName, lociByName, lociById
     //, sortedAnnots
   ] = parsedCache;
 

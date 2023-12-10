@@ -1225,9 +1225,37 @@ function mergeAnnots(unmergedAnnots) {
   return mergedAnnots;
 }
 
+async function setTissueExpressions(geneNames, ideo) {
+  if (
+    !ideo.tissueCache
+    // || !(annot.name in ideo.tissueCache.byteRangesByName)
+  ) {
+    return;
+  }
+
+  const tissueExpressionsByGene = {};
+  const cache = ideo.tissueCache;
+
+  const promises = [];
+  geneNames.forEach(async gene => {
+    const promise = new Promise(async (resolve) => {
+      const tissueExpressions = await cache.getTissueExpressions(gene, ideo);
+      tissueExpressionsByGene[gene] = tissueExpressions;
+      resolve();
+    });
+    promises.push(promise);
+  });
+
+  await Promise.all(promises);
+
+  ideo.tissueExpressionsByGene = tissueExpressionsByGene;
+}
+
 function onBeforeDrawAnnots() {
   const ideo = this;
   setRelatedAnnotDomIds(ideo);
+
+  const geneNames = [];
 
   // Handle differential expression extension
   const chrAnnots = ideo.annots;
@@ -1237,6 +1265,8 @@ function onBeforeDrawAnnots() {
     for (let j = 0; j < annots.length; j++) {
       const annot = annots[j];
 
+      geneNames.push(annot.name);
+
       if (ideo.config.colorMap && annot.differentialExpression?.length) {
         const colorMap = ideo.config.colorMap;
         const group = annot.differentialExpression[0].group;
@@ -1245,6 +1275,8 @@ function onBeforeDrawAnnots() {
       }
     }
   }
+
+  setTissueExpressions(geneNames, ideo);
 }
 
 function filterAndDrawAnnots(annots, ideo) {
@@ -1699,14 +1731,13 @@ function decorateParalogNeighborhood(annot, descObj, style) {
 }
 
 function getTissueHtml(annot, ideo) {
-  if (!ideo.tissueCache || !(annot.name in ideo.tissueCache.tissueIdsByName)) {
+  if (!ideo.tissueCache || !(annot.name in ideo.tissueCache.byteRangesByName)) {
     return '';
   }
-  const cache = ideo.tissueCache;
-  const tissueIds = cache.tissueIdsByName[annot.name][0];
+  const tissueExpressions = ideo.tissueExpressionsByGene[annot.name];
 
-  const tissueNames = tissueIds.map(tissueId => {
-    let name = cache.tissueNames[tissueId];
+  const tissueNames = tissueExpressions.map(teObject => {
+    let name = teObject.tissue;
     name = name.replace(/_/g, ' ').toLowerCase();
 
     // Style abbreviations of "Brodmann area", and other terms
@@ -1743,7 +1774,7 @@ function getTissueHtml(annot, ideo) {
       `${openLi}${tissueNames.join(`</li>${openLi}`)}</li>` +
     '</ul>';
 
-  const tissueColor = `#${cache.tissueColors[tissueIds[0]]}`;
+  const tissueColor = `#${tissueExpressions[0].color}`;
   const tissueText = `Most expressed in:${joinedTissueNames}`;
   const tissueTooltip =
     `data-tippy-content='${tissueText}' `;
@@ -1761,6 +1792,7 @@ function getTissueHtml(annot, ideo) {
     `<span ${tissueAttrs}>` +
       `<span ${innerStyle}>${topTissueFirstLetter}</span>` +
     '</span>';
+
   return tissueHtml;
 }
 

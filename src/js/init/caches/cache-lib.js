@@ -117,19 +117,13 @@ export async function cacheRangeFetch(url, byteRange) {
   });
 
   const request = new Request(url, {headers});
-  console.log('request', request)
-  console.log('request.headers.get("range")', request.headers.get("range"))
 
   const cache = await getServiceWorkerCache();
 
   const fullResponse = await cache.match(request);
-  console.log(`bytes=${rangeStart}-${rangeEnd}`);
-  console.log('fullResponse', fullResponse);
   const partialResponse = await createPartialResponse(request, fullResponse);
 
   const text = await partialResponse.text();
-
-  console.log('text', text);
 
   return text;
 }
