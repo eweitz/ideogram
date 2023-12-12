@@ -49,7 +49,6 @@ async function getTissueExpressions(gene, ideo) {
 
 /** Parse a tissue cache TSV file */
 export function parseTissueCache(rawTsv, perfTimes, byteRangesByName) {
-  const tissueIdsByName = {};
   let tissueNames;
   let tissueColors;
 
@@ -69,15 +68,7 @@ export function parseTissueCache(rawTsv, perfTimes, byteRangesByName) {
       }
       continue;
     }
-    const columns = line.trim().split(/\t/);
-    const [
-      gene, rawTissueIds, rawTopTissueIds
-    ] = columns;
 
-    const tissueIds = processIds(rawTissueIds);
-    const topTissueIds = rawTopTissueIds ? processIds(rawTopTissueIds) : [];
-
-    tissueIdsByName[gene] = [tissueIds, topTissueIds];
   };
   const t1 = performance.now();
   perfTimes.parseCacheLoop = Math.round(t1 - t0);
