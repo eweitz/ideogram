@@ -356,9 +356,13 @@ function getFont(ideo) {
   if (config.fontFamily) {
     family = config.fontFamily;
   }
+  let weight = 600;
+  if (config.fontWeight) {
+    weight = config.fontWeight;
+  }
 
   const labelSize = config.annotLabelSize ? config.annotLabelSize : 13;
-  const font = '600 ' + labelSize + 'px ' + family;
+  const font = weight + ' ' + labelSize + 'px ' + family;
 
   return font;
 }

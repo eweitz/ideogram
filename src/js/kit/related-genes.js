@@ -42,7 +42,7 @@ import {getDir, pluralize, getTextSize} from '../lib';
 import {
   fetchGpmls, summarizeInteractions, fetchPathwayInteractions
 } from './wikipathways';
-import {getTissueHtml} from './tissue';
+import {getTissueHtml, addTissueListeners} from './tissue';
 // import {drawAnnotsByLayoutType} from '../annotations/draw';
 // import {organismMetadata} from '../init/organism-metadata';
 
@@ -1610,6 +1610,7 @@ function onDidShowAnnotTooltip() {
   const ideo = this;
   handleTooltipClick(ideo);
   addGeneStructureListeners(ideo);
+  addTissueListeners(ideo);
   ideo.tissueTippy =
     tippy('._ideoGeneTissues[data-tippy-content]', getTippyConfig());
 }
@@ -1801,11 +1802,16 @@ function decorateAnnot(annot) {
     tissueBreak = '<br/><br/>';
   }
 
+  const geneSymbolAndFullName =
+    `<span id="_ideoGeneSymbolAndFullName">
+      <span id="ideo-related-gene" style="${style}">${annot.name}</span><br/>` +
+      `${fullNameAndRank}<br/>
+    </span>`;
+
   let originalDisplay =
     `<div style="${barStyle}">${tissueHtml}</div>` +
     `<div style="${nameDescStyle}">` +
-    `<span id="ideo-related-gene" style="${style}">${annot.name}</span><br/>` +
-    `${fullNameAndRank}<br/>` +
+    geneSymbolAndFullName +
     synonym +
     description +
     geneStructureHtml +
