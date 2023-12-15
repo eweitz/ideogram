@@ -38,7 +38,9 @@ import {
 } from '../annotations/annotations';
 import {writeLegend} from '../annotations/legend';
 import {getAnnotDomId} from '../annotations/process';
-import {getDir, pluralize, getTextSize} from '../lib';
+import {
+  getDir, pluralize, getTextSize, getTippyConfig
+} from '../lib';
 import {
   fetchGpmls, summarizeInteractions, fetchPathwayInteractions
 } from './wikipathways';
@@ -946,25 +948,6 @@ function dehighlightAll(ideo) {
   }
 }
 
-function getTippyConfig() {
-  return {
-    theme: 'light-border',
-    allowHTML: true,
-    popperOptions: { // Docs: https://atomiks.github.io/tippyjs/v6/all-props/#popperoptions
-      modifiers: [ // Docs: https://popper.js.org/docs/v2/modifiers
-        {
-          name: 'flip'
-        }
-      ]
-    },
-    onShow: function() {
-      // Ensure only 1 tippy tooltip is displayed at a time
-      document.querySelectorAll('[data-tippy-root]')
-        .forEach(tippyNode => tippyNode.remove());
-    }
-  };
-}
-
 function initInteractiveLegend(ideo) {
   // Highlight and filter annotations by type on hovering over legend entries
   function highlight(event) {
@@ -1799,7 +1782,7 @@ function decorateAnnot(annot) {
     const fullNameWidth =
       textWidth - 240 > 0 ? `width: ${textWidth + 60}px;` : '';
     nameDescStyle = `${fullNameWidth} float: left;`;
-    tissueBreak = '<br/><br/>';
+    tissueBreak = '<br/>';
   }
 
   const geneSymbolAndFullName =

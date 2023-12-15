@@ -44,10 +44,14 @@ const subpartClasses = {
 const css =
   `<style>
   ._ideoGeneStructureContainerName {
-    margin-left: 81px;
+    position: relative;
+    left: 45px;
+    margin-right: 20px;
+    margin-bottom: -10px;
   }
   ._ideoGeneStructureContainerName.pre-mRNA {
-    margin-left: 69px;
+    left: 70px;
+    margin-right: 70px;
   }
   ._ideoGeneStructureContainer rect:hover + line {
     visibility: hidden;
@@ -76,6 +80,11 @@ const css =
   #_ideoGeneStructureTip {
     font-style: italic;
   }
+  ._ideoGeneStructureFooter {
+    position: relative;
+    top: -10px;
+  }
+
   ${tippyCss}
 
   .tippy-box {
@@ -617,7 +626,7 @@ function getSpliceToggle(ideo) {
     `type="checkbox" ${checked} ` +
     `style="display: none;"`;
   const style =
-    'style="position: relative; top: -5px; ' +
+    'style="position: relative; top: -10px; ' +
     'user-select: none; ' + // Prevent distracting highlight on quick toggle
     'float: right; cursor: pointer; font-size: 16px; ' +
     'padding: 2px 4px; border: 1px solid #CCC; border-radius: 3px;"';
@@ -690,14 +699,16 @@ function spliceIn(subparts) {
 
 function getSpliceStateText(spliceExons, isCanonical=true) {
   let modifier = '';
+  let suffix = ' and protein';
   let titleMod = 'without';
   if (!spliceExons) {
     modifier = 'pre-';
+    suffix = '';
     titleMod = 'with';
   }
   const canonOrAlt = isCanonical ? 'Canonical' : 'Alternative';
   const title = `${canonOrAlt} transcript per Ensembl, ${titleMod} introns`;
-  const name = `${canonOrAlt} ${modifier}mRNA`;
+  const name = `${canonOrAlt} ${modifier}mRNA ${suffix}`;
   return {title, name};
 }
 
@@ -1132,12 +1143,13 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
     const spanClass = `class="_ideoGeneStructureContainerName${rnaClass}"`;
     const {name, title} = getSpliceStateText(spliceExons);
     const spanAttrs = `${spanClass} title="${title}"`;
+    const containerStyle = 'style="position: relative; top: -10px;"';
     geneStructureHtml =
       '<br/><br/>' +
       css +
       `<div ${cls}>` +
       `<div><span ${spanAttrs}>${name}</span>${toggle}</div>` +
-      `<span class="_ideoGeneStructureSvgContainer">` +
+      `<span class="_ideoGeneStructureSvgContainer" ${containerStyle}>` +
         geneStructureSvg +
       `</span>` +
       `<div class="_ideoGeneStructureFooter">` +

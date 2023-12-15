@@ -1,4 +1,5 @@
-import {getTextSize} from '../lib';
+import {getTippyConfig, darken} from '../lib';
+import tippy from 'tippy.js';
 
 /** Copyedit machine-friendly tissue name to human-friendly GTEx convention */
 function refineTissueName(rawName) {
@@ -20,12 +21,15 @@ function refineTissueName(rawName) {
     name = name.replace(term, term + ' -');
   });
 
+  // Shorten from long full name to brief (but also standard) abbreviation
+  name = name.replace('basal ganglia', 'BG');
+
   name = name[0].toUpperCase() + name.slice(1);
   return name;
 }
 
 function setPxLength(tissueExpressions) {
-  const maxPxLength = 85;
+  const maxPxLength = 80;
   let maxExpression = 0;
 
   tissueExpressions.map(teObject => {
@@ -41,50 +45,125 @@ function setPxLength(tissueExpressions) {
   return tissueExpressions;
 }
 
-function getExpressionPlotHtml(tissueExpressions) {
+function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
   tissueExpressions = setPxLength(tissueExpressions);
 
-  const rects = tissueExpressions.map((teObject, i) => {
-    const height = 12;
-    const y = i * (height + 2);
-    const tissue = refineTissueName(teObject.tissue);
+  const height = 12;
 
+  const gtexUrl = `https://www.gtexportal.org/home/gene/${gene}`;
+  const pipeStyle =
+    'style="margin: 0 6px; color: #CCC;"';
+  const gtexLink =
+    `<a href="${gtexUrl}" target="_blank">GTEx</a>`;
+  const details =
+    `<span ${pipeStyle}>|</span><i>Full detail: ${gtexLink}</i>`;
+  const moreOrLess =
+    !ideo.showTissuesMore ? `Less...` : 'More...';
+  const mlStyle = 'style="cursor: pointer;px;"';
+  const numTissues = !ideo.showTissuesMore ? 10 : 3;
+  const left = `left: ${!ideo.showTissuesMore ? 10 : -41}px;`;
+  const top = 'top: -2px;';
+  const mltStyle =
+    `style="position: relative; ${left} ${top} font-size: ${height}px"`
+  const moreOrLessToggleHtml =
+    `<div ${mltStyle}>` +
+      `<a class="_ideoMoreOrLessTissue" ${mlStyle}>${moreOrLess}</a>` +
+      `${!ideo.showTissuesMore ? details : ''}` +
+    `</div>`;
+
+  let y;
+  const rects = tissueExpressions.slice(0, numTissues).map((teObject, i) => {
+    y = 1 + i * (height + 2);
+    const tissue = refineTissueName(teObject.tissue);
+    const color = `#${teObject.color}`;
+    const borderColor = darken(color, 0.85);
+    const tpm = teObject.medianExpression;
+    const tippyTxt = `${tpm} median TPM in GTEx`;
+    const tippyAttr = `data-tippy-content="${tippyTxt}"`;
     const rectAttrs =
-      `height="${height}" ` +
+      `height="${height - 0.5}" ` +
       `width="${teObject.pxLength}" ` +
       `x="${85 - teObject.pxLength}" ` +
       `y="${y}" ` +
-      `fill="#${teObject.color}"`;
+      `fill="${color}" ` +
+      `stroke="${borderColor}" stroke-width="1px" ` +
+      'class="_ideoExpressionTrace" ' +
+      tippyAttr;
     const textAttrs =
-      `y="${y + height - 2}" ` +
-      `style="font-size: 11px;" ` +
-      `x="${90} "`;
+      `y="${y + height - 1.5}" ` +
+      `style="font-size: ${height}px;" ` +
+      `x="90"`;
 
     return `<text ${textAttrs}>${tissue}</text><rect ${rectAttrs} />`;
   }).join('');
 
-  const plotAttrs = `style="margin-top: 15px"`;
+  const plotAttrs = `style="margin-top: 0px; margin-bottom: 15px;"`;
+  const tippyTxt = 'Top tissues by median gene expression, per GTEx';
+  const tippyAttr = `data-tippy-content="${tippyTxt}"`;
+  const cls = 'class="_ideoTissuePlotTitle"'
+  const titleAttrs = `${cls} style="margin-bottom: 4px;" ${tippyAttr}`;
   const plotHtml =
-    `<div ${plotAttrs}>
-      <div>Tissue expression, per GTEx:</div>
-      <br/>
-      <svg>${rects}</svg>
+    `<div class="_ideoTissueExpressionPlot" ${plotAttrs}>
+      <div ${titleAttrs}>Typically most expressed in:</div>
+      <svg height="${y + height + 2}">${rects}</svg>
+      ${moreOrLessToggleHtml}
     </div>`;
   return plotHtml;
 }
 
+function removePlot() {
+  const plot = document.querySelector('._ideoTissueExpressionPlot');
+  if (plot) {
+    plot.remove();
+  }
+}
+
+function showTissueExpressionPlot(ideo, fromMoreOrLess) {
+  if (!fromMoreOrLess) {
+    ideo.showTissues = !ideo.showTissues;
+  }
+  const showTissues = ideo.showTissues;
+  if (!showTissues) {
+    removePlot();
+    return;
+  }
+
+  const geneDom = document.querySelector('#ideo-related-gene');
+  const gene = geneDom.innerText;
+  const tissueExpressions = ideo.tissueExpressionsByGene[gene];
+  if (!tissueExpressions) return;
+  const expressionPlotHtml =
+    getExpressionPlotHtml(gene, tissueExpressions, ideo);
+
+  const gsDom = document.querySelector('._ideoGeneStructureContainer');
+  gsDom.insertAdjacentHTML('beforebegin', expressionPlotHtml);
+
+  tippy(
+    '._ideoTissuePlotTitle[data-tippy-content], ' +
+    '._ideoExpressionTrace',
+    getTippyConfig()
+  );
+
+  document.querySelector('._ideoMoreOrLessTissue')
+    .addEventListener('click', (event) => {
+      event.stopPropagation();
+      event.preventDefault();
+      ideo.showTissuesMore = !ideo.showTissuesMore;
+      removePlot();
+      showTissueExpressionPlot(ideo, true);
+    });
+}
+
 export function addTissueListeners(ideo) {
   const tissueIconDom = document.querySelector('._ideoGeneTissues');
+  if (!tissueIconDom) return; // e.g., miRNA genes
+  if (ideo.showTissuesMore === undefined) {
+    ideo.showTissuesMore = true;
+  }
   tissueIconDom.addEventListener('click', (event) => {
-    const geneDom = document.querySelector('#ideo-related-gene');
-    const gene = geneDom.innerText;
-    const tissueExpressions = ideo.tissueExpressionsByGene[gene];
-    const expressionPlotHtml = getExpressionPlotHtml(tissueExpressions);
-
-    const geneDomParent = geneDom.parentElement;
-    geneDomParent.insertAdjacentHTML('afterend', expressionPlotHtml);
     event.stopPropagation();
     event.preventDefault();
+    showTissueExpressionPlot(ideo);
   });
 }
 
@@ -95,31 +174,23 @@ export function getTissueHtml(annot, ideo) {
   const tissueExpressions =
     ideo.tissueExpressionsByGene[annot.name].slice(0, 3);
 
-  const tissueNames = tissueExpressions.map(
+  const topTissueFirstLetter = tissueExpressions.map(
     teObject => refineTissueName(teObject.tissue)
-  );
-
-  const openLi = '<li style="list-style-type: inherit">';
-  const joinedTissueNames =
-    '<ul style="padding-inline-start: 20px;">' +
-      `${openLi}${tissueNames.join(`</li>${openLi}`)}</li>` +
-    '</ul>';
+  )[0][0].toUpperCase();
 
   const tissueColor = `#${tissueExpressions[0].color}`;
-  const tissueText = `Most expressed in:${joinedTissueNames}`;
   const tissueTooltip =
-    `data-tippy-content='${tissueText}' `;
+    `data-tippy-content="Explore reference tissue expression" `;
   const tissueStyle =
     'style="float: right; border-radius: 4px; ' +
     'margin-right: 8px; padding: 4px 0 3.5px 0; ' +
-    `border: 1px solid #CCC;"`;
-
+    `border: 1px solid #CCC; cursor: pointer;"`;
   const tissueAttrs =
     `class="_ideoGeneTissues" ${tissueStyle} ${tissueTooltip}`;
   const innerStyle =
     `style="border: 1px solid ${tissueColor}; border-radius: 4px; ` +
     'background-color: #EEE; padding: 3px 8px; "';
-  const topTissueFirstLetter = tissueNames[0][0].toUpperCase();
+
   const tissueHtml =
     `<span ${tissueAttrs}>` +
       `<span ${innerStyle}>${topTissueFirstLetter}</span>` +

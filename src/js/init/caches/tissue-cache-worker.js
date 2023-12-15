@@ -28,6 +28,7 @@ function processIds(ids) {
 async function getTissueExpressions(gene, ideo) {
   const cache = ideo.tissueCache;
   const byteRange = cache.byteRangesByName[gene];
+  if (!byteRange) return null;
 
   const geneDataLine = await cacheRangeFetch(
     '/dist/data/cache/tissues/homo-sapiens-tissues.tsv',
