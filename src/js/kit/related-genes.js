@@ -1773,15 +1773,8 @@ function decorateAnnot(annot) {
   );
 
   const tissueHtml = getTissueHtml(annot, ideo);
-  const barStyle =
-    'float:right; width: 0px; position: relative; z-index: 0;';
-  let nameDescStyle = '';
   let tissueBreak = '';
   if (tissueHtml !== '') {
-    const textWidth = getTextSize(fullName, ideo).width;
-    const fullNameWidth =
-      textWidth - 240 > 0 ? `width: ${textWidth + 60}px;` : '';
-    nameDescStyle = `${fullNameWidth} float: left;`;
     tissueBreak = '<br/>';
   }
 
@@ -1792,15 +1785,11 @@ function decorateAnnot(annot) {
     </span>`;
 
   let originalDisplay =
-    `<div style="${barStyle}">${tissueHtml}</div>` +
-    `<div style="${nameDescStyle}">` +
     geneSymbolAndFullName +
     synonym +
     description +
-    geneStructureHtml +
-    tissueBreak +
-    '</div>' +
-    `<br/>`;
+    tissueHtml +
+    geneStructureHtml;
 
   if (isParalogNeighborhood) {
     [annot, originalDisplay] =

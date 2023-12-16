@@ -45,10 +45,7 @@ function setPxLength(tissueExpressions) {
   return tissueExpressions;
 }
 
-function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
-  tissueExpressions = setPxLength(tissueExpressions);
-
-  const height = 12;
+function getMoreOrLessToggle(gene, height, ideo) {
 
   const gtexUrl = `https://www.gtexportal.org/home/gene/${gene}`;
   const pipeStyle =
@@ -60,7 +57,6 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
   const moreOrLess =
     !ideo.showTissuesMore ? `Less...` : 'More...';
   const mlStyle = 'style="cursor: pointer;px;"';
-  const numTissues = !ideo.showTissuesMore ? 10 : 3;
   const left = `left: ${!ideo.showTissuesMore ? 10 : -41}px;`;
   const top = 'top: -2px;';
   const mltStyle =
@@ -70,6 +66,17 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
       `<a class="_ideoMoreOrLessTissue" ${mlStyle}>${moreOrLess}</a>` +
       `${!ideo.showTissuesMore ? details : ''}` +
     `</div>`;
+
+  return moreOrLessToggleHtml;
+}
+
+function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
+  tissueExpressions = setPxLength(tissueExpressions);
+
+  const height = 12;
+
+  const moreOrLessToggleHtml = getMoreOrLessToggle(gene, height, ideo);
+  const numTissues = !ideo.showTissuesMore ? 10 : 3;
 
   let y;
   const rects = tissueExpressions.slice(0, numTissues).map((teObject, i) => {
@@ -97,104 +104,63 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
     return `<text ${textAttrs}>${tissue}</text><rect ${rectAttrs} />`;
   }).join('');
 
-  const plotAttrs = `style="margin-top: 0px; margin-bottom: 15px;"`;
-  const tippyTxt = 'Top tissues by median gene expression, per GTEx';
-  const tippyAttr = `data-tippy-content="${tippyTxt}"`;
-  const cls = 'class="_ideoTissuePlotTitle"'
-  const titleAttrs = `${cls} style="margin-bottom: 4px;" ${tippyAttr}`;
+  const plotAttrs = `style="margin-top: 15px; margin-bottom: -15px;"`;
+  const cls = 'class="_ideoTissuePlotTitle"';
+  const titleAttrs = `${cls} style="margin-bottom: 4px;"`;
   const plotHtml =
-    `<div class="_ideoTissueExpressionPlot" ${plotAttrs}>
-      <div ${titleAttrs}>Typically most expressed in:</div>
-      <svg height="${y + height + 2}">${rects}</svg>
-      ${moreOrLessToggleHtml}
-    </div>`;
+    '<div>' +
+      `<div class="_ideoTissueExpressionPlot" ${plotAttrs}>
+        <div ${titleAttrs}>Typically most expressed in:</div>
+        <svg height="${y + height + 2}">${rects}</svg>
+        ${moreOrLessToggleHtml}
+      </div>` +
+    '</div>';
   return plotHtml;
 }
 
-function removePlot() {
+function updateTissueExpressionPlot(ideo) {
   const plot = document.querySelector('._ideoTissueExpressionPlot');
-  if (plot) {
-    plot.remove();
-  }
+  console.log('plot', plot)
+  const plotParent = plot.parentElement;
+
+  const gene = document.querySelector('#ideo-related-gene').innerText;
+  const tissueExpressions = ideo.tissueExpressionsByGene[gene];
+
+  const newPlotHtml = getExpressionPlotHtml(gene, tissueExpressions, ideo);
+
+  plotParent.innerHTML = newPlotHtml;
+  addTissueListeners(ideo);
 }
 
-function showTissueExpressionPlot(ideo, fromMoreOrLess) {
-  if (!fromMoreOrLess) {
-    ideo.showTissues = !ideo.showTissues;
-  }
-  const showTissues = ideo.showTissues;
-  if (!showTissues) {
-    removePlot();
-    return;
-  }
-
-  const geneDom = document.querySelector('#ideo-related-gene');
-  const gene = geneDom.innerText;
-  const tissueExpressions = ideo.tissueExpressionsByGene[gene];
-  if (!tissueExpressions) return;
-  const expressionPlotHtml =
-    getExpressionPlotHtml(gene, tissueExpressions, ideo);
-
-  const gsDom = document.querySelector('._ideoGeneStructureContainer');
-  gsDom.insertAdjacentHTML('beforebegin', expressionPlotHtml);
-
-  tippy(
-    '._ideoTissuePlotTitle[data-tippy-content], ' +
-    '._ideoExpressionTrace',
-    getTippyConfig()
-  );
-
+export function addTissueListeners(ideo) {
   document.querySelector('._ideoMoreOrLessTissue')
     .addEventListener('click', (event) => {
       event.stopPropagation();
       event.preventDefault();
       ideo.showTissuesMore = !ideo.showTissuesMore;
-      removePlot();
-      showTissueExpressionPlot(ideo, true);
+      updateTissueExpressionPlot(ideo);
     });
-}
 
-export function addTissueListeners(ideo) {
-  const tissueIconDom = document.querySelector('._ideoGeneTissues');
-  if (!tissueIconDom) return; // e.g., miRNA genes
-  if (ideo.showTissuesMore === undefined) {
-    ideo.showTissuesMore = true;
-  }
-  tissueIconDom.addEventListener('click', (event) => {
-    event.stopPropagation();
-    event.preventDefault();
-    showTissueExpressionPlot(ideo);
-  });
+  tippy(
+    '._ideoExpressionTrace',
+    getTippyConfig()
+  );
 }
 
 export function getTissueHtml(annot, ideo) {
   if (!ideo.tissueCache || !(annot.name in ideo.tissueCache.byteRangesByName)) {
     return '';
   }
-  const tissueExpressions =
-    ideo.tissueExpressionsByGene[annot.name].slice(0, 3);
 
-  const topTissueFirstLetter = tissueExpressions.map(
-    teObject => refineTissueName(teObject.tissue)
-  )[0][0].toUpperCase();
+  if (ideo.showTissuesMore === undefined) {
+    ideo.showTissuesMore = true;
+  }
 
-  const tissueColor = `#${tissueExpressions[0].color}`;
-  const tissueTooltip =
-    `data-tippy-content="Explore reference tissue expression" `;
-  const tissueStyle =
-    'style="float: right; border-radius: 4px; ' +
-    'margin-right: 8px; padding: 4px 0 3.5px 0; ' +
-    `border: 1px solid #CCC; cursor: pointer;"`;
-  const tissueAttrs =
-    `class="_ideoGeneTissues" ${tissueStyle} ${tissueTooltip}`;
-  const innerStyle =
-    `style="border: 1px solid ${tissueColor}; border-radius: 4px; ` +
-    'background-color: #EEE; padding: 3px 8px; "';
-
+  const gene = annot.name;
+  const tissueExpressions = ideo.tissueExpressionsByGene[gene];
+  if (!tissueExpressions) return;
   const tissueHtml =
-    `<span ${tissueAttrs}>` +
-      `<span ${innerStyle}>${topTissueFirstLetter}</span>` +
-    '</span>';
+    getExpressionPlotHtml(gene, tissueExpressions, ideo);
 
   return tissueHtml;
 }
