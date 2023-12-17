@@ -513,6 +513,8 @@ function addHoverListeners(ideo) {
 
   const container = document.querySelector('._ideoGeneStructureContainer');
 
+  if (ideo.tissueCache) container.style.marginBottom = '-5px';
+
   container.addEventListener('mouseenter', () => {
     document.addEventListener('keydown', navigateSubparts);
     if (ideo.addedMenuListeners) return;
@@ -529,6 +531,12 @@ function addHoverListeners(ideo) {
       // is often the case in genes with many transcripts, like TP53).
       ideo.oneTimeDelayTooltipHideMs = 2000; // wait 2.0 s instead of 0.25 s
     });
+
+    if (ideo.tissueCache) {
+      const tooltipFooter = document.querySelector('._ideoTooltipFooter');
+      tooltipFooter.style.display = 'none';
+      if (ideo.tissueCache) container.style.marginBottom = '-22px';
+    }
   });
   container.addEventListener('mouseleave', (event) => {
     ideo.oneTimeDelayTooltipHideMs = 2000; // See "Without this..." note above
@@ -543,6 +551,12 @@ function addHoverListeners(ideo) {
       // frustratingly disappear immediately upon transcript selection.
 
       updateFooter(hoverTip, ideo);
+
+      if (ideo.tissueCache) {
+        const tooltipFooter = document.querySelector('._ideoTooltipFooter');
+        tooltipFooter.style.display = '';
+        if (ideo.tissueCache) container.style.marginBottom = '-5px';
+      }
     }
     ideo.addedMenuListeners = false;
     document.removeEventListener('keydown', navigateSubparts);

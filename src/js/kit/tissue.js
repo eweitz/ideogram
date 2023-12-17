@@ -120,7 +120,6 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
 
 function updateTissueExpressionPlot(ideo) {
   const plot = document.querySelector('._ideoTissueExpressionPlot');
-  console.log('plot', plot)
   const plotParent = plot.parentElement;
 
   const gene = document.querySelector('#ideo-related-gene').innerText;

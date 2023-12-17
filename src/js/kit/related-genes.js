@@ -655,7 +655,9 @@ async function fetchParalogPositionsFromMyGeneInfo(
     const annot = parseAnnotFromMgiGene(gene, ideo, 'pink');
     annots.push(annot);
 
-    const description = `Paralog of ${searchedGene.name}`;
+    const description =
+      ideo.tissueCache ? '' : `Paralog of ${searchedGene.name}`;
+
     const {name, ensemblId} = parseNameAndEnsemblIdFromMgiGene(gene);
     const type = 'paralogous gene';
     const descriptionObj = {description, ensemblId, name, type};
