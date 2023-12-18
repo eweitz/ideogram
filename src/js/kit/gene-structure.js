@@ -513,7 +513,9 @@ function addHoverListeners(ideo) {
 
   const container = document.querySelector('._ideoGeneStructureContainer');
 
-  if (ideo.tissueCache) container.style.marginBottom = '-5px';
+  if (ideo.tissueCache) {
+    container.style.marginBottom = '-5px';
+  }
 
   container.addEventListener('mouseenter', () => {
     document.addEventListener('keydown', navigateSubparts);

@@ -1179,7 +1179,7 @@ function mergeDescriptions(annot, desc, ideo) {
       }
     });
     // Object.assign({}, descriptions[annot.name]);
-    if ('type' in otherDesc) {
+    if ('type' in otherDesc && !ideo.tissueCache) {
       mergedDesc.type += ', ' + otherDesc.type;
       mergedDesc.description += `<br/><br/>${otherDesc.description}`;
     }
@@ -1775,10 +1775,6 @@ function decorateAnnot(annot) {
   );
 
   const tissueHtml = getTissueHtml(annot, ideo);
-  let tissueBreak = '';
-  if (tissueHtml !== '') {
-    tissueBreak = '<br/>';
-  }
 
   const geneSymbolAndFullName =
     `<span id="_ideoGeneSymbolAndFullName">
