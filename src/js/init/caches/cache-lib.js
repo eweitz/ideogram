@@ -10,7 +10,7 @@ import {organismMetadata} from '../organism-metadata';
 async function fetchByteRangesByName(url) {
   const byteRangesByName = {};
 
-  const path = `${url.replace('.tsv.gz', '')}-detail.tsv.li.gz`;
+  const path = `${url.replace('.tsv.gz', '')}.tsv.li.gz`;
 
   const response = await cacheFetch(path);
   const text = await response.text();

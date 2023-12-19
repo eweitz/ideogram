@@ -293,7 +293,7 @@ export function getColors(domainType) {
     domainType === 'Sodium ion transport-associated' ||
     domainType === 'Sodium ion transport-associated domain' ||
     domainType.endsWith('head') ||
-    domainType === 'Pleckstrin homology domain' ||
+    domainType.includes('Pleckstrin homology domain') ||
     domainType === 'PH domain' ||
     domainType.endsWith('pleckstrin homology-like domain') ||
     domainType === 'DEP domain' ||

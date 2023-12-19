@@ -7,12 +7,14 @@ import {
 function parseTissueKeys(rawTissuesString) {
   const tissueNames = [];
   const tissueColors = [];
-  rawTissuesString.split(';').forEach(nameAndColor => {
-    nameAndColor = nameAndColor.split(',');
-    tissueNames.push(nameAndColor[0]);
-    tissueColors.push(nameAndColor[1]);
+  const tissueSamples = [];
+  rawTissuesString.split(';').forEach(entry => {
+    const splitEntry = entry.split(',');
+    tissueNames.push(splitEntry[0]);
+    tissueColors.push(splitEntry[1]);
+    tissueSamples.push(splitEntry[2]);
   });
-  return [tissueNames, tissueColors];
+  return [tissueNames, tissueColors, tissueSamples];
 }
 
 /** Transform a stringified list of integers into an actual list of integers */
@@ -42,7 +44,8 @@ async function getTissueExpressions(gene, ideo) {
     const medianExpression = parseFloat(rawValue);
     const tissue = cache.tissueNames[tissueId];
     const color = cache.tissueColors[tissueId];
-    tissueExpressions.push({tissue, medianExpression, color});
+    const samples = cache.tissueSamples[tissueId];
+    tissueExpressions.push({tissue, medianExpression, color, samples});
   }
 
   return tissueExpressions;
@@ -52,6 +55,7 @@ async function getTissueExpressions(gene, ideo) {
 export function parseTissueCache(rawTsv, perfTimes, byteRangesByName) {
   let tissueNames;
   let tissueColors;
+  let tissueSamples;
 
   let t0 = performance.now();
   const lines = rawTsv.split(/\r\n|\n/);
@@ -64,8 +68,7 @@ export function parseTissueCache(rawTsv, perfTimes, byteRangesByName) {
     if (line[0] === '#') {
       if (line.slice(0, 10) === '## tissues') {
         const parsedTissueKeys = parseTissueKeys(line.split('tissues: ')[1]);
-        tissueNames = parsedTissueKeys[0];
-        tissueColors = parsedTissueKeys[1];
+        [tissueNames, tissueColors, tissueSamples] = parsedTissueKeys;
       }
       continue;
     }
@@ -78,7 +81,8 @@ export function parseTissueCache(rawTsv, perfTimes, byteRangesByName) {
     getTissueExpressions,
     byteRangesByName,
     tissueNames,
-    tissueColors
+    tissueColors,
+    tissueSamples
   };
 }
 

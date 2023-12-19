@@ -6,7 +6,7 @@ import {d3} from '../lib';
 import {getIcon} from '../annotations/legend';
 import {getProtein, getHasTopology} from './protein';
 
-const y = 15;
+const y = 5;
 
 // Subtle visual delimiter; separates horizontally adjacent fields in UI
 export const pipe = `<span style='color: #CCC'>|</span>`;
@@ -47,7 +47,6 @@ const css =
     position: relative;
     left: 45px;
     margin-right: 20px;
-    margin-bottom: -10px;
   }
   ._ideoGeneStructureContainerName.pre-mRNA {
     left: 70px;
@@ -79,10 +78,6 @@ const css =
   }
   #_ideoGeneStructureTip {
     font-style: italic;
-  }
-  ._ideoGeneStructureFooter {
-    position: relative;
-    top: -10px;
   }
 
   ${tippyCss}
@@ -513,10 +508,6 @@ function addHoverListeners(ideo) {
 
   const container = document.querySelector('._ideoGeneStructureContainer');
 
-  if (ideo.tissueCache) {
-    container.style.marginBottom = '-5px';
-  }
-
   container.addEventListener('mouseenter', () => {
     document.addEventListener('keydown', navigateSubparts);
     if (ideo.addedMenuListeners) return;
@@ -537,11 +528,16 @@ function addHoverListeners(ideo) {
     if (ideo.tissueCache) {
       const tooltipFooter = document.querySelector('._ideoTooltipFooter');
       tooltipFooter.style.display = 'none';
-      if (ideo.tissueCache) container.style.marginBottom = '-22px';
     }
   });
   container.addEventListener('mouseleave', (event) => {
     ideo.oneTimeDelayTooltipHideMs = 2000; // See "Without this..." note above
+
+    if (ideo.tissueCache) {
+      const tooltipFooter = document.querySelector('._ideoTooltipFooter');
+      tooltipFooter.style.display = '';
+    }
+
     const inTooltip = isMouseEventInTooltip(event);
     if (inTooltip === true) {
       // Only remove transcript footer if `mouseleave` event is from footer to
@@ -553,13 +549,9 @@ function addHoverListeners(ideo) {
       // frustratingly disappear immediately upon transcript selection.
 
       updateFooter(hoverTip, ideo);
-
-      if (ideo.tissueCache) {
-        const tooltipFooter = document.querySelector('._ideoTooltipFooter');
-        tooltipFooter.style.display = '';
-        if (ideo.tissueCache) container.style.marginBottom = '-5px';
-      }
     }
+
+
     ideo.addedMenuListeners = false;
     document.removeEventListener('keydown', navigateSubparts);
   });
@@ -741,7 +733,7 @@ function drawIntrons(prelimSubparts, matureSubparts, ideo) {
     const matureSubpart = matureSubparts[matureIndex];
     if (matureSubpart[0] !== prelimSubpart[0]) {
       const summary = prelimSubpart[3].summary;
-      const otherAttrs = `y="15" height="20" fill="#FFFFFF00" ${summary}`;
+      const otherAttrs = `y="${y}" height="20" fill="#FFFFFF00" ${summary}`;
       const intronRect =
         `<rect class="subpart intron" ${otherAttrs} />`;
       subpartEls[matureIndex].insertAdjacentHTML('beforebegin', intronRect);
@@ -1054,8 +1046,8 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
   }
   const footerData = menu + footerDetails.join(` ${pipe} `);
 
-  let svgHeight = proteinSvg === '' ? '40' : '60';
-  if (hasTopology) svgHeight = '70';
+  let svgHeight = proteinSvg === '' ? '30' : '50';
+  if (hasTopology) svgHeight = '60';
 
   const geneStructureSvg =
     `<svg class="_ideoGeneStructure" ` +
@@ -1159,7 +1151,7 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
     const spanClass = `class="_ideoGeneStructureContainerName${rnaClass}"`;
     const {name, title} = getSpliceStateText(spliceExons);
     const spanAttrs = `${spanClass} title="${title}"`;
-    const containerStyle = 'style="position: relative; top: -10px;"';
+    const containerStyle = '';
     geneStructureHtml =
       '<br/><br/>' +
       css +

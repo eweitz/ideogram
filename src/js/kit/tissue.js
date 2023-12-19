@@ -85,7 +85,11 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
     const color = `#${teObject.color}`;
     const borderColor = darken(color, 0.85);
     const tpm = teObject.medianExpression;
-    const tippyTxt = `${tpm} median TPM in GTEx`;
+    const numSamples = teObject.samples;
+    const tippyTxt =
+      `Median TPM: <b>${tpm}</b><br/>` +
+      `Samples: <b>${numSamples}</b><br/>` +
+      `<span style='font-size: 9px;'>Source: GTEx</span>`;
     const tippyAttr = `data-tippy-content="${tippyTxt}"`;
     const rectAttrs =
       `height="${height - 0.5}" ` +
@@ -96,10 +100,12 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
       `stroke="${borderColor}" stroke-width="1px" ` +
       'class="_ideoExpressionTrace" ' +
       tippyAttr;
+
     const textAttrs =
       `y="${y + height - 1.5}" ` +
       `style="font-size: ${height}px;" ` +
-      `x="90"`;
+      'x="90" ' +
+      'class="_ideoExpressionTissueName"';
 
     return `<text ${textAttrs}>${tissue}</text><rect ${rectAttrs} />`;
   }).join('');

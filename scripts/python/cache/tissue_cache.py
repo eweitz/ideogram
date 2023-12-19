@@ -22,7 +22,7 @@ def write_json_file(output, output_path):
     print(f'Wrote output to {output_path}')
 
 def fetch_tissues():
-    """Return all GTEx tissues that have >= 70 samples
+    """Return all GTEx tissues
     """
     url = f'{base_url}/dataset/tissueSiteDetail?page=0&itemsPerPage=250'
     response = urllib.request.urlopen(url)
@@ -199,9 +199,9 @@ def merge_tissue_dimensions():
         detail_rows.append(detail_row)
 
     tissues_list = [
-        [tissue["id"], tissue["color"]] for tissue in raw_json["tissues"]
+        [t["id"], t["color"], str(t["num_samples"])] for t in raw_json["tissues"]
     ]
-    tissues_str = [t[0] + ',' + t[1] for t in tissues_list]
+    tissues_str = [','.join(t) for t in tissues_list]
     print('len(tissues_list)', len(tissues_list))
 
     meta_info = f"## tissues: {';'.join(tissues_str)}"
@@ -216,7 +216,7 @@ def merge_tissue_dimensions():
         f.write(output)
     print(output_path)
 
-    detail_output_path = 'cache/homo-sapiens-tissues-detail.tsv'
+    detail_output_path = 'cache/homo-sapiens-tissues.tsv'
     with open(detail_output_path, 'w') as f:
         f.write(detail_output)
     print(detail_output_path)
@@ -266,6 +266,6 @@ def write_line_byte_index(filepath):
 
 # process_top_tissues_by_gene()
 
-# merge_tissue_dimensions()
+merge_tissue_dimensions()
 
-write_line_byte_index('cache/homo-sapiens-tissues-detail.tsv')
+write_line_byte_index('cache/homo-sapiens-tissues.tsv')
