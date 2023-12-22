@@ -1211,11 +1211,29 @@ function mergeAnnots(unmergedAnnots) {
   return mergedAnnots;
 }
 
+/**
+ * Prevents bug when showing gene leads instantly on page load,
+ * then hovering over an annotation, as in e.g.
+ * https://eweitz.github.io/ideogram/gene-leads
+ */
+function waitForTissueCache(geneNames, ideo, n) {
+  setTimeout(() => {
+    if (n < 40) { // 40 * 50 ms = 2 s
+      if (!ideo.tissueCache) {
+        waitForTissueCache(geneNames, ideo, n + 1);
+      } else {
+        setTissueExpressions(geneNames, ideo);
+      }
+    }
+  }, 50);
+}
+
 async function setTissueExpressions(geneNames, ideo) {
   if (
     !ideo.tissueCache
     // || !(annot.name in ideo.tissueCache.byteRangesByName)
   ) {
+    waitForTissueCache(geneNames, ideo, 0);
     return;
   }
 
