@@ -45,15 +45,27 @@ function setPxLength(tissueExpressions) {
   return tissueExpressions;
 }
 
-function getMoreOrLessToggle(gene, height, ideo) {
-
+/** Get link to full detail about gene on GTEx */
+function getFullDetail(gene) {
   const gtexUrl = `https://www.gtexportal.org/home/gene/${gene}`;
-  const pipeStyle =
-    'style="margin: 0 6px; color: #CCC;"';
   const gtexLink =
     `<a href="${gtexUrl}" target="_blank">GTEx</a>`;
+  const fullDetail = `<i>Full detail: ${gtexLink}</i>`;
+  return fullDetail;
+}
+
+function getMoreOrLessToggle(gene, height, tissueExpressions, ideo) {
+
+  const fullDetail = getFullDetail(gene);
+
+  if (tissueExpressions.length <= 3) {
+    return `<br/>${fullDetail}<br/><br/>`;
+  }
+
+  const pipeStyle =
+    'style="margin: 0 6px; color: #CCC;"';
   const details =
-    `<span ${pipeStyle}>|</span><i>Full detail: ${gtexLink}</i>`;
+    `<span ${pipeStyle}>|</span>${fullDetail}`;
   const moreOrLess =
     !ideo.showTissuesMore ? `Less...` : 'More...';
   const mlStyle = 'style="cursor: pointer;px;"';
@@ -75,7 +87,8 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
 
   const height = 12;
 
-  const moreOrLessToggleHtml = getMoreOrLessToggle(gene, height, ideo);
+  const moreOrLessToggleHtml =
+    getMoreOrLessToggle(gene, height, tissueExpressions, ideo);
   const numTissues = !ideo.showTissuesMore ? 10 : 3;
 
   let y;
@@ -116,7 +129,7 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
   const plotHtml =
     '<div>' +
       `<div class="_ideoTissueExpressionPlot" ${plotAttrs}>
-        <div ${titleAttrs}>Typically most expressed in:</div>
+        <div ${titleAttrs}>Reference expression by tissue:</div>
         <svg height="${y + height + 2}">${rects}</svg>
         ${moreOrLessToggleHtml}
       </div>` +
@@ -138,13 +151,15 @@ function updateTissueExpressionPlot(ideo) {
 }
 
 export function addTissueListeners(ideo) {
-  document.querySelector('._ideoMoreOrLessTissue')
-    .addEventListener('click', (event) => {
+  const moreOrLess = document.querySelector('._ideoMoreOrLessTissue');
+  if (moreOrLess) {
+    moreOrLess.addEventListener('click', (event) => {
       event.stopPropagation();
       event.preventDefault();
       ideo.showTissuesMore = !ideo.showTissuesMore;
       updateTissueExpressionPlot(ideo);
     });
+  }
 
   tippy(
     '._ideoExpressionTrace',
@@ -154,7 +169,8 @@ export function addTissueListeners(ideo) {
 
 export function getTissueHtml(annot, ideo) {
   if (!ideo.tissueCache || !(annot.name in ideo.tissueCache.byteRangesByName)) {
-    return '';
+    // e.g. MIR23A
+    return '<br/>';
   }
 
   if (ideo.showTissuesMore === undefined) {

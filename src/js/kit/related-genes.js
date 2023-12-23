@@ -1609,8 +1609,21 @@ function getAnnotByName(annotName, ideo) {
 //   }, 100);
 // }
 
+/** Move tooltip mass to vertical center of viewport */
+function centralizeTooltipPosition() {
+  const tooltip = document.querySelector('#_ideogramTooltip');
+  const tooltipTop = tooltip.getBoundingClientRect().top;
+  const ideoDom = document.querySelector('#_ideogram');
+  const ideogramTop = ideoDom.getBoundingClientRect().top;
+  const centralTop = ideogramTop + 40;
+  if (tooltipTop > centralTop) {
+    tooltip.style.top = ideogramTop + 40 + 'px';
+  }
+}
+
 function onDidShowAnnotTooltip() {
   const ideo = this;
+  centralizeTooltipPosition();
   handleTooltipClick(ideo);
   addGeneStructureListeners(ideo);
   addTissueListeners(ideo);
