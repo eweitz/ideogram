@@ -1615,15 +1615,16 @@ function centralizeTooltipPosition() {
   const tooltipTop = tooltip.getBoundingClientRect().top;
   const ideoDom = document.querySelector('#_ideogram');
   const ideogramTop = ideoDom.getBoundingClientRect().top;
-  const centralTop = ideogramTop + 40;
-  if (tooltipTop > centralTop) {
-    tooltip.style.top = ideogramTop + 40 + 'px';
+  if (tooltipTop > ideogramTop) {
+    tooltip.style.top = ideogramTop + 'px';
   }
 }
 
 function onDidShowAnnotTooltip() {
   const ideo = this;
-  centralizeTooltipPosition();
+  if (ideo.tissueCache) {
+    centralizeTooltipPosition();
+  }
   handleTooltipClick(ideo);
   addGeneStructureListeners(ideo);
   addTissueListeners(ideo);
@@ -1737,7 +1738,7 @@ function decorateParalogNeighborhood(annot, descObj, style) {
         }
         if (title !== '') title = `title="${title}"`;
         return (
-          `<span class="ideo-paralog-neighbor" ${title} ${style}'>${
+          `<span class="ideo-paralog-neighbor" ${title} style="${style}"'>${
             paralog.name
           }</span>`
         );
