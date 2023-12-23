@@ -1,4 +1,7 @@
-import {supportsCache, getCacheUrl, fetchAndParse} from './cache-lib';
+import {
+  supportsCache, getCacheUrl, fetchAndParse,
+  cacheFetch
+} from './cache-lib';
 
 // Uncomment when workers work outside localhost
 // const geneCacheWorker = new Worker(
@@ -131,8 +134,7 @@ const allCacheProps = {
 function setGeneCache(parsedCache, ideo) {
   const [
     interestingNames, nameCaseMap, namesById, fullNamesById,
-    idsByName, lociByName, lociById,
-    tissueIdsByName, tissueNames, tissueColors
+    idsByName, lociByName, lociById
     //, sortedAnnots
   ] = parsedCache;
 

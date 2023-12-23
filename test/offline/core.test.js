@@ -310,7 +310,7 @@ describe('Ideogram', function() {
       d3.select('.annot path').dispatch('mouseover');
       var content = d3.select('._ideogramTooltip').html();
       const expected =
-        'BRCA1<br><span class="_ideoTooltipFooter">' +
+        'BRCA1<span class="_ideoTooltipFooter"><br>' +
           'chr17:43,044,294-43,125,482 (81 kbp)' +
         '</span>';
       assert.equal(content, expected);

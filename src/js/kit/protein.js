@@ -113,16 +113,16 @@ function getFeatureSvg(feature, cds, isPositiveStrand, hasTopology) {
   };
 
   // Perhaps make these configurable, later
-  let y = 40;
+  let y = 30;
   let height = 14;
   const isTopology = isTopologyFeature(feature);
   const isSignal = isSignalPeptideFeature(feature);
   let topoAttr = '';
   if (hasTopology) {
-    y = 48;
+    y = 38;
     if (isTopology) {
       featureType = decompressTopologyFeature(feature[0]);
-      y = 40;
+      y = 30;
       height = 30;
 
       const featureDigest = `${feature[0]} ${feature[1]} ${feature[2]}`;
@@ -198,7 +198,7 @@ function isEligibleforProteinSvg(gene, ideo) {
 }
 
 function getProteinRect(cds, hasTopology) {
-  const y = hasTopology ? '53' : '45';
+  const y = hasTopology ? '43' : '35';
   const fill = hasTopology ? 'BBB' : 'DDD';
   const stroke = hasTopology ? '555' : '777';
   const proteinRect =

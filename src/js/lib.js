@@ -356,9 +356,13 @@ function getFont(ideo) {
   if (config.fontFamily) {
     family = config.fontFamily;
   }
+  let weight = 600;
+  if (config.fontWeight) {
+    weight = config.fontWeight;
+  }
 
   const labelSize = config.annotLabelSize ? config.annotLabelSize : 13;
-  const font = '600 ' + labelSize + 'px ' + family;
+  const font = weight + ' ' + labelSize + 'px ' + family;
 
   return font;
 }
@@ -418,6 +422,57 @@ export function hexToRgb(hex) {
     g: parseInt(result[2], 16),
     b: parseInt(result[3], 16)
   } : null;
+}
+
+/**
+ * If hex color is low contrast with white, then darken it.
+ *
+ * @param {String} color Initial color that fills the shape, in hex
+ */
+export function ensureContrast(color) {
+  if (color[0] !== '#') return color; // preserve non-hex color, e.g. "purple"
+  const rgb = hexToRgb(color);
+
+  // If low contrast, darken
+  if (rgb.r > 150 && rgb.g > 150 && rgb.b > 150) {
+    color = `rgb(${rgb.r - 30}, ${rgb.g - 30}, ${rgb.b - 30})`;
+  }
+
+  // If lower contrast, darken more
+  if (rgb.r > 200 && rgb.g > 200 && rgb.b > 200) {
+    color = `rgb(${rgb.r - 50}, ${rgb.g - 50}, ${rgb.b - 50})`;
+  }
+
+  return color;
+}
+
+export function darken(color, brightness) {
+  if (color[0] !== '#') return color; // preserve non-hex color, e.g. "purple"
+  const rgb = hexToRgb(color);
+  const br = brightness;
+  const newRgb = {r: rgb.r * br, g: rgb.g * br, b: rgb.b * br};
+  const darkenedColor = `rgb(${newRgb.r}, ${newRgb.g}, ${newRgb.b})`;
+
+  return darkenedColor;
+}
+
+export function getTippyConfig() {
+  return {
+    theme: 'light-border',
+    allowHTML: true,
+    popperOptions: { // Docs: https://atomiks.github.io/tippyjs/v6/all-props/#popperoptions
+      modifiers: [ // Docs: https://popper.js.org/docs/v2/modifiers
+        {
+          name: 'flip'
+        }
+      ]
+    },
+    onShow: function() {
+      // Ensure only 1 tippy tooltip is displayed at a time
+      document.querySelectorAll('[data-tippy-root]')
+        .forEach(tippyNode => tippyNode.remove());
+    }
+  };
 }
 
 export {

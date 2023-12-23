@@ -22,7 +22,7 @@ def write_json_file(output, output_path):
     print(f'Wrote output to {output_path}')
 
 def fetch_tissues():
-    """Return all GTEx tissues that have >= 70 samples
+    """Return all GTEx tissues
     """
     url = f'{base_url}/dataset/tissueSiteDetail?page=0&itemsPerPage=250'
     response = urllib.request.urlopen(url)
@@ -120,20 +120,18 @@ def process_top_tissues_by_gene():
                 print('len(expressions)', len(expressions))
                 print('expressions for WASH7P:', expressions)
 
-
             for j, median_expression in enumerate(expressions):
                 if median_expression > 0:
                     tissue_id = j
                     tissue_expressions.append([str(tissue_id), median_expression])
 
             sorted_tissue_expressions = sorted(tissue_expressions, key=lambda e: e[1], reverse=True)
-            sorted_tissues = [e[0] for e in sorted_tissue_expressions]
 
             if gene_name == 'WASH7P':
                 print('tissue_expressions for WASH7P:', tissue_expressions)
                 print('sorted_tissue_expressions for WASH7P:', sorted_tissue_expressions)
 
-            top_tissues = sorted_tissues
+            top_tissues = sorted_tissue_expressions
 
             top_tissues_by_gene[gene_name] = top_tissues
 
@@ -155,7 +153,7 @@ def merge_tissue_dimensions():
             if gene == 'WASH7P':
                 print('raw_indexes for WASH7P', raw_indexes)
             top_tissue_indexes = list(
-                filter(lambda i: int(i) < len(tissues_names), raw_indexes)
+                filter(lambda e: int(e[0]) < len(tissues_names), raw_indexes)
             )
             top_tissues_by_gene[gene] = top_tissue_indexes
 
@@ -169,15 +167,23 @@ def merge_tissue_dimensions():
             tissues_by_top_genes[top_gene].append([str(tissue_index), median_expression_tpm])
 
     rows = []
+    detail_rows = []
 
     for gene in top_tissues_by_gene:
         row = [gene]
+        detail_row = [gene]
 
         # Add top 3 tissues for each gene
-        top_tissue_indexes = ','.join(top_tissues_by_gene[gene][:3])
+        tissue_entries = top_tissues_by_gene[gene]
+        tissue_indexes = [e[0] for e in tissue_entries]
+        top_tissue_indexes = ','.join(tissue_indexes[:3])
         if top_tissue_indexes == '':
             continue
+        top_tissue_entries = ','.join([';'.join([
+            str(round(f, 3)) if isinstance(f, float) else f for f in e
+        ]) for e in tissue_entries[:10]])
         row.append(top_tissue_indexes)
+        detail_row.append(top_tissue_entries)
 
         # If gene is among top 1% expressed in any tissues,
         # then add up to 3 such tissues
@@ -190,26 +196,76 @@ def merge_tissue_dimensions():
             row.append(tissue_indexes)
 
         rows.append(row)
+        detail_rows.append(detail_row)
 
     tissues_list = [
-        [tissue["id"], tissue["color"]] for tissue in raw_json["tissues"]
+        [t["id"], t["color"], str(t["num_samples"])] for t in raw_json["tissues"]
     ]
-    tissues_str = [t[0] + ',' + t[1] for t in tissues_list]
+    tissues_str = [','.join(t) for t in tissues_list]
     print('len(tissues_list)', len(tissues_list))
 
     meta_info = f"## tissues: {';'.join(tissues_str)}"
     headers = '\t'.join(['# gene', 'top_tissues', 'top_gene_in_tissues'])
     content = '\n'.join(['\t'.join(row) for row in rows])
+    detail_content = '\n'.join(['\t'.join(row) for row in detail_rows])
     output = meta_info + '\n' + headers + '\n' + content
+    detail_output = meta_info + '\n' + headers + '\n' + detail_content
 
     output_path = 'cache/homo-sapiens-tissues.tsv'
     with open(output_path, 'w') as f:
         f.write(output)
     print(output_path)
 
+    detail_output_path = 'cache/homo-sapiens-tissues.tsv'
+    with open(detail_output_path, 'w') as f:
+        f.write(detail_output)
+    print(detail_output_path)
+
+def write_line_byte_index(filepath):
+    """Write byte-offset index file of each line in a file at filepath
+    """
+    header = "# gene\tline_byte_offset"
+    index = [header] # the byte offset of each line, and the gene it represents
+    genes = []
+
+    with open(filepath) as file:
+        lines = file.readlines()
+    for line in lines:
+        if line[0] == '#':
+            continue
+        gene = line.split('\t')[0]
+        genes.append(gene)
+
+    print('genes[0:3]', genes[0:3])
+    print('genes[-3:]', genes[-3:])
+
+    with open(filepath) as file:
+        char = file.read(1)
+        offset = 0
+        while char != "": # end of file
+            if offset % 100_000 == 0:
+                print(f"Lines byte-indexed, so far: {len(index)}")
+            char = file.read(1)
+            if char == "\n":
+                try:
+                    gene = genes[len(index) - 2]
+                except IndexError as e:
+                    print('len(genes)', len(genes))
+                    print('len(index)', len(index))
+                entry = f"{gene}\t{offset}"
+                index.append(entry)
+            offset += 1
+            file.seek(offset)
+            continue
+
+    with open(f"{filepath}.li", "w") as file:
+        file.write("\n".join([str(o) for o in index]))
+    print(f"Lines byte-indexed, total: {len(index)}")
 
 # process_top_genes_by_tissue()
 
 # process_top_tissues_by_gene()
 
 merge_tissue_dimensions()
+
+write_line_byte_index('cache/homo-sapiens-tissues.tsv')

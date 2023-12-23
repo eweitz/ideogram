@@ -38,10 +38,13 @@ import {
 } from '../annotations/annotations';
 import {writeLegend} from '../annotations/legend';
 import {getAnnotDomId} from '../annotations/process';
-import {getDir, pluralize, getTextSize} from '../lib';
+import {
+  getDir, pluralize, getTextSize, getTippyConfig
+} from '../lib';
 import {
   fetchGpmls, summarizeInteractions, fetchPathwayInteractions
 } from './wikipathways';
+import {getTissueHtml, addTissueListeners} from './tissue';
 // import {drawAnnotsByLayoutType} from '../annotations/draw';
 // import {organismMetadata} from '../init/organism-metadata';
 
@@ -652,7 +655,9 @@ async function fetchParalogPositionsFromMyGeneInfo(
     const annot = parseAnnotFromMgiGene(gene, ideo, 'pink');
     annots.push(annot);
 
-    const description = `Paralog of ${searchedGene.name}`;
+    const description =
+      ideo.tissueCache ? '' : `Paralog of ${searchedGene.name}`;
+
     const {name, ensemblId} = parseNameAndEnsemblIdFromMgiGene(gene);
     const type = 'paralogous gene';
     const descriptionObj = {description, ensemblId, name, type};
@@ -945,25 +950,6 @@ function dehighlightAll(ideo) {
   }
 }
 
-function getTippyConfig() {
-  return {
-    theme: 'light-border',
-    allowHTML: true,
-    popperOptions: { // Docs: https://atomiks.github.io/tippyjs/v6/all-props/#popperoptions
-      modifiers: [ // Docs: https://popper.js.org/docs/v2/modifiers
-        {
-          name: 'flip'
-        }
-      ]
-    },
-    onShow: function() {
-      // Ensure only 1 tippy tooltip is displayed at a time
-      document.querySelectorAll('[data-tippy-root]')
-        .forEach(tippyNode => tippyNode.remove());
-    }
-  };
-}
-
 function initInteractiveLegend(ideo) {
   // Highlight and filter annotations by type on hovering over legend entries
   function highlight(event) {
@@ -1193,7 +1179,7 @@ function mergeDescriptions(annot, desc, ideo) {
       }
     });
     // Object.assign({}, descriptions[annot.name]);
-    if ('type' in otherDesc) {
+    if ('type' in otherDesc && !ideo.tissueCache) {
       mergedDesc.type += ', ' + otherDesc.type;
       mergedDesc.description += `<br/><br/>${otherDesc.description}`;
     }
@@ -1225,9 +1211,55 @@ function mergeAnnots(unmergedAnnots) {
   return mergedAnnots;
 }
 
+/**
+ * Prevents bug when showing gene leads instantly on page load,
+ * then hovering over an annotation, as in e.g.
+ * https://eweitz.github.io/ideogram/gene-leads
+ */
+function waitForTissueCache(geneNames, ideo, n) {
+  setTimeout(() => {
+    if (n < 40) { // 40 * 50 ms = 2 s
+      if (!ideo.tissueCache) {
+        waitForTissueCache(geneNames, ideo, n + 1);
+      } else {
+        setTissueExpressions(geneNames, ideo);
+      }
+    }
+  }, 50);
+}
+
+async function setTissueExpressions(geneNames, ideo) {
+  if (
+    !ideo.tissueCache
+    // || !(annot.name in ideo.tissueCache.byteRangesByName)
+  ) {
+    waitForTissueCache(geneNames, ideo, 0);
+    return;
+  }
+
+  const tissueExpressionsByGene = {};
+  const cache = ideo.tissueCache;
+
+  const promises = [];
+  geneNames.forEach(async gene => {
+    const promise = new Promise(async (resolve) => {
+      const tissueExpressions = await cache.getTissueExpressions(gene, ideo);
+      tissueExpressionsByGene[gene] = tissueExpressions;
+      resolve();
+    });
+    promises.push(promise);
+  });
+
+  await Promise.all(promises);
+
+  ideo.tissueExpressionsByGene = tissueExpressionsByGene;
+}
+
 function onBeforeDrawAnnots() {
   const ideo = this;
   setRelatedAnnotDomIds(ideo);
+
+  const geneNames = [];
 
   // Handle differential expression extension
   const chrAnnots = ideo.annots;
@@ -1237,6 +1269,8 @@ function onBeforeDrawAnnots() {
     for (let j = 0; j < annots.length; j++) {
       const annot = annots[j];
 
+      geneNames.push(annot.name);
+
       if (ideo.config.colorMap && annot.differentialExpression?.length) {
         const colorMap = ideo.config.colorMap;
         const group = annot.differentialExpression[0].group;
@@ -1245,6 +1279,8 @@ function onBeforeDrawAnnots() {
       }
     }
   }
+
+  setTissueExpressions(geneNames, ideo);
 }
 
 function filterAndDrawAnnots(annots, ideo) {
@@ -1573,10 +1609,25 @@ function getAnnotByName(annotName, ideo) {
 //   }, 100);
 // }
 
+/** Move tooltip mass to vertical center of viewport */
+function centralizeTooltipPosition() {
+  const tooltip = document.querySelector('#_ideogramTooltip');
+  const tooltipTop = tooltip.getBoundingClientRect().top;
+  const ideoDom = document.querySelector('#_ideogram');
+  const ideogramTop = ideoDom.getBoundingClientRect().top;
+  if (tooltipTop > ideogramTop) {
+    tooltip.style.top = ideogramTop + 'px';
+  }
+}
+
 function onDidShowAnnotTooltip() {
   const ideo = this;
+  if (ideo.tissueCache) {
+    centralizeTooltipPosition();
+  }
   handleTooltipClick(ideo);
   addGeneStructureListeners(ideo);
+  addTissueListeners(ideo);
   ideo.tissueTippy =
     tippy('._ideoGeneTissues[data-tippy-content]', getTippyConfig());
 }
@@ -1687,7 +1738,7 @@ function decorateParalogNeighborhood(annot, descObj, style) {
         }
         if (title !== '') title = `title="${title}"`;
         return (
-          `<span class="ideo-paralog-neighbor" ${title} ${style}'>${
+          `<span class="ideo-paralog-neighbor" ${title} style="${style}"'>${
             paralog.name
           }</span>`
         );
@@ -1696,72 +1747,6 @@ function decorateParalogNeighborhood(annot, descObj, style) {
   annot.displayCoordinates = descObj.displayCoordinates;
 
   return [annot, originalDisplay];
-}
-
-function getTissueHtml(annot, ideo) {
-  if (!ideo.tissueCache || !(annot.name in ideo.tissueCache.tissueIdsByName)) {
-    return '';
-  }
-  const cache = ideo.tissueCache;
-  const tissueIds = cache.tissueIdsByName[annot.name][0];
-
-  const tissueNames = tissueIds.map(tissueId => {
-    let name = cache.tissueNames[tissueId];
-    name = name.replace(/_/g, ' ').toLowerCase();
-
-    // Style abbreviations of "Brodmann area", and other terms
-    // per GTEx conventions
-    [
-      'ba24', 'ba9', 'basal ganglia', 'omentum', 'suprapubic', 'lower leg',
-      'cervical c-1'
-    ].forEach(term => name = name.replace(term, '(' + term + ')'));
-    ['ba24', 'ba9', 'ebv'].forEach(term => {
-      name = name.replace(term, term.toUpperCase());
-    });
-    [
-      'adipose', 'artery', 'brain', 'breast', 'cells', 'cervix', 'colon',
-      'heart', 'kidney', 'muscle', 'nerve', 'skin', 'small intestine'
-    ].forEach(term => {
-      name = name.replace(term, term + ' -');
-    });
-
-    name = name[0].toUpperCase() + name.slice(1);
-    return name;
-  });
-
-  // let joinedTissueNames = tissueNames[0];
-  // if (tissueNames.length === 2) {
-  //   joinedTissueNames = tissueNames.join(' and ');
-  // } else if (tissueNames.length > 2 && tissueNames.length < 5) {
-  //   joinedTissueNames =
-  //     tissueNames.slice(0, -1).join(', ') +
-  //     ', and ' + tissueNames.slice(-1)[0];
-  // }
-  const openLi = '<li style="list-style-type: inherit">';
-  const joinedTissueNames =
-    '<ul style="padding-inline-start: 20px;">' +
-      `${openLi}${tissueNames.join(`</li>${openLi}`)}</li>` +
-    '</ul>';
-
-  const tissueColor = `#${cache.tissueColors[tissueIds[0]]}`;
-  const tissueText = `Most expressed in:${joinedTissueNames}`;
-  const tissueTooltip =
-    `data-tippy-content='${tissueText}' `;
-  const tissueStyle =
-    'style="float: right; border-radius: 4px; ' +
-    'margin-right: 8px; padding: 4px 0 3.5px 0; ' +
-    `border: 1px solid #CCC;"`;
-  const tissueAttrs =
-    `class="_ideoGeneTissues" ${tissueStyle} ${tissueTooltip}`;
-  const innerStyle =
-    `style="border: 1px solid ${tissueColor}; border-radius: 4px; ` +
-    'background-color: #EEE; padding: 3px 8px; "';
-  const topTissueFirstLetter = tissueNames[0][0].toUpperCase();
-  const tissueHtml =
-    `<span ${tissueAttrs}>` +
-      `<span ${innerStyle}>${topTissueFirstLetter}</span>` +
-    '</span>';
-  return tissueHtml;
 }
 
 /**
@@ -1822,29 +1807,19 @@ function decorateAnnot(annot) {
   );
 
   const tissueHtml = getTissueHtml(annot, ideo);
-  const barStyle =
-    'float:right; width: 0px; position: relative; z-index: 0;';
-  let nameDescStyle = '';
-  let tissueBreak = '';
-  if (tissueHtml !== '') {
-    const textWidth = getTextSize(fullName, ideo).width;
-    const fullNameWidth =
-      textWidth - 240 > 0 ? `width: ${textWidth + 60}px;` : '';
-    nameDescStyle = `${fullNameWidth} float: left;`;
-    tissueBreak = '<br/><br/>';
-  }
+
+  const geneSymbolAndFullName =
+    `<span id="_ideoGeneSymbolAndFullName">
+      <span id="ideo-related-gene" style="${style}">${annot.name}</span><br/>` +
+      `${fullNameAndRank}<br/>
+    </span>`;
 
   let originalDisplay =
-    `<div style="${barStyle}">${tissueHtml}</div>` +
-    `<div style="${nameDescStyle}">` +
-    `<span id="ideo-related-gene" style="${style}">${annot.name}</span><br/>` +
-    `${fullNameAndRank}<br/>` +
+    geneSymbolAndFullName +
     synonym +
     description +
-    geneStructureHtml +
-    tissueBreak +
-    '</div>' +
-    `<br/>`;
+    tissueHtml +
+    geneStructureHtml;
 
   if (isParalogNeighborhood) {
     [annot, originalDisplay] =
