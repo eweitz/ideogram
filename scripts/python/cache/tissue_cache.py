@@ -1,9 +1,11 @@
+import argparse
 import urllib.request
 import csv
 import json
 import os
 import sys
 import urllib.parse
+import statistics
 
 # Enable importing local modules when directly calling as script
 if __name__ == "__main__":
@@ -85,7 +87,7 @@ def process_top_genes_by_tissue():
     write_json_file(output, output_path)
 
 def process_top_tissues_by_gene():
-    """Make JSON file of top 3 tissues (by expression in GTEx) for each gene
+    """Make JSON file top tissues (by expression in GTEx) for each gene
     """
 
     # To manually fetch GTEx file:
@@ -137,6 +139,166 @@ def process_top_tissues_by_gene():
 
     output_path = 'cache/gtex_top_tissues_by_gene.json'
     write_json_file(top_tissues_by_gene, output_path)
+
+def summarize_top_tissues_by_gene(input_dir):
+    """Make JSON file top tissues (by expression in GTEx) for each gene
+    """
+
+    if input_dir[-1] != "/":
+        input_dir += "/"
+
+    # To manually fetch GTEx files:
+    # 1.  Go to https://www.gtexportal.org/home/downloads/adult-gtex/bulk_tissue_expression
+    # 2.  Find the row that says:
+    #     "GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_tpm.gct.gz"
+    #     and notes the file size of "1.5 GB"
+    # 3.  Click the download button.  This source data is public.
+    # 4.  Unzip the file
+    # 5.  Go to https://www.gtexportal.org/home/downloads/adult-gtex/metadata
+    # 6.  Find row that says:
+    #     "GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt"
+    #     and notes the file size of "11 MB"
+    # 7.  Click the download button, and save the resulting file
+    #     URL: https://storage.cloud.google.com/adult-gtex/annotations/v8/metadata-files/GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt
+    gct_path = (
+        input_dir +
+        "bulk-gex_v8_rna-seq_GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_tpm.gct"
+    )
+
+    ds_path = (
+        input_dir +
+        "annotations_v8_metadata-files_GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt"
+    )
+
+    tissues_by_sample_id = {}
+    with open(ds_path) as file:
+        reader = csv.reader(file, delimiter="\t")
+        for i, row in enumerate(reader):
+            if i < 1:
+                continue
+            sample_id = row[0]
+            tissue_detail = row[6]
+            tissues_by_sample_id[sample_id] = tissue_detail
+
+    print('tissues_by_sample_id', tissues_by_sample_id)
+    summary_by_gene_by_tissue = {}
+    tissues_by_index = [] # Tissue detail by column index
+
+    output = []
+
+    with open(gct_path) as file:
+        reader = csv.reader(file, delimiter="\t")
+
+        for i, row in enumerate(reader):
+            # if i > 500:
+            #     # for debug
+            #     continue
+
+            # The matrix is generally genes as rows, samples as columns
+            if i < 3:
+
+                if i < 2:
+                    # Skip version and matrix dimension rows
+                    continue
+
+                # print('row', row)
+                for j, sample_id in enumerate(row):
+                    # Initialize tissues_by_index
+                    if j < 2:
+                        tissues_by_index.append('na')
+                        continue
+                    # print('sample_id', sample_id)
+                    tissue = tissues_by_sample_id[sample_id]
+                    tissues_by_index.append(tissue)
+
+
+                output.append(
+                    '# gene\t' +
+                    '\t'.join(tissues_by_index[2:])
+                )
+                continue
+
+            gene = row[1]
+
+            if i % 500 == 0:
+                print(f'Computing summary for gene {i}: {gene}')
+
+            expressions_by_tissue = {}
+            for j, raw_expression in enumerate(row):
+                if j < 2:
+                    # Skip Ensembl ID and gene name columns
+                    continue
+
+                tissue = tissues_by_index[j]
+                expression = float(raw_expression)
+                if tissue in expressions_by_tissue:
+                    expressions_by_tissue[tissue].append(expression)
+                else:
+                    expressions_by_tissue[tissue] = [expression]
+
+            output_row = [gene]
+            for tissue in expressions_by_tissue:
+                expressions = expressions_by_tissue[tissue]
+                sorted_expressions = sorted(expressions)
+                q1, median, q3 = statistics.quantiles(sorted_expressions, n=4)
+                min = sorted_expressions[0]
+                max = sorted_expressions[-1]
+
+                # boxplot summary statistics
+                raw_summary = [min, q1, median, q3, max]
+                summary = []
+                for s in raw_summary:
+                    if s > 0:
+                        summary.append(round(s, 3))
+
+                if gene not in summary_by_gene_by_tissue:
+                    summary_by_gene_by_tissue[gene] = {}
+
+                summary_by_gene_by_tissue[gene][tissue] = summary
+
+            trimmed_summary_by_gene_by_tissue = {}
+            trimmed_summary_by_gene_by_tissue[gene] = {}
+            medians_by_tissue_index = []
+            j = 0
+            for tissue in summary_by_gene_by_tissue[gene]:
+                summary = summary_by_gene_by_tissue[gene][tissue]
+                if len(summary) == 5:
+                    median = summary[2]
+                else:
+                    median = 0
+                medians_by_tissue_index.append([tissue, median])
+            sorted_medians_by_tissue_index = sorted(
+                medians_by_tissue_index,
+                key=lambda x: x[1],
+                reverse=True
+            )
+            top_tissues_by_median = [
+                tm[0] for tm in sorted_medians_by_tissue_index[:10]
+            ]
+            for tissue in summary_by_gene_by_tissue[gene]:
+                if tissue in top_tissues_by_median:
+                    summary = summary_by_gene_by_tissue[gene][tissue]
+                else:
+                    # Skip tissues not in top 10 by median
+                    continue
+                summary_str = ';'.join([str(s) for s in summary])
+                output_row.append(summary_str)
+
+            output_row = '\t'.join(output_row)
+
+            output.append(output_row)
+            if gene == 'WASH7P':
+                print('summary_by_gene_by_tissue[gene]', summary_by_gene_by_tissue[gene])
+                # print('expressions for WASH7P:', expressions)
+
+        output = '\n'.join(output)
+        with open('tissue-boxplot.tsv', 'w') as file:
+            file.write(output)
+
+
+    # output_path = 'cache/gtex_boxplot_summary_by_gene.json'
+    # write_json_file(summary_by_gene, output_path)
+
 
 def merge_tissue_dimensions():
     with open("cache/gtex_top_genes_by_tissue.json") as f:
@@ -266,6 +428,40 @@ def write_line_byte_index(filepath):
 
 # process_top_tissues_by_gene()
 
-merge_tissue_dimensions()
+# merge_tissue_dimensions()
 
-write_line_byte_index('cache/homo-sapiens-tissues.tsv')
+# write_line_byte_index('cache/homo-sapiens-tissues.tsv')
+
+class TissueCache:
+
+    def __init__(
+
+    ):
+        return
+
+# Command-line handler
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument(
+        "--output-dir",
+        help=(
+            "Directory to put outcome data.  (default: %(default))"
+        ),
+        default="data/"
+    )
+    parser.add_argument(
+        "--input-dir",
+        help=(
+            "Directory for GTEx gene TPMs file " +
+            "(i.e., for bulk-gex_v8_rna-seq_GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_tpm.gct)"
+        )
+    )
+    args = parser.parse_args()
+    input_dir = args.input_dir
+    output_dir = args.output_dir
+
+    # summarize_top_tissues_by_gene(input_dir)
+    write_line_byte_index('tissue-boxplot.tsv')
