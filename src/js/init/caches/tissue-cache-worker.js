@@ -38,14 +38,20 @@ async function getTissueExpressions(gene, ideo) {
   );
 
   const tissueExpressions = [];
-  const rawExpressions = geneDataLine.split('\t')[1].split(',');
+  const rawExpressions = geneDataLine.split('\t').slice(1);
   for (let i = 0; i < rawExpressions.length; i++) {
-    const [tissueId, rawValue] = rawExpressions[i].split(';');
-    const medianExpression = parseFloat(rawValue);
+    const rawValues = rawExpressions[i].split(';');
+    const tissueId = rawValues[0];
+    const min = parseFloat(rawValues[1]);
+    const q1 = parseFloat(rawValues[2]);
+    const median = parseFloat(rawValues[3]);
+    const q3 = parseFloat(rawValues[4]);
+    const max = parseFloat(rawValues[5]);
+    const expression = {min, q1, median, q3, max};
     const tissue = cache.tissueNames[tissueId];
     const color = cache.tissueColors[tissueId];
     const samples = cache.tissueSamples[tissueId];
-    tissueExpressions.push({tissue, medianExpression, color, samples});
+    tissueExpressions.push({tissue, expression, color, samples});
   }
 
   return tissueExpressions;

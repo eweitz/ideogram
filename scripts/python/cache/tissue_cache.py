@@ -86,62 +86,11 @@ def process_top_genes_by_tissue():
     output_path = 'cache/gtex_top_genes_by_tissue.json'
     write_json_file(output, output_path)
 
-def process_top_tissues_by_gene():
-    """Make JSON file top tissues (by expression in GTEx) for each gene
-    """
-
-    # To manually fetch GTEx file:
-    # 1.  Go to https://www.gtexportal.org/home/downloads/adult-gtex#bulk_tissue_expression
-    # 2.  Note the "GTEx Analysis V8" section, and "RNA-Seq" table shown by default
-    # 3.  Find the row that says:
-    #     "GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_median_tpm.gct.gz"
-    #     and notes the file size of "6.6 MB"
-    # 4.  Click the download button.  This source data is public.
-    gct_path = "GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_median_tpm.gct"
-    url = (
-        "https://storage.googleapis.com/storage/v1/b/adult-gtex/o/" +
-        urllib.parse.quote_plus(f"bulk-gex/v8/rna-seq/{gct_path}.gz") +
-        "?alt=media"
-    )
-    download_gzip(url, gct_path, cache=True)
-
-    top_tissues_by_gene = {}
-
-    with open(gct_path) as file:
-        reader = csv.reader(file, delimiter="\t")
-
-        for i, row in enumerate(reader):
-            if i < 3:
-                continue
-
-            gene_name = row[1]
-
-            tissue_expressions = []
-            expressions = [float(expression) for expression in row[2:]]
-            if gene_name == 'WASH7P':
-                print('len(expressions)', len(expressions))
-                print('expressions for WASH7P:', expressions)
-
-            for j, median_expression in enumerate(expressions):
-                if median_expression > 0:
-                    tissue_id = j
-                    tissue_expressions.append([str(tissue_id), median_expression])
-
-            sorted_tissue_expressions = sorted(tissue_expressions, key=lambda e: e[1], reverse=True)
-
-            if gene_name == 'WASH7P':
-                print('tissue_expressions for WASH7P:', tissue_expressions)
-                print('sorted_tissue_expressions for WASH7P:', sorted_tissue_expressions)
-
-            top_tissues = sorted_tissue_expressions
-
-            top_tissues_by_gene[gene_name] = top_tissues
-
-    output_path = 'cache/gtex_top_tissues_by_gene.json'
-    write_json_file(top_tissues_by_gene, output_path)
 
 def summarize_top_tissues_by_gene(input_dir):
     """Make JSON file top tissues (by expression in GTEx) for each gene
+
+    The output has 5 metrics (min, q1, median, q3, max) per tissue per gene.
     """
 
     if input_dir[-1] != "/":
@@ -183,6 +132,7 @@ def summarize_top_tissues_by_gene(input_dir):
     print('tissues_by_sample_id', tissues_by_sample_id)
     summary_by_gene_by_tissue = {}
     tissues_by_index = [] # Tissue detail by column index
+    tissues_by_index_unique = []
 
     output = []
 
@@ -194,7 +144,8 @@ def summarize_top_tissues_by_gene(input_dir):
             #     # for debug
             #     continue
 
-            # The matrix is generally genes as rows, samples as columns
+            # The matrix is generally genes as rows, samples as columns.
+            # Each sample is from one tissue in one donor.
             if i < 3:
 
                 if i < 2:
@@ -210,12 +161,11 @@ def summarize_top_tissues_by_gene(input_dir):
                     # print('sample_id', sample_id)
                     tissue = tissues_by_sample_id[sample_id]
                     tissues_by_index.append(tissue)
+                    if tissue not in tissues_by_index_unique:
+                        tissues_by_index_unique.append(tissue)
+                        tissues_by_index_unique = sorted(tissues_by_index_unique)
+                        # print('tissues_by_index_unique', tissues_by_index_unique)
 
-
-                output.append(
-                    '# gene\t' +
-                    '\t'.join(tissues_by_index[2:])
-                )
                 continue
 
             gene = row[1]
@@ -275,14 +225,23 @@ def summarize_top_tissues_by_gene(input_dir):
             top_tissues_by_median = [
                 tm[0] for tm in sorted_medians_by_tissue_index[:10]
             ]
-            for tissue in summary_by_gene_by_tissue[gene]:
-                if tissue in top_tissues_by_median:
-                    summary = summary_by_gene_by_tissue[gene][tissue]
-                else:
-                    # Skip tissues not in top 10 by median
+            for tissue in top_tissues_by_median:
+                summary = summary_by_gene_by_tissue[gene][tissue]
+                if len(summary) < 5:
+                    # Skip summaries that lack enough points for a median
                     continue
-                summary_str = ';'.join([str(s) for s in summary])
-                output_row.append(summary_str)
+                summary = ';'.join([str(s) for s in summary])
+                if summary == '':
+                    # Observed for e.g. MEF2AP1, a pseudogene
+                    continue
+                tissue_index = tissues_by_index_unique.index(tissue)
+                tissue_and_summary = f'{tissue_index};{summary}'
+                output_row.append(tissue_and_summary)
+
+            if len(output_row) == 1:
+                # Skip genes with no measured expression, like MEF2AP1, a pseudogene
+                # print(f'Inadequate expression, so skipping gene: {gene}')
+                continue
 
             output_row = '\t'.join(output_row)
 
@@ -303,62 +262,9 @@ def summarize_top_tissues_by_gene(input_dir):
 def merge_tissue_dimensions():
     with open("cache/gtex_top_genes_by_tissue.json") as f:
         raw_json = json.loads(f.read())
-        top_genes_by_tissue = raw_json["genes"]
 
-    tissues_names = [tissue["id"] for tissue in raw_json["tissues"]]
-
-    with open("cache/gtex_top_tissues_by_gene.json") as f:
-        raw_top_tissues_by_gene = json.loads(f.read())
-        top_tissues_by_gene = {}
-        for gene in raw_top_tissues_by_gene:
-            raw_indexes = raw_top_tissues_by_gene[gene]
-            if gene == 'WASH7P':
-                print('raw_indexes for WASH7P', raw_indexes)
-            top_tissue_indexes = list(
-                filter(lambda e: int(e[0]) < len(tissues_names), raw_indexes)
-            )
-            top_tissues_by_gene[gene] = top_tissue_indexes
-
-    tissues_by_top_genes = {}
-    for tissue in top_genes_by_tissue:
-        for entry in top_genes_by_tissue[tissue]:
-            top_gene, median_expression_tpm = entry
-            if top_gene not in tissues_by_top_genes:
-                tissues_by_top_genes[top_gene] = []
-            tissue_index = tissues_names.index(tissue)
-            tissues_by_top_genes[top_gene].append([str(tissue_index), median_expression_tpm])
-
-    rows = []
-    detail_rows = []
-
-    for gene in top_tissues_by_gene:
-        row = [gene]
-        detail_row = [gene]
-
-        # Add top 3 tissues for each gene
-        tissue_entries = top_tissues_by_gene[gene]
-        tissue_indexes = [e[0] for e in tissue_entries]
-        top_tissue_indexes = ','.join(tissue_indexes[:3])
-        if top_tissue_indexes == '':
-            continue
-        top_tissue_entries = ','.join([';'.join([
-            str(round(f, 3)) if isinstance(f, float) else f for f in e
-        ]) for e in tissue_entries[:10]])
-        row.append(top_tissue_indexes)
-        detail_row.append(top_tissue_entries)
-
-        # If gene is among top 1% expressed in any tissues,
-        # then add up to 3 such tissues
-        if gene in tissues_by_top_genes:
-            entries = tissues_by_top_genes[gene]
-            sorted_entries = sorted(entries, key=lambda e: e[1], reverse=True)
-            sorted_tissues = [e[0] for e in sorted_entries]
-            sorted_top_tissues = sorted_tissues[:3]
-            tissue_indexes = ','.join(sorted_top_tissues)
-            row.append(tissue_indexes)
-
-        rows.append(row)
-        detail_rows.append(detail_row)
+    with open("tissue-boxplot.tsv") as f:
+        detail_content = f.read()
 
     tissues_list = [
         [t["id"], t["color"], str(t["num_samples"])] for t in raw_json["tissues"]
@@ -367,21 +273,13 @@ def merge_tissue_dimensions():
     print('len(tissues_list)', len(tissues_list))
 
     meta_info = f"## tissues: {';'.join(tissues_str)}"
-    headers = '\t'.join(['# gene', 'top_tissues', 'top_gene_in_tissues'])
-    content = '\n'.join(['\t'.join(row) for row in rows])
-    detail_content = '\n'.join(['\t'.join(row) for row in detail_rows])
-    output = meta_info + '\n' + headers + '\n' + content
-    detail_output = meta_info + '\n' + headers + '\n' + detail_content
+    headers = '\t'.join(['# gene', 'tissue_boxplot_metrics'])
+    output = meta_info + '\n' + headers + '\n' + detail_content
 
     output_path = 'cache/homo-sapiens-tissues.tsv'
     with open(output_path, 'w') as f:
         f.write(output)
     print(output_path)
-
-    detail_output_path = 'cache/homo-sapiens-tissues.tsv'
-    with open(detail_output_path, 'w') as f:
-        f.write(detail_output)
-    print(detail_output_path)
 
 def write_line_byte_index(filepath):
     """Write byte-offset index file of each line in a file at filepath
@@ -464,4 +362,5 @@ if __name__ == "__main__":
     output_dir = args.output_dir
 
     # summarize_top_tissues_by_gene(input_dir)
-    write_line_byte_index('tissue-boxplot.tsv')
+    merge_tissue_dimensions()
+    write_line_byte_index('cache/homo-sapiens-tissues.tsv')

@@ -33,7 +33,7 @@ function setPxLength(tissueExpressions) {
   let maxExpression = 0;
 
   tissueExpressions.map(teObject => {
-    const expression = teObject.medianExpression;
+    const expression = teObject.expression.median;
     if (expression > maxExpression) {
       maxExpression = expression;
     }
@@ -97,7 +97,7 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
     const tissue = refineTissueName(teObject.tissue);
     const color = `#${teObject.color}`;
     const borderColor = darken(color, 0.85);
-    const tpm = teObject.medianExpression;
+    const tpm = teObject.expression.median;
     const numSamples = teObject.samples;
     const tippyTxt =
       `Median TPM: <b>${tpm}</b><br/>` +
