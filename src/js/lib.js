@@ -424,36 +424,71 @@ export function hexToRgb(hex) {
   } : null;
 }
 
+// http://stackoverflow.com/a/5624139
+function componentToHex(c) {
+  var hex = parseInt(c, 10).toString(16);
+  return hex.length === 1 ? '0' + hex : hex;
+}
+
+function rgbToHex(r, g, b) {
+  return (
+    '#' +
+    componentToHex(r) +
+    componentToHex(g) +
+    componentToHex(b)
+  );
+}
+
+function rgbColorToHex(color) {
+  const rgb = color.split('rgb(')[1].trim(')').split(', ');
+  const hex = rgbToHex(rgb[0], rgb[1], rgb[2]);
+  return hex;
+}
+
 /**
  * If hex color is low contrast with white, then darken it.
  *
  * @param {String} color Initial color that fills the shape, in hex
  */
-export function ensureContrast(color) {
+export function ensureContrast(color, bgColor='#FFF') {
+  if (color.slice(0, 3) === 'rgb') color = rgbColorToHex(color);
   if (color[0] !== '#') return color; // preserve non-hex color, e.g. "purple"
   const rgb = hexToRgb(color);
 
-  // If low contrast, darken
-  if (rgb.r > 150 && rgb.g > 150 && rgb.b > 150) {
-    color = `rgb(${rgb.r - 30}, ${rgb.g - 30}, ${rgb.b - 30})`;
-  }
+  if (bgColor === '#FFF') {
+    // If low contrast, darken
+    if (rgb.r > 150 && rgb.g > 150 && rgb.b > 150) {
+      color = `rgb(${rgb.r - 30}, ${rgb.g - 30}, ${rgb.b - 30})`;
+    }
 
-  // If lower contrast, darken more
-  if (rgb.r > 200 && rgb.g > 200 && rgb.b > 200) {
-    color = `rgb(${rgb.r - 50}, ${rgb.g - 50}, ${rgb.b - 50})`;
+    // If lower contrast, darken more
+    if (rgb.r > 200 && rgb.g > 200 && rgb.b > 200) {
+      color = `rgb(${rgb.r - 50}, ${rgb.g - 50}, ${rgb.b - 50})`;
+    }
+  } else {
+    const bgRgb = hexToRgb(bgColor);
+    let bgDarkness = 0;
+    if (bgRgb.r < 155) bgDarkness += 1;
+    if (bgRgb.g < 155) bgDarkness += 1;
+    if (bgRgb.b < 155) bgDarkness += 1;
+    if (bgDarkness > 1) {
+      color = `rgb(${rgb.r + 150}, ${rgb.g + 150}, ${rgb.b + 150})`;
+    }
   }
 
   return color;
 }
 
-export function darken(color, brightness) {
+
+
+export function adjustBrightness(color, brightness) {
   if (color[0] !== '#') return color; // preserve non-hex color, e.g. "purple"
   const rgb = hexToRgb(color);
   const br = brightness;
   const newRgb = {r: rgb.r * br, g: rgb.g * br, b: rgb.b * br};
-  const darkenedColor = `rgb(${newRgb.r}, ${newRgb.g}, ${newRgb.b})`;
+  const newColor = `rgb(${newRgb.r}, ${newRgb.g}, ${newRgb.b})`;
 
-  return darkenedColor;
+  return newColor;
 }
 
 export function getTippyConfig() {

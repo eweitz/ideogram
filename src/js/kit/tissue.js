@@ -1,4 +1,4 @@
-import {getTippyConfig, darken} from '../lib';
+import {getTippyConfig, adjustBrightness, ensureContrast} from '../lib';
 import tippy from 'tippy.js';
 
 /** Copyedit machine-friendly tissue name to human-friendly GTEx convention */
@@ -28,21 +28,25 @@ function refineTissueName(rawName) {
   return name;
 }
 
-function setPxLength(tissueExpressions) {
-  const maxPx = 80;
+function setPxOffset(tissueExpressions) {
+  const maxPx = 70;
   let maxExpression = 0;
 
   const metrics = ['max', 'q3', 'median', 'q1', 'min'];
+
+  for (let i = 0; i < tissueExpressions.length; i++) {
+    const teObject = tissueExpressions[i];
+    if (teObject.expression.max > maxExpression) {
+      maxExpression = teObject.expression.max;
+    }
+  }
 
   tissueExpressions.map(teObject => {
     teObject.px = {};
     for (let i = 0; i < metrics.length; i++) {
       const metric = metrics[i];
       const expression = teObject.expression[metric];
-      if (expression > maxExpression) {
-        maxExpression = expression;
-      }
-      const px = maxPx * expression/maxExpression;
+      const px = maxPx * expression/maxExpression + 10;
       teObject.px[metric] = px;
     }
     return teObject;
@@ -89,7 +93,7 @@ function getMoreOrLessToggle(gene, height, tissueExpressions, ideo) {
 }
 
 function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
-  tissueExpressions = setPxLength(tissueExpressions);
+  tissueExpressions = setPxOffset(tissueExpressions);
 
   const height = 12;
 
@@ -102,32 +106,32 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
     y = 1 + i * (height + 2);
     const tissue = refineTissueName(teObject.tissue);
     const color = `#${teObject.color}`;
-    const borderColor = darken(color, 0.85);
+    const borderColor = adjustBrightness(color, 0.85);
     const median = teObject.expression.median;
     const numSamples = teObject.samples;
     const offsets = teObject.px;
     const width = offsets.q3 - offsets.q1;
-    const x = Math.abs(offsets.q3 - 85);
+    const x = offsets.q1;
 
-    const maxX1 = Math.abs(offsets.max - 85);
-    const maxX2 = Math.abs(offsets.q3 - 85);
-    const whiskerColor = darken(color, 0.65);
+    const maxX1 = offsets.q3;
+    const maxX2 = offsets.max;
+    const whiskerColor = adjustBrightness(color, 0.65);
     const whiskerY = y + 6;
     const whiskerMaxAttrs =
       `x1="${maxX1}" y1="${whiskerY}" x2="${maxX2}" y2="${whiskerY}"`;
     const whiskerMax = `<line stroke="${whiskerColor}" ${whiskerMaxAttrs} />`;
-    const minX1 = Math.abs(offsets.q1 - 85);
-    const minX2 = Math.abs(offsets.min - 85);
+    const minX1 = offsets.min;
+    const minX2 = offsets.q1;
     const whiskerMinAttrs =
       `x1="${minX1}" y1="${whiskerY}" x2="${minX2}" y2="${whiskerY}"`;
     const whiskerMin = `<line stroke="${whiskerColor}" ${whiskerMinAttrs} />`;
 
-    const medianX = Math.abs(offsets.median - 85);
-    const medianColor = darken(color, 0.65);
+    const medianX = offsets.median;
+    const medianBaseColor = adjustBrightness(color, 0.55);
+    const medianColor = ensureContrast(medianBaseColor, color);
     const medianAttrs =
       `x1="${medianX}" y1="${y}" x2="${medianX}" y2="${y + height - 0.5}"`;
     const medianLine = `<line stroke="${medianColor}" ${medianAttrs} />`;
-
 
     const tippyTxt =
       `Median TPM: <b>${median}</b><br/>` +
@@ -152,10 +156,10 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
     return (
       `<text ${textAttrs}>${tissue}</text>` +
       '<g class="_ideoExpressionTrace">' +
-      whiskerMax +
+      whiskerMin +
       `<rect ${boxAttrs} />` +
       medianLine +
-      whiskerMin +
+      whiskerMax +
       '</g>'
     );
   }).join('');
