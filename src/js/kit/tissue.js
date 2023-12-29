@@ -125,68 +125,79 @@ function getBoxPlot(offsets, y, height, color, tippyAttr) {
   return [whiskers, medianLine];
 }
 
-function getViolin(teObject, y, height, color, borderColor) {
-
+/**
+ * Get a distribution curve of expression, via kernel density estimation (KDE)
+ */
+function getCurve(teObject, y, height, color, borderColor) {
   const quantiles = teObject.expression.quantiles;
   const offsets = teObject.px;
   const samples = teObject.samples;
   const spreadQuantiles = [];
-  const numQuantiles = quantiles.length;
-  console.log('quantiles', quantiles)
+
+  // `quantiles` is an array encoding a histogram.
+  // To get a kernel density estimation (KDE) -- i.e., a curve that smooths the
+  // crude bars of the histogram -- we need to "spread" or "flatten" the
+  // histogram array so e.g.
+  // [0, 5, 4, 1] (= 0 samples in quantile 1, 5 samples in quantile 2, etc.)
+  // becomes
+  // [0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3]
   quantiles.map((quantileCount, j) => {
     for (let k = 0; k < quantileCount; k++) {
       spreadQuantiles.push(j);
     }
   });
-  console.log('spreadQuantiles', spreadQuantiles)
+
   const sampleThreshold = 70; // GTEx sample threshold
+
+  // Small bandwidth : sharp curve :: large bandwidth : smooth curve
+  //
+  // Increasing bandwidth when there are few samples helps avoid sharp curves
+  // that are mere artifacts of having few points, which would be problematic
+  // as it almost certainly misrepresents the underlying population.
   const bandwidth = samples >= sampleThreshold ? 0.7 : 1.5;
-  const numBins = 64;
+
+  const numBins = 64; // The number of lines in the KDE curve
   const kde = density1d(
     spreadQuantiles, {bins: numBins, bandwidth}
   );
   const rawKdeArray = Array.from(kde);
-  console.log('rawKdeArray', rawKdeArray)
   const kdeArray = rawKdeArray
     .filter(point => 0 <= point.x && point.x <= 10);
+
   if (kdeArray.length === 0) return '';
+
+  // Get scaling factor to convert kernel coordinates to pixels
   const maxKernelY = Math.max(...kdeArray.map(p => p.y));
-  console.log('kdeArray', kdeArray);
   const minKernelX = kdeArray[0].x;
   const maxKernelX = kdeArray.slice(-1)[0].x;
   const kdeWidth = maxKernelX - minKernelX;
   const offsetsWidth = offsets.max - offsets.min;
-
   const pixelsPerKernel = offsetsWidth/kdeWidth;
 
   const bottom = height + y;
+
+  // Convert KDE x,y points to pixel coordinates, each a segment of the curve.
   const rawPoints = kdeArray.map(point => {
-    // const pointX = (offsets.max - 10) * (point.x / numQuantiles);
-    // const pointX = offsetsWidth * ((point.x / numQuantiles)) + offsets.min - 10;
-    // if (point.x)
     const pointX = (point.x - minKernelX) * pixelsPerKernel + offsets.min;
-    let pointY = bottom - height * (point.y / maxKernelY);
-    // pointY = pointY > (bottom) ? (bottom) : pointY;
+    const pointY = bottom - height * (point.y / maxKernelY);
     return `${pointX},${pointY}`;
-  })
-  const point1 = rawPoints[0];
+  });
+
+  // Tie up loose ends of the curved diagram
+  rawPoints.push(offsets.max + ',' + bottom);
   rawPoints.push(offsets.min + ',' + bottom);
-  rawPoints.push(point1);
+  const originPoint = rawPoints[0];
+  rawPoints.push(originPoint);
   const points = rawPoints.join(' ');
 
-
-  console.log('offsets', offsets);
-  console.log('kdeArray', kdeArray);
-  console.log('pixelsPerKernel', pixelsPerKernel);
-  console.log('points', points);
-  const violinAttrs =
+  const curveAttrs =
     `fill="${color}" ` +
     `stroke="${borderColor}" ` +
     `points="${points}"`;
 
-  const violin = `<polyline ${violinAttrs} />`;
+  const curve = `<polyline ${curveAttrs} />`;
 
-  return violin;
+  return curve;
 }
 
 function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
@@ -206,7 +217,6 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
     const borderColor = adjustBrightness(color, 0.85);
 
     const expression = teObject.expression;
-    const quantiles = expression.quantiles;
 
     const median = expression.median;
     const q1 = expression.q1;
@@ -218,27 +228,28 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
     const width = offsets.q3 - offsets.q1;
     const x = offsets.q1;
 
+    // const tippyTxt =
+    //   `Expression:<br/>` +
+    //   `Min.: <b>${min}</b> (${Math.round(offsets.min)} px)<br/>` +
+    //   `Q1: <b>${q1}</b> (${Math.round(offsets.q1)} px)<br/>` +
+    //   `Median: <b>${median}</b> (${Math.round(offsets.median)} px)<br/>` +
+    //   `Q3: <b>${q3}</b> (${Math.round(offsets.q3)} px)<br/>` +
+    //   `Max.: <b>${max}</b> (${Math.round(offsets.max)} px)<br/>` +
+    //   `Samples: <b>${numSamples}</b><br/>` +
+    //   `<span style='font-size: 9px;'>Source: GTEx</span>`;
     const tippyTxt =
-      `Expression:<br/>` +
-      `Min.: <b>${min}</b> (${Math.round(offsets.min)} px)<br/>` +
-      `Q1: <b>${q1}</b> (${Math.round(offsets.q1)} px)<br/>` +
-      `Median: <b>${median}</b> (${Math.round(offsets.median)} px)<br/>` +
-      `Q3: <b>${q3}</b> (${Math.round(offsets.q3)} px)<br/>` +
-      `Max.: <b>${max}</b> (${Math.round(offsets.max)} px)<br/>` +
+      `Median: <b>${median}</b> TPM<br/>` +
       `Samples: <b>${numSamples}</b><br/>` +
       `<span style='font-size: 9px;'>Source: GTEx</span>`;
     const tippyAttr = `data-tippy-content="${tippyTxt}"`;
 
     const [whiskers, medianLine] = getBoxPlot(
       offsets, y, height, color, tippyAttr
-      );
+    );
 
-    console.log('')
-    console.log('expression', expression)
-    const violin = getViolin(
+    const distributionCurve = getCurve(
       teObject, y, height, color, borderColor
     );
-    console.log('medianLine', medianLine)
 
     const boxAttrs =
       `height="${height - 0.5}" ` +
@@ -246,17 +257,17 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
       `x="${x}" ` +
       `y="${y}" ` +
       `fill="${color}" ` +
-      `stroke="${borderColor}" stroke-width="1px" `
-      ;
+      `stroke="${borderColor}" stroke-width="1px" `;
 
+    // Invisible; enables tooltip upon hover anywhere in diagram area,
+    // not merely the (potentially very small) diagram itself
     const containerAttrs =
       `height="${height - 0.5}" ` +
       `width="80px" ` +
       'fill="#FFF" ' +
       'opacity="0" ' +
       `x="0" ` +
-      `y="${y}" ` +
-      'class="_ideoExpressionTrace"';
+      `y="${y}"`;
 
     const textAttrs =
       `y="${y + height - 1.5}" ` +
@@ -264,14 +275,14 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
       'x="90"';
 
     return (
-      `<g>' +
-      <text ${textAttrs}>${tissue}</text>` +
+      '<g>' +
+      `<text ${textAttrs}>${tissue}</text>` +
       // whiskers.min +
       // `<rect ${boxAttrs} />` +
-      violin +
+      distributionCurve +
       medianLine +
       // whiskers.max +
-      `<rect ${containerAttrs} />` +
+      `<rect ${containerAttrs} class="_ideoExpressionTrace" />` +
       '</g>'
     );
   }).join('');
