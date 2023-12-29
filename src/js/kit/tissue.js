@@ -29,8 +29,7 @@ function refineTissueName(rawName) {
   return name;
 }
 
-function setPxOffset(tissueExpressions) {
-  const maxPx = 80;
+function setPxOffset(tissueExpressions, maxPx=80) {
   let maxExpression = 0;
 
   const metrics = ['max', 'q3', 'median', 'q1', 'min'];
@@ -93,7 +92,28 @@ function getMoreOrLessToggle(gene, height, tissueExpressions, ideo) {
   return moreOrLessToggleHtml;
 }
 
-function getBoxPlot(offsets, y, height, color, tippyAttr) {
+function getMetricLine(
+  metric, offsets, color, y, height,
+  tippyAttr='', dash=false
+) {
+  const classMetric = metric[0].toUpperCase() + metric.slice(1);
+  const x = offsets[metric];
+  const metricHeight = offsets[metric + 'Height'];
+  const top = height - metricHeight;
+  const y1 = top + y + 0.5;
+  const y2 = top + y + metricHeight;
+  const baseColor = adjustBrightness(color, 0.55);
+  const strokeColor = ensureContrast(baseColor, color);
+  const dasharray = dash ? 'stroke-dasharray="4" ' : '';
+  const attrs =
+    `x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" ` +
+    dasharray +
+    `class="_ideoExpression${classMetric}" ${tippyAttr}`;
+  const metricLine = `<line stroke="${strokeColor}" ${attrs} />`;
+  return metricLine;
+}
+
+function getBoxPlot(offsets, y, height, color, tippyAttr='') {
   const whiskerColor = adjustBrightness(color, 0.65);
   const whiskerY = y + 6;
 
@@ -111,24 +131,26 @@ function getBoxPlot(offsets, y, height, color, tippyAttr) {
     `x1="${maxX1}" y1="${whiskerY}" x2="${maxX2}" y2="${whiskerY}"`;
   const whiskerMax = `<line stroke="${whiskerColor}" ${whiskerMaxAttrs} />`;
 
-  // Get median line
-  const medianX = offsets.median;
-  const medianBaseColor = adjustBrightness(color, 0.55);
-  const medianColor = ensureContrast(medianBaseColor, color);
-  const medianAttrs =
-    `x1="${medianX}" y1="${y}" x2="${medianX}" y2="${y + height - 0.5}" ` +
-    `class="_ideoExpressionMedian" ${tippyAttr}`;
-  const medianLine = `<line stroke="${medianColor}" ${medianAttrs} />`;
-
   const whiskers = {min: whiskerMin, max: whiskerMax};
 
-  return [whiskers, medianLine];
+  // Get vertical lines for median, Q1, Q3
+  const medianLine = getMetricLine(
+    'median', offsets, color, y, height, tippyAttr, false
+  );
+  const q1Line = getMetricLine(
+    'q1', offsets, color, y, height, tippyAttr, true
+  );
+  const q3Line = getMetricLine(
+    'q3', offsets, color, y, height, tippyAttr, true
+  );
+
+  return [whiskers, medianLine, q1Line, q3Line];
 }
 
 /**
  * Get a distribution curve of expression, via kernel density estimation (KDE)
  */
-function getCurve(teObject, y, height, color, borderColor) {
+function getCurve(teObject, y, height, color, borderColor, numKdeBins=64) {
   const quantiles = teObject.expression.quantiles;
   const offsets = teObject.px;
   const samples = teObject.samples;
@@ -156,7 +178,7 @@ function getCurve(teObject, y, height, color, borderColor) {
   // as it almost certainly misrepresents the underlying population.
   const bandwidth = samples >= sampleThreshold ? 0.7 : 1.5;
 
-  const numBins = 64; // The number of lines in the KDE curve
+  const numBins = numKdeBins; // The number of lines in the KDE curve
   const kde = density1d(
     spreadQuantiles, {bins: numBins, bandwidth}
   );
@@ -176,11 +198,26 @@ function getCurve(teObject, y, height, color, borderColor) {
 
   const bottom = height + y;
 
-  // Convert KDE x,y points to pixel coordinates, each a segment of the curve.
-  const rawPoints = kdeArray.map(point => {
-    const pointX = (point.x - minKernelX) * pixelsPerKernel + offsets.min;
-    const pointY = bottom - height * (point.y / maxKernelY);
-    return `${pointX},${pointY}`;
+  // Convert KDE x,y points to pixel coordinates, each a segment of the curve;
+  // and set heights for each metric plotted in detailed distribution
+  let prevPixelX = 0;
+  const rawPoints = kdeArray.map((point, i) => {
+    const pixelX = (point.x - minKernelX) * pixelsPerKernel + offsets.min;
+    const segmentHeight = height * (point.y / maxKernelY);
+    const pixelY = bottom - segmentHeight;
+
+    if (i > 0) {
+      ['q1', 'median', 'q3'].forEach(metric => {
+        const metricX = offsets[metric];
+        if (prevPixelX < metricX && metricX <= pixelX) {
+          offsets[metric + 'Height'] = segmentHeight;
+        }
+      });
+    }
+
+    prevPixelX = pixelX;
+
+    return `${pixelX},${pixelY}`;
   });
 
   // Tie up loose ends of the curved diagram
@@ -193,11 +230,69 @@ function getCurve(teObject, y, height, color, borderColor) {
   const curveAttrs =
     `fill="${color}" ` +
     `stroke="${borderColor}" ` +
-    `points="${points}"`;
+    `points="${points}" `;
 
   const curve = `<polyline ${curveAttrs} />`;
 
-  return curve;
+  return [curve, offsets];
+}
+
+/**
+ * Remove detailed distribution curve; unhide RNA & protein diagrams, footer
+ */
+function removeDetailedCurve() {
+  const container = document.querySelector('._ideoDistributionContainer');
+  container.remove();
+
+  const structureDom = document.querySelector('._ideoGeneStructureContainer');
+  structureDom.style.display = '';
+  const footer = document.querySelector('._ideoTooltipFooter');
+  footer.style.display = '';
+}
+
+function addDetailedCurve(traceDom, ideo) {
+  const gene = traceDom.getAttribute('data-gene');
+  const tissue = traceDom.getAttribute('data-tissue');
+  const tissueExpressions = ideo.tissueExpressionsByGene[gene];
+
+  let teObject = tissueExpressions.find(t => t.tissue === tissue);
+  const maxWidthPx = 250; // Same width as RNA & protein diagrams
+  teObject = setPxOffset([teObject], maxWidthPx)[0];
+
+  const y = 0;
+  const height = 50;
+
+  const color = `#${teObject.color}`;
+  const borderColor = adjustBrightness(color, 0.85);
+
+  const [distributionCurve, offsetsWithHeight] = getCurve(
+    teObject, y, height, color, borderColor, 256
+  );
+
+  const [whiskers, medianLine, q1Line, q3Line] = getBoxPlot(
+    offsetsWithHeight, y, height, color
+  );
+
+  // Hide RNA & protein diagrams, footer
+  const structureDom = document.querySelector('._ideoGeneStructureContainer');
+  structureDom.style.display = 'none';
+  const footer = document.querySelector('._ideoTooltipFooter');
+  footer.style.display = 'none';
+
+  const borderPad = '-1 -1'; // Avoids truncating curve border / stroke
+
+  const container =
+    `<div class="_ideoDistributionContainer">` +
+    `<svg viewbox="${borderPad} ${maxWidthPx + 40} ${height + 10}">` +
+    distributionCurve +
+    medianLine +
+    q1Line +
+    q3Line +
+    `</svg>` +
+    '</div>';
+
+  structureDom.insertAdjacentHTML('beforebegin', container);
+  console.log('distributionCurve', distributionCurve);
 }
 
 function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
@@ -243,12 +338,12 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
       `<span style='font-size: 9px;'>Source: GTEx</span>`;
     const tippyAttr = `data-tippy-content="${tippyTxt}"`;
 
-    const [whiskers, medianLine] = getBoxPlot(
-      offsets, y, height, color, tippyAttr
+    const [distributionCurve, offsetsWithHeight] = getCurve(
+      teObject, y, height, color, borderColor
     );
 
-    const distributionCurve = getCurve(
-      teObject, y, height, color, borderColor
+    const [whiskers, medianLine] = getBoxPlot(
+      offsetsWithHeight, y, height, color, tippyAttr
     );
 
     const boxAttrs =
@@ -267,7 +362,9 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
       'fill="#FFF" ' +
       'opacity="0" ' +
       `x="0" ` +
-      `y="${y}"`;
+      `y="${y}" ` +
+      `data-gene="${gene}" ` +
+      `data-tissue="${teObject.tissue}"`;
 
     const textAttrs =
       `y="${y + height - 1.5}" ` +
@@ -329,9 +426,11 @@ export function addTissueListeners(ideo) {
     const medianLine = trace.parentNode.querySelector('._ideoExpressionMedian');
     trace.addEventListener('mouseenter', () => {
       medianLine.dispatchEvent(new Event('mouseenter'));
+      addDetailedCurve(trace, ideo);
     });
     trace.addEventListener('mouseleave', () => {
       medianLine.dispatchEvent(new Event('mouseleave'));
+      removeDetailedCurve(trace, ideo);
     });
   });
 
