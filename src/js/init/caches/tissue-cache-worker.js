@@ -42,15 +42,20 @@ async function getTissueExpressions(gene, ideo) {
   for (let i = 0; i < rawExpressions.length; i++) {
     const rawValues = rawExpressions[i].split(';');
     const tissueId = rawValues[0];
-    const min = parseFloat(rawValues[1]);
-    const q1 = parseFloat(rawValues[2]);
-    const median = parseFloat(rawValues[3]);
-    const q3 = parseFloat(rawValues[4]);
-    const max = parseFloat(rawValues[5]);
-    const expression = {min, q1, median, q3, max};
+    const boxMetrics = rawValues.slice(1, 6);
+    const min = parseFloat(boxMetrics[0]);
+    const q1 = parseFloat(boxMetrics[1]);
+    const median = parseFloat(boxMetrics[2]);
+    const q3 = parseFloat(boxMetrics[3]);
+    const max = parseFloat(boxMetrics[4]);
+    const quantiles = rawValues.slice(6).map(v => parseInt(v));
+    const expression = {
+      min, q1, median, q3, max,
+      quantiles
+    };
     const tissue = cache.tissueNames[tissueId];
     const color = cache.tissueColors[tissueId];
-    const samples = cache.tissueSamples[tissueId];
+    const samples = parseInt(cache.tissueSamples[tissueId]);
     tissueExpressions.push({tissue, expression, color, samples});
   }
 

@@ -1,5 +1,6 @@
 import {getTippyConfig, adjustBrightness, ensureContrast} from '../lib';
 import tippy from 'tippy.js';
+import { density1d } from 'fast-kde';
 
 /** Copyedit machine-friendly tissue name to human-friendly GTEx convention */
 function refineTissueName(rawName) {
@@ -29,7 +30,7 @@ function refineTissueName(rawName) {
 }
 
 function setPxOffset(tissueExpressions) {
-  const maxPx = 70;
+  const maxPx = 80;
   let maxExpression = 0;
 
   const metrics = ['max', 'q3', 'median', 'q1', 'min'];
@@ -46,7 +47,7 @@ function setPxOffset(tissueExpressions) {
     for (let i = 0; i < metrics.length; i++) {
       const metric = metrics[i];
       const expression = teObject.expression[metric];
-      const px = maxPx * expression/maxExpression + 10;
+      const px = maxPx * expression/maxExpression;
       teObject.px[metric] = px;
     }
     return teObject;
@@ -92,6 +93,102 @@ function getMoreOrLessToggle(gene, height, tissueExpressions, ideo) {
   return moreOrLessToggleHtml;
 }
 
+function getBoxPlot(offsets, y, height, color, tippyAttr) {
+  const whiskerColor = adjustBrightness(color, 0.65);
+  const whiskerY = y + 6;
+
+  // Get minimum whisker
+  const minX1 = offsets.min;
+  const minX2 = offsets.q1;
+  const whiskerMinAttrs =
+    `x1="${minX1}" y1="${whiskerY}" x2="${minX2}" y2="${whiskerY}"`;
+  const whiskerMin = `<line stroke="${whiskerColor}" ${whiskerMinAttrs} />`;
+
+  // Get maximum whisker
+  const maxX1 = offsets.q3;
+  const maxX2 = offsets.max;
+  const whiskerMaxAttrs =
+    `x1="${maxX1}" y1="${whiskerY}" x2="${maxX2}" y2="${whiskerY}"`;
+  const whiskerMax = `<line stroke="${whiskerColor}" ${whiskerMaxAttrs} />`;
+
+  // Get median line
+  const medianX = offsets.median;
+  const medianBaseColor = adjustBrightness(color, 0.55);
+  const medianColor = ensureContrast(medianBaseColor, color);
+  const medianAttrs =
+    `x1="${medianX}" y1="${y}" x2="${medianX}" y2="${y + height - 0.5}" ` +
+    `class="_ideoExpressionMedian" ${tippyAttr}`;
+  const medianLine = `<line stroke="${medianColor}" ${medianAttrs} />`;
+
+  const whiskers = {min: whiskerMin, max: whiskerMax};
+
+  return [whiskers, medianLine];
+}
+
+function getViolin(teObject, y, height, color, borderColor) {
+
+  const quantiles = teObject.expression.quantiles;
+  const offsets = teObject.px;
+  const samples = teObject.samples;
+  const spreadQuantiles = [];
+  const numQuantiles = quantiles.length;
+  console.log('quantiles', quantiles)
+  quantiles.map((quantileCount, j) => {
+    for (let k = 0; k < quantileCount; k++) {
+      spreadQuantiles.push(j);
+    }
+  });
+  console.log('spreadQuantiles', spreadQuantiles)
+  const sampleThreshold = 70; // GTEx sample threshold
+  const bandwidth = samples >= sampleThreshold ? 0.7 : 1.5;
+  const numBins = 64;
+  const kde = density1d(
+    spreadQuantiles, {bins: numBins, bandwidth}
+  );
+  const rawKdeArray = Array.from(kde);
+  console.log('rawKdeArray', rawKdeArray)
+  const kdeArray = rawKdeArray
+    .filter(point => 0 <= point.x && point.x <= 10);
+  if (kdeArray.length === 0) return '';
+  const maxKernelY = Math.max(...kdeArray.map(p => p.y));
+  console.log('kdeArray', kdeArray);
+  const minKernelX = kdeArray[0].x;
+  const maxKernelX = kdeArray.slice(-1)[0].x;
+  const kdeWidth = maxKernelX - minKernelX;
+  const offsetsWidth = offsets.max - offsets.min;
+
+  const pixelsPerKernel = offsetsWidth/kdeWidth;
+
+  const bottom = height + y;
+  const rawPoints = kdeArray.map(point => {
+    // const pointX = (offsets.max - 10) * (point.x / numQuantiles);
+    // const pointX = offsetsWidth * ((point.x / numQuantiles)) + offsets.min - 10;
+    // if (point.x)
+    const pointX = (point.x - minKernelX) * pixelsPerKernel + offsets.min;
+    let pointY = bottom - height * (point.y / maxKernelY);
+    // pointY = pointY > (bottom) ? (bottom) : pointY;
+    return `${pointX},${pointY}`;
+  })
+  const point1 = rawPoints[0];
+  rawPoints.push(offsets.min + ',' + bottom);
+  rawPoints.push(point1);
+  const points = rawPoints.join(' ');
+
+
+  console.log('offsets', offsets);
+  console.log('kdeArray', kdeArray);
+  console.log('pixelsPerKernel', pixelsPerKernel);
+  console.log('points', points);
+  const violinAttrs =
+    `fill="${color}" ` +
+    `stroke="${borderColor}" ` +
+    `points="${points}"`;
+
+  const violin = `<polyline ${violinAttrs} />`;
+
+  return violin;
+}
+
 function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
   tissueExpressions = setPxOffset(tissueExpressions);
 
@@ -107,46 +204,59 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
     const tissue = refineTissueName(teObject.tissue);
     const color = `#${teObject.color}`;
     const borderColor = adjustBrightness(color, 0.85);
-    const median = teObject.expression.median;
+
+    const expression = teObject.expression;
+    const quantiles = expression.quantiles;
+
+    const median = expression.median;
+    const q1 = expression.q1;
+    const q3 = expression.q3;
+    const max = expression.max;
+    const min = expression.min;
     const numSamples = teObject.samples;
     const offsets = teObject.px;
     const width = offsets.q3 - offsets.q1;
     const x = offsets.q1;
 
-    const maxX1 = offsets.q3;
-    const maxX2 = offsets.max;
-    const whiskerColor = adjustBrightness(color, 0.65);
-    const whiskerY = y + 6;
-    const whiskerMaxAttrs =
-      `x1="${maxX1}" y1="${whiskerY}" x2="${maxX2}" y2="${whiskerY}"`;
-    const whiskerMax = `<line stroke="${whiskerColor}" ${whiskerMaxAttrs} />`;
-    const minX1 = offsets.min;
-    const minX2 = offsets.q1;
-    const whiskerMinAttrs =
-      `x1="${minX1}" y1="${whiskerY}" x2="${minX2}" y2="${whiskerY}"`;
-    const whiskerMin = `<line stroke="${whiskerColor}" ${whiskerMinAttrs} />`;
-
-    const medianX = offsets.median;
-    const medianBaseColor = adjustBrightness(color, 0.55);
-    const medianColor = ensureContrast(medianBaseColor, color);
-    const medianAttrs =
-      `x1="${medianX}" y1="${y}" x2="${medianX}" y2="${y + height - 0.5}"`;
-    const medianLine = `<line stroke="${medianColor}" ${medianAttrs} />`;
-
     const tippyTxt =
-      `Median TPM: <b>${median}</b><br/>` +
+      `Expression:<br/>` +
+      `Min.: <b>${min}</b> (${Math.round(offsets.min)} px)<br/>` +
+      `Q1: <b>${q1}</b> (${Math.round(offsets.q1)} px)<br/>` +
+      `Median: <b>${median}</b> (${Math.round(offsets.median)} px)<br/>` +
+      `Q3: <b>${q3}</b> (${Math.round(offsets.q3)} px)<br/>` +
+      `Max.: <b>${max}</b> (${Math.round(offsets.max)} px)<br/>` +
       `Samples: <b>${numSamples}</b><br/>` +
       `<span style='font-size: 9px;'>Source: GTEx</span>`;
     const tippyAttr = `data-tippy-content="${tippyTxt}"`;
+
+    const [whiskers, medianLine] = getBoxPlot(
+      offsets, y, height, color, tippyAttr
+      );
+
+    console.log('')
+    console.log('expression', expression)
+    const violin = getViolin(
+      teObject, y, height, color, borderColor
+    );
+    console.log('medianLine', medianLine)
+
     const boxAttrs =
       `height="${height - 0.5}" ` +
       `width="${width}" ` +
       `x="${x}" ` +
       `y="${y}" ` +
       `fill="${color}" ` +
-      `stroke="${borderColor}" stroke-width="1px" ` +
-      'class="_ideoExpressionTrace" ' +
-      tippyAttr;
+      `stroke="${borderColor}" stroke-width="1px" `
+      ;
+
+    const containerAttrs =
+      `height="${height - 0.5}" ` +
+      `width="80px" ` +
+      'fill="#FFF" ' +
+      'opacity="0" ' +
+      `x="0" ` +
+      `y="${y}" ` +
+      'class="_ideoExpressionTrace"';
 
     const textAttrs =
       `y="${y + height - 1.5}" ` +
@@ -154,12 +264,14 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
       'x="90"';
 
     return (
-      `<text ${textAttrs}>${tissue}</text>` +
-      '<g class="_ideoExpressionTrace">' +
-      whiskerMin +
-      `<rect ${boxAttrs} />` +
+      `<g>' +
+      <text ${textAttrs}>${tissue}</text>` +
+      // whiskers.min +
+      // `<rect ${boxAttrs} />` +
+      violin +
       medianLine +
-      whiskerMax +
+      // whiskers.max +
+      `<rect ${containerAttrs} />` +
       '</g>'
     );
   }).join('');
@@ -202,8 +314,18 @@ export function addTissueListeners(ideo) {
     });
   }
 
+  document.querySelectorAll('._ideoExpressionTrace').forEach(trace => {
+    const medianLine = trace.parentNode.querySelector('._ideoExpressionMedian');
+    trace.addEventListener('mouseenter', () => {
+      medianLine.dispatchEvent(new Event('mouseenter'));
+    });
+    trace.addEventListener('mouseleave', () => {
+      medianLine.dispatchEvent(new Event('mouseleave'));
+    });
+  });
+
   tippy(
-    '._ideoExpressionTrace',
+    '._ideoExpressionMedian',
     getTippyConfig()
   );
 }

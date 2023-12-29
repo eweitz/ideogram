@@ -129,7 +129,7 @@ def summarize_top_tissues_by_gene(input_dir):
             tissue_detail = row[6]
             tissues_by_sample_id[sample_id] = tissue_detail
 
-    print('tissues_by_sample_id', tissues_by_sample_id)
+    # print('tissues_by_sample_id', tissues_by_sample_id)
     summary_by_gene_by_tissue = {}
     tissues_by_index = [] # Tissue detail by column index
     tissues_by_index_unique = []
@@ -164,14 +164,10 @@ def summarize_top_tissues_by_gene(input_dir):
                     if tissue not in tissues_by_index_unique:
                         tissues_by_index_unique.append(tissue)
                         tissues_by_index_unique = sorted(tissues_by_index_unique)
-                        # print('tissues_by_index_unique', tissues_by_index_unique)
 
                 continue
 
             gene = row[1]
-
-            if i % 500 == 0:
-                print(f'Computing summary for gene {i}: {gene}')
 
             expressions_by_tissue = {}
             for j, raw_expression in enumerate(row):
@@ -199,7 +195,21 @@ def summarize_top_tissues_by_gene(input_dir):
                 summary = []
                 for s in raw_summary:
                     if s > 0:
-                        summary.append(round(s, 3))
+                        summary.append(round(s, 2))
+
+                if len(summary) == 5:
+                    num_bins = 10
+                    size = max / num_bins
+                    kde_counts = [0] * num_bins
+                    for j in range(1, num_bins + 1):
+                        prev_bin_exp = (j - 1) * size
+                        bin_exp = j * size
+                        for expression in sorted_expressions:
+                            if prev_bin_exp < expression <= bin_exp:
+                                kde_counts[j - 1] += 1
+                    # if i % 500 == 0:
+                    #     print('kde_counts', kde_counts)
+                    summary += kde_counts
 
                 if gene not in summary_by_gene_by_tissue:
                     summary_by_gene_by_tissue[gene] = {}
@@ -212,7 +222,7 @@ def summarize_top_tissues_by_gene(input_dir):
             j = 0
             for tissue in summary_by_gene_by_tissue[gene]:
                 summary = summary_by_gene_by_tissue[gene][tissue]
-                if len(summary) == 5:
+                if len(summary) == 15: # 5 for box plot, 10 for KDE deciles
                     median = summary[2]
                 else:
                     median = 0
@@ -238,6 +248,11 @@ def summarize_top_tissues_by_gene(input_dir):
                 tissue_and_summary = f'{tissue_index};{summary}'
                 output_row.append(tissue_and_summary)
 
+
+            if i % 500 == 0:
+                print(f'Last tissue summary for gene {i} {gene}:')
+                print(tissue_and_summary)
+
             if len(output_row) == 1:
                 # Skip genes with no measured expression, like MEF2AP1, a pseudogene
                 # print(f'Inadequate expression, so skipping gene: {gene}')
@@ -251,9 +266,8 @@ def summarize_top_tissues_by_gene(input_dir):
                 # print('expressions for WASH7P:', expressions)
 
         output = '\n'.join(output)
-        with open('tissue-boxplot.tsv', 'w') as file:
+        with open('cache/homo-sapiens-tissues-detail.tsv', 'w') as file:
             file.write(output)
-
 
     # output_path = 'cache/gtex_boxplot_summary_by_gene.json'
     # write_json_file(summary_by_gene, output_path)
@@ -263,15 +277,35 @@ def merge_tissue_dimensions():
     with open("cache/gtex_top_genes_by_tissue.json") as f:
         raw_json = json.loads(f.read())
 
-    with open("tissue-boxplot.tsv") as f:
+    with open("cache/homo-sapiens-tissues-detail.tsv") as f:
         detail_content = f.read()
 
     tissues_list = [
         [t["id"], t["color"], str(t["num_samples"])] for t in raw_json["tissues"]
     ]
+
+    # One (and only one) tissue is non-naturally ordered in GTEx tissue lists
+    # This manually adjusts to use natural order
+    tissue_ids = [t["id"] for t in raw_json["tissues"]]
+    fibroblasts = 'Cells_Cultured_fibroblasts'
+    lymphocytes = 'Cells_EBV-transformed_lymphocytes'
+    if (
+        fibroblasts in tissue_ids and
+        lymphocytes in tissue_ids
+    ):
+        print('Naturalize order for cell tissues')
+        fibroblasts_i = tissue_ids.index(fibroblasts)
+        fibroblasts_new_i = fibroblasts_i - 1
+        lymphocytes_new_i = fibroblasts_i
+        fibroblasts_el = tissues_list[fibroblasts_i]
+        lymphocytes_el = tissues_list[fibroblasts_i - 1]
+        tissues_list[fibroblasts_new_i] = fibroblasts_el
+        tissues_list[lymphocytes_new_i] = lymphocytes_el
+
     tissues_str = [','.join(t) for t in tissues_list]
     print('len(tissues_list)', len(tissues_list))
 
+    print('tissues_str', tissues_str)
     meta_info = f"## tissues: {';'.join(tissues_str)}"
     headers = '\t'.join(['# gene', 'tissue_boxplot_metrics'])
     output = meta_info + '\n' + headers + '\n' + detail_content
@@ -361,6 +395,6 @@ if __name__ == "__main__":
     input_dir = args.input_dir
     output_dir = args.output_dir
 
-    # summarize_top_tissues_by_gene(input_dir)
+    summarize_top_tissues_by_gene(input_dir)
     merge_tissue_dimensions()
     write_line_byte_index('cache/homo-sapiens-tissues.tsv')
