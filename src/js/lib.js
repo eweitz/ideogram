@@ -348,7 +348,6 @@ function downloadPng(ideo) {
   img.src = url;
 }
 
-
 function getFont(ideo) {
   const config = ideo.config;
 

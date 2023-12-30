@@ -1,4 +1,6 @@
-import {getTippyConfig, adjustBrightness, ensureContrast} from '../lib';
+import {
+  getTippyConfig, adjustBrightness, ensureContrast, getTextSize
+} from '../lib';
 import tippy from 'tippy.js';
 import { density1d } from 'fast-kde';
 
@@ -94,7 +96,7 @@ function getMoreOrLessToggle(gene, height, tissueExpressions, ideo) {
 
 function getMetricLine(
   metric, offsets, color, y, height,
-  tippyAttr='', dash=false
+  dash=false
 ) {
   const classMetric = metric[0].toUpperCase() + metric.slice(1);
   const x = offsets[metric];
@@ -104,16 +106,16 @@ function getMetricLine(
   const y2 = top + y + metricHeight;
   const baseColor = adjustBrightness(color, 0.55);
   const strokeColor = ensureContrast(baseColor, color);
-  const dasharray = dash ? 'stroke-dasharray="4" ' : '';
+  const dasharray = dash ? 'stroke-dasharray="3" ' : '';
   const attrs =
     `x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" ` +
     dasharray +
-    `class="_ideoExpression${classMetric}" ${tippyAttr}`;
+    `class="_ideoExpression${classMetric}" `;
   const metricLine = `<line stroke="${strokeColor}" ${attrs} />`;
   return metricLine;
 }
 
-function getBoxPlot(offsets, y, height, color, tippyAttr='') {
+function getBoxPlot(offsets, y, height, color) {
   const whiskerColor = adjustBrightness(color, 0.65);
   const whiskerY = y + 6;
 
@@ -135,13 +137,13 @@ function getBoxPlot(offsets, y, height, color, tippyAttr='') {
 
   // Get vertical lines for median, Q1, Q3
   const medianLine = getMetricLine(
-    'median', offsets, color, y, height, tippyAttr, false
+    'median', offsets, color, y, height, false
   );
   const q1Line = getMetricLine(
-    'q1', offsets, color, y, height, tippyAttr, true
+    'q1', offsets, color, y, height, true
   );
   const q3Line = getMetricLine(
-    'q3', offsets, color, y, height, tippyAttr, true
+    'q3', offsets, color, y, height, true
   );
 
   return [whiskers, medianLine, q1Line, q3Line];
@@ -250,6 +252,71 @@ function removeDetailedCurve() {
   footer.style.display = '';
 }
 
+function getAxis(teObject, height) {
+  const min = teObject.px.min;
+  const minExp = teObject.expression.min;
+  const max = teObject.px.max;
+  const maxExp = teObject.expression.max;
+  const median = teObject.px.median;
+  const medianExp = teObject.expression.median;
+  const mid = max/2;
+  const y = height + 5;
+  const stroke = `stroke="#CCC" stroke-width="1px"`;
+
+  const fontObject = {
+    config: {weight: 400, annotLabelSize: 10}
+  };
+
+  const nameAttrs =
+    `x="${mid - 70}" y="${y + 50}" style="font-size: 11px"`;
+  const sampleAttrs =
+    `x="${mid - 70}" y="${y + 63}" style="font-size: 11px"`;
+
+  const minTextWidth = getTextSize(minExp, fontObject).width;
+  const minTickAttrs =
+    `x1="${min}" x2="${min}" y1="${y - 3}" y2="${y + 5}" ${stroke}`;
+  const minTextAttrs =
+    `x="${min}" style="font-size: 10px"`;
+  const minText =
+    `<line ${minTickAttrs} />` +
+    `<text ${minTextAttrs} y="${y + 15}" >Min.</text>` +
+    `<text ${minTextAttrs} y="${y + 26}" >${minExp}</text>`;
+
+  const maxTextWidth = getTextSize(maxExp, fontObject).width;
+  const maxTickAttrs =
+    `x1="${max}" x2="${max}" y1="${y - 3}" y2="${y + 5}" ${stroke}`;
+  const maxTextAttrs =
+    `style="font-size: 10px"`;
+  const maxText =
+    `<line ${maxTickAttrs} />` +
+    `<text ${maxTextAttrs} x="${max - 16}" y="${y + 15}">Max.</text>` +
+    `<text ${maxTextAttrs} x="${max - maxTextWidth + 3}" y="${y + 26}">${maxExp}</text>`;
+
+  const medianTextWidth = getTextSize(medianExp, fontObject).width;
+  const medianTickAttrs =
+    `x1="${median}" x2="${median}" y1="${y - 3}" y2="${y + 5}" ${stroke}`;
+  const medianTextAttrs =
+  `style="font-size: 10px"`;
+  const medianX = median - 16;
+  const medianText =
+    `<line ${medianTickAttrs} />` +
+    `<text ${medianTextAttrs} x="${medianX}" y="${y + 15}">Median</text>` +
+    `<text ${medianTextAttrs} x="${median - medianTextWidth + 12}" y="${y + 26}">${medianExp}</text>`;
+
+  const minAndMedianCollide = minTextWidth + 5 >= medianX;
+  const refinedMinText = minAndMedianCollide ? '' : minText;
+
+  return (
+    `<g>` +
+    refinedMinText +
+    maxText +
+    medianText +
+    `<text ${nameAttrs}>Expression distribution (TPM)</text>` +
+    `<text ${sampleAttrs}>Samples: ${teObject.samples} | Source: GTEx</text>` +
+    `</g>`
+  );
+}
+
 function addDetailedCurve(traceDom, ideo) {
   const gene = traceDom.getAttribute('data-gene');
   const tissue = traceDom.getAttribute('data-tissue');
@@ -260,7 +327,7 @@ function addDetailedCurve(traceDom, ideo) {
   teObject = setPxOffset([teObject], maxWidthPx)[0];
 
   const y = 0;
-  const height = 50;
+  const height = 30;
 
   const color = `#${teObject.color}`;
   const borderColor = adjustBrightness(color, 0.85);
@@ -272,6 +339,7 @@ function addDetailedCurve(traceDom, ideo) {
   const [whiskers, medianLine, q1Line, q3Line] = getBoxPlot(
     offsetsWithHeight, y, height, color
   );
+  const axis = getAxis(teObject, height);
 
   // Hide RNA & protein diagrams, footer
   const structureDom = document.querySelector('._ideoGeneStructureContainer');
@@ -283,7 +351,8 @@ function addDetailedCurve(traceDom, ideo) {
 
   const container =
     `<div class="_ideoDistributionContainer">` +
-    `<svg viewbox="${borderPad} ${maxWidthPx + 40} ${height + 10}">` +
+    `<svg viewbox="${borderPad} ${maxWidthPx + 20} ${height + 70}">` +
+    axis +
     distributionCurve +
     medianLine +
     q1Line +
@@ -292,7 +361,6 @@ function addDetailedCurve(traceDom, ideo) {
     '</div>';
 
   structureDom.insertAdjacentHTML('beforebegin', container);
-  console.log('distributionCurve', distributionCurve);
 }
 
 function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
@@ -332,18 +400,13 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
     //   `Max.: <b>${max}</b> (${Math.round(offsets.max)} px)<br/>` +
     //   `Samples: <b>${numSamples}</b><br/>` +
     //   `<span style='font-size: 9px;'>Source: GTEx</span>`;
-    const tippyTxt =
-      `Median: <b>${median}</b> TPM<br/>` +
-      `Samples: <b>${numSamples}</b><br/>` +
-      `<span style='font-size: 9px;'>Source: GTEx</span>`;
-    const tippyAttr = `data-tippy-content="${tippyTxt}"`;
 
     const [distributionCurve, offsetsWithHeight] = getCurve(
       teObject, y, height, color, borderColor
     );
 
     const [whiskers, medianLine] = getBoxPlot(
-      offsetsWithHeight, y, height, color, tippyAttr
+      offsetsWithHeight, y, height, color
     );
 
     const boxAttrs =
@@ -357,7 +420,7 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
     // Invisible; enables tooltip upon hover anywhere in diagram area,
     // not merely the (potentially very small) diagram itself
     const containerAttrs =
-      `height="${height - 0.5}" ` +
+      `height="${height + 2}" ` +
       `width="80px" ` +
       'fill="#FFF" ' +
       'opacity="0" ' +
@@ -434,10 +497,10 @@ export function addTissueListeners(ideo) {
     });
   });
 
-  tippy(
-    '._ideoExpressionMedian',
-    getTippyConfig()
-  );
+  // tippy(
+  //   '._ideoExpressionMedian',
+  //   getTippyConfig()
+  // );
 }
 
 export function getTissueHtml(annot, ideo) {

@@ -119,7 +119,9 @@ def summarize_top_tissues_by_gene(input_dir):
         "annotations_v8_metadata-files_GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt"
     )
 
+    num_samples_by_tissue = {}
     tissues_by_sample_id = {}
+
     with open(ds_path) as file:
         reader = csv.reader(file, delimiter="\t")
         for i, row in enumerate(reader):
@@ -128,6 +130,10 @@ def summarize_top_tissues_by_gene(input_dir):
             sample_id = row[0]
             tissue_detail = row[6]
             tissues_by_sample_id[sample_id] = tissue_detail
+            if tissue_detail not in num_samples_by_tissue:
+                num_samples_by_tissue[tissue_detail] = 1
+            else:
+                num_samples_by_tissue[tissue_detail] += 1
 
     # print('tissues_by_sample_id', tissues_by_sample_id)
     summary_by_gene_by_tissue = {}
@@ -167,6 +173,15 @@ def summarize_top_tissues_by_gene(input_dir):
 
                 continue
 
+            # print('num_samples_by_tissue', num_samples_by_tissue)
+
+            # Omit tissues with < 70 samples
+            filtered_tissues_by_index_unique = []
+            for tissue in tissues_by_index_unique:
+                if num_samples_by_tissue[tissue] >= 70:
+                    filtered_tissues_by_index_unique.append(tissue)
+            tissues_by_index_unique = filtered_tissues_by_index_unique
+
             gene = row[1]
 
             expressions_by_tissue = {}
@@ -177,10 +192,11 @@ def summarize_top_tissues_by_gene(input_dir):
 
                 tissue = tissues_by_index[j]
                 expression = float(raw_expression)
-                if tissue in expressions_by_tissue:
-                    expressions_by_tissue[tissue].append(expression)
-                else:
-                    expressions_by_tissue[tissue] = [expression]
+                if tissue in tissues_by_index_unique:
+                    if tissue in expressions_by_tissue:
+                        expressions_by_tissue[tissue].append(expression)
+                    else:
+                        expressions_by_tissue[tissue] = [expression]
 
             output_row = [gene]
             for tissue in expressions_by_tissue:
@@ -282,7 +298,9 @@ def merge_tissue_dimensions():
 
     tissues_list = [
         [t["id"], t["color"], str(t["num_samples"])] for t in raw_json["tissues"]
+        if t["num_samples"] >= 70
     ]
+
 
     # One (and only one) tissue is non-naturally ordered in GTEx tissue lists
     # This manually adjusts to use natural order
