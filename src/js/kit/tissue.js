@@ -31,7 +31,7 @@ function refineTissueName(rawName) {
   return name;
 }
 
-function setPxOffset(tissueExpressions, maxPx=80) {
+function setPxOffset(tissueExpressions, maxPx=80, relative=true) {
   let maxExpression = 0;
 
   const metrics = ['max', 'q3', 'median', 'q1', 'min'];
@@ -45,11 +45,24 @@ function setPxOffset(tissueExpressions, maxPx=80) {
 
   tissueExpressions.map(teObject => {
     teObject.px = {};
-    for (let i = 0; i < metrics.length; i++) {
-      const metric = metrics[i];
-      const expression = teObject.expression[metric];
-      const px = maxPx * expression/maxExpression;
-      teObject.px[metric] = px;
+    if (relative) {
+      for (let i = 0; i < metrics.length; i++) {
+        const metric = metrics[i];
+        const expression = teObject.expression[metric];
+        const px = maxPx * expression/maxExpression;
+        teObject.px[metric] = px;
+      }
+    } else {
+      // min = 50,   med = 100,    max = 200
+      // px.min = 0, px.med = 250 * 100-50/(200 - 50), px.max = 250
+      const minExp = teObject.expression.min;
+      const maxExp = teObject.expression.max;
+      for (let i = 0; i < metrics.length; i++) {
+        const metric = metrics[i];
+        const exp = teObject.expression[metric];
+        const px = maxPx * (exp - minExp)/(maxExp - minExp);
+        teObject.px[metric] = px;
+      }
     }
     return teObject;
   });
@@ -252,7 +265,7 @@ function removeDetailedCurve() {
   footer.style.display = '';
 }
 
-function getAxis(teObject, height) {
+function getMetricTicks(teObject, height) {
   const min = teObject.px.min;
   const minExp = teObject.expression.min;
   const max = teObject.px.max;
@@ -263,20 +276,21 @@ function getAxis(teObject, height) {
   const y = height + 5;
   const stroke = `stroke="#CCC" stroke-width="1px"`;
 
+  const style = 'style="font-size: 11px"';
+
   const fontObject = {
     config: {weight: 400, annotLabelSize: 10}
   };
 
   const nameAttrs =
-    `x="${mid - 70}" y="${y + 50}" style="font-size: 11px"`;
+    `x="${mid - 70}" y="${y + 45}" ${style}"`;
   const sampleAttrs =
-    `x="${mid - 70}" y="${y + 63}" style="font-size: 11px"`;
+    `x="${mid - 70}" y="${y + 58}" ${style}"`;
 
   const minTextWidth = getTextSize(minExp, fontObject).width;
   const minTickAttrs =
     `x1="${min}" x2="${min}" y1="${y - 3}" y2="${y + 5}" ${stroke}`;
-  const minTextAttrs =
-    `x="${min}" style="font-size: 10px"`;
+  const minTextAttrs = `x="${min}" ${style}`;
   const minText =
     `<line ${minTickAttrs} />` +
     `<text ${minTextAttrs} y="${y + 15}" >Min.</text>` +
@@ -285,23 +299,19 @@ function getAxis(teObject, height) {
   const maxTextWidth = getTextSize(maxExp, fontObject).width;
   const maxTickAttrs =
     `x1="${max}" x2="${max}" y1="${y - 3}" y2="${y + 5}" ${stroke}`;
-  const maxTextAttrs =
-    `style="font-size: 10px"`;
   const maxText =
     `<line ${maxTickAttrs} />` +
-    `<text ${maxTextAttrs} x="${max - 16}" y="${y + 15}">Max.</text>` +
-    `<text ${maxTextAttrs} x="${max - maxTextWidth + 3}" y="${y + 26}">${maxExp}</text>`;
+    `<text ${style} x="${max - 16}" y="${y + 15}">Max.</text>` +
+    `<text ${style} x="${max - maxTextWidth + 3}" y="${y + 26}">${maxExp}</text>`;
 
   const medianTextWidth = getTextSize(medianExp, fontObject).width;
   const medianTickAttrs =
     `x1="${median}" x2="${median}" y1="${y - 3}" y2="${y + 5}" ${stroke}`;
-  const medianTextAttrs =
-  `style="font-size: 10px"`;
   const medianX = median - 16;
   const medianText =
     `<line ${medianTickAttrs} />` +
-    `<text ${medianTextAttrs} x="${medianX}" y="${y + 15}">Median</text>` +
-    `<text ${medianTextAttrs} x="${median - medianTextWidth + 12}" y="${y + 26}">${medianExp}</text>`;
+    `<text ${style} x="${medianX}" y="${y + 15}">Median</text>` +
+    `<text ${style} x="${median - medianTextWidth + 12}" y="${y + 26}">${medianExp}</text>`;
 
   const minAndMedianCollide = minTextWidth + 5 >= medianX;
   const refinedMinText = minAndMedianCollide ? '' : minText;
@@ -324,10 +334,10 @@ function addDetailedCurve(traceDom, ideo) {
 
   let teObject = tissueExpressions.find(t => t.tissue === tissue);
   const maxWidthPx = 250; // Same width as RNA & protein diagrams
-  teObject = setPxOffset([teObject], maxWidthPx)[0];
+  teObject = setPxOffset([teObject], maxWidthPx, false)[0];
 
   const y = 0;
-  const height = 30;
+  const height = 40;
 
   const color = `#${teObject.color}`;
   const borderColor = adjustBrightness(color, 0.85);
@@ -339,7 +349,7 @@ function addDetailedCurve(traceDom, ideo) {
   const [whiskers, medianLine, q1Line, q3Line] = getBoxPlot(
     offsetsWithHeight, y, height, color
   );
-  const axis = getAxis(teObject, height);
+  const metricTicks = getMetricTicks(teObject, height);
 
   // Hide RNA & protein diagrams, footer
   const structureDom = document.querySelector('._ideoGeneStructureContainer');
@@ -349,10 +359,11 @@ function addDetailedCurve(traceDom, ideo) {
 
   const borderPad = '-1 -1'; // Avoids truncating curve border / stroke
 
+  const style = 'style="position: relative; top: -2px"';
   const container =
-    `<div class="_ideoDistributionContainer">` +
-    `<svg viewbox="${borderPad} ${maxWidthPx + 20} ${height + 70}">` +
-    axis +
+    `<div class="_ideoDistributionContainer" ${style}>` +
+    `<svg viewbox="${borderPad} ${maxWidthPx + 20} ${height + 65}">` +
+    metricTicks +
     distributionCurve +
     medianLine +
     q1Line +
@@ -379,27 +390,9 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
     const color = `#${teObject.color}`;
     const borderColor = adjustBrightness(color, 0.85);
 
-    const expression = teObject.expression;
-
-    const median = expression.median;
-    const q1 = expression.q1;
-    const q3 = expression.q3;
-    const max = expression.max;
-    const min = expression.min;
-    const numSamples = teObject.samples;
     const offsets = teObject.px;
     const width = offsets.q3 - offsets.q1;
     const x = offsets.q1;
-
-    // const tippyTxt =
-    //   `Expression:<br/>` +
-    //   `Min.: <b>${min}</b> (${Math.round(offsets.min)} px)<br/>` +
-    //   `Q1: <b>${q1}</b> (${Math.round(offsets.q1)} px)<br/>` +
-    //   `Median: <b>${median}</b> (${Math.round(offsets.median)} px)<br/>` +
-    //   `Q3: <b>${q3}</b> (${Math.round(offsets.q3)} px)<br/>` +
-    //   `Max.: <b>${max}</b> (${Math.round(offsets.max)} px)<br/>` +
-    //   `Samples: <b>${numSamples}</b><br/>` +
-    //   `<span style='font-size: 9px;'>Source: GTEx</span>`;
 
     const [distributionCurve, offsetsWithHeight] = getCurve(
       teObject, y, height, color, borderColor
