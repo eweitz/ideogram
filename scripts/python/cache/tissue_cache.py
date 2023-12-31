@@ -304,7 +304,7 @@ def merge_tissue_dimensions():
 
     # One (and only one) tissue is non-naturally ordered in GTEx tissue lists
     # This manually adjusts to use natural order
-    tissue_ids = [t["id"] for t in raw_json["tissues"]]
+    tissue_ids = [t[0] for t in tissues_list]
     fibroblasts = 'Cells_Cultured_fibroblasts'
     lymphocytes = 'Cells_EBV-transformed_lymphocytes'
     if (
@@ -325,7 +325,7 @@ def merge_tissue_dimensions():
 
     print('tissues_str', tissues_str)
     meta_info = f"## tissues: {';'.join(tissues_str)}"
-    headers = '\t'.join(['# gene', 'tissue_boxplot_metrics'])
+    headers = '\t'.join(['# gene', 'tissue_metrics'])
     output = meta_info + '\n' + headers + '\n' + detail_content
 
     output_path = 'cache/homo-sapiens-tissues.tsv'
@@ -413,6 +413,6 @@ if __name__ == "__main__":
     input_dir = args.input_dir
     output_dir = args.output_dir
 
-    summarize_top_tissues_by_gene(input_dir)
+    # summarize_top_tissues_by_gene(input_dir)
     merge_tissue_dimensions()
     write_line_byte_index('cache/homo-sapiens-tissues.tsv')

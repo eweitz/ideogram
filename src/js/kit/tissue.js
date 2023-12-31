@@ -276,7 +276,7 @@ function getMetricTicks(teObject, height) {
   const y = height + 5;
   const stroke = `stroke="#CCC" stroke-width="1px"`;
 
-  const style = 'style="font-size: 11px"';
+  const style = 'style="font-size: 10px"';
 
   const fontObject = {
     config: {weight: 400, annotLabelSize: 10}
@@ -301,20 +301,37 @@ function getMetricTicks(teObject, height) {
     `x1="${max}" x2="${max}" y1="${y - 3}" y2="${y + 5}" ${stroke}`;
   const maxText =
     `<line ${maxTickAttrs} />` +
-    `<text ${style} x="${max - 16}" y="${y + 15}">Max.</text>` +
-    `<text ${style} x="${max - maxTextWidth + 3}" y="${y + 26}">${maxExp}</text>`;
+    `<text ${style} x="${max - 20}" y="${y + 15}">Max.</text>` +
+    `<text ${style} x="${max - maxTextWidth}" y="${y + 26}">${maxExp}</text>`;
 
   const medianTextWidth = getTextSize(medianExp, fontObject).width;
+
   const medianTickAttrs =
     `x1="${median}" x2="${median}" y1="${y - 3}" y2="${y + 5}" ${stroke}`;
-  const medianX = median - 16;
+
+  let medLeft = 16;
+  let medExpLeft = medianTextWidth - 12;
+  const isMedianOverflow = median - medianTextWidth < 0;
+  if (isMedianOverflow) {
+    medLeft = 0;
+    medExpLeft = 0;
+  }
+  let medianX = median - medLeft;
+  let medianExpX = median - medExpLeft;
+
+  const isMinMedSoftCollide = minTextWidth + 5 >= medianX;
+  if (isMinMedSoftCollide) {
+    medianX = median;
+    medianExpX = median;
+  }
+
   const medianText =
     `<line ${medianTickAttrs} />` +
     `<text ${style} x="${medianX}" y="${y + 15}">Median</text>` +
-    `<text ${style} x="${median - medianTextWidth + 12}" y="${y + 26}">${medianExp}</text>`;
+    `<text ${style} x="${medianExpX}" y="${y + 26}">${medianExp}</text>`;
 
-  const minAndMedianCollide = minTextWidth + 5 >= medianX;
-  const refinedMinText = minAndMedianCollide ? '' : minText;
+  const isMinMedCollide = minTextWidth + 5 >= medianX;
+  const refinedMinText = isMinMedCollide ? '' : minText;
 
   return (
     `<g>` +
@@ -362,7 +379,7 @@ function addDetailedCurve(traceDom, ideo) {
   const style = 'style="position: relative; top: -2px"';
   const container =
     `<div class="_ideoDistributionContainer" ${style}>` +
-    `<svg viewbox="${borderPad} ${maxWidthPx + 20} ${height + 65}">` +
+    `<svg viewbox="${borderPad} ${maxWidthPx + 5} ${height + 65}">` +
     metricTicks +
     distributionCurve +
     medianLine +

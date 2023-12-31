@@ -30,6 +30,10 @@ function processIds(ids) {
 async function getTissueExpressions(gene, ideo) {
   const cache = ideo.tissueCache;
   const byteRange = cache.byteRangesByName[gene];
+
+  // Easier debuggability
+  if (!ideo.cacheRangeFetch) ideo.cacheRangeFetch = cacheRangeFetch;
+
   if (!byteRange) return null;
 
   const geneDataLine = await cacheRangeFetch(
