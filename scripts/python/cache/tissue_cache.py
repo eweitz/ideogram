@@ -86,6 +86,36 @@ def process_top_genes_by_tissue():
     output_path = 'cache/gtex_top_genes_by_tissue.json'
     write_json_file(output, output_path)
 
+def get_summary(expressions):
+    """Get min, q1, median, q3, and max; and 10-quantile (i.e. decile) counts
+    """
+    sorted_expressions = sorted(expressions)
+    q1, median, q3 = statistics.quantiles(sorted_expressions, n=4)
+    min = sorted_expressions[0]
+    max = sorted_expressions[-1]
+
+    # boxplot summary statistics
+    raw_summary = [min, q1, median, q3, max]
+    summary = []
+    for s in raw_summary:
+        if s > 0:
+            summary.append(round(s, 2))
+
+    if len(summary) == 5:
+        num_bins = 10
+        size = (max - min) / num_bins
+        quantile_counts = [0] * num_bins
+        for j in range(1, num_bins + 1):
+            prev_bin_exp = min + (j - 1) * size
+            bin_exp = min + j * size
+            for expression in sorted_expressions:
+                if prev_bin_exp < expression <= bin_exp:
+                    quantile_counts[j - 1] += 1
+        # if i % 500 == 0:
+        #     print('kde_counts', kde_counts)
+        summary += quantile_counts
+
+    return summary
 
 def summarize_top_tissues_by_gene(input_dir):
     """Make JSON file top tissues (by expression in GTEx) for each gene
@@ -201,31 +231,7 @@ def summarize_top_tissues_by_gene(input_dir):
             output_row = [gene]
             for tissue in expressions_by_tissue:
                 expressions = expressions_by_tissue[tissue]
-                sorted_expressions = sorted(expressions)
-                q1, median, q3 = statistics.quantiles(sorted_expressions, n=4)
-                min = sorted_expressions[0]
-                max = sorted_expressions[-1]
-
-                # boxplot summary statistics
-                raw_summary = [min, q1, median, q3, max]
-                summary = []
-                for s in raw_summary:
-                    if s > 0:
-                        summary.append(round(s, 2))
-
-                if len(summary) == 5:
-                    num_bins = 10
-                    size = max / num_bins
-                    kde_counts = [0] * num_bins
-                    for j in range(1, num_bins + 1):
-                        prev_bin_exp = (j - 1) * size
-                        bin_exp = j * size
-                        for expression in sorted_expressions:
-                            if prev_bin_exp < expression <= bin_exp:
-                                kde_counts[j - 1] += 1
-                    # if i % 500 == 0:
-                    #     print('kde_counts', kde_counts)
-                    summary += kde_counts
+                summary = get_summary(expressions)
 
                 if gene not in summary_by_gene_by_tissue:
                     summary_by_gene_by_tissue[gene] = {}
@@ -413,6 +419,6 @@ if __name__ == "__main__":
     input_dir = args.input_dir
     output_dir = args.output_dir
 
-    # summarize_top_tissues_by_gene(input_dir)
+    summarize_top_tissues_by_gene(input_dir)
     merge_tissue_dimensions()
     write_line_byte_index('cache/homo-sapiens-tissues.tsv')

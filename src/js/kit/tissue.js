@@ -276,7 +276,7 @@ function getMetricTicks(teObject, height) {
   const y = height + 5;
   const stroke = `stroke="#CCC" stroke-width="1px"`;
 
-  const style = 'style="font-size: 10px"';
+  const style = 'style="font-size: 10.5px"';
 
   const fontObject = {
     config: {weight: 400, annotLabelSize: 10}
