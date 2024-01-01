@@ -30,6 +30,10 @@ function processIds(ids) {
 async function getTissueExpressions(gene, ideo) {
   const cache = ideo.tissueCache;
   const byteRange = cache.byteRangesByName[gene];
+
+  // Easier debuggability
+  if (!ideo.cacheRangeFetch) ideo.cacheRangeFetch = cacheRangeFetch;
+
   if (!byteRange) return null;
 
   const geneDataLine = await cacheRangeFetch(
@@ -38,14 +42,25 @@ async function getTissueExpressions(gene, ideo) {
   );
 
   const tissueExpressions = [];
-  const rawExpressions = geneDataLine.split('\t')[1].split(',');
+  const rawExpressions = geneDataLine.split('\t').slice(1);
   for (let i = 0; i < rawExpressions.length; i++) {
-    const [tissueId, rawValue] = rawExpressions[i].split(';');
-    const medianExpression = parseFloat(rawValue);
+    const rawValues = rawExpressions[i].split(';');
+    const tissueId = rawValues[0];
+    const boxMetrics = rawValues.slice(1, 6);
+    const min = parseFloat(boxMetrics[0]);
+    const q1 = parseFloat(boxMetrics[1]);
+    const median = parseFloat(boxMetrics[2]);
+    const q3 = parseFloat(boxMetrics[3]);
+    const max = parseFloat(boxMetrics[4]);
+    const quantiles = rawValues.slice(6).map(v => parseInt(v));
+    const expression = {
+      min, q1, median, q3, max,
+      quantiles
+    };
     const tissue = cache.tissueNames[tissueId];
     const color = cache.tissueColors[tissueId];
-    const samples = cache.tissueSamples[tissueId];
-    tissueExpressions.push({tissue, medianExpression, color, samples});
+    const samples = parseInt(cache.tissueSamples[tissueId]);
+    tissueExpressions.push({tissue, expression, color, samples});
   }
 
   return tissueExpressions;
