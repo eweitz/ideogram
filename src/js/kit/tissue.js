@@ -107,6 +107,7 @@ function getMoreOrLessToggle(gene, height, tissueExpressions, ideo) {
   return moreOrLessToggleHtml;
 }
 
+/** Get a vertical line to show in distribution curve for median, Q1, or Q2 */
 function getMetricLine(
   metric, offsets, color, y, height,
   dash=false
@@ -128,38 +129,18 @@ function getMetricLine(
   return metricLine;
 }
 
-function getBoxPlot(offsets, y, height, color) {
-  const whiskerColor = adjustBrightness(color, 0.65);
-  const whiskerY = y + 6;
+/**
+ * Get vertical lines for median, Q1, Q3, to overlay in distribution curve plot
+ *
+ * Median line is solid, and shown in both mini-curve and detailed curve.
+ * Q1 and Q3 lines are dashed, and only shown in detailed curve.
+ */
+function getMetricLines(offsets, y, height, color) {
+  const medianLine = getMetricLine('median', offsets, color, y, height, false);
+  const q1Line = getMetricLine('q1', offsets, color, y, height, true);
+  const q3Line = getMetricLine('q3', offsets, color, y, height, true);
 
-  // Get minimum whisker
-  const minX1 = offsets.min;
-  const minX2 = offsets.q1;
-  const whiskerMinAttrs =
-    `x1="${minX1}" y1="${whiskerY}" x2="${minX2}" y2="${whiskerY}"`;
-  const whiskerMin = `<line stroke="${whiskerColor}" ${whiskerMinAttrs} />`;
-
-  // Get maximum whisker
-  const maxX1 = offsets.q3;
-  const maxX2 = offsets.max;
-  const whiskerMaxAttrs =
-    `x1="${maxX1}" y1="${whiskerY}" x2="${maxX2}" y2="${whiskerY}"`;
-  const whiskerMax = `<line stroke="${whiskerColor}" ${whiskerMaxAttrs} />`;
-
-  const whiskers = {min: whiskerMin, max: whiskerMax};
-
-  // Get vertical lines for median, Q1, Q3
-  const medianLine = getMetricLine(
-    'median', offsets, color, y, height, false
-  );
-  const q1Line = getMetricLine(
-    'q1', offsets, color, y, height, true
-  );
-  const q3Line = getMetricLine(
-    'q3', offsets, color, y, height, true
-  );
-
-  return [whiskers, medianLine, q1Line, q3Line];
+  return [medianLine, q1Line, q3Line];
 }
 
 /**
@@ -265,6 +246,10 @@ function removeDetailedCurve() {
   footer.style.display = '';
 }
 
+/**
+ * Get small vertical lines ("ticks") for min, max, and median in detailed
+ * distribution curve
+ */
 function getMetricTicks(teObject, height) {
   const min = teObject.px.min;
   const minExp = teObject.expression.min;
@@ -276,16 +261,13 @@ function getMetricTicks(teObject, height) {
   const y = height + 5;
   const stroke = `stroke="#CCC" stroke-width="1px"`;
 
+  // A special font size seems needed to ensure text is same sizez
+  // as other tooltip text.  This seems caused by custom SVG viewbox.
   const style = 'style="font-size: 10.5px"';
 
   const fontObject = {
     config: {weight: 400, annotLabelSize: 10}
   };
-
-  const nameAttrs =
-    `x="${mid - 70}" y="${y + 45}" ${style}"`;
-  const sampleAttrs =
-    `x="${mid - 70}" y="${y + 58}" ${style}"`;
 
   const minTextWidth = getTextSize(minExp, fontObject).width;
   const minTickAttrs =
@@ -305,12 +287,14 @@ function getMetricTicks(teObject, height) {
     `<text ${style} x="${max - maxTextWidth}" y="${y + 26}">${maxExp}</text>`;
 
   const medianTextWidth = getTextSize(medianExp, fontObject).width;
-
   const medianTickAttrs =
     `x1="${median}" x2="${median}" y1="${y - 3}" y2="${y + 5}" ${stroke}`;
 
   let medLeft = 16;
   let medExpLeft = medianTextWidth - 12;
+
+  // Align "Median" to right of tick if text would flow beyond start
+  // of diagram.
   const isMedianOverflow = median - medianTextWidth < 0;
   if (isMedianOverflow) {
     medLeft = 0;
@@ -319,6 +303,7 @@ function getMetricTicks(teObject, height) {
   let medianX = median - medLeft;
   let medianExpX = median - medExpLeft;
 
+  // Align "Median" to right of tick if text would clash with "Min."
   const isMinMedSoftCollide = minTextWidth + 5 >= medianX;
   if (isMinMedSoftCollide) {
     medianX = median;
@@ -330,8 +315,14 @@ function getMetricTicks(teObject, height) {
     `<text ${style} x="${medianX}" y="${y + 15}">Median</text>` +
     `<text ${style} x="${medianExpX}" y="${y + 26}">${medianExp}</text>`;
 
+  // If right-aligning "Median" doesn't fix clash, then hide "Min."
   const isMinMedCollide = minTextWidth + 5 >= medianX;
   const refinedMinText = isMinMedCollide ? '' : minText;
+
+  const nameAttrs =
+    `x="${mid - 70}" y="${y + 45}" ${style}"`;
+  const sampleAttrs =
+    `x="${mid - 70}" y="${y + 58}" ${style}"`;
 
   return (
     `<g>` +
@@ -344,6 +335,14 @@ function getMetricTicks(teObject, height) {
   );
 }
 
+/**
+ * Write a large, detailed distribution curve to the DOM.
+ *
+ * This is shown upon hovering over a mini-curve.  The detailed curve shows
+ * more metrics than the mini-curve, in a zoomed-in view that makes it easier
+ * to discern the overall shape and local features of gene expression
+ * distribution in the tissue.
+ */
 function addDetailedCurve(traceDom, ideo) {
   const gene = traceDom.getAttribute('data-gene');
   const tissue = traceDom.getAttribute('data-tissue');
@@ -359,11 +358,12 @@ function addDetailedCurve(traceDom, ideo) {
   const color = `#${teObject.color}`;
   const borderColor = adjustBrightness(color, 0.85);
 
+  const numBins = 256;
   const [distributionCurve, offsetsWithHeight] = getCurve(
-    teObject, y, height, color, borderColor, 256
+    teObject, y, height, color, borderColor, numBins
   );
 
-  const [whiskers, medianLine, q1Line, q3Line] = getBoxPlot(
+  const [medianLine, q1Line, q3Line] = getMetricLines(
     offsetsWithHeight, y, height, color
   );
   const metricTicks = getMetricTicks(teObject, height);
@@ -391,6 +391,7 @@ function addDetailedCurve(traceDom, ideo) {
   structureDom.insertAdjacentHTML('beforebegin', container);
 }
 
+/** Get mini distribution curves and  */
 function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
   tissueExpressions = setPxOffset(tissueExpressions);
 
@@ -415,7 +416,7 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
       teObject, y, height, color, borderColor
     );
 
-    const [whiskers, medianLine] = getBoxPlot(
+    const [medianLine] = getMetricLines(
       offsetsWithHeight, y, height, color
     );
 

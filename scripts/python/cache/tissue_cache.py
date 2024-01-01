@@ -380,20 +380,6 @@ def write_line_byte_index(filepath):
         file.write("\n".join([str(o) for o in index]))
     print(f"Lines byte-indexed, total: {len(index)}")
 
-# process_top_genes_by_tissue()
-
-# process_top_tissues_by_gene()
-
-# merge_tissue_dimensions()
-
-# write_line_byte_index('cache/homo-sapiens-tissues.tsv')
-
-class TissueCache:
-
-    def __init__(
-
-    ):
-        return
 
 # Command-line handler
 if __name__ == "__main__":
