@@ -31,7 +31,7 @@ function refineTissueName(rawName) {
   return name;
 }
 
-function setPxOffset(tissueExpressions, maxPx=80, relative=true) {
+function setPxOffset(tissueExpressions, maxPx=80, relative=true, leftPx=0) {
   let maxExpression = 0;
 
   const metrics = ['max', 'q3', 'median', 'q1', 'min'];
@@ -49,7 +49,7 @@ function setPxOffset(tissueExpressions, maxPx=80, relative=true) {
       for (let i = 0; i < metrics.length; i++) {
         const metric = metrics[i];
         const expression = teObject.expression[metric];
-        const px = maxPx * expression/maxExpression;
+        const px = maxPx * expression/maxExpression + leftPx;
         teObject.px[metric] = px;
       }
     } else {
@@ -60,7 +60,7 @@ function setPxOffset(tissueExpressions, maxPx=80, relative=true) {
       for (let i = 0; i < metrics.length; i++) {
         const metric = metrics[i];
         const exp = teObject.expression[metric];
-        const px = maxPx * (exp - minExp)/(maxExp - minExp);
+        const px = maxPx * (exp - minExp)/(maxExp - minExp) + leftPx;
         teObject.px[metric] = px;
       }
     }
@@ -261,30 +261,26 @@ function getMetricTicks(teObject, height) {
   const y = height + 5;
   const stroke = `stroke="#CCC" stroke-width="1px"`;
 
-  // A special font size seems needed to ensure text is same sizez
-  // as other tooltip text.  This seems caused by custom SVG viewbox.
-  const style = 'style="font-size: 10.5px"';
-
   const fontObject = {
-    config: {weight: 400, annotLabelSize: 10}
+    config: {weight: 400, annotLabelSize: 12}
   };
 
   const minTextWidth = getTextSize(minExp, fontObject).width;
+  const minTextEndX = min + minTextWidth;
   const minTickAttrs =
     `x1="${min}" x2="${min}" y1="${y - 3}" y2="${y + 5}" ${stroke}`;
-  const minTextAttrs = `x="${min}" ${style}`;
   const minText =
     `<line ${minTickAttrs} />` +
-    `<text ${minTextAttrs} y="${y + 15}" >Min.</text>` +
-    `<text ${minTextAttrs} y="${y + 26}" >${minExp}</text>`;
+    `<text x="${min}" y="${y + 15}" >Min.</text>` +
+    `<text x="${min}" y="${y + 26}" >${minExp}</text>`;
 
   const maxTextWidth = getTextSize(maxExp, fontObject).width;
   const maxTickAttrs =
     `x1="${max}" x2="${max}" y1="${y - 3}" y2="${y + 5}" ${stroke}`;
   const maxText =
     `<line ${maxTickAttrs} />` +
-    `<text ${style} x="${max - 20}" y="${y + 15}">Max.</text>` +
-    `<text ${style} x="${max - maxTextWidth}" y="${y + 26}">${maxExp}</text>`;
+    `<text x="${max - 20}" y="${y + 15}">Max.</text>` +
+    `<text x="${max - maxTextWidth}" y="${y + 26}">${maxExp}</text>`;
 
   const medianTextWidth = getTextSize(medianExp, fontObject).width;
   const medianTickAttrs =
@@ -304,7 +300,10 @@ function getMetricTicks(teObject, height) {
   let medianExpX = median - medExpLeft;
 
   // Align "Median" to right of tick if text would clash with "Min."
-  const isMinMedSoftCollide = minTextWidth + 5 >= medianX;
+  const isMinMedSoftCollide = minTextEndX >= medianX;
+  console.log('isMinMedSoftCollide', isMinMedSoftCollide)
+  console.log('minTextEndX', minTextEndX)
+  console.log('medianX', medianX)
   if (isMinMedSoftCollide) {
     medianX = median;
     medianExpX = median;
@@ -312,17 +311,21 @@ function getMetricTicks(teObject, height) {
 
   const medianText =
     `<line ${medianTickAttrs} />` +
-    `<text ${style} x="${medianX}" y="${y + 15}">Median</text>` +
-    `<text ${style} x="${medianExpX}" y="${y + 26}">${medianExp}</text>`;
+    `<text x="${medianX}" y="${y + 15}">Median</text>` +
+    `<text x="${medianExpX}" y="${y + 26}">${medianExp}</text>`;
 
   // If right-aligning "Median" doesn't fix clash, then hide "Min."
-  const isMinMedCollide = minTextWidth + 5 >= medianX;
+  const isMinMedCollide = minTextEndX >= medianX;
   const refinedMinText = isMinMedCollide ? '' : minText;
 
+  console.log('isMinMedCollide', isMinMedCollide)
+  console.log('minTextEndX', minTextEndX)
+  console.log('medianX', medianX)
+
   const nameAttrs =
-    `x="${mid - 70}" y="${y + 45}" ${style}"`;
+    `x="${mid - 70}" y="${y + 45}"`;
   const sampleAttrs =
-    `x="${mid - 70}" y="${y + 58}" ${style}"`;
+    `x="${mid - 70}" y="${y + 58}"`;
 
   return (
     `<g>` +
@@ -350,10 +353,13 @@ function addDetailedCurve(traceDom, ideo) {
 
   let teObject = tissueExpressions.find(t => t.tissue === tissue);
   const maxWidthPx = 250; // Same width as RNA & protein diagrams
-  teObject = setPxOffset([teObject], maxWidthPx, false)[0];
+  const leftPx = 20;
+  teObject = setPxOffset(
+    [teObject], maxWidthPx, false, leftPx
+  )[0];
 
   const y = 0;
-  const height = 40;
+  const height = 55;
 
   const color = `#${teObject.color}`;
   const borderColor = adjustBrightness(color, 0.85);
@@ -374,12 +380,10 @@ function addDetailedCurve(traceDom, ideo) {
   const footer = document.querySelector('._ideoTooltipFooter');
   footer.style.display = 'none';
 
-  const borderPad = '-1 -1'; // Avoids truncating curve border / stroke
-
-  const style = 'style="position: relative; top: -2px"';
+  const style = 'style="position: relative; top: 2px;"';
   const container =
     `<div class="_ideoDistributionContainer" ${style}>` +
-    `<svg viewbox="${borderPad} ${maxWidthPx + 5} ${height + 65}">` +
+    `<svg width="285px" height="120px">` +
     metricTicks +
     distributionCurve +
     medianLine +

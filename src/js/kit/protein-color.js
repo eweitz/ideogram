@@ -600,7 +600,8 @@ export function getColors(domainType) {
     domainType.includes('Citron') ||
     domainType === 'RIH domain' ||
     domainType.toLowerCase().includes('sclerostin') || // e.g. SOSTDC1
-    domainType === 'ZU5 domain' // e.g. TJP1
+    domainType === 'ZU5 domain' || // e.g. TJP1
+    domainType === 'Piezo domain' // e.g. PIEZO1
   ) {
     return [yellow, yellowLine];
   }
@@ -894,7 +895,9 @@ export function getColors(domainType) {
 
     domainType.includes('interacting') ||
 
-    domainType.includes('domain IV') // e.g. EEF2
+    domainType.includes('domain IV') || // e.g. EEF2
+
+    domainType.toLowerCase().includes('immunoglobulin domain')
   ) {
     return [purple, purpleLine];
   } else if (
