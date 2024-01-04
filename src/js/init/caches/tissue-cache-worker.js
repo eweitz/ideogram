@@ -47,10 +47,8 @@ async function getTissueExpressions(gene, ideo) {
     const rawValues = rawExpressions[i].split(';');
     const numValues = rawValues.length;
     if (numValues === 15) {
-      console.log('rawValues 14', rawValues)
       rawValues.splice(1, 0, 0); // Insert number 0 at position 1
     } else if (numValues === 14) {
-      console.log('rawValues 13', rawValues)
       // Min. and Q1 are 0
       rawValues.splice(1, 0, 0);
       rawValues.splice(1, 0, 0);

@@ -304,9 +304,6 @@ function getMetricTicks(teObject, height) {
 
   // Align "Median" to right of tick if text would clash with "Min."
   const isMinMedSoftCollide = minTextEndX >= medianX;
-  console.log('isMinMedSoftCollide', isMinMedSoftCollide)
-  console.log('minTextEndX', minTextEndX)
-  console.log('medianX', medianX)
   if (isMinMedSoftCollide) {
     medianX = median;
     medianExpX = median;
@@ -334,10 +331,6 @@ function getMetricTicks(teObject, height) {
     `<text x="${minTextX}" y="${textY}" >${minRawText}.</text>` +
     `<text x="${minExpTextX}" y="${expTextY}" >${minExp}</text>`;
 
-  console.log('isMinMedCollide', isMinMedCollide)
-  console.log('minTextEndX', minTextEndX)
-  console.log('medianX', medianX)
-
   const nameAttrs =
     `x="${mid - 70}" y="${y + 46}"`;
   const sampleAttrs =
@@ -348,7 +341,7 @@ function getMetricTicks(teObject, height) {
     minText +
     maxText +
     medianText +
-    `<text ${nameAttrs}>Expression distribution (TPM)</text>` +
+    `<text ${nameAttrs}>Expression (TPM)</text>` +
     `<text ${sampleAttrs}>Samples: ${teObject.samples} | Source: GTEx</text>` +
     `</g>`
   );
@@ -429,10 +422,6 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
     const color = `#${teObject.color}`;
     const borderColor = adjustBrightness(color, 0.85);
 
-    const offsets = teObject.px;
-    const width = offsets.q3 - offsets.q1;
-    const x = offsets.q1;
-
     const [distributionCurve, offsetsWithHeight] = getCurve(
       teObject, y, height, color, borderColor
     );
@@ -441,13 +430,7 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
       offsetsWithHeight, y, height, color
     );
 
-    const boxAttrs =
-      `height="${height - 0.5}" ` +
-      `width="${width}" ` +
-      `x="${x}" ` +
-      `y="${y}" ` +
-      `fill="${color}" ` +
-      `stroke="${borderColor}" stroke-width="1px" `;
+    const dataTissue = `data-tissue="${teObject.tissue}"`;
 
     // Invisible; enables tooltip upon hover anywhere in diagram area,
     // not merely the (potentially very small) diagram itself
@@ -459,21 +442,19 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
       `x="0" ` +
       `y="${y}" ` +
       `data-gene="${gene}" ` +
-      `data-tissue="${teObject.tissue}"`;
+      dataTissue;
 
     const textAttrs =
       `y="${y + height - 1.5}" ` +
       `style="font-size: ${height}px;" ` +
-      'x="90"';
+      'x="90" ' +
+      dataTissue;
 
     return (
       '<g>' +
       `<text ${textAttrs}>${tissue}</text>` +
-      // whiskers.min +
-      // `<rect ${boxAttrs} />` +
       distributionCurve +
       medianLine +
-      // whiskers.max +
       `<rect ${containerAttrs} class="_ideoExpressionTrace" />` +
       '</g>'
     );
@@ -506,6 +487,12 @@ function updateTissueExpressionPlot(ideo) {
   addTissueListeners(ideo);
 }
 
+function colorTissueText(traceDom, color) {
+  const tissue = traceDom.getAttribute('data-tissue');
+  const tissueTextDom = document.querySelector(`text[data-tissue="${tissue}"]`);
+  tissueTextDom.setAttribute('fill', color);
+}
+
 export function addTissueListeners(ideo) {
   const moreOrLess = document.querySelector('._ideoMoreOrLessTissue');
   if (moreOrLess) {
@@ -521,10 +508,12 @@ export function addTissueListeners(ideo) {
     const medianLine = trace.parentNode.querySelector('._ideoExpressionMedian');
     trace.addEventListener('mouseenter', () => {
       medianLine.dispatchEvent(new Event('mouseenter'));
+      colorTissueText(trace, '#338');
       addDetailedCurve(trace, ideo);
     });
     trace.addEventListener('mouseleave', () => {
       medianLine.dispatchEvent(new Event('mouseleave'));
+      colorTissueText(trace, '#000');
       removeDetailedCurve(trace, ideo);
     });
   });
