@@ -332,7 +332,7 @@ function getMetricTicks(teObject, height) {
     `<text x="${minExpTextX}" y="${expTextY}" >${minExp}</text>`;
 
   const nameAttrs =
-    `x="${mid - 70}" y="${y + 46}"`;
+    `x="${mid - 40}" y="${y + 46}"`;
   const sampleAttrs =
     `x="${mid - 70}" y="${y + 59}"`;
 
