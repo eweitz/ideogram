@@ -31,7 +31,7 @@ function refineTissueName(rawName) {
   return name;
 }
 
-function setPxOffset(tissueExpressions, maxPx=80, relative=true, leftPx=0) {
+function setPxOffset(tissueExpressions, maxPx=70, relative=true, leftPx=0) {
   let maxExpression = 0;
 
   const metrics = ['max', 'q3', 'median', 'q1', 'min'];
@@ -94,8 +94,8 @@ function getMoreOrLessToggle(gene, height, tissueExpressions, ideo) {
   const moreOrLess =
     !ideo.showTissuesMore ? `Less...` : 'More...';
   const mlStyle = 'style="cursor: pointer;px;"';
-  const left = `left: ${!ideo.showTissuesMore ? 10 : -41}px;`;
-  const top = 'top: -2px;';
+  const left = `left: ${!ideo.showTissuesMore ? 1 : -50}px;`;
+  const top = 'top: -1px;';
   const mltStyle =
     `style="position: relative; ${left} ${top} font-size: ${height}px"`
   const moreOrLessToggleHtml =
@@ -361,7 +361,7 @@ function addDetailedCurve(traceDom, ideo) {
   const tissueExpressions = ideo.tissueExpressionsByGene[gene];
 
   let teObject = tissueExpressions.find(t => t.tissue === tissue);
-  const maxWidthPx = 245; // Same width as RNA & protein diagrams
+  const maxWidthPx = 225; // Same width as RNA & protein diagrams
   const leftPx = 35;
   teObject = setPxOffset(
     [teObject], maxWidthPx, false, leftPx
@@ -389,11 +389,12 @@ function addDetailedCurve(traceDom, ideo) {
   const footer = document.querySelector('._ideoTooltipFooter');
   footer.style.display = 'none';
 
-  const style = 'style="position: relative; top: 2px; left: -5px;"';
-  const svgHeight = 116.5; // Keeps tooltip bottom flush with prior state
+  const svgHeight = 119.5; // Keeps tooltip bottom flush with prior state
+  const style = `style="position: relative; height: ${svgHeight}px"`;
+  const svgStyle = 'style="position: absolute; top: 2px; left: -5px;"';
   const container =
     `<div class="_ideoDistributionContainer" ${style}>` +
-    `<svg width="300px" height="${svgHeight}px">` +
+    `<svg width="280px" height="${svgHeight}px" ${svgStyle}>` +
     metricTicks +
     distributionCurve +
     medianLine +
@@ -407,7 +408,8 @@ function addDetailedCurve(traceDom, ideo) {
 
 /** Get mini distribution curves and  */
 function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
-  tissueExpressions = setPxOffset(tissueExpressions);
+  const maxWidth = 48;
+  tissueExpressions = setPxOffset(tissueExpressions, maxWidth);
 
   const height = 12;
 
@@ -436,7 +438,7 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
     // not merely the (potentially very small) diagram itself
     const containerAttrs =
       `height="${height + 2}" ` +
-      `width="80px" ` +
+      `width="${maxWidth}px" ` +
       'fill="#FFF" ' +
       'opacity="0" ' +
       `x="0" ` +
@@ -445,16 +447,19 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
       dataTissue;
 
     const textAttrs =
-      `y="${y + height - 1.5}" ` +
+      `y="${y + height}" ` +
       `style="font-size: ${height}px;" ` +
-      'x="90" ' +
+      `x="${maxWidth + 10}" ` +
       dataTissue;
+
+    const curveWidth = offsetsWithHeight.max - offsetsWithHeight.min;
+    const refinedMedianLine = curveWidth > 8 ? medianLine : '';
 
     return (
       '<g>' +
       `<text ${textAttrs}>${tissue}</text>` +
       distributionCurve +
-      medianLine +
+      refinedMedianLine +
       `<rect ${containerAttrs} class="_ideoExpressionTrace" />` +
       '</g>'
     );
@@ -463,11 +468,12 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
   const plotAttrs = `style="margin-top: 15px; margin-bottom: -15px;"`;
   const cls = 'class="_ideoTissuePlotTitle"';
   const titleAttrs = `${cls} style="margin-bottom: 4px;"`;
+  const style = `style="position: relative; left: 10px"`;
   const plotHtml =
     '<div>' +
       `<div class="_ideoTissueExpressionPlot" ${plotAttrs}>
         <div ${titleAttrs}>Reference expression by tissue:</div>
-        <svg height="${y + height + 2}">${rects}</svg>
+        <svg width="275" height="${y + height + 2}" ${style}>${rects}</svg>
         ${moreOrLessToggleHtml}
       </div>` +
     '</div>';
@@ -505,14 +511,11 @@ export function addTissueListeners(ideo) {
   }
 
   document.querySelectorAll('._ideoExpressionTrace').forEach(trace => {
-    const medianLine = trace.parentNode.querySelector('._ideoExpressionMedian');
     trace.addEventListener('mouseenter', () => {
-      medianLine.dispatchEvent(new Event('mouseenter'));
       colorTissueText(trace, '#338');
       addDetailedCurve(trace, ideo);
     });
     trace.addEventListener('mouseleave', () => {
-      medianLine.dispatchEvent(new Event('mouseleave'));
       colorTissueText(trace, '#000');
       removeDetailedCurve(trace, ideo);
     });
