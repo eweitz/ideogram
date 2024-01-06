@@ -161,7 +161,8 @@ export function getColors(domainType) {
     domainType === 'Globin' ||
     domainType === 'GPS motif' ||
     domainType.includes('D-like') ||
-    domainType.toLowerCase().includes('insertion domain') // e.g. RPLP0
+    domainType.toLowerCase().includes('insertion domain') || // e.g. RPLP0
+    domainType === 'Macro domain' // e.g. MACROH2A1
   ) {
     return [magenta, magentaLines];
   } else if (
@@ -606,7 +607,8 @@ export function getColors(domainType) {
     domainType === 'RIH domain' ||
     domainType.toLowerCase().includes('sclerostin') || // e.g. SOSTDC1
     domainType === 'ZU5 domain' || // e.g. TJP1
-    domainType === 'Piezo domain' // e.g. PIEZO1
+    domainType === 'Piezo domain' || // e.g. PIEZO1
+    domainType === 'Histone H2A/H2B/H3' // e.g. H2AZ1
   ) {
     return [yellow, yellowLine];
   }
@@ -834,7 +836,8 @@ export function getColors(domainType) {
     domainType.includes('winged helix') ||
     domainType.toLowerCase().includes('dehydrogenase') ||
     domainType.includes('BAR') ||
-    domainType.includes('metal')
+    domainType.includes('metal') ||
+    domainType.includes('redoxin')
   ) {
     return [green, greenLine];
   } else if (

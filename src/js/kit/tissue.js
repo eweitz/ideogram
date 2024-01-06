@@ -1,8 +1,7 @@
 import {
-  getTippyConfig, adjustBrightness, ensureContrast, getTextSize
+  adjustBrightness, ensureContrast, getTextSize
 } from '../lib';
-import tippy from 'tippy.js';
-import { density1d } from 'fast-kde';
+import {density1d} from 'fast-kde';
 
 /** Copyedit machine-friendly tissue name to human-friendly GTEx convention */
 function refineTissueName(rawName) {
@@ -31,17 +30,52 @@ function refineTissueName(rawName) {
   return name;
 }
 
-function setPxOffset(tissueExpressions, maxPx=70, relative=true, leftPx=0) {
+/** Get maximum expression among tissues, or for an optional reference */
+function getMaxExpression(tissueExpressions, refTissue) {
   let maxExpression = 0;
-
-  const metrics = ['max', 'q3', 'median', 'q1', 'min'];
 
   for (let i = 0; i < tissueExpressions.length; i++) {
     const teObject = tissueExpressions[i];
-    if (teObject.expression.max > maxExpression) {
-      maxExpression = teObject.expression.max;
+    const thisMaxExp = teObject.expression.max;
+
+    if (!refTissue) {
+      // For default display of mini-curves
+      if (thisMaxExp > maxExpression) {
+        maxExpression = thisMaxExp;
+      }
+    } else {
+      // Set a non-default tissue as reference, e.g. to frame other
+      // mini-curves relative to hovered mini-curve.
+      if (teObject.tissue === refTissue) {
+        maxExpression = thisMaxExp;
+        break;
+      }
     }
   }
+
+  return maxExpression;
+}
+
+/**
+ * Set a `px` property in each item of tissueExpressions for key metrics
+ *
+ * @param {List<Object>} tissueExpressions
+ * @param {Number} maxPx Maximum width
+ * @param {Boolean} relative Whether offsets are relative to highest-median
+ *   expression tissue (e.g. multiple mini-curves) or not (e.g. detail curve)
+ * @param {Number} leftPx How much to much curves over from the left
+ * @param {String} refTissue Tissue used as reference for maximum expression.
+ *   refTissue maxExp becomes px.max, any greater exp. in other tissues gets
+ *   truncated at right in its curve.
+ * @returns {List<Object>} tissueExpressions, with a new `px` property in each
+ *   for max, q3, median, q1, and min.
+ */
+function setPxOffset(
+  tissueExpressions, maxPx=70, relative=true, leftPx=0, refTissue=null
+) {
+  const maxExpression = getMaxExpression(tissueExpressions, refTissue);
+
+  const metrics = ['max', 'q3', 'median', 'q1', 'min'];
 
   tissueExpressions.map(teObject => {
     teObject.px = {};
@@ -49,7 +83,12 @@ function setPxOffset(tissueExpressions, maxPx=70, relative=true, leftPx=0) {
       for (let i = 0; i < metrics.length; i++) {
         const metric = metrics[i];
         const expression = teObject.expression[metric];
-        const px = maxPx * expression/maxExpression + leftPx;
+        let px = maxPx * expression/maxExpression;
+        if (px > maxPx) {
+          // Often occurs when `refTissue` is specified
+          px = maxPx;
+        }
+        px += leftPx;
         teObject.px[metric] = px;
       }
     } else {
@@ -73,8 +112,9 @@ function setPxOffset(tissueExpressions, maxPx=70, relative=true, leftPx=0) {
 /** Get link to full detail about gene on GTEx */
 function getFullDetail(gene) {
   const gtexUrl = `https://www.gtexportal.org/home/gene/${gene}`;
+  const cls = 'class="_ideoGtexLink"';
   const gtexLink =
-    `<a href="${gtexUrl}" target="_blank">GTEx</a>`;
+    `<a href="${gtexUrl}" ${cls} target="_blank">GTEx</a>`;
   const fullDetail = `<i>Full detail: ${gtexLink}</i>`;
   return fullDetail;
 }
@@ -143,10 +183,7 @@ function getMetricLines(offsets, y, height, color) {
   return [medianLine, q1Line, q3Line];
 }
 
-/**
- * Get a distribution curve of expression, via kernel density estimation (KDE)
- */
-function getCurve(teObject, y, height, color, borderColor, numKdeBins=64) {
+function getCurvePoints(teObject, y, height, numKdeBins=64) {
   const quantiles = teObject.expression.quantiles;
   const offsets = teObject.px;
   const samples = teObject.samples;
@@ -223,6 +260,15 @@ function getCurve(teObject, y, height, color, borderColor, numKdeBins=64) {
   rawPoints.push(originPoint);
   const points = rawPoints.join(' ');
 
+  return points;
+}
+
+/**
+ * Get a distribution curve of expression, via kernel density estimation (KDE)
+ */
+function getCurve(teObject, y, height, color, borderColor, numKdeBins=64) {
+  const points = getCurvePoints(teObject, y, height, numKdeBins=64);
+
   const curveAttrs =
     `fill="${color}" ` +
     `stroke="${borderColor}" ` +
@@ -230,7 +276,7 @@ function getCurve(teObject, y, height, color, borderColor, numKdeBins=64) {
 
   const curve = `<polyline ${curveAttrs} />`;
 
-  return [curve, offsets];
+  return [curve, teObject.px];
 }
 
 /**
@@ -385,9 +431,11 @@ function addDetailedCurve(traceDom, ideo) {
 
   // Hide RNA & protein diagrams, footer
   const structureDom = document.querySelector('._ideoGeneStructureContainer');
-  structureDom.style.display = 'none';
-  const footer = document.querySelector('._ideoTooltipFooter');
-  footer.style.display = 'none';
+  if (structureDom) { // Account for e.g. ncRNA, like MALAT1
+    structureDom.style.display = 'none';
+    const footer = document.querySelector('._ideoTooltipFooter');
+    footer.style.display = 'none';
+  }
 
   const svgHeight = 119.5; // Keeps tooltip bottom flush with prior state
   const style = `style="position: relative; height: ${svgHeight}px"`;
@@ -409,7 +457,7 @@ function addDetailedCurve(traceDom, ideo) {
 /** Get mini distribution curves and  */
 function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
   const maxWidth = 48;
-  tissueExpressions = setPxOffset(tissueExpressions, maxWidth);
+  tissueExpressions = setPxOffset(tissueExpressions, maxWidth, true, 0);
 
   const height = 12;
 
@@ -428,9 +476,7 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
       teObject, y, height, color, borderColor
     );
 
-    const [medianLine] = getMetricLines(
-      offsetsWithHeight, y, height, color
-    );
+    const [medianLine] = getMetricLines(offsetsWithHeight, y, height, color);
 
     const dataTissue = `data-tissue="${teObject.tissue}"`;
 
@@ -472,7 +518,7 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
   const plotHtml =
     '<div>' +
       `<div class="_ideoTissueExpressionPlot" ${plotAttrs}>
-        <div ${titleAttrs}>Reference expression by tissue:</div>
+        <div ${titleAttrs}>Reference expression by tissue</div>
         <svg width="275" height="${y + height + 2}" ${style}>${rects}</svg>
         ${moreOrLessToggleHtml}
       </div>` +
@@ -513,6 +559,7 @@ export function addTissueListeners(ideo) {
   document.querySelectorAll('._ideoExpressionTrace').forEach(trace => {
     trace.addEventListener('mouseenter', () => {
       colorTissueText(trace, '#338');
+
       addDetailedCurve(trace, ideo);
     });
     trace.addEventListener('mouseleave', () => {
@@ -520,11 +567,10 @@ export function addTissueListeners(ideo) {
       removeDetailedCurve(trace, ideo);
     });
   });
+}
 
-  // tippy(
-  //   '._ideoExpressionMedian',
-  //   getTippyConfig()
-  // );
+function updateCurvePaths(gene, tissueExpressions, refTissue) {
+
 }
 
 export function getTissueHtml(annot, ideo) {
