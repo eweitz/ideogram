@@ -1,7 +1,10 @@
 import {
-  adjustBrightness, ensureContrast, getTextSize
+  adjustBrightness, ensureContrast, getTextSize, d3
 } from '../lib';
 import {density1d} from 'fast-kde';
+
+const MINI_CURVE_HEIGHT = 12;
+const MINI_CURVE_WIDTH = 48;
 
 /** Copyedit machine-friendly tissue name to human-friendly GTEx convention */
 function refineTissueName(rawName) {
@@ -71,9 +74,15 @@ function getMaxExpression(tissueExpressions, refTissue) {
  *   for max, q3, median, q1, and min.
  */
 function setPxOffset(
-  tissueExpressions, maxPx=70, relative=true, leftPx=0, refTissue=null
+  tissueExpressions, maxPx, relative=true, leftPx=0, refTissue=null
 ) {
   const maxExpression = getMaxExpression(tissueExpressions, refTissue);
+  let refMinExp = 0;
+  if (refTissue) {
+    const refTeObject =
+      tissueExpressions.find(teObject => teObject.tissue === refTissue);
+    refMinExp = refTeObject.expression.min;
+  }
 
   const metrics = ['max', 'q3', 'median', 'q1', 'min'];
 
@@ -82,8 +91,9 @@ function setPxOffset(
     if (relative) {
       for (let i = 0; i < metrics.length; i++) {
         const metric = metrics[i];
-        const expression = teObject.expression[metric];
-        let px = maxPx * expression/maxExpression;
+        const exp = teObject.expression[metric];
+        let px =
+          maxPx * (exp - refMinExp)/(maxExpression - refMinExp) + leftPx;
         if (px > maxPx) {
           // Often occurs when `refTissue` is specified
           px = maxPx;
@@ -147,17 +157,24 @@ function getMoreOrLessToggle(gene, height, tissueExpressions, ideo) {
   return moreOrLessToggleHtml;
 }
 
+/** Get x, y1, and y2 for a metric line */
+function getMetricLinePosition(offsets, metric, y, height) {
+  const x = offsets[metric];
+  const metricHeight = offsets[metric + 'Height'];
+  const top = height - metricHeight;
+  const y1 = top + y + 0.5;
+  const y2 = top + y + metricHeight;
+
+  return {x, y1, y2};
+}
+
 /** Get a vertical line to show in distribution curve for median, Q1, or Q2 */
 function getMetricLine(
   metric, offsets, color, y, height,
   dash=false
 ) {
   const classMetric = metric[0].toUpperCase() + metric.slice(1);
-  const x = offsets[metric];
-  const metricHeight = offsets[metric + 'Height'];
-  const top = height - metricHeight;
-  const y1 = top + y + 0.5;
-  const y2 = top + y + metricHeight;
+  const {x, y1, y2} = getMetricLinePosition(offsets, metric, y, height);
   const baseColor = adjustBrightness(color, 0.55);
   const strokeColor = ensureContrast(baseColor, color);
   const dasharray = dash ? 'stroke-dasharray="3" ' : '';
@@ -183,7 +200,7 @@ function getMetricLines(offsets, y, height, color) {
   return [medianLine, q1Line, q3Line];
 }
 
-function getCurvePoints(teObject, y, height, numKdeBins=64) {
+function getCurveShape(teObject, y, height, numKdeBins=64) {
   const quantiles = teObject.expression.quantiles;
   const offsets = teObject.px;
   const samples = teObject.samples;
@@ -260,23 +277,25 @@ function getCurvePoints(teObject, y, height, numKdeBins=64) {
   rawPoints.push(originPoint);
   const points = rawPoints.join(' ');
 
-  return points;
+  return [points, offsets];
 }
 
 /**
  * Get a distribution curve of expression, via kernel density estimation (KDE)
  */
 function getCurve(teObject, y, height, color, borderColor, numKdeBins=64) {
-  const points = getCurvePoints(teObject, y, height, numKdeBins=64);
+  const [points, offsets] = getCurveShape(teObject, y, height, numKdeBins=64);
 
   const curveAttrs =
     `fill="${color}" ` +
     `stroke="${borderColor}" ` +
-    `points="${points}" `;
+    `points="${points}" ` +
+    'class="tissue-curve" ' +
+    `data-tissue-curve="${teObject.tissue}"`;
 
   const curve = `<polyline ${curveAttrs} />`;
 
-  return [curve, teObject.px];
+  return [curve, offsets];
 }
 
 /**
@@ -284,6 +303,7 @@ function getCurve(teObject, y, height, color, borderColor, numKdeBins=64) {
  */
 function removeDetailedCurve() {
   const container = document.querySelector('._ideoDistributionContainer');
+  if (!container) return;
   container.remove();
 
   const structureDom = document.querySelector('._ideoGeneStructureContainer');
@@ -454,12 +474,17 @@ function addDetailedCurve(traceDom, ideo) {
   structureDom.insertAdjacentHTML('beforebegin', container);
 }
 
+function getMiniCurveY(i, height) {
+  const y = 1 + i * (height + 2);
+  return y;
+}
+
 /** Get mini distribution curves and  */
 function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
-  const maxWidth = 48;
+  const maxWidth = MINI_CURVE_WIDTH;
   tissueExpressions = setPxOffset(tissueExpressions, maxWidth, true, 0);
 
-  const height = 12;
+  const height = MINI_CURVE_HEIGHT;
 
   const moreOrLessToggleHtml =
     getMoreOrLessToggle(gene, height, tissueExpressions, ideo);
@@ -467,7 +492,7 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
 
   let y;
   const rects = tissueExpressions.slice(0, numTissues).map((teObject, i) => {
-    y = 1 + i * (height + 2);
+    y = getMiniCurveY(i, height);
     const tissue = refineTissueName(teObject.tissue);
     const color = `#${teObject.color}`;
     const borderColor = adjustBrightness(color, 0.85);
@@ -556,21 +581,60 @@ export function addTissueListeners(ideo) {
     });
   }
 
-  document.querySelectorAll('._ideoExpressionTrace').forEach(trace => {
+  const traces = document.querySelectorAll('._ideoExpressionTrace')
+  traces.forEach(trace => {
     trace.addEventListener('mouseenter', () => {
       colorTissueText(trace, '#338');
-
+      updateMiniCurveShapes(trace, ideo);
       addDetailedCurve(trace, ideo);
     });
     trace.addEventListener('mouseleave', () => {
       colorTissueText(trace, '#000');
+      updateMiniCurveShapes(traces[0], ideo, true);
       removeDetailedCurve(trace, ideo);
     });
   });
 }
 
-function updateCurvePaths(gene, tissueExpressions, refTissue) {
+function updateMiniCurveShapes(traceDom, ideo, reset=false) {
+  const gene = traceDom.getAttribute('data-gene');
+  const refTissue = reset ? null : traceDom.getAttribute('data-tissue');
+  let tissueExpressions = ideo.tissueExpressionsByGene[gene];
 
+  const maxPx = MINI_CURVE_WIDTH;
+  const relative = true;
+  const leftPx = 0;
+  tissueExpressions =
+    setPxOffset(tissueExpressions, maxPx, relative, leftPx, refTissue);
+
+  const height = MINI_CURVE_HEIGHT;
+  tissueExpressions.forEach((teObject, i) => {
+    const thisTissue = teObject.tissue;
+    const thisTeObject = tissueExpressions.find(te => te.tissue === thisTissue);
+    const y = getMiniCurveY(i, height);
+
+    const [newPoints, newOffsets] = getCurveShape(thisTeObject, y, height);
+    tissueExpressions[i].points = newPoints;
+
+    const medianLineAttrs =
+      getMetricLinePosition(newOffsets, 'median', y, height);
+    tissueExpressions[i].medianLine = medianLineAttrs;
+  });
+
+  d3.select('._ideoTissueExpressionPlot').selectAll('polyline')
+    .data(tissueExpressions)
+    .transition()
+    .duration(500)
+    .attr('points', (_, i) => tissueExpressions[i].points);
+
+  d3.select('._ideoTissueExpressionPlot').selectAll('._ideoExpressionMedian')
+    .data(tissueExpressions)
+    .transition()
+    .duration(500)
+    .attr('x1', (_, i) => tissueExpressions[i].medianLine.x)
+    .attr('x2', (_, i) => tissueExpressions[i].medianLine.x)
+    .attr('y1', (_, i) => tissueExpressions[i].medianLine.y1)
+    .attr('y2', (_, i) => tissueExpressions[i].medianLine.y2);
 }
 
 export function getTissueHtml(annot, ideo) {
