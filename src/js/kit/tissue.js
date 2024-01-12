@@ -86,6 +86,8 @@ function setPxOffset(
 
   const metrics = ['max', 'q3', 'median', 'q1', 'min'];
 
+  console.log('leftPx, maxPx, maxExpression', leftPx, maxPx, maxExpression)
+
   tissueExpressions.map(teObject => {
     teObject.px = {};
     if (relative) {
@@ -94,9 +96,9 @@ function setPxOffset(
         const exp = teObject.expression[metric];
         let px =
           maxPx * (exp - refMinExp)/(maxExpression - refMinExp) + leftPx;
-        if (px > maxPx) {
+        if (Math.round(px) > maxPx) {
           // Often occurs when `refTissue` is specified
-          px = maxPx;
+          px += maxPx;
         }
         px += leftPx;
         teObject.px[metric] = px;
@@ -157,15 +159,34 @@ function getMoreOrLessToggle(gene, height, tissueExpressions, ideo) {
   return moreOrLessToggleHtml;
 }
 
-/** Get x, y1, and y2 for a metric line */
-function getMetricLinePosition(offsets, metric, y, height) {
-  const x = offsets[metric];
-  const metricHeight = offsets[metric + 'Height'];
+/** Get x, y1, y2, and style for a metric line */
+function getMetricLineAttrs(offsets, metric, y, height, isShifted=false) {
+  let x = offsets[metric];
+  let isTruncated = false;
+  if (isShifted && x > MINI_CURVE_WIDTH) {
+    x = MINI_CURVE_WIDTH + 1;
+    isTruncated = true;
+  }
+  const metricHeight =
+    !isTruncated ? offsets[metric + 'Height'] : MINI_CURVE_HEIGHT;
   const top = height - metricHeight;
   const y1 = top + y + 0.5;
   const y2 = top + y + metricHeight;
 
-  return {x, y1, y2};
+  // E.g. brain mini-curve in AGT
+  const isNarrow = offsets.max - offsets.min > 8;
+  const isMedian = metric === 'median';
+  const isNarrowMedian = isNarrow && isMedian;
+  const style = isNarrowMedian ? '' : 'display: none';
+
+  // Whether to hide median at end of transition, e.g. when focus is
+  // esophagus in ACE2 and testis median should be hidden
+  const isTruncatedMedian = isTruncated && isMedian;
+
+  const endStyle =
+    isTruncatedMedian || !isNarrowMedian ? 'display: none;' : '';
+
+  return {x, y1, y2, style, endStyle};
 }
 
 /** Get a vertical line to show in distribution curve for median, Q1, or Q2 */
@@ -174,12 +195,13 @@ function getMetricLine(
   dash=false
 ) {
   const classMetric = metric[0].toUpperCase() + metric.slice(1);
-  const {x, y1, y2} = getMetricLinePosition(offsets, metric, y, height);
+  const {x, y1, y2, style} = getMetricLineAttrs(offsets, metric, y, height);
+  const styleAttr = style === '' ? `style="${style}" ` : '';
   const baseColor = adjustBrightness(color, 0.55);
   const strokeColor = ensureContrast(baseColor, color);
   const dasharray = dash ? 'stroke-dasharray="3" ' : '';
   const attrs =
-    `x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" ` +
+    `x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" ${styleAttr} ` +
     dasharray +
     `class="_ideoExpression${classMetric}" `;
   const metricLine = `<line stroke="${strokeColor}" ${attrs} />`;
@@ -200,11 +222,15 @@ function getMetricLines(offsets, y, height, color) {
   return [medianLine, q1Line, q3Line];
 }
 
-function getCurveShape(teObject, y, height, numKdeBins=64) {
+function getCurveShape(teObject, y, height, numKdeBins=64, isShifted=false) {
   const quantiles = teObject.expression.quantiles;
   const offsets = teObject.px;
   const samples = teObject.samples;
   const spreadQuantiles = [];
+
+  if (numKdeBins === 64) {
+    console.log('in getCurveShape, tissue, offsets', teObject.tissue, offsets)
+  }
 
   // `quantiles` is an array encoding a histogram.
   // To get a kernel density estimation (KDE) -- i.e., a curve that smooths the
@@ -252,7 +278,10 @@ function getCurveShape(teObject, y, height, numKdeBins=64) {
   // and set heights for each metric plotted in detailed distribution
   let prevPixelX = 0;
   const rawPoints = kdeArray.map((point, i) => {
-    const pixelX = (point.x - minKernelX) * pixelsPerKernel + offsets.min;
+    let pixelX = (point.x - minKernelX) * pixelsPerKernel + offsets.min;
+    if (isShifted && pixelX > MINI_CURVE_WIDTH) {
+      pixelX = MINI_CURVE_WIDTH;
+    }
     const segmentHeight = height * (point.y / maxKernelY);
     const pixelY = bottom - segmentHeight;
 
@@ -270,9 +299,16 @@ function getCurveShape(teObject, y, height, numKdeBins=64) {
     return `${pixelX},${pixelY}`;
   });
 
+  let refinedMax = offsets.max;
+  let refinedMin = offsets.min;
+  if (isShifted) {
+    if (offsets.max > MINI_CURVE_WIDTH) refinedMax = MINI_CURVE_WIDTH;
+    if (offsets.min > MINI_CURVE_WIDTH) refinedMin = MINI_CURVE_WIDTH;
+  }
+
   // Tie up loose ends of the curved diagram
-  rawPoints.push(offsets.max + ',' + bottom);
-  rawPoints.push(offsets.min + ',' + bottom);
+  rawPoints.push(refinedMax + ',' + bottom);
+  rawPoints.push(refinedMin + ',' + bottom);
   const originPoint = rawPoints[0];
   rawPoints.push(originPoint);
   const points = rawPoints.join(' ');
@@ -284,7 +320,7 @@ function getCurveShape(teObject, y, height, numKdeBins=64) {
  * Get a distribution curve of expression, via kernel density estimation (KDE)
  */
 function getCurve(teObject, y, height, color, borderColor, numKdeBins=64) {
-  const [points, offsets] = getCurveShape(teObject, y, height, numKdeBins=64);
+  const [points, offsets] = getCurveShape(teObject, y, height, numKdeBins);
 
   const curveAttrs =
     `fill="${color}" ` +
@@ -523,14 +559,11 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
       `x="${maxWidth + 10}" ` +
       dataTissue;
 
-    const curveWidth = offsetsWithHeight.max - offsetsWithHeight.min;
-    const refinedMedianLine = curveWidth > 8 ? medianLine : '';
-
     return (
       '<g>' +
       `<text ${textAttrs}>${tissue}</text>` +
       distributionCurve +
-      refinedMedianLine +
+      medianLine +
       `<rect ${containerAttrs} class="_ideoExpressionTrace" />` +
       '</g>'
     );
@@ -599,7 +632,10 @@ export function addTissueListeners(ideo) {
 function updateMiniCurveShapes(traceDom, ideo, reset=false) {
   const gene = traceDom.getAttribute('data-gene');
   const refTissue = reset ? null : traceDom.getAttribute('data-tissue');
-  let tissueExpressions = ideo.tissueExpressionsByGene[gene];
+
+  const numTissues = !ideo.showTissuesMore ? 10 : 3;
+  let tissueExpressions =
+    ideo.tissueExpressionsByGene[gene].slice(0, numTissues);
 
   const maxPx = MINI_CURVE_WIDTH;
   const relative = true;
@@ -607,18 +643,25 @@ function updateMiniCurveShapes(traceDom, ideo, reset=false) {
   tissueExpressions =
     setPxOffset(tissueExpressions, maxPx, relative, leftPx, refTissue);
 
+  console.log('')
+  console.log('Updating mini curves')
+
   const height = MINI_CURVE_HEIGHT;
   tissueExpressions.forEach((teObject, i) => {
     const thisTissue = teObject.tissue;
     const thisTeObject = tissueExpressions.find(te => te.tissue === thisTissue);
     const y = getMiniCurveY(i, height);
 
-    const [newPoints, newOffsets] = getCurveShape(thisTeObject, y, height);
+    const isShifted = !reset;
+    const [newPoints, newOffsets] =
+      getCurveShape(thisTeObject, y, height, 64, isShifted);
     tissueExpressions[i].points = newPoints;
 
     const medianLineAttrs =
-      getMetricLinePosition(newOffsets, 'median', y, height);
+      getMetricLineAttrs(newOffsets, 'median', y, height, isShifted);
     tissueExpressions[i].medianLine = medianLineAttrs;
+
+    console.log('medianLineAttrs', medianLineAttrs)
   });
 
   d3.select('._ideoTissueExpressionPlot').selectAll('polyline')
@@ -629,12 +672,14 @@ function updateMiniCurveShapes(traceDom, ideo, reset=false) {
 
   d3.select('._ideoTissueExpressionPlot').selectAll('._ideoExpressionMedian')
     .data(tissueExpressions)
+    .attr('style', (_, i) => tissueExpressions[i].medianLine.style)
     .transition()
     .duration(500)
     .attr('x1', (_, i) => tissueExpressions[i].medianLine.x)
     .attr('x2', (_, i) => tissueExpressions[i].medianLine.x)
     .attr('y1', (_, i) => tissueExpressions[i].medianLine.y1)
-    .attr('y2', (_, i) => tissueExpressions[i].medianLine.y2);
+    .attr('y2', (_, i) => tissueExpressions[i].medianLine.y2)
+    .attr('style', (_, i) => tissueExpressions[i].medianLine.endStyle);
 }
 
 export function getTissueHtml(annot, ideo) {
