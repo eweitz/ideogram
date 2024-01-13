@@ -86,8 +86,6 @@ function setPxOffset(
 
   const metrics = ['max', 'q3', 'median', 'q1', 'min'];
 
-  console.log('leftPx, maxPx, maxExpression', leftPx, maxPx, maxExpression)
-
   tissueExpressions.map(teObject => {
     teObject.px = {};
     if (relative) {
@@ -98,7 +96,8 @@ function setPxOffset(
           maxPx * (exp - refMinExp)/(maxExpression - refMinExp) + leftPx;
         if (Math.round(px) > maxPx) {
           // Often occurs when `refTissue` is specified
-          px += maxPx;
+          teObject.px[metric + 'Raw'] = px;
+          px += (maxPx - px);
         }
         px += leftPx;
         teObject.px[metric] = px;
@@ -174,17 +173,17 @@ function getMetricLineAttrs(offsets, metric, y, height, isShifted=false) {
   const y2 = top + y + metricHeight;
 
   // E.g. brain mini-curve in AGT
-  const isNarrow = offsets.max - offsets.min > 8;
+  const isNarrow = offsets.max - offsets.min <= 8;
   const isMedian = metric === 'median';
   const isNarrowMedian = isNarrow && isMedian;
-  const style = isNarrowMedian ? '' : 'display: none';
+  const style = isNarrowMedian ? 'display: none' : '';
 
   // Whether to hide median at end of transition, e.g. when focus is
   // esophagus in ACE2 and testis median should be hidden
   const isTruncatedMedian = isTruncated && isMedian;
 
   const endStyle =
-    isTruncatedMedian || !isNarrowMedian ? 'display: none;' : '';
+    isTruncatedMedian || isNarrowMedian ? 'display: none;' : '';
 
   return {x, y1, y2, style, endStyle};
 }
@@ -196,7 +195,7 @@ function getMetricLine(
 ) {
   const classMetric = metric[0].toUpperCase() + metric.slice(1);
   const {x, y1, y2, style} = getMetricLineAttrs(offsets, metric, y, height);
-  const styleAttr = style === '' ? `style="${style}" ` : '';
+  const styleAttr = style === '' ? '' : `style="${style}"`;
   const baseColor = adjustBrightness(color, 0.55);
   const strokeColor = ensureContrast(baseColor, color);
   const dasharray = dash ? 'stroke-dasharray="3" ' : '';
@@ -227,10 +226,6 @@ function getCurveShape(teObject, y, height, numKdeBins=64, isShifted=false) {
   const offsets = teObject.px;
   const samples = teObject.samples;
   const spreadQuantiles = [];
-
-  if (numKdeBins === 64) {
-    console.log('in getCurveShape, tissue, offsets', teObject.tissue, offsets)
-  }
 
   // `quantiles` is an array encoding a histogram.
   // To get a kernel density estimation (KDE) -- i.e., a curve that smooths the
@@ -269,7 +264,8 @@ function getCurveShape(teObject, y, height, numKdeBins=64, isShifted=false) {
   const minKernelX = kdeArray[0].x;
   const maxKernelX = kdeArray.slice(-1)[0].x;
   const kdeWidth = maxKernelX - minKernelX;
-  const offsetsWidth = offsets.max - offsets.min;
+  const thisMax = ('maxRaw' in offsets) ? offsets.maxRaw : offsets.max;
+  const offsetsWidth = thisMax - offsets.min;
   const pixelsPerKernel = offsetsWidth/kdeWidth;
 
   const bottom = height + y;
@@ -618,18 +614,33 @@ export function addTissueListeners(ideo) {
   traces.forEach(trace => {
     trace.addEventListener('mouseenter', () => {
       colorTissueText(trace, '#338');
-      updateMiniCurveShapes(trace, ideo);
+      focusMiniCurve(trace, ideo);
       addDetailedCurve(trace, ideo);
     });
     trace.addEventListener('mouseleave', () => {
       colorTissueText(trace, '#000');
-      updateMiniCurveShapes(traces[0], ideo, true);
+      focusMiniCurve(traces[0], ideo, true);
       removeDetailedCurve(trace, ideo);
     });
   });
 }
 
-function updateMiniCurveShapes(traceDom, ideo, reset=false) {
+/**
+ * Update mini-curve shapes to focus on hovered tissue
+ *
+ * This helps compare the focused tissue to other tissues.  Without this,
+ * often almost all curves are too small, and their distributions can't be
+ * richly compared, because one or a few tissues have a maximum drastically
+ * larger than others.  With this feature, expression in those non-dominant
+ * tissues (which are often the majority, and biologically relevant) can be
+ * compared in detail.
+ *
+ * The focused tissue becomes the new coordinate reference for all mini-curves.
+ * The new reference tissue (refTissue) gets scaled and translated to occupy
+ * the full width available to mini-curves (MINI_CURVE_WIDTH).  Other curves get
+ * transformed to be viewed from the perspective of the focused tissue.
+ **/
+function focusMiniCurve(traceDom, ideo, reset=false) {
   const gene = traceDom.getAttribute('data-gene');
   const refTissue = reset ? null : traceDom.getAttribute('data-tissue');
 
@@ -642,9 +653,6 @@ function updateMiniCurveShapes(traceDom, ideo, reset=false) {
   const leftPx = 0;
   tissueExpressions =
     setPxOffset(tissueExpressions, maxPx, relative, leftPx, refTissue);
-
-  console.log('')
-  console.log('Updating mini curves')
 
   const height = MINI_CURVE_HEIGHT;
   tissueExpressions.forEach((teObject, i) => {
@@ -660,8 +668,6 @@ function updateMiniCurveShapes(traceDom, ideo, reset=false) {
     const medianLineAttrs =
       getMetricLineAttrs(newOffsets, 'median', y, height, isShifted);
     tissueExpressions[i].medianLine = medianLineAttrs;
-
-    console.log('medianLineAttrs', medianLineAttrs)
   });
 
   d3.select('._ideoTissueExpressionPlot').selectAll('polyline')
