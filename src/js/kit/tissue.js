@@ -166,8 +166,14 @@ function getMetricLineAttrs(offsets, metric, y, height, isShifted=false) {
     x = MINI_CURVE_WIDTH + 1;
     isTruncated = true;
   }
-  const metricHeight =
+  let metricHeight =
     !isTruncated ? offsets[metric + 'Height'] : MINI_CURVE_HEIGHT;
+
+  if (isNaN(metricHeight)) {
+    // Seen upon e.g. hovering over "Artery - Coronary" in STAT1
+    metricHeight = MINI_CURVE_HEIGHT;
+  }
+
   const top = height - metricHeight;
   const y1 = top + y + 0.5;
   const y2 = top + y + metricHeight;
@@ -556,7 +562,7 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
       dataTissue;
 
     return (
-      '<g>' +
+      `<g data-group-tissue="${teObject.tissue}">` +
       `<text ${textAttrs}>${tissue}</text>` +
       distributionCurve +
       medianLine +
