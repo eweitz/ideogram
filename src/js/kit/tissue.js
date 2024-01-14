@@ -345,7 +345,9 @@ function removeDetailedCurve() {
   container.remove();
 
   const structureDom = document.querySelector('._ideoGeneStructureContainer');
-  structureDom.style.display = '';
+  if (structureDom) {
+    structureDom.style.display = '';
+  }
   const footer = document.querySelector('._ideoTooltipFooter');
   footer.style.display = '';
 }
@@ -488,11 +490,17 @@ function addDetailedCurve(traceDom, ideo) {
   const metricTicks = getMetricTicks(teObject, height);
 
   // Hide RNA & protein diagrams, footer
+  let ledgeDom;
   const structureDom = document.querySelector('._ideoGeneStructureContainer');
+  const footer = document.querySelector('._ideoTooltipFooter');
   if (structureDom) { // Account for e.g. ncRNA, like MALAT1
+    ledgeDom = structureDom;
     structureDom.style.display = 'none';
-    const footer = document.querySelector('._ideoTooltipFooter');
     footer.style.display = 'none';
+  } else {
+    ledgeDom = footer;
+    const plotContainer = document.querySelector('._ideoTissuePlotContainer');
+    plotContainer.setAttribute('style', 'margin-bottom: 20px');
   }
 
   const svgHeight = 119.5; // Keeps tooltip bottom flush with prior state
@@ -509,7 +517,7 @@ function addDetailedCurve(traceDom, ideo) {
     `</svg>` +
     '</div>';
 
-  structureDom.insertAdjacentHTML('beforebegin', container);
+  ledgeDom.insertAdjacentHTML('beforebegin', container);
 }
 
 function getMiniCurveY(i, height) {
@@ -571,12 +579,18 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
     );
   }).join('');
 
+  let containerStyle = '';
+  const hasStructure = gene in ideo.geneStructureCache;
+  if (!hasStructure) { // e.g. MALAT1
+    containerStyle = 'style="margin-bottom: 10px;"';
+  }
+
   const plotAttrs = `style="margin-top: 15px; margin-bottom: -15px;"`;
   const cls = 'class="_ideoTissuePlotTitle"';
   const titleAttrs = `${cls} style="margin-bottom: 4px;"`;
   const style = `style="position: relative; left: 10px"`;
   const plotHtml =
-    '<div>' +
+    `<div class="_ideoTissuePlotContainer" ${containerStyle}>` +
       `<div class="_ideoTissueExpressionPlot" ${plotAttrs}>
         <div ${titleAttrs}>Reference expression by tissue</div>
         <svg width="275" height="${y + height + 2}" ${style}>${rects}</svg>

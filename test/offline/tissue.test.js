@@ -70,12 +70,49 @@ describe('Ideogram gene-tissue expression functionality', function() {
         const lungSelector = 'rect[data-tissue="Lung"]';
         const lungCurve = document.querySelector(lungSelector);
         lungCurve.dispatchEvent(new Event('mouseenter'));
-        console.log('lungCurve', lungCurve)
         const cellsEbv = 'Cells_EBV-transformed_lymphocytes';
         const cellsEbvSelector =
           `[data-group-tissue="${cellsEbv}"] ._ideoExpressionMedian`;
         const medianTick = document.querySelector(cellsEbvSelector);
         assert.equal(medianTick.style.display, 'none');
+
+        done();
+      }, 500);
+    }
+
+    function onClickAnnot(annot) {
+      ideogram.plotRelatedGenes(annot.name);
+    }
+
+    var config = {
+      organism: 'Homo sapiens', // Also tests standard, non-slugged name
+      onLoad: callback,
+      dataDir: '/dist/data/bands/native/',
+      cacheDir: '/dist/data/cache/',
+      onClickAnnot,
+      showGeneStructureInTooltip: true,
+      showParalogNeighborhoods: true
+    };
+
+    const ideogram = Ideogram.initRelatedGenes(config);
+  });
+
+  it('handles lncRNA gene', done => {
+    async function callback() {
+      await ideogram.plotRelatedGenes('MALAT1');
+      setTimeout(async function() {
+        const malat1Label = document.querySelector('#ideogramLabel__c10_a0');
+        malat1Label.dispatchEvent(new Event('mouseover'));
+        const curves = document.querySelectorAll('polyline');
+        assert.equal(curves.length, 3);
+
+        const ovarySelector = 'rect[data-tissue="Ovary"]';
+        const ovaryCurve = document.querySelector(ovarySelector);
+        ovaryCurve.dispatchEvent(new Event('mouseenter'));
+        const detailCurve =
+          document.querySelector('._ideoDistributionContainer');
+        assert.equal(detailCurve.style.height, '119.5px');
+        ovaryCurve.dispatchEvent(new Event('mouseleave'));
 
         done();
       }, 500);
