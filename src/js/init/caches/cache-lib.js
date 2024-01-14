@@ -93,9 +93,9 @@ export async function cacheFetch(url) {
     // If cache miss, then fetch, decompress, and put response in cache
     const rawResponse = await fetch(url);
     const blob = await rawResponse.blob();
-    const contentLength = blob.size;
     const uint8Array = new Uint8Array(await blob.arrayBuffer());
     const data = strFromU8(decompressSync(uint8Array));
+    const contentLength = data.length;
     const decompressedResponse = new Response(
       new Blob([data], {type: 'text/tab-separated-values'}),
       {headers: new Headers({'Content-Length': contentLength})}

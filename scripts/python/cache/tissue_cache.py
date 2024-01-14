@@ -101,7 +101,7 @@ def get_summary(expressions):
         if s > 0:
             summary.append(round(s, 2))
 
-    if len(summary) == 5:
+    if len(summary) >= 4:
         num_bins = 10
         size = (max - min) / num_bins
         quantile_counts = [0] * num_bins
@@ -246,6 +246,8 @@ def summarize_top_tissues_by_gene(input_dir):
                 summary = summary_by_gene_by_tissue[gene][tissue]
                 if len(summary) == 15: # 5 for box plot, 10 for KDE deciles
                     median = summary[2]
+                elif len(summary) == 14: # for minimum with a value of 0
+                    median = summary[1]
                 else:
                     median = 0
                 medians_by_tissue_index.append([tissue, median])
@@ -259,8 +261,8 @@ def summarize_top_tissues_by_gene(input_dir):
             ]
             for tissue in top_tissues_by_median:
                 summary = summary_by_gene_by_tissue[gene][tissue]
-                if len(summary) < 5:
-                    # Skip summaries that lack enough points for a median
+                if len(summary) < 4:
+                    # Skip summaries that where Q1 (or higher percentile) is 0
                     continue
                 summary = ';'.join([str(s) for s in summary])
                 if summary == '':
