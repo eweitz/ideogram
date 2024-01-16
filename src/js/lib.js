@@ -348,7 +348,6 @@ function downloadPng(ideo) {
   img.src = url;
 }
 
-
 function getFont(ideo) {
   const config = ideo.config;
 
@@ -356,9 +355,13 @@ function getFont(ideo) {
   if (config.fontFamily) {
     family = config.fontFamily;
   }
+  let weight = 600;
+  if (config.fontWeight) {
+    weight = config.fontWeight;
+  }
 
   const labelSize = config.annotLabelSize ? config.annotLabelSize : 13;
-  const font = '600 ' + labelSize + 'px ' + family;
+  const font = weight + ' ' + labelSize + 'px ' + family;
 
   return font;
 }
@@ -418,6 +421,120 @@ export function hexToRgb(hex) {
     g: parseInt(result[2], 16),
     b: parseInt(result[3], 16)
   } : null;
+}
+
+// http://stackoverflow.com/a/5624139
+function componentToHex(c) {
+  var hex = parseInt(c, 10).toString(16);
+  return hex.length === 1 ? '0' + hex : hex;
+}
+
+function rgbToHex(r, g, b) {
+  return (
+    '#' +
+    componentToHex(r) +
+    componentToHex(g) +
+    componentToHex(b)
+  );
+}
+
+function rgbColorToHex(color) {
+  const rgb = color.split('rgb(')[1].trim(')').split(', ');
+  const hex = rgbToHex(rgb[0], rgb[1], rgb[2]);
+  return hex;
+}
+
+/**
+ * If hex color is low contrast with white, then darken it.
+ *
+ * @param {String} color Initial color that fills the shape, in hex
+ */
+export function ensureContrast(color, bgColor='#FFF') {
+  if (color.slice(0, 3) === 'rgb') color = rgbColorToHex(color);
+  if (color[0] !== '#') return color; // preserve non-hex color, e.g. "purple"
+  const rgb = hexToRgb(color);
+
+  if (bgColor === '#FFF') {
+    // If low contrast, darken
+    if (rgb.r > 150 && rgb.g > 150 && rgb.b > 150) {
+      color = `rgb(${rgb.r - 30}, ${rgb.g - 30}, ${rgb.b - 30})`;
+    }
+
+    // If lower contrast, darken more
+    if (rgb.r > 200 && rgb.g > 200 && rgb.b > 200) {
+      color = `rgb(${rgb.r - 50}, ${rgb.g - 50}, ${rgb.b - 50})`;
+    }
+  } else {
+    const bgRgb = hexToRgb(bgColor);
+    const contrast = getContrast(
+      [rgb.r, rgb.g, rgb.b],
+      [bgRgb.r, bgRgb.g, bgRgb.b]
+    );
+    if (contrast < 3) {
+      color = `rgb(230, 230, 230)`;
+    }
+  }
+
+  return color;
+}
+
+/** https://stackoverflow.com/a/9733420 */
+const RED = 0.2126;
+const GREEN = 0.7152;
+const BLUE = 0.0722;
+
+const GAMMA = 2.4;
+
+/** https://stackoverflow.com/a/9733420 */
+function luminance(r, g, b) {
+  var a = [r, g, b].map((v) => {
+    v /= 255;
+    return (
+      v <= 0.03928
+        ? v / 12.92
+        : Math.pow((v + 0.055) / 1.055, GAMMA)
+    );
+  });
+  return a[0] * RED + a[1] * GREEN + a[2] * BLUE;
+}
+
+/** https://stackoverflow.com/a/9733420 */
+function getContrast(rgb1, rgb2) {
+  var lum1 = luminance(...rgb1);
+  var lum2 = luminance(...rgb2);
+  var brightest = Math.max(lum1, lum2);
+  var darkest = Math.min(lum1, lum2);
+  return (brightest + 0.05) / (darkest + 0.05);
+}
+
+
+export function adjustBrightness(color, brightness) {
+  if (color[0] !== '#') return color; // preserve non-hex color, e.g. "purple"
+  const rgb = hexToRgb(color);
+  const br = brightness;
+  const newRgb = {r: rgb.r * br, g: rgb.g * br, b: rgb.b * br};
+  const newColor = `rgb(${newRgb.r}, ${newRgb.g}, ${newRgb.b})`;
+
+  return newColor;
+}
+
+export function getTippyConfig() {
+  return {
+    theme: 'light-border',
+    allowHTML: true,
+    popperOptions: { // Docs: https://atomiks.github.io/tippyjs/v6/all-props/#popperoptions
+      modifiers: [ // Docs: https://popper.js.org/docs/v2/modifiers
+        {
+          name: 'flip'
+        }
+      ]
+    },
+    onShow: function() {
+      // Ensure only 1 tippy tooltip is displayed at a time
+      document.querySelectorAll('[data-tippy-root]')
+        .forEach(tippyNode => tippyNode.remove());
+    }
+  };
 }
 
 export {

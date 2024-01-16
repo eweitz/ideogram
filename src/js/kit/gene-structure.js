@@ -6,7 +6,7 @@ import {d3} from '../lib';
 import {getIcon} from '../annotations/legend';
 import {getProtein, getHasTopology} from './protein';
 
-const y = 15;
+const y = 5;
 
 // Subtle visual delimiter; separates horizontally adjacent fields in UI
 export const pipe = `<span style='color: #CCC'>|</span>`;
@@ -44,10 +44,13 @@ const subpartClasses = {
 const css =
   `<style>
   ._ideoGeneStructureContainerName {
-    margin-left: 81px;
+    position: relative;
+    left: 45px;
+    margin-right: 20px;
   }
   ._ideoGeneStructureContainerName.pre-mRNA {
-    margin-left: 69px;
+    left: 70px;
+    margin-right: 70px;
   }
   ._ideoGeneStructureContainer rect:hover + line {
     visibility: hidden;
@@ -76,6 +79,7 @@ const css =
   #_ideoGeneStructureTip {
     font-style: italic;
   }
+
   ${tippyCss}
 
   .tippy-box {
@@ -520,9 +524,20 @@ function addHoverListeners(ideo) {
       // is often the case in genes with many transcripts, like TP53).
       ideo.oneTimeDelayTooltipHideMs = 2000; // wait 2.0 s instead of 0.25 s
     });
+
+    if (ideo.tissueCache) {
+      const tooltipFooter = document.querySelector('._ideoTooltipFooter');
+      tooltipFooter.style.display = 'none';
+    }
   });
   container.addEventListener('mouseleave', (event) => {
     ideo.oneTimeDelayTooltipHideMs = 2000; // See "Without this..." note above
+
+    if (ideo.tissueCache) {
+      const tooltipFooter = document.querySelector('._ideoTooltipFooter');
+      tooltipFooter.style.display = '';
+    }
+
     const inTooltip = isMouseEventInTooltip(event);
     if (inTooltip === true) {
       // Only remove transcript footer if `mouseleave` event is from footer to
@@ -535,6 +550,8 @@ function addHoverListeners(ideo) {
 
       updateFooter(hoverTip, ideo);
     }
+
+
     ideo.addedMenuListeners = false;
     document.removeEventListener('keydown', navigateSubparts);
   });
@@ -617,7 +634,7 @@ function getSpliceToggle(ideo) {
     `type="checkbox" ${checked} ` +
     `style="display: none;"`;
   const style =
-    'style="position: relative; top: -5px; ' +
+    'style="position: relative; top: -10px; ' +
     'user-select: none; ' + // Prevent distracting highlight on quick toggle
     'float: right; cursor: pointer; font-size: 16px; ' +
     'padding: 2px 4px; border: 1px solid #CCC; border-radius: 3px;"';
@@ -690,14 +707,16 @@ function spliceIn(subparts) {
 
 function getSpliceStateText(spliceExons, isCanonical=true) {
   let modifier = '';
+  let suffix = ' and protein';
   let titleMod = 'without';
   if (!spliceExons) {
     modifier = 'pre-';
+    suffix = '';
     titleMod = 'with';
   }
   const canonOrAlt = isCanonical ? 'Canonical' : 'Alternative';
   const title = `${canonOrAlt} transcript per Ensembl, ${titleMod} introns`;
-  const name = `${canonOrAlt} ${modifier}mRNA`;
+  const name = `${canonOrAlt} ${modifier}mRNA ${suffix}`;
   return {title, name};
 }
 
@@ -714,7 +733,7 @@ function drawIntrons(prelimSubparts, matureSubparts, ideo) {
     const matureSubpart = matureSubparts[matureIndex];
     if (matureSubpart[0] !== prelimSubpart[0]) {
       const summary = prelimSubpart[3].summary;
-      const otherAttrs = `y="15" height="20" fill="#FFFFFF00" ${summary}`;
+      const otherAttrs = `y="${y}" height="20" fill="#FFFFFF00" ${summary}`;
       const intronRect =
         `<rect class="subpart intron" ${otherAttrs} />`;
       subpartEls[matureIndex].insertAdjacentHTML('beforebegin', intronRect);
@@ -1027,8 +1046,8 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
   }
   const footerData = menu + footerDetails.join(` ${pipe} `);
 
-  let svgHeight = proteinSvg === '' ? '40' : '60';
-  if (hasTopology) svgHeight = '70';
+  let svgHeight = proteinSvg === '' ? '30' : '50';
+  if (hasTopology) svgHeight = '60';
 
   const geneStructureSvg =
     `<svg class="_ideoGeneStructure" ` +
@@ -1132,12 +1151,13 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
     const spanClass = `class="_ideoGeneStructureContainerName${rnaClass}"`;
     const {name, title} = getSpliceStateText(spliceExons);
     const spanAttrs = `${spanClass} title="${title}"`;
+    const containerStyle = '';
     geneStructureHtml =
       '<br/><br/>' +
       css +
       `<div ${cls}>` +
       `<div><span ${spanAttrs}>${name}</span>${toggle}</div>` +
-      `<span class="_ideoGeneStructureSvgContainer">` +
+      `<span class="_ideoGeneStructureSvgContainer" ${containerStyle}>` +
         geneStructureSvg +
       `</span>` +
       `<div class="_ideoGeneStructureFooter">` +

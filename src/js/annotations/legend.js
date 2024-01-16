@@ -23,7 +23,7 @@ export function getIcon(row, ideo) {
 
   triangleAttrs = 'd="m7,3 l -5 9 l 9 0 z"';
   circleAttrs = 'd="m2,9a 4.5,4.5 0 1,0 9,0a 4.5,4.5 0 1,0 -9,0"';
-  rectAttrs = 'height="10" width="10"  y="3"';
+  rectAttrs = 'height="10" width="10" y="3"';
 
   if ('shape' in row && ['circle', 'triangle'].includes(shape)) {
     if (shape === 'circle') {

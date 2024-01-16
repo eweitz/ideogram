@@ -1,10 +1,30 @@
 /** @fileoverview Functions used by multiple content-specific cache modules */
 
 import {decompressSync, strFromU8} from 'fflate';
+import {createPartialResponse} from 'workbox-range-requests';
 
 import version from '../../version';
 import {getEarlyTaxid, slug, getDir} from '../../lib';
 import {organismMetadata} from '../organism-metadata';
+
+async function fetchByteRangesByName(url) {
+  const byteRangesByName = {};
+
+  const path = `${url.replace('.tsv.gz', '')}.tsv.li.gz`;
+
+  const response = await cacheFetch(path);
+  const text = await response.text();
+  const lines = text.split('\n');
+  for (let i = 0; i < lines.length - 1; i++) {
+    const [gene, rawOffset] = lines[i].split('\t');
+    if (gene[0] === '#') continue;
+    const offset = parseInt(rawOffset);
+    const offsetEnd = parseInt(lines[i + 1].split('\t')[1]);
+    byteRangesByName[gene] = [offset, offsetEnd];
+  }
+
+  return byteRangesByName;
+}
 
 /** Reports if current organism has a gene structure cache */
 export function supportsCache(orgName, cacheName) {
@@ -44,7 +64,8 @@ export function getFullId(prefix, slimId, fullNumLength=11) {
   return prefix + zeroPaddedId;
 }
 
-export async function cacheFetch(url) {
+
+async function getServiceWorkerCache() {
   const currentIdeogram = `ideogram-${version}`;
 
   // Delete other versions of Ideogram cache; there should be 1 per dodmain
@@ -57,23 +78,57 @@ export async function cacheFetch(url) {
 
   const cache = await caches.open(currentIdeogram);
 
+  return cache;
+}
+
+export async function cacheFetch(url) {
+
+  const cache = await getServiceWorkerCache();
+  window.ideoCache = cache;
+  window.createPartialResponse = createPartialResponse;
+
   const decompressedUrl = url.replace('.gz', '');
   const response = await cache.match(decompressedUrl);
   if (typeof response === 'undefined') {
-    // If cache miss, then fetch and add response to cache
+    // If cache miss, then fetch, decompress, and put response in cache
     const rawResponse = await fetch(url);
     const blob = await rawResponse.blob();
     const uint8Array = new Uint8Array(await blob.arrayBuffer());
     const data = strFromU8(decompressSync(uint8Array));
+    const contentLength = data.length;
     const decompressedResponse = new Response(
       new Blob([data], {type: 'text/tab-separated-values'}),
-      rawResponse.init
+      {headers: new Headers({'Content-Length': contentLength})}
     );
     await cache.put(decompressedUrl, decompressedResponse);
     return await cache.match(decompressedUrl);
   }
   return await cache.match(decompressedUrl);
 }
+
+export async function cacheRangeFetch(url, byteRange) {
+  // +/- 1 to trim newlines
+  const rangeStart = byteRange[0] + 1;
+  const rangeEnd = byteRange[1] - 1;
+
+  const headers = new Headers({
+    'content-type': 'multipart/byteranges',
+    'range': `bytes=${rangeStart}-${rangeEnd}`
+  });
+
+  const request = new Request(url, {headers});
+
+  const cache = await getServiceWorkerCache();
+
+  const fullResponse = await cache.match(request);
+  const partialResponse = await createPartialResponse(request, fullResponse);
+
+  const text = await partialResponse.text();
+
+  return text;
+}
+
+window.cacheRangeFetch = cacheRangeFetch;
 
 /** Get organism's metadata fields */
 export function parseOrgMetadata(orgName) {
@@ -96,7 +151,14 @@ export async function fetchAndParse(
   const fetchEndTime = performance.now();
   perfTimes.fetch = Math.round(fetchEndTime - fetchStartTime);
 
-  const parsedCache = parseFn(data, perfTimes, orgName);
+  let parsedCache;
+  if (cacheUrl.includes('tissue')) {
+    const byteRangesByName = await fetchByteRangesByName(cacheUrl);
+    parsedCache = parseFn(data, perfTimes, byteRangesByName);
+  } else {
+    parsedCache = parseFn(data, perfTimes, orgName);
+  }
+
   perfTimes.parseCache = Math.round(performance.now() - fetchEndTime);
 
   return [parsedCache, perfTimes];

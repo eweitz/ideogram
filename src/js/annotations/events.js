@@ -90,12 +90,12 @@ function getContentAndYOffset(annot, includeLength=false) {
     range += '-' + annot.stop.toLocaleString();
     if (includeLength) range += ' (' + getCoarseBpLength(annot) + ')';
   }
-  content = `<span class="_ideoTooltipFooter">${range}</span>`;
+  content = `<span class="_ideoTooltipFooter"><br />${range}</span>`;
   yOffset = 24;
 
   if (annot.name) {
     displayName = annot.displayName ? annot.displayName : annot.name;
-    content = displayName + '<br/>' + content;
+    content = displayName + content;
     yOffset += 8;
   }
 

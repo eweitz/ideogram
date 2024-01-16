@@ -40,6 +40,11 @@ export function parseGeneCache(rawTsv, perfTimes) {
   const lociByName = {};
   const lociById = {};
   const preAnnots = [];
+
+  // If the gene has among top 2% expression in a tissue (per GTEx), that's
+  // tracked here.
+  const tissueIdsByName = {};
+
   let ensemblPrefix;
 
   let t0 = performance.now();
@@ -57,8 +62,8 @@ export function parseGeneCache(rawTsv, perfTimes) {
       continue;
     }
     const [
-      chromosome, rawStart, rawLength, slimEnsemblId, gene
-      , rawFullName
+      chromosome, rawStart, rawLength, slimEnsemblId, gene,
+      rawFullName, tissueIds
     ] = line.trim().split(/\t/);
     const fullName = decodeURIComponent(rawFullName);
     const start = parseInt(rawStart);
@@ -74,6 +79,15 @@ export function parseGeneCache(rawTsv, perfTimes) {
     idsByName[gene] = ensemblId;
     lociByName[gene] = locus;
     lociById[ensemblId] = locus;
+
+    if (tissueIds !== undefined) {
+      const processedTissueIds = [];
+      const splitTissueIds = tissueIds.split(',');
+      for (let i = 0; i < splitTissueIds.length; i++) {
+        processedTissueIds.push(parseInt(splitTissueIds[i], 10));
+      }
+      tissueIdsByName[gene] = processedTissueIds;
+    }
   };
   const t1 = performance.now();
   perfTimes.parseCacheLoop = Math.round(t1 - t0);

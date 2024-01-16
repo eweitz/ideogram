@@ -38,10 +38,13 @@ import {
 } from '../annotations/annotations';
 import {writeLegend} from '../annotations/legend';
 import {getAnnotDomId} from '../annotations/process';
-import {getDir, pluralize} from '../lib';
+import {
+  getDir, pluralize, getTextSize, getTippyConfig
+} from '../lib';
 import {
   fetchGpmls, summarizeInteractions, fetchPathwayInteractions
 } from './wikipathways';
+import {getTissueHtml, addTissueListeners} from './tissue';
 // import {drawAnnotsByLayoutType} from '../annotations/draw';
 // import {organismMetadata} from '../init/organism-metadata';
 
@@ -652,7 +655,9 @@ async function fetchParalogPositionsFromMyGeneInfo(
     const annot = parseAnnotFromMgiGene(gene, ideo, 'pink');
     annots.push(annot);
 
-    const description = `Paralog of ${searchedGene.name}`;
+    const description =
+      ideo.tissueCache ? '' : `Paralog of ${searchedGene.name}`;
+
     const {name, ensemblId} = parseNameAndEnsemblIdFromMgiGene(gene);
     const type = 'paralogous gene';
     const descriptionObj = {description, ensemblId, name, type};
@@ -945,24 +950,6 @@ function dehighlightAll(ideo) {
   }
 }
 
-function getTippyConfig() {
-  return {
-    theme: 'light-border',
-    popperOptions: { // Docs: https://atomiks.github.io/tippyjs/v6/all-props/#popperoptions
-      modifiers: [ // Docs: https://popper.js.org/docs/v2/modifiers
-        {
-          name: 'flip'
-        }
-      ]
-    },
-    onShow: function() {
-      // Ensure only 1 tippy tooltip is displayed at a time
-      document.querySelectorAll('[data-tippy-root]')
-        .forEach(tippyNode => tippyNode.remove());
-    }
-  };
-}
-
 function initInteractiveLegend(ideo) {
   // Highlight and filter annotations by type on hovering over legend entries
   function highlight(event) {
@@ -1192,7 +1179,7 @@ function mergeDescriptions(annot, desc, ideo) {
       }
     });
     // Object.assign({}, descriptions[annot.name]);
-    if ('type' in otherDesc) {
+    if ('type' in otherDesc && !ideo.tissueCache) {
       mergedDesc.type += ', ' + otherDesc.type;
       mergedDesc.description += `<br/><br/>${otherDesc.description}`;
     }
@@ -1224,9 +1211,55 @@ function mergeAnnots(unmergedAnnots) {
   return mergedAnnots;
 }
 
+/**
+ * Prevents bug when showing gene leads instantly on page load,
+ * then hovering over an annotation, as in e.g.
+ * https://eweitz.github.io/ideogram/gene-leads
+ */
+function waitForTissueCache(geneNames, ideo, n) {
+  setTimeout(() => {
+    if (n < 40) { // 40 * 50 ms = 2 s
+      if (!ideo.tissueCache) {
+        waitForTissueCache(geneNames, ideo, n + 1);
+      } else {
+        setTissueExpressions(geneNames, ideo);
+      }
+    }
+  }, 50);
+}
+
+async function setTissueExpressions(geneNames, ideo) {
+  if (
+    !ideo.tissueCache
+    // || !(annot.name in ideo.tissueCache.byteRangesByName)
+  ) {
+    waitForTissueCache(geneNames, ideo, 0);
+    return;
+  }
+
+  const tissueExpressionsByGene = {};
+  const cache = ideo.tissueCache;
+
+  const promises = [];
+  geneNames.forEach(async gene => {
+    const promise = new Promise(async (resolve) => {
+      const tissueExpressions = await cache.getTissueExpressions(gene, ideo);
+      tissueExpressionsByGene[gene] = tissueExpressions;
+      resolve();
+    });
+    promises.push(promise);
+  });
+
+  await Promise.all(promises);
+
+  ideo.tissueExpressionsByGene = tissueExpressionsByGene;
+}
+
 function onBeforeDrawAnnots() {
   const ideo = this;
   setRelatedAnnotDomIds(ideo);
+
+  const geneNames = [];
 
   // Handle differential expression extension
   const chrAnnots = ideo.annots;
@@ -1236,6 +1269,8 @@ function onBeforeDrawAnnots() {
     for (let j = 0; j < annots.length; j++) {
       const annot = annots[j];
 
+      geneNames.push(annot.name);
+
       if (ideo.config.colorMap && annot.differentialExpression?.length) {
         const colorMap = ideo.config.colorMap;
         const group = annot.differentialExpression[0].group;
@@ -1244,6 +1279,8 @@ function onBeforeDrawAnnots() {
       }
     }
   }
+
+  setTissueExpressions(geneNames, ideo);
 }
 
 function filterAndDrawAnnots(annots, ideo) {
@@ -1572,10 +1609,27 @@ function getAnnotByName(annotName, ideo) {
 //   }, 100);
 // }
 
+/** Move tooltip mass to vertical center of viewport */
+function centralizeTooltipPosition() {
+  const tooltip = document.querySelector('#_ideogramTooltip');
+  const tooltipTop = tooltip.getBoundingClientRect().top;
+  const ideoDom = document.querySelector('#_ideogram');
+  const ideogramTop = ideoDom.getBoundingClientRect().top;
+  if (tooltipTop > ideogramTop) {
+    tooltip.style.top = ideogramTop + 'px';
+  }
+}
+
 function onDidShowAnnotTooltip() {
   const ideo = this;
+  if (ideo.tissueCache) {
+    centralizeTooltipPosition();
+  }
   handleTooltipClick(ideo);
   addGeneStructureListeners(ideo);
+  addTissueListeners(ideo);
+  ideo.tissueTippy =
+    tippy('._ideoGeneTissues[data-tippy-content]', getTippyConfig());
 }
 
 /**
@@ -1684,7 +1738,7 @@ function decorateParalogNeighborhood(annot, descObj, style) {
         }
         if (title !== '') title = `title="${title}"`;
         return (
-          `<span class="ideo-paralog-neighbor" ${title} ${style}'>${
+          `<span class="ideo-paralog-neighbor" ${title} style="${style}"'>${
             paralog.name
           }</span>`
         );
@@ -1717,7 +1771,7 @@ function decorateAnnot(annot) {
   const description =
     descObj.description.length > 0 ? `<br/>${descObj.description}` : '';
   const fullName = descObj.name;
-  const style = 'style="color: #0366d6; cursor: pointer;"';
+  const style = 'color: #0366d6; cursor: pointer;';
 
   let fullNameAndRank = fullName;
   if ('rank' in annot) {
@@ -1752,13 +1806,20 @@ function decorateAnnot(annot) {
     annot, ideo, isParalogNeighborhood
   );
 
+  const tissueHtml = getTissueHtml(annot, ideo);
+
+  const geneSymbolAndFullName =
+    `<span id="_ideoGeneSymbolAndFullName">
+      <span id="ideo-related-gene" style="${style}">${annot.name}</span><br/>` +
+      `${fullNameAndRank}<br/>
+    </span>`;
+
   let originalDisplay =
-    `<span id="ideo-related-gene" ${style}>${annot.name}</span><br/>` +
-    `${fullNameAndRank}<br/>` +
+    geneSymbolAndFullName +
     synonym +
     description +
-    geneStructureHtml +
-    `<br/>`;
+    tissueHtml +
+    geneStructureHtml;
 
   if (isParalogNeighborhood) {
     [annot, originalDisplay] =

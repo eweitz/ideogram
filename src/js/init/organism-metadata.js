@@ -13,7 +13,8 @@ var organismMetadata = {
     hasInteractionCache: true,
     hasGeneStructureCache: true,
     hasProteinCache: true,
-    hasSynonymCache: true
+    hasSynonymCache: true,
+    hasTissueCache: true
   },
   10090: {
     commonName: 'Mouse',

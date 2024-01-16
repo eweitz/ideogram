@@ -314,14 +314,12 @@ def sort_proteins(proteins, organism, canonical_ids):
         gene = "".join(protein[1].split('-')[:-1])
         proteins_with_genes.append([gene] + protein)
 
-
     doms = proteins_with_genes
     doms = sorted(
         doms,
         key=lambda d: d[1] in canonical_ids, reverse=True
     )
     proteins_with_genes = doms
-
 
     # Sort genes by interest rank, and put unranked genes last
     trimmed_proteins = sorted(

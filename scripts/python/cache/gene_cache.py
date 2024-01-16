@@ -8,6 +8,7 @@ import argparse
 import codecs
 import csv
 import gzip
+import json
 import os
 import re
 import sys
@@ -266,14 +267,19 @@ class GeneCache():
     def write(self, genes, organism, prefix, gff_url):
         """Save fetched and transformed gene data to cache file
         """
-        headers = (
-            f"## Ideogram.js gene cache for {organism}\n" +
-            f"## Derived from {gff_url}\n"
-            f"## prefix: {prefix}\n"
-            f"# chr\tstart\tlength\tslim_id\tsymbol\tdescription\n"
-        )
+
+        columns = ["# chr", "start", "length", "slim_id", "symbol", "description"]
+        column_headers = "\t".join(columns)
+
+        file_headers = [
+            f"## Ideogram.js gene cache for {organism}",
+            f"## Derived from {gff_url}",
+            f"## prefix: {prefix}",
+            column_headers
+        ]
+        header_lines = "\n".join(file_headers)
         gene_lines = "\n".join(["\t".join(g) for g in genes])
-        content = headers + gene_lines
+        content = header_lines + "\n" + gene_lines
 
         org_lch = organism.lower().replace(" ", "-")
         output_path = f"{self.output_dir}{org_lch}-genes.tsv.gz"
@@ -294,8 +300,8 @@ class GeneCache():
 
         Consider parallelizing this.
         """
-        for organism in assemblies_by_org:
-        # for organism in ["Homo sapiens"]:
+        # for organism in assemblies_by_org:
+        for organism in ["Homo sapiens"]:
             self.populate_by_org(organism)
 
 # Command-line handler

@@ -1,4 +1,7 @@
-import {supportsCache, getCacheUrl, fetchAndParse} from './cache-lib';
+import {
+  supportsCache, getCacheUrl, fetchAndParse,
+  cacheFetch
+} from './cache-lib';
 
 // Uncomment when workers work outside localhost
 // const geneCacheWorker = new Worker(
@@ -20,6 +23,7 @@ import {parseInteractionCache} from './interaction-cache-worker';
 import {parseGeneStructureCache} from './gene-structure-cache-worker';
 import {parseProteinCache} from './protein-cache-worker';
 import {parseSynonymCache} from './synonym-cache-worker';
+import {parseTissueCache} from './tissue-cache-worker';
 
 /**
  * Populates in-memory content caches from on-disk service worker (SW) caches.
@@ -58,7 +62,8 @@ export async function initCaches(ideo) {
       cacheFactory('gene', organism, ideo, cacheDir),
       cacheFactory('paralog', organism, ideo, cacheDir),
       cacheFactory('interaction', organism, ideo, cacheDir),
-      cacheFactory('synonym', organism, ideo, cacheDir)
+      cacheFactory('synonym', organism, ideo, cacheDir),
+      cacheFactory('tissue', organism, ideo, cacheDir)
     ]);
 
     if (config.showGeneStructureInTooltip) {
@@ -72,11 +77,11 @@ export async function initCaches(ideo) {
     cacheFactory('gene', organism, ideo, cacheDir);
     cacheFactory('paralog', organism, ideo, cacheDir);
     cacheFactory('interaction', organism, ideo, cacheDir);
-    cacheFactory('synonym', organism, ideo, cacheDir);
     if (config.showGeneStructureInTooltip) {
       cacheFactory('geneStructure', organism, ideo, cacheDir);
       cacheFactory('protein', organism, ideo, cacheDir);
       cacheFactory('synonym', organism, ideo, cacheDir);
+      cacheFactory('tissue', organism, ideo, cacheDir);
     }
   }
 }
@@ -117,6 +122,12 @@ const allCacheProps = {
     fn: setSynonymCache,
     // worker: synonymCacheWorker // Uncomment when workers work
     parseFn: parseSynonymCache // Remove when workers work
+  },
+  tissue: {
+    metadata: 'Tissue', dir: 'tissues',
+    fn: setTissueCache,
+    // worker: tissueCacheWorker // Uncomment when workers work
+    parseFn: parseTissueCache // Remove when workers work
   }
 };
 
@@ -161,6 +172,10 @@ function setProteinCache(parsedCache, ideo) {
 
 function setSynonymCache(parsedCache, ideo) {
   ideo.synonymCache = parsedCache;
+}
+
+function setTissueCache(parsedCache, ideo) {
+  ideo.tissueCache = parsedCache;
 }
 
 async function cacheFactory(cacheName, orgName, ideo, cacheDir=null) {
