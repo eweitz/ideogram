@@ -665,14 +665,14 @@ function focusMiniCurve(traceDom, ideo, reset=false) {
   const refTissue = reset ? null : traceDom.getAttribute('data-tissue');
 
   const numTissues = !ideo.showTissuesMore ? 10 : 3;
-  let tissueExpressions =
-    ideo.tissueExpressionsByGene[gene].slice(0, numTissues);
+  let tissueExpressions = ideo.tissueExpressionsByGene[gene];
 
   const maxPx = MINI_CURVE_WIDTH;
   const relative = true;
   const leftPx = 0;
   tissueExpressions =
-    setPxOffset(tissueExpressions, maxPx, relative, leftPx, refTissue);
+    setPxOffset(tissueExpressions, maxPx, relative, leftPx, refTissue)
+      .slice(0, numTissues);
 
   const height = MINI_CURVE_HEIGHT;
   tissueExpressions.forEach((teObject, i) => {

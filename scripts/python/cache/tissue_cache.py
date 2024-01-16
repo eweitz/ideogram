@@ -101,7 +101,7 @@ def get_summary(expressions):
         if s > 0:
             summary.append(round(s, 2))
 
-    if len(summary) >= 4:
+    if len(summary) >= 4 or (len(summary) > 0 and summary[-1] >= 100):
         num_bins = 10
         size = (max - min) / num_bins
         quantile_counts = [0] * num_bins
@@ -240,38 +240,80 @@ def summarize_top_tissues_by_gene(input_dir):
 
             trimmed_summary_by_gene_by_tissue = {}
             trimmed_summary_by_gene_by_tissue[gene] = {}
-            medians_by_tissue_index = []
+            medians_and_maxes_by_tissue_index = []
             j = 0
+            top_max = 0
+            top_max_tissue = ''
             for tissue in summary_by_gene_by_tissue[gene]:
                 summary = summary_by_gene_by_tissue[gene][tissue]
-                if len(summary) == 15: # 5 for box plot, 10 for KDE deciles
+                num_metrics = len(summary)
+                if num_metrics == 15: # 5 for box plot, 10 for KDE deciles
                     median = summary[2]
-                elif len(summary) == 14: # for minimum with a value of 0
+                    max = summary[4]
+                elif num_metrics == 14: # for minimum with a value of 0
                     median = summary[1]
+                    max = summary[3]
+                elif num_metrics == 13:
+                    # Occurs in "Breast - mammary tissue" in LALBA or CSN3
+                    median = 0
+                    max = summary[2]
+                elif num_metrics == 12:
+                    # Occurs in "Breast - mammary tissue" in LALBA or CSN3
+                    median = 0
+                    max = summary[1]
                 else:
                     median = 0
-                medians_by_tissue_index.append([tissue, median])
-            sorted_medians_by_tissue_index = sorted(
-                medians_by_tissue_index,
-                key=lambda x: x[1],
+                    max = 0
+                if max > top_max:
+                    top_max = max
+                    top_max_tissue = tissue
+                medians_and_maxes_by_tissue_index.append([tissue, median, max])
+            sorted_medians_and_maxes_by_tissue_index = sorted(
+                medians_and_maxes_by_tissue_index,
+                key=lambda x: (x[1], x[2]),
                 reverse=True
             )
-            top_tissues_by_median = [
-                tm[0] for tm in sorted_medians_by_tissue_index[:10]
-            ]
-            for tissue in top_tissues_by_median:
+            top_tissues_by_median_and_max = []
+            includes_top_max = False
+            for tm in sorted_medians_and_maxes_by_tissue_index[:10]:
+                top_tissues_by_median_and_max.append(tm[0])
+                if tm[0] == top_max_tissue:
+                    includes_top_max = True
+
+            if not includes_top_max and top_max != 0:
+                # Ensure a tissue with a low median but the highest max
+                # isn't excluded from the top 10, e.g. "Breast - mammary gland"
+                # for gene XDH
+                top_tissues_by_median_and_max[-1] = top_max_tissue
+
+            for tissue in top_tissues_by_median_and_max:
                 summary = summary_by_gene_by_tissue[gene][tissue]
-                if len(summary) < 4:
-                    # Skip summaries that where Q1 (or higher percentile) is 0
+                if len(summary) < 10:
                     continue
-                summary = ';'.join([str(s) for s in summary])
+                elif len(summary) == 13:
+                    max = summary[2]
+                    if max < 100:
+                        # Skip summaries where Q1 (or higher percentile) is 0
+                        # and max is less than 100 TPM (e.g. to not skip
+                        # "Breast - mammary tissue" in LALBA or CSN3)
+                        continue
+                summary_list = []
+                for s in summary:
+                    if s == 0:
+                        # Delate 0-integer to empty string
+                        summary_list.append('')
+                    elif s < 1:
+                        # Truncate e.g. 0.1234 to .1234
+                        summary_list.append(str(s)[1:])
+                    else:
+                        summary_list.append(str(s))
+                summary = ';'.join(summary_list)
                 if summary == '':
                     # Observed for e.g. MEF2AP1, a pseudogene
                     continue
                 tissue_index = tissues_by_index_unique.index(tissue)
                 tissue_and_summary = f'{tissue_index};{summary}'
                 output_row.append(tissue_and_summary)
-
 
             if i % 500 == 0:
                 print(f'Last tissue summary for gene {i} {gene}:')

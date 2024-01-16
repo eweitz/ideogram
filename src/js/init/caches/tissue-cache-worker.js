@@ -44,12 +44,19 @@ async function getTissueExpressions(gene, ideo) {
   const tissueExpressions = [];
   const rawExpressions = geneDataLine.split('\t').slice(1);
   for (let i = 0; i < rawExpressions.length; i++) {
-    const rawValues = rawExpressions[i].split(';');
+    const rawValues = rawExpressions[i].split(';').map(
+      v => v === '' ? 0 : v // inflate empty string to 0-integer
+    );
     const numValues = rawValues.length;
     if (numValues === 15) {
       rawValues.splice(1, 0, 0); // Insert number 0 at position 1
     } else if (numValues === 14) {
       // Min. and Q1 are 0
+      rawValues.splice(1, 0, 0);
+      rawValues.splice(1, 0, 0);
+    } else if (numValues === 13) {
+      // Min., Q1, and median are 0
+      rawValues.splice(1, 0, 0);
       rawValues.splice(1, 0, 0);
       rawValues.splice(1, 0, 0);
     }
