@@ -1,6 +1,6 @@
 import {
   fetchAndParse, getFullId, inspectWorker,
-  cacheFetch, cacheRangeFetch
+  cacheFetch, cacheRangeFetch, getCacheUrl
 } from './cache-lib';
 
 
@@ -36,10 +36,16 @@ async function getTissueExpressions(gene, ideo) {
 
   if (!byteRange) return null;
 
-  const geneDataLine = await cacheRangeFetch(
-    '/dist/data/cache/tissues/homo-sapiens-tissues.tsv',
-    byteRange
-  );
+  const config = ideo.config;
+  let cacheDir = null;
+  if (config.cacheDir) cacheDir = config.cacheDir;
+  const cacheType = 'tissues';
+  const extension = 'tsv';
+
+  const orgName = 'homo-sapiens';
+  const cacheUrl = getCacheUrl(orgName, cacheDir, cacheType, extension);
+
+  const geneDataLine = await cacheRangeFetch(cacheUrl, byteRange);
 
   const tissueExpressions = [];
   const rawExpressions = geneDataLine.split('\t').slice(1);
