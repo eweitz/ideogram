@@ -107,6 +107,8 @@ export async function cacheFetch(url) {
 }
 
 export async function cacheRangeFetch(url, byteRange) {
+  url = url.replace('.gz', '');
+
   // +/- 1 to trim newlines
   const rangeStart = byteRange[0] + 1;
   const rangeEnd = byteRange[1] - 1;
