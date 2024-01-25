@@ -1,6 +1,7 @@
 import {d3} from '../lib';
 import {writeHistogramAnnots} from './histogram';
 import {writeLegend} from './legend';
+import { writeSyntenicRegionPolygons, writeSyntenicRegionPolygonsHorizontal } from './synteny-lib';
 
 function parseFriendlyAnnots(friendlyAnnots, rawAnnots) {
   var i, j, annot, rawAnnot;
@@ -174,6 +175,29 @@ function writeOverlayAnnots(chrAnnot, ideo) {
     .on('mouseout', function() {ideo.startHideAnnotTooltipTimeout();});
 }
 
+function writeSpanAnnots(chrAnnot, ideo) {
+  chrAnnot.append('polygon')
+  .attr('id', function(d) {return d.id;})
+  .attr('class', 'annot')
+  .attr('points', function(d) {
+    var x1, x2,
+      chrWidth = ideo.config.chrWidth;
+
+    if (d.stopPx - d.startPx > 1) {
+      x1 = d.startPx;
+      x2 = d.stopPx;
+    } else {
+      x1 = d.px - 0.5;
+      x2 = d.px + 0.5;
+    }
+    const bars = `${x1},${chrWidth * 2} ${x2},${chrWidth * 2} ${x2},${chrWidth} ${x1},${chrWidth} `
+    return bars;
+  })
+  .attr('fill', function(d) {return d.color;})
+  .on('mouseover', function(event, d) {ideo.showAnnotTooltip(d, this);})
+  .on('mouseout', function() {ideo.startHideAnnotTooltipTimeout();});
+};
+
 function warnIfTooManyAnnots(layout, annots) {
   var i, numAnnots;
 
@@ -209,7 +233,10 @@ function drawAnnotsByLayoutType(layout, annots, ideo) {
     writeOverlayAnnots(chrAnnot, ideo);
   } else if (layout === 'histogram') {
     writeHistogramAnnots(chrAnnot, ideo);
+  } else if (layout === 'span') {
+    writeSpanAnnots(chrAnnot, ideo);
   }
+
 }
 
 /**
