@@ -100,6 +100,7 @@ function getShapes(annotHeight) {
     'l ' + annotHeight + ' 0' +
     'l 0 -' + (2 * annotHeight) + 'z';
 
+
   return {triangle: triangle, circle: circle, rectangle: rectangle};
 }
 
@@ -176,26 +177,26 @@ function writeOverlayAnnots(chrAnnot, ideo) {
 }
 
 function writeSpanAnnots(chrAnnot, ideo) {
-  chrAnnot.append('polygon')
-  .attr('id', function(d) {return d.id;})
-  .attr('class', 'annot')
-  .attr('points', function(d) {
-    var x1, x2,
-      chrWidth = ideo.config.chrWidth;
-
-    if (d.stopPx - d.startPx > 1) {
-      x1 = d.startPx;
-      x2 = d.stopPx;
-    } else {
-      x1 = d.px - 0.5;
-      x2 = d.px + 0.5;
-    }
-    const bars = `${x1},${chrWidth * 2} ${x2},${chrWidth * 2} ${x2},${chrWidth} ${x1},${chrWidth} `
-    return bars;
-  })
+  chrAnnot.append('g')
+    .attr('id', function(d) {return d.domId;})
+    .attr('class', 'annot')
+    .append('polygon')
+    .attr('points', function(d) {
+    
+      var chrWidth = ideo.config.chrWidth;
+      var annotHeight = ideo.config.annotationHeight;
+      var x1 = d.startPx;
+      var x2 = d.stopPx;
+      console.log(chrWidth, x1, x2)
+      var y = ideo.config.chrWidth + (d.trackIndex * annotHeight * 2);
+      
+      const bars = `${x1},${y + annotHeight} ${x2},${y + annotHeight} ${x2},${y} ${x1},${y} `;
+      return bars;
+    })
   .attr('fill', function(d) {return d.color;})
   .on('mouseover', function(event, d) {ideo.showAnnotTooltip(d, this);})
-  .on('mouseout', function() {ideo.startHideAnnotTooltipTimeout();});
+  .on('mouseout', function() {ideo.startHideAnnotTooltipTimeout();})
+  .on('click', function(event, d) {ideo.onClickAnnot(d);});
 };
 
 function warnIfTooManyAnnots(layout, annots) {

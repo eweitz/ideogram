@@ -19,14 +19,35 @@
   <a href="https://github.com/eweitz/ideogram/blob/gh-pages/annotations-overlaid.html" target="_blank">Source</a>
   <p>Large-scale structural variations (SVs) can be depicted using colored blocks, as seen below.</p>
   <script type="text/javascript">
+  
+  var d3 = Ideogram.d3;
+
+  var annotHeight = 5;
+  var legend = [{
+      name: 'Clinical significance (simulated)',
+      rows: [
+        {name: 'Pathogenic', color: '#F00'},
+        {name: 'Uncertain significance', color: '#CCC'},
+        {name: 'Benign', color: '#8D4'}
+      ]
+  }];
+  
+  var annotationTracks = [
+    {id: 'pathogenicTrack', displayName: 'Pathogenic', color: '#F00'},
+    {id: 'uncertainSignificanceTrack', displayName: 'Uncertain significance', color: '#CCC'},
+    {id: 'benignTrack',  displayName: 'Benign', color: '#8D4'}
+  ];
 
   var config = {
-    organism: 'human',
-    chrHeight: 300,
-    chrMargin: 2,
-    annotationsPath: '../../data/annotations/10_virtual_cnvs.json',
-    annotationsLayout: 'span',
-    orientation: 'horizontal'
+      organism: 'human',
+      chrHeight: 300,
+      chrMargin: 10,
+      annotationsPath: '../../data/annotations/1000_virtual_snvs.json',
+      annotationTracks: annotationTracks,
+      annotationsLayout: 'span',
+      orientation: 'vertical',
+      legend: legend,
+      annotHeight: annotHeight
   };
 
   var ideogram = new Ideogram(config);
