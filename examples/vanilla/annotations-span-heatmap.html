@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Annotations, spanning heatmap | Ideogram</title>
+  <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
+<link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
+  <style>
+    body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
+    a, a:visited {text-decoration: none;}
+    a:hover {text-decoration: underline;}
+    a, a:hover, a:visited, a:active {color: #0366d6;}
+  </style>
+</head>
+<body>
+<h1>Annotations, spanning heatmap | Ideogram</h1>
+<a href="../">Overview</a> |
+<a href="annotations-animated">Previous</a> |
+<a href="gene-leads">Next</a> |
+  <a href="https://github.com/eweitz/ideogram/blob/gh-pages/annotations-heatmap.html" target="_blank">Source</a>
+<p>
+    All human genes, annotated in heatmaps.  The proximal heatmap for each chromosome shows gene distribution
+    by expression.  The distal heatmap shows gene distribution by type.
+</p>
+<div id="container"></div>
+
+<div class="note">
+    Expression data from NCBI SRA and GEO (<a href="https://trace.ncbi.nlm.nih.gov/Traces/sra/?run=SRR562645">SRR562645</a>, <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE40705">GSE40705</a>)
+    via <a href="https://github.com/NCBI-Hackathons/rnaseqview#rnaseqview">rnaseqview</a> pipeline.
+</div>
+<script type="text/javascript">
+
+  var annotationTracks = [
+    {id: 'cnTrack', displayName: 'Copy Number', shape: 'span'},
+    {id: 'lohTrack', display: 'loh', shape: 'span'},
+    {id: 'pathclassTrack', display: 'pathClass', shape: 'triangle'}
+  ];
+
+  var legend = [
+    {
+      name: 'cn',
+      rows: [
+        {color: '#5DFCA8', name: '0'},
+        {color: '#84FFBE', name: '1.3'},
+        {color: '#C9FFE2', name: '1.5'},
+        {color: '#ECF0F3', name: '2'},
+        {color: '#FEE0E9', name: '2.75'},
+        {color: '#FEE0E9', name: '3.3'},
+        {color: '#FF84A9', name: '+'},
+      ]
+    },
+    // {
+    //   name: 'rna',
+    //   rows: [
+    //     {color: '#5DFCA8', name: '-3'},
+    //     {color: '#84FFBE', name: '-2'},
+    //     {color: '#C9FFE2', name: '-1'},
+    //     {color: '#ECF0F3', name: '0'},
+    //     {color: '#FEE0E9', name: '1'},
+    //     {color: '#FF84A9', name: '2'},
+    //     {color: '#FF5E8E', name: '3'},
+    //   ]
+    // },
+    {
+      name: 'loh',
+      rows: [
+        {color: 'yellow', name: '0'},
+        {color: 'orange', name: '1'},
+      ],
+    },
+    {
+      name: 'pathclass',
+      rows: [
+        {color: 'rgba(0,0,0,0)', name: '-1'},
+        {color: '#FFF2F6', name: '0'},
+        {color: '#FFF2F6', name: '1'},
+        {color: '#E0FFEF', name: '2'},
+        {color: '#E0FFEF', name: '3'},
+        {color: '#D0D9E2', name: '4'},
+        {color: '#D0D9E2', name: '5'},
+        {color: '#D0D9E2', name: '6'},
+        {color: '#D0D9E2', name: '7'},
+      ],
+    },
+
+  ]
+
+  var heatmaps = [
+  {
+        key: 'cn',
+        thresholds: [
+          ['0', 'green'],
+          ['1.3', 'green'],
+          ['1.5', 'green'],
+          ['2', 'gray'],
+          ['2.75', 'red'],
+          ['3.3', 'red'],
+          ['+', 'red'],
+        ],
+      },
+      // {
+      //   key: 'rna',
+      //   thresholds: [
+      //     ['-3', '#5DFCA8'],
+      //     ['-2', '#84FFBE'],
+      //     ['-1', '#C9FFE2'],
+      //     ['0', '#ECF0F3'],
+      //     ['1', '#FEE0E9'],
+      //     ['2', '#FF84A9'],
+      //     ['3', '#FF5E8E']
+      //   ]
+      // },
+      {
+        key: 'loh',
+        thresholds: [
+          ['0', 'yellow'],
+          ['1', 'orange'],
+        ],
+      },
+      {
+        key: 'pathclass',
+        thresholds: [
+          ['-1', 'blue'],
+          ['0', 'blue'],
+          ['1', 'blue'],
+          ['2', 'blue'],
+          ['3', 'blue'],
+          ['4', 'blue'],
+          ['5', 'blue'],
+          ['6', 'blue'],
+          ['7', 'blue'],
+        ],
+      },
+    ];
+
+  var config = {
+    container: '#container',
+    organism: 'human',
+    assembly: 'GRCh37',
+    chrHeight: 275,
+    annotationsPath: '../../data/annotations/testdata.json',
+    legend: legend,
+    heatmaps: heatmaps,
+    annotationTracks: annotationTracks,
+    rotatable: true, // Support for rotatable heatmaps is planned
+    barWidth: 3,
+  };
+
+  var ideogram = new Ideogram(config);
+</script>
+</body>
+</html>

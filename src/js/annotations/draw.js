@@ -1,7 +1,7 @@
 import {d3} from '../lib';
 import {writeHistogramAnnots} from './histogram';
 import {writeLegend} from './legend';
-import { writeSyntenicRegionPolygons, writeSyntenicRegionPolygonsHorizontal } from './synteny-lib';
+
 
 function parseFriendlyAnnots(friendlyAnnots, rawAnnots) {
   var i, j, annot, rawAnnot;
@@ -79,7 +79,7 @@ function drawAnnots(friendlyAnnots, layout, keep=false, isOtherLayout=false) {
 }
 
 function getShapes(annotHeight) {
-  var triangle, circle, rectangle, r;
+  var triangle, circle, rectangle, r, span;
 
   triangle =
     'm0,0 l -' + annotHeight + ' ' + (2 * annotHeight) +
@@ -100,8 +100,9 @@ function getShapes(annotHeight) {
     'l ' + annotHeight + ' 0' +
     'l 0 -' + (2 * annotHeight) + 'z';
 
+  span = ` `;
 
-  return {triangle: triangle, circle: circle, rectangle: rectangle};
+  return {triangle: triangle, circle: circle, rectangle: rectangle, span: span};
 }
 
 function getChrAnnotNodes(filledAnnots, ideo) {
@@ -121,26 +122,58 @@ function determineShape(d, shapes) {
     return shapes.circle;
   } else if (d.shape === 'rectangle') {
     return shapes.rectangle;
+  } else if (d.shape === 'span') {
+    return shapes.span;
   } else {
     return d.shape;
   }
 }
 
+/**
+ * Multiple annotations appear next to chromosomes
+ */
 function writeTrackAnnots(chrAnnot, ideo) {
   var shapes,
     annotHeight = ideo.config.annotationHeight;
-
   shapes = getShapes(annotHeight);
 
-  chrAnnot.append('g')
+  var gElement = chrAnnot.append('g')
     .attr('id', function(d) {return d.domId;})
     .attr('class', 'annot')
     .attr('transform', function(d) {
-      var y = ideo.config.chrWidth + (d.trackIndex * annotHeight * 2);
-      return 'translate(' + d.px + ',' + y + ')';
-    })
+      if (d.shape !== 'span') {
+        var y = ideo.config.chrWidth + (d.trackIndex * annotHeight * 2);
+        return 'translate(' + d.px + ',' + y + ')';
+      }
+    });
+
+  gElement
     .append('path')
     .attr('d', function(d) {return determineShape(d, shapes);})
+    .attr('fill', function(d) {return d.color;})
+    .on('mouseover', function(event, d) {ideo.showAnnotTooltip(d, this);})
+    .on('mouseout', function() {ideo.startHideAnnotTooltipTimeout();})
+    .on('click', function(event, d) {ideo.onClickAnnot(d);});
+
+  gElement
+    .append('polygon')
+    .attr('points', function(d) {
+      if (d.shape === 'span') {
+        var annotHeight = ideo.config.annotationHeight * 2;
+        var x1 = d.startPx;
+        var x2 = d.stopPx;
+        var y = ideo.config.chrWidth +
+                (d.trackIndex * annotHeight);
+        var points = [
+          `${x1},${y + annotHeight}`,
+          `${x2},${y + annotHeight}`,
+          `${x2},${y}`,
+          `${x1},${y}`
+        ];
+        const bars = points.join(' ');
+        return bars;
+      }
+    })
     .attr('fill', function(d) {return d.color;})
     .on('mouseover', function(event, d) {ideo.showAnnotTooltip(d, this);})
     .on('mouseout', function() {ideo.startHideAnnotTooltipTimeout();})
@@ -176,27 +209,33 @@ function writeOverlayAnnots(chrAnnot, ideo) {
     .on('mouseout', function() {ideo.startHideAnnotTooltipTimeout();});
 }
 
+/**
+ * Annotations appear next to chromosomes
+ */
 function writeSpanAnnots(chrAnnot, ideo) {
   chrAnnot.append('g')
     .attr('id', function(d) {return d.domId;})
     .attr('class', 'annot')
     .append('polygon')
     .attr('points', function(d) {
-    
-      var chrWidth = ideo.config.chrWidth;
-      var annotHeight = ideo.config.annotationHeight;
+      var annotHeight = ideo.config.annotationHeight * 2;
       var x1 = d.startPx;
       var x2 = d.stopPx;
-      console.log(chrWidth, x1, x2)
-      var y = ideo.config.chrWidth + (d.trackIndex * annotHeight * 2);
-      
-      const bars = `${x1},${y + annotHeight} ${x2},${y + annotHeight} ${x2},${y} ${x1},${y} `;
+      var y = ideo.config.chrWidth + (d.trackIndex * annotHeight);
+
+      var points = [
+        `${x1},${y + annotHeight}`,
+        `${x2},${y + annotHeight}`,
+        `${x2},${y}`,
+        `${x1},${y}`
+      ];
+      const bars = points.join(' ');
       return bars;
     })
-  .attr('fill', function(d) {return d.color;})
-  .on('mouseover', function(event, d) {ideo.showAnnotTooltip(d, this);})
-  .on('mouseout', function() {ideo.startHideAnnotTooltipTimeout();})
-  .on('click', function(event, d) {ideo.onClickAnnot(d);});
+    .attr('fill', function(d) {return d.color;})
+    .on('mouseover', function(event, d) {ideo.showAnnotTooltip(d, this);})
+    .on('mouseout', function() {ideo.startHideAnnotTooltipTimeout();})
+    .on('click', function(event, d) {ideo.onClickAnnot(d);});
 };
 
 function warnIfTooManyAnnots(layout, annots) {
@@ -237,7 +276,6 @@ function drawAnnotsByLayoutType(layout, annots, ideo) {
   } else if (layout === 'span') {
     writeSpanAnnots(chrAnnot, ideo);
   }
-
 }
 
 /**
@@ -247,6 +285,7 @@ function drawAnnotsByLayoutType(layout, annots, ideo) {
  * running parallel to each chromosome.
  */
 function drawProcessedAnnots(annots, layout, keep=false) {
+
   var ideo = this;
 
   if (ideo.onBeforeDrawAnnotsCallback) {
