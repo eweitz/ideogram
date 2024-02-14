@@ -1,3 +1,45 @@
+import {shouldUseThresholdColor} from './heatmap-lib';
+
+function histogramAnnots(ideo, annot) {
+  var value, thresholds, histogramKeyIndexes, height;
+  var keys = ideo.rawAnnots.keys;
+  histogramKeyIndexes = [];
+  for (var i = 0; i < ideo.config.histogram.length; i++) {
+    var histogramKey = ideo.config.histogram[i].key;
+    histogramKeyIndexes.push(keys.indexOf(histogramKey));
+  }
+
+  value = annot[keys[histogramKeyIndexes]];
+  if (ideo.config.histogram) {
+    thresholds = ideo.config.histogram.thresholds;
+    height = getHistogramHeight(thresholds, value, ideo);
+  }
+  return height;
+}
+
+function getHistogramHeight(thresholds, value, ideo) {
+  var thresholds = ideo.config.histogram[0].thresholds;
+  var m, numThresholds, thresholdList, threshold, tvNum,
+    prevThreshold, useThresholdHeight, height;
+
+  for (m = 0; m < thresholds.length; m++) {
+    numThresholds = thresholds.length - 1;
+    thresholdList = thresholds[m];
+    threshold = thresholdList[0];
+
+    tvNum = parseFloat(threshold);
+    if (isNaN(tvNum) === false) threshold = tvNum;
+    if (m !== 0) prevThreshold = parseFloat(thresholds[m - 1][0]);
+
+    useThresholdHeight = shouldUseThresholdColor(m, numThresholds, value,
+      prevThreshold, threshold);
+
+    if (useThresholdHeight) height = parseFloat(thresholdList[1]);
+  }
+
+  return height;
+}
+
 /**
  * Get containers to group individual annotations into higher-level "bar"
  * annotations.
@@ -197,4 +239,7 @@ function writeHistogramAnnots(chrAnnot, ideo) {
     .attr('fill', function(d) {return d.color;});
 }
 
-export {getHistogramBars, writeHistogramAnnots};
+export {
+  getHistogramBars, writeHistogramAnnots,
+  getHistogramHeight, histogramAnnots
+};

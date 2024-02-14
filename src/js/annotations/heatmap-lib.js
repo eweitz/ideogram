@@ -163,5 +163,5 @@ function getHeatmapAnnotColor(thresholds, value) {
 
 export {
   getLabels, inflateHeatmaps, inflateThresholds, defaultHeatmapColors,
-  getHeatmapAnnotColor
+  getHeatmapAnnotColor, shouldUseThresholdColor
 };
