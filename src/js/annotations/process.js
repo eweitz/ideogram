@@ -1,5 +1,7 @@
 import {add2dAnnotsForChr} from './heatmap-2d';
 import {setAnnotRanks} from './annotations';
+import {histogramAnnots} from './histogram';
+
 
 // Default colors for tracks of annotations
 var colorMap = [
@@ -40,16 +42,21 @@ function orderAnnotContainers(annots, ideo) {
 /**
  * Add client annotations, as in annotations-tracks.html
  */
-function addClientAnnot(annots, annot, ra, m, ideo) {
+function addClientAnnot(annots, annot, ra, m, annotationTracks) {
   var annotTrack;
 
   annot.trackIndex = ra[3];
-  annotTrack = ideo.config.annotationTracks[annot.trackIndex];
+  annotTrack = annotationTracks[annot.trackIndex];
   if (annotTrack.color) {
     annot.color = annotTrack.color;
   }
   if (annotTrack.shape) {
     annot.shape = annotTrack.shape;
+  }
+  if (annotTrack.placement) {
+    annot.placement = annotTrack.placement;
+  } else {
+    annot.placement = annot.trackIndex;
   }
 
   annots[m].annots.push(annot);
@@ -86,12 +93,17 @@ function addSparseServerAnnot(annot, ra, omittedAnnots, annots, m, ideo) {
  * and annotations-external.html
  */
 function addBasicClientAnnot(annots, annot, m, ideo) {
-  annot.trackIndex = 0;
+  if (!annot.trackIndex) {
+    annot.trackIndex = 0;
+  }
   if (!annot.color) {
     annot.color = ideo.config.annotationsColor;
   }
   if (!annot.shape) {
     annot.shape = 'triangle';
+  }
+  if (!annot.placement) {
+    annot.placement = annot.trackIndex;
   }
   annots[m].annots.push(annot);
 
@@ -101,7 +113,7 @@ function addBasicClientAnnot(annots, annot, m, ideo) {
 function addAnnot(annot, keys, ra, omittedAnnots, annots, m, ideo) {
 
   if (ideo.config.annotationTracks) {
-    annots = addClientAnnot(annots, annot, ra, m, ideo);
+    annots = addClientAnnot(annots, annot, ra, m, ideo.config.annotationTracks);
   } else if (keys[3] === 'trackIndex' && ideo.numAvailTracks !== 1) {
     [annots, omittedAnnots] =
       addSparseServerAnnot(annot, ra, omittedAnnots, annots, m, ideo);
@@ -131,7 +143,6 @@ function addAnnotsForChr(annots, omittedAnnots, annotsByChr, chrModel,
     !ideo.config.annotationsLayout ||
     ideo.config.annotationsLayout === 'tracks'
   );
-
   for (j = 0; j < annotsByChr.annots.length; j++) {
     ra = annotsByChr.annots[j];
     annot = {};
@@ -139,11 +150,22 @@ function addAnnotsForChr(annots, omittedAnnots, annotsByChr, chrModel,
     for (k = 0; k < keys.length; k++) {
       annot[keys[k]] = ra[k];
     }
-
+    if (ideo.config.heatmaps) {
+      // assign annot value to the correct heatmap key
+      if (keys.includes('trackIndex')) {
+        var trackIndex = ra[keys.indexOf('trackIndex')];
+        var heatmapKey = ideo.config.heatmaps[trackIndex].key;
+        annot[heatmapKey] = ra[ra.length - 1];
+      }
+    }
     annot.stop = annot.start + annot.length;
 
     annot.chr = annotsByChr.chr;
     annot.chrIndex = m;
+    if (ideo.config.histogram) {
+      annot.height = histogramAnnots(ideo, annot);
+    }
+
     annot.startPx = ideo.convertBpToPx(chrModel, annot.start);
     annot.stopPx = ideo.convertBpToPx(chrModel, annot.stop);
     annot.px = Math.round((annot.startPx + annot.stopPx) / 2);

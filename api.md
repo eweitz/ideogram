@@ -82,7 +82,7 @@ String.  Optional.  OAuth 2.0 access token.  Enables authentication and authoriz
 Object.  Optional.  A map associating ancestor labels to colors.  Used to color chromosomes from different ancestors in polyploid genomes.  Example in [Ploidy, recombination](https://eweitz.github.io/ideogram/ploidy-recombination).
 
 ## annotations
-Array.  Optional.  A list of annotation objects.  Each annotation object has at least a chromosome name (chr), start coordinate (start), and stop coordinate (stop).  Annotation objects can also have a name, color, shape, and track index.  Example in [Annotations, basic](https://eweitz.github.io/ideogram/annotations-basic).
+Array.  Optional.  A list of annotation objects.  Each annotation object has at least a chromosome name (chr), start coordinate (start), and stop coordinate (stop).  Annotation objects can also have a name, color, shape, track index and placement. Positive placement brings the annotations to the bottom/left of the chromosome, whilst negative placement brings it to the top/right. Example in [Annotations, basic](https://eweitz.github.io/ideogram/annotations-basic).
 
 See also [annotationsPath](#annotationspath).
 
@@ -96,6 +96,10 @@ String.  Optional.  Default: "#F00" (i.e., red).  The color of each annotation. 
 String.  Optional.  Default: "tracks".
 
 The layout of this ideogram's annotations.  One of "tracks", "heatmap", "histogram", or "overlay".
+
+## annotationsLayout: 'span'
+Lay out annotations in spanning tracks beside each chromosome. There can be more than one
+track, hich is useful for displaying annotations by category (e.g. pathogenic, unknown significance, benign). Example in [Annotations, span](https://eweitz.github.io/ideogram/annotations-span).
 
 ### annotationsLayout: 'tracks'
 Lay out annotations in tracks beside each chromosome.  There can be more than one track, which is useful for displaying annotations by category (e.g. pathogenic, unknown significance, benign).  Example in [Annotations, tracks](https://eweitz.github.io/ideogram/annotations-tracks).
@@ -119,7 +123,7 @@ String.  Optional.  An absolute or relative URL to a JSON file containing annota
 See also [annotations](#annotations).
 
 ## annotationTracks
-Array.  Optional.  A list of objects with metadata for each track, e.g. DOM `id`, display name, color, shape.  Example in [Annotations, tracks](https://eweitz.github.io/ideogram/annotations-tracks).
+Array.  Optional.  A list of objects with metadata for each track, e.g. DOM `id`, display name, color, shape, placement. Example in [Annotations, tracks](https://eweitz.github.io/ideogram/annotations-tracks). If placement is not specified, it is assigned the trackIndex by default. Positive placement brings the annotations to the bottom/left of the chromosome, whilst negative placement brings it to the top/right. The placement of the histogram should have the largest number (either positive or negative) to avoid overlapping of tracks. Example in [Annotations, spanning heatmap and histogram](https://eweitz.github.io/ideogram/annotations-span-heatmap-histogram).
 
 ## assembly
 String.  Optional.  Default: latest RefSeq assembly for specified organism.  The genome assembly to display.  Takes assembly name (e.g. "GRCh37"), RefSeq accession (e.g. "GCF_000306695.2"), or GenBank accession (e.g. "GCA_000005005.5").  Example in [Annotations, histogram](https://eweitz.github.io/ideogram/annotations-histogram).
