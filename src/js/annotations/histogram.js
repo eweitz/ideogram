@@ -1,4 +1,4 @@
-import {shouldUseThresholdColor} from './heatmap-lib';
+import {shouldUseThreshold} from './heatmap-lib';
 
 function histogramAnnots(ideo, annot) {
   var value, thresholds, histogramKeyIndexes, height;
@@ -31,7 +31,7 @@ function getHistogramHeight(thresholds, value, ideo) {
     if (isNaN(tvNum) === false) threshold = tvNum;
     if (m !== 0) prevThreshold = parseFloat(thresholds[m - 1][0]);
 
-    useThresholdHeight = shouldUseThresholdColor(m, numThresholds, value,
+    useThresholdHeight = shouldUseThreshold(m, numThresholds, value,
       prevThreshold, threshold);
 
     if (useThresholdHeight) height = parseFloat(thresholdList[1]);

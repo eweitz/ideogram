@@ -81,9 +81,9 @@ function drawAnnots(friendlyAnnots, layout, keep=false, isOtherLayout=false) {
 }
 
 function getShapes(annotHeight) {
-  var reverse, triangle, circle, rectangle, r, span, histo;
+  var reverseTriangle, triangle, circle, rectangle, r, span, histo;
 
-  reverse =
+  reverseTriangle =
     'm0,0 l -' + annotHeight + ' ' + (-2 * annotHeight) +
     ' l ' + (2 * annotHeight) + ' 0 z';
 
@@ -110,7 +110,7 @@ function getShapes(annotHeight) {
 
   histo = ` `;
 
-  return {reverse: reverse, triangle: triangle, circle: circle,
+  return {reverseTriangle: reverseTriangle, triangle: triangle, circle: circle,
     rectangle: rectangle, span: span, histo: histo};
 }
 
@@ -127,7 +127,7 @@ function getChrAnnotNodes(filledAnnots, ideo) {
 function determineShape(d, shapes) {
   if (!d.shape || d.shape === 'triangle') {
     if (d.placement < 0) {
-      return shapes.reverse;
+      return shapes.reverseTriangle;
     }
     return shapes.triangle;
   } else if (d.shape === 'circle') {
