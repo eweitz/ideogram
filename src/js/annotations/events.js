@@ -20,7 +20,7 @@ function onDrawAnnots() {
 }
 
 function hideAnnotTooltip() {
-  d3.select('._ideogramTooltip').transition()
+  d3.selectAll('._ideogramTooltip').transition()
     .duration(500) // fade out for half second
     .style('opacity', 0)
     .style('pointer-events', 'none');
@@ -155,8 +155,8 @@ function showAnnotTooltip(annot, context) {
   }
 
   ideo.prevTooltipAnnotName = annot.name;
-
-  tooltip = d3.select('._ideogramTooltip');
+  console.log(ideo.config.container, annot.name)
+  tooltip = d3.select('#' + ideo.config.container.replace('#', '') + '_ideogramTooltip');
   tooltip.interrupt(); // Stop any in-progress disapperance
 
   matrix = context.getScreenCTM().translate(cx, cy);

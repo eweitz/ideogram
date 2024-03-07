@@ -50,7 +50,7 @@ function getContainerSvgClass(ideo) {
 /** Hide tooltip upon pressing "esc" on keyboard */
 function handleEscape(event) {
   if (event.keyCode === 27) { // "Escape" key pressed
-    const tooltip = document.querySelector('#_ideogramTooltip');
+    const tooltip = document.querySelector('_ideogramTooltip');
     if (!tooltip) return;
     tooltip.style.opacity = 0;
   }
@@ -62,7 +62,7 @@ function handleEscape(event) {
 function writeTooltipContainer(ideo) {
   d3.select(ideo.config.container + ' #_ideogramOuterWrap').append('div')
     .attr('class', '_ideogramTooltip')
-    .attr('id', '_ideogramTooltip')
+    .attr('id', ideo.config.container.replace('#', '') + '_ideogramTooltip')
     .style('opacity', 0)
     .style('position', 'fixed')
     .style('text-align', 'center')

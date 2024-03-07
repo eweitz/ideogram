@@ -22,7 +22,12 @@
     All human genes, annotated in heatmaps and histograms.  The proximal heatmap for each chromosome shows gene distribution
     by expression.  The distal heatmap shows gene distribution by type and rna expression levels.
 <div>
-<div id="container"></div>
+  <div>
+    <div id="container"></div>
+  </div>
+  <div>
+    <div id="container2"></div>
+  </div>
 <div class="note">
     Expression data from NCBI SRA and GEO (<a href="https://trace.ncbi.nlm.nih.gov/Traces/sra/?run=SRR562645">SRR562645</a>, <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE40705">GSE40705</a>)
     via <a href="https://github.com/NCBI-Hackathons/rnaseqview#rnaseqview">rnaseqview</a> pipeline.
@@ -115,6 +120,7 @@
       {
         key: 'rna',
         thresholds: [
+          // ['-', 'red']
           ['0', 'purple'],
           ['+', 'purple']
         ]
@@ -144,11 +150,13 @@
     heatmaps: heatmaps,
     histogram: histogram,
     annotationTracks: annotationTracks,
-    rotatable: true, // Support for rotatable heatmaps is planned
+    // rotatable: true, // Support for rotatable heatmaps is planned
+    orientation: 'vertical',
     barWidth: 3
   };
 
   var ideogram = new Ideogram(config);
+  var ideogram = new Ideogram({ ...config, container: '#container2', });
 </script>
 </body>
 </html>
