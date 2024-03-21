@@ -62,7 +62,7 @@ function handleEscape(event) {
 function writeTooltipContainer(ideo) {
   d3.select(ideo.config.container + ' #_ideogramOuterWrap').append('div')
     .attr('class', '_ideogramTooltip')
-    .attr('id', ideo.config.container.replace('#', '') + '_ideogramTooltip')
+    .attr('id', `${ideo.config.container.replace('#', '')}_ideogramTooltip`)
     .style('opacity', 0)
     .style('position', 'fixed')
     .style('text-align', 'center')

@@ -25,9 +25,6 @@
   <div>
     <div id="container"></div>
   </div>
-  <div>
-    <div id="container2"></div>
-  </div>
 <div class="note">
     Expression data from NCBI SRA and GEO (<a href="https://trace.ncbi.nlm.nih.gov/Traces/sra/?run=SRR562645">SRR562645</a>, <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE40705">GSE40705</a>)
     via <a href="https://github.com/NCBI-Hackathons/rnaseqview#rnaseqview">rnaseqview</a> pipeline.
@@ -37,7 +34,7 @@
   var annotationTracks = [
     {id: 'cnTrack', displaName: 'Copy Number', shape: 'span', placement: 0},
     {id: 'lohTrack', displayName: 'loh', shape: 'span', placement: 1},
-    {id: 'pathclassTrack', displayName: 'pathClass', shape: 'triangle', placement: -1},
+    {id: 'pathclassTrack', displayName: 'pathClass', shape: 'triangle', placement: -2},
     {id: 'rnaexpressionLevelTrack', displayName: 'RNA-Seq Expression level', shape: 'histo', placement: 2}
   ];
 
@@ -120,7 +117,6 @@
       {
         key: 'rna',
         thresholds: [
-          // ['-', 'red']
           ['0', 'purple'],
           ['+', 'purple']
         ]
@@ -132,31 +128,31 @@
         key: 'rna',
         thresholds: [
           ['0', '0'],
-          ['1', '2'],
-          ['2', '4'],
-          ['3', '6'],
-          ['4', '8'],
-          ['5', '10'],
+          ['1', '4'],
+          ['2', '8'],
+          ['3', '12'],
+          ['4', '16'],
+          ['5', '20'],
         ]
       },
   ]
   var config = {
     container: '#container',
+    chromosome: '1',
     organism: 'human',
     assembly: 'GRCh37',
-    chrHeight: 275,
+    chrHeight: 1000,
     annotationsPath: '../../data/annotations/span_heatmap_histogram_virtual.json',
     legend: legend,
     heatmaps: heatmaps,
     histogram: histogram,
     annotationTracks: annotationTracks,
     // rotatable: true, // Support for rotatable heatmaps is planned
-    orientation: 'vertical',
+    orientation: 'horizontal',
     barWidth: 3
   };
 
   var ideogram = new Ideogram(config);
-  var ideogram = new Ideogram({ ...config, container: '#container2', });
 </script>
 </body>
 </html>
