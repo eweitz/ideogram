@@ -99,7 +99,7 @@ The layout of this ideogram's annotations.  One of "tracks", "heatmap", "histogr
 
 ## annotationsLayout: 'span'
 Lay out annotations in spanning tracks beside each chromosome. There can be more than one
-track, hich is useful for displaying annotations by category (e.g. pathogenic, unknown significance, benign). Example in [Annotations, span](https://eweitz.github.io/ideogram/annotations-span).
+track, which is useful for displaying annotations by category (e.g. pathogenic, unknown significance, benign). Example in [Annotations, span](https://eweitz.github.io/ideogram/annotations-span).
 
 ### annotationsLayout: 'tracks'
 Lay out annotations in tracks beside each chromosome.  There can be more than one track, which is useful for displaying annotations by category (e.g. pathogenic, unknown significance, benign).  Example in [Annotations, tracks](https://eweitz.github.io/ideogram/annotations-tracks).
