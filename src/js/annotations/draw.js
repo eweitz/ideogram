@@ -156,71 +156,44 @@ function writeTrackAnnots(chrAnnot, ideo) {
     .attr('class', 'annot')
     .attr('transform', function(d) {
       if (d.shape !== 'span' && d.shape !== 'histo') {
+        var y = ideo.config.chrWidth + (d.placement * annotHeight * 2);
         if (d.placement < 0) {
           var y = ((d.placement + 1) * annotHeight * 2);
-          return 'translate(' + d.px + ',' + y + ')';
-        } else if (d.placement >= 0) {
-          var y = ideo.config.chrWidth +
-          (d.placement * annotHeight * 2);
-          return 'translate(' + d.px + ',' + y + ')';
         }
-      }
-    });
-
-  gElement
-    .append('path')
-    .attr('d', function(d) {return determineShape(d, shapes);})
-    .attr('fill', function(d) {return d.color;})
-    .on('mouseover', function(event, d) {ideo.showAnnotTooltip(d, this);})
-    .on('mouseout', function() {ideo.startHideAnnotTooltipTimeout();})
-    .on('click', function(event, d) {ideo.onClickAnnot(d);});
-
-  gElement
-    .append('polygon')
-    .attr('points', function(d) {
-      if (d.shape === 'span') {
-        var annotHeight = ideo.config.annotationHeight * 2;
-        var x1 = d.startPx;
-        var x2 = d.stopPx;
-        if (d.placement >= 0) {
-          var y = ideo.config.chrWidth +
-                (d.placement * annotHeight);
-          var points = [
-            `${x1},${y + annotHeight}`,
-            `${x2},${y + annotHeight}`,
-            `${x2},${y}`,
-            `${x1},${y}`
-          ];
-          const bars = points.join(' ');
-          return bars;
-        } else if (d.placement < 0) {
-          var y = annotHeight + ((d.placement - 1) * annotHeight);
-          var points = [
-            `${x1},${y + annotHeight}`,
-            `${x2},${y + annotHeight}`,
-            `${x2},${y}`,
-            `${x1},${y}`
-          ];
-          const bars = points.join(' ');
-          return bars;
-        }
-
+        return 'translate(' + d.px + ',' + y + ')';
       }
     })
-    .attr('fill', function(d) {return d.color;})
     .on('mouseover', function(event, d) {ideo.showAnnotTooltip(d, this);})
     .on('mouseout', function() {ideo.startHideAnnotTooltipTimeout();})
-    .on('click', function(event, d) {ideo.onClickAnnot(d);});
+    .on('click', function(event, d) {ideo.onClickAnnot(d);})
+    .attr('fill', function(d) {return d.color;});
 
   gElement
+    .filter(function(d) {
+      return d.shape === 'span' || d.shape == 'histo';
+    })
     .append('polygon')
     .attr('points', function(d) {
+      var x1 = d.startPx;
+      var x2 = d.stopPx;
+      var annotHeight = ideo.config.annotationHeight * 2;
+      var y = ideo.config.chrWidth + (d.placement * annotHeight);
+      if (d.shape === 'span') {
+        if (d.placement < 0) {
+          var y = annotHeight + ((d.placement - 1) * annotHeight);
+        }
+
+        var points = [
+          `${x1},${y + annotHeight}`,
+          `${x2},${y + annotHeight}`,
+          `${x2},${y}`,
+          `${x1},${y}`
+        ];
+        const bars = points.join(' ');
+        return bars;
+      }
       if (d.shape === 'histo') {
-        var x1 = d.startPx;
-        var x2 = d.stopPx;
-        var annotHeight = ideo.config.annotationHeight * 2;
         if (d.placement >= 0) {
-          var y = ideo.config.chrWidth + (d.placement * annotHeight);
           var points = [
             `${x1},${y}`,
             `${x2},${y}`,
@@ -239,11 +212,14 @@ function writeTrackAnnots(chrAnnot, ideo) {
         const bars = points.join(' ');
         return bars;
       }
+    });
+
+  gElement
+    .filter(function(d) {
+      return d.shape !== 'span' && d.shape !== 'histo';
     })
-    .attr('fill', function(d) {return d.color;})
-    .on('mouseover', function(event, d) {ideo.showAnnotTooltip(d, this);})
-    .on('mouseout', function() {ideo.startHideAnnotTooltipTimeout();})
-    .on('click', function(event, d) {ideo.onClickAnnot(d);});
+    .append('path')
+    .attr('d', function(d) {return determineShape(d, shapes);});
 }
 
 /**

@@ -11,7 +11,7 @@
   <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
 <link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
 </head>
-<body>
+<body>  
   <h1>Annotations, span | Ideogram</h1>
   <a href="../">Overview</a> |
   <a href="annotations-basic">Previous</a> |
@@ -23,31 +23,46 @@
   var d3 = Ideogram.d3;
 
   var annotHeight = 5;
-  var legend = [{
-      name: 'Clinical significance (simulated)',
-      rows: [
-        {name: 'Pathogenic', color: '#F00'},
-        {name: 'Uncertain significance', color: '#CCC'},
-        {name: 'Benign', color: '#8D4'}
-      ]
-  }];
   
   var annotationTracks = [
-    {id: 'pathogenicTrack', displayName: 'Pathogenic', color: '#F00'},
-    {id: 'uncertainSignificanceTrack', displayName: 'Uncertain significance', color: '#CCC'},
-    {id: 'benignTrack',  displayName: 'Benign', color: '#8D4'}
+    {id: 'copyNumberTrack', displayName: 'Copy number'},
+    {id: 'lohTrack', displayName: 'LOH', },
+  ];
+
+  const heatmaps = [
+    {
+      key: 'cn',
+      thresholds: [
+        ['0', '#5DFCA8'],
+        ['1.3', '#84FFBE'],
+        ['1.5', '#C9FFE2'],
+        ['2', '#ECF0F3'],
+        ['2.75', '#FEE0E9'],
+        ['3.3', '#FEE0E9'],
+        ['+', '#FF84A9'],
+      ],
+    },
+    {
+      key: 'loh',
+      thresholds: [
+        ['0', 'rgba(0,0,0,0)'],
+        ['1', '#d19cff'],
+      ],
+    },
   ];
 
   var config = {
-      organism: 'human',
-      chrHeight: 300,
-      chrMargin: 10,
-      annotationsPath: '../../data/annotations/1000_virtual_snvs.json',
-      annotationTracks: annotationTracks,
-      annotationsLayout: 'span',
-      orientation: 'vertical',
-      legend: legend,
-      annotHeight: annotHeight
+    organism: 'human',
+    chrHeight: 1000,
+    chrMargin: 10,
+    chromosome: '6',
+    annotationsPath: '../../data/annotations/chr1_span_virtual_cnvs.json',
+    annotationTracks: annotationTracks,
+    heatmaps: heatmaps,
+    annotationsLayout: 'span',
+    orientation: 'horizontal',
+    annotHeight: annotHeight,
+
   };
 
   var ideogram = new Ideogram(config);
