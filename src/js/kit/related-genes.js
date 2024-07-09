@@ -24,6 +24,7 @@
 import {decompressSync, strFromU8} from 'fflate';
 import tippy, {hideAll} from 'tippy.js';
 import {tippyCss, tippyLightCss} from './tippy-styles';
+import {Pvjs} from 'eweitz-pvjs';
 
 import {
   initAnalyzeRelatedGenes, analyzePlotTimes, analyzeRelatedGenes, timeDiff,
@@ -47,6 +48,7 @@ import {
 import {getTissueHtml, addTissueListeners} from './tissue';
 // import {drawAnnotsByLayoutType} from '../annotations/draw';
 // import {organismMetadata} from '../init/organism-metadata';
+
 
 /** Sets DOM IDs for ideo.relatedAnnots; needed to associate labels */
 function setRelatedAnnotDomIds(ideo) {
@@ -1945,6 +1947,21 @@ function plotGeneHints() {
  * @param {Object} config Ideogram configuration object
  */
 function _initRelatedGenes(config, annotsInList) {
+  console.log('ok')
+  window.Pvjs = Pvjs
+  console.log('Pvjs')
+  console.log(Pvjs)
+  window.pathwayViewer = new Pvjs({
+    theme: 'plain',
+    opacities: [],
+    highlights: [],
+    panned: [],
+    zoomed: [],
+    pathway: {},
+    entitiesById: {},
+    detailPanelOpen: false,
+    selected: null
+  })
 
   if (config.relatedGenesMode === 'leads') {
     delete config.onDrawAnnots;
