@@ -25,6 +25,7 @@ import {decompressSync, strFromU8} from 'fflate';
 import tippy, {hideAll} from 'tippy.js';
 import {tippyCss, tippyLightCss} from './tippy-styles';
 import {Pvjs} from 'eweitz-pvjs';
+import { createRoot } from 'react-dom/client';
 
 import {
   initAnalyzeRelatedGenes, analyzePlotTimes, analyzeRelatedGenes, timeDiff,
@@ -1939,6 +1940,21 @@ function plotGeneHints() {
   }
 }
 
+/** Request JSON for a WikiPathways biological pathway diagram */
+async function fetchPathwayJson(pwId) {
+  const origin = 'https://raw.githubusercontent.com'
+  const repoAndBranch = '/wikipathways/wikipathways-assets/main'
+
+  // E.g. https://raw.githubusercontent.com/wikipathways/wikipathways-assets/main/pathways/WP5445/WP5445.json
+  const url = `${origin}${repoAndBranch}/pathways/${pwId}/${pwId}.json`
+
+  const response = await fetch(url);
+  const pathwayJson = await response.json();
+
+  window.pathwayJson = pathwayJson;
+  return pathwayJson;
+}
+
 /**
  * Wrapper for Ideogram constructor, with generic "Related genes" options
  *
@@ -1947,21 +1963,37 @@ function plotGeneHints() {
  * @param {Object} config Ideogram configuration object
  */
 function _initRelatedGenes(config, annotsInList) {
-  console.log('ok')
-  window.Pvjs = Pvjs
-  console.log('Pvjs')
-  console.log(Pvjs)
-  window.pathwayViewer = new Pvjs({
-    theme: 'plain',
-    opacities: [],
-    highlights: [],
-    panned: [],
-    zoomed: [],
-    pathway: {},
-    entitiesById: {},
-    detailPanelOpen: false,
-    selected: null
-  })
+
+  // console.log('ok')
+  // window.Pvjs = Pvjs
+  // console.log('Pvjs')
+  // console.log(Pvjs)
+  // fetchPathwayJson('WP5445').then(pathwayJson => {
+  //   const whyDomNode = document.querySelector('#why');
+  //   const pvjsProps = {
+  //     theme: 'plain',
+  //     opacities: [],
+  //     highlights: [],
+  //     panned: [],
+  //     zoomed: [],
+  //     pathway: pathwayJson.pathway,
+  //     entitiesById: pathwayJson.entitiesById,
+  //     detailPanelOpen: false,
+  //     showPanZoomControls: false,
+  //     selected: null
+  //   }
+  //   const pathwayViewer = new Pvjs(pvjsProps);
+  //   window.pathwayViewer = pathwayViewer;
+  //   const pathwayContainer = document.getElementById('pathway-container');
+  //   const reactRoot = createRoot(pathwayContainer);
+  //   console.log('reactRoot')
+  //   console.log(reactRoot)
+  //   console.log('pathwayViewer')
+  //   console.log(pathwayViewer);
+  //   // const pwComponent = pathwayViewer.render();
+  //   console.log('pwComponent')
+  //   reactRoot.render(<Pvjs {...pvjsProps} />);
+  // });
 
   if (config.relatedGenesMode === 'leads') {
     delete config.onDrawAnnots;

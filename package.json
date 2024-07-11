@@ -54,7 +54,8 @@
     "fflate": "^0.7.3",
     "tippy.js": "6.3.7",
     "workbox-range-requests": "7.0.0",
-    "fast-kde": "0.2.1"
+    "fast-kde": "0.2.1",
+    "eweitz-pvjs": "eweitz/pvjs#f08c39aa0db967bac65df082aba1fae2ba71d3f6"
   },
   "devDependencies": {
     "@babel/core": "^7.16.0",
