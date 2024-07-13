@@ -25,7 +25,8 @@ import {decompressSync, strFromU8} from 'fflate';
 import tippy, {hideAll} from 'tippy.js';
 import {tippyCss, tippyLightCss} from './tippy-styles';
 import {Pvjs} from 'eweitz-pvjs';
-import { createRoot } from 'react-dom/client';
+import { drawPathway } from './pathway-viewer';
+
 
 import {
   initAnalyzeRelatedGenes, analyzePlotTimes, analyzeRelatedGenes, timeDiff,
@@ -1964,36 +1965,7 @@ async function fetchPathwayJson(pwId) {
  */
 function _initRelatedGenes(config, annotsInList) {
 
-  // console.log('ok')
-  // window.Pvjs = Pvjs
-  // console.log('Pvjs')
-  // console.log(Pvjs)
-  // fetchPathwayJson('WP5445').then(pathwayJson => {
-  //   const whyDomNode = document.querySelector('#why');
-  //   const pvjsProps = {
-  //     theme: 'plain',
-  //     opacities: [],
-  //     highlights: [],
-  //     panned: [],
-  //     zoomed: [],
-  //     pathway: pathwayJson.pathway,
-  //     entitiesById: pathwayJson.entitiesById,
-  //     detailPanelOpen: false,
-  //     showPanZoomControls: false,
-  //     selected: null
-  //   }
-  //   const pathwayViewer = new Pvjs(pvjsProps);
-  //   window.pathwayViewer = pathwayViewer;
-  //   const pathwayContainer = document.getElementById('pathway-container');
-  //   const reactRoot = createRoot(pathwayContainer);
-  //   console.log('reactRoot')
-  //   console.log(reactRoot)
-  //   console.log('pathwayViewer')
-  //   console.log(pathwayViewer);
-  //   // const pwComponent = pathwayViewer.render();
-  //   console.log('pwComponent')
-  //   reactRoot.render(<Pvjs {...pvjsProps} />);
-  // });
+  drawPathway('WP5445', '#pathway-container');
 
   if (config.relatedGenesMode === 'leads') {
     delete config.onDrawAnnots;
