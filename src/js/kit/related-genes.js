@@ -369,10 +369,9 @@ function describeInteractions(gene, ixns, searchedGene) {
       pathwayNames.push(ixn.name);
       const attrs =
         `class="ideo-pathway-link" ` +
-        `title="View in WikiPathways" ` +
-        `data-pathway-id="${ixn.pathwayId}" ` +
-        `target="_blank" ` +
-        `href="${url}"`;
+        `style="cursor: pointer" ` +
+        `title="View pathway diagram from WikiPathways" ` +
+        `data-pathway-id="${ixn.pathwayId}"`;
       return `<a ${attrs}>${ixn.name}</a>`;
     });
 
@@ -1591,27 +1590,29 @@ function getAnnotByName(annotName, ideo) {
 /**
  * Manage click on pathway links in annotation tooltips
  */
-// function managePathwayClickHandlers(searchedGene, ideo) {
-//   setTimeout(function() {
-//     const pathways = document.querySelectorAll('.ideo-pathway-link');
-//     if (pathways.length > 0 && !ideo.addedPathwayClickHandler) {
-//       pathways.forEach(pathway => {
-//         // pathway.removeEventListener('click', handlePathwayClick);
-//         pathway.addEventListener('click', function(event) {
-//           const target = event.target;
-//           const pathwayId = target.getAttribute('data-pathway-id');
-//           const pathwayName = target.getAttribute('data-pathway-name');
-//           const pathway = {id: pathwayId, name: pathwayName};
-//           plotPathwayGenes(searchedGene, pathway, ideo);
-//         });
-//       });
+function addPathwayListeners(ideo) {
+  setTimeout(function() {
+    const pathways = document.querySelectorAll('.ideo-pathway-link');
+    if (pathways.length > 0 && !ideo.addedPathwayClickHandler) {
+      pathways.forEach(pathway => {
+        // pathway.removeEventListener('click', handlePathwayClick);
+        pathway.addEventListener('click', function(event) {
+          const target = event.target;
+          const pathwayId = target.getAttribute('data-pathway-id');
+          // const pathwayName = target.getAttribute('data-pathway-name');
+          // const pathway = {id: pathwayId, name: pathwayName};
+          // plotPathwayGenes(searchedGene, pathway, ideo);
+          drawPathway(pathwayId);
+          event.stopPropagation();
+        });
+      });
 
-//       // Ensures handler isn't added redundantly.  This is used because
-//       // addEventListener options like {once: true} don't suffice
-//       // ideo.addedPathwayClickHandler = true;
-//     }
-//   }, 100);
-// }
+      // Ensures handler isn't added redundantly.  This is used because
+      // addEventListener options like {once: true} don't suffice
+      // ideo.addedPathwayClickHandler = true;
+    }
+  }, 100);
+}
 
 /** Move tooltip mass to vertical center of viewport */
 function centralizeTooltipPosition() {
@@ -1632,6 +1633,7 @@ function onDidShowAnnotTooltip() {
   handleTooltipClick(ideo);
   addGeneStructureListeners(ideo);
   addTissueListeners(ideo);
+  addPathwayListeners(ideo);
   ideo.tissueTippy =
     tippy('._ideoGeneTissues[data-tippy-content]', getTippyConfig());
 }
@@ -1832,8 +1834,6 @@ function decorateAnnot(annot) {
 
   annot.displayName = originalDisplay;
 
-  // managePathwayClickHandlers(annot, ideo);
-
   return annot;
 }
 
@@ -1964,8 +1964,6 @@ async function fetchPathwayJson(pwId) {
  * @param {Object} config Ideogram configuration object
  */
 function _initRelatedGenes(config, annotsInList) {
-
-  drawPathway('WP5445', '#pathway-container');
 
   if (config.relatedGenesMode === 'leads') {
     delete config.onDrawAnnots;

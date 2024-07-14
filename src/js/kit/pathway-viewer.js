@@ -30,14 +30,18 @@ async function loadPvjsScript() {
 }
 
 /** Fetch and render WikiPathways diagram for given pathway ID */
-export async function drawPathway(pwId, containerSelector, retryAttempt=0) {
+export async function drawPathway(pwId, retryAttempt=0) {
   const pvjsScript = document.querySelector(`script[src="${PVJS_URL}"]`);
   if (!pvjsScript) {loadPvjsScript();}
 
+  const containerId = 'pathway-container'
+  const containerSelector = `#${containerId}`
+
+  // Try drawing pathway, retry each .25 s for 10 s if Pvjs hasn't loaded yet
   if (typeof Pvjs === 'undefined') {
-    if (retryAttempt <= 20) {
+    if (retryAttempt <= 40) {
       setTimeout(() => {
-        drawPathway(pwId, containerSelector, retryAttempt++)
+        drawPathway(pwId, retryAttempt++);
       }, 250);
       return;
     } else {
@@ -48,8 +52,23 @@ export async function drawPathway(pwId, containerSelector, retryAttempt=0) {
     }
   }
 
+  // Get pathway diagram data
   const pathwayJson = await fetchPathwayViewerJson(pwId);
 
+  const oldPathwayContainer = document.querySelector(containerSelector);
+  const ideoContainerDom = document.querySelector('#ideogram-container');
+  if (oldPathwayContainer) {
+    oldPathwayContainer.innerHTML = '';
+  }
+
+  const style = 'height: 400px; width: 900px';
+  const containerHtml = `<div id="${containerId}" style="${style}"></div>`;
+  ideoContainerDom.insertAdjacentHTML('beforeEnd', containerHtml);
+  const pathwayContainer = document.querySelector(containerSelector);
+
+  // Pvjs parameters
+  // Source: https://github.com/wikipathways/pvjs/blob/fb321e5b8796ecc3312c9a604f75b7ace94a81aa/src/Pvjs.tsx#L392
+  // Docs: https://github.com/wikipathways/pvjs#-props
   const pvjsProps = {
     theme: 'plain',
     opacities: [],
@@ -64,7 +83,6 @@ export async function drawPathway(pwId, containerSelector, retryAttempt=0) {
   };
 
   // const pathwayViewer = new Pvjs(pvjsProps);
-  const pathwayContainer = document.querySelector(containerSelector)
   const pathwayViewer = new Pvjs(pathwayContainer, pvjsProps);
   window.pathwayViewer = pathwayViewer;
 
