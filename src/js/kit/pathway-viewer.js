@@ -29,19 +29,31 @@ async function loadPvjsScript() {
   document.querySelector('body').appendChild(scriptElement);
 }
 
+function getEntityIds(gene, pathwayJson) {
+  window.pathwayJson = pathwayJson
+  const matchedEntities =
+    Object.entries(pathwayJson.entitiesById).filter(([id, entity]) => {
+      return entity.textContent?.split(' ').some(token => token === gene);
+    });
+  return matchedEntities[0][0];
+}
+
 /** Fetch and render WikiPathways diagram for given pathway ID */
-export async function drawPathway(pwId, retryAttempt=0) {
+export async function drawPathway(pwId, sourceGene, destGene, retryAttempt=0) {
   const pvjsScript = document.querySelector(`script[src="${PVJS_URL}"]`);
   if (!pvjsScript) {loadPvjsScript();}
 
+  console.log('pwId, sourceGene, destGene')
+  console.log(pwId, sourceGene, destGene)
+
   const containerId = 'pathway-container'
-  const containerSelector = `#${containerId}`
+  const containerSelector = `#${containerId}`;
 
   // Try drawing pathway, retry each .25 s for 10 s if Pvjs hasn't loaded yet
   if (typeof Pvjs === 'undefined') {
     if (retryAttempt <= 40) {
       setTimeout(() => {
-        drawPathway(pwId, retryAttempt++);
+        drawPathway(pwId, sourceGene, destGene, retryAttempt++);
       }, 250);
       return;
     } else {
@@ -54,11 +66,18 @@ export async function drawPathway(pwId, retryAttempt=0) {
 
   // Get pathway diagram data
   const pathwayJson = await fetchPathwayViewerJson(pwId);
+  console.log('pathwayJson', pathwayJson)
+
+  const sourceEntityId = getEntityIds(sourceGene, pathwayJson);
+  const destEntityId = getEntityIds(destGene, pathwayJson);
+
+  console.log('sourceEntityId', sourceEntityId)
+  console.log('destEntityId', destEntityId)
 
   const oldPathwayContainer = document.querySelector(containerSelector);
   const ideoContainerDom = document.querySelector('#ideogram-container');
   if (oldPathwayContainer) {
-    oldPathwayContainer.innerHTML = '';
+    oldPathwayContainer.remove();
   }
 
   const style = 'height: 400px; width: 900px';
@@ -72,9 +91,12 @@ export async function drawPathway(pwId, retryAttempt=0) {
   const pvjsProps = {
     theme: 'plain',
     opacities: [],
-    highlights: [],
-    panned: [],
-    zoomed: [],
+    highlights: [
+      [null, sourceGene, 'red'],
+      [null, destGene, 'purple']
+    ],
+    panned: [sourceEntityId],
+    zoomed: [sourceEntityId],
     pathway: pathwayJson.pathway,
     entitiesById: pathwayJson.entitiesById,
     detailPanelOpen: false,

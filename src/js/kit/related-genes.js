@@ -1599,10 +1599,14 @@ function addPathwayListeners(ideo) {
         pathway.addEventListener('click', function(event) {
           const target = event.target;
           const pathwayId = target.getAttribute('data-pathway-id');
+
+          const searchedGene = getSearchedFromDescriptions(ideo);
+          const interactingGene =
+            document.querySelector('#ideo-related-gene').textContent;
           // const pathwayName = target.getAttribute('data-pathway-name');
           // const pathway = {id: pathwayId, name: pathwayName};
           // plotPathwayGenes(searchedGene, pathway, ideo);
-          drawPathway(pathwayId);
+          drawPathway(pathwayId, searchedGene, interactingGene);
           event.stopPropagation();
         });
       });
