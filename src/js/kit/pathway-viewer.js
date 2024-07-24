@@ -29,13 +29,27 @@ async function loadPvjsScript() {
   document.querySelector('body').appendChild(scriptElement);
 }
 
-function getEntityIds(gene, pathwayJson) {
-  window.pathwayJson = pathwayJson
+/** Get pathway entities that have a term matching query text, e.g. a gene */
+function findEntitiesByText(text, pathwayJson) {
   const matchedEntities =
     Object.entries(pathwayJson.entitiesById).filter(([id, entity]) => {
-      return entity.textContent?.split(' ').some(token => token === gene);
+      return entity.textContent?.split(' ').some(token => token === text);
     });
-  return matchedEntities[0][0];
+  return matchedEntities;
+}
+
+/** Get IDs of entities that have a term matching query text, e.g. a gene */
+function getEntityIds(text, pathwayJson) {
+  const matchedEntities = findEntitiesByText(text, pathwayJson);
+  const entityIds = matchedEntities.map(e => e[0]);
+  return entityIds;
+}
+
+/** Get highlights to color nodes that match query text, e.g. a gene */
+function getHighlights(text, pathwayJson, color) {
+  const entityIds = getEntityIds(text, pathwayJson);
+  const highlights = entityIds.map(entityId => [null, entityId, color]);
+  return highlights;
 }
 
 /** Fetch and render WikiPathways diagram for given pathway ID */
@@ -43,10 +57,7 @@ export async function drawPathway(pwId, sourceGene, destGene, retryAttempt=0) {
   const pvjsScript = document.querySelector(`script[src="${PVJS_URL}"]`);
   if (!pvjsScript) {loadPvjsScript();}
 
-  console.log('pwId, sourceGene, destGene')
-  console.log(pwId, sourceGene, destGene)
-
-  const containerId = 'pathway-container'
+  const containerId = 'pathway-container';
   const containerSelector = `#${containerId}`;
 
   // Try drawing pathway, retry each .25 s for 10 s if Pvjs hasn't loaded yet
@@ -66,13 +77,13 @@ export async function drawPathway(pwId, sourceGene, destGene, retryAttempt=0) {
 
   // Get pathway diagram data
   const pathwayJson = await fetchPathwayViewerJson(pwId);
-  console.log('pathwayJson', pathwayJson)
 
   const sourceEntityId = getEntityIds(sourceGene, pathwayJson);
   const destEntityId = getEntityIds(destGene, pathwayJson);
 
-  console.log('sourceEntityId', sourceEntityId)
-  console.log('destEntityId', destEntityId)
+  const sourceHighlights = getHighlights(sourceGene, pathwayJson, 'red');
+  const destHighlights = getHighlights(destGene, pathwayJson, 'purple');
+  const highlights = sourceHighlights.concat(destHighlights);
 
   const oldPathwayContainer = document.querySelector(containerSelector);
   const ideoContainerDom = document.querySelector('#ideogram-container');
@@ -91,12 +102,9 @@ export async function drawPathway(pwId, sourceGene, destGene, retryAttempt=0) {
   const pvjsProps = {
     theme: 'plain',
     opacities: [],
-    highlights: [
-      [null, sourceGene, 'red'],
-      [null, destGene, 'purple']
-    ],
-    panned: [sourceEntityId],
-    zoomed: [sourceEntityId],
+    highlights,
+    panned: [sourceEntityId], // TODO: Pvjs documents this, but it's unsupported
+    zoomed: [sourceEntityId], // TODO: Pvjs documents this, but it's unsupported
     pathway: pathwayJson.pathway,
     entitiesById: pathwayJson.entitiesById,
     detailPanelOpen: false,
