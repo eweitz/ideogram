@@ -91,8 +91,8 @@ export async function drawPathway(pwId, sourceGene, destGene, retryAttempt=0) {
     oldPathwayContainer.remove();
   }
 
-  const style = 'height: 400px; width: 900px';
-  const containerHtml = `<div id="${containerId}" style="${style}"></div>`;
+  const style = 'border: 0.5px solid #DDD; height: 400px; width: 900px; margin: auto;';
+  const containerHtml = `<div><div id="${containerId}" style="${style}"></div></div>`;
   ideoContainerDom.insertAdjacentHTML('beforeEnd', containerHtml);
   const pathwayContainer = document.querySelector(containerSelector);
 
@@ -115,5 +115,11 @@ export async function drawPathway(pwId, sourceGene, destGene, retryAttempt=0) {
   // const pathwayViewer = new Pvjs(pvjsProps);
   const pathwayViewer = new Pvjs(pathwayContainer, pvjsProps);
   window.pathwayViewer = pathwayViewer;
+
+  const pathwayName = pathwayJson.pathway.name;
+  const url = `https://wikipathways.org/pathways/${pwId}`;
+  const linkAttrs = `href="${url}" target="_blank"`;
+  const pathwayNameHtml = `<div><a ${linkAttrs}>${pathwayName}</a></div>`
+  pathwayContainer.insertAdjacentHTML('afterBegin', pathwayNameHtml);
 
 }
