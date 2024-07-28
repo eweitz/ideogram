@@ -1,4 +1,5 @@
 const PVJS_URL = 'https://cdn.jsdelivr.net/npm/@wikipathways/pvjs@5.0.1/dist/pvjs.vanilla.js';
+const SVGPANZOOM_URL = 'https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.5.0/dist/svg-pan-zoom.min.js';
 
 /** Request pvjs / kaavio JSON for a WikiPathways biological pathway diagram */
 async function fetchPathwayViewerJson(pwId) {
@@ -24,9 +25,13 @@ async function fetchPathwayViewerJson(pwId) {
  * TODO: Modify pvjs upstream to distribute module imports without e.g. React
  */
 async function loadPvjsScript() {
-  const scriptElement = document.createElement('script');
-  scriptElement.setAttribute('src', PVJS_URL);
-  document.querySelector('body').appendChild(scriptElement);
+  const pvjsScript = document.createElement('script');
+  pvjsScript.setAttribute('src', PVJS_URL);
+  document.querySelector('body').appendChild(pvjsScript);
+
+  const svgpanzoomScript = document.createElement('script');
+  svgpanzoomScript.setAttribute('src', SVGPANZOOM_URL);
+  document.querySelector('body').appendChild(svgpanzoomScript);
 }
 
 /** Get pathway entities that have a term matching query text, e.g. a gene */
@@ -52,6 +57,69 @@ function getHighlights(text, pathwayJson, color) {
   return highlights;
 }
 
+function zoomToEntity(entityId, retryAttempt=0) {
+  let entityDom = document.querySelector(`#${entityId}`);
+  const parentClasses = Array.from(entityDom.parentNode.classList);
+  const isInGroup = parentClasses.includes('Group');
+  if (isInGroup) {
+    entityDom = entityDom.parentNode;
+  }
+  console.log('entityDom')
+  console.log(entityDom)
+
+  // Try drawing pathway, retry each .25 s for 10 s if Pvjs hasn't loaded yet
+  if (typeof entityDom === 'undefined') {
+    if (retryAttempt <= 40) {
+      setTimeout(() => {
+        zoomToEntity(entityId, retryAttempt++);
+      }, 250);
+      return;
+    } else {
+      throw Error(
+        'Zoomed entity DOM is undefined.  ' +
+        'Possible causes include unavailable network or CDN.'
+      );
+    }
+  }
+
+  const panZoom = svgPanZoom('.Diagram');
+  // const clientRect = entityDom.getBoundingClientRect();
+
+  const svgMatrix = entityDom.transform.baseVal[0].matrix;
+
+  const transformLeft = svgMatrix.e;
+  const transformTop = svgMatrix.f;
+  // const scale = 0.5161290261053255
+
+  const viewport = document.querySelector('.svg-pan-zoom_viewport')
+
+  const viewportMatrix = viewport.transform.baseVal[0].matrix;
+  const viewportScale = viewportMatrix.a;
+  const viewportLeft = viewportMatrix.e;
+
+
+
+  // panZoom.zoomAtPointBy(3, {x: 282*0.47+213-30, y: 107.5*0.47-10});
+  panZoom.zoomAtPointBy(3, {
+    x: transformLeft * viewportScale + viewportLeft - 60,
+    y: transformTop * viewportScale - 10
+  });
+
+
+  window.viewport = viewport;
+  window.panZoom = panZoom;
+  window.entityDom = entityDom;
+  // window.clientRect = clientRect
+  window.svgMatrix = svgMatrix
+  window.transformLeft = transformLeft
+  window.transformTop = transformTop
+  window.viewportScale = viewportScale
+  window.viewportLeft = viewportLeft
+
+  // panZoom.zoomAtPoint(2, sourceEntityDom.getBoundingClientRect());
+  // panZoom.zoomAtPoint(2, sourceEntityDom.getBoundingClientRect());
+}
+
 /** Fetch and render WikiPathways diagram for given pathway ID */
 export async function drawPathway(pwId, sourceGene, destGene, retryAttempt=0) {
   const pvjsScript = document.querySelector(`script[src="${PVJS_URL}"]`);
@@ -61,7 +129,7 @@ export async function drawPathway(pwId, sourceGene, destGene, retryAttempt=0) {
   const containerSelector = `#${containerId}`;
 
   // Try drawing pathway, retry each .25 s for 10 s if Pvjs hasn't loaded yet
-  if (typeof Pvjs === 'undefined') {
+  if (typeof Pvjs === 'undefined' || typeof svgPanZoom === 'undefined') {
     if (retryAttempt <= 40) {
       setTimeout(() => {
         drawPathway(pwId, sourceGene, destGene, retryAttempt++);
@@ -78,8 +146,8 @@ export async function drawPathway(pwId, sourceGene, destGene, retryAttempt=0) {
   // Get pathway diagram data
   const pathwayJson = await fetchPathwayViewerJson(pwId);
 
-  const sourceEntityId = getEntityIds(sourceGene, pathwayJson);
-  const destEntityId = getEntityIds(destGene, pathwayJson);
+  const sourceEntityId = getEntityIds(sourceGene, pathwayJson)[0];
+  const destEntityId = getEntityIds(destGene, pathwayJson)[0];
 
   const sourceHighlights = getHighlights(sourceGene, pathwayJson, 'red');
   const destHighlights = getHighlights(destGene, pathwayJson, 'purple');
@@ -119,7 +187,8 @@ export async function drawPathway(pwId, sourceGene, destGene, retryAttempt=0) {
   const pathwayName = pathwayJson.pathway.name;
   const url = `https://wikipathways.org/pathways/${pwId}`;
   const linkAttrs = `href="${url}" target="_blank"`;
-  const pathwayNameHtml = `<div><a ${linkAttrs}>${pathwayName}</a></div>`
+  const pathwayNameHtml = `<span><a ${linkAttrs}>${pathwayName}</a></span>`;
   pathwayContainer.insertAdjacentHTML('afterBegin', pathwayNameHtml);
 
+  zoomToEntity(sourceEntityId);
 }

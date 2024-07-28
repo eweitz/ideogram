@@ -24,7 +24,7 @@
 import {decompressSync, strFromU8} from 'fflate';
 import tippy, {hideAll} from 'tippy.js';
 import {tippyCss, tippyLightCss} from './tippy-styles';
-import {Pvjs} from 'eweitz-pvjs';
+// import {Pvjs} from 'eweitz-pvjs';
 import { drawPathway } from './pathway-viewer';
 
 
