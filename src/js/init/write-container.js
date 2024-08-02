@@ -51,8 +51,13 @@ function getContainerSvgClass(ideo) {
 function handleEscape(event) {
   if (event.keyCode === 27) { // "Escape" key pressed
     const tooltip = document.querySelector('#_ideogramTooltip');
-    if (!tooltip) return;
-    tooltip.style.opacity = 0;
+    if (tooltip) {
+      tooltip.style.opacity = 0;
+    }
+    const pathwayContainer = document.querySelector('#ideo-pathway-container');
+    if (pathwayContainer) {
+      pathwayContainer.remove();
+    }
   }
 }
 
