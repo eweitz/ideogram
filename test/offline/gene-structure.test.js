@@ -11,7 +11,6 @@ describe('Ideogram gene structure functionality', function() {
   d3 = Ideogram.d3;
 
   beforeEach(function() {
-
     delete window.chrBands;
     d3.selectAll('div').remove();
   });

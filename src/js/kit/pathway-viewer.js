@@ -70,8 +70,6 @@ function zoomToEntity(entityId, retryAttempt=0) {
   if (isInGroup) {
     entityDom = entityDom.parentNode;
   }
-  console.log('entityDom')
-  console.log(entityDom)
 
   // Try drawing pathway, retry each .25 s for 10 s if Pvjs hasn't loaded yet
   if (typeof entityDom === 'undefined') {
@@ -132,6 +130,7 @@ function addHeader(pwId, pathwayJson, pathwayContainer) {
   // Link to full page on WikiPathways, using pathway title
   const pathwayLink = `<a ${linkAttrs}>${pathwayName}</a>`;
 
+  // Close button
   const style =
     'style="float: right; background-color: #aaa; border: none; ' +
     'color: white; font-weight: bold; font-size: 16px; padding: 0px 4px; ' +
@@ -193,7 +192,7 @@ export async function drawPathway(
   const highlights = sourceHighlights.concat(destHighlights);
 
   const oldPathwayContainer = document.querySelector(containerSelector);
-  const ideoContainerDom = document.querySelector('#ideogram-container');
+  const ideoContainerDom = document.querySelector('#_ideogramOuterWrap');
   if (oldPathwayContainer) {
     oldPathwayContainer.remove();
   }
@@ -205,7 +204,7 @@ export async function drawPathway(
   const style = `border: 0.5px solid #DDD; ${containerDimensions} margin: auto;`;
   const pvjsContainerHtml = `<div id="ideo-pvjs-container" style="${pvjsDimensions}"></div>`;
   const containerHtml = `<div id="${CONTAINER_ID}" style="${style}">${pvjsContainerHtml}</div>`;
-  ideoContainerDom.insertAdjacentHTML('beforeEnd', containerHtml);
+  ideoContainerDom.insertAdjacentHTML('afterEnd', containerHtml);
   const pathwayContainer = document.querySelector(containerSelector);
   const pvjsContainer = document.querySelector('#ideo-pvjs-container');
 

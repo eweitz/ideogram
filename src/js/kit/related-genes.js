@@ -1591,31 +1591,25 @@ function getAnnotByName(annotName, ideo) {
  * Manage click on pathway links in annotation tooltips
  */
 function addPathwayListeners(ideo) {
-  setTimeout(function() {
-    const pathways = document.querySelectorAll('.ideo-pathway-link');
-    if (pathways.length > 0 && !ideo.addedPathwayClickHandler) {
-      pathways.forEach(pathway => {
-        // pathway.removeEventListener('click', handlePathwayClick);
-        pathway.addEventListener('click', function(event) {
-          const target = event.target;
-          const pathwayId = target.getAttribute('data-pathway-id');
+  const pathways = document.querySelectorAll('.ideo-pathway-link');
+  if (pathways.length > 0 && !ideo.addedPathwayClickHandler) {
+    pathways.forEach(pathway => {
+      // pathway.removeEventListener('click', handlePathwayClick);
+      pathway.addEventListener('click', function(event) {
+        const target = event.target;
+        const pathwayId = target.getAttribute('data-pathway-id');
 
-          const searchedGene = getSearchedFromDescriptions(ideo);
-          const interactingGene =
-            document.querySelector('#ideo-related-gene').textContent;
-          // const pathwayName = target.getAttribute('data-pathway-name');
-          // const pathway = {id: pathwayId, name: pathwayName};
-          // plotPathwayGenes(searchedGene, pathway, ideo);
-          drawPathway(pathwayId, searchedGene, interactingGene);
-          event.stopPropagation();
-        });
+        const searchedGene = getSearchedFromDescriptions(ideo);
+        const interactingGene =
+          document.querySelector('#ideo-related-gene').textContent;
+        // const pathwayName = target.getAttribute('data-pathway-name');
+        // const pathway = {id: pathwayId, name: pathwayName};
+        // plotPathwayGenes(searchedGene, pathway, ideo);
+        drawPathway(pathwayId, searchedGene, interactingGene);
+        event.stopPropagation();
       });
-
-      // Ensures handler isn't added redundantly.  This is used because
-      // addEventListener options like {once: true} don't suffice
-      // ideo.addedPathwayClickHandler = true;
-    }
-  }, 100);
+    });
+  }
 }
 
 /** Move tooltip mass to vertical center of viewport */
@@ -1945,21 +1939,6 @@ function plotGeneHints() {
   }
 }
 
-/** Request JSON for a WikiPathways biological pathway diagram */
-async function fetchPathwayJson(pwId) {
-  const origin = 'https://raw.githubusercontent.com'
-  const repoAndBranch = '/wikipathways/wikipathways-assets/main'
-
-  // E.g. https://raw.githubusercontent.com/wikipathways/wikipathways-assets/main/pathways/WP5445/WP5445.json
-  const url = `${origin}${repoAndBranch}/pathways/${pwId}/${pwId}.json`
-
-  const response = await fetch(url);
-  const pathwayJson = await response.json();
-
-  window.pathwayJson = pathwayJson;
-  return pathwayJson;
-}
-
 /**
  * Wrapper for Ideogram constructor, with generic "Related genes" options
  *
@@ -1968,7 +1947,6 @@ async function fetchPathwayJson(pwId) {
  * @param {Object} config Ideogram configuration object
  */
 function _initRelatedGenes(config, annotsInList) {
-
   if (config.relatedGenesMode === 'leads') {
     delete config.onDrawAnnots;
     delete config.relatedGenesMode;
