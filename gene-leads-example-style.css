@@ -11,7 +11,7 @@ h1, .control-container, .wrapper, .why, .by {
 }
 h1 {
   font-size: 32px;
-  margin: 60px auto 60px auto;
+  margin: 10px auto 40px auto;
 }
 h1 small {
   font-size: 60%;
@@ -37,7 +37,7 @@ h1 small {
   font-size: 16px;
   text-align: center;
   color: #6f6f6f;
-  margin: 40px 60px 0 60px;
+  margin: 100px 60px 0 60px;
 }
 
 a, a:visited {text-decoration: none;}
