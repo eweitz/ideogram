@@ -125,7 +125,7 @@ function zoomToEntity(entityId, retryAttempt=0) {
 function addHeader(pwId, pathwayJson, pathwayContainer) {
   const pathwayName = pathwayJson.pathway.name;
   const url = `https://wikipathways.org/pathways/${pwId}`;
-  const linkAttrs = `href="${url}" target="_blank"`;
+  const linkAttrs = `href="${url}" target="_blank" style="margin-left: 4px;"`;
 
   // Link to full page on WikiPathways, using pathway title
   const pathwayLink = `<a ${linkAttrs}>${pathwayName}</a>`;
@@ -197,14 +197,17 @@ export async function drawPathway(
     oldPathwayContainer.remove();
   }
 
-  const dim = dimensions;
-  const widthCss = `width: 900px;`
-  const pvjsDimensions = `height: ${dim.height}px; ${widthCss}`;
-  const containerDimensions = `height: ${dim.height + 20}px; ${widthCss}`;
-  const style = `border: 0.5px solid #DDD; ${containerDimensions} margin: auto;`;
+  const width = dimensions.width;
+  const height = dimensions.height;
+  const pvjsDimensions = `height: ${height}px; width: ${width - 2}px;`;
+  const containerDimensions = `height: ${height + 20}px; width: ${width}px;`;
+  const style =
+    `border: 0.5px solid #DDD; border-radius: 3px; ` +
+    `position: relative; margin: auto; background-color: #FFF; z-index: 99; ` +
+    `${containerDimensions} margin: auto;`;
   const pvjsContainerHtml = `<div id="ideo-pvjs-container" style="${pvjsDimensions}"></div>`;
   const containerHtml = `<div id="${CONTAINER_ID}" style="${style}">${pvjsContainerHtml}</div>`;
-  ideoContainerDom.insertAdjacentHTML('afterEnd', containerHtml);
+  ideoContainerDom.insertAdjacentHTML('beforeEnd', containerHtml);
   const pathwayContainer = document.querySelector(containerSelector);
   const pvjsContainer = document.querySelector('#ideo-pvjs-container');
 
