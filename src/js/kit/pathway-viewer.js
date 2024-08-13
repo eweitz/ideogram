@@ -1,6 +1,6 @@
 const PVJS_URL = 'https://cdn.jsdelivr.net/npm/@wikipathways/pvjs@5.0.1/dist/pvjs.vanilla.js';
 const SVGPANZOOM_URL = 'https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.5.0/dist/svg-pan-zoom.min.js';
-const CONTAINER_ID = 'ideo-pathway-container';
+const CONTAINER_ID = '_ideogramPathwayContainer';
 
 /** Request pvjs / kaavio JSON for a WikiPathways biological pathway diagram */
 async function fetchPathwayViewerJson(pwId) {
@@ -125,7 +125,7 @@ function zoomToEntity(entityId, retryAttempt=0) {
 function addHeader(pwId, pathwayJson, pathwayContainer) {
   const pathwayName = pathwayJson.pathway.name;
   const url = `https://wikipathways.org/pathways/${pwId}`;
-  const linkAttrs = `href="${url}" target="_blank"`;
+  const linkAttrs = `href="${url}" target="_blank" style="margin-left: 4px;"`;
 
   // Link to full page on WikiPathways, using pathway title
   const pathwayLink = `<a ${linkAttrs}>${pathwayName}</a>`;
@@ -151,8 +151,8 @@ function addHeader(pwId, pathwayJson, pathwayContainer) {
 
 /** Fetch and render WikiPathways diagram for given pathway ID */
 export async function drawPathway(
-  pwId, sourceGene, destGene, dimensions={height: 440, width: 900},
-  retryAttempt=0
+  pwId, sourceGene, destGene,
+  dimensions={height: 440, width: 900}, retryAttempt=0
 ) {
   const pvjsScript = document.querySelector(`script[src="${PVJS_URL}"]`);
   if (!pvjsScript) {loadPvjsScript();}
@@ -197,16 +197,23 @@ export async function drawPathway(
     oldPathwayContainer.remove();
   }
 
-  const dim = dimensions;
-  const widthCss = `width: 900px;`
-  const pvjsDimensions = `height: ${dim.height}px; ${widthCss}`;
-  const containerDimensions = `height: ${dim.height + 20}px; ${widthCss}`;
-  const style = `border: 0.5px solid #DDD; ${containerDimensions} margin: auto;`;
-  const pvjsContainerHtml = `<div id="ideo-pvjs-container" style="${pvjsDimensions}"></div>`;
-  const containerHtml = `<div id="${CONTAINER_ID}" style="${style}">${pvjsContainerHtml}</div>`;
-  ideoContainerDom.insertAdjacentHTML('afterEnd', containerHtml);
+  const width = dimensions.width;
+  const height = dimensions.height;
+  const pvjsDimensions = `height: ${height}px; width: ${width - 2}px;`;
+  const containerDimensions = `height: ${height + 20}px; width: ${width}px;`;
+  const style =
+    `border: 0.5px solid #DDD; border-radius: 3px; ` +
+    `position: relative; margin: auto; background-color: #FFF; z-index: 99; ` +
+    `${containerDimensions} margin: auto;`;
+  const pvjsContainerHtml = `<div id="_ideogramPvjsContainer" style="${pvjsDimensions}"></div>`;
+  const containerAttrs =
+    `id="${CONTAINER_ID}" style="${style}" ` +
+    `data-ideo-pathway-searched="${sourceGene}" ` +
+    `data-ideo-pathway-interacting="${destGene}"`;
+  const containerHtml = `<div ${containerAttrs}>${pvjsContainerHtml}</div>`;
+  ideoContainerDom.insertAdjacentHTML('beforeEnd', containerHtml);
   const pathwayContainer = document.querySelector(containerSelector);
-  const pvjsContainer = document.querySelector('#ideo-pvjs-container');
+  const pvjsContainer = document.querySelector('#_ideogramPvjsContainer');
 
   // Pvjs parameters
   // Source: https://github.com/wikipathways/pvjs/blob/fb321e5b8796ecc3312c9a604f75b7ace94a81aa/src/Pvjs.tsx#L392
@@ -226,9 +233,16 @@ export async function drawPathway(
 
   // const pathwayViewer = new Pvjs(pvjsProps);
   const pathwayViewer = new Pvjs(pvjsContainer, pvjsProps);
-  window.pathwayViewer = pathwayViewer;
-
   addHeader(pwId, pathwayJson, pathwayContainer);
 
   // zoomToEntity(sourceEntityId);
+
+  const detail = {
+    pathwayViewer,
+    pwId, sourceGene, destGene, dimensions
+  };
+
+  // Notify listeners of event completion
+  const ideogramPathwayEvent = new CustomEvent('ideogramDrawPathway', {detail});
+  document.dispatchEvent(ideogramPathwayEvent);
 }
