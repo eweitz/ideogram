@@ -19,7 +19,7 @@ describe('Ideogram gene structure functionality', function() {
     async function callback() {
       await ideogram.plotRelatedGenes('APOE');
       setTimeout(async function() {
-        const apoeLabel = document.querySelector('#ideogramLabel__c18_a1');
+        const apoeLabel = document.querySelector('#ideogramLabel__c18_a3');
         apoeLabel.dispatchEvent(new Event('mouseover'));
         const subparts = document.querySelectorAll('rect.subpart');
         assert.equal(subparts.length, 7); // spliced, without introns
@@ -27,6 +27,7 @@ describe('Ideogram gene structure functionality', function() {
       }, 500);
     }
 
+    console.log('*** -1')
     function onClickAnnot(annot) {
       ideogram.plotRelatedGenes(annot.name);
     }
@@ -48,7 +49,7 @@ describe('Ideogram gene structure functionality', function() {
     async function callback() {
       await ideogram.plotRelatedGenes('APOE');
       setTimeout(async function() {
-        const ldlrLabel = document.querySelector('#ideogramLabel__c18_a0');
+        const ldlrLabel = document.querySelector('#ideogramLabel__c18_a2');
         ldlrLabel.dispatchEvent(new Event('mouseover'));
         const subparts = document.querySelectorAll('rect.subpart.domain');
         assert.equal(subparts.length, 22); // Protein features
@@ -81,7 +82,7 @@ describe('Ideogram gene structure functionality', function() {
       await ideogram.plotRelatedGenes('APOE');
 
       setTimeout(async function() {
-        const apoeLabel = document.querySelector('#ideogramLabel__c18_a1');
+        const apoeLabel = document.querySelector('#ideogramLabel__c18_a3');
         apoeLabel.dispatchEvent(new Event('mouseover'));
 
         // Mimic real user action
@@ -109,7 +110,7 @@ describe('Ideogram gene structure functionality', function() {
         );
 
         // Negative-stranded gene
-        const apoa1Label = document.querySelector('#ideogramLabel__c10_a2');
+        const apoa1Label = document.querySelector('#ideogramLabel__c10_a4');
         apoa1Label.dispatchEvent(new Event('mouseover'));
 
         // Mimic real user action
@@ -156,7 +157,7 @@ describe('Ideogram gene structure functionality', function() {
     async function callback() {
       await ideogram.plotRelatedGenes('APOE');
       setTimeout(async function() {
-        const apoeLabel = document.querySelector('#ideogramLabel__c18_a1');
+        const apoeLabel = document.querySelector('#ideogramLabel__c18_a3');
         apoeLabel.dispatchEvent(new Event('mouseover'));
         // Press "s" key, to toggle exon splicing
         const sKeydown = new KeyboardEvent('keydown', {key: 's'});
@@ -170,7 +171,7 @@ describe('Ideogram gene structure functionality', function() {
           // There was a bug (see commit 7a43ba0) that caused drastically
           // longer apparent CDS in these cases, whereas correct display
           // has a relatively very small CDS compared to 3'-UTR.
-          const ldlrLabel = document.querySelector('#ideogramLabel__c18_a0');
+          const ldlrLabel = document.querySelector('#ideogramLabel__c18_a2');
           ldlrLabel.dispatchEvent(new Event('mouseover'));
           subparts = document.querySelectorAll('rect.subpart');
 
@@ -184,7 +185,7 @@ describe('Ideogram gene structure functionality', function() {
           assert.equal(Math.round(threePrimeUtr.width.baseVal.value), 121);
 
           // Label for MAOA gene
-          const maoaLabel = document.querySelector('#ideogramLabel__c22_a0');
+          const maoaLabel = document.querySelector('#ideogramLabel__c22_a1');
           maoaLabel.dispatchEvent(new Event('mouseover'));
           const container =
             document.querySelector('._ideoGeneStructureContainer');
@@ -225,7 +226,7 @@ describe('Ideogram gene structure functionality', function() {
     async function callback() {
       await ideogram.plotRelatedGenes('SREBF1');
       setTimeout(async function() {
-        const srebf1Label = document.querySelector('#ideogramLabel__c16_a1');
+        const srebf1Label = document.querySelector('#ideogramLabel__c16_a2');
         srebf1Label.dispatchEvent(new Event('mouseover'));
 
         // Mimic real user action
