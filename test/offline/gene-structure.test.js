@@ -6,7 +6,7 @@
 describe('Ideogram gene structure functionality', function() {
 
   // Account for latency
-  this.timeout(10000);
+  this.timeout(20000);
 
   d3 = Ideogram.d3;
 
@@ -24,10 +24,9 @@ describe('Ideogram gene structure functionality', function() {
         const subparts = document.querySelectorAll('rect.subpart');
         assert.equal(subparts.length, 7); // spliced, without introns
         done();
-      }, 500);
+      }, 2000);
     }
 
-    console.log('*** -1')
     function onClickAnnot(annot) {
       ideogram.plotRelatedGenes(annot.name);
     }

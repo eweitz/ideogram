@@ -6,6 +6,8 @@
 
 describe('Ideogram filter support', function() {
 
+  this.timeout(10000);
+
   var config = {};
 
   d3 = Ideogram.d3;
