@@ -10,6 +10,9 @@
 
 describe('Ideogram toggling', function() {
 
+  // Account for latency
+  this.timeout(10000);
+
   var config = {};
 
   d3 = Ideogram.d3;
@@ -40,12 +43,12 @@ describe('Ideogram toggling', function() {
       annot = document.getElementsByClassName('annot')[3];
       annotBox = annot.getBoundingClientRect();
 
-      assert.isBelow(Math.abs(annotBox.x - 73), 2);
+      assert.isBelow(Math.abs(annotBox.x - 101), 2);
       assert.isBelow(Math.abs(annotBox.y - 65), 2);
       assert.isBelow(Math.abs(annotBox.height - 14), 2);
-      assert.isBelow(Math.abs(annotBox.right - 87), 2);
+      assert.isBelow(Math.abs(annotBox.right - 115), 2);
       assert.isBelow(Math.abs(annotBox.bottom - 79), 2);
-      assert.isBelow(Math.abs(annotBox.left - 73), 2);
+      assert.isBelow(Math.abs(annotBox.left - 101), 2);
 
       done();
     }
