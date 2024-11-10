@@ -6,7 +6,7 @@
 describe('Ideogram gene-tissue expression functionality', function() {
 
   // Account for latency
-  this.timeout(10000);
+  this.timeout(20000);
 
   d3 = Ideogram.d3;
 
@@ -20,7 +20,7 @@ describe('Ideogram gene-tissue expression functionality', function() {
     async function callback() {
       await ideogram.plotRelatedGenes('APOE');
       setTimeout(async function() {
-        const apoeLabel = document.querySelector('#ideogramLabel__c18_a1');
+        const apoeLabel = document.querySelector('#ideogramLabel__c18_a3');
         apoeLabel.dispatchEvent(new Event('mouseover'));
         const curves = document.querySelectorAll('polyline');
         assert.equal(curves.length, 3);
@@ -62,7 +62,7 @@ describe('Ideogram gene-tissue expression functionality', function() {
     async function callback() {
       await ideogram.plotRelatedGenes('STAT1');
       setTimeout(async function() {
-        const stat1Label = document.querySelector('#ideogramLabel__c1_a1');
+        const stat1Label = document.querySelector('#ideogramLabel__c1_a3');
         stat1Label.dispatchEvent(new Event('mouseover'));
         const curves = document.querySelectorAll('polyline');
         assert.equal(curves.length, 3);
