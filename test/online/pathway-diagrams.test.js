@@ -35,9 +35,9 @@ describe('Ideogram pathway diagrams functionality', function() {
               assert.equal(apoeColor, red);
               done();
             }, 5000);
-          }, 500);
+          }, 100);
         }, 1000);
-      }, 1000);
+      }, 2000);
     }
 
     function onClickAnnot(annot) {

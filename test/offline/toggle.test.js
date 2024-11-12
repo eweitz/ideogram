@@ -57,7 +57,7 @@ describe('Ideogram toggling', function() {
     function loadCallback() {
       setTimeout(function() {
         d3.select('#chr1-9606-chromosome-set').dispatch('click');
-      }, 200);
+      }, 500);
     }
 
     var annotationTracks = [
