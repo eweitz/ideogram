@@ -10,6 +10,9 @@
 
 describe('Ideogram heatmap', function() {
 
+  // Account for latency
+  this.timeout(10000);
+
   var config = {};
 
   d3 = Ideogram.d3;

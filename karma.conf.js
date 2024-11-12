@@ -20,7 +20,6 @@ module.exports = function(config) {
       'test/online/**.test.js',
       // 'test/online/related-genes.test.js',
       // 'test/offline/gene-structure.test.js',
-      // 'test/offline/tissue.test.js',
       {pattern: 'dist/data/**', watched: false, included: false, served: true, nocache: false}
     ],
 
@@ -93,6 +92,7 @@ module.exports = function(config) {
     // level of logging
     // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
     logLevel: config.LOG_INFO,
+    // logLevel: config.LOG_DEBUG,
 
     // enable / disable watching file and executing tests whenever any file changes
     autoWatch: true,

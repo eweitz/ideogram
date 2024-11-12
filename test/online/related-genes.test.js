@@ -25,16 +25,14 @@ describe('Ideogram related genes kit', function() {
 
     async function callback() {
       const ideo = this;
-
       await ideo.plotRelatedGenes('BRCA2');
 
       const related = ideo.getRelatedGenesByType();
-
       const numParalogs = related.paralogous.length;
       const numInteractingGenes = related.interacting.length;
-
       assert.isAtLeast(numInteractingGenes, 1);
       assert.equal(numParalogs, 0);
+
       done();
     }
 
@@ -102,12 +100,12 @@ describe('Ideogram related genes kit', function() {
                   document.querySelectorAll('._ideoGeneStructure');
                 assert.equal(structures.length, 1);
                 done();
-              }, 500);
+              }, 1000);
 
-            }, 500);
-          }, 500);
-        }, 500);
-      }, 1000);
+            }, 1000);
+          }, 1000);
+        }, 1000);
+      }, 2000);
 
 
     }
@@ -149,6 +147,8 @@ describe('Ideogram related genes kit', function() {
     const ideogram = Ideogram.initRelatedGenes(config);
   });
 
+  // Uncomment this test after 2024-11-12.
+  // The needed pathway was unapproved, now it is approved.
   // it('handles pathway genes', done => {
 
   //   async function callback() {
@@ -216,15 +216,17 @@ describe('Ideogram related genes kit', function() {
 
   //     await ideogram.plotRelatedGenes('DMC1');
 
-  //     const related = ideo.getRelatedGenesByType();
+  //     setTimeout(() => {
+  //       const related = ideo.getRelatedGenesByType();
 
-  //     const numParalogs = related.paralogous.length;
-  //     const numInteractingGenes = related.interacting.length;
+  //       const numParalogs = related.paralogous.length;
+  //       const numInteractingGenes = related.interacting.length;
 
-  //     assert.equal(numInteractingGenes, 0);
-  //     assert.isAtLeast(numParalogs, 1);
+  //       assert.equal(numInteractingGenes, 0);
+  //       assert.isAtLeast(numParalogs, 1);
 
-  //     done();
+  //       done();
+  //     }, 2000);
   //   }
 
   //   function onClickAnnot(annot) {

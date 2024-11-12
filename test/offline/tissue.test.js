@@ -77,7 +77,7 @@ describe('Ideogram gene-tissue expression functionality', function() {
         assert.equal(medianTick.style.display, 'none');
 
         done();
-      }, 500);
+      }, 2000);
     }
 
     function onClickAnnot(annot) {
@@ -115,7 +115,7 @@ describe('Ideogram gene-tissue expression functionality', function() {
         ovaryCurve.dispatchEvent(new Event('mouseleave'));
 
         done();
-      }, 500);
+      }, 2000);
     }
 
     function onClickAnnot(annot) {

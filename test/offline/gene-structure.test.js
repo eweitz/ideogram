@@ -53,7 +53,7 @@ describe('Ideogram gene structure functionality', function() {
         const subparts = document.querySelectorAll('rect.subpart.domain');
         assert.equal(subparts.length, 22); // Protein features
         done();
-      }, 500);
+      }, 2000);
     }
 
     function onClickAnnot(annot) {
@@ -132,7 +132,7 @@ describe('Ideogram gene structure functionality', function() {
         );
 
         done();
-      }, 500);
+      }, 2000);
     }
 
     function onClickAnnot(annot) {
@@ -206,7 +206,7 @@ describe('Ideogram gene structure functionality', function() {
             done();
           }, 1000);
         }, 1000);
-      }, 500);
+      }, 2000);
     }
 
     var config = {
@@ -221,7 +221,7 @@ describe('Ideogram gene structure functionality', function() {
     const ideogram = Ideogram.initRelatedGenes(config);
   });
 
-  it('animates splice for unannotated 5\'-UTR trancscript', done => {
+  it('animates splice for unannotated 5\'-UTR transcript', done => {
     async function callback() {
       await ideogram.plotRelatedGenes('SREBF1');
       setTimeout(async function() {
@@ -252,7 +252,7 @@ describe('Ideogram gene structure functionality', function() {
           assert.equal(color, '#DAA521');
           done();
         }, 1000);
-      }, 500);
+      }, 2000);
     }
 
     var config = {
