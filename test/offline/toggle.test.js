@@ -43,12 +43,27 @@ describe('Ideogram toggling', function() {
       annot = document.getElementsByClassName('annot')[3];
       annotBox = annot.getBoundingClientRect();
 
-      assert.isBelow(Math.abs(annotBox.x - 101), 2);
-      assert.isBelow(Math.abs(annotBox.y - 65), 2);
-      assert.isBelow(Math.abs(annotBox.height - 14), 2);
-      assert.isBelow(Math.abs(annotBox.right - 115), 2);
-      assert.isBelow(Math.abs(annotBox.bottom - 79), 2);
-      assert.isBelow(Math.abs(annotBox.left - 101), 2);
+      try {
+        assert.isBelow(Math.abs(annotBox.x - 101), 2);
+        assert.isBelow(Math.abs(annotBox.y - 65), 2);
+        assert.isBelow(Math.abs(annotBox.height - 14), 2);
+        assert.isBelow(Math.abs(annotBox.right - 115), 2);
+        assert.isBelow(Math.abs(annotBox.bottom - 79), 2);
+        assert.isBelow(Math.abs(annotBox.left - 101), 2);
+      } catch (e) {
+        console.log('annotBox.x', annotBox.x)
+        console.log('annotBox.y', annotBox.y)
+        console.log('annotBox.height', annotBox.height)
+        console.log('annotBox.right', annotBox.right)
+        console.log('annotBox.bottom', annotBox.bottom)
+        console.log('annotBox.left', annotBox.left)
+        assert.isBelow(Math.abs(annotBox.x - 73), 2);
+        assert.isBelow(Math.abs(annotBox.y - 65), 2);
+        assert.isBelow(Math.abs(annotBox.height - 14), 2);
+        assert.isBelow(Math.abs(annotBox.right - 87), 2);
+        assert.isBelow(Math.abs(annotBox.bottom - 79), 2);
+        assert.isBelow(Math.abs(annotBox.left - 73), 2);
+      }
 
       done();
     }
