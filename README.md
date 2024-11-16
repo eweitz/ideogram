@@ -1,4 +1,6 @@
 # ideogram
+[![Tests](https://github.com/eweitz/ideogram/actions/workflows/ci.yml/badge.svg)](https://github.com/eweitz/ideogram/actions/workflows/ci.yml)
+[![Coverage status](https://coveralls.io/repos/github/eweitz/ideogram/badge.svg?branch=master)](https://coveralls.io/github/eweitz/ideogram?branch=master)
 
 [Ideogram.js](https://eweitz.github.io/ideogram/) is a JavaScript library for [chromosome visualization](https://speakerdeck.com/eweitz/designing-genome-visualizations-with-ideogramjs).
 
@@ -16,7 +18,7 @@ A [broader overview](https://speakerdeck.com/eweitz/ideogramjs-chromosome-visual
 
 To link directly to the latest release, copy this snippet:
 ```
-<script src="https://cdn.jsdelivr.net/npm/ideogram@1.46.0-beta/dist/js/ideogram.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ideogram@1.48.0/dist/js/ideogram.min.js"></script>
 ```
 
 You can also easily use the library locally:
@@ -41,7 +43,7 @@ import Ideogram from 'ideogram';
 # Usage
 ```html
 <head>
-  <script src="https://cdn.jsdelivr.net/npm/ideogram@1.46.0-beta/dist/js/ideogram.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ideogram@1.48.0/dist/js/ideogram.min.js"></script>
 </head>
 <body>
 <script>

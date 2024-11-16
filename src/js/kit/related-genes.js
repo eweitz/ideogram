@@ -161,7 +161,9 @@ function isInteractionRelevant(rawIxn, gene, nameId, seenNameIds, ideo) {
     isGeneSymbol = maybeGeneSymbol(rawIxn, gene);
   }
 
-  return isGeneSymbol && !(nameId in seenNameIds);
+  const isNewNameId = !(nameId in seenNameIds);
+
+  return isGeneSymbol && isNewNameId;
 }
 
 /**
@@ -231,6 +233,7 @@ async function fetchInteractions(gene, ideo) {
       const wrappedRawIxns = rawIxns.map(rawIxn => {
         return {name: rawIxn, color: ''};
       });
+
       const sortedRawIxns =
         sortAnnotsByRank(wrappedRawIxns, ideo).map(i => i.name);
 
@@ -243,7 +246,7 @@ async function fetchInteractions(gene, ideo) {
 
         // if (rawIxn === '') return; // Avoid oddly blank placeholders
 
-        const nameId = name + id;
+        const nameId = name + id + normRawIxn;
 
         const isRelevant =
           isInteractionRelevant(normRawIxn, gene, nameId, seenNameIds, ideo);
@@ -261,7 +264,36 @@ async function fetchInteractions(gene, ideo) {
     }
   });
 
-  return ixns;
+  const limitIxns = 20; // Maximum number of interacting genes to show
+  const ixnEntries = Object.entries(ixns);
+  const numIxns = ixnEntries.length;
+
+  let filteredIxns = {};
+  if (numIxns > limitIxns) {
+    // Only show up to 20 interacting genes,
+    // ordered by interest rank of interacting gene.
+    const ranks = ideo.geneCache.interestingNames.map(g => g.toLowerCase());
+    const ixnGenes = Object.keys(ixns);
+    const rankedIxnGenes = ixnGenes
+      .map(gene => {
+        let rank = 1E10; // Big number, so these rank last
+        if (ranks.includes(gene)) {
+          rank = ranks.indexOf(gene) + 1;
+        }
+        return [gene, rank];
+      })
+      .filter(([gene, _rank]) => gene in ixns)
+      .sort((a, b) => a[1] - b[1]); // Ascending gene rank order
+
+    rankedIxnGenes
+      .slice(0, limitIxns)
+      .forEach(([gene, _rank]) => filteredIxns[gene] = ixns[gene]);
+
+  } else {
+    filteredIxns = ixns;
+  }
+
+  return filteredIxns;
 }
 
 /**
