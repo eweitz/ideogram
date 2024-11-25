@@ -14,17 +14,17 @@ const allLabelStyle = `
       stroke-linejoin: bevel;
     }
 
-    #_ideogram ._ideogramLabel._ideoActive {
+    #_ideogram .annot ._ideogramLabel._ideoActive {
       fill: #77F !important;
       stroke: #F0F0FF !important;
     }
 
-    #_ideogram .annot > ._ideoActive {
+    #_ideogram .annot > path._ideoActive {
       stroke: #D0D0DD !important;
       stroke-width: 1.5px;
     }
 
-    #_ideogram ._ideogramLabel {
+    #_ideogram .annot ._ideogramLabel {
       stroke: white;
       stroke-width: 5px;
       stroke-linejoin: round;
@@ -96,15 +96,25 @@ function renderLabel(annot, style, ideo) {
 
   fill = ensureContrast(fill);
 
-  d3.select('#_ideogram').append('text')
+  console.log('style', style)
+
+  const translate = `translate(-${style.width + 10},${style.height/2 - 2})`;
+  d3.select('#' + annot.domId).append('text')
     .attr('id', id)
     .attr('class', '_ideogramLabel')
-    .attr('x', style.left)
-    .attr('y', style.top)
+    .attr('transform', `rotate(-90) ${translate}`)
     .style('font', font)
     .style('fill', fill)
     .style('pointer-events', null) // Prevent bug in clicking chromosome
     .html(annot.name);
+
+  const rectTranslate = `translate(-${style.width}, -${style.height/2})`;
+  d3.select('#' + annot.domId).append('rect')
+    .attr('class', '_ideogramLabelRect')
+    .attr('transform', `rotate(-90) ${rectTranslate}`)
+    .attr('width', style.width + 10)
+    .attr('height', style.height)
+    .attr('style', 'opacity: 0');
 }
 
 /** Get annotation object by name, e.g. "BRCA1" */
@@ -445,7 +455,7 @@ function fillAnnotLabels(sortedAnnots=[], numLabels=10) {
     ideo.addAnnotLabel(annot.name);
   });
 
-  d3.selectAll('._ideogramLabel, .annot')
+  d3.selectAll('.annot')
     .on('mouseover', (event) => triggerAnnotEvent(event))
     .on('mouseout', (event) => triggerAnnotEvent(event, ideo))
     .on('click', (event) => triggerAnnotEvent(event));

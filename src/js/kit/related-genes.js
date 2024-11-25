@@ -1798,6 +1798,7 @@ function decorateAnnot(annot) {
     return null;
   }
 
+
   let descObj = ideo.annotDescriptions.annots[annot.name];
 
   if (ideo.config.relatedGenesMode === 'related') {
