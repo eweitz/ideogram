@@ -59,6 +59,10 @@ function triggerAnnotEvent(event, ideo) {
     const annotElement = target.parentElement;
     labelId = 'ideogramLabel_' + annotElement.id;
     annotId = annotElement.id;
+
+    if (targetClasses.includes('_ideogramLabelRect')) {
+      d3.select('#' + annotId + ' path').dispatch(type);
+    }
   }
 
   if (type === 'mouseout') {
@@ -96,8 +100,6 @@ function renderLabel(annot, style, ideo) {
 
   fill = ensureContrast(fill);
 
-  console.log('style', style)
-
   const translate = `translate(-${style.width + 10},${style.height/2 - 2})`;
   d3.select('#' + annot.domId).append('text')
     .attr('id', id)
@@ -109,6 +111,7 @@ function renderLabel(annot, style, ideo) {
     .html(annot.name);
 
   const rectTranslate = `translate(-${style.width}, -${style.height/2})`;
+
   d3.select('#' + annot.domId).append('rect')
     .attr('class', '_ideogramLabelRect')
     .attr('transform', `rotate(-90) ${rectTranslate}`)
