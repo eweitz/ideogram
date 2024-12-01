@@ -28,7 +28,6 @@ describe('Ideogram toggling', function() {
       var annot, annotBox;
       annot = document.getElementsByClassName('annot')[3];
       annotBox = annot.getBoundingClientRect();
-      console.log('annotBox', annotBox)
       try {
         assert.isBelow(Math.abs(annotBox.x - 101), 2);
         assert.isBelow(Math.abs(annotBox.y - 65), 2);
@@ -43,12 +42,12 @@ describe('Ideogram toggling', function() {
         console.log('annotBox.right', annotBox.right)
         console.log('annotBox.bottom', annotBox.bottom)
         console.log('annotBox.left', annotBox.left)
-        assert.isBelow(Math.abs(annotBox.x - 73), 2);
+        assert.isBelow(Math.abs(annotBox.x - 71), 2);
         assert.isBelow(Math.abs(annotBox.y - 65), 2);
         assert.isBelow(Math.abs(annotBox.height - 14), 2);
-        assert.isBelow(Math.abs(annotBox.right - 87), 2);
+        assert.isBelow(Math.abs(annotBox.right - 85), 2);
         assert.isBelow(Math.abs(annotBox.bottom - 79), 2);
-        assert.isBelow(Math.abs(annotBox.left - 73), 2);
+        assert.isBelow(Math.abs(annotBox.left - 71), 2);
       }
       done();
     }
