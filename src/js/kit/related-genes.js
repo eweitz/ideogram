@@ -1788,7 +1788,7 @@ function decorateParalogNeighborhood(annot, descObj, style) {
 /**
  * Enhance tooltip shown on hovering over gene annotation
  */
-function decorateAnnot(annot, context) {
+function decorateAnnot(annot) {
   const ideo = this;
   if (
     annot.name === ideo.prevClickedAnnot?.name &&
