@@ -100,7 +100,7 @@ function renderLabel(annot, style, ideo) {
 
   fill = ensureContrast(fill);
 
-  const translate = `translate(-${style.width + 10},${style.height/2 - 2})`;
+  const translate = `translate(-${style.width + 9},${style.height/2 - 1.5})`;
   d3.select('#' + annot.domId).append('text')
     .attr('id', id)
     .attr('class', '_ideogramLabel')
