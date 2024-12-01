@@ -19,7 +19,7 @@ describe('Ideogram pathway diagrams functionality', function() {
     async function callback() {
       await ideogram.plotRelatedGenes('APOE');
       setTimeout(async function() {
-        const ldlrLabel = document.querySelector('#ideogramLabel__c18_a0');
+        const ldlrLabel = document.querySelector('#_c18_a2 path');
         ldlrLabel.dispatchEvent(new Event('mouseover'));
         setTimeout(async function() {
           const fhSelector = '.ideo-pathway-link[data-pathway-id="WP5110"]';
