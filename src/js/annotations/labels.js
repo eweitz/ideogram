@@ -110,7 +110,9 @@ function renderLabel(annot, style, ideo) {
     .style('pointer-events', null) // Prevent bug in clicking chromosome
     .html(annot.name);
 
-  const rectTranslate = `translate(-${style.width}, -${style.height/2})`;
+  const paralogNeighborhoodMargin = 10;
+  const rectWidth = style.width + paralogNeighborhoodMargin;
+  const rectTranslate = `translate(-${rectWidth}, -${style.height/2})`;
 
   d3.select('#' + annot.domId).append('rect')
     .attr('class', '_ideogramLabelRect')
