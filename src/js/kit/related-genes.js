@@ -1792,11 +1792,17 @@ function decorateAnnot(annot) {
   const ideo = this;
   if (
     annot.name === ideo.prevClickedAnnot?.name &&
+    annot.name === ideo.prevShownAnnot?.name &&
+    !ideo.hasShownAnnotSinceClick &&
     ideo.isTooltipCooling
   ) {
+    ideo.prevShownAnnot = annot;
     // Cancels showing tooltip immediately after clicking gene
     return null;
   }
+
+  ideo.prevShownAnnot = annot;
+  ideo.hasShownAnnotSinceClick = true;
 
   let descObj = ideo.annotDescriptions.annots[annot.name];
 

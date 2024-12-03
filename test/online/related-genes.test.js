@@ -55,7 +55,7 @@ describe('Ideogram related genes kit', function() {
 
       setTimeout(async function() {
 
-        const rad54lLabel = document.querySelector('#ideogramLabel__c0_a0');
+        const rad54lLabel = document.querySelector('#_c0_a0 path');
         rad54lLabel.dispatchEvent(new Event('mouseover'));
         let relatedGene = document.querySelector('#ideo-related-gene');
         assert.equal(relatedGene.textContent, 'RAD54L');
@@ -156,7 +156,7 @@ describe('Ideogram related genes kit', function() {
 
   //     setTimeout(async function() {
 
-  //       const rad54lLabel = document.querySelector('#ideogramLabel__c0_a0');
+  //       const rad54lLabel = document.querySelector('#_c0_a0 path');
   //       rad54lLabel.dispatchEvent(new Event('mouseover'));
   //       const pathwayLink = document.querySelector('.ideo-pathway-link');
   //       const pathwayName = 'Integrated breast cancer pathway';
