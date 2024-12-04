@@ -475,34 +475,39 @@ function fetchGenesFromCache(names, type, ideo) {
 
   const hits = names.map(name => {
 
-    const nameLc = name.toLowerCase();
-
-    if (
-      !locusMap[name] &&
-      !cache.nameCaseMap[nameLc] &&
-      !getGeneBySynonym(name, ideo)
-    ) {
-      if (isSymbol) {
-        throwGeneNotFound(name, ideo);
-      } else {
-        return;
-      }
-    }
-
     let isSynonym = false;
     let synonym = null;
 
-    // Canonicalize name if it is mistaken in upstream data source.
-    // This can sometimes happen in WikiPathways, e.g. when searching
-    // interactions for rat Pten, it includes a result for "PIK3CA".
-    // In that case, this would correct PIK3CA to be Pik3ca.
-    if (isSymbol && !locusMap[name]) {
-      if (cache.nameCaseMap[nameLc]) {
-        name = cache.nameCaseMap[nameLc];
-      } else {
-        synonym = name;
-        name = getGeneBySynonym(synonym, ideo);
-        isSynonym = true;
+    const isIdentifier = name in cache.namesById;
+    if (isIdentifier && isSymbol) {
+      name = cache.namesById[name];
+    } else {
+      const nameLc = name.toLowerCase();
+
+      if (
+        !locusMap[name] &&
+        !cache.nameCaseMap[nameLc] &&
+        !getGeneBySynonym(name, ideo)
+      ) {
+        if (isSymbol) {
+          throwGeneNotFound(name, ideo);
+        } else {
+          return;
+        }
+      }
+
+      // Canonicalize name if it is mistaken in upstream data source.
+      // This can sometimes happen in WikiPathways, e.g. when searching
+      // interactions for rat Pten, it includes a result for "PIK3CA".
+      // In that case, this would correct PIK3CA to be Pik3ca.
+      if (isSymbol && !locusMap[name]) {
+        if (cache.nameCaseMap[nameLc]) {
+          name = cache.nameCaseMap[nameLc];
+        } else {
+          synonym = name;
+          name = getGeneBySynonym(synonym, ideo);
+          isSynonym = true;
+        }
       }
     }
 
@@ -522,6 +527,7 @@ function fetchGenesFromCache(names, type, ideo) {
         ensemblgene: ensemblId
       },
       isSynonym,
+      isIdentifier,
       synonym
     };
 
