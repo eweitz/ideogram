@@ -473,11 +473,18 @@ function fetchGenesFromCache(names, type, ideo) {
   const locusMap = isSymbol ? cache.lociByName : cache.lociById;
   const nameMap = isSymbol ? cache.idsByName : cache.namesById;
 
+  const ensemblGeneIdRegex = /ENS[A-Z]{0,3}G\d{11}/
+
   const hits = names.map(name => {
 
     let isSynonym = false;
     let synonym = null;
 
+    if (ensemblGeneIdRegex.test(name)) {
+      // Omit version if given Ensembl gene ID + version, e.g.
+      // ENSG00000010404.11 -> ENSG00000010404
+      name = name.split('.')[0];
+    }
     const isIdentifier = name in cache.namesById;
     if (isIdentifier && isSymbol) {
       name = cache.namesById[name];
