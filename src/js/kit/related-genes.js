@@ -473,7 +473,7 @@ function fetchGenesFromCache(names, type, ideo) {
   const locusMap = isSymbol ? cache.lociByName : cache.lociById;
   const nameMap = isSymbol ? cache.idsByName : cache.namesById;
 
-  const ensemblGeneIdRegex = /ENS[A-Z]{0,3}G\d{11}/
+  const ensemblGeneIdRegex = /ENS[A-Z]{0,3}G\d{11}/;
 
   const hits = names.map(name => {
 
