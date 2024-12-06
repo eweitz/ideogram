@@ -473,36 +473,48 @@ function fetchGenesFromCache(names, type, ideo) {
   const locusMap = isSymbol ? cache.lociByName : cache.lociById;
   const nameMap = isSymbol ? cache.idsByName : cache.namesById;
 
+  const ensemblGeneIdRegex = /ENS[A-Z]{0,3}G\d{11}/;
+
   const hits = names.map(name => {
-
-    const nameLc = name.toLowerCase();
-
-    if (
-      !locusMap[name] &&
-      !cache.nameCaseMap[nameLc] &&
-      !getGeneBySynonym(name, ideo)
-    ) {
-      if (isSymbol) {
-        throwGeneNotFound(name, ideo);
-      } else {
-        return;
-      }
-    }
 
     let isSynonym = false;
     let synonym = null;
 
-    // Canonicalize name if it is mistaken in upstream data source.
-    // This can sometimes happen in WikiPathways, e.g. when searching
-    // interactions for rat Pten, it includes a result for "PIK3CA".
-    // In that case, this would correct PIK3CA to be Pik3ca.
-    if (isSymbol && !locusMap[name]) {
-      if (cache.nameCaseMap[nameLc]) {
-        name = cache.nameCaseMap[nameLc];
-      } else {
-        synonym = name;
-        name = getGeneBySynonym(synonym, ideo);
-        isSynonym = true;
+    if (ensemblGeneIdRegex.test(name)) {
+      // Omit version if given Ensembl gene ID + version, e.g.
+      // ENSG00000010404.11 -> ENSG00000010404
+      name = name.split('.')[0];
+    }
+    const isIdentifier = name in cache.namesById;
+    if (isIdentifier && isSymbol) {
+      name = cache.namesById[name];
+    } else {
+      const nameLc = name.toLowerCase();
+
+      if (
+        !locusMap[name] &&
+        !cache.nameCaseMap[nameLc] &&
+        !getGeneBySynonym(name, ideo)
+      ) {
+        if (isSymbol) {
+          throwGeneNotFound(name, ideo);
+        } else {
+          return;
+        }
+      }
+
+      // Canonicalize name if it is mistaken in upstream data source.
+      // This can sometimes happen in WikiPathways, e.g. when searching
+      // interactions for rat Pten, it includes a result for "PIK3CA".
+      // In that case, this would correct PIK3CA to be Pik3ca.
+      if (isSymbol && !locusMap[name]) {
+        if (cache.nameCaseMap[nameLc]) {
+          name = cache.nameCaseMap[nameLc];
+        } else {
+          synonym = name;
+          name = getGeneBySynonym(synonym, ideo);
+          isSynonym = true;
+        }
       }
     }
 
@@ -522,6 +534,7 @@ function fetchGenesFromCache(names, type, ideo) {
         ensemblgene: ensemblId
       },
       isSynonym,
+      isIdentifier,
       synonym
     };
 
