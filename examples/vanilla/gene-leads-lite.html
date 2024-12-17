@@ -29,22 +29,24 @@
     <div id="ideogram-container" style="visibility: hidden;"></div>
     <div>
       <pre>
-        /** Upon clicking a triangular annotation or tooltip, plot that gene */
+        // Setup
+        npm install ideogram
+
+        // Either use a modern import statement
+        import Ideogram from 'ideogram'
+
+        // or use a classic HTML script tag
+        &lt;script src="https://cdn.jsdelivr.net/npm/ideogram@1.50.0/dist/js/ideogram.min.js"&gt;&lt;/script&gt;
+
+        // Upon clicking a triangular annotation, plot that gene
         function onClickAnnot(annot) {
           ideogram.plotRelatedGenes(annot.name);
         }
 
-        // Ideogram configuration object
-        config = {
-          organism: 'homo-sapiens',
+        const ideogram = Ideogram.initGeneLeads({
           container: '#ideogram-container',
-          legendName: 'Gene leads',
-          showGeneStructureInTooltip: true,
-          showProteinInTooltip: true,
           onClickAnnot
-        }
-
-        const ideogram = Ideogram.initGeneLeads(config);
+        });
       </pre>
     </div>
   </div>
@@ -54,17 +56,12 @@
       ideogram.plotRelatedGenes(annot.name);
     }
 
-    // Ideogram configuration object
-    config = {
+    // Instantiate Gene Leads ideogram
+    const ideogram = Ideogram.initGeneLeads({
       organism: 'homo-sapiens',
       container: '#ideogram-container',
-      legendName: 'Gene leads',
-      showGeneStructureInTooltip: true,
-      showProteinInTooltip: true,
       onClickAnnot
-    }
-
-    const ideogram = Ideogram.initGeneLeads(config);
+    });
   </script>
 </body>
 </html>
