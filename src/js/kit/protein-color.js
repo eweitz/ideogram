@@ -646,7 +646,8 @@ export function getColors(domainType) {
     domainType === 'Laminin domain II' ||
     domainType === 'Troponin I residues 1-32' || // e.g. TNNI3 in ACMG
     domainType === 'KI67R' || // KI67 / Chmadrin repeat
-    domainType.includes('FAD-binding')
+    domainType.includes('FAD-binding') ||
+    domainType.includes('Glucagon') // e.g. GCG, which encodes GLP-1
   ) {
     return [orange, orangeLines];
   } else if (
