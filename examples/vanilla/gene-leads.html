@@ -224,7 +224,6 @@
       updateUrl();
 
       ideogram.config.relatedGenesMode = 'related';
-      const selector = '#ideogram-container #_ideogramInnerWrap'
       ideogram.plotRelatedGenes(annot.name);
     }
 
@@ -246,8 +245,6 @@
       onLoad: plotGeneFromUrl,
       onPlotFoundGenes: reportFoundGenes,
       onHoverLegend: reportLegendMetrics,
-      showGeneStructureInTooltip: true,
-      showProteinInTooltip: true,
       onClickAnnot
     }
 

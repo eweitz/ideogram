@@ -873,7 +873,8 @@ async function fetchParalogs(annot, ideo) {
     homologs = hasParalogs ? paralogsByName[nameUc] : [];
   } else {
     const params = `&format=condensed&type=paralogues&target_taxon=${taxid}`;
-    const path = `/homology/id/${annot.id}?${params}`;
+    const organismUnderscore = ideo.config.organism.replace('-', '_');
+    const path = `/homology/id/${organismUnderscore}/${annot.id}?${params}`;
     const ensemblHomologs = await Ideogram.fetchEnsembl(path);
     homologs = ensemblHomologs.data[0].homologies;
   }
@@ -1950,6 +1951,8 @@ const globalKitDefaults = {
   onDidShowAnnotTooltip,
   showTools: true,
   showAnnotLabels: true,
+  showGeneStructureInTooltip: true,
+  showProteinInTooltip: true,
   chrFillColor: {centromere: '#DAAAAA'}
 };
 
