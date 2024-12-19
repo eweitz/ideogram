@@ -80,14 +80,20 @@ with open('clinvar_20241215.vcf') as file:
         if not is_relevant:
             continue
         slim_info = trim_info_fields(fields)
-        row[7] = slim_info
+        del row[5:7]
+        row[5] = slim_info
 
         output_rows.append('\t'.join(row))
 
 content = '\n'.join(output_rows)
 
 disease_map = json.dumps(disease_names_by_id)
-content = disease_map + '\n' + content
+column_names = ['#CHROM', 'POS', 'ID', 'REF', 'ALT', 'INFO']
+headers = '\n'.join([
+    '# disease_names_by_mondo_id = ' + disease_map,
+    '\t'.join(column_names)
+])
+content = headers + '\n' + content
 
 
 output_path = 'clinvar_priority_20241215.vcf'
