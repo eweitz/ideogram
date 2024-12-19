@@ -13,6 +13,7 @@ robust_review_statuses = [
 # Disease names by MONDO IDs
 disease_names_by_id = {}
 variant_types = []
+molecular_consequences = []
 
 def get_is_relevant(fields):
     is_clinical_concern = False
@@ -56,6 +57,16 @@ def trim_info_fields(fields):
             variant_type = variant_types.index(value)
             slim_fields.append(str(variant_type))
 
+        elif name == 'MC':
+            entries = value.split('|')
+            slim_mc = []
+            for entry in entries:
+                if entry not in molecular_consequences:
+                    molecular_consequences.append(entry)
+                molecular_consequence = molecular_consequences.index(entry)
+                slim_mc.append(str(molecular_consequence))
+            slim_fields.append(','.join(slim_mc))
+
         elif name in names_to_keep:
             if name == 'CLNSIG':
                 value = clinical_concerns.index(value)
@@ -95,7 +106,7 @@ with open('clinvar_20241215.vcf') as file:
 content = '\n'.join(output_rows)
 
 disease_map = json.dumps(disease_names_by_id)
-column_names = ['#CHROM', 'POS', 'ID', 'REF', 'ALT', 'DISEASE_IDS', 'CLNREVSTAT', 'CLNSIG', 'CLNVC', 'ORIGIN', 'RS']
+column_names = ['#CHROM', 'POS', 'ID', 'REF', 'ALT', 'DISEASE_IDS', 'CLNREVSTAT', 'CLNSIG', 'CLNVC', 'MC', 'ORIGIN', 'RS']
 headers = '\n'.join([
     '# disease_names_by_mondo_id = ' + disease_map,
     '# variant_types = ' + str(variant_types),
