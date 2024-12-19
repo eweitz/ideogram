@@ -12,6 +12,7 @@ robust_review_statuses = [
 
 # Disease names by MONDO IDs
 disease_names_by_id = {}
+variant_types = []
 
 def get_is_relevant(fields):
     is_clinical_concern = False
@@ -49,12 +50,18 @@ def trim_info_fields(fields):
         elif name == 'CLNDN': # "Clinical disease name"
             disease_names = value.split('|')
 
-        if name in names_to_keep:
+        elif name == 'CLNVC':
+            if value not in variant_types:
+                variant_types.append(value)
+            variant_type = variant_types.index(value)
+            slim_fields.append(str(variant_type))
+
+        elif name in names_to_keep:
             if name == 'CLNSIG':
                 value = clinical_concerns.index(value)
             elif name == 'CLNREVSTAT':
                 value = robust_review_statuses.index(value)
-            slim_fields.append(f"{name}={value}")
+            slim_fields.append(str(value))
 
     for (i, disease_id) in enumerate(disease_ids):
         if disease_id not in disease_names_by_id:
@@ -63,7 +70,7 @@ def trim_info_fields(fields):
     disease_ids_string = ','.join(disease_ids)
     slim_fields.insert(0, disease_ids_string)
 
-    slim_info = ';'.join(slim_fields)
+    slim_info = '\t'.join(slim_fields)
     return slim_info
 
 output_rows = []
@@ -88,15 +95,16 @@ with open('clinvar_20241215.vcf') as file:
 content = '\n'.join(output_rows)
 
 disease_map = json.dumps(disease_names_by_id)
-column_names = ['#CHROM', 'POS', 'ID', 'REF', 'ALT', 'INFO']
+column_names = ['#CHROM', 'POS', 'ID', 'REF', 'ALT', 'DISEASE_IDS', 'CLNREVSTAT', 'CLNSIG', 'CLNVC', 'ORIGIN', 'RS']
 headers = '\n'.join([
     '# disease_names_by_mondo_id = ' + disease_map,
+    '# variant_types = ' + str(variant_types),
     '\t'.join(column_names)
 ])
 content = headers + '\n' + content
 
 
-output_path = 'clinvar_priority_20241215.vcf'
+output_path = 'clinvar_priority_20241215.tsv'
 with open(output_path, "w") as f:
     f.write(content)
 with gzip.open(f"{output_path}.gz", "wt") as f:
