@@ -1,4 +1,5 @@
 import csv
+import json
 import gzip
 
 
@@ -8,6 +9,9 @@ robust_review_statuses = [
     'reviewed_by_expert_panel',
     'practice_guideline'
 ]
+
+# Disease names by MONDO IDs
+disease_names_by_id = {}
 
 def get_is_relevant(fields):
     is_clinical_concern = False
@@ -25,15 +29,40 @@ def get_is_relevant(fields):
 
 def trim_info_fields(fields):
     slim_fields = []
-    names_to_keep = ['CLNDN', 'CLNREVSTAT', 'CLNSIG', 'CLNVC', 'MC', 'ORIGIN', 'RS']
+    names_to_keep = ['CLNREVSTAT', 'CLNSIG', 'CLNVC', 'MC', 'ORIGIN', 'RS']
+    disease_names = []
+    disease_ids = []
     for field in fields:
         [name, value] = field.split('=')
+
+        if name == 'CLNDISDB': # "Clinical disease database"
+            entries = value.split('|')
+            for entry in entries:
+                full_values = entry.split(',')
+                for fv in full_values:
+                    split_fv = fv.split(':')
+                    db_name = split_fv[0]
+                    db_value = split_fv[-1]
+                    if db_name == 'MONDO':
+                        disease_ids.append(db_value)
+
+        elif name == 'CLNDN': # "Clinical disease name"
+            disease_names = value.split('|')
+
         if name in names_to_keep:
             if name == 'CLNSIG':
                 value = clinical_concerns.index(value)
             elif name == 'CLNREVSTAT':
                 value = robust_review_statuses.index(value)
             slim_fields.append(f"{name}={value}")
+
+    for (i, disease_id) in enumerate(disease_ids):
+        if disease_id not in disease_names_by_id:
+            disease_names_by_id[disease_id] = disease_names[i]
+
+    disease_ids_string = ','.join(disease_ids)
+    slim_fields.insert(0, disease_ids_string)
+
     slim_info = ';'.join(slim_fields)
     return slim_info
 
@@ -56,6 +85,10 @@ with open('clinvar_20241215.vcf') as file:
         output_rows.append('\t'.join(row))
 
 content = '\n'.join(output_rows)
+
+disease_map = json.dumps(disease_names_by_id)
+content = disease_map + '\n' + content
+
 
 output_path = 'clinvar_priority_20241215.vcf'
 with open(output_path, "w") as f:
