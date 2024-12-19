@@ -10,8 +10,7 @@ robust_review_statuses = [
     'practice_guideline'
 ]
 
-# Disease names by MONDO IDs
-disease_names_by_id = {}
+disease_ids_and_names = []
 variant_types = []
 molecular_consequences = []
 
@@ -32,6 +31,7 @@ def get_is_relevant(fields):
 def trim_info_fields(fields):
     slim_fields = []
     names_to_keep = ['CLNREVSTAT', 'CLNSIG', 'CLNVC', 'MC', 'ORIGIN', 'RS']
+    disease_indexes = []
     disease_names = []
     disease_ids = []
     for field in fields:
@@ -41,12 +41,16 @@ def trim_info_fields(fields):
             entries = value.split('|')
             for entry in entries:
                 full_values = entry.split(',')
+                has_mondo = False
                 for fv in full_values:
                     split_fv = fv.split(':')
                     db_name = split_fv[0]
                     db_value = split_fv[-1]
                     if db_name == 'MONDO':
                         disease_ids.append(db_value)
+                        has_mondo = True
+                if not has_mondo:
+                    disease_ids.append('-1')
 
         elif name == 'CLNDN': # "Clinical disease name"
             disease_names = value.split('|')
@@ -75,11 +79,17 @@ def trim_info_fields(fields):
             slim_fields.append(str(value))
 
     for (i, disease_id) in enumerate(disease_ids):
-        if disease_id not in disease_names_by_id:
-            disease_names_by_id[disease_id] = disease_names[i]
+        if disease_id == '-1':
+            continue
+        disease_name = disease_names[i]
+        disease_id_and_name = disease_id + '|' + disease_name
+        if disease_id_and_name not in disease_ids_and_names:
+            disease_ids_and_names.append(disease_id_and_name)
+        disease_index = disease_ids_and_names.index(disease_id_and_name)
+        disease_indexes.append(str(disease_index))
 
-    disease_ids_string = ','.join(disease_ids)
-    slim_fields.insert(0, disease_ids_string)
+    disease_indexes_string = ','.join(disease_indexes)
+    slim_fields.insert(0, disease_indexes_string)
 
     slim_info = '\t'.join(slim_fields)
     return slim_info
@@ -105,10 +115,10 @@ with open('clinvar_20241215.vcf') as file:
 
 content = '\n'.join(output_rows)
 
-disease_map = json.dumps(disease_names_by_id)
+disease_map = json.dumps(disease_ids_and_names)
 column_names = ['#CHROM', 'POS', 'ID', 'REF', 'ALT', 'DISEASE_IDS', 'CLNREVSTAT', 'CLNSIG', 'CLNVC', 'MC', 'ORIGIN', 'RS']
 headers = '\n'.join([
-    '# disease_names_by_mondo_id = ' + disease_map,
+    '# disease_mondo_ids_and_names = ' + disease_map,
     '# variant_types = ' + str(variant_types),
     '\t'.join(column_names)
 ])
