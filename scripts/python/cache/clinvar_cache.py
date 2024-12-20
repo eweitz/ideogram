@@ -62,7 +62,7 @@ def trim_info_fields(fields):
             slim_fields.append(str(variant_type))
 
         elif name == 'MC':
-            entries = value.split('|')
+            entries = value.split(',')
             slim_mc = []
             for entry in entries:
                 if entry not in molecular_consequences:
@@ -120,6 +120,7 @@ column_names = ['#CHROM', 'POS', 'ID', 'REF', 'ALT', 'DISEASE_IDS', 'CLNREVSTAT'
 headers = '\n'.join([
     '# disease_mondo_ids_and_names = ' + disease_map,
     '# variant_types = ' + str(variant_types),
+    '# molecular_consequences = ' + str(molecular_consequences),
     '\t'.join(column_names)
 ])
 content = headers + '\n' + content
