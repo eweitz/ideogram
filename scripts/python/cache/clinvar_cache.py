@@ -1,7 +1,12 @@
+"""Cache data on variants related to human health, from NCBI ClinVar
+
+Example:
+python clinvar_cache.py
+"""
+
 import csv
 import json
 import gzip
-
 
 clinical_concerns = ['Likely_pathogenic', 'Pathogenic/Likely_pathogenic', 'Pathogenic']
 robust_review_statuses = [
@@ -96,6 +101,8 @@ def trim_info_fields(fields):
 
 output_rows = []
 
+# https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar_20241215.vcf.gz
+# Source: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/
 with open('clinvar_20241215.vcf') as file:
     reader = csv.reader(file, delimiter="\t")
     for row in reader:
