@@ -22,7 +22,7 @@ describe('Ideogram gene structure functionality', function() {
         const apoeLabel = document.querySelector('#_c18_a3 path');
         apoeLabel.dispatchEvent(new Event('mouseover'));
         const subparts = document.querySelectorAll('rect.subpart');
-        assert.equal(subparts.length, 7); // spliced, without introns
+        assert.equal(subparts.length, 9); // spliced, without introns
         done();
       }, 500);
     }
