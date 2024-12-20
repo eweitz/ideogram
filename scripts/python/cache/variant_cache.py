@@ -1,14 +1,18 @@
 """Cache data on variants related to human health, from NCBI ClinVar
 
 Example:
-python clinvar_cache.py
+python variant_cache.py
 """
 
 import csv
 import json
 import gzip
 
-clinical_concerns = ['Likely_pathogenic', 'Pathogenic/Likely_pathogenic', 'Pathogenic']
+clinical_concerns = [
+    'Likely_pathogenic',
+    'Pathogenic/Likely_pathogenic',
+    'Pathogenic'
+]
 robust_review_statuses = [
     'criteria_provided,_multiple_submitters,_no_conflicts',
     'reviewed_by_expert_panel',
@@ -83,6 +87,7 @@ def trim_info_fields(fields):
                 value = robust_review_statuses.index(value)
             slim_fields.append(str(value))
 
+    # Index disease names and IDs, and represent them compactly
     for (i, disease_id) in enumerate(disease_ids):
         if disease_id == '-1':
             continue
@@ -92,7 +97,6 @@ def trim_info_fields(fields):
             disease_ids_and_names.append(disease_id_and_name)
         disease_index = disease_ids_and_names.index(disease_id_and_name)
         disease_indexes.append(str(disease_index))
-
     disease_indexes_string = ','.join(disease_indexes)
     slim_fields.insert(0, disease_indexes_string)
 
@@ -123,17 +127,30 @@ with open('clinvar_20241215.vcf') as file:
 content = '\n'.join(output_rows)
 
 disease_map = json.dumps(disease_ids_and_names)
-column_names = ['#CHROM', 'POS', 'ID', 'REF', 'ALT', 'DISEASE_IDS', 'CLNREVSTAT', 'CLNSIG', 'CLNVC', 'MC', 'ORIGIN', 'RS']
+column_names = [
+    '#CHROM', 'POS', 'ID', 'REF', 'ALT',
+    'DISEASE_IDS', 'CLNREVSTAT', 'CLNSIG', 'CLNVC', 'MC', 'ORIGIN', 'RS'
+]
 headers = '\n'.join([
+    '# Cache data on variants related to human health, from NCBI ClinVar',
+    '# Used by Gene Leads, a feature of Ideogram.js.  This is a compact representation of data from:',
+    '# https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar_20241215.vcf.gz',
+    '# '
+    '# It filters that data to include only the columns below, and only rows',
+    '# where the variant has a clinical significance of at least "Likely_pathogenic"',
+    '# and a review status of at least "criteria_provided,_multiple_submitters,_no_conflicts".',
+    '# ',
+    '# Keys:'
     '# disease_mondo_ids_and_names = ' + disease_map,
     '# variant_types = ' + str(variant_types),
+    '# clinical_significances = ' + str(clinical_concerns),
+    '# clinical_review_statuses = ' + str(robust_review_statuses),
     '# molecular_consequences = ' + str(molecular_consequences),
     '\t'.join(column_names)
 ])
 content = headers + '\n' + content
 
-
-output_path = 'clinvar_priority_20241215.tsv'
+output_path = 'variants.tsv'
 with open(output_path, "w") as f:
     f.write(content)
 with gzip.open(f"{output_path}.gz", "wt") as f:
