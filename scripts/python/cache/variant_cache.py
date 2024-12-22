@@ -131,7 +131,7 @@ def write_gene_byte_index(filepath):
                 variants_by_chromosome[chromosome] = []
             variants_by_chromosome[chromosome].append([bp_position, i])
 
-    print('variants_by_chromosome', variants_by_chromosome)
+    # print('variants_by_chromosome["1"][0]', variants_by_chromosome["1"][0])
 
     with gzip.open(f"{genes_path}.gz", "rt") as file:
         reader = csv.reader(file, delimiter="\t")
@@ -144,7 +144,7 @@ def write_gene_byte_index(filepath):
             start = int(row[1])
             length = int(row[2])
             gene = row[4]
-            print('gene', gene)
+            # print('gene', gene)
 
             if chromosome == 'Y':
                 # ClinVar does not represent variants in chromosome Y by default;
@@ -164,10 +164,10 @@ def write_gene_byte_index(filepath):
             for variant in variants_in_chromosome:
                 variant_bp_position = variant[0]
                 if variant_bp_position >= start and variant_bp_position <= start + length:
-                    variant_index = variant[1]
+                    variant_line_index = variant[1]
                     if gene not in variant_indexes_by_gene:
                         variant_indexes_by_gene[gene] = []
-                    variant_indexes_by_gene[gene].append(variant_index)
+                    variant_indexes_by_gene[gene].append(variant_line_index)
 
         variant_gene_index_rows = []
         for gene in variant_indexes_by_gene:
@@ -175,8 +175,12 @@ def write_gene_byte_index(filepath):
             row.insert(0, gene)
             variant_gene_index_rows.append(row)
 
+    with open('variant_gene_index_rows.tsv', 'w') as f:
+        f.write('\n'.join(['\t'.join([str(item) for item in row]) for row in variant_gene_index_rows]))
+
     header = "# line\tbyte_offset"
-    index = [header] # the byte offset for each line in variants.tsv
+    gene_variant_byte_index = [header] # the byte offset for each line in variants.tsv
+    variant_byte_index = [header]
     genes = []
 
     with open(filepath) as file:
@@ -187,25 +191,35 @@ def write_gene_byte_index(filepath):
         gene = line.split('\t')[0]
         genes.append(gene)
 
-    print('genes[0:3]', genes[0:3])
-    print('genes[-3:]', genes[-3:])
+    # print('genes[0:3]', genes[0:3])
+    # print('genes[-3:]', genes[-3:])
 
     with open(filepath) as file:
         char = file.read(1)
         byte_offset = 0
         while char != "": # end of file
             if byte_offset % 100_000 == 0:
-                print(f"Lines byte-indexed, so far: {len(index)}")
+                print(f"Lines byte-indexed, so far: {len(variant_byte_index)}")
             char = file.read(1)
             if char == "\n":
-                index.append(byte_offset)
+                variant_byte_index.append(byte_offset)
             byte_offset += 1
             file.seek(byte_offset)
             continue
 
+    # print('variant_indexes_by_gene["TP53"]', variant_indexes_by_gene["TP53"])
+    for gene in variant_indexes_by_gene:
+        variant_line_indexes = variant_indexes_by_gene[gene]
+        byte_index_first_variant = variant_byte_index[variant_line_indexes[1]]
+        byte_indexes = str(byte_index_first_variant) # Byte offset start
+        if len(variant_line_indexes) > 2:
+            byte_index_last_variant = variant_byte_index[variant_line_indexes[-1]]
+            byte_indexes += '-' + str(byte_index_last_variant) # Byte range
+        gene_variant_byte_index.append(byte_indexes)
+
     with open(f"{filepath}.li", "w") as file:
-        file.write("\n".join([str(o) for o in index]))
-    print(f"Lines byte-indexed, total: {len(index)}")
+        file.write("\n".join([str(o) for o in gene_variant_byte_index]))
+    print(f"Lines byte-indexed, total: {len(gene_variant_byte_index)}")
 
 def cache_variants(output_path):
 
