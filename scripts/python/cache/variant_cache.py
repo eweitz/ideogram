@@ -161,13 +161,21 @@ def write_gene_byte_index(filepath):
             # If so, add the index of the variant to a list
             # of variant indexes for the gene
             variants_in_chromosome = variants_by_chromosome[chromosome]
-            for variant in variants_in_chromosome:
+            for (i, variant) in enumerate(variants_in_chromosome):
                 variant_bp_position = variant[0]
                 if variant_bp_position >= start and variant_bp_position <= start + length:
                     variant_line_index = variant[1]
                     if gene not in variant_indexes_by_gene:
-                        variant_indexes_by_gene[gene] = []
-                    variant_indexes_by_gene[gene].append(variant_line_index)
+                        variant_indexes_by_gene[gene] = [
+                            variant_line_index, # Used later for byte-range start
+                            variant_line_index + 1  # Used later for byte-range end
+                        ]
+                    else:
+                        # Set the 2nd element in the 2-element list to the line
+                        # _after_ the current variant.  This will let us define the
+                        # end of the byte-range as the last byte of the last variant
+                        # in the gene.
+                        variant_indexes_by_gene[gene][1] = variant_line_index + 1
 
         variant_gene_index_rows = []
         for gene in variant_indexes_by_gene:
@@ -178,8 +186,8 @@ def write_gene_byte_index(filepath):
     with open('variant_gene_index_rows.tsv', 'w') as f:
         f.write('\n'.join(['\t'.join([str(item) for item in row]) for row in variant_gene_index_rows]))
 
-    header = "# line\tbyte_offset"
-    gene_variant_byte_index = [header] # the byte offset for each line in variants.tsv
+    header = "# gene\tbyte_offset\tbyte_length"
+    gene_variant_byte_index = [header]
     variant_byte_index = [header]
     genes = []
 
@@ -194,6 +202,7 @@ def write_gene_byte_index(filepath):
     # print('genes[0:3]', genes[0:3])
     # print('genes[-3:]', genes[-3:])
 
+    # Get the byte offset of each line (i.e., each variant) in variants.tsv
     with open(filepath) as file:
         char = file.read(1)
         byte_offset = 0
@@ -206,19 +215,25 @@ def write_gene_byte_index(filepath):
             byte_offset += 1
             file.seek(byte_offset)
             continue
+        variant_byte_index.append(byte_offset)
 
-    # print('variant_indexes_by_gene["TP53"]', variant_indexes_by_gene["TP53"])
+    print('variant_indexes_by_gene["TP53"]', variant_indexes_by_gene["TP53"])
+
+    # For each gene, get the byte offset and byte length (i.e.
+    # compact byte-range) of its variants in variants.tsv
     for gene in variant_indexes_by_gene:
         variant_line_indexes = variant_indexes_by_gene[gene]
         byte_index_first_variant = variant_byte_index[variant_line_indexes[1]]
-        byte_indexes = str(byte_index_first_variant) # Byte offset start
-        if len(variant_line_indexes) > 2:
-            byte_index_last_variant = variant_byte_index[variant_line_indexes[-1]]
-            byte_indexes += '-' + str(byte_index_last_variant) # Byte range
-        gene_variant_byte_index.append(byte_indexes)
+        byte_index_last_variant = variant_byte_index[variant_line_indexes[2]]
+        bytes_length = byte_index_last_variant - byte_index_first_variant
+        byte_indexes = str(byte_index_first_variant) + '\t' + str(bytes_length)
+        gene_variant_byte_index.append(gene + '\t' + byte_indexes)
 
+    output = "\n".join([str(o) for o in gene_variant_byte_index])
     with open(f"{filepath}.li", "w") as file:
-        file.write("\n".join([str(o) for o in gene_variant_byte_index]))
+        file.write(output)
+    with gzip.open(f"{output_path}.li.gz", "wt") as f:
+        f.write(output)
     print(f"Lines byte-indexed, total: {len(gene_variant_byte_index)}")
 
 def cache_variants(output_path):
@@ -280,5 +295,5 @@ def cache_variants(output_path):
 
 output_path = 'variants.tsv'
 
-# cache_variants(output_path)
+cache_variants(output_path)
 write_gene_byte_index(output_path)
