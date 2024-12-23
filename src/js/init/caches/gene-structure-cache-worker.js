@@ -59,12 +59,13 @@ export function parseGeneStructureCache(rawTsv, perfTimes) {
     const splitLine = line.trim().split(/\t/);
 
     const [
-      name, biotypeCompressed, strand
-    ] = splitLine.slice(0, 3);
+      name, rawStartOffset, biotypeCompressed, strand
+    ] = splitLine.slice(0, 4);
 
+    const startOffset = parseInt(rawStartOffset);
     const gene = name.split('-').slice(0, -1).join('-');
 
-    const rawSubparts = splitLine.slice(3);
+    const rawSubparts = splitLine.slice(4);
     const subparts = deserializeSubparts(rawSubparts, subpartKeys);
 
     const biotype = biotypeKeys[biotypeCompressed];
@@ -72,6 +73,7 @@ export function parseGeneStructureCache(rawTsv, perfTimes) {
     // E.g. ACE2-201, protein_coding, -, <array of exon or UTR arrays>
     const feature = {
       name,
+      startOffset,
       biotype,
       strand,
       subparts
