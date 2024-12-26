@@ -230,6 +230,21 @@ def write_gene_byte_index(filepath):
         gene_variant_byte_index.append(gene + '\t' + byte_indexes)
 
     output = "\n".join([str(o) for o in gene_variant_byte_index])
+
+    with open('variant-headers.tsv') as file:
+        keys = file.read()
+
+    comments = "\n".join([
+        '# Byte index of gene data in variants.tsv',
+        '#' ,
+        '# This line index file reports the byte-offset and byte-range of ',
+        '# variants summarized in variants.tsv, for each human gene.',
+        '# The keys below map the compressed values of each data row in',
+        '# variants.tsv to more human-readable values.',
+        '#',
+    ])
+    output = comments + '\n' + keys + '\n' + output
+
     with open(f"{filepath}.li", "w") as file:
         file.write(output)
     with gzip.open(f"{output_path}.li.gz", "wt") as f:
@@ -266,6 +281,20 @@ def cache_variants(output_path):
         '#CHROM', 'POS', 'ID', 'REF', 'ALT',
         'DISEASE_IDS', 'CLNREVSTAT', 'CLNSIG', 'CLNVC', 'MC', 'ORIGIN', 'RS'
     ]
+
+    keys = '\n'.join([
+        '# Keys:',
+        '# disease_mondo_ids_and_names = ' + disease_map,
+        '# variant_types = ' + str(variant_types),
+        '# clinical_significances = ' + str(clinical_concerns),
+        '# clinical_review_statuses = ' + str(robust_review_statuses),
+        '# molecular_consequences = ' + str(molecular_consequences),
+        '# ',
+    ])
+
+    with open('variant-headers.tsv', "w") as f:
+        f.write(keys)
+
     headers = '\n'.join([
         '# Cache data on variants related to human health, from NCBI ClinVar',
         '# Used by Gene Leads, a feature of Ideogram.js.  This is a compact representation of data from:',
@@ -275,13 +304,9 @@ def cache_variants(output_path):
         '# where the variant has a clinical significance of at least "Likely_pathogenic"',
         '# and a review status of at least "criteria_provided,_multiple_submitters,_no_conflicts".',
         '# ',
-        '# Keys:',
-        '# disease_mondo_ids_and_names = ' + disease_map,
-        '# variant_types = ' + str(variant_types),
-        '# clinical_significances = ' + str(clinical_concerns),
-        '# clinical_review_statuses = ' + str(robust_review_statuses),
-        '# molecular_consequences = ' + str(molecular_consequences),
-        '# ',
+        '# Values below are custom-compressed, with keys and indexes in:',
+        '# variants.tsv.li.gz',
+        '#',
         '\t'.join(column_names)
     ])
     content = headers + '\n' + content

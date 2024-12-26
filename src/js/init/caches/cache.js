@@ -24,7 +24,7 @@ import {parseGeneStructureCache} from './gene-structure-cache-worker';
 import {parseProteinCache} from './protein-cache-worker';
 import {parseSynonymCache} from './synonym-cache-worker';
 import {parseTissueCache} from './tissue-cache-worker';
-import {parseVariantCache} from './tissue-cache-worker';
+import {parseVariantCache} from './variant-cache-worker';
 
 /**
  * Populates in-memory content caches from on-disk service worker (SW) caches.
