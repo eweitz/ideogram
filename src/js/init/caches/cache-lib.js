@@ -26,6 +26,21 @@ async function fetchByteRangesByName(url) {
   return byteRangesByName;
 }
 
+async function fetchVariantByteRangesByName(text) {
+  const byteRangesByName = {};
+
+  const lines = text.split('\n');
+  for (let i = 0; i < lines.length - 1; i++) {
+    const [gene, rawOffset, rawLength] = lines[i].split('\t');
+    if (gene[0] === '#') continue;
+    const offset = parseInt(rawOffset);
+    const offsetEnd = offset + parseInt(rawLength);
+    byteRangesByName[gene] = [offset, offsetEnd];
+  }
+
+  return byteRangesByName;
+}
+
 /** Reports if current organism has a gene structure cache */
 export function supportsCache(orgName, cacheName) {
   const metadata = parseOrgMetadata(orgName);
@@ -33,7 +48,7 @@ export function supportsCache(orgName, cacheName) {
   return metadata[cacheProp] && metadata[cacheProp] === true;
 }
 
-/** Get URL for gene structure cache file */
+/** Get URL for given type of cache file (e.g. gene, tissue, variant) */
 export function getCacheUrl(orgName, cacheDir, cacheType, fileType='tsv') {
   const organism = slug(orgName);
   if (!cacheDir) {
@@ -107,6 +122,7 @@ export async function cacheFetch(url) {
 }
 
 export async function cacheRangeFetch(url, byteRange) {
+  console.log('url', url)
   url = url.replace('.gz', '');
 
   // +/- 1 to trim newlines
@@ -123,6 +139,7 @@ export async function cacheRangeFetch(url, byteRange) {
   const cache = await getServiceWorkerCache();
 
   const fullResponse = await cache.match(request);
+  console.log('request', request)
   const partialResponse = await createPartialResponse(request, fullResponse);
 
   const text = await partialResponse.text();
@@ -156,6 +173,9 @@ export async function fetchAndParse(
   let parsedCache;
   if (cacheUrl.includes('tissue')) {
     const byteRangesByName = await fetchByteRangesByName(cacheUrl);
+    parsedCache = parseFn(data, perfTimes, byteRangesByName);
+  } else if (cacheUrl.includes('variant')) {
+    const byteRangesByName = await fetchVariantByteRangesByName(data);
     parsedCache = parseFn(data, perfTimes, byteRangesByName);
   } else {
     parsedCache = parseFn(data, perfTimes, orgName);

@@ -285,10 +285,10 @@ def cache_variants(output_path):
     keys = '\n'.join([
         '# Keys:',
         '# disease_mondo_ids_and_names = ' + disease_map,
-        '# variant_types = ' + str(variant_types),
-        '# clinical_significances = ' + str(clinical_concerns),
-        '# clinical_review_statuses = ' + str(robust_review_statuses),
-        '# molecular_consequences = ' + str(molecular_consequences),
+        '# variant_types = ' + json.dumps(variant_types),
+        '# clinical_significances = ' + json.dumps(clinical_concerns),
+        '# clinical_review_statuses = ' + json.dumps(robust_review_statuses),
+        '# molecular_consequences = ' + json.dumps(molecular_consequences),
         '# ',
     ])
 

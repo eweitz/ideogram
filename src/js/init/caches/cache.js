@@ -24,7 +24,7 @@ import {parseGeneStructureCache} from './gene-structure-cache-worker';
 import {parseProteinCache} from './protein-cache-worker';
 import {parseSynonymCache} from './synonym-cache-worker';
 import {parseTissueCache} from './tissue-cache-worker';
-import {parseVariantCache} from './variant-cache-worker';
+import {parseVariantCacheIndex} from './variant-cache-worker';
 
 /**
  * Populates in-memory content caches from on-disk service worker (SW) caches.
@@ -133,10 +133,10 @@ const allCacheProps = {
     parseFn: parseTissueCache // Remove when workers work
   },
   variant: {
-    metadata: 'Variant', dir: 'variant',
-    fn: setVariantCache,
+    metadata: 'Variant', dir: 'variants',
+    fn: setVariantCache, extension: 'tsv.li',
     // worker: variantCacheWorker // Uncomment when workers work
-    parseFn: parseVariantCache // Remove when workers work
+    parseFn: parseVariantCacheIndex // Remove when workers work
   }
 };
 
