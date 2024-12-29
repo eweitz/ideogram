@@ -139,7 +139,6 @@ export async function cacheRangeFetch(url, byteRange) {
   const cache = await getServiceWorkerCache();
 
   const fullResponse = await cache.match(request);
-  console.log('request', request)
   const partialResponse = await createPartialResponse(request, fullResponse);
 
   const text = await partialResponse.text();
@@ -175,6 +174,8 @@ export async function fetchAndParse(
     const byteRangesByName = await fetchByteRangesByName(cacheUrl);
     parsedCache = parseFn(data, perfTimes, byteRangesByName);
   } else if (cacheUrl.includes('variant')) {
+    const variantsTsvPath = cacheUrl.replace('.li', '');
+    await cacheFetch(variantsTsvPath);
     const byteRangesByName = await fetchVariantByteRangesByName(data);
     parsedCache = parseFn(data, perfTimes, byteRangesByName);
   } else {

@@ -5,9 +5,9 @@ import {
 
 
 function parseDiseaseElement(diseaseArray, i) {
-  const [rawId, rawName] = diseaseArray[i];
-  const id = 'MONDO:' + rawId
-  const name = rawName.replace('_', ' ');
+  const [rawId, rawName] = diseaseArray[i].split('|');
+  const id = 'MONDO:' + rawId;
+  const name = rawName.replaceAll('_', ' ');
   return [id, name];
 }
 
@@ -28,14 +28,14 @@ function parseDiseaseKey(line) {
 
 /** Transform custom-compressed molecular consequence array */
 function parseMolecularConsequenceKey(line) {
-  const molecularConsequenceById = {}
+  const molecularConsequenceById = {};
 
   // E.g. ['SO:0001574|splice_acceptor_variant', 'SO:0001234|foo', ...]
   const molecularConsequenceArray = getArray(line);
 
   for (let i = 0; i < molecularConsequenceArray.length; i++) {
-    const [id, rawName] = molecularConsequenceArray[i];
-    const name = rawName.replace('_', ' ');
+    const [id, rawName] = molecularConsequenceArray[i].split('|');
+    const name = rawName.replaceAll('_', ' ');
     molecularConsequenceById[id] = name;
   }
 
@@ -46,7 +46,10 @@ function parseMolecularConsequenceKey(line) {
 function parseDiseases(rawDiseases, diseaseArray) {
   const diseases = [];
 
-  console.log('rawDiseases', rawDiseases)
+  if (rawDiseases === '') {
+    return [{id: '', disease: 'Not provided'}];
+  }
+
   // The raw "diseases" value in variants.tsv is a list of integer index values,
   // which map to the id-name values in disease_mondo_ids_and_names from the
   // variants.tsv.li file.
@@ -70,7 +73,7 @@ function parseMolecularConsequences(rawMolecularConsequences, mcArray) {
 
   for (let i = 0; i < mcIndexValues.length; i++) {
     const mcIndexValue = parseInt(mcIndexValues[i]);
-    const [id, name] = mcArray[mcIndexValue];
+    const [id, name] = mcArray[mcIndexValue].split('|');
     const mc = {id, name};
     molecularConsequences.push(mc);
   }
@@ -79,7 +82,7 @@ function parseMolecularConsequences(rawMolecularConsequences, mcArray) {
 }
 
 function parseKey(index, key) {
-  return key[index].replace('_', ' ');
+  return key[index].replaceAll('_', ' ');
 }
 
 /**
@@ -92,11 +95,12 @@ function parseVariant(line, variantCache) {
 
   const [
     chromosome,
-    position,
+    rawPosition,
     rawClinvarId,
     refAllele, // Allele in the reference genome
     altAllele, // Allele that makes this a "variant"
     rawDiseases,
+    rawAfExac,
     rawReviewStatus,
     rawClinicalSignificance,
     rawVariantType,
@@ -105,10 +109,10 @@ function parseVariant(line, variantCache) {
     rawRsNumber
   ] = line.split('\t')
 
+  const position = parseInt(rawPosition);
+  const afExac = rawAfExac === '' ? null : parseFloat(rawAfExac);
+
   const keys = variantCache.keys;
-  console.log('variantCache', variantCache)
-  console.log('line', line)
-  console.log('rawDiseases', rawDiseases)
 
   const clinvarVariantId = 'VCV' + rawClinvarId;
   const diseases = parseDiseases(rawDiseases, keys.diseaseArray);
@@ -118,12 +122,13 @@ function parseVariant(line, variantCache) {
   );
   const variantType = parseKey(rawVariantType, keys.variantTypes);
   const molecularConsequences = parseMolecularConsequences(
-    rawMolecularConsequences, keys.molecularConsequences
+    rawMolecularConsequences, keys.molecularConsequenceArray
   );
   const dbSnpId = 'rs' + rawRsNumber;
 
   const variant = {
     chromosome, position,
+    afExac,
     clinvarVariantId,
     refAllele,
     altAllele,
@@ -149,8 +154,6 @@ async function getVariants(gene, ideo) {
 
   if (!byteRange) return null;
 
-  console.log('cache', cache)
-
   const config = ideo.config;
   let cacheDir = null;
   if (config.cacheDir) cacheDir = config.cacheDir;
@@ -159,14 +162,11 @@ async function getVariants(gene, ideo) {
 
   const orgName = 'homo-sapiens';
   const cacheUrl = getCacheUrl(orgName, cacheDir, cacheType, extension);
-  console.log('cacheUrl', cacheUrl)
 
   // Get variant data only for the requested gene
   const data = await cacheRangeFetch(cacheUrl, byteRange);
   const lines = data.split('\n');
 
-  console.log('byteRange', byteRange)
-  console.log('lines.length', lines.length)
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const variant = parseVariant(line, cache);
@@ -179,7 +179,6 @@ async function getVariants(gene, ideo) {
 function getArray(line) {
   // console.log('line', line)
   const value = line.split('= ')[1];
-  console.log('value', value)
   return JSON.parse(value);
 }
 

@@ -44,10 +44,19 @@ def get_is_relevant(fields):
 
 def trim_info_fields(fields):
     slim_fields = []
-    names_to_keep = ['CLNREVSTAT', 'CLNSIG', 'CLNVC', 'MC', 'ORIGIN', 'RS']
+    names_to_keep = [
+        'AF_EXAC', # Allele frequency, per ExAC Consortium
+        'CLNREVSTAT', # Clinical review status
+        'CLNSIG', # Clinical significance
+        'CLNVC', # Variant type ("clinical variant class?")
+        'MC', # Molecular consequence
+        'ORIGIN', # Variant origin, e.g. germline, somatic
+        'RS' # dbSNP RS ID
+    ]
     disease_indexes = []
     disease_names = []
     disease_ids = []
+    has_af_exac = False
     for field in fields:
         [name, value] = field.split('=')
 
@@ -86,11 +95,16 @@ def trim_info_fields(fields):
             slim_fields.append(','.join(slim_mc))
 
         elif name in names_to_keep:
+            if name == 'AF_EXAC':
+                has_af_exac = True
             if name == 'CLNSIG':
                 value = clinical_concerns.index(value)
             elif name == 'CLNREVSTAT':
                 value = robust_review_statuses.index(value)
             slim_fields.append(str(value))
+
+    if not has_af_exac:
+        slim_fields.insert(0, '')
 
     # Index disease names and IDs, and represent them compactly
     for (i, disease_id) in enumerate(disease_ids):
@@ -279,7 +293,7 @@ def cache_variants(output_path):
     disease_map = json.dumps(disease_ids_and_names)
     column_names = [
         '#CHROM', 'POS', 'ID', 'REF', 'ALT',
-        'DISEASE_IDS', 'CLNREVSTAT', 'CLNSIG', 'CLNVC', 'MC', 'ORIGIN', 'RS'
+        'DISEASE_IDS', 'AF_EXAC', 'CLNREVSTAT', 'CLNSIG', 'CLNVC', 'MC', 'ORIGIN', 'RS'
     ]
 
     keys = '\n'.join([
