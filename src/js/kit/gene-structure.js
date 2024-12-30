@@ -113,7 +113,8 @@ async function updateGeneStructure(ideo, offset=0) {
   const isCanonical = (selectedIndex === 0);
   const menu = document.querySelector('#_ideoGeneStructureMenu');
   menu.options[selectedIndex].selected = true;
-  const svg = await getSvg(structure, ideo, ideo.spliceExons)[0];
+  const svgResults = await getSvg(structure, ideo, ideo.spliceExons);
+  const svg = svgResults[0];
   const container = document.querySelector('._ideoGeneStructureSvgContainer');
   container.innerHTML = svg;
   updateHeader(ideo.spliceExons, isCanonical);
@@ -218,8 +219,8 @@ function addSpliceToggleListeners(ideo) {
 
   if (!container) return;
 
-  toggler.addEventListener('change', (event) => {
-    toggleSplice(ideo);
+  toggler.addEventListener('change', async (event) => {
+    await toggleSplice(ideo);
     addHoverListeners(ideo);
     event.stopPropagation();
   });
@@ -517,8 +518,8 @@ function addHoverListeners(ideo) {
 
     // Listen for change of selected option in transcript menu
     const tooltip = document.querySelector('._ideogramTooltip');
-    tooltip.addEventListener('change', () => {
-      updateGeneStructure(ideo);
+    tooltip.addEventListener('change', async () => {
+      await updateGeneStructure(ideo);
 
       // Without this, selecting a new transcript will close the tooltip if
       // the selected <option> screen position is outside the tooltip (as
@@ -678,7 +679,9 @@ function spliceOut(subparts) {
       splicedStart = prevEnd;
     }
     const splicedEnd = splicedStart + length;
-    const splicedSubpart = [subpartType, splicedStart, length + 1];
+    const splicedSubpart = [
+      subpartType, splicedStart, length + 1, start
+    ];
     splicedSubparts.push(splicedSubpart);
     prevEnd = splicedEnd;
     prevStart = splicedStart;
@@ -733,7 +736,7 @@ function drawIntrons(prelimSubparts, matureSubparts, ideo) {
     const matureIndex = i - numInserted;
     const matureSubpart = matureSubparts[matureIndex];
     if (matureSubpart[0] !== prelimSubpart[0]) {
-      const summary = prelimSubpart[3].summary;
+      const summary = prelimSubpart.slice(-1)[0].summary;
       const otherAttrs = `y="${y}" height="20" fill="#FFFFFF00" ${summary}`;
       const intronRect =
         `<rect class="subpart intron" ${otherAttrs} />`;
@@ -764,18 +767,21 @@ function updateHeader(spliceExons, isCanonical) {
   }
 }
 
-function toggleSplice(ideo) {
+async function toggleSplice(ideo) {
+  const subpartEls = document.querySelectorAll('.subpart');
+
   ideo.spliceExons = !ideo.spliceExons;
   const spliceExons = ideo.spliceExons;
   const [structure, selectedIndex] = getSelectedStructure(ideo);
   const isCanonical = (selectedIndex === 0);
-  const [, prelimSubparts, matureSubparts] =
-    getSvg(structure, ideo, spliceExons);
+  const svgResult = await getSvg(structure, ideo, spliceExons);
+  const [, prelimSubparts, matureSubparts] = svgResult;
   const proteinSvg = document.querySelector('#_ideoProtein');
 
   if (proteinSvg && !spliceExons) proteinSvg.style.display = 'none';
 
   const addedIntrons = document.querySelectorAll('.intron').length > 0;
+
   if (!spliceExons && !addedIntrons) {
     drawIntrons(prelimSubparts, matureSubparts, ideo);
   } else {
@@ -789,8 +795,8 @@ function toggleSplice(ideo) {
     .data(subparts)
     .transition()
     .duration(750)
-    .attr('x', (d, i) => subparts[i][3].x)
-    .attr('width', (d, i) => subparts[i][3].width)
+    .attr('x', (d, i) => subparts[i].slice(-1)[0].x)
+    .attr('width', (d, i) => subparts[i].slice(-1)[0].width)
     .on('end', (d, i) => {
       if (i !== subparts.length - 1) return;
       if (proteinSvg && spliceExons) proteinSvg.style.display = '';
@@ -828,21 +834,27 @@ function getTranscriptLengthBp(subparts, spliceExons=false) {
   return transcriptLengthBp;
 }
 
-/** Merge feature type, pixel-x position, and pixel width to each feature */
-export function addPositions(subparts, projectedFeatures=null, biotype) {
+export function getBpPerPx(subparts, projectedFeatures=null) {
   const transcriptLengthPx = 250;
-
   const totalLengthBp = getTranscriptLengthBp(subparts);
-
-  const isProtein = projectedFeatures && biotype !== 'variant';
-  const factor = isProtein && biotype !== '' ? 3 : 1; // 3 nt per aa
+  const isProtein = projectedFeatures;
+  const factor = isProtein ? 3 : 1; // 3 nt per aa
   const bpPerPx = (totalLengthBp / transcriptLengthPx) / factor;
+
+  return bpPerPx;
+}
+
+/** Merge feature type, pixel-x position, and pixel width to each feature */
+export function addPositions(subparts, projectedFeatures=null) {
+  const bpPerPx = getBpPerPx(subparts, projectedFeatures)
 
   const features = projectedFeatures ?? subparts;
 
+  const expectedLength = projectedFeatures === null ? 4 : 3;
+
   for (let i = 0; i < features.length; i++) {
     const feature = features[i];
-    if (feature.length !== 3) continue;
+    if (feature.length !== expectedLength) continue;
     // Define subpart position, tooltip footer
     const lengthBp = feature[2];
     const x = feature[1] / bpPerPx;
@@ -852,6 +864,7 @@ export function addPositions(subparts, projectedFeatures=null, biotype) {
     features[i].push({type, x, width});
   }
 
+  console.log('features', features)
   return features;
 }
 
@@ -870,7 +883,7 @@ function getSubpartSummary(subpartType, total, index, strand, lengthBp) {
 function getSubpartBorderLine(subpart) {
   const subpartType = subpart[0];
   // Define subpart border
-  const x = subpart[3].x;
+  const x = subpart.slice(-1)[0].x;
   const height = heights[subpartType];
   const lineHeight = y + height;
   const lineStroke = `stroke="${lineColors[subpartType]}"`;
@@ -981,8 +994,8 @@ async function getSvg(geneStructure, ideo, spliceExons=false) {
 
     // Define subpart position, tooltip footer
     const lengthBp = subpart[2];
-    const x = subpart[3].x;
-    const width = subpart[3].width;
+    const x = subpart.slice(-1)[0].x;
+    const width = subpart.slice(-1)[0].width;
 
     const pos = `x="${x}" width="${width}" y="${y}" height="${height}"`;
     const cls = `class="subpart ${subpartClasses[subpartType]}" `;
@@ -994,9 +1007,9 @@ async function getSvg(geneStructure, ideo, spliceExons=false) {
     const summary =
       getSubpartSummary(subpartType, total, subpartIndex, strand, lengthBp);
     if (!spliceExons) {
-      prelimSubparts[i][3].summary = summary;
+      prelimSubparts[i].slice(-1)[0].summary = summary;
     } else if (subpartType !== 'intron') {
-      matureSubparts[i][3].summary = summary;
+      matureSubparts[i].slice(-1)[0].summary = summary;
     }
 
     const subpartSvg = (
@@ -1024,10 +1037,9 @@ async function getSvg(geneStructure, ideo, spliceExons=false) {
   const [proteinSvg, proteinLengthAa] =
     getProtein(structureName, subparts, isPositiveStrand, hasTopology, ideo);
 
-  console.log('before getVariantsSvg')
-  const variantSvg = await getVariantsSvg(geneStructure, ideo);
-
-  console.log('variantSvg', variantSvg)
+  const startOffset = geneStructure.startOffset;
+  const variantSvg =
+    await getVariantsSvg(structureName, subparts, startOffset, ideo);
 
   const transcriptLengthBp = getTranscriptLengthBp(subparts, spliceExons);
   const prettyLength = transcriptLengthBp.toLocaleString();
@@ -1152,10 +1164,8 @@ export async function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
     if ('spliceExons' in ideo === false) ideo.spliceExons = true;
     const spliceExons = ideo.spliceExons;
     const structure = ideo.geneStructureCache[gene][0];
-    console.log('before getSvg')
     const svgResults = await getSvg(structure, ideo, spliceExons)
     const geneStructureSvg = svgResults[0];
-    console.log('geneStructureSvg', geneStructureSvg)
     const cls = 'class="_ideoGeneStructureContainer"';
     const toggle = getSpliceToggle(ideo);
     const rnaClass = spliceExons ? '' : ' pre-mRNA';

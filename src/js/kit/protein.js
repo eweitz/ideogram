@@ -48,7 +48,7 @@ function getCdsCoordinates(subparts, isPositiveStrand) {
   const lastStartUtr = subparts.filter(s => s[0] === startUtr).slice(-1)[0];
   let startPx, startBp;
   if (lastStartUtr) {
-    startPx = lastStartUtr[3].x + lastStartUtr[3].width;
+    startPx = lastStartUtr.slice(-1)[0].x + lastStartUtr.slice(-1)[0].width;
     startBp = lastStartUtr[1] + lastStartUtr[2];
   } else {
     // For transcipts without an annotated start UTR, e.g. EGFR-205
@@ -61,12 +61,12 @@ function getCdsCoordinates(subparts, isPositiveStrand) {
   const firstEndUtr = subparts.filter(s => s[0] === endUtr).slice(-1)[0];
   let stopPx, stopBp;
   if (firstEndUtr) {
-    stopPx = firstEndUtr[3].x;
+    stopPx = firstEndUtr.slice(-1)[0].x;
     stopBp = firstEndUtr[1];
   } else {
     // For transcipts without an annotated last UTR, e.g. EGFR-205
     const lastSubpart = subparts.slice(-1)[0];
-    stopPx = lastSubpart[3].x + lastSubpart[3].width;
+    stopPx = lastSubpart.slice(-1)[0].x + lastSubpart.slice(-1)[0].width;
     stopBp = lastSubpart[1] + lastSubpart[2];
   }
 
@@ -104,7 +104,7 @@ function decompressTopologyFeature(feature) {
 /** Get SVG for an inidividual protein domain */
 function getFeatureSvg(feature, cds, isPositiveStrand, hasTopology) {
   let featureType = feature[0];
-  const featurePx = feature[3];
+  const featurePx = feature.slice(-1)[0];
 
   let x = cds.px.start + featurePx.x;
   let width = featurePx.width;
