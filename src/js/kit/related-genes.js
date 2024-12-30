@@ -48,6 +48,7 @@ import {
   fetchGpmls, summarizeInteractions, fetchPathwayInteractions
 } from './wikipathways';
 import {getTissueHtml, addTissueListeners} from './tissue';
+import { writeVariantsSvg } from './variant';
 // import {drawAnnotsByLayoutType} from '../annotations/draw';
 // import {organismMetadata} from '../init/organism-metadata';
 
@@ -1802,7 +1803,7 @@ function decorateParalogNeighborhood(annot, descObj, style) {
 /**
  * Enhance tooltip shown on hovering over gene annotation
  */
-function decorateAnnot(annot) {
+async function decorateAnnot(annot) {
   const ideo = this;
   if (
     annot.name === ideo.prevClickedAnnot?.name &&
@@ -1858,7 +1859,7 @@ function decorateAnnot(annot) {
 
   const isParalogNeighborhood = annot.name.includes('paralogNeighborhood');
 
-  const geneStructureHtml = getGeneStructureHtml(
+  const geneStructureHtml = await getGeneStructureHtml(
     annot, ideo, isParalogNeighborhood
   );
 
@@ -1884,6 +1885,7 @@ function decorateAnnot(annot) {
 
   annot.displayName = originalDisplay;
 
+  console.log('annot', annot)
   return annot;
 }
 

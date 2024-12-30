@@ -105,8 +105,8 @@ function getContentAndYOffset(annot, includeLength=false) {
 /**
  * Optional callback, invoked before showing annotation tooltip
  */
-function onWillShowAnnotTooltip(event, context) {
-  call(this.onWillShowAnnotTooltipCallback, event, context);
+async function onWillShowAnnotTooltip(event, context) {
+  await call(this.onWillShowAnnotTooltipCallback, event, context);
 }
 
 function onDidShowAnnotTooltip() {
@@ -135,7 +135,7 @@ function onClickAnnot(annot) {
  * @param annot {Object} Processed annotation object
  * @param context {Object} "This" of the caller -- an SVG path DOM object
  */
-function showAnnotTooltip(annot, context) {
+async function showAnnotTooltip(annot, context) {
   var matrix, content, yOffset, tooltip,
     cx = Number(context.getAttribute('cx')),
     cy = Number(context.getAttribute('cy')),
@@ -146,7 +146,7 @@ function showAnnotTooltip(annot, context) {
   clearTimeout(ideo.hideAnnotTooltipTimeout);
 
   if (ideo.onWillShowAnnotTooltipCallback) {
-    annot = ideo.onWillShowAnnotTooltipCallback(annot, context);
+    annot = await ideo.onWillShowAnnotTooltipCallback(annot, context);
   }
 
   // Enable onWillShowAnnotTooltipCallback to cancel showing tooltip

@@ -106,7 +106,7 @@ function parseVariant(line, variantCache) {
     rawVariantType,
     rawMolecularConsequences,
     rawOrigin,
-    rawRsNumber
+    rsNumber
   ] = line.split('\t')
 
   const position = parseInt(rawPosition);
@@ -124,7 +124,7 @@ function parseVariant(line, variantCache) {
   const molecularConsequences = parseMolecularConsequences(
     rawMolecularConsequences, keys.molecularConsequenceArray
   );
-  const dbSnpId = 'rs' + rawRsNumber;
+  const dbSnpId = rsNumber ? 'rs' + rsNumber : null;
 
   const variant = {
     chromosome, position,
@@ -152,7 +152,7 @@ async function getVariants(gene, ideo) {
   // Easier debuggability
   if (!ideo.cacheRangeFetch) ideo.cacheRangeFetch = cacheRangeFetch;
 
-  if (!byteRange) return null;
+  if (!byteRange) return [];
 
   const config = ideo.config;
   let cacheDir = null;
@@ -163,6 +163,8 @@ async function getVariants(gene, ideo) {
   const orgName = 'homo-sapiens';
   const cacheUrl = getCacheUrl(orgName, cacheDir, cacheType, extension);
 
+  const geneLocus = ideo.geneCache.lociByName[gene];
+
   // Get variant data only for the requested gene
   const data = await cacheRangeFetch(cacheUrl, byteRange);
   const lines = data.split('\n');
@@ -170,6 +172,7 @@ async function getVariants(gene, ideo) {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const variant = parseVariant(line, cache);
+    variant.positionRelative = variant.position - geneLocus[1];
     variants.push(variant);
   }
 

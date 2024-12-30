@@ -5,6 +5,7 @@ import {tippyCss, tippyLightCss} from './tippy-styles';
 import {d3} from '../lib';
 import {getIcon} from '../annotations/legend';
 import {getProtein, getHasTopology} from './protein';
+import {getVariantsSvg} from './variant';
 
 const y = 5;
 
@@ -107,12 +108,12 @@ function writeFooter(container) {
 }
 
 /** Write newly-selected gene structure diagram, header, and footer */
-function updateGeneStructure(ideo, offset=0) {
+async function updateGeneStructure(ideo, offset=0) {
   const [structure, selectedIndex] = getSelectedStructure(ideo, offset);
   const isCanonical = (selectedIndex === 0);
   const menu = document.querySelector('#_ideoGeneStructureMenu');
   menu.options[selectedIndex].selected = true;
-  const svg = getSvg(structure, ideo, ideo.spliceExons)[0];
+  const svg = await getSvg(structure, ideo, ideo.spliceExons)[0];
   const container = document.querySelector('._ideoGeneStructureSvgContainer');
   container.innerHTML = svg;
   updateHeader(ideo.spliceExons, isCanonical);
@@ -167,7 +168,7 @@ function addMenuListeners(ideo) {
   const container = document.querySelector('._ideoGeneStructureContainer');
 
   // Don't search this gene if clicking to expand the menu
-  container.addEventListener('click', (event) => {
+  container.addEventListener('click', async (event) => {
     if (event.target.id === menuId) {
       event.stopPropagation();
     }
@@ -182,7 +183,7 @@ function addMenuListeners(ideo) {
       const menuArrow = svgMaybe;
       const direction = menuArrow.getAttribute('data-dir');
       const offset = direction === 'down' ? 1 : -1;
-      updateGeneStructure(ideo, offset);
+      await updateGeneStructure(ideo, offset);
       event.stopPropagation();
     }
   });
@@ -828,15 +829,16 @@ function getTranscriptLengthBp(subparts, spliceExons=false) {
 }
 
 /** Merge feature type, pixel-x position, and pixel width to each feature */
-export function addPositions(subparts, domains=null) {
+export function addPositions(subparts, projectedFeatures=null, biotype) {
   const transcriptLengthPx = 250;
 
   const totalLengthBp = getTranscriptLengthBp(subparts);
 
-  const factor = domains ? 3 : 1; // 3 nt per aa
+  const isProtein = projectedFeatures && biotype !== 'variant';
+  const factor = isProtein && biotype !== '' ? 3 : 1; // 3 nt per aa
   const bpPerPx = (totalLengthBp / transcriptLengthPx) / factor;
 
-  const features = domains ?? subparts;
+  const features = projectedFeatures ?? subparts;
 
   for (let i = 0; i < features.length; i++) {
     const feature = features[i];
@@ -893,7 +895,7 @@ function getSubpartBorderLine(subpart) {
 // }
 
 /** Get SVG, and prelimnary and mature subparts for given gene structure */
-function getSvg(geneStructure, ideo, spliceExons=false) {
+async function getSvg(geneStructure, ideo, spliceExons=false) {
   const strand = geneStructure.strand;
 
   const rawSubparts = geneStructure.subparts;
@@ -1022,6 +1024,11 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
   const [proteinSvg, proteinLengthAa] =
     getProtein(structureName, subparts, isPositiveStrand, hasTopology, ideo);
 
+  console.log('before getVariantsSvg')
+  const variantSvg = await getVariantsSvg(geneStructure, ideo);
+
+  console.log('variantSvg', variantSvg)
+
   const transcriptLengthBp = getTranscriptLengthBp(subparts, spliceExons);
   const prettyLength = transcriptLengthBp.toLocaleString();
 
@@ -1057,6 +1064,7 @@ function getSvg(geneStructure, ideo, spliceExons=false) {
     `>` +
       geneStructureArray.join('') +
       proteinSvg +
+      variantSvg +
     '</svg>';
 
   return [geneStructureSvg, prelimSubparts, matureSubparts];
@@ -1130,7 +1138,7 @@ function getMenu(gene, ideo, selectedName) {
   return menu;
 }
 
-export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
+export async function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
   let geneStructureHtml = '';
   const gene = annot.name;
   if (
@@ -1144,7 +1152,10 @@ export function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
     if ('spliceExons' in ideo === false) ideo.spliceExons = true;
     const spliceExons = ideo.spliceExons;
     const structure = ideo.geneStructureCache[gene][0];
-    const geneStructureSvg = getSvg(structure, ideo, spliceExons)[0];
+    console.log('before getSvg')
+    const svgResults = await getSvg(structure, ideo, spliceExons)
+    const geneStructureSvg = svgResults[0];
+    console.log('geneStructureSvg', geneStructureSvg)
     const cls = 'class="_ideoGeneStructureContainer"';
     const toggle = getSpliceToggle(ideo);
     const rnaClass = spliceExons ? '' : ' pre-mRNA';
