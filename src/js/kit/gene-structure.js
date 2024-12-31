@@ -846,7 +846,7 @@ export function getBpPerPx(subparts, projectedFeatures=null) {
 
 /** Merge feature type, pixel-x position, and pixel width to each feature */
 export function addPositions(subparts, projectedFeatures=null) {
-  const bpPerPx = getBpPerPx(subparts, projectedFeatures)
+  const bpPerPx = getBpPerPx(subparts, projectedFeatures);
 
   const features = projectedFeatures ?? subparts;
 
@@ -854,7 +854,9 @@ export function addPositions(subparts, projectedFeatures=null) {
 
   for (let i = 0; i < features.length; i++) {
     const feature = features[i];
-    if (feature.length !== expectedLength) continue;
+    if (feature.length !== expectedLength && feature[0] !== 'intron') {
+      continue;
+    };
     // Define subpart position, tooltip footer
     const lengthBp = feature[2];
     const x = feature[1] / bpPerPx;
@@ -1009,6 +1011,7 @@ async function getSvg(geneStructure, ideo, spliceExons=false) {
     const summary =
       getSubpartSummary(subpartType, total, subpartIndex, strand, lengthBp);
     if (!spliceExons) {
+      // console.log('prelimSubparts[i]', prelimSubparts[i])
       prelimSubparts[i].slice(-1)[0].summary = summary;
     } else if (subpartType !== 'intron') {
       matureSubparts[i].slice(-1)[0].summary = summary;

@@ -65,6 +65,8 @@ export async function getVariantsSvg(
     return null;
   }
 
+  console.log('rawVariants.length', rawVariants.length)
+
   if (rawVariants.length > 15) {
     rawVariants = rawVariants
       .filter(v => v.dbSnpId !== '' && v.afExac !== null)
@@ -96,20 +98,20 @@ export async function getVariantsSvg(
     });
   });
 
-  const lines = variants.map(v => {
+  const lines = variants.reverse().map(v => {
 
     let stroke = '#D00';
-    let fill = '#F99';
+    let fill = '#FBB';
     let bottomV = 13;
     let topV = 1;
     if (v.clinicalSignificance === 'Pathogenic/Likely pathogenic') {
       stroke = '#F55';
-      fill = '#FCC';
+      fill = '#FDD';
       bottomV = 16;
       topV = 4;
     } else if (v.clinicalSignificance === 'Likely pathogenic') {
       stroke = '#F99500';
-      fill = '#FFE955';
+      fill = '#FEC';
       bottomV = 19;
       topV = 7;
     }
