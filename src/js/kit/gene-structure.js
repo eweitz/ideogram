@@ -1041,7 +1041,7 @@ async function getSvg(geneStructure, ideo, spliceExons=false) {
   const startOffset = geneStructure.startOffset;
   const variantSvg =
     await getVariantsSvg(structureName, subparts, startOffset, ideo);
-  console.log('variantSvg', variantSvg)
+  // console.log('variantSvg', variantSvg)
 
   const transcriptLengthBp = getTranscriptLengthBp(subparts, spliceExons);
   const prettyLength = transcriptLengthBp.toLocaleString();
@@ -1072,7 +1072,7 @@ async function getSvg(geneStructure, ideo, spliceExons=false) {
 
   let translate = '';
   if (variantSvg) {
-    const varHeight = 14;
+    const varHeight = 18;
     svgHeight += varHeight;
     translate = `transform="translate(0, ${varHeight})"`;
   }
