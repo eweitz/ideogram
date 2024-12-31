@@ -864,7 +864,6 @@ export function addPositions(subparts, projectedFeatures=null) {
     features[i].push({type, x, width});
   }
 
-  console.log('features', features)
   return features;
 }
 
@@ -981,6 +980,9 @@ async function getSvg(geneStructure, ideo, spliceExons=false) {
     }
   }
 
+  const structureName = geneStructure.name;
+  const gene = getGeneFromStructureName(structureName);
+
   for (let i = 0; i < subparts.length; i++) {
     const subpart = subparts[i];
     // const position = positions[i];
@@ -1028,8 +1030,6 @@ async function getSvg(geneStructure, ideo, spliceExons=false) {
       `style="${sharedStyle} left: -10px;"`;
   }
 
-  const structureName = geneStructure.name;
-  const gene = getGeneFromStructureName(structureName);
   const menu = getMenu(gene, ideo, structureName).replaceAll('"', '\'');
 
   const hasTopology = getHasTopology(gene, ideo);
@@ -1037,9 +1037,11 @@ async function getSvg(geneStructure, ideo, spliceExons=false) {
   const [proteinSvg, proteinLengthAa] =
     getProtein(structureName, subparts, isPositiveStrand, hasTopology, ideo);
 
+
   const startOffset = geneStructure.startOffset;
   const variantSvg =
     await getVariantsSvg(structureName, subparts, startOffset, ideo);
+  console.log('variantSvg', variantSvg)
 
   const transcriptLengthBp = getTranscriptLengthBp(subparts, spliceExons);
   const prettyLength = transcriptLengthBp.toLocaleString();
@@ -1065,8 +1067,15 @@ async function getSvg(geneStructure, ideo, spliceExons=false) {
   }
   const footerData = menu + footerDetails.join(` ${pipe} `);
 
-  let svgHeight = proteinSvg === '' ? '30' : '50';
-  if (hasTopology) svgHeight = '60';
+  let svgHeight = proteinSvg === '' ? 30 : 50;
+  if (hasTopology) svgHeight = 60;
+
+  let translate = '';
+  if (variantSvg) {
+    const varHeight = 14;
+    svgHeight += varHeight;
+    translate = `transform="translate(0, ${varHeight})"`;
+  }
 
   const geneStructureSvg =
     `<svg class="_ideoGeneStructure" ` +
@@ -1074,8 +1083,10 @@ async function getSvg(geneStructure, ideo, spliceExons=false) {
       `data-ideo-strand="${strand}" data-ideo-footer="${footerData}" ` +
       `width="${(featureLengthPx + 20)}" height="${svgHeight}" ${transform}` +
     `>` +
-      geneStructureArray.join('') +
-      proteinSvg +
+      `<g class="rnaProteinDiagrams" ${translate}>` +
+        geneStructureArray.join('') +
+        proteinSvg +
+      `</g>` +
       variantSvg +
     '</svg>';
 
