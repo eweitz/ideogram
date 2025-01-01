@@ -8,6 +8,38 @@ import {
   addPositions, getBpPerPx, getGeneFromStructureName, pipe
 } from './gene-structure';
 
+function getVariantSummary(variant) {
+
+  const diseases = variant.diseases.map(d => `<li>${d.name}</li>`);
+
+  const variantSummary =
+    `<ul>
+      <li>${variant.clinvarVariantId}</li>
+      <li>${variant.clinicalSignificance}</li>
+      ${diseases}
+      <li>chr${variant.chromosome}: ${variant.position}</li>
+    </ul>`;
+
+  return variantSummary;
+}
+
+export function addVariantListeners(ideo) {
+  document.querySelectorAll('._ideoVariant').forEach(variantDom => {
+    variantDom.addEventListener('mouseover', (event) => {
+      const target = event.target;
+      const varId = target.parentElement.id;
+      console.log('target', target)
+      const variant = ideo.variants.find(v => v.clinvarVariantId === varId);
+      console.log('hovered variant', variant);
+      const variantSummary = getVariantSummary(variant);
+      const tissuePlot = document.querySelector('._ideoTissueExpressionPlot')
+      tissuePlot.style.display = 'none';
+      const container = document.querySelector('._ideoTissuePlotContainer');
+      container.insertAdjacentHTML('beforeend', variantSummary);
+    });
+  });
+}
+
 function addSplicedPositions(subparts, rawVariants) {
   const features = [];
 
@@ -137,7 +169,7 @@ export async function getVariantsSvg(
     const triangleStyle = `fill:${fill};stroke:${stroke}`;
     const lineStyle=`stroke:${stroke};`;
     return `
-      <g>
+      <g class="_ideoVariant" id="${v.clinvarVariantId}">
         <line x1="${v.x}" y1="10" x2="${v.x}" y2="25" style="${lineStyle}" />
         <polygon points="${points}" style="${triangleStyle}" />
       </g>
@@ -149,6 +181,9 @@ export async function getVariantsSvg(
   console.log('getVariantsSvg duration (ms): ' + (t1-t0));
   console.log('in getVariantsSvg, svg.length', svg.length)
   console.log('end getVariantsSvg, variants', variants)
+
+  ideo.variants = variants;
+
   return svg;
 }
 

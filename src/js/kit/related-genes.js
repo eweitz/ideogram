@@ -48,7 +48,7 @@ import {
   fetchGpmls, summarizeInteractions, fetchPathwayInteractions
 } from './wikipathways';
 import {getTissueHtml, addTissueListeners} from './tissue';
-import { writeVariantsSvg } from './variant';
+import { addVariantListeners } from './variant';
 // import {drawAnnotsByLayoutType} from '../annotations/draw';
 // import {organismMetadata} from '../init/organism-metadata';
 
@@ -1679,6 +1679,7 @@ function onDidShowAnnotTooltip() {
   addGeneStructureListeners(ideo);
   addTissueListeners(ideo);
   addPathwayListeners(ideo);
+  addVariantListeners(ideo);
   ideo.tissueTippy =
     tippy('._ideoGeneTissues[data-tippy-content]', getTippyConfig());
 }
