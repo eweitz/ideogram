@@ -220,7 +220,7 @@ function addSpliceToggleListeners(ideo) {
   if (!container) return;
 
   toggler.addEventListener('change', async (event) => {
-    await toggleSplice(ideo);
+    toggleSplice(ideo);
     addHoverListeners(ideo);
     event.stopPropagation();
   });
@@ -768,13 +768,11 @@ function updateHeader(spliceExons, isCanonical) {
 }
 
 async function toggleSplice(ideo) {
-  const subpartEls = document.querySelectorAll('.subpart');
-
   ideo.spliceExons = !ideo.spliceExons;
   const spliceExons = ideo.spliceExons;
-  const [structure, selectedIndex] = getSelectedStructure(ideo);
+  const [geneStructure, selectedIndex] = getSelectedStructure(ideo);
   const isCanonical = (selectedIndex === 0);
-  const svgResult = await getSvg(structure, ideo, spliceExons);
+  const svgResult = await getSvg(geneStructure, ideo, spliceExons);
   const [, prelimSubparts, matureSubparts] = svgResult;
   const proteinSvg = document.querySelector('#_ideoProtein');
 
@@ -791,13 +789,15 @@ async function toggleSplice(ideo) {
 
   const subparts = spliceExons ? matureSubparts : prelimSubparts;
 
+  console.log('in toggleSplice, subparts', subparts)
   d3.select('._ideoGeneStructure').selectAll('.subpart')
     .data(subparts)
     .transition()
     .duration(750)
     .attr('x', (d, i) => subparts[i].slice(-1)[0].x)
     .attr('width', (d, i) => subparts[i].slice(-1)[0].width)
-    .on('end', (d, i) => {
+    .on('end', async (d, i) => {
+      console.log('in end')
       if (i !== subparts.length - 1) return;
       if (proteinSvg && spliceExons) proteinSvg.style.display = '';
 
@@ -816,6 +816,10 @@ async function toggleSplice(ideo) {
       const transcriptLengthBp = getTranscriptLengthBp(subparts, spliceExons);
       const prettyLength = transcriptLengthBp.toLocaleString();
       tlbpDOM.innerText = `${prettyLength} bp`;
+
+      const variantSvg = await getVariantsSvg(geneStructure, subparts, ideo);
+      console.log('toggled variantSvg.length', variantSvg.length)
+      document.querySelector('.variantsDiagrams').innerHTML = variantSvg;
 
       ideo.tippy[0].show();
     });
@@ -850,13 +854,9 @@ export function addPositions(subparts, projectedFeatures=null) {
 
   const features = projectedFeatures ?? subparts;
 
-  const expectedLength = projectedFeatures === null ? 4 : 3;
-
   for (let i = 0; i < features.length; i++) {
     const feature = features[i];
-    if (feature.length !== expectedLength && feature[0] !== 'intron') {
-      continue;
-    };
+    if (typeof feature.slice(-1)[0] === 'object') continue;
     // Define subpart position, tooltip footer
     const lengthBp = feature[2];
     const x = feature[1] / bpPerPx;
@@ -1040,11 +1040,7 @@ async function getSvg(geneStructure, ideo, spliceExons=false) {
   const [proteinSvg, proteinLengthAa] =
     getProtein(structureName, subparts, isPositiveStrand, hasTopology, ideo);
 
-
-  const startOffset = geneStructure.startOffset;
-  const variantSvg =
-    await getVariantsSvg(structureName, subparts, startOffset, ideo);
-  // console.log('variantSvg', variantSvg)
+  const variantSvg = await getVariantsSvg(geneStructure, subparts, ideo);
 
   const transcriptLengthBp = getTranscriptLengthBp(subparts, spliceExons);
   const prettyLength = transcriptLengthBp.toLocaleString();
@@ -1090,7 +1086,9 @@ async function getSvg(geneStructure, ideo, spliceExons=false) {
         geneStructureArray.join('') +
         proteinSvg +
       `</g>` +
-      variantSvg +
+      `<g class="variantsDiagrams">` +
+        variantSvg +
+      `</g>` +
     '</svg>';
 
   return [geneStructureSvg, prelimSubparts, matureSubparts];
@@ -1178,7 +1176,7 @@ export async function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
     if ('spliceExons' in ideo === false) ideo.spliceExons = true;
     const spliceExons = ideo.spliceExons;
     const structure = ideo.geneStructureCache[gene][0];
-    const svgResults = await getSvg(structure, ideo, spliceExons)
+    const svgResults = await getSvg(structure, ideo, spliceExons);
     const geneStructureSvg = svgResults[0];
     const cls = 'class="_ideoGeneStructureContainer"';
     const toggle = getSpliceToggle(ideo);

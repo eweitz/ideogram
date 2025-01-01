@@ -9,9 +9,7 @@ import {
 } from './gene-structure';
 
 function addSplicedPositions(subparts, rawVariants) {
-  const features = []
-  console.log('in addSplicedPositions, subparts', subparts)
-  console.log('in addSplicedPositions, rawVariants', rawVariants)
+  const features = [];
 
   const bpPerPx = getBpPerPx(subparts);
 
@@ -19,9 +17,9 @@ function addSplicedPositions(subparts, rawVariants) {
 
     for (let i = 0; i < subparts.length; i++) {
       const subpart = subparts[i];
-      const [
-        subpartType, subpartRelBpStart, subpartBpLength, subpartBpStart, subpartPx
-      ] = subpart;
+      const [subpartBpLength, subpartBpStart, subpartPx] = subpart.slice(-3);
+
+      const isRelative = (subpart.length === 5);
 
       if (
         subpartBpStart <= v.positionRelative &&
@@ -29,7 +27,9 @@ function addSplicedPositions(subparts, rawVariants) {
       ) {
         const variantSubpartRelativePosition =
           v.positionRelative - subpartBpStart;
-        const x = variantSubpartRelativePosition / bpPerPx + subpartPx.x;
+        let x = variantSubpartRelativePosition / bpPerPx;
+        if (isRelative) x += subpartPx.x;
+        // x += subpartPx.x;
         const width = 0.5;
         const feature = [
           '', variantSubpartRelativePosition, 1, {
@@ -51,21 +51,26 @@ function addSplicedPositions(subparts, rawVariants) {
 
 /** Get SVG showing 2D variant features */
 export async function getVariantsSvg(
-  structureName, subparts, startOffset, ideo
+  geneStructure, subparts, ideo
 ) {
   const t0 = Date.now();
+
+  const structureName = geneStructure.name;
+  const startOffset = geneStructure.startOffset;
+  console.log('in getVariantsSvg, startOffset', startOffset)
 
   const gene = getGeneFromStructureName(structureName, ideo);
 
   const cache = ideo.variantCache;
 
   let rawVariants = await cache.getVariants(gene, ideo);
+  console.log('rawVariants', rawVariants)
 
   if (rawVariants.length === 0) {
     return null;
   }
 
-  console.log('rawVariants.length', rawVariants.length)
+  // console.log('rawVariants.length', rawVariants.length)
 
   if (rawVariants.length > 15) {
     rawVariants = rawVariants
@@ -73,6 +78,8 @@ export async function getVariantsSvg(
       .sort((a, b) => b.afExac - a.afExac)
       .slice(0, 15);
   }
+
+  console.log('updated rawVariants.length', rawVariants.length)
 
   rawVariants = rawVariants.map(v => {
     v.positionRelative -= startOffset;
@@ -97,6 +104,8 @@ export async function getVariantsSvg(
       diseases[d.name] += 1;
     });
   });
+
+  console.log('before lines, variants.length', variants.length)
 
   const lines = variants.reverse().map(v => {
 
@@ -137,7 +146,9 @@ export async function getVariantsSvg(
   const svg = lines.join('');
 
   const t1 = Date.now();
-  console.log(t1-t0)
+  console.log('getVariantsSvg duration (ms): ' + (t1-t0));
+  console.log('in getVariantsSvg, svg.length', svg.length)
+  console.log('end getVariantsSvg, variants', variants)
   return svg;
 }
 
