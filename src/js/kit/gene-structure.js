@@ -44,6 +44,9 @@ const subpartClasses = {
 
 const css =
   `<style>
+  ._ideoGeneStructureContainerHead {
+    margin-top: 30px;
+  }
   ._ideoGeneStructureContainerName {
     position: relative;
     left: 45px;
@@ -1184,12 +1187,12 @@ export async function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
     const spanClass = `class="_ideoGeneStructureContainerName${rnaClass}"`;
     const {name, title} = getSpliceStateText(spliceExons);
     const spanAttrs = `${spanClass} title="${title}"`;
+    const divAttrs = 'class="_ideoGeneStructureContainerHead"';
     const containerStyle = '';
     geneStructureHtml =
-      '<br/><br/>' +
       css +
       `<div ${cls}>` +
-      `<div><span ${spanAttrs}>${name}</span>${toggle}</div>` +
+      `<div ${divAttrs}><span ${spanAttrs}>${name}</span>${toggle}</div>` +
       `<span class="_ideoGeneStructureSvgContainer" ${containerStyle}>` +
         geneStructureSvg +
       `</span>` +

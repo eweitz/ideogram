@@ -8,34 +8,59 @@ import {
   addPositions, getBpPerPx, getGeneFromStructureName, pipe
 } from './gene-structure';
 
-function getVariantSummary(variant) {
+function getVariantSummary(v) {
 
-  const diseases = variant.diseases.map(d => `<li>${d.name}</li>`);
+  const liAttrs = 'style="float: left; clear:both;"';
+  const diseases =
+    v.diseases.map(d => `<div>-&nbsp;${d.name}</div>`).join('');
 
-  const variantSummary =
-    `<ul>
-      <li>${variant.clinvarVariantId}</li>
-      <li>${variant.clinicalSignificance}</li>
-      ${diseases}
-      <li>chr${variant.chromosome}: ${variant.position}</li>
-    </ul>`;
+
+  const positionalId = `${v.chromosome}-${v.position}-${v.refAllele}-${v.altAllele}`;
+
+  let variantId = v.clinvarVariantId;
+  if (v.dbSnpId) variantId += ` ${pipe} ${v.dbSnpId}`;
+  variantId += ` ${pipe} ${positionalId}`;
+
+  const style =
+    'height: 120px; ' +
+    'width: 275px; ' +
+    'margin-top: 15px; ';
+
+
+  const variantSummary = `
+      <div class="_ideoVariantSummary" style="${style}">
+          <div>${variantId}</div>
+          <br/>
+          <div>Implicated in:</div>
+          <div>
+          ${diseases}
+          </div>
+      </div>`;
 
   return variantSummary;
 }
 
 export function addVariantListeners(ideo) {
+  const head = document.querySelector('._ideoGeneStructureContainerHead');
+  const tissuePlot = document.querySelector('._ideoTissueExpressionPlot')
+  const tissueContainer = document.querySelector('._ideoTissuePlotContainer');
+
   document.querySelectorAll('._ideoVariant').forEach(variantDom => {
     variantDom.addEventListener('mouseover', (event) => {
+      document.querySelector('._ideoVariantSummary')?.remove();
       const target = event.target;
       const varId = target.parentElement.id;
-      console.log('target', target)
       const variant = ideo.variants.find(v => v.clinvarVariantId === varId);
-      console.log('hovered variant', variant);
       const variantSummary = getVariantSummary(variant);
-      const tissuePlot = document.querySelector('._ideoTissueExpressionPlot')
       tissuePlot.style.display = 'none';
-      const container = document.querySelector('._ideoTissuePlotContainer');
-      container.insertAdjacentHTML('beforeend', variantSummary);
+      head.style.display = 'none';
+      tissueContainer.insertAdjacentHTML('beforeend', variantSummary);
+    });
+    variantDom.addEventListener('mouseout', (event) => {
+      document.querySelector('._ideoVariantSummary')?.remove();
+      tissuePlot.style.display = '';
+      tissueContainer.style.display = '';
+      head.style.display = '';
     });
   });
 }
