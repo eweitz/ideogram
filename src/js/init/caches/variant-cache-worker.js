@@ -3,6 +3,20 @@ import {
   cacheFetch, cacheRangeFetch, getCacheUrl
 } from './cache-lib';
 
+const variantOriginMap = {
+  '0': 'unknown',
+  '1': 'germline',
+  '2': 'somatic',
+  '4': 'inherited',
+  '8': 'paternal',
+  '16': 'maternal',
+  '32': 'de-novo',
+  '64': 'biparental',
+  '128': 'uniparental',
+  '256': 'not-tested',
+  '512': 'tested-inconclusive',
+  '1073741824': 'other'
+};
 
 function parseDiseaseElement(diseaseArray, i) {
   const [rawId, rawName] = diseaseArray[i].split('|');
@@ -114,7 +128,8 @@ function parseVariant(line, variantCache) {
 
   const keys = variantCache.keys;
 
-  const clinvarVariantId = 'VCV' + rawClinvarId;
+  const zeros = new Array(9 - rawClinvarId.length).fill('0').join('');
+  const clinvarVariantId = 'VCV' + zeros + rawClinvarId;
   const diseases = parseDiseases(rawDiseases, keys.diseaseArray);
   const reviewStatus = parseKey(rawReviewStatus, keys.reviewStatuses);
   const clinicalSignificance = parseKey(
@@ -125,6 +140,8 @@ function parseVariant(line, variantCache) {
     rawMolecularConsequences, keys.molecularConsequenceArray
   );
   const dbSnpId = rsNumber ? 'rs' + rsNumber : null;
+
+  const origin = variantOriginMap[rawOrigin];
 
   const variant = {
     chromosome, position,
@@ -137,7 +154,8 @@ function parseVariant(line, variantCache) {
     clinicalSignificance,
     variantType,
     molecularConsequences,
-    dbSnpId
+    dbSnpId,
+    origin
   };
 
   return variant;

@@ -10,9 +10,9 @@ import {
 
 function getVariantSummary(v, isFullDetail=false) {
 
-  const numDiseases = isFullDetail ? v.diseases.length : 2;
+  const numDiseases = isFullDetail ? v.diseases.length : 1;
 
-  const diseases = v.diseases.slice(0, numDiseases)
+  let diseases = v.diseases.slice(0, numDiseases)
     .map(d => {
       const id = d.id.replace(':', '_');
       const url = `https://purl.obolibrary.org/obo/${id}`;
@@ -20,6 +20,13 @@ function getVariantSummary(v, isFullDetail=false) {
       const value = isFullDetail ? link : d.name;
       return `<div>-&nbsp;${value}</div>`;
     }).join('');
+
+  if (!isFullDetail && v.diseases.length > 1) {
+    const numRemaining = v.diseases.length - 1;
+    let remaining = `- ${numRemaining} more condition`;
+    if (numRemaining > 1) remaining += 's';
+    diseases += `<div>${remaining}</div>`;
+  }
 
   const positionalId =
     `${v.chromosome}-${v.position}-${v.refAllele}-${v.altAllele}`;
@@ -34,6 +41,7 @@ function getVariantSummary(v, isFullDetail=false) {
     'width: 275px; ' +
     'margin-top: 15px; ';
 
+
   let supplementaryDetails;
   if (!isFullDetail) {
     supplementaryDetails = '<div><i>Click variant for more details</i></div>';
@@ -41,6 +49,7 @@ function getVariantSummary(v, isFullDetail=false) {
     supplementaryDetails =
     `<div>Variant type: ${v.variantType}</div>` +
     `<div>Review status: ${v.reviewStatus}</div>` +
+    (v.origin ? `<div>Origin: ${v.origin}</div>` : '') +
     `<br/>`;
   }
 
