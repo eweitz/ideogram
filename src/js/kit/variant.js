@@ -8,60 +8,117 @@ import {
   addPositions, getBpPerPx, getGeneFromStructureName, pipe
 } from './gene-structure';
 
-function getVariantSummary(v) {
+function getVariantSummary(v, isFullDetail=false) {
 
-  const liAttrs = 'style="float: left; clear:both;"';
-  const diseases =
-    v.diseases.map(d => `<div>-&nbsp;${d.name}</div>`).join('');
+  const numDiseases = isFullDetail ? v.diseases.length : 2;
 
+  const diseases = v.diseases.slice(0, numDiseases)
+    .map(d => {
+      const id = d.id.replace(':', '_');
+      const url = `https://purl.obolibrary.org/obo/${id}`;
+      const link = `<a href="${url}" target=_blank>${d.name}</a>`;
+      const value = isFullDetail ? link : d.name;
+      return `<div>-&nbsp;${value}</div>`;
+    }).join('');
 
-  const positionalId = `${v.chromosome}-${v.position}-${v.refAllele}-${v.altAllele}`;
+  const positionalId =
+    `${v.chromosome}-${v.position}-${v.refAllele}-${v.altAllele}`;
 
   let variantId = v.clinvarVariantId;
   if (v.dbSnpId) variantId += ` ${pipe} ${v.dbSnpId}`;
   variantId += ` ${pipe} ${positionalId}`;
 
+  const height = isFullDetail ? 180 : 120;
   const style =
-    'height: 120px; ' +
+    `height: ${height}px; ` +
     'width: 275px; ' +
     'margin-top: 15px; ';
 
+  let supplementaryDetails;
+  if (!isFullDetail) {
+    supplementaryDetails = '<div><i>Click variant for more details</i></div>';
+  } else {
+    supplementaryDetails =
+    `<div>Variant type: ${v.variantType}</div>` +
+    `<div>Review status: ${v.reviewStatus}</div>` +
+    `<br/>`;
+  }
 
   const variantSummary = `
       <div class="_ideoVariantSummary" style="${style}">
           <div>${variantId}</div>
           <br/>
-          <div>Implicated in:</div>
+          <div>${v.clinicalSignificance} in:</div>
           <div>
           ${diseases}
           </div>
+          <br/>
+          ${supplementaryDetails}
       </div>`;
 
   return variantSummary;
 }
 
-export function addVariantListeners(ideo) {
+function getContainers() {
   const head = document.querySelector('._ideoGeneStructureContainerHead');
   const tissuePlot = document.querySelector('._ideoTissueExpressionPlot')
   const tissueContainer = document.querySelector('._ideoTissuePlotContainer');
 
+  return [head, tissuePlot, tissueContainer];
+}
+
+function writeVariantSummary(event, isFullDetail, ideo) {
+  const [head, tissuePlot, tissueContainer] = getContainers();
+
+  const thisVariant = event.target.parentElement;
+
+  document.querySelectorAll('._ideoVariant').forEach(vd => {
+    vd.classList.remove('_ideoBackgroundVariant');
+  });
+
+  document.querySelectorAll('._ideoVariant').forEach(vd => {
+    if (vd.id !== thisVariant.id) {
+      vd.classList.add('_ideoBackgroundVariant');
+    }
+  });
+
+
+  document.querySelector('._ideoVariantSummary')?.remove();
+  const target = event.target;
+  const varId = target.parentElement.id;
+  const variant = ideo.variants.find(v => v.clinvarVariantId === varId);
+  const variantSummary = getVariantSummary(variant, isFullDetail);
+  tissuePlot.style.display = 'none';
+  head.style.display = 'none';
+  tissueContainer.insertAdjacentHTML('beforeend', variantSummary);
+}
+
+function removeVariantSummary() {
+  const [head, tissuePlot, tissueContainer] = getContainers();
+
+  document.querySelectorAll('._ideoVariant').forEach(vd => {
+    vd.classList.remove('_ideoBackgroundVariant');
+  });
+
+  document.querySelector('._ideoVariantSummary')?.remove();
+  tissuePlot.style.display = '';
+  tissueContainer.style.display = '';
+  head.style.display = '';
+}
+
+export function addVariantListeners(ideo) {
   document.querySelectorAll('._ideoVariant').forEach(variantDom => {
     variantDom.addEventListener('mouseover', (event) => {
-      document.querySelector('._ideoVariantSummary')?.remove();
-      const target = event.target;
-      const varId = target.parentElement.id;
-      const variant = ideo.variants.find(v => v.clinvarVariantId === varId);
-      const variantSummary = getVariantSummary(variant);
-      tissuePlot.style.display = 'none';
-      head.style.display = 'none';
-      tissueContainer.insertAdjacentHTML('beforeend', variantSummary);
+      const isFullDetail = false;
+      writeVariantSummary(event, isFullDetail, ideo);
     });
-    variantDom.addEventListener('mouseout', (event) => {
-      document.querySelector('._ideoVariantSummary')?.remove();
-      tissuePlot.style.display = '';
-      tissueContainer.style.display = '';
-      head.style.display = '';
+    variantDom.addEventListener('click', (event) => {
+      const isFullDetail = true;
+      writeVariantSummary(event, isFullDetail, ideo);
+      event.stopPropagation();
+      variantDom.removeEventListener('mouseout', removeVariantSummary);
     });
+    variantDom.addEventListener('mouseout', removeVariantSummary);
   });
 }
 
@@ -162,22 +219,17 @@ export async function getVariantsSvg(
     });
   });
 
-  console.log('before lines, variants.length', variants.length)
-
   const lines = variants.reverse().map(v => {
 
-    let stroke = '#D00';
-    let fill = '#FBB';
+    let vClass = '_ideoPathogenic';
     let bottomV = 13;
     let topV = 1;
     if (v.clinicalSignificance === 'Pathogenic/Likely pathogenic') {
-      stroke = '#F55';
-      fill = '#FDD';
+      vClass = '_ideoPathogenicLikelyPathogenic';
       bottomV = 16;
       topV = 4;
     } else if (v.clinicalSignificance === 'Likely pathogenic') {
-      stroke = '#F99500';
-      fill = '#FEC';
+      vClass = '_ideoLikelyPathogenic';
       bottomV = 19;
       topV = 7;
     }
@@ -191,21 +243,23 @@ export async function getVariantsSvg(
     const points =
      `${triangle.bottom} ${triangle.topLeft} ${triangle.topRight}`;
 
-    const triangleStyle = `fill:${fill};stroke:${stroke}`;
-    const lineStyle=`stroke:${stroke};`;
+    const polygonStyle = 'style="cursor: pointer;"';
     return `
-      <g class="_ideoVariant" id="${v.clinvarVariantId}">
-        <line x1="${v.x}" y1="10" x2="${v.x}" y2="25" style="${lineStyle}" />
-        <polygon points="${points}" style="${triangleStyle}" />
+      <g class="_ideoVariant ${vClass}" id="${v.clinvarVariantId}" ${polygonStyle}>
+        <line x1="${v.x}" y1="10" x2="${v.x}" y2="25" />
+        <polygon points="${points}" />
       </g>
     `;
   });
-  const svg = lines.join('');
 
-  const t1 = Date.now();
-  console.log('getVariantsSvg duration (ms): ' + (t1-t0));
-  console.log('in getVariantsSvg, svg.length', svg.length)
-  console.log('end getVariantsSvg, variants', variants)
+  const style =
+    '<style>' +
+      '._ideoPathogenic {stroke: #D00; fill: #FBB;} ' +
+      '._ideoPathogenicLikelyPathogenic {stroke: #F55; fill: #FDD;} ' +
+      '._ideoLikelyPathogenic {stroke: #F99500; fill: #FEC;} ' +
+      '._ideoVariant._ideoBackgroundVariant {stroke: #BBB; fill: #EEE; opacity: 0.2;} ' +
+    '</style>';
+  const svg = style + lines.join('');
 
   ideo.variants = variants;
 
