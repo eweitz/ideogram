@@ -154,11 +154,14 @@ function parseVariant(line, variantCache) {
     altAllele,
     diseases,
     reviewStatus,
+    rawReviewStatus: parseInt(rawReviewStatus),
     clinicalSignificance,
+    rawClinicalSignificance: parseInt(rawClinicalSignificance),
     variantType,
     molecularConsequences,
     dbSnpId,
-    origin
+    origin,
+    rawOrigin: parseInt(rawOrigin)
   };
 
   return variant;

@@ -50,13 +50,14 @@ function getVariantSummary(v, ideo, isFullDetail=false) {
   }
 
   const fullStar = '<span style="color: #C89306">&#9733;</span>';
+  const emptyStar = '<span style="color: #C89306">&#9734;</span>';
   const reviewStatuses = [
     'criteria provided, multiple submitters, no conflicts',
     'reviewed by expert panel',
     'practice guideline'
   ];
   const numStars = reviewStatuses.indexOf(v.reviewStatus) + 2;
-  const stars = star.repeat(numStars);
+  const stars = fullStar.repeat(numStars) + emptyStar.repeat(4 - numStars);
 
   const height = isFullDetail ? 150 : 90;
   const style =
@@ -193,6 +194,55 @@ function addSplicedPositions(subparts, rawVariants) {
   return features;
 }
 
+/** Get the highest-priority variants */
+function triageVariants(rawVariants, maxVariants) {
+  const tier1Variants = rawVariants
+    .filter(v => v.dbSnpId !== '' && v.afExac !== null)
+    .sort((a, b) => b.afExac - a.afExac)
+    .slice(0, maxVariants);
+
+  let selectedVariants = tier1Variants;
+  let selectedIds = selectedVariants.map(v => v.clinvarVariantId);
+
+  console.log('1st pass updated rawVariants.length', rawVariants.length)
+  console.log('1st pass updated rawVariants', rawVariants)
+
+  if (selectedVariants.length < maxVariants) {
+    const tier2Variants = rawVariants
+      .filter(v => {
+        return (
+          (v.dbSnpId !== '' || v.afExac !== null) &&
+          !selectedIds.includes(v.clinvarVariantId)
+        );
+      })
+      .sort((a, b) => b.rawOrigin - a.rawOrigin)
+      .sort((a, b) => b.rawClinicalSignifiance - a.rawClinicalSignifiance)
+      .sort((a, b) => b.rawReviewStatus - a.rawReviewStatus)
+      .sort((a, b) => b.afExac - a.afExac)
+      .slice(0, maxVariants - selectedVariants.length);
+
+    selectedIds =
+      selectedIds.concat(tier2Variants.map(v => v.clinvarVariantId));
+    console.log('tier2Variants.length', tier2Variants.length)
+    console.log('tier2Variants', tier2Variants)
+
+    selectedVariants = selectedVariants.concat(tier2Variants);
+
+    if (selectedVariants.length < maxVariants) {
+      const tier3Variants = rawVariants
+        .filter(v => !selectedIds.includes(v.clinvarVariantId))
+        .sort((a, b) => b.rawOrigin - a.rawOrigin)
+        .sort((a, b) => b.rawClinicalSignifiance - a.rawClinicalSignifiance)
+        .sort((a, b) => b.rawReviewStatus - a.rawReviewStatus)
+        .slice(0, maxVariants - selectedVariants.length);
+
+      selectedVariants = selectedVariants.concat(tier3Variants);
+    }
+  }
+
+  return selectedVariants;
+}
+
 /** Get SVG showing 2D variant features */
 export async function getVariantsSvg(
   geneStructure, subparts, ideo
@@ -208,19 +258,14 @@ export async function getVariantsSvg(
   const cache = ideo.variantCache;
 
   let rawVariants = await cache.getVariants(gene, ideo);
-  console.log('rawVariants', rawVariants)
 
   if (rawVariants.length === 0) {
     return null;
   }
 
-  // console.log('rawVariants.length', rawVariants.length)
-
-  if (rawVariants.length > 15) {
-    rawVariants = rawVariants
-      .filter(v => v.dbSnpId !== '' && v.afExac !== null)
-      .sort((a, b) => b.afExac - a.afExac)
-      .slice(0, 15);
+  const maxVariants = 10;
+  if (rawVariants.length > maxVariants) {
+    rawVariants = triageVariants(rawVariants, maxVariants);
   }
 
   console.log('updated rawVariants.length', rawVariants.length)
