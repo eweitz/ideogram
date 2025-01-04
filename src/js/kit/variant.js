@@ -4,11 +4,12 @@
  * The protein diagrams are shown in the Gene Leads tooltip.
  */
 
+import {getTextSize} from '../lib';
 import {
   addPositions, getBpPerPx, getGeneFromStructureName, pipe
 } from './gene-structure';
 
-function getVariantSummary(v, isFullDetail=false) {
+function getVariantSummary(v, ideo, isFullDetail=false) {
 
   const numDiseases = isFullDetail ? v.diseases.length : 1;
 
@@ -32,15 +33,36 @@ function getVariantSummary(v, isFullDetail=false) {
     `${v.chromosome}-${v.position}-${v.refAllele}-${v.altAllele}`;
 
   let variantId = v.clinvarVariantId;
-  if (v.dbSnpId) variantId += ` ${pipe} ${v.dbSnpId}`;
-  variantId += ` ${pipe} ${positionalId}`;
+  let textVariantId = variantId;
+  if (v.dbSnpId) {
+    variantId += ` ${pipe} ${v.dbSnpId}`;
+    textVariantId += ` | ${v.dbSnpId}`;
+  };
 
-  const height = isFullDetail ? 180 : 120;
+  let idStyle = '';
+  if (v.variantType !== 'single nucleotide variant') {
+    variantId += `<div>${positionalId}</div>`;
+  } else {
+    textVariantId += ` | ${positionalId}`;
+    variantId += ` ${pipe} ${positionalId}`;
+    const idWidth = getTextSize(textVariantId, ideo).width;
+    idStyle = (idWidth > 295) ? 'style="font-size: 11.5px"' : '';
+  }
+
+  const fullStar = '<span style="color: #C89306">&#9733;</span>';
+  const reviewStatuses = [
+    'criteria provided, multiple submitters, no conflicts',
+    'reviewed by expert panel',
+    'practice guideline'
+  ];
+  const numStars = reviewStatuses.indexOf(v.reviewStatus) + 2;
+  const stars = star.repeat(numStars);
+
+  const height = isFullDetail ? 150 : 90;
   const style =
     `height: ${height}px; ` +
     'width: 275px; ' +
     'margin-top: 15px; ';
-
 
   let supplementaryDetails;
   if (!isFullDetail) {
@@ -48,22 +70,22 @@ function getVariantSummary(v, isFullDetail=false) {
   } else {
     supplementaryDetails =
     `<div>Variant type: ${v.variantType}</div>` +
-    `<div>Review status: ${v.reviewStatus}</div>` +
+    `<div>Review status: ${stars}</div>` +
     (v.origin ? `<div>Origin: ${v.origin}</div>` : '') +
     `<br/>`;
   }
 
   const variantSummary = `
-      <div class="_ideoVariantSummary" style="${style}">
-          <div>${variantId}</div>
-          <br/>
-          <div>${v.clinicalSignificance} in:</div>
-          <div>
-          ${diseases}
-          </div>
-          <br/>
-          ${supplementaryDetails}
-      </div>`;
+    <div class="_ideoVariantSummary" style="${style}">
+      <div ${idStyle}>${variantId}</div>
+      <br/>
+      <div>${v.clinicalSignificance} in:</div>
+      <div>
+      ${diseases}
+      </div>
+      <br/>
+      ${supplementaryDetails}
+    </div>`;
 
   return variantSummary;
 }
@@ -91,12 +113,11 @@ function writeVariantSummary(event, isFullDetail, ideo) {
     }
   });
 
-
   document.querySelector('._ideoVariantSummary')?.remove();
   const target = event.target;
   const varId = target.parentElement.id;
   const variant = ideo.variants.find(v => v.clinvarVariantId === varId);
-  const variantSummary = getVariantSummary(variant, isFullDetail);
+  const variantSummary = getVariantSummary(variant, ideo, isFullDetail);
   tissuePlot.style.display = 'none';
   head.style.display = 'none';
   tissueContainer.insertAdjacentHTML('beforeend', variantSummary);

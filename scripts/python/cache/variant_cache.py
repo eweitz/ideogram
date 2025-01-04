@@ -57,6 +57,8 @@ def trim_info_fields(fields):
     disease_names = []
     disease_ids = []
     has_af_exac = False
+    has_mc = False
+
     for field in fields:
         [name, value] = field.split('=')
 
@@ -85,6 +87,7 @@ def trim_info_fields(fields):
             slim_fields.append(str(variant_type))
 
         elif name == 'MC':
+            has_mc = True
             entries = value.split(',')
             slim_mc = []
             for entry in entries:
@@ -118,6 +121,11 @@ def trim_info_fields(fields):
         disease_indexes.append(str(disease_index))
     disease_indexes_string = ','.join(disease_indexes)
     slim_fields.insert(0, disease_indexes_string)
+
+    if not has_mc:
+        # Seen in a variant in gene PTPN11,
+        # https://www.ncbi.nlm.nih.gov/clinvar/variation/44604/
+        slim_fields.insert(5, '')
 
     slim_info = '\t'.join(slim_fields)
     return slim_info

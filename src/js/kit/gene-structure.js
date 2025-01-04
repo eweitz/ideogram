@@ -44,9 +44,6 @@ const subpartClasses = {
 
 const css =
   `<style>
-  ._ideoGeneStructureContainerHead {
-    margin-top: 30px;
-  }
   ._ideoGeneStructureContainerName {
     position: relative;
     left: 45px;

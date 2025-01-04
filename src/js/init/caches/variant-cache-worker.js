@@ -128,7 +128,7 @@ function parseVariant(line, variantCache) {
 
   const keys = variantCache.keys;
 
-  const zeros = new Array(9 - rawClinvarId.length).fill('0').join('');
+  const zeros = '0'.repeat(9 - rawClinvarId.length);
   const clinvarVariantId = 'VCV' + zeros + rawClinvarId;
   const diseases = parseDiseases(rawDiseases, keys.diseaseArray);
   const reviewStatus = parseKey(rawReviewStatus, keys.reviewStatuses);
@@ -136,9 +136,12 @@ function parseVariant(line, variantCache) {
     rawClinicalSignificance, keys.clinicalSignificances
   );
   const variantType = parseKey(rawVariantType, keys.variantTypes);
-  const molecularConsequences = parseMolecularConsequences(
-    rawMolecularConsequences, keys.molecularConsequenceArray
-  );
+  let molecularConsequences = null;
+  if (rawMolecularConsequences !== '') {
+    molecularConsequences = parseMolecularConsequences(
+      rawMolecularConsequences, keys.molecularConsequenceArray
+    );
+  }
   const dbSnpId = rsNumber ? 'rs' + rsNumber : null;
 
   const origin = variantOriginMap[rawOrigin];
