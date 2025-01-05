@@ -128,8 +128,9 @@ function parseVariant(line, variantCache) {
 
   const keys = variantCache.keys;
 
-  const zeros = '0'.repeat(9 - rawClinvarId.length);
-  const clinvarVariantId = 'VCV' + zeros + rawClinvarId;
+  // const zeros = '0'.repeat(9 - rawClinvarId.length);
+  // const clinvarVariantId = 'VCV' + zeros + rawClinvarId;
+  const clinvarVariantId = rawClinvarId;
   const diseases = parseDiseases(rawDiseases, keys.diseaseArray);
   const reviewStatus = parseKey(rawReviewStatus, keys.reviewStatuses);
   const clinicalSignificance = parseKey(

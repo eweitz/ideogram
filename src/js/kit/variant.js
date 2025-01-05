@@ -9,6 +9,24 @@ import {
   addPositions, getBpPerPx, getGeneFromStructureName, pipe
 } from './gene-structure';
 
+function getReviewStars(reviewStatus, showEmptyStars=false) {
+  const fullStar = '<span style="color: #C89306">&#9733;</span>';
+  const emptyStar = '<span style="color: #C89306">&#9734;</span>';
+  const reviewStatuses = [
+    'criteria provided, multiple submitters, no conflicts',
+    'reviewed by expert panel',
+    'practice guideline'
+  ];
+  const numStars = reviewStatuses.indexOf(reviewStatus) + 2;
+  let stars = fullStar.repeat(numStars)
+
+  if (showEmptyStars) {
+    stars += emptyStar.repeat(4 - numStars);
+  }
+
+  return stars;
+}
+
 function getVariantSummary(v, ideo, isFullDetail=false) {
 
   const numDiseases = isFullDetail ? v.diseases.length : 1;
@@ -32,34 +50,35 @@ function getVariantSummary(v, ideo, isFullDetail=false) {
   const positionalId =
     `${v.chromosome}-${v.position}-${v.refAllele}-${v.altAllele}`;
 
-  let variantId = v.clinvarVariantId;
-  let textVariantId = variantId;
+  let head = positionalId;
   if (v.dbSnpId) {
-    variantId += ` ${pipe} ${v.dbSnpId}`;
-    textVariantId += ` | ${v.dbSnpId}`;
+    head += ` ${pipe} ${v.dbSnpId}`;
   };
-
-  let idStyle = '';
-  if (v.variantType !== 'single nucleotide variant') {
-    variantId += `<div>${positionalId}</div>`;
-  } else {
-    textVariantId += ` | ${positionalId}`;
-    variantId += ` ${pipe} ${positionalId}`;
-    const idWidth = getTextSize(textVariantId, ideo).width;
-    idStyle = (idWidth > 295) ? 'style="font-size: 11.5px"' : '';
+  const interestingOrigin = v.origin && v.origin !== 'germline'
+  if (v.rawReviewStatus !== 0 || interestingOrigin) {
+    head += ` ${pipe} `;
+    if (v.rawReviewStatus !== 0) {
+      const stars = getReviewStars(v.reviewStatus);
+      head += stars;
+    }
+    if (v.rawReviewStatus !== 0 && interestingOrigin) {
+      head += ' ';
+    }
+    if (interestingOrigin) {
+      head += v.origin;
+    }
   }
 
-  const fullStar = '<span style="color: #C89306">&#9733;</span>';
-  const emptyStar = '<span style="color: #C89306">&#9734;</span>';
-  const reviewStatuses = [
-    'criteria provided, multiple submitters, no conflicts',
-    'reviewed by expert panel',
-    'practice guideline'
-  ];
-  const numStars = reviewStatuses.indexOf(v.reviewStatus) + 2;
-  const stars = fullStar.repeat(numStars) + emptyStar.repeat(4 - numStars);
+  const detailedStars = getReviewStars(v.reviewStatus, true);
 
-  const height = isFullDetail ? 150 : 90;
+  let extraHeight = 0;
+  if (isFullDetail) {
+    extraHeight += Math.min(v.diseases.length, 5) * 13;
+    if (v.origin) extraHeight += 13;
+    if (v.afExac) extraHeight += 13;
+  }
+
+  const height = (isFullDetail ? 110 : 87) + extraHeight;
   const style =
     `height: ${height}px; ` +
     'width: 275px; ' +
@@ -71,19 +90,37 @@ function getVariantSummary(v, ideo, isFullDetail=false) {
   } else {
     supplementaryDetails =
     `<div>Variant type: ${v.variantType}</div>` +
-    `<div>Review status: ${stars}</div>` +
+    `<div>Review status: ${detailedStars}</div>` +
     (v.origin ? `<div>Origin: ${v.origin}</div>` : '') +
+    (v.afExac ? `<div>Allele frequency (ExAC): ${v.afExac}</div>` : '') +
+    `<div>ClinVar Variation ID: ${v.clinvarVariantId}</div>` +
     `<br/>`;
+  }
+
+  const diseaseStyle =
+    'max-height: 70px; ' +
+    'overflow-y: scroll; ';
+
+  let diseaseBar = '';
+  if (isFullDetail && v.diseases.length >= 5) {
+    const diseaseBarStyle =
+      `width: 100px; ` +
+      'height: 5px; ' +
+      'position: relative; top: 6px; ' +
+      'box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1); ' +
+      'margin: auto;';
+    diseaseBar = `<div style="${diseaseBarStyle}"></div>`;
   }
 
   const variantSummary = `
     <div class="_ideoVariantSummary" style="${style}">
-      <div ${idStyle}>${variantId}</div>
+      <div>${head}</div>
       <br/>
       <div>${v.clinicalSignificance} in:</div>
-      <div>
+      <div style="${diseaseStyle}">
       ${diseases}
       </div>
+      ${diseaseBar}
       <br/>
       ${supplementaryDetails}
     </div>`;
