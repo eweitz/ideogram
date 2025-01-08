@@ -4,6 +4,9 @@
  * The protein diagrams are shown in the Gene Leads tooltip.
  */
 
+import tippy, {hideAll} from 'tippy.js';
+import {tippyCss, tippyLightCss} from './tippy-styles';
+
 import {getTextSize} from '../lib';
 import {
   addPositions, getBpPerPx, getGeneFromStructureName, pipe
@@ -18,13 +21,53 @@ function getReviewStars(reviewStatus, showEmptyStars=false) {
     'practice guideline'
   ];
   const numStars = reviewStatuses.indexOf(reviewStatus) + 2;
-  let stars = fullStar.repeat(numStars)
+  let stars = fullStar.repeat(numStars);
 
   if (showEmptyStars) {
     stars += emptyStar.repeat(4 - numStars);
   }
 
+  const cleanStatus = reviewStatus[0].toUpperCase() + reviewStatus.slice(1);
+  const tippyContent = `data-tippy-content="${cleanStatus}"`;
+  stars = `<span class="_ideoReviewStatus" ${tippyContent}>${stars}</span>`;
+
   return stars;
+}
+
+function getTippyConfig(fallbackPlacements) {
+  return {
+    theme: 'light-border',
+    popperOptions: { // Docs: https://atomiks.github.io/tippyjs/v6/all-props/#popperoptions
+      modifiers: [ // Docs: https://popper.js.org/docs/v2/modifiers
+        {
+          name: 'flip',
+          options: {
+            fallbackPlacements // Defined via argument to this function
+          }
+        }
+      ]
+    },
+    onShow: function() {
+      // Ensure only 1 tippy tooltip is displayed at a time
+      document.querySelectorAll('[data-tippy-root]')
+        .forEach(tippyNode => tippyNode.remove());
+    }
+  };
+}
+
+function initTippy(ideo) {
+  const toggle = getTippyConfig(['top-start', 'top']);
+  ideo.tippyVariant = tippy('._ideoSpliceToggle[data-tippy-content]', toggle);
+
+  const arrow = getTippyConfig(['bottom']);
+  arrow.popperOptions.modifiers.push({
+    name: 'offset',
+    options: {
+      offset: [-5, 20]
+    }
+  });
+  const updownTips = tippy('._ideoReviewStatus[data-tippy-content]', arrow);
+  ideo.tippyVariant = ideo.tippyVariant.concat(updownTips);
 }
 
 function getVariantSummary(v, isFullDetail=false) {
@@ -160,6 +203,7 @@ function writeVariantSummary(event, isFullDetail, ideo) {
   tissuePlot.style.display = 'none';
   head.style.display = 'none';
   tissueContainer.insertAdjacentHTML('beforeend', variantSummary);
+  initTippy(ideo);
 }
 
 function removeVariantSummary() {
