@@ -4,12 +4,10 @@
  * The protein diagrams are shown in the Gene Leads tooltip.
  */
 
-import tippy, {hideAll} from 'tippy.js';
-import {tippyCss, tippyLightCss} from './tippy-styles';
+import tippy from 'tippy.js';
 
-import {getTextSize} from '../lib';
 import {
-  addPositions, getBpPerPx, getGeneFromStructureName, pipe
+  getBpPerPx, getGeneFromStructureName, pipe
 } from './gene-structure';
 
 function getReviewStars(reviewStatus, showEmptyStars=false) {
@@ -60,12 +58,6 @@ function initTippy(ideo) {
   ideo.tippyVariant = tippy('._ideoSpliceToggle[data-tippy-content]', toggle);
 
   const arrow = getTippyConfig(['bottom']);
-  arrow.popperOptions.modifiers.push({
-    name: 'offset',
-    options: {
-      offset: [-5, 20]
-    }
-  });
   const updownTips = tippy('._ideoReviewStatus[data-tippy-content]', arrow);
   ideo.tippyVariant = ideo.tippyVariant.concat(updownTips);
 }
