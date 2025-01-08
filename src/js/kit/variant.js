@@ -27,8 +27,7 @@ function getReviewStars(reviewStatus, showEmptyStars=false) {
   return stars;
 }
 
-function getVariantSummary(v, ideo, isFullDetail=false) {
-
+function getVariantSummary(v, isFullDetail=false) {
   const numDiseases = isFullDetail ? v.diseases.length : 1;
 
   let diseases = v.diseases.slice(0, numDiseases)
@@ -81,7 +80,6 @@ function getVariantSummary(v, ideo, isFullDetail=false) {
   const height = (isFullDetail ? 110 : 87) + extraHeight;
   const style =
     `height: ${height}px; ` +
-    'width: 275px; ' +
     'margin-top: 15px; ';
 
   let supplementaryDetails;
@@ -99,7 +97,9 @@ function getVariantSummary(v, ideo, isFullDetail=false) {
 
   const diseaseStyle =
     'max-height: 70px; ' +
-    'overflow-y: scroll; ';
+    'overflow-y: scroll; ' +
+    'width: 275px; ' +
+    'margin: auto;'; // Center text even when long pathway or gene name
 
   let diseaseBar = '';
   if (isFullDetail && v.diseases.length >= 5) {
@@ -139,7 +139,8 @@ function getContainers() {
 function writeVariantSummary(event, isFullDetail, ideo) {
   const [head, tissuePlot, tissueContainer] = getContainers();
 
-  const thisVariant = event.target.parentElement;
+  const isG = event.target.tagName === 'g';
+  const thisVariant = isG ? event.target : event.target.parentElement;
 
   document.querySelectorAll('._ideoVariant').forEach(vd => {
     vd.classList.remove('_ideoBackgroundVariant');
@@ -153,9 +154,9 @@ function writeVariantSummary(event, isFullDetail, ideo) {
 
   document.querySelector('._ideoVariantSummary')?.remove();
   const target = event.target;
-  const varId = target.parentElement.id;
-  const variant = ideo.variants.find(v => v.clinvarVariantId === varId);
-  const variantSummary = getVariantSummary(variant, ideo, isFullDetail);
+  const varId = isG ? target.id : target.parentElement.id;
+  const variant = ideo.variants.find(v => 'v' + v.clinvarVariantId === varId);
+  const variantSummary = getVariantSummary(variant, isFullDetail);
   tissuePlot.style.display = 'none';
   head.style.display = 'none';
   tissueContainer.insertAdjacentHTML('beforeend', variantSummary);
@@ -227,7 +228,6 @@ function addSplicedPositions(subparts, rawVariants) {
     return v;
   });
 
-  console.log('positioned variant features:', features)
   return features;
 }
 
@@ -239,17 +239,14 @@ function triageVariants(rawVariants, maxVariants) {
     .slice(0, maxVariants);
 
   let selectedVariants = tier1Variants;
-  let selectedIds = selectedVariants.map(v => v.clinvarVariantId);
-
-  console.log('1st pass updated rawVariants.length', rawVariants.length)
-  console.log('1st pass updated rawVariants', rawVariants)
+  let selectedIds = selectedVariants.map(v => 'v' + v.clinvarVariantId);
 
   if (selectedVariants.length < maxVariants) {
     const tier2Variants = rawVariants
       .filter(v => {
         return (
           (v.dbSnpId !== '' || v.afExac !== null) &&
-          !selectedIds.includes(v.clinvarVariantId)
+          !selectedIds.includes('v' + v.clinvarVariantId)
         );
       })
       .sort((a, b) => b.rawOrigin - a.rawOrigin)
@@ -259,15 +256,13 @@ function triageVariants(rawVariants, maxVariants) {
       .slice(0, maxVariants - selectedVariants.length);
 
     selectedIds =
-      selectedIds.concat(tier2Variants.map(v => v.clinvarVariantId));
-    console.log('tier2Variants.length', tier2Variants.length)
-    console.log('tier2Variants', tier2Variants)
+      selectedIds.concat(tier2Variants.map(v => 'v' + v.clinvarVariantId));
 
     selectedVariants = selectedVariants.concat(tier2Variants);
 
     if (selectedVariants.length < maxVariants) {
       const tier3Variants = rawVariants
-        .filter(v => !selectedIds.includes(v.clinvarVariantId))
+        .filter(v => !selectedIds.includes('v' + v.clinvarVariantId))
         .sort((a, b) => b.rawOrigin - a.rawOrigin)
         .sort((a, b) => b.rawClinicalSignifiance - a.rawClinicalSignifiance)
         .sort((a, b) => b.rawReviewStatus - a.rawReviewStatus)
@@ -288,7 +283,6 @@ export async function getVariantsSvg(
 
   const structureName = geneStructure.name;
   const startOffset = geneStructure.startOffset;
-  console.log('in getVariantsSvg, startOffset', startOffset)
 
   const gene = getGeneFromStructureName(structureName, ideo);
 
@@ -357,7 +351,7 @@ export async function getVariantsSvg(
 
     const polygonStyle = 'style="cursor: pointer;"';
     return `
-      <g class="_ideoVariant ${vClass}" id="${v.clinvarVariantId}" ${polygonStyle}>
+      <g class="_ideoVariant ${vClass}" id="v${v.clinvarVariantId}" ${polygonStyle}>
         <line x1="${v.x}" y1="10" x2="${v.x}" y2="25" />
         <polygon points="${points}" />
       </g>
