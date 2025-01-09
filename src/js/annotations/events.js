@@ -109,8 +109,8 @@ function getContentAndYOffset(annot, includeLength=false) {
 /**
  * Optional callback, invoked before showing annotation tooltip
  */
-function onWillShowAnnotTooltip(annot) {
-  call(this.onWillShowAnnotTooltipCallback, annot);
+function onWillShowAnnotTooltip(event, context) {
+  call(this.onWillShowAnnotTooltipCallback, event, context);
 }
 
 function onDidShowAnnotTooltip() {
@@ -122,6 +122,7 @@ function onDidShowAnnotTooltip() {
  */
 function onClickAnnot(annot) {
   this.prevClickedAnnot = annot;
+  this.hasShownAnnotSinceClick = false;
   this.onClickAnnotCallback(annot);
 }
 
@@ -146,7 +147,7 @@ function showAnnotTooltip(annot, context) {
   clearTimeout(ideo.hideAnnotTooltipTimeout);
 
   if (ideo.onWillShowAnnotTooltipCallback) {
-    annot = ideo.onWillShowAnnotTooltipCallback(annot);
+    annot = ideo.onWillShowAnnotTooltipCallback(annot, context);
   }
 
   // Enable onWillShowAnnotTooltipCallback to cancel showing tooltip

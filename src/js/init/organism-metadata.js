@@ -41,7 +41,6 @@ var organismMetadata = {
       'Pan_tro 3.0': 'GCF_000001515.7'
     },
     hasGeneCache: true,
-    hasParalogCache: true,
     hasSynonymCache: true
   },
   10116: {

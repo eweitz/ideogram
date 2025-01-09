@@ -55,7 +55,7 @@ describe('Ideogram related genes kit', function() {
 
       setTimeout(async function() {
 
-        const rad54lLabel = document.querySelector('#ideogramLabel__c0_a0');
+        const rad54lLabel = document.querySelector('#_c0_a0 path');
         rad54lLabel.dispatchEvent(new Event('mouseover'));
         let relatedGene = document.querySelector('#ideo-related-gene');
         assert.equal(relatedGene.textContent, 'RAD54L');
@@ -156,7 +156,7 @@ describe('Ideogram related genes kit', function() {
 
   //     setTimeout(async function() {
 
-  //       const rad54lLabel = document.querySelector('#ideogramLabel__c0_a0');
+  //       const rad54lLabel = document.querySelector('#_c0_a0 path');
   //       rad54lLabel.dispatchEvent(new Event('mouseover'));
   //       const pathwayLink = document.querySelector('.ideo-pathway-link');
   //       const pathwayName = 'Integrated breast cancer pathway';
@@ -269,6 +269,35 @@ describe('Ideogram related genes kit', function() {
     const ideogram = Ideogram.initRelatedGenes(config);
   });
 
+  it('handles search by Ensembl ID', done => {
+
+    async function callback() {
+      const ideo = this;
+
+      // Ensembl ID for gene "LPL"
+      await ideo.plotRelatedGenes('ENSG00000175445');
+
+      const chr10ParalogNeighborhoods = ideo.annotsOther['9'].annots;
+      assert.equal(chr10ParalogNeighborhoods.length, 1);
+
+      done();
+    }
+
+    function onClickAnnot(annot) {
+      ideogram.plotRelatedGenes(annot.name);
+    }
+
+    var config = {
+      organism: 'Homo sapiens', // Also tests standard, non-slugged name
+      onLoad: callback,
+      dataDir: '/dist/data/bands/native/',
+      cacheDir: '/dist/data/cache/',
+      onClickAnnot
+    };
+
+    const ideogram = Ideogram.initRelatedGenes(config);
+  });
+
   it('handles gene with no interacting genes and no paralogs', done => {
 
     async function callback() {
@@ -301,38 +330,6 @@ describe('Ideogram related genes kit', function() {
 
     const ideogram = Ideogram.initRelatedGenes(config);
   });
-
-  it('handles gene with no interacting genes and no paralogs', done => {
-    async function callback() {
-      const ideo = this;
-
-      await ideogram.plotRelatedGenes('BRCA1');
-
-      const related = ideo.getRelatedGenesByType();
-
-      const numParalogs = related.paralogous.length;
-      const numInteractingGenes = related.interacting.length;
-
-      assert.equal(numInteractingGenes, 0);
-      assert.equal(numParalogs, 0);
-
-      done();
-    }
-
-    function onClickAnnot(annot) {
-      ideogram.plotRelatedGenes(annot.name);
-    }
-
-    var config = {
-      organism: 'Macaca mulatta',
-      onLoad: callback,
-      dataDir: '/dist/data/bands/native/',
-      onClickAnnot
-    };
-
-    const ideogram = Ideogram.initRelatedGenes(config);
-  });
-
 
   it('handles gene that is unknown', done => {
 

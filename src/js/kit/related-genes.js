@@ -24,6 +24,9 @@
 import {decompressSync, strFromU8} from 'fflate';
 import tippy, {hideAll} from 'tippy.js';
 import {tippyCss, tippyLightCss} from './tippy-styles';
+// import {Pvjs} from 'eweitz-pvjs';
+import { drawPathway } from './pathway-viewer';
+
 
 import {
   initAnalyzeRelatedGenes, analyzePlotTimes, analyzeRelatedGenes, timeDiff,
@@ -47,6 +50,7 @@ import {
 import {getTissueHtml, addTissueListeners} from './tissue';
 // import {drawAnnotsByLayoutType} from '../annotations/draw';
 // import {organismMetadata} from '../init/organism-metadata';
+
 
 /** Sets DOM IDs for ideo.relatedAnnots; needed to associate labels */
 function setRelatedAnnotDomIds(ideo) {
@@ -157,7 +161,9 @@ function isInteractionRelevant(rawIxn, gene, nameId, seenNameIds, ideo) {
     isGeneSymbol = maybeGeneSymbol(rawIxn, gene);
   }
 
-  return isGeneSymbol && !(nameId in seenNameIds);
+  const isNewNameId = !(nameId in seenNameIds);
+
+  return isGeneSymbol && isNewNameId;
 }
 
 /**
@@ -227,6 +233,7 @@ async function fetchInteractions(gene, ideo) {
       const wrappedRawIxns = rawIxns.map(rawIxn => {
         return {name: rawIxn, color: ''};
       });
+
       const sortedRawIxns =
         sortAnnotsByRank(wrappedRawIxns, ideo).map(i => i.name);
 
@@ -239,7 +246,7 @@ async function fetchInteractions(gene, ideo) {
 
         // if (rawIxn === '') return; // Avoid oddly blank placeholders
 
-        const nameId = name + id;
+        const nameId = name + id + normRawIxn;
 
         const isRelevant =
           isInteractionRelevant(normRawIxn, gene, nameId, seenNameIds, ideo);
@@ -257,7 +264,36 @@ async function fetchInteractions(gene, ideo) {
     }
   });
 
-  return ixns;
+  const limitIxns = 20; // Maximum number of interacting genes to show
+  const ixnEntries = Object.entries(ixns);
+  const numIxns = ixnEntries.length;
+
+  let filteredIxns = {};
+  if (numIxns > limitIxns) {
+    // Only show up to 20 interacting genes,
+    // ordered by interest rank of interacting gene.
+    const ranks = ideo.geneCache.interestingNames.map(g => g.toLowerCase());
+    const ixnGenes = Object.keys(ixns);
+    const rankedIxnGenes = ixnGenes
+      .map(gene => {
+        let rank = 1E10; // Big number, so these rank last
+        if (ranks.includes(gene)) {
+          rank = ranks.indexOf(gene) + 1;
+        }
+        return [gene, rank];
+      })
+      .filter(([gene, _rank]) => gene in ixns)
+      .sort((a, b) => a[1] - b[1]); // Ascending gene rank order
+
+    rankedIxnGenes
+      .slice(0, limitIxns)
+      .forEach(([gene, _rank]) => filteredIxns[gene] = ixns[gene]);
+
+  } else {
+    filteredIxns = ixns;
+  }
+
+  return filteredIxns;
 }
 
 /**
@@ -365,10 +401,9 @@ function describeInteractions(gene, ixns, searchedGene) {
       pathwayNames.push(ixn.name);
       const attrs =
         `class="ideo-pathway-link" ` +
-        `title="View in WikiPathways" ` +
-        `data-pathway-id="${ixn.pathwayId}" ` +
-        `target="_blank" ` +
-        `href="${url}"`;
+        `style="cursor: pointer" ` +
+        `title="View pathway diagram from WikiPathways" ` +
+        `data-pathway-id="${ixn.pathwayId}"`;
       return `<a ${attrs}>${ixn.name}</a>`;
     });
 
@@ -438,36 +473,48 @@ function fetchGenesFromCache(names, type, ideo) {
   const locusMap = isSymbol ? cache.lociByName : cache.lociById;
   const nameMap = isSymbol ? cache.idsByName : cache.namesById;
 
+  const ensemblGeneIdRegex = /ENS[A-Z]{0,3}G\d{11}/;
+
   const hits = names.map(name => {
-
-    const nameLc = name.toLowerCase();
-
-    if (
-      !locusMap[name] &&
-      !cache.nameCaseMap[nameLc] &&
-      !getGeneBySynonym(name, ideo)
-    ) {
-      if (isSymbol) {
-        throwGeneNotFound(name, ideo);
-      } else {
-        return;
-      }
-    }
 
     let isSynonym = false;
     let synonym = null;
 
-    // Canonicalize name if it is mistaken in upstream data source.
-    // This can sometimes happen in WikiPathways, e.g. when searching
-    // interactions for rat Pten, it includes a result for "PIK3CA".
-    // In that case, this would correct PIK3CA to be Pik3ca.
-    if (isSymbol && !locusMap[name]) {
-      if (cache.nameCaseMap[nameLc]) {
-        name = cache.nameCaseMap[nameLc];
-      } else {
-        synonym = name;
-        name = getGeneBySynonym(synonym, ideo);
-        isSynonym = true;
+    if (ensemblGeneIdRegex.test(name)) {
+      // Omit version if given Ensembl gene ID + version, e.g.
+      // ENSG00000010404.11 -> ENSG00000010404
+      name = name.split('.')[0];
+    }
+    const isIdentifier = name in cache.namesById;
+    if (isIdentifier && isSymbol) {
+      name = cache.namesById[name];
+    } else {
+      const nameLc = name.toLowerCase();
+
+      if (
+        !locusMap[name] &&
+        !cache.nameCaseMap[nameLc] &&
+        !getGeneBySynonym(name, ideo)
+      ) {
+        if (isSymbol) {
+          throwGeneNotFound(name, ideo);
+        } else {
+          return;
+        }
+      }
+
+      // Canonicalize name if it is mistaken in upstream data source.
+      // This can sometimes happen in WikiPathways, e.g. when searching
+      // interactions for rat Pten, it includes a result for "PIK3CA".
+      // In that case, this would correct PIK3CA to be Pik3ca.
+      if (isSymbol && !locusMap[name]) {
+        if (cache.nameCaseMap[nameLc]) {
+          name = cache.nameCaseMap[nameLc];
+        } else {
+          synonym = name;
+          name = getGeneBySynonym(synonym, ideo);
+          isSynonym = true;
+        }
       }
     }
 
@@ -487,6 +534,7 @@ function fetchGenesFromCache(names, type, ideo) {
         ensemblgene: ensemblId
       },
       isSynonym,
+      isIdentifier,
       synonym
     };
 
@@ -825,7 +873,8 @@ async function fetchParalogs(annot, ideo) {
     homologs = hasParalogs ? paralogsByName[nameUc] : [];
   } else {
     const params = `&format=condensed&type=paralogues&target_taxon=${taxid}`;
-    const path = `/homology/id/${annot.id}?${params}`;
+    const organismUnderscore = ideo.config.organism.replace('-', '_');
+    const path = `/homology/id/${organismUnderscore}/${annot.id}?${params}`;
     const ensemblHomologs = await Ideogram.fetchEnsembl(path);
     homologs = ensemblHomologs.data[0].homologies;
   }
@@ -1587,27 +1636,27 @@ function getAnnotByName(annotName, ideo) {
 /**
  * Manage click on pathway links in annotation tooltips
  */
-// function managePathwayClickHandlers(searchedGene, ideo) {
-//   setTimeout(function() {
-//     const pathways = document.querySelectorAll('.ideo-pathway-link');
-//     if (pathways.length > 0 && !ideo.addedPathwayClickHandler) {
-//       pathways.forEach(pathway => {
-//         // pathway.removeEventListener('click', handlePathwayClick);
-//         pathway.addEventListener('click', function(event) {
-//           const target = event.target;
-//           const pathwayId = target.getAttribute('data-pathway-id');
-//           const pathwayName = target.getAttribute('data-pathway-name');
-//           const pathway = {id: pathwayId, name: pathwayName};
-//           plotPathwayGenes(searchedGene, pathway, ideo);
-//         });
-//       });
+function addPathwayListeners(ideo) {
+  const pathways = document.querySelectorAll('.ideo-pathway-link');
+  if (pathways.length > 0 && !ideo.addedPathwayClickHandler) {
+    pathways.forEach(pathway => {
+      // pathway.removeEventListener('click', handlePathwayClick);
+      pathway.addEventListener('click', function(event) {
+        const target = event.target;
+        const pathwayId = target.getAttribute('data-pathway-id');
 
-//       // Ensures handler isn't added redundantly.  This is used because
-//       // addEventListener options like {once: true} don't suffice
-//       // ideo.addedPathwayClickHandler = true;
-//     }
-//   }, 100);
-// }
+        const searchedGene = getSearchedFromDescriptions(ideo);
+        const interactingGene =
+          document.querySelector('#ideo-related-gene').textContent;
+        // const pathwayName = target.getAttribute('data-pathway-name');
+        // const pathway = {id: pathwayId, name: pathwayName};
+        // plotPathwayGenes(searchedGene, pathway, ideo);
+        drawPathway(pathwayId, searchedGene, interactingGene);
+        event.stopPropagation();
+      });
+    });
+  }
+}
 
 /** Move tooltip mass to vertical center of viewport */
 function centralizeTooltipPosition() {
@@ -1628,6 +1677,7 @@ function onDidShowAnnotTooltip() {
   handleTooltipClick(ideo);
   addGeneStructureListeners(ideo);
   addTissueListeners(ideo);
+  addPathwayListeners(ideo);
   ideo.tissueTippy =
     tippy('._ideoGeneTissues[data-tippy-content]', getTippyConfig());
 }
@@ -1756,11 +1806,17 @@ function decorateAnnot(annot) {
   const ideo = this;
   if (
     annot.name === ideo.prevClickedAnnot?.name &&
+    annot.name === ideo.prevShownAnnot?.name &&
+    !ideo.hasShownAnnotSinceClick &&
     ideo.isTooltipCooling
   ) {
+    ideo.prevShownAnnot = annot;
     // Cancels showing tooltip immediately after clicking gene
     return null;
   }
+
+  ideo.prevShownAnnot = annot;
+  ideo.hasShownAnnotSinceClick = true;
 
   let descObj = ideo.annotDescriptions.annots[annot.name];
 
@@ -1827,8 +1883,6 @@ function decorateAnnot(annot) {
   }
 
   annot.displayName = originalDisplay;
-
-  // managePathwayClickHandlers(annot, ideo);
 
   return annot;
 }
@@ -1897,6 +1951,8 @@ const globalKitDefaults = {
   onDidShowAnnotTooltip,
   showTools: true,
   showAnnotLabels: true,
+  showGeneStructureInTooltip: true,
+  showProteinInTooltip: true,
   chrFillColor: {centromere: '#DAAAAA'}
 };
 
@@ -1945,7 +2001,6 @@ function plotGeneHints() {
  * @param {Object} config Ideogram configuration object
  */
 function _initRelatedGenes(config, annotsInList) {
-
   if (config.relatedGenesMode === 'leads') {
     delete config.onDrawAnnots;
     delete config.relatedGenesMode;
