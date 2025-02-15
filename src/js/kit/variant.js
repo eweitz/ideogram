@@ -70,7 +70,11 @@ function getVariantSummary(v, isFullDetail=false) {
       const id = d.id.replace(':', '_');
       const url = `https://purl.obolibrary.org/obo/${id}`;
       const link = `<a href="${url}" target=_blank>${d.name}</a>`;
-      const value = isFullDetail ? link : d.name;
+      if (d.name === undefined) {
+        d.name = 'Not provided';
+      }
+      const isLinked = isFullDetail && d.name !== 'Not provided';
+      const value = isLinked ? link : d.name;
       return `<div>-&nbsp;${value}</div>`;
     }).join('');
 
@@ -88,7 +92,7 @@ function getVariantSummary(v, isFullDetail=false) {
   if (v.dbSnpId) {
     head += ` ${pipe} ${v.dbSnpId}`;
   };
-  const interestingOrigin = v.origin && v.origin !== 'germline'
+  const interestingOrigin = v.origin && v.origin !== 'germline';
   if (v.rawReviewStatus !== 0 || interestingOrigin) {
     head += ` ${pipe} `;
     if (v.rawReviewStatus !== 0) {
