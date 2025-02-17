@@ -20,7 +20,7 @@ function onDrawAnnots() {
 }
 
 function hideAnnotTooltip() {
-  d3.select('._ideogramTooltip').transition()
+  d3.selectAll('._ideogramTooltip').transition()
     .duration(500) // fade out for half second
     .style('opacity', 0)
     .style('pointer-events', 'none');
@@ -60,10 +60,14 @@ function startHideAnnotTooltipTimeout() {
 }
 
 function renderTooltip(tooltip, content, matrix, yOffset, ideo) {
+  const left = ideo.config.orientation === 'horizontal' ?
+    matrix.left + (matrix.width / 2) :
+    matrix.left + matrix.width;
+
   tooltip.html(content)
     .style('opacity', 1) // Make tooltip visible
-    .style('left', matrix.e + 'px')
-    .style('top', (matrix.f - yOffset) + 'px')
+    .style('left', left + 'px')
+    .style('top', (matrix.top - yOffset) + 'px')
     .style('font-family', ideo.config.fontFamily)
     .style('pointer-events', null) // Prevent bug in clicking chromosome
     .on('mouseover', function() {
@@ -136,9 +140,7 @@ function onClickAnnot(annot) {
  * @param context {Object} "This" of the caller -- an SVG path DOM object
  */
 async function showAnnotTooltip(annot, context) {
-  var matrix, content, yOffset, tooltip,
-    cx = Number(context.getAttribute('cx')),
-    cy = Number(context.getAttribute('cy')),
+  var content, yOffset, tooltip,
     ideo = this;
 
   if (ideo.config.showAnnotTooltip === false) return;
@@ -156,15 +158,14 @@ async function showAnnotTooltip(annot, context) {
   }
 
   ideo.prevTooltipAnnotName = annot.name;
-
-  tooltip = d3.select('._ideogramTooltip');
+  tooltip = d3
+    .select(`#${ideo.config.container.replace('#', '')}_ideogramTooltip`);
   tooltip.interrupt(); // Stop any in-progress disapperance
-
-  matrix = context.getScreenCTM().translate(cx, cy);
 
   const includeLength = true;
   [content, yOffset] = getContentAndYOffset(annot, includeLength);
 
+  const matrix = context.getBoundingClientRect();
   renderTooltip(tooltip, content, matrix, yOffset, ideo);
 
   if (ideo.onDidShowAnnotTooltipCallback) {

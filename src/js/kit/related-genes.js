@@ -1661,7 +1661,7 @@ function addPathwayListeners(ideo) {
 
 /** Move tooltip mass to vertical center of viewport */
 function centralizeTooltipPosition() {
-  const tooltip = document.querySelector('#_ideogramTooltip');
+  const tooltip = document.querySelector('._ideogramTooltip');
   const tooltipTop = tooltip.getBoundingClientRect().top;
   const ideoDom = document.querySelector('#_ideogram');
   const ideogramTop = ideoDom.getBoundingClientRect().top;
@@ -1806,6 +1806,7 @@ function decorateParalogNeighborhood(annot, descObj, style) {
  */
 async function decorateAnnot(annot) {
   const ideo = this;
+
   if (
     annot.name === ideo.prevClickedAnnot?.name &&
     annot.name === ideo.prevShownAnnot?.name &&
@@ -1886,7 +1887,6 @@ async function decorateAnnot(annot) {
 
   annot.displayName = originalDisplay;
 
-  console.log('annot', annot)
   return annot;
 }
 

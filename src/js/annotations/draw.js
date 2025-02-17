@@ -2,6 +2,7 @@ import {d3} from '../lib';
 import {writeHistogramAnnots} from './histogram';
 import {writeLegend} from './legend';
 
+
 function parseFriendlyAnnots(friendlyAnnots, rawAnnots) {
   var i, j, annot, rawAnnot;
 
@@ -17,12 +18,12 @@ function parseFriendlyAnnots(friendlyAnnots, rawAnnots) {
         ];
         if ('color' in annot) rawAnnot.push(annot.color);
         if ('shape' in annot) rawAnnot.push(annot.shape);
+        if ('placement' in annot) rawAnnot.push(annot.placement);
         rawAnnots[j].annots.push(rawAnnot);
         break;
       }
     }
   }
-
   return rawAnnots;
 }
 
@@ -33,6 +34,9 @@ function parseFriendlyKeys(friendlyAnnots) {
   }
   if ('shape' in friendlyAnnots[0]) {
     keys.push('shape');
+  }
+  if ('placement'in friendlyAnnots[0]) {
+    keys.push('placement');
   }
   return keys;
 }
@@ -62,7 +66,6 @@ function drawAnnots(friendlyAnnots, layout, keep=false, isOtherLayout=false) {
     rawAnnots.push({chr: chr, annots: []});
   }
   rawAnnots = parseFriendlyAnnots(friendlyAnnots, rawAnnots);
-
   keys = parseFriendlyKeys(friendlyAnnots);
 
   ideo.rawAnnots = {keys: keys, annots: rawAnnots};
@@ -78,7 +81,11 @@ function drawAnnots(friendlyAnnots, layout, keep=false, isOtherLayout=false) {
 }
 
 function getShapes(annotHeight) {
-  var triangle, circle, rectangle, r;
+  var reverseTriangle, triangle, circle, rectangle, r, span, histo;
+
+  reverseTriangle =
+    'm0,0 l -' + annotHeight + ' ' + (-2 * annotHeight) +
+    ' l ' + (2 * annotHeight) + ' 0 z';
 
   triangle =
     'm0,0 l -' + annotHeight + ' ' + (2 * annotHeight) +
@@ -99,7 +106,12 @@ function getShapes(annotHeight) {
     'l ' + annotHeight + ' 0' +
     'l 0 -' + (2 * annotHeight) + 'z';
 
-  return {triangle: triangle, circle: circle, rectangle: rectangle};
+  span = ` `;
+
+  histo = ` `;
+
+  return {reverseTriangle: reverseTriangle, triangle: triangle, circle: circle,
+    rectangle: rectangle, span: span, histo: histo};
 }
 
 function getChrAnnotNodes(filledAnnots, ideo) {
@@ -114,32 +126,100 @@ function getChrAnnotNodes(filledAnnots, ideo) {
 
 function determineShape(d, shapes) {
   if (!d.shape || d.shape === 'triangle') {
+    if (d.placement < 0) {
+      return shapes.reverseTriangle;
+    }
     return shapes.triangle;
   } else if (d.shape === 'circle') {
     return shapes.circle;
   } else if (d.shape === 'rectangle') {
     return shapes.rectangle;
+  } else if (d.shape === 'span') {
+    return shapes.span;
+  } else if (d.shape === 'histo') {
+    return shapes.histo;
   } else {
     return d.shape;
   }
 }
 
+/**
+ * Multiple annotations appear next to chromosomes
+ */
 function writeTrackAnnots(chrAnnot, ideo) {
   var shapes,
     annotHeight = ideo.config.annotationHeight;
-
   shapes = getShapes(annotHeight);
 
-  chrAnnot.append('g')
+  var gElement = chrAnnot.append('g')
     .attr('id', function(d) {return d.domId;})
     .attr('class', 'annot')
     .attr('transform', function(d) {
-      var y = ideo.config.chrWidth + (d.trackIndex * annotHeight * 2);
-      return 'translate(' + d.px + ',' + y + ')';
+      if (d.shape !== 'span' && d.shape !== 'histo') {
+        var y = ideo.config.chrWidth + (d.placement * annotHeight * 2);
+        if (d.placement < 0) {
+          var y = ((d.placement + 1) * annotHeight * 2);
+        }
+        return 'translate(' + d.px + ',' + y + ')';
+      }
+    })
+    .attr('fill', function(d) {return d.color;});
+
+  gElement
+    .filter(function(d) {
+      return d.shape === 'span' || d.shape == 'histo';
+    })
+    .on('mouseover', function(event, d) {ideo.showAnnotTooltip(d, this);})
+    .on('mouseout', function() {ideo.startHideAnnotTooltipTimeout();})
+    .on('click', function(event, d) {ideo.onClickAnnot(d);})
+    .append('polygon')
+    .attr('points', function(d) {
+      var x1 = d.startPx;
+      var x2 = d.stopPx;
+      var annotHeight = ideo.config.annotationHeight * 2;
+      var y = ideo.config.chrWidth + (d.placement * annotHeight);
+      if (d.shape === 'span') {
+        if (d.placement < 0) {
+          var y = annotHeight + ((d.placement - 1) * annotHeight);
+        }
+
+        var points = [
+          `${x1},${y + annotHeight}`,
+          `${x2},${y + annotHeight}`,
+          `${x2},${y}`,
+          `${x1},${y}`
+        ];
+        const bars = points.join(' ');
+        return bars;
+      }
+      if (d.shape === 'histo') {
+        if (d.placement >= 0) {
+          var points = [
+            `${x1},${y}`,
+            `${x2},${y}`,
+            `${x2},${y + d.height}`,
+            `${x1},${y + d.height}`
+          ];
+        } else if (d.placement < 0) {
+          var y = ((d.placement + 1) * annotHeight);
+          var points = [
+            `${x1},${y - d.height}`,
+            `${x2},${y - d.height}`,
+            `${x2},${y}`,
+            `${x1},${y}`
+          ];
+        }
+        const bars = points.join(' ');
+        return bars;
+      }
+    });
+
+  gElement
+    .filter(function(d) {
+      return d.shape !== 'span' && d.shape !== 'histo';
     })
     .append('path')
     .attr('d', function(d) {return determineShape(d, shapes);})
-    .attr('fill', function(d) {return d.color;})
     .on('mouseover', function(event, d) {ideo.showAnnotTooltip(d, this);})
     .on('mouseout', function() {ideo.startHideAnnotTooltipTimeout();})
     .on('click', function(event, d) {ideo.onClickAnnot(d);});
@@ -173,6 +253,35 @@ function writeOverlayAnnots(chrAnnot, ideo) {
     .on('mouseover', function(event, d) {ideo.showAnnotTooltip(d, this);})
     .on('mouseout', function() {ideo.startHideAnnotTooltipTimeout();});
 }
+
+/**
+ * Annotations appear next to chromosomes
+ */
+function writeSpanAnnots(chrAnnot, ideo) {
+  chrAnnot.append('g')
+    .attr('id', function(d) {return d.domId;})
+    .attr('class', 'annot')
+    .append('polygon')
+    .attr('points', function(d) {
+      var annotHeight = ideo.config.annotationHeight * 2;
+      var x1 = d.startPx;
+      var x2 = d.stopPx;
+      var y = ideo.config.chrWidth + (d.placement * annotHeight);
+
+      var points = [
+        `${x1},${y + annotHeight}`,
+        `${x2},${y + annotHeight}`,
+        `${x2},${y}`,
+        `${x1},${y}`
+      ];
+      const bars = points.join(' ');
+      return bars;
+    })
+    .attr('fill', function(d) {return d.color;})
+    .on('mouseover', function(event, d) {ideo.showAnnotTooltip(d, this);})
+    .on('mouseout', function() {ideo.startHideAnnotTooltipTimeout();})
+    .on('click', function(event, d) {ideo.onClickAnnot(d);});
+};
 
 function warnIfTooManyAnnots(layout, annots) {
   var i, numAnnots;
@@ -209,6 +318,8 @@ function drawAnnotsByLayoutType(layout, annots, ideo) {
     writeOverlayAnnots(chrAnnot, ideo);
   } else if (layout === 'histogram') {
     writeHistogramAnnots(chrAnnot, ideo);
+  } else if (layout === 'span') {
+    writeSpanAnnots(chrAnnot, ideo);
   }
 }
 
@@ -219,6 +330,7 @@ function drawAnnotsByLayoutType(layout, annots, ideo) {
  * running parallel to each chromosome.
  */
 function drawProcessedAnnots(annots, layout, keep=false) {
+
   var ideo = this;
 
   if (ideo.onBeforeDrawAnnotsCallback) {

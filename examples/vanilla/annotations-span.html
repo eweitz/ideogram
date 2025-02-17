@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Annotations, span | Ideogram</title>
+  <style>
+    body {font: 14px Arial; line-height: 19.6px; padding: 0 15px;}
+    a, a:visited {text-decoration: none;}
+    a:hover {text-decoration: underline;}
+    a, a:hover, a:visited, a:active {color: #0366d6;}
+  </style>
+  <script type="text/javascript" src="../../dist/js/ideogram.min.js"></script>
+<link rel="icon" type="image/x-icon" href="img/ideogram_favicon.ico">
+</head>
+<body>  
+  <h1>Annotations, span | Ideogram</h1>
+  <a href="../">Overview</a> |
+  <a href="annotations-basic">Previous</a> |
+  <a href="annotations-tracks">Next</a> |
+  <a href="https://github.com/eweitz/ideogram/blob/gh-pages/annotations-overlaid.html" target="_blank">Source</a>
+  <p>Large-scale structural variations (SVs) can be depicted using colored blocks, as seen below.</p>
+  <script type="text/javascript">
+  
+  var d3 = Ideogram.d3;
+
+  var annotHeight = 5;
+  
+  var annotationTracks = [
+    {id: 'copyNumberTrack', displayName: 'Copy number'},
+    {id: 'lohTrack', displayName: 'LOH', },
+  ];
+
+  const heatmaps = [
+    {
+      key: 'cn',
+      thresholds: [
+        ['0', '#5DFCA8'],
+        ['1.3', '#84FFBE'],
+        ['1.5', '#C9FFE2'],
+        ['2', '#ECF0F3'],
+        ['2.75', '#FEE0E9'],
+        ['3.3', '#FEE0E9'],
+        ['+', '#FF84A9'],
+      ],
+    },
+    {
+      key: 'loh',
+      thresholds: [
+        ['0', 'rgba(0,0,0,0)'],
+        ['1', '#d19cff'],
+      ],
+    },
+  ];
+
+  var config = {
+    organism: 'human',
+    chrHeight: 1000,
+    chrMargin: 10,
+    chromosome: '6',
+    annotationsPath: '../../data/annotations/chr1_span_virtual_cnvs.json',
+    annotationTracks: annotationTracks,
+    heatmaps: heatmaps,
+    annotationsLayout: 'span',
+    orientation: 'horizontal',
+    annotHeight: annotHeight,
+
+  };
+
+  var ideogram = new Ideogram(config);
+
+  </script>
+</body>
+</html>

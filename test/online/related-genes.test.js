@@ -65,7 +65,7 @@ describe('Ideogram related genes kit', function() {
 
           // Test interaction gene summary processing, where one gene
           // is part of a WikiPathways group
-          let tooltip = document.querySelector('#_ideogramTooltip');
+          let tooltip = document.querySelector('._ideogramTooltip');
           assert.include(tooltip.textContent, 'Stimulated by RAD51 in');
 
           rad54lLabel.dispatchEvent(new Event('mouseout'));
@@ -80,7 +80,7 @@ describe('Ideogram related genes kit', function() {
 
             // Test interacting gene summary processing, where interactions
             // *are* directionally the same, though not identical in type
-            tooltip = document.querySelector('#_ideogramTooltip');
+            tooltip = document.querySelector('._ideogramTooltip');
             assert.include(tooltip.textContent, 'Acts on RAD51 in');
 
             ideogram.plotRelatedGenes('BRCA1');
@@ -92,7 +92,7 @@ describe('Ideogram related genes kit', function() {
               setTimeout(function() {
                 // Test interacting gene summary processing, where interactions
                 // *are not* directionally the same
-                tooltip = document.querySelector('#_ideogramTooltip');
+                tooltip = document.querySelector('._ideogramTooltip');
                 assert.include(tooltip.textContent, 'Interacts with BRCA1 in');
 
                 const structureContainer =
@@ -164,7 +164,7 @@ describe('Ideogram related genes kit', function() {
 
   //       // Test interaction gene summary processing, where one gene
   //       // is part of a WikiPathways group
-  //       const tooltip = document.querySelector('#_ideogramTooltip');
+  //       const tooltip = document.querySelector('._ideogramTooltip');
   //       assert.include(tooltip.textContent, 'Stimulated by RAD51 in');
 
   //       setTimeout(async function() {

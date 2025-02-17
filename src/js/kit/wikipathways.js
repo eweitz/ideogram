@@ -519,7 +519,7 @@ function detailInteractions(interactingGene, searchedGene, gpml) {
 
 //     annot.displayName += pathwayDiagram;
 
-//     document.querySelector('#_ideogramTooltip').innerHTML =
+//     document.querySelector('._ideogramTooltip').innerHTML =
 //       annot.displayName;
 
 //     Ideogram.d3.select('svg.Diagram')

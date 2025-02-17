@@ -106,7 +106,7 @@ function inflateHeatmaps(ideo) {
 /**
  * Given annotation value (m), should it use the color in this threshold?
  */
-function shouldUseThresholdColor(m, numThresholds, value, prevThreshold,
+function shouldUseThreshold(m, numThresholds, value, prevThreshold,
   threshold) {
 
   return (
@@ -152,7 +152,7 @@ function getHeatmapAnnotColor(thresholds, value) {
     if (m !== 0) prevThreshold = parseFloat(thresholds[m - 1][0]);
     thresholdColor = thresholdList[1];
 
-    useThresholdColor = shouldUseThresholdColor(m, numThresholds, value,
+    useThresholdColor = shouldUseThreshold(m, numThresholds, value,
       prevThreshold, threshold);
 
     if (useThresholdColor) color = thresholdColor;
@@ -163,5 +163,5 @@ function getHeatmapAnnotColor(thresholds, value) {
 
 export {
   getLabels, inflateHeatmaps, inflateThresholds, defaultHeatmapColors,
-  getHeatmapAnnotColor
+  getHeatmapAnnotColor, shouldUseThreshold
 };

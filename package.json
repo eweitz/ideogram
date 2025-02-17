@@ -51,10 +51,10 @@
     "d3-fetch": "^2.0.0",
     "d3-format": "^2.0.0",
     "d3-scale": "^4.0.2",
+    "fast-kde": "0.2.1",
     "fflate": "^0.7.3",
     "tippy.js": "6.3.7",
-    "workbox-range-requests": "7.0.0",
-    "fast-kde": "0.2.1"
+    "workbox-range-requests": "7.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.16.0",

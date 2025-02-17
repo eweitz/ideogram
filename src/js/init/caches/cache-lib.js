@@ -122,7 +122,7 @@ export async function cacheFetch(url) {
 }
 
 export async function cacheRangeFetch(url, byteRange) {
-  console.log('url', url)
+  // console.log('url', url)
   url = url.replace('.gz', '');
 
   // +/- 1 to trim newlines
