@@ -50,7 +50,7 @@ function getContainerSvgClass(ideo) {
 /** Hide tooltip upon pressing "esc" on keyboard */
 function handleEscape(event) {
   if (event.keyCode === 27) { // "Escape" key pressed
-    const tooltip = document.querySelector('#_ideogramTooltip');
+    const tooltip = document.querySelector('._ideogramTooltip');
     if (tooltip) {
       tooltip.style.opacity = 0;
     }

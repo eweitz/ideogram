@@ -579,7 +579,7 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
     );
   }).join('');
 
-  let containerStyle = '';
+  let containerStyle = 'style="margin-bottom: 30px;"';
   const hasStructure = gene in ideo.geneStructureCache;
   if (!hasStructure) { // e.g. MALAT1
     containerStyle = 'style="margin-bottom: 10px;"';

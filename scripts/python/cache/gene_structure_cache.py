@@ -262,6 +262,8 @@ def parse_mrna(raw_mrna, biotypes_list):
 def build_structures(structures_by_id):
     biotypes_list = list(biotypes.keys())
 
+    prev_gene = ''
+
     structures = []
     for id in structures_by_id:
         structure_lists = structures_by_id[id]
@@ -273,8 +275,19 @@ def build_structures(structures_by_id):
 
         for structure_list in structure_lists[1:]:
             subpart = parse_transcript_subpart(structure_list, mrna_start)
-            structure += [";".join(subpart) ]
+            structure += [";".join(subpart)]
 
+        # Set transcript start coordinate relative to most-upstream transcript
+        # This enables projecting genomic features (e.g. variants) onto
+        # transcript coordinates.  It also enables viewing multiple transcripts
+        # in genomic coordinates, like typical genome browsers (Ensembl, IGV).
+        gene_name = structure[1].split('-')[0]
+        if gene_name != prev_gene:
+            gene_start = int(mrna_start) # Start of 1st transcript is gene start
+            prev_gene = gene_name
+        mrna_start_offset = str(int(mrna_start) - gene_start)
+
+        structure.insert(2, mrna_start_offset)
         structures.append(structure)
 
     return structures
@@ -288,8 +301,8 @@ def parse_structures(canonical_ids, gff_path, gff_url):
 
     Parts of a transcript that comprise "gene structure" here:
         * Exons: regions of gene not removed by RNA splicing
-        * 3'-UTR: Three prime untranslated region; start region
-        * 5'-UTR: Fix prime untranslated region; end region
+        * 5'-UTR: Fix prime untranslated region; start region (for +, end for -)
+        * 3'-UTR: Three prime untranslated region; end region (for +, start for -)
 
     (Introns are the regions between 3'- and 5'-UTRs that are not exons.
     These are implied in the structure, and not modeled explicitly.)

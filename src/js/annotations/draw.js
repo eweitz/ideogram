@@ -163,15 +163,15 @@ function writeTrackAnnots(chrAnnot, ideo) {
         return 'translate(' + d.px + ',' + y + ')';
       }
     })
-    .on('mouseover', function(event, d) {ideo.showAnnotTooltip(d, this);})
-    .on('mouseout', function() {ideo.startHideAnnotTooltipTimeout();})
-    .on('click', function(event, d) {ideo.onClickAnnot(d);})
     .attr('fill', function(d) {return d.color;});
 
   gElement
     .filter(function(d) {
       return d.shape === 'span' || d.shape == 'histo';
     })
+    .on('mouseover', function(event, d) {ideo.showAnnotTooltip(d, this);})
+    .on('mouseout', function() {ideo.startHideAnnotTooltipTimeout();})
+    .on('click', function(event, d) {ideo.onClickAnnot(d);})
     .append('polygon')
     .attr('points', function(d) {
       var x1 = d.startPx;
@@ -219,7 +219,10 @@ function writeTrackAnnots(chrAnnot, ideo) {
       return d.shape !== 'span' && d.shape !== 'histo';
     })
     .append('path')
-    .attr('d', function(d) {return determineShape(d, shapes);});
+    .attr('d', function(d) {return determineShape(d, shapes);})
+    .on('mouseover', function(event, d) {ideo.showAnnotTooltip(d, this);})
+    .on('mouseout', function() {ideo.startHideAnnotTooltipTimeout();})
+    .on('click', function(event, d) {ideo.onClickAnnot(d);});
 }
 
 /**

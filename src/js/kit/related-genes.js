@@ -48,6 +48,7 @@ import {
   fetchGpmls, summarizeInteractions, fetchPathwayInteractions
 } from './wikipathways';
 import {getTissueHtml, addTissueListeners} from './tissue';
+import { addVariantListeners } from './variant';
 // import {drawAnnotsByLayoutType} from '../annotations/draw';
 // import {organismMetadata} from '../init/organism-metadata';
 
@@ -1660,7 +1661,7 @@ function addPathwayListeners(ideo) {
 
 /** Move tooltip mass to vertical center of viewport */
 function centralizeTooltipPosition() {
-  const tooltip = document.querySelector('#_ideogramTooltip');
+  const tooltip = document.querySelector('._ideogramTooltip');
   const tooltipTop = tooltip.getBoundingClientRect().top;
   const ideoDom = document.querySelector('#_ideogram');
   const ideogramTop = ideoDom.getBoundingClientRect().top;
@@ -1678,6 +1679,7 @@ function onDidShowAnnotTooltip() {
   addGeneStructureListeners(ideo);
   addTissueListeners(ideo);
   addPathwayListeners(ideo);
+  addVariantListeners(ideo);
   ideo.tissueTippy =
     tippy('._ideoGeneTissues[data-tippy-content]', getTippyConfig());
 }
@@ -1802,8 +1804,9 @@ function decorateParalogNeighborhood(annot, descObj, style) {
 /**
  * Enhance tooltip shown on hovering over gene annotation
  */
-function decorateAnnot(annot) {
+async function decorateAnnot(annot) {
   const ideo = this;
+
   if (
     annot.name === ideo.prevClickedAnnot?.name &&
     annot.name === ideo.prevShownAnnot?.name &&
@@ -1858,7 +1861,7 @@ function decorateAnnot(annot) {
 
   const isParalogNeighborhood = annot.name.includes('paralogNeighborhood');
 
-  const geneStructureHtml = getGeneStructureHtml(
+  const geneStructureHtml = await getGeneStructureHtml(
     annot, ideo, isParalogNeighborhood
   );
 

@@ -24,6 +24,7 @@ import {parseGeneStructureCache} from './gene-structure-cache-worker';
 import {parseProteinCache} from './protein-cache-worker';
 import {parseSynonymCache} from './synonym-cache-worker';
 import {parseTissueCache} from './tissue-cache-worker';
+import {parseVariantCacheIndex} from './variant-cache-worker';
 
 /**
  * Populates in-memory content caches from on-disk service worker (SW) caches.
@@ -63,12 +64,13 @@ export async function initCaches(ideo) {
       cacheFactory('paralog', organism, ideo, cacheDir),
       cacheFactory('interaction', organism, ideo, cacheDir),
       cacheFactory('synonym', organism, ideo, cacheDir),
-      cacheFactory('tissue', organism, ideo, cacheDir)
     ]);
 
     if (config.showGeneStructureInTooltip) {
       cacheFactory('geneStructure', organism, ideo, cacheDir);
       cacheFactory('protein', organism, ideo, cacheDir);
+      cacheFactory('tissue', organism, ideo, cacheDir);
+      cacheFactory('variant', organism, ideo, cacheDir);
     }
 
     return cachePromise;
@@ -82,6 +84,7 @@ export async function initCaches(ideo) {
       cacheFactory('protein', organism, ideo, cacheDir);
       cacheFactory('synonym', organism, ideo, cacheDir);
       cacheFactory('tissue', organism, ideo, cacheDir);
+      cacheFactory('variant', organism, ideo, cacheDir);
     }
   }
 }
@@ -128,6 +131,12 @@ const allCacheProps = {
     fn: setTissueCache,
     // worker: tissueCacheWorker // Uncomment when workers work
     parseFn: parseTissueCache // Remove when workers work
+  },
+  variant: {
+    metadata: 'Variant', dir: 'variants',
+    fn: setVariantCache, extension: 'tsv.li',
+    // worker: variantCacheWorker // Uncomment when workers work
+    parseFn: parseVariantCacheIndex // Remove when workers work
   }
 };
 
@@ -176,6 +185,10 @@ function setSynonymCache(parsedCache, ideo) {
 
 function setTissueCache(parsedCache, ideo) {
   ideo.tissueCache = parsedCache;
+}
+
+function setVariantCache(parsedCache, ideo) {
+  ideo.variantCache = parsedCache;
 }
 
 async function cacheFactory(cacheName, orgName, ideo, cacheDir=null) {

@@ -62,8 +62,8 @@ def download(url, output_path, cache=0):
     response = urllib.request.urlopen(request, context=ctx)
     content = response.read().decode()
 
-    print('content')
-    print(content)
+    # print('content')
+    # print(content)
 
     with open(output_path, "w") as f:
         f.write(content)

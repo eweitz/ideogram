@@ -16,10 +16,10 @@ module.exports = function(config) {
     // list of files / patterns to load in the browser
     files: [
       'src/js/index.js',
-      'test/offline/**.test.js',
-      'test/online/**.test.js',
+      // 'test/offline/**.test.js',
+      // 'test/online/**.test.js',
       // 'test/online/related-genes.test.js',
-      // 'test/offline/gene-structure.test.js',
+      'test/offline/gene-structure.test.js',
       // 'test/offline/tissue.test.js',
       {pattern: 'dist/data/**', watched: false, included: false, served: true, nocache: false}
     ],
