@@ -152,6 +152,7 @@ function addHeader(pwId, pathwayJson, pathwayContainer) {
 /** Fetch and render WikiPathways diagram for given pathway ID */
 export async function drawPathway(
   pwId, sourceGene, destGene,
+  outerSelector='#_ideogramOuterWrap',
   dimensions={height: 440, width: 900}, retryAttempt=0
 ) {
   const pvjsScript = document.querySelector(`script[src="${PVJS_URL}"]`);
@@ -170,7 +171,10 @@ export async function drawPathway(
   ) {
     if (retryAttempt <= 40) {
       setTimeout(() => {
-        drawPathway(pwId, sourceGene, destGene, dimensions, retryAttempt++);
+        drawPathway(
+          pwId, sourceGene, destGene,
+          outerSelector, dimensions, retryAttempt++
+        );
       }, 250);
       return;
     } else {
@@ -192,7 +196,7 @@ export async function drawPathway(
   const highlights = sourceHighlights.concat(destHighlights);
 
   const oldPathwayContainer = document.querySelector(containerSelector);
-  const ideoContainerDom = document.querySelector('#_ideogramOuterWrap');
+  const ideoContainerDom = document.querySelector(outerSelector);
   if (oldPathwayContainer) {
     oldPathwayContainer.remove();
   }

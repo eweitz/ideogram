@@ -68,6 +68,10 @@ import {
   plotRelatedGenes, getRelatedGenesByType
 } from './kit/related-genes';
 
+import {
+  drawPathway as _drawPathway
+} from './kit/pathway-viewer.js';
+
 export default class Ideogram {
   constructor(config) {
 
@@ -339,5 +343,26 @@ export default class Ideogram {
   */
   static initGeneLeads(config, annotsInList='all') {
     return _initGeneLeads(config, annotsInList);
+  }
+
+  /**
+   * Wrapper for drawing biological pathways using cached WikiPathways data
+   *
+   * @param {String} pwId WikiPathways ID, e.g. "WP5109"
+   * @param {String} sourceGene Symbol of source gene, e.g. "LDLR"
+   * @param {String} destGene Symbol of destination gene, e.g. "PCSK9"
+   * @param {String} outerSelector DOM selector of container, e.g. "#my-diagram"
+   * @param {Object} dimensions Height and width of pathway diagram
+  */
+  static drawPathway(
+    pwId, sourceGene, destGene,
+    outerSelector,
+    dimensions={height: 440, width: 900}
+  ) {
+    _drawPathway(
+      pwId, sourceGene, destGene,
+      outerSelector,
+      dimensions=dimensions
+    );
   }
 }
