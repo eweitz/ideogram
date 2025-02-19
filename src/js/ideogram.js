@@ -72,6 +72,10 @@ import {
   drawPathway as _drawPathway
 } from './kit/pathway-viewer.js';
 
+import {
+  initCaches as _initCaches
+} from './init/caches/cache';
+
 export default class Ideogram {
   constructor(config) {
 
@@ -364,5 +368,18 @@ export default class Ideogram {
       outerSelector,
       dimensions=dimensions
     );
+  }
+
+  /**
+   * Wrapper for initializing cached data
+   *
+   * @param {Object} config Includes organism, useCache, etc.
+  */
+  static initCaches(config={
+    organism: 'homo-sapiens', useCache: true,
+    awaitCache: true,
+    showGeneStructureInTooltip: true
+  }) {
+    _initCaches(config);
   }
 }

@@ -119,7 +119,7 @@ function finishInit(t0) {
   if (config.geometry === 'collinear') collinearizeChromosomes(ideo);
 
   if (ideo.config.debug) console.time('initCache: Ideogram');
-  initCaches(ideo).then(() => {
+  initCaches(ideo.config).then(() => {
     if (ideo.config.debug) console.timeEnd('initCache: Ideogram');
     if (ideo.onLoadCallback) ideo.onLoadCallback();
   });

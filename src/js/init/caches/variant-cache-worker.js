@@ -171,11 +171,11 @@ function parseVariant(line, variantCache) {
 async function getVariants(gene, ideo) {
   const variants = [];
 
-  const cache = ideo.variantCache;
+  const cache = Ideogram.variantCache;
   const byteRange = cache.byteRangesByName[gene];
 
   // Easier debuggability
-  if (!ideo.cacheRangeFetch) ideo.cacheRangeFetch = cacheRangeFetch;
+  if (!Ideogram.cacheRangeFetch) Ideogram.cacheRangeFetch = cacheRangeFetch;
 
   if (!byteRange) return [];
 
@@ -188,7 +188,7 @@ async function getVariants(gene, ideo) {
   const orgName = 'homo-sapiens';
   const cacheUrl = getCacheUrl(orgName, cacheDir, cacheType, extension);
 
-  const geneLocus = ideo.geneCache.lociByName[gene];
+  const geneLocus = Ideogram.geneCache.lociByName[gene];
 
   // Get variant data only for the requested gene
   const data = await cacheRangeFetch(cacheUrl, byteRange);

@@ -464,7 +464,7 @@ function getMetricTicks(teObject, height) {
 function addDetailedCurve(traceDom, ideo) {
   const gene = traceDom.getAttribute('data-gene');
   const tissue = traceDom.getAttribute('data-tissue');
-  const tissueExpressions = ideo.tissueExpressionsByGene[gene];
+  const tissueExpressions = Ideogram.tissueExpressionsByGene[gene];
 
   let teObject = tissueExpressions.find(t => t.tissue === tissue);
   const maxWidthPx = 225; // Same width as RNA & protein diagrams
@@ -580,7 +580,7 @@ function getExpressionPlotHtml(gene, tissueExpressions, ideo) {
   }).join('');
 
   let containerStyle = 'style="margin-bottom: 30px;"';
-  const hasStructure = gene in ideo.geneStructureCache;
+  const hasStructure = gene in Ideogram.geneStructureCache;
   if (!hasStructure) { // e.g. MALAT1
     containerStyle = 'style="margin-bottom: 10px;"';
   }
@@ -605,7 +605,7 @@ function updateTissueExpressionPlot(ideo) {
   const plotParent = plot.parentElement;
 
   const gene = document.querySelector('#ideo-related-gene').innerText;
-  const tissueExpressions = ideo.tissueExpressionsByGene[gene];
+  const tissueExpressions = Ideogram.tissueExpressionsByGene[gene];
 
   const newPlotHtml = getExpressionPlotHtml(gene, tissueExpressions, ideo);
 
@@ -665,7 +665,7 @@ function focusMiniCurve(traceDom, ideo, reset=false) {
   const refTissue = reset ? null : traceDom.getAttribute('data-tissue');
 
   const numTissues = !ideo.showTissuesMore ? 10 : 3;
-  let tissueExpressions = ideo.tissueExpressionsByGene[gene];
+  let tissueExpressions = Ideogram.tissueExpressionsByGene[gene];
 
   const maxPx = MINI_CURVE_WIDTH;
   const relative = true;
@@ -709,7 +709,10 @@ function focusMiniCurve(traceDom, ideo, reset=false) {
 }
 
 export function getTissueHtml(annot, ideo) {
-  if (!ideo.tissueCache || !(annot.name in ideo.tissueCache.byteRangesByName)) {
+  if (
+    !Ideogram.tissueCache ||
+    !(annot.name in Ideogram.tissueCache.byteRangesByName)
+  ) {
     // e.g. MIR23A
     return '<br/>';
   }
@@ -719,7 +722,7 @@ export function getTissueHtml(annot, ideo) {
   }
 
   const gene = annot.name;
-  const tissueExpressions = ideo.tissueExpressionsByGene[gene];
+  const tissueExpressions = Ideogram.tissueExpressionsByGene[gene];
   if (!tissueExpressions) return;
   const tissueHtml =
     getExpressionPlotHtml(gene, tissueExpressions, ideo);

@@ -27,16 +27,15 @@ function processIds(ids) {
   return processedIds;
 }
 
-async function getTissueExpressions(gene, ideo) {
-  const cache = ideo.tissueCache;
+async function getTissueExpressions(gene, config) {
+  const cache = Ideogram.tissueCache;
   const byteRange = cache.byteRangesByName[gene];
 
   // Easier debuggability
-  if (!ideo.cacheRangeFetch) ideo.cacheRangeFetch = cacheRangeFetch;
+  if (!Ideogram.cacheRangeFetch) Ideogram.cacheRangeFetch = cacheRangeFetch;
 
   if (!byteRange) return null;
 
-  const config = ideo.config;
   let cacheDir = null;
   if (config.cacheDir) cacheDir = config.cacheDir;
   const cacheType = 'tissues';

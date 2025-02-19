@@ -45,9 +45,8 @@ import {parseVariantCacheIndex} from './variant-cache-worker';
  * possible completely offline (i.e. a progressive web component) -- but only
  * once caches are populated.
  */
-export async function initCaches(ideo) {
+export async function initCaches(config) {
 
-  const config = ideo.config;
   if (!config.useCache) return;
 
   const organism = config.organism;
@@ -60,31 +59,31 @@ export async function initCaches(ideo) {
     // resolves a Promise, whereas the others return upon completing their
     // respective initializations.
     const cachePromise = Promise.all([
-      cacheFactory('gene', organism, ideo, cacheDir),
-      cacheFactory('paralog', organism, ideo, cacheDir),
-      cacheFactory('interaction', organism, ideo, cacheDir),
-      cacheFactory('synonym', organism, ideo, cacheDir),
+      cacheFactory('gene', organism, config, cacheDir),
+      cacheFactory('paralog', organism, config, cacheDir),
+      cacheFactory('interaction', organism, config, cacheDir),
+      cacheFactory('synonym', organism, config, cacheDir),
     ]);
 
     if (config.showGeneStructureInTooltip) {
-      cacheFactory('geneStructure', organism, ideo, cacheDir);
-      cacheFactory('protein', organism, ideo, cacheDir);
-      cacheFactory('tissue', organism, ideo, cacheDir);
-      cacheFactory('variant', organism, ideo, cacheDir);
+      cacheFactory('geneStructure', organism, config, cacheDir);
+      cacheFactory('protein', organism, config, cacheDir);
+      cacheFactory('tissue', organism, config, cacheDir);
+      cacheFactory('variant', organism, config, cacheDir);
     }
 
     return cachePromise;
 
   } else {
-    cacheFactory('gene', organism, ideo, cacheDir);
-    cacheFactory('paralog', organism, ideo, cacheDir);
-    cacheFactory('interaction', organism, ideo, cacheDir);
+    cacheFactory('gene', organism, config, cacheDir);
+    cacheFactory('paralog', organism, config, cacheDir);
+    cacheFactory('interaction', organism, config, cacheDir);
     if (config.showGeneStructureInTooltip) {
-      cacheFactory('geneStructure', organism, ideo, cacheDir);
-      cacheFactory('protein', organism, ideo, cacheDir);
-      cacheFactory('synonym', organism, ideo, cacheDir);
-      cacheFactory('tissue', organism, ideo, cacheDir);
-      cacheFactory('variant', organism, ideo, cacheDir);
+      cacheFactory('geneStructure', organism, config, cacheDir);
+      cacheFactory('protein', organism, config, cacheDir);
+      cacheFactory('synonym', organism, config, cacheDir);
+      cacheFactory('tissue', organism, config, cacheDir);
+      cacheFactory('variant', organism, config, cacheDir);
     }
   }
 }
@@ -140,14 +139,14 @@ const allCacheProps = {
   }
 };
 
-function setGeneCache(parsedCache, ideo) {
+function setGeneCache(parsedCache) {
   const [
     interestingNames, nameCaseMap, namesById, fullNamesById,
     idsByName, lociByName, lociById
     //, sortedAnnots
   ] = parsedCache;
 
-  ideo.geneCache = {
+  Ideogram.geneCache = {
     interestingNames, // Array ordered by general or scholarly interest
     nameCaseMap, // Maps of lowercase gene names to proper gene names
     namesById,
@@ -159,46 +158,46 @@ function setGeneCache(parsedCache, ideo) {
   };
 }
 
-function setParalogCache(parsedCache, ideo) {
+function setParalogCache(parsedCache) {
   const paralogsByName = parsedCache;
   // Array of paralog Ensembl IDs by (uppercase) gene name
-  ideo.paralogCache = {paralogsByName};
+  Ideogram.paralogCache = {paralogsByName};
 }
 
-function setInteractionCache(parsedCache, ideo) {
+function setInteractionCache(parsedCache) {
   const interactionsByName = parsedCache;
-  ideo.interactionCache = interactionsByName;
+  Ideogram.interactionCache = interactionsByName;
 }
 
-function setGeneStructureCache(parsedCache, ideo) {
+function setGeneStructureCache(parsedCache) {
   const featuresByGene = parsedCache;
-  ideo.geneStructureCache = featuresByGene;
+  Ideogram.geneStructureCache = featuresByGene;
 }
 
-function setProteinCache(parsedCache, ideo) {
-  ideo.proteinCache = parsedCache;
+function setProteinCache(parsedCache) {
+  Ideogram.proteinCache = parsedCache;
 }
 
-function setSynonymCache(parsedCache, ideo) {
-  ideo.synonymCache = parsedCache;
+function setSynonymCache(parsedCache) {
+  Ideogram.synonymCache = parsedCache;
 }
 
-function setTissueCache(parsedCache, ideo) {
-  ideo.tissueCache = parsedCache;
+function setTissueCache(parsedCache) {
+  Ideogram.tissueCache = parsedCache;
 }
 
-function setVariantCache(parsedCache, ideo) {
-  ideo.variantCache = parsedCache;
+function setVariantCache(parsedCache) {
+  Ideogram.variantCache = parsedCache;
 }
 
-async function cacheFactory(cacheName, orgName, ideo, cacheDir=null) {
+async function cacheFactory(cacheName, orgName, config, cacheDir=null) {
 
   const cacheProps = allCacheProps[cacheName];
-  const debug = ideo.config.debug;
+  const debug = config.debug;
 
   /**
- * Fetch cached gene data, transform it usefully, and set it as ideo prop
- */
+   * Fetch cached gene data, transform it usefully, and set it as Ideogram prop
+   */
   const startTime = performance.now();
   let perfTimes = {};
 
@@ -211,7 +210,6 @@ async function cacheFactory(cacheName, orgName, ideo, cacheDir=null) {
   // Skip initialization if cache is already populated
   if (Ideogram[staticProp] && Ideogram[staticProp][orgName]) {
     // Simplify chief use case, i.e. for single organism
-    ideo[staticProp] = Ideogram[staticProp][orgName];
     return;
   }
 
@@ -233,8 +231,8 @@ async function cacheFactory(cacheName, orgName, ideo, cacheDir=null) {
   //   cacheWorker.postMessage(message);
   //   cacheWorker.addEventListener('message', event => {
   //     [parsedCache, perfTimes] = event.data;
-      cacheProps.fn(parsedCache, ideo, orgName);
-      Ideogram[staticProp][orgName] = ideo[staticProp];
+      cacheProps.fn(parsedCache, orgName);
+      Ideogram[staticProp][orgName] = Ideogram[staticProp];
 
       if (debug) {
         console.timeEnd(`${cacheName}Cache total`);

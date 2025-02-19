@@ -191,7 +191,7 @@ function isEligibleforProteinSvg(gene, ideo) {
     ideo.config.showProteinInTooltip &&
     !(
       'proteinCache' in ideo === false ||
-      gene in ideo.proteinCache === false ||
+      gene in Ideogram.proteinCache === false ||
       ('spliceExons' in ideo === false || ideo.spliceExons === false)
     )
   );
@@ -220,7 +220,7 @@ function getProteinRect(cds, hasTopology) {
  * Example: LDLR
  */
 export function getHasTopology(gene, ideo) {
-  const hasTopology = ideo.proteinCache[gene]?.some(entry => {
+  const hasTopology = Ideogram.proteinCache[gene]?.some(entry => {
     return entry.protein.some(
       feature => isTopologyFeature(feature)
     );
@@ -238,7 +238,7 @@ export function getProtein(
   const isEligible = isEligibleforProteinSvg(gene, ideo);
   if (!isEligible) return ['<br/>', null];
 
-  const entry = ideo.proteinCache[gene].find(d => {
+  const entry = Ideogram.proteinCache[gene].find(d => {
     return d.transcriptName === structureName;
   });
   if (!entry) return ['<br/>', null];
