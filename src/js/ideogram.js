@@ -361,12 +361,14 @@ export default class Ideogram {
   static drawPathway(
     pwId, sourceGene, destGene,
     outerSelector,
-    dimensions={height: 440, width: 900}
+    dimensions={height: 440, width: 900},
+    showClose=true
   ) {
     _drawPathway(
       pwId, sourceGene, destGene,
       outerSelector,
-      dimensions=dimensions
+      dimensions=dimensions,
+      showClose=showClose
     );
   }
 

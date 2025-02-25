@@ -122,7 +122,7 @@ function zoomToEntity(entityId, retryAttempt=0) {
 }
 
 /** Add header bar to pathway diagram with name, link, close button, etc. */
-function addHeader(pwId, pathwayJson, pathwayContainer) {
+function addHeader(pwId, pathwayJson, pathwayContainer, showClose=true) {
   const pathwayName = pathwayJson.pathway.name;
   const url = `https://wikipathways.org/pathways/${pwId}`;
   const linkAttrs = `href="${url}" target="_blank" style="margin-left: 4px;"`;
@@ -130,23 +130,30 @@ function addHeader(pwId, pathwayJson, pathwayContainer) {
   // Link to full page on WikiPathways, using pathway title
   const pathwayLink = `<a ${linkAttrs}>${pathwayName}</a>`;
 
-  // Close button
-  const style =
-    'style="float: right; background-color: #aaa; border: none; ' +
-    'color: white; font-weight: bold; font-size: 16px; padding: 0px 4px; ' +
-    'border-radius: 3px; cursor: pointer;"';
-  const buttonAttrs = `class="_ideoPathwayCloseButton" ${style}`;
-  const closeButton = `<button ${buttonAttrs}}>x</button>`;
+  let closeButton;
+  if (showClose) {
+    // Close button
+    const style =
+      'style="float: right; background-color: #aaa; border: none; ' +
+      'color: white; font-weight: bold; font-size: 16px; padding: 0px 4px; ' +
+      'border-radius: 3px; cursor: pointer;"';
+    const buttonAttrs = `class="_ideoPathwayCloseButton" ${style}`;
+    closeButton = `<button ${buttonAttrs}}>x</button>`;
+  } else {
+    closeButton = '';
+  }
 
   const headerBar =
     `<div class="_ideoPathwayHeader">${pathwayLink}${closeButton}</div>`;
   pathwayContainer.insertAdjacentHTML('afterBegin', headerBar);
 
-  const closeButtonDom = document.querySelector('._ideoPathwayCloseButton');
-  closeButtonDom.addEventListener('click', function(event) {
-    const pathwayContainer = document.querySelector(`#${CONTAINER_ID}`);
-    pathwayContainer.remove();
-  });
+  if (showClose) {
+    const closeButtonDom = document.querySelector('._ideoPathwayCloseButton');
+    closeButtonDom.addEventListener('click', function(event) {
+      const pathwayContainer = document.querySelector(`#${CONTAINER_ID}`);
+      pathwayContainer.remove();
+    });
+  }
 }
 
 function removeCptacAssayPortalClause(inputText) {
@@ -254,7 +261,9 @@ function addFooter(pathwayJson, pathwayContainer) {
 export async function drawPathway(
   pwId, sourceGene, destGene,
   outerSelector='#_ideogramOuterWrap',
-  dimensions={height: 440, width: 900}, retryAttempt=0
+  dimensions={height: 440, width: 900},
+  showClose=true,
+  retryAttempt=0
 ) {
   const pvjsScript = document.querySelector(`script[src="${PVJS_URL}"]`);
   if (!pvjsScript) {loadPvjsScript();}
@@ -274,7 +283,7 @@ export async function drawPathway(
       setTimeout(() => {
         drawPathway(
           pwId, sourceGene, destGene,
-          outerSelector, dimensions, retryAttempt++
+          outerSelector, dimensions, showClose, retryAttempt++
         );
       }, 250);
       return;
@@ -338,7 +347,7 @@ export async function drawPathway(
 
   // const pathwayViewer = new Pvjs(pvjsProps);
   const pathwayViewer = new Pvjs(pvjsContainer, pvjsProps);
-  addHeader(pwId, pathwayJson, pathwayContainer);
+  addHeader(pwId, pathwayJson, pathwayContainer, showClose);
 
   addFooter(pathwayJson, pathwayContainer);
 
