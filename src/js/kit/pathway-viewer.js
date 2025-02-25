@@ -173,14 +173,81 @@ function formatDescription(rawText) {
   return trimmedText;
 }
 
-function addFooter(pathwayJson, pathwayContainer) {
+function getDescription(pathwayJson) {
   const rawText =
-    pathwayJson.pathway.comments.filter(
-      c => c.source === 'WikiPathways-description'
-    )[0].content;
+  pathwayJson.pathway.comments.filter(
+    c => c.source === 'WikiPathways-description'
+  )[0].content;
   const descriptionText = formatDescription(rawText);
-  const description = `<br/><div>${descriptionText}</div>`;
-  pathwayContainer.insertAdjacentHTML('beforeEnd', description);
+
+  const style = `style="font-weight: bold"`;
+
+  const description =
+    `<div>` +
+      // `<div class="ideoPathwayDescription" ${style}>Description</div>` +
+      descriptionText +
+    `</div>`;
+
+  return description;
+}
+
+function parsePwAnnotations(entitiesById, keys, ontology) {
+  const pwKeys = keys.filter(k => entitiesById[k].ontology === ontology);
+  const pwAnnotations = pwKeys.map(k => entitiesById[k]);
+  return pwAnnotations;
+}
+
+function getPathwayAnnotations(pathwayJson) {
+  const entitiesById = pathwayJson.entitiesById;
+  const keys = Object.keys(entitiesById).filter(k => k.startsWith('http://identifiers.org'));
+  const sentenceCases = {
+    'Cell Type': 'Cell type'
+  }
+  const ontologies = [
+    'Cell Type'
+    // 'Disease', 'Pathway Ontology' // maybe later
+  ];
+  const pathwayAnnotationsList = ontologies.map(ontology => {
+    const pwAnnotations = parsePwAnnotations(entitiesById, keys, ontology);
+    const links = pwAnnotations.map(pwa => {
+      const id = pwa.xrefIdentifier.replace(':', '_');
+      const url = `https://purl.obolibrary.org/obo/${id}`;
+      return `<a href="${url}" target="_blank">${pwa.term}</a>`;
+    }).join(', ');
+
+    const refinedOntology = sentenceCases[ontology];
+    const safeOntology = ontology.replaceAll(' ', '_');
+    const cls = `class="ideoPathwayOntology__${safeOntology}"`;
+
+    return `<div ${cls}>${refinedOntology}: ${links}</div>`;
+  });
+
+  if (pathwayAnnotationsList.length === 0) {
+    return '';
+  }
+
+  const style = `style="font-weight: bold"`;
+
+  const pathwayAnnotations =
+  `<div>` +
+    // `<div class="ideoPathwayAnnotations" ${style}>Pathway annotations</div>` +
+    pathwayAnnotationsList +
+  `</div>`;
+
+  return pathwayAnnotations;
+}
+
+function addFooter(pathwayJson, pathwayContainer) {
+  const description = getDescription(pathwayJson);
+  const pathwayAnnotations = getPathwayAnnotations(pathwayJson);
+  const footer =
+    `<br/>` +
+    `<div class="_ideoPathwayFooter">` +
+      description +
+      `<br/>` +
+      pathwayAnnotations +
+    `</div>`;
+  pathwayContainer.insertAdjacentHTML('beforeEnd', footer);
 }
 
 /** Fetch and render WikiPathways diagram for given pathway ID */
