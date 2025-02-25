@@ -149,8 +149,28 @@ function addHeader(pwId, pathwayJson, pathwayContainer) {
   });
 }
 
+function removeCptacAssayPortalClause(inputText) {
+  const regex = /Proteins on this pathway have targeted assays available via the \[https:\/\/assays\.cancer\.gov\/available_assays\?wp_id=WP\d+\s+CPTAC Assay Portal\]/g;
+  return inputText.replace(regex, '');
+}
+
+function convertMediaWikiLinks(inputText) {
+  // Regular expression to match the MediaWiki link format
+  const regex = /\[([^\s]+)\s+([^\]]+)\]/g;
+
+  // Replace the MediaWiki link format with an HTML anchor tag
+  return inputText.replace(regex, (match, url, text) => {
+    return `<a href="${url}">${text}</a>`;
+  });
+}
+
 function formatDescription(rawText) {
-  return rawText.replaceAll('\r\n', '<br/><br/>');
+  rawText = rawText.replaceAll('\r\n\r\n', '\r\n');
+  rawText = rawText.replaceAll('\r\n', '<br/><br/>');
+  const denoisedText = removeCptacAssayPortalClause(rawText);
+  const linkedText = convertMediaWikiLinks(denoisedText);
+  const trimmedText = linkedText.trim();
+  return trimmedText;
 }
 
 function addFooter(pathwayJson, pathwayContainer) {
