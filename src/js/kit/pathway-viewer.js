@@ -13,7 +13,7 @@ async function fetchPathwayViewerJson(pwId) {
   const response = await fetch(url);
   const pathwayJson = await response.json();
 
-  window.pathwayJson = pathwayJson;
+  Ideogram.pathwayJson = pathwayJson;
   return pathwayJson;
 }
 
@@ -149,6 +149,20 @@ function addHeader(pwId, pathwayJson, pathwayContainer) {
   });
 }
 
+function formatDescription(rawText) {
+  return rawText.replaceAll('\r\n', '<br/><br/>');
+}
+
+function addFooter(pathwayJson, pathwayContainer) {
+  const rawText =
+    pathwayJson.pathway.comments.filter(
+      c => c.source === 'WikiPathways-description'
+    )[0].content;
+  const descriptionText = formatDescription(rawText);
+  const description = `<br/><div>${descriptionText}</div>`;
+  pathwayContainer.insertAdjacentHTML('beforeEnd', description);
+}
+
 /** Fetch and render WikiPathways diagram for given pathway ID */
 export async function drawPathway(
   pwId, sourceGene, destGene,
@@ -238,6 +252,8 @@ export async function drawPathway(
   // const pathwayViewer = new Pvjs(pvjsProps);
   const pathwayViewer = new Pvjs(pvjsContainer, pvjsProps);
   addHeader(pwId, pathwayJson, pathwayContainer);
+
+  addFooter(pathwayJson, pathwayContainer);
 
   // zoomToEntity(sourceEntityId);
 
