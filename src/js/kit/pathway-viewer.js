@@ -158,7 +158,9 @@ function addHeader(pwId, pathwayJson, pathwayContainer, showClose=true) {
 
 function removeCptacAssayPortalClause(inputText) {
   const regex = /Proteins on this pathway have targeted assays available via the \[https:\/\/assays\.cancer\.gov\/available_assays\?wp_id=WP\d+\s+CPTAC Assay Portal\]/g;
-  return inputText.replace(regex, '');
+  const regex2 = /Proteins on this pathway have targeted assays available via the \[CPTAC Assay Portal\]\(https:\/\/assays\.cancer\.gov\/available_assays\?wp_id=WP\d+\)/g;
+
+  return inputText.replace(regex, '').replace(regex2, '');
 }
 
 function convertMediaWikiLinks(inputText) {
@@ -209,7 +211,7 @@ function getPathwayAnnotations(pathwayJson) {
   const keys = Object.keys(entitiesById).filter(k => k.startsWith('http://identifiers.org'));
   const sentenceCases = {
     'Cell Type': 'Cell type'
-  }
+  };
   const ontologies = [
     'Cell Type'
     // 'Disease', 'Pathway Ontology' // maybe later
@@ -225,6 +227,8 @@ function getPathwayAnnotations(pathwayJson) {
     const refinedOntology = sentenceCases[ontology];
     const safeOntology = ontology.replaceAll(' ', '_');
     const cls = `class="ideoPathwayOntology__${safeOntology}"`;
+
+    if (links === '') return '';
 
     return `<div ${cls}>${refinedOntology}: ${links}</div>`;
   });
