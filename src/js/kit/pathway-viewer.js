@@ -172,7 +172,7 @@ function convertMarkdownLinks(markdown) {
   const htmlWithClassedLinks =
     html.replace(
       /<a href="([^"]+)">/g,
-      '<a href="$1" class="_ideoPathwayDescriptionLink">'
+      '<a href="$1" class="_ideoPathwayDescriptionLink" target="_blank">'
     );
 
   return htmlWithClassedLinks;
