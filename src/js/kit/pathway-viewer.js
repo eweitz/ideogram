@@ -1,3 +1,5 @@
+import snarkdown from 'snarkdown';
+
 const PVJS_URL = 'https://cdn.jsdelivr.net/npm/@wikipathways/pvjs@5.0.1/dist/pvjs.vanilla.js';
 const SVGPANZOOM_URL = 'https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.5.0/dist/svg-pan-zoom.min.js';
 const CONTAINER_ID = '_ideogramPathwayContainer';
@@ -163,21 +165,24 @@ function removeCptacAssayPortalClause(inputText) {
   return inputText.replace(regex, '').replace(regex2, '');
 }
 
-function convertMediaWikiLinks(inputText) {
-  // Regular expression to match the MediaWiki link format
-  const regex = /\[([^\s]+)\s+([^\]]+)\]/g;
+/** Convert Markdown links to standard <a href="... links */
+function convertMarkdownLinks(markdown) {
+  const html = snarkdown(markdown);
 
-  // Replace the MediaWiki link format with an HTML anchor tag
-  return inputText.replace(regex, (match, url, text) => {
-    return `<a href="${url}">${text}</a>`;
-  });
+  const htmlWithClassedLinks =
+    html.replace(
+      /<a href="([^"]+)">/g,
+      '<a href="$1" class="_ideoPathwayDescriptionLink">'
+    );
+
+  return htmlWithClassedLinks;
 }
 
 function formatDescription(rawText) {
   rawText = rawText.replaceAll('\r\n\r\n', '\r\n');
   rawText = rawText.replaceAll('\r\n', '<br/><br/>');
   const denoisedText = removeCptacAssayPortalClause(rawText);
-  const linkedText = convertMediaWikiLinks(denoisedText);
+  const linkedText = convertMarkdownLinks(denoisedText);
   const trimmedText = linkedText.trim();
   return trimmedText;
 }
