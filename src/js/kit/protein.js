@@ -190,9 +190,9 @@ function isEligibleforProteinSvg(gene, ideo) {
   return (
     ideo.config.showProteinInTooltip &&
     !(
-      'proteinCache' in ideo === false ||
+      'proteinCache' in Ideogram === false ||
       gene in Ideogram.proteinCache === false ||
-      ('spliceExons' in ideo === false || ideo.spliceExons === false)
+      ('spliceExons' in Ideogram === false || Ideogram.spliceExons === false)
     )
   );
 }

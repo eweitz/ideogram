@@ -69,7 +69,9 @@ export async function initCaches(config) {
       cacheFactory('geneStructure', organism, config, cacheDir);
       cacheFactory('protein', organism, config, cacheDir);
       cacheFactory('tissue', organism, config, cacheDir);
-      cacheFactory('variant', organism, config, cacheDir);
+      if (config.showVariantInTooltip) {
+        cacheFactory('variant', organism, config, cacheDir);
+      }
     }
 
     return cachePromise;
@@ -83,7 +85,9 @@ export async function initCaches(config) {
       cacheFactory('protein', organism, config, cacheDir);
       cacheFactory('synonym', organism, config, cacheDir);
       cacheFactory('tissue', organism, config, cacheDir);
-      cacheFactory('variant', organism, config, cacheDir);
+      if (config.showVariantInTooltip) {
+        cacheFactory('variant', organism, config, cacheDir);
+      }
     }
   }
 }

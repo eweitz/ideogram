@@ -1961,6 +1961,7 @@ const globalKitDefaults = {
   showAnnotLabels: true,
   showGeneStructureInTooltip: true,
   showProteinInTooltip: true,
+  showVariantInTooltip: false,
   chrFillColor: {centromere: '#DAAAAA'}
 };
 
