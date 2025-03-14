@@ -158,11 +158,24 @@ function addHeader(pwId, pathwayJson, pathwayContainer, showClose=true) {
   }
 }
 
+/**
+ *
+ */
 function removeCptacAssayPortalClause(inputText) {
-  const regex = /Proteins on this pathway have targeted assays available via the \[https:\/\/assays\.cancer\.gov\/available_assays\?wp_id=WP\d+\s+CPTAC Assay Portal\]/g;
-  const regex2 = /Proteins on this pathway have targeted assays available via the \[CPTAC Assay Portal\]\(https:\/\/assays\.cancer\.gov\/available_assays\?wp_id=WP\d+\)/g;
+  // eslint-disable-next-line max-len
+  const regex = /Proteins on this pathway have targeted assays available via the \[https:\/\/assays\.cancer\.gov\/available_assays\?wp_id=WP\d+\s+CPTAC Assay Portal\]\./g;
+  // eslint-disable-next-line max-len
+  const regex2 = /Proteins on this pathway have targeted assays available via the \[CPTAC Assay Portal\]\(https:\/\/assays\.cancer\.gov\/available_assays\?wp_id=WP\d+\)\./g;
 
   return inputText.replace(regex, '').replace(regex2, '');
+}
+
+
+function removePhosphoSitePlusClause(inputText) {
+  // eslint-disable-next-line max-len
+  const regex = 'Phosphorylation sites were added based on information from PhosphoSitePlus (R), www.phosphosite.org.';
+
+  return inputText.replace(regex, '');
 }
 
 /** Convert Markdown links to standard <a href="... links */
@@ -181,7 +194,8 @@ function convertMarkdownLinks(markdown) {
 function formatDescription(rawText) {
   rawText = rawText.replaceAll('\r\n\r\n', '\r\n');
   rawText = rawText.replaceAll('\r\n', '<br/><br/>');
-  const denoisedText = removeCptacAssayPortalClause(rawText);
+  const denoisedPhospho = removePhosphoSitePlusClause(rawText);
+  const denoisedText = removeCptacAssayPortalClause(denoisedPhospho);
   const linkedText = convertMarkdownLinks(denoisedText);
   const trimmedText = linkedText.trim();
   return trimmedText;
