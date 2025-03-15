@@ -232,8 +232,9 @@ function getPathwayAnnotations(pathwayJson) {
     'Cell Type': 'Cell type'
   };
   const ontologies = [
-    'Cell Type'
-    // 'Disease', 'Pathway Ontology' // maybe later
+    'Cell Type',
+    'Disease'
+    // 'Pathway Ontology' // maybe later
   ];
   const pathwayAnnotationsList = ontologies.map(ontology => {
     const pwAnnotations = parsePwAnnotations(entitiesById, keys, ontology);
@@ -243,14 +244,14 @@ function getPathwayAnnotations(pathwayJson) {
       return `<a href="${url}" target="_blank">${pwa.term}</a>`;
     }).join(', ');
 
-    const refinedOntology = sentenceCases[ontology];
+    const refinedOntology = sentenceCases[ontology] ?? ontology;
     const safeOntology = ontology.replaceAll(' ', '_');
     const cls = `class="ideoPathwayOntology__${safeOntology}"`;
 
     if (links === '') return '';
 
     return `<div ${cls}>${refinedOntology}: ${links}</div>`;
-  });
+  }).join('');
 
   if (pathwayAnnotationsList.length === 0) {
     return '';
