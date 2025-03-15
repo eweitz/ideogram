@@ -268,6 +268,17 @@ function getPathwayAnnotations(pathwayJson) {
   return pathwayAnnotations;
 }
 
+/** Get list of unique genes in pathway */
+export function getPathwayGenes() {
+  const entities = Object.values(Ideogram.pathwayJson.entitiesById);
+  const genes = entities.filter(entity => {
+    return ['GeneProduct', 'RNA', 'Protein'].includes(entity.wpType);
+  }).map(e => e.textContent);
+  const uniqueGenes = Array.from(new Set(genes));
+  return uniqueGenes;
+}
+
+
 function addFooter(pathwayJson, pathwayContainer) {
   const description = getDescription(pathwayJson);
   const pathwayAnnotations = getPathwayAnnotations(pathwayJson);

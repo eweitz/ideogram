@@ -69,7 +69,8 @@ import {
 } from './kit/related-genes';
 
 import {
-  drawPathway as _drawPathway
+  drawPathway as _drawPathway,
+  getPathwayGenes as _getPathwayGenes
 } from './kit/pathway-viewer.js';
 
 import {
@@ -383,5 +384,14 @@ export default class Ideogram {
     showGeneStructureInTooltip: true
   }) {
     _initCaches(config);
+  }
+
+  /**
+   * Get list of gene names in pathway
+   *
+   * @param {Object} config Includes organism, useCache, etc.
+  */
+  static getPathwayGenes() {
+    return _getPathwayGenes();
   }
 }
