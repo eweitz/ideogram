@@ -1657,7 +1657,12 @@ function addPathwayListeners(ideo) {
         // const pathwayName = target.getAttribute('data-pathway-name');
         // const pathway = {id: pathwayId, name: pathwayName};
         // plotPathwayGenes(searchedGene, pathway, ideo);
-        drawPathway(pathwayId, searchedGene, interactingGene);
+        function nodeHoverFn(geneName) {
+          console.log('in nodeHoverFn')
+          return '<div>ok ' + geneName + '</div><div>1234</div>';
+        }
+        drawPathway(pathwayId, searchedGene, interactingGene,
+          undefined, undefined, undefined, nodeHoverFn);
         event.stopPropagation();
       });
     });

@@ -1,4 +1,7 @@
 import snarkdown from 'snarkdown';
+import tippy from 'tippy.js';
+import {getTippyConfig} from '../lib';
+import { tippyLightCss } from './tippy-styles';
 
 const PVJS_URL = 'https://cdn.jsdelivr.net/npm/@wikipathways/pvjs@5.0.1/dist/pvjs.vanilla.js';
 const SVGPANZOOM_URL = 'https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.5.0/dist/svg-pan-zoom.min.js';
@@ -292,12 +295,16 @@ function addFooter(pathwayJson, pathwayContainer) {
   pathwayContainer.insertAdjacentHTML('beforeEnd', footer);
 }
 
+function addPathwayNodeListeners() {
+}
+
 /** Fetch and render WikiPathways diagram for given pathway ID */
 export async function drawPathway(
   pwId, sourceGene, destGene,
   outerSelector='#_ideogramOuterWrap',
   dimensions={height: 440, width: 900},
   showClose=true,
+  nodeHoverFn,
   retryAttempt=0
 ) {
   const pvjsScript = document.querySelector(`script[src="${PVJS_URL}"]`);
@@ -318,7 +325,8 @@ export async function drawPathway(
       setTimeout(() => {
         drawPathway(
           pwId, sourceGene, destGene,
-          outerSelector, dimensions, showClose, retryAttempt++
+          outerSelector, dimensions, showClose, nodeHoverFn,
+          retryAttempt++
         );
       }, 250);
       return;
@@ -396,4 +404,27 @@ export async function drawPathway(
   // Notify listeners of event completion
   const ideogramPathwayEvent = new CustomEvent('ideogramDrawPathway', {detail});
   document.dispatchEvent(ideogramPathwayEvent);
+
+  const css =
+    `<style>
+      ${tippyLightCss}
+    </style>`;
+  pvjsContainer.insertAdjacentHTML('afterBegin', css);
+
+  pathwayContainer.querySelectorAll('g.GeneProduct').forEach(g => {
+    const geneName = g.getAttribute('name');
+    let tooltipContent = geneName;
+    g.addEventListener('mouseover', (event) => {
+      if (nodeHoverFn) {
+        tooltipContent = nodeHoverFn(geneName);
+        g.setAttribute('data-tippy-content', tooltipContent);
+        tippy('g.GeneProduct[data-tippy-content]', tippyConfig);
+      }
+    });
+
+    g.setAttribute(`data-tippy-content`, tooltipContent);
+  });
+
+  const tippyConfig = getTippyConfig();
+  tippy('g.GeneProduct[data-tippy-content]', tippyConfig);
 }
