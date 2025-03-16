@@ -295,9 +295,6 @@ function addFooter(pathwayJson, pathwayContainer) {
   pathwayContainer.insertAdjacentHTML('beforeEnd', footer);
 }
 
-function addPathwayNodeListeners() {
-}
-
 /** Fetch and render WikiPathways diagram for given pathway ID */
 export async function drawPathway(
   pwId, sourceGene, destGene,

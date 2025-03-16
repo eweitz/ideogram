@@ -358,18 +358,22 @@ export default class Ideogram {
    * @param {String} destGene Symbol of destination gene, e.g. "PCSK9"
    * @param {String} outerSelector DOM selector of container, e.g. "#my-diagram"
    * @param {Object} dimensions Height and width of pathway diagram
+   * @param {Boolean} showClose Whether to show close button
+   * @param {Function} nodeHoverFn Function to call upon hovering diagram node
   */
   static drawPathway(
     pwId, sourceGene, destGene,
     outerSelector,
     dimensions={height: 440, width: 900},
-    showClose=true
+    showClose=true,
+    nodeHoverFn=undefined
   ) {
     _drawPathway(
       pwId, sourceGene, destGene,
       outerSelector,
       dimensions=dimensions,
-      showClose=showClose
+      showClose=showClose,
+      nodeHoverFn=nodeHoverFn
     );
   }
 
