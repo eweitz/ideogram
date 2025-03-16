@@ -409,11 +409,10 @@ export async function drawPathway(
   pvjsContainer.insertAdjacentHTML('afterBegin', css);
 
   pathwayContainer.querySelectorAll('g.GeneProduct').forEach(g => {
-    const geneName = g.getAttribute('name');
     let tooltipContent = geneName;
     g.addEventListener('mouseover', (event) => {
       if (nodeHoverFn) {
-        tooltipContent = nodeHoverFn(geneName);
+        tooltipContent = nodeHoverFn(event, geneName);
         g.setAttribute('data-tippy-content', tooltipContent);
         tippy('g.GeneProduct[data-tippy-content]', tippyConfig);
       }

@@ -1657,7 +1657,7 @@ function addPathwayListeners(ideo) {
         // const pathwayName = target.getAttribute('data-pathway-name');
         // const pathway = {id: pathwayId, name: pathwayName};
         // plotPathwayGenes(searchedGene, pathway, ideo);
-        function nodeHoverFn(geneName) {
+        function nodeHoverFn(event, geneName) {
           console.log('in nodeHoverFn')
           return '<div>ok ' + geneName + '</div><div>1234</div>';
         }
