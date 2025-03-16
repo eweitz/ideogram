@@ -409,6 +409,7 @@ export async function drawPathway(
   pvjsContainer.insertAdjacentHTML('afterBegin', css);
 
   pathwayContainer.querySelectorAll('g.GeneProduct').forEach(g => {
+    const geneName = g.getAttribute('name');
     let tooltipContent = geneName;
     g.addEventListener('mouseover', (event) => {
       if (nodeHoverFn) {
