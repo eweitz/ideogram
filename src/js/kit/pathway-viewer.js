@@ -1,7 +1,6 @@
 import snarkdown from 'snarkdown';
 import tippy from 'tippy.js';
 import {getTippyConfig} from '../lib';
-import { tippyLightCss } from './tippy-styles';
 
 const PVJS_URL = 'https://cdn.jsdelivr.net/npm/@wikipathways/pvjs@5.0.1/dist/pvjs.vanilla.js';
 const SVGPANZOOM_URL = 'https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.5.0/dist/svg-pan-zoom.min.js';
@@ -401,12 +400,6 @@ export async function drawPathway(
   // Notify listeners of event completion
   const ideogramPathwayEvent = new CustomEvent('ideogramDrawPathway', {detail});
   document.dispatchEvent(ideogramPathwayEvent);
-
-  const css =
-    `<style>
-      ${tippyLightCss}
-    </style>`;
-  pvjsContainer.insertAdjacentHTML('afterBegin', css);
 
   pathwayContainer.querySelectorAll('g.GeneProduct').forEach(g => {
     const geneName = g.getAttribute('name');
