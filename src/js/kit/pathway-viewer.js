@@ -300,7 +300,8 @@ export async function drawPathway(
   outerSelector='#_ideogramOuterWrap',
   dimensions={height: 440, width: 900},
   showClose=true,
-  nodeHoverFn,
+  geneNodeHoverFn,
+  pathwayNodeClickFn,
   retryAttempt=0
 ) {
   const pvjsScript = document.querySelector(`script[src="${PVJS_URL}"]`);
@@ -321,7 +322,8 @@ export async function drawPathway(
       setTimeout(() => {
         drawPathway(
           pwId, sourceGene, destGene,
-          outerSelector, dimensions, showClose, nodeHoverFn,
+          outerSelector, dimensions, showClose,
+          geneNodeHoverFn, pathwayNodeClickFn,
           retryAttempt++
         );
       }, 250);
@@ -401,20 +403,41 @@ export async function drawPathway(
   const ideogramPathwayEvent = new CustomEvent('ideogramDrawPathway', {detail});
   document.dispatchEvent(ideogramPathwayEvent);
 
-  pathwayContainer.querySelectorAll('g.GeneProduct').forEach(g => {
-    const geneName = g.getAttribute('name');
+  // Add mouseover handler to gene nodes in this pathway diagram
+  pathwayContainer.querySelectorAll('g.GeneProduct').forEach(geneNode => {
+    const geneName = geneNode.getAttribute('name');
     let tooltipContent = geneName;
-    g.addEventListener('mouseover', (event) => {
-      if (nodeHoverFn) {
-        tooltipContent = nodeHoverFn(event, geneName);
-        g.setAttribute('data-tippy-content', tooltipContent);
-        tippy('g.GeneProduct[data-tippy-content]', tippyConfig);
+    geneNode.addEventListener('mouseover', (event) => {
+      if (geneNodeHoverFn) {
+        tooltipContent = geneNodeHoverFn(event, geneName);
+        geneNode.setAttribute('data-tippy-content', tooltipContent);
       }
     });
 
-    g.setAttribute(`data-tippy-content`, tooltipContent);
+    geneNode.setAttribute(`data-tippy-content`, tooltipContent);
   });
-
   const tippyConfig = getTippyConfig();
   tippy('g.GeneProduct[data-tippy-content]', tippyConfig);
+
+  // Add click handler to pathway nodes in this pathway diagram
+  if (pathwayNodeClickFn) {
+    pathwayContainer.querySelectorAll('g.Pathway').forEach(pathwayNode => {
+
+      // Add customizable click handler
+      pathwayNode.addEventListener('click', (event) => {
+        const domClasses = Array.from(pathwayNode.classList);
+        const pathwayId = domClasses
+          .find(c => c.startsWith('WikiPathways_'))
+          .split('WikiPathways_')[1]; // e.g. WikiPathways_WP2815 -> WP2815
+
+        pathwayNodeClickFn(event, pathwayId);
+      });
+
+      // Indicate this new pathway can be rendered on click
+      const tooltipContent = 'Click to show pathway';
+      pathwayNode.setAttribute('data-tippy-content', tooltipContent);
+    });
+
+    tippy('g.Pathway[data-tippy-content]', tippyConfig);
+  }
 }

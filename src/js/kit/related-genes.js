@@ -1657,12 +1657,20 @@ function addPathwayListeners(ideo) {
         // const pathwayName = target.getAttribute('data-pathway-name');
         // const pathway = {id: pathwayId, name: pathwayName};
         // plotPathwayGenes(searchedGene, pathway, ideo);
-        function nodeHoverFn(event, geneName) {
-          console.log('in nodeHoverFn')
+        function geneNodeHoverFn(event, geneName) {
+          console.log('in geneNodeHoverFn')
           return '<div>ok ' + geneName + '</div><div>1234</div>';
         }
+
+        function pathwayNodeClickFn(event, pathwayId) {
+          const pathwayNode = event.target;
+          console.log('in pathwayNodeClickFn, pathwayNode', pathwayNode);
+          console.log('in pathwayNodeClickFn, pathwayId', pathwayId);
+        }
+
         drawPathway(pathwayId, searchedGene, interactingGene,
-          undefined, undefined, undefined, nodeHoverFn);
+          undefined, undefined, undefined,
+          geneNodeHoverFn, pathwayNodeClickFn);
         event.stopPropagation();
       });
     });
