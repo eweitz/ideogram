@@ -18,7 +18,7 @@ A [broader overview](https://speakerdeck.com/eweitz/ideogramjs-chromosome-visual
 
 To link directly to the latest release, copy this snippet:
 ```
-<script src="https://cdn.jsdelivr.net/npm/ideogram@1.50.0/dist/js/ideogram.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ideogram@1.51.0/dist/js/ideogram.min.js"></script>
 ```
 
 You can also easily use the library locally:
@@ -43,7 +43,7 @@ import Ideogram from 'ideogram';
 # Usage
 ```html
 <head>
-  <script src="https://cdn.jsdelivr.net/npm/ideogram@1.50.0/dist/js/ideogram.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ideogram@1.51.0/dist/js/ideogram.min.js"></script>
 </head>
 <body>
 <script>
