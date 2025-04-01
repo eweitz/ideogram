@@ -425,7 +425,7 @@ export async function fetchPathwayInteractions(searchedGene, pathwayId, ideo) {
   nodes.forEach(node => {
     const label = node.getAttribute('TextLabel');
     const normLabel = label.toLowerCase();
-    const isKnownGene = normLabel in ideo.geneCache.nameCaseMap;
+    const isKnownGene = normLabel in Ideogram.geneCache.nameCaseMap;
     if (isKnownGene) {
       genes[label] = 1;
     }

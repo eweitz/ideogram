@@ -156,8 +156,8 @@ function maybeGeneSymbol(ixn, gene) {
 /** Reports if interaction node is a gene and not previously seen */
 function isInteractionRelevant(rawIxn, gene, nameId, seenNameIds, ideo) {
   let isGeneSymbol;
-  if ('geneCache' in ideo && gene.name) {
-    isGeneSymbol = rawIxn.toLowerCase() in ideo.geneCache.nameCaseMap;
+  if ('geneCache' in Ideogram && gene.name) {
+    isGeneSymbol = rawIxn.toLowerCase() in Ideogram.geneCache.nameCaseMap;
   } else {
     isGeneSymbol = maybeGeneSymbol(rawIxn, gene);
   }
@@ -186,9 +186,9 @@ async function fetchInteractions(gene, ideo) {
 
   let data = {result: []};
 
-  if (ideo.interactionCache) {
-    if (upperGene in ideo.interactionCache) {
-      data = ideo.interactionCache[upperGene];
+  if (Ideogram.interactionCache) {
+    if (upperGene in Ideogram.interactionCache) {
+      data = Ideogram.interactionCache[upperGene];
     }
   } else {
 
@@ -273,7 +273,7 @@ async function fetchInteractions(gene, ideo) {
   if (numIxns > limitIxns) {
     // Only show up to 20 interacting genes,
     // ordered by interest rank of interacting gene.
-    const ranks = ideo.geneCache.interestingNames.map(g => g.toLowerCase());
+    const ranks = Ideogram.geneCache.interestingNames.map(g => g.toLowerCase());
     const ixnGenes = Object.keys(ixns);
     const rankedIxnGenes = ixnGenes
       .map(gene => {
@@ -437,27 +437,27 @@ function throwGeneNotFound(geneSymbol, ideo) {
  * E.g. getGeneBySynonym("p53", ideo) returns "TP53"
  */
 function getGeneBySynonym(name, ideo) {
-  if (!ideo.synonymCache) return null;
+  if (!Ideogram.synonymCache) return null;
 
   const nameLc = name.toLowerCase();
 
-  if (!ideo.synonymCache?.nameCaseMap) {
+  if (!Ideogram.synonymCache?.nameCaseMap) {
     // JIT initialization of canonicalized synonym lookup data.
     // Done only once.
     const nameCaseMap = {};
-    for (const gene in ideo.synonymCache.byGene) {
-      const synonyms = ideo.synonymCache.byGene[gene];
+    for (const gene in Ideogram.synonymCache.byGene) {
+      const synonyms = Ideogram.synonymCache.byGene[gene];
       nameCaseMap[gene.toLowerCase()] = synonyms.map(s => s.toLowerCase());
     }
-    ideo.synonymCache.nameCaseMap = nameCaseMap;
+    Ideogram.synonymCache.nameCaseMap = nameCaseMap;
   }
 
-  const nameCaseMap = ideo.synonymCache.nameCaseMap;
+  const nameCaseMap = Ideogram.synonymCache.nameCaseMap;
   for (const geneLc in nameCaseMap) {
     const synonymsLc = nameCaseMap[geneLc];
     if (synonymsLc.includes(nameLc)) {
       // Got a hit!  Return standard gene symbol, e.g. "tp53" -> "TP53".
-      return ideo.geneCache.nameCaseMap[geneLc];
+      return Ideogram.geneCache.nameCaseMap[geneLc];
     }
   }
 
@@ -469,7 +469,7 @@ function getGeneBySynonym(name, ideo) {
  * Construct objects that match format of MyGene.info API response
  */
 function fetchGenesFromCache(names, type, ideo) {
-  const cache = ideo.geneCache;
+  const cache = Ideogram.geneCache;
   const isSymbol = (type === 'symbol');
   const locusMap = isSymbol ? cache.lociByName : cache.lociById;
   const nameMap = isSymbol ? cache.idsByName : cache.namesById;
@@ -604,7 +604,7 @@ async function fetchGenes(names, type, ideo) {
 
   const queryStringBase = `?q=${qParam}&species=${taxid}&fields=`;
 
-  if (ideo.geneCache) {
+  if (Ideogram.geneCache) {
     const hits = fetchGenesFromCache(names, type, ideo);
 
     // Asynchronously fetch full name, but don't await the response, because
@@ -692,6 +692,7 @@ async function fetchParalogPositionsFromMyGeneInfo(
   const annots = [];
 
   const cached = homologs.length && typeof homologs[0] === 'string';
+  console.log('cached', cached)
   const ensemblIds = cached ? homologs : homologs.map(homolog => homolog.id);
   const data = await fetchGenes(ensemblIds, 'ensemblgene', ideo);
 
@@ -705,7 +706,7 @@ async function fetchParalogPositionsFromMyGeneInfo(
     annots.push(annot);
 
     const description =
-      ideo.tissueCache ? '' : `Paralog of ${searchedGene.name}`;
+      Ideogram.tissueCache ? '' : `Paralog of ${searchedGene.name}`;
 
     const {name, ensemblId} = parseNameAndEnsemblIdFromMgiGene(gene);
     const type = 'paralogous gene';
@@ -810,11 +811,11 @@ function plotParalogNeighborhoods(annots, ideo) {
         annotStop = overlayAnnotLength;
       };
 
-      if ('geneCache' in ideo) {
+      if ('geneCache' in Ideogram) {
         paralogs = paralogs.map(paralog => {
-          paralog.fullName = ideo.geneCache.fullNamesById[paralog.id];
+          paralog.fullName = Ideogram.geneCache.fullNamesById[paralog.id];
 
-          const ranks = ideo.geneCache.interestingNames;
+          const ranks = Ideogram.geneCache.interestingNames;
           if (ranks.includes(paralog.name)) {
             paralog.rank = ranks.indexOf(paralog.name) + 1;
           } else {
@@ -861,14 +862,14 @@ async function fetchParalogs(annot, ideo) {
 
   let homologs;
   // Fetch paralogs
-  if (ideo.paralogCache) {
+  if (Ideogram.paralogCache) {
     // const baseUrl = 'http://localhost:8080/dist/data/cache/paralogs/';
     // const url = `${baseUrl}homo-sapiens/${annot.name}.tsv`;
     // const response = await fetch(url);
     // const oneRowTsv = await response.text();
     // const rawHomologEnsemblIds = oneRowTsv.split('\t');
     // homologs = rawHomologEnsemblIds.map(r => getEnsemblId('ENSG', r));
-    const paralogsByName = ideo.paralogCache.paralogsByName;
+    const paralogsByName = Ideogram.paralogCache.paralogsByName;
     const nameUc = annot.name.toUpperCase();
     const hasParalogs = nameUc in paralogsByName;
     homologs = hasParalogs ? paralogsByName[nameUc] : [];
@@ -1229,7 +1230,7 @@ function mergeDescriptions(annot, desc, ideo) {
       }
     });
     // Object.assign({}, descriptions[annot.name]);
-    if ('type' in otherDesc && !ideo.tissueCache) {
+    if ('type' in otherDesc && !Ideogram.tissueCache) {
       mergedDesc.type += ', ' + otherDesc.type;
       mergedDesc.description += `<br/><br/>${otherDesc.description}`;
     }
@@ -1261,39 +1262,43 @@ function mergeAnnots(unmergedAnnots) {
   return mergedAnnots;
 }
 
+function hasTissueCache() {
+  return Ideogram.tissueCache && Object.keys(Ideogram.tissueCache).length > 0;
+}
+
 /**
  * Prevents bug when showing gene leads instantly on page load,
  * then hovering over an annotation, as in e.g.
  * https://eweitz.github.io/ideogram/gene-leads
  */
-function waitForTissueCache(geneNames, ideo, n) {
+function waitForTissueCache(geneNames, config, n) {
   setTimeout(() => {
     if (n < 40) { // 40 * 50 ms = 2 s
-      if (!ideo.tissueCache) {
-        waitForTissueCache(geneNames, ideo, n + 1);
+      if (!hasTissueCache()) {
+        waitForTissueCache(geneNames, config, n + 1);
       } else {
-        setTissueExpressions(geneNames, ideo);
+        setTissueExpressions(geneNames, config);
       }
     }
   }, 50);
 }
 
-async function setTissueExpressions(geneNames, ideo) {
+async function setTissueExpressions(geneNames, config) {
   if (
-    !ideo.tissueCache
-    // || !(annot.name in ideo.tissueCache.byteRangesByName)
+    !hasTissueCache()
+    // || !(annot.name in Ideogram.tissueCache.byteRangesByName)
   ) {
-    waitForTissueCache(geneNames, ideo, 0);
+    waitForTissueCache(geneNames, config, 0);
     return;
   }
 
   const tissueExpressionsByGene = {};
-  const cache = ideo.tissueCache;
+  const cache = Ideogram.tissueCache;
 
   const promises = [];
   geneNames.forEach(async gene => {
     const promise = new Promise(async (resolve) => {
-      const tissueExpressions = await cache.getTissueExpressions(gene, ideo);
+      const tissueExpressions = await cache.getTissueExpressions(gene, config);
       tissueExpressionsByGene[gene] = tissueExpressions;
       resolve();
     });
@@ -1302,7 +1307,7 @@ async function setTissueExpressions(geneNames, ideo) {
 
   await Promise.all(promises);
 
-  ideo.tissueExpressionsByGene = tissueExpressionsByGene;
+  Ideogram.tissueExpressionsByGene = tissueExpressionsByGene;
 }
 
 function onBeforeDrawAnnots() {
@@ -1330,7 +1335,7 @@ function onBeforeDrawAnnots() {
     }
   }
 
-  setTissueExpressions(geneNames, ideo);
+  setTissueExpressions(geneNames, ideo.config);
 }
 
 function filterAndDrawAnnots(annots, ideo) {
@@ -1652,7 +1657,20 @@ function addPathwayListeners(ideo) {
         // const pathwayName = target.getAttribute('data-pathway-name');
         // const pathway = {id: pathwayId, name: pathwayName};
         // plotPathwayGenes(searchedGene, pathway, ideo);
-        drawPathway(pathwayId, searchedGene, interactingGene);
+        function geneNodeHoverFn(event, geneName) {
+          console.log('in geneNodeHoverFn')
+          return '<div>ok ' + geneName + '</div><div>1234</div>';
+        }
+
+        function pathwayNodeClickFn(event, pathwayId) {
+          const pathwayNode = event.target;
+          console.log('in pathwayNodeClickFn, pathwayNode', pathwayNode);
+          console.log('in pathwayNodeClickFn, pathwayId', pathwayId);
+        }
+
+        drawPathway(pathwayId, searchedGene, interactingGene,
+          undefined, undefined, undefined,
+          geneNodeHoverFn, pathwayNodeClickFn);
         event.stopPropagation();
       });
     });
@@ -1672,7 +1690,7 @@ function centralizeTooltipPosition() {
 
 function onDidShowAnnotTooltip() {
   const ideo = this;
-  if (ideo.tissueCache) {
+  if (Ideogram.tissueCache) {
     centralizeTooltipPosition();
   }
   handleTooltipClick(ideo);
@@ -1843,7 +1861,7 @@ async function decorateAnnot(annot) {
     const queriedSynonym = descObj.synonym;
     const synStyle = 'style="font-style: italic"';
     synonym = `<div ${synStyle}>Synonym: ${queriedSynonym}</div>`;
-    // const synList = ideo.synonymCache.byGene[annot.name];
+    // const synList = Ideogram.synonymCache.byGene[annot.name];
     // const litSyns = synList.map(s => {
     //   // Emphasize ("highlight") any synonyms that match the user's query
     //   if (s.toLowerCase() === queriedSynonym.toLowerCase()) {
@@ -1956,6 +1974,7 @@ const globalKitDefaults = {
   showAnnotLabels: true,
   showGeneStructureInTooltip: true,
   showProteinInTooltip: true,
+  showVariantInTooltip: false,
   chrFillColor: {centromere: '#DAAAAA'}
 };
 

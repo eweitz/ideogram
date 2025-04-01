@@ -68,6 +68,15 @@ import {
   plotRelatedGenes, getRelatedGenesByType
 } from './kit/related-genes';
 
+import {
+  drawPathway as _drawPathway,
+  getPathwayGenes as _getPathwayGenes
+} from './kit/pathway-viewer.js';
+
+import {
+  initCaches as _initCaches
+} from './init/caches/cache';
+
 export default class Ideogram {
   constructor(config) {
 
@@ -339,5 +348,56 @@ export default class Ideogram {
   */
   static initGeneLeads(config, annotsInList='all') {
     return _initGeneLeads(config, annotsInList);
+  }
+
+  /**
+   * Wrapper for drawing biological pathways using cached WikiPathways data
+   *
+   * @param {String} pwId WikiPathways ID, e.g. "WP5109"
+   * @param {String} sourceGene Symbol of source gene, e.g. "LDLR"
+   * @param {String} destGene Symbol of destination gene, e.g. "PCSK9"
+   * @param {String} outerSelector DOM selector of container, e.g. "#my-diagram"
+   * @param {Object} dimensions Height and width of pathway diagram
+   * @param {Boolean} showClose Whether to show close button
+   * @param {Function} geneNodeHoverFn Function to call upon hovering diagram node
+  */
+  static drawPathway(
+    pwId, sourceGene, destGene,
+    outerSelector,
+    dimensions={height: 440, width: 900},
+    showClose=true,
+    geneNodeHoverFn=undefined,
+    pathwayNodeClickFn=undefined
+  ) {
+    _drawPathway(
+      pwId, sourceGene, destGene,
+      outerSelector,
+      dimensions=dimensions,
+      showClose=showClose,
+      geneNodeHoverFn=geneNodeHoverFn,
+      pathwayNodeClickFn=pathwayNodeClickFn
+    );
+  }
+
+  /**
+   * Wrapper for initializing cached data
+   *
+   * @param {Object} config Includes organism, useCache, etc.
+  */
+  static initCaches(config={
+    organism: 'homo-sapiens', useCache: true,
+    awaitCache: true,
+    showGeneStructureInTooltip: true
+  }) {
+    _initCaches(config);
+  }
+
+  /**
+   * Get list of gene names in pathway
+   *
+   * @param {Object} config Includes organism, useCache, etc.
+  */
+  static getPathwayGenes() {
+    return _getPathwayGenes();
   }
 }

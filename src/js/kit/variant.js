@@ -326,7 +326,10 @@ export async function getVariantsSvg(
 
   const gene = getGeneFromStructureName(structureName, ideo);
 
-  const cache = ideo.variantCache;
+  const cache = Ideogram.variantCache;
+  if (!cache) {
+    return null;
+  }
 
   let rawVariants = await cache.getVariants(gene, ideo);
 

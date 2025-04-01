@@ -113,11 +113,11 @@ async function updateGeneStructure(ideo, offset=0) {
   const isCanonical = (selectedIndex === 0);
   const menu = document.querySelector('#_ideoGeneStructureMenu');
   menu.options[selectedIndex].selected = true;
-  const svgResults = await getSvg(structure, ideo, ideo.spliceExons);
+  const svgResults = await getSvg(structure, ideo, Ideogram.spliceExons);
   const svg = svgResults[0];
   const container = document.querySelector('._ideoGeneStructureSvgContainer');
   container.innerHTML = svg;
-  updateHeader(ideo.spliceExons, isCanonical);
+  updateHeader(Ideogram.spliceExons, isCanonical);
   writeFooter(container);
   ideo.addedSubpartListeners = false;
   addHoverListeners(ideo);
@@ -153,7 +153,7 @@ function getSelectedStructure(ideo, offset=0) {
   }
   const gene = getGeneFromStructureName(structureName);
   const geneStructure =
-    ideo.geneStructureCache[gene].find(gs => gs.name === structureName);
+    Ideogram.geneStructureCache[gene].find(gs => gs.name === structureName);
 
 
   return [geneStructure, selectedIndex];
@@ -527,7 +527,7 @@ function addHoverListeners(ideo) {
       ideo.oneTimeDelayTooltipHideMs = 2000; // wait 2.0 s instead of 0.25 s
     });
 
-    if (ideo.tissueCache) {
+    if (Ideogram.tissueCache) {
       const tooltipFooter = document.querySelector('._ideoTooltipFooter');
       tooltipFooter.style.display = 'none';
     }
@@ -535,7 +535,7 @@ function addHoverListeners(ideo) {
   container.addEventListener('mouseleave', (event) => {
     ideo.oneTimeDelayTooltipHideMs = 2000; // See "Without this..." note above
 
-    if (ideo.tissueCache) {
+    if (Ideogram.tissueCache) {
       const tooltipFooter = document.querySelector('._ideoTooltipFooter');
       tooltipFooter.style.display = '';
     }
@@ -625,7 +625,7 @@ function getSpliceToggleHoverTitle(spliceExons) {
 }
 
 function getSpliceToggle(ideo) {
-  const spliceExons = ideo.spliceExons;
+  const spliceExons = Ideogram.spliceExons;
   const modifier = spliceExons ? '' : 'pre-';
   const cls = `class="_ideoSpliceToggle ${modifier}mRNA"`;
   const checked = spliceExons ? 'checked' : '';
@@ -768,8 +768,8 @@ function updateHeader(spliceExons, isCanonical) {
 }
 
 async function toggleSplice(ideo) {
-  ideo.spliceExons = !ideo.spliceExons;
-  const spliceExons = ideo.spliceExons;
+  Ideogram.spliceExons = !Ideogram.spliceExons;
+  const spliceExons = Ideogram.spliceExons;
   const [geneStructure, selectedIndex] = getSelectedStructure(ideo);
   const isCanonical = (selectedIndex === 0);
   const svgResult = await getSvg(geneStructure, ideo, spliceExons);
@@ -895,13 +895,13 @@ function getSubpartBorderLine(subpart) {
 
 // function getSvgList(gene, ideo, spliceExons=false) {
 //   if (
-//     'geneStructureCache' in ideo === false ||
-//     gene in ideo.geneStructureCache === false
+//     'geneStructureCache' in Ideogram === false ||
+//     gene in Ideogram.geneStructureCache === false
 //   ) {
 //     return [null];
 //   }
 
-//   const svgList = ideo.geneStructureCache[gene].map(geneStructure => {
+//   const svgList = Ideogram.geneStructureCache[gene].map(geneStructure => {
 //     return getSvg(geneStructure, ideo, spliceExons);
 //   });
 
@@ -1131,7 +1131,7 @@ function getMenu(gene, ideo, selectedName) {
   const containerId = '_ideoGeneStructureMenuContainer';
   const style = 'margin-bottom: 4px; margin-top: 4px; clear: both;';
 
-  const structures = ideo.geneStructureCache[gene];
+  const structures = Ideogram.geneStructureCache[gene];
 
   if (structures.length === 1) {
     const name = structures[0].name;
@@ -1168,14 +1168,14 @@ export async function getGeneStructureHtml(annot, ideo, isParalogNeighborhood) {
   if (
     ideo.config.showGeneStructureInTooltip && !isParalogNeighborhood &&
     !(
-      'geneStructureCache' in ideo === false ||
-      gene in ideo.geneStructureCache === false
+      'geneStructureCache' in Ideogram === false ||
+      gene in Ideogram.geneStructureCache === false
     )
   ) {
     ideo.addedSubpartListeners = false;
-    if ('spliceExons' in ideo === false) ideo.spliceExons = true;
-    const spliceExons = ideo.spliceExons;
-    const structure = ideo.geneStructureCache[gene][0];
+    if ('spliceExons' in Ideogram === false) Ideogram.spliceExons = true;
+    const spliceExons = Ideogram.spliceExons;
+    const structure = Ideogram.geneStructureCache[gene][0];
     const svgResults = await getSvg(structure, ideo, spliceExons);
     const geneStructureSvg = svgResults[0];
     const cls = 'class="_ideoGeneStructureContainer"';

@@ -1,3 +1,7 @@
+import snarkdown from 'snarkdown';
+import tippy from 'tippy.js';
+import {getTippyConfig} from '../lib';
+
 const PVJS_URL = 'https://cdn.jsdelivr.net/npm/@wikipathways/pvjs@5.0.1/dist/pvjs.vanilla.js';
 const SVGPANZOOM_URL = 'https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.5.0/dist/svg-pan-zoom.min.js';
 const CONTAINER_ID = '_ideogramPathwayContainer';
@@ -13,7 +17,7 @@ async function fetchPathwayViewerJson(pwId) {
   const response = await fetch(url);
   const pathwayJson = await response.json();
 
-  window.pathwayJson = pathwayJson;
+  Ideogram.pathwayJson = pathwayJson;
   return pathwayJson;
 }
 
@@ -122,7 +126,7 @@ function zoomToEntity(entityId, retryAttempt=0) {
 }
 
 /** Add header bar to pathway diagram with name, link, close button, etc. */
-function addHeader(pwId, pathwayJson, pathwayContainer) {
+function addHeader(pwId, pathwayJson, pathwayContainer, showClose=true) {
   const pathwayName = pathwayJson.pathway.name;
   const url = `https://wikipathways.org/pathways/${pwId}`;
   const linkAttrs = `href="${url}" target="_blank" style="margin-left: 4px;"`;
@@ -130,29 +134,175 @@ function addHeader(pwId, pathwayJson, pathwayContainer) {
   // Link to full page on WikiPathways, using pathway title
   const pathwayLink = `<a ${linkAttrs}>${pathwayName}</a>`;
 
-  // Close button
-  const style =
-    'style="float: right; background-color: #aaa; border: none; ' +
-    'color: white; font-weight: bold; font-size: 16px; padding: 0px 4px; ' +
-    'border-radius: 3px; cursor: pointer;"';
-  const buttonAttrs = `class="_ideoPathwayCloseButton" ${style}`;
-  const closeButton = `<button ${buttonAttrs}}>x</button>`;
+  let closeButton;
+  if (showClose) {
+    // Close button
+    const style =
+      'style="float: right; background-color: #aaa; border: none; ' +
+      'color: white; font-weight: bold; font-size: 16px; padding: 0px 4px; ' +
+      'border-radius: 3px; cursor: pointer;"';
+    const buttonAttrs = `class="_ideoPathwayCloseButton" ${style}`;
+    closeButton = `<button ${buttonAttrs}}>x</button>`;
+  } else {
+    closeButton = '';
+  }
 
   const headerBar =
     `<div class="_ideoPathwayHeader">${pathwayLink}${closeButton}</div>`;
   pathwayContainer.insertAdjacentHTML('afterBegin', headerBar);
 
-  const closeButtonDom = document.querySelector('._ideoPathwayCloseButton');
-  closeButtonDom.addEventListener('click', function(event) {
-    const pathwayContainer = document.querySelector(`#${CONTAINER_ID}`);
-    pathwayContainer.remove();
-  });
+  if (showClose) {
+    const closeButtonDom = document.querySelector('._ideoPathwayCloseButton');
+    closeButtonDom.addEventListener('click', function(event) {
+      const pathwayContainer = document.querySelector(`#${CONTAINER_ID}`);
+      pathwayContainer.remove();
+    });
+  }
+}
+
+/**
+ *
+ */
+function removeCptacAssayPortalClause(inputText) {
+  // eslint-disable-next-line max-len
+  const regex = /Proteins on this pathway have targeted assays available via the \[https:\/\/assays\.cancer\.gov\/available_assays\?wp_id=WP\d+\s+CPTAC Assay Portal\]\./g;
+  // eslint-disable-next-line max-len
+  const regex2 = /Proteins on this pathway have targeted assays available via the \[CPTAC Assay Portal\]\(https:\/\/assays\.cancer\.gov\/available_assays\?wp_id=WP\d+\)\./g;
+
+  return inputText.replace(regex, '').replace(regex2, '');
+}
+
+
+function removePhosphoSitePlusClause(inputText) {
+  // eslint-disable-next-line max-len
+  const regex = 'Phosphorylation sites were added based on information from PhosphoSitePlus (R), www.phosphosite.org.';
+
+  return inputText.replace(regex, '');
+}
+
+/** Convert Markdown links to standard <a href="... links */
+function convertMarkdownLinks(markdown) {
+  const html = snarkdown(markdown);
+
+  const htmlWithClassedLinks =
+    html.replace(
+      /<a href="([^"]+)">/g,
+      '<a href="$1" class="_ideoPathwayDescriptionLink" target="_blank">'
+    );
+
+  return htmlWithClassedLinks;
+}
+
+function formatDescription(rawText) {
+  rawText = rawText.replaceAll('\r\n\r\n', '\r\n');
+  rawText = rawText.replaceAll('\r\n', '<br/><br/>');
+  const denoisedPhospho = removePhosphoSitePlusClause(rawText);
+  const denoisedText = removeCptacAssayPortalClause(denoisedPhospho);
+  const linkedText = convertMarkdownLinks(denoisedText);
+  const trimmedText = linkedText.trim();
+  return trimmedText;
+}
+
+function getDescription(pathwayJson) {
+  const rawText =
+  pathwayJson.pathway.comments.filter(
+    c => c.source === 'WikiPathways-description'
+  )[0].content;
+  const descriptionText = formatDescription(rawText);
+
+  const style = `style="font-weight: bold"`;
+
+  const description =
+    `<div>` +
+      // `<div class="ideoPathwayDescription" ${style}>Description</div>` +
+      descriptionText +
+    `</div>`;
+
+  return description;
+}
+
+function parsePwAnnotations(entitiesById, keys, ontology) {
+  const pwKeys = keys.filter(k => entitiesById[k].ontology === ontology);
+  const pwAnnotations = pwKeys.map(k => entitiesById[k]);
+  return pwAnnotations;
+}
+
+function getPathwayAnnotations(pathwayJson) {
+  const entitiesById = pathwayJson.entitiesById;
+  const keys = Object.keys(entitiesById).filter(k => k.startsWith('http://identifiers.org'));
+  const sentenceCases = {
+    'Cell Type': 'Cell type'
+  };
+  const ontologies = [
+    'Cell Type',
+    'Disease'
+    // 'Pathway Ontology' // maybe later
+  ];
+  const pathwayAnnotationsList = ontologies.map(ontology => {
+    const pwAnnotations = parsePwAnnotations(entitiesById, keys, ontology);
+    const links = pwAnnotations.map(pwa => {
+      const id = pwa.xrefIdentifier.replace(':', '_');
+      const url = `https://purl.obolibrary.org/obo/${id}`;
+      return `<a href="${url}" target="_blank">${pwa.term}</a>`;
+    }).join(', ');
+
+    const refinedOntology = sentenceCases[ontology] ?? ontology;
+    const safeOntology = ontology.replaceAll(' ', '_');
+    const cls = `class="ideoPathwayOntology__${safeOntology}"`;
+
+    if (links === '') return '';
+
+    return `<div ${cls}>${refinedOntology}: ${links}</div>`;
+  }).join('');
+
+  if (pathwayAnnotationsList.length === 0) {
+    return '';
+  }
+
+  const style = `style="font-weight: bold"`;
+
+  const pathwayAnnotations =
+  `<div>` +
+    // `<div class="ideoPathwayAnnotations" ${style}>Pathway annotations</div>` +
+    pathwayAnnotationsList +
+  `</div>`;
+
+  return pathwayAnnotations;
+}
+
+/** Get list of unique genes in pathway */
+export function getPathwayGenes() {
+  const entities = Object.values(Ideogram.pathwayJson.entitiesById);
+  const genes = entities.filter(entity => {
+    return ['GeneProduct', 'RNA', 'Protein'].includes(entity.wpType);
+  }).map(e => e.textContent);
+  const uniqueGenes = Array.from(new Set(genes));
+  return uniqueGenes;
+}
+
+
+function addFooter(pathwayJson, pathwayContainer) {
+  const description = getDescription(pathwayJson);
+  const pathwayAnnotations = getPathwayAnnotations(pathwayJson);
+  const footer =
+    `<br/>` +
+    `<div class="_ideoPathwayFooter">` +
+      description +
+      `<br/>` +
+      pathwayAnnotations +
+    `</div>`;
+  pathwayContainer.insertAdjacentHTML('beforeEnd', footer);
 }
 
 /** Fetch and render WikiPathways diagram for given pathway ID */
 export async function drawPathway(
   pwId, sourceGene, destGene,
-  dimensions={height: 440, width: 900}, retryAttempt=0
+  outerSelector='#_ideogramOuterWrap',
+  dimensions={height: 440, width: 900},
+  showClose=true,
+  geneNodeHoverFn,
+  pathwayNodeClickFn,
+  retryAttempt=0
 ) {
   const pvjsScript = document.querySelector(`script[src="${PVJS_URL}"]`);
   if (!pvjsScript) {loadPvjsScript();}
@@ -170,7 +320,12 @@ export async function drawPathway(
   ) {
     if (retryAttempt <= 40) {
       setTimeout(() => {
-        drawPathway(pwId, sourceGene, destGene, dimensions, retryAttempt++);
+        drawPathway(
+          pwId, sourceGene, destGene,
+          outerSelector, dimensions, showClose,
+          geneNodeHoverFn, pathwayNodeClickFn,
+          retryAttempt++
+        );
       }, 250);
       return;
     } else {
@@ -192,7 +347,7 @@ export async function drawPathway(
   const highlights = sourceHighlights.concat(destHighlights);
 
   const oldPathwayContainer = document.querySelector(containerSelector);
-  const ideoContainerDom = document.querySelector('#_ideogramOuterWrap');
+  const ideoContainerDom = document.querySelector(outerSelector);
   if (oldPathwayContainer) {
     oldPathwayContainer.remove();
   }
@@ -233,7 +388,9 @@ export async function drawPathway(
 
   // const pathwayViewer = new Pvjs(pvjsProps);
   const pathwayViewer = new Pvjs(pvjsContainer, pvjsProps);
-  addHeader(pwId, pathwayJson, pathwayContainer);
+  addHeader(pwId, pathwayJson, pathwayContainer, showClose);
+
+  addFooter(pathwayJson, pathwayContainer);
 
   // zoomToEntity(sourceEntityId);
 
@@ -245,4 +402,42 @@ export async function drawPathway(
   // Notify listeners of event completion
   const ideogramPathwayEvent = new CustomEvent('ideogramDrawPathway', {detail});
   document.dispatchEvent(ideogramPathwayEvent);
+
+  // Add mouseover handler to gene nodes in this pathway diagram
+  pathwayContainer.querySelectorAll('g.GeneProduct').forEach(geneNode => {
+    const geneName = geneNode.getAttribute('name');
+    let tooltipContent = geneName;
+    geneNode.addEventListener('mouseover', (event) => {
+      if (geneNodeHoverFn) {
+        tooltipContent = geneNodeHoverFn(event, geneName);
+        geneNode.setAttribute('data-tippy-content', tooltipContent);
+      }
+    });
+
+    geneNode.setAttribute(`data-tippy-content`, tooltipContent);
+  });
+  const tippyConfig = getTippyConfig();
+  tippy('g.GeneProduct[data-tippy-content]', tippyConfig);
+
+  // Add click handler to pathway nodes in this pathway diagram
+  if (pathwayNodeClickFn) {
+    pathwayContainer.querySelectorAll('g.Pathway').forEach(pathwayNode => {
+
+      // Add customizable click handler
+      pathwayNode.addEventListener('click', (event) => {
+        const domClasses = Array.from(pathwayNode.classList);
+        const pathwayId = domClasses
+          .find(c => c.startsWith('WikiPathways_'))
+          .split('WikiPathways_')[1]; // e.g. WikiPathways_WP2815 -> WP2815
+
+        pathwayNodeClickFn(event, pathwayId);
+      });
+
+      // Indicate this new pathway can be rendered on click
+      const tooltipContent = 'Click to show pathway';
+      pathwayNode.setAttribute('data-tippy-content', tooltipContent);
+    });
+
+    tippy('g.Pathway[data-tippy-content]', tippyConfig);
+  }
 }
