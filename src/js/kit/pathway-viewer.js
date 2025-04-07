@@ -302,6 +302,8 @@ export async function drawPathway(
   showClose=true,
   geneNodeHoverFn,
   pathwayNodeClickFn,
+  showDescription,
+  showDefaultTooltips,
   retryAttempt=0
 ) {
   const pvjsScript = document.querySelector(`script[src="${PVJS_URL}"]`);
@@ -324,6 +326,7 @@ export async function drawPathway(
           pwId, sourceGene, destGene,
           outerSelector, dimensions, showClose,
           geneNodeHoverFn, pathwayNodeClickFn,
+          showDescription,
           retryAttempt++
         );
       }, 250);
@@ -390,7 +393,9 @@ export async function drawPathway(
   const pathwayViewer = new Pvjs(pvjsContainer, pvjsProps);
   addHeader(pwId, pathwayJson, pathwayContainer, showClose);
 
-  addFooter(pathwayJson, pathwayContainer);
+  if (showDescription) {
+    addFooter(pathwayJson, pathwayContainer);
+  }
 
   // zoomToEntity(sourceEntityId);
 
@@ -414,10 +419,15 @@ export async function drawPathway(
       }
     });
 
-    geneNode.setAttribute(`data-tippy-content`, tooltipContent);
+    if (showDefaultTooltips) {
+      geneNode.setAttribute(`data-tippy-content`, tooltipContent);
+    }
   });
-  const tippyConfig = getTippyConfig();
-  tippy('g.GeneProduct[data-tippy-content]', tippyConfig);
+  if (showDefaultTooltips) {
+    const tippyConfig = getTippyConfig();
+    tippyConfig.trigger = 'mouseenter';
+    tippy('g.GeneProduct[data-tippy-content]', tippyConfig);
+  }
 
   // Add click handler to pathway nodes in this pathway diagram
   if (pathwayNodeClickFn) {
@@ -433,11 +443,15 @@ export async function drawPathway(
         pathwayNodeClickFn(event, pathwayId);
       });
 
-      // Indicate this new pathway can be rendered on click
-      const tooltipContent = 'Click to show pathway';
-      pathwayNode.setAttribute('data-tippy-content', tooltipContent);
+      if (showDefaultTooltips) {
+        // Indicate this new pathway can be rendered on click
+        const tooltipContent = 'Click to show pathway';
+        pathwayNode.setAttribute('data-tippy-content', tooltipContent);
+      }
     });
 
-    tippy('g.Pathway[data-tippy-content]', tippyConfig);
+    if (showDefaultTooltips) {
+      tippy('g.Pathway[data-tippy-content]', tippyConfig);
+    }
   }
 }
