@@ -70,7 +70,8 @@ import {
 
 import {
   drawPathway as _drawPathway,
-  getPathwayGenes as _getPathwayGenes
+  getPathwayGenes as _getPathwayGenes,
+  getPathwayAnnotations
 } from './kit/pathway-viewer.js';
 
 import {
@@ -359,7 +360,11 @@ export default class Ideogram {
    * @param {String} outerSelector DOM selector of container, e.g. "#my-diagram"
    * @param {Object} dimensions Height and width of pathway diagram
    * @param {Boolean} showClose Whether to show close button
-   * @param {Function} geneNodeHoverFn Function to call upon hovering diagram node
+   * @param {Function} geneNodeHoverFn Function to call upon hovering gene
+   * @param {Function} pathwayNodeClickFn Function to call upon clicking pathway
+   * @param {Boolean} showDescription Whether to display pathway description
+   * @param {Boolean} showOntologies Whether to display ontology annotations
+   * @param {Boolean} showDefaultTooltips Whether to display default tooltips
   */
   static drawPathway(
     pwId, sourceGene, destGene,
@@ -367,7 +372,10 @@ export default class Ideogram {
     dimensions={height: 440, width: 900},
     showClose=true,
     geneNodeHoverFn=undefined,
-    pathwayNodeClickFn=undefined
+    pathwayNodeClickFn=undefined,
+    showDescription=true,
+    showOntologies=true,
+    showDefaultTooltips=true
   ) {
     _drawPathway(
       pwId, sourceGene, destGene,
@@ -375,7 +383,10 @@ export default class Ideogram {
       dimensions=dimensions,
       showClose=showClose,
       geneNodeHoverFn=geneNodeHoverFn,
-      pathwayNodeClickFn=pathwayNodeClickFn
+      pathwayNodeClickFn=pathwayNodeClickFn,
+      showDescription=showDescription,
+      showOntologies=showOntologies,
+      showDefaultTooltips=showDefaultTooltips
     );
   }
 
@@ -399,5 +410,9 @@ export default class Ideogram {
   */
   static getPathwayGenes() {
     return _getPathwayGenes();
+  }
+
+  static getPathwayOntologies(pathwayJson, selectedOntology) {
+    return getPathwayAnnotations(pathwayJson, selectedOntology);
   }
 }
