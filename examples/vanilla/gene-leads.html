@@ -207,6 +207,13 @@
       }
     }
 
+    async function onWillShowAnnotTooltip(annot) {
+      if (annot.then) {
+        return await annot
+      }
+      return annot
+    }
+
     /** Ideogram has no 3rd party analytics, but lets you easily hook in your own */
     function reportFoundGenes() {
       console.log(this.relatedGenesAnalytics)
@@ -246,7 +253,8 @@
       onLoad: plotGeneFromUrl,
       onPlotFoundGenes: reportFoundGenes,
       onHoverLegend: reportLegendMetrics,
-      onClickAnnot
+      onClickAnnot,
+      onWillShowAnnotTooltip
     }
 
     const annotsInList = 'all';
