@@ -70,7 +70,8 @@ import {
 
 import {
   drawPathway as _drawPathway,
-  getPathwayGenes as _getPathwayGenes
+  getPathwayGenes as _getPathwayGenes,
+  getPathwayAnnotations
 } from './kit/pathway-viewer.js';
 
 import {
@@ -362,6 +363,7 @@ export default class Ideogram {
    * @param {Function} geneNodeHoverFn Function to call upon hovering gene
    * @param {Function} pathwayNodeClickFn Function to call upon clicking pathway
    * @param {Boolean} showDescription Whether to display pathway description
+   * @param {Boolean} showOntologies Whether to display ontology annotations
    * @param {Boolean} showDefaultTooltips Whether to display default tooltips
   */
   static drawPathway(
@@ -372,6 +374,7 @@ export default class Ideogram {
     geneNodeHoverFn=undefined,
     pathwayNodeClickFn=undefined,
     showDescription=true,
+    showOntologies=true,
     showDefaultTooltips=true
   ) {
     _drawPathway(
@@ -382,6 +385,7 @@ export default class Ideogram {
       geneNodeHoverFn=geneNodeHoverFn,
       pathwayNodeClickFn=pathwayNodeClickFn,
       showDescription=showDescription,
+      showOntologies=showOntologies,
       showDefaultTooltips=showDefaultTooltips
     );
   }
@@ -406,5 +410,9 @@ export default class Ideogram {
   */
   static getPathwayGenes() {
     return _getPathwayGenes();
+  }
+
+  static getPathwayOntologies(pathwayJson, selectedOntology) {
+    return getPathwayAnnotations(pathwayJson, selectedOntology);
   }
 }

@@ -227,7 +227,7 @@ function parsePwAnnotations(entitiesById, keys, ontology) {
   return pwAnnotations;
 }
 
-function getPathwayAnnotations(pathwayJson) {
+export function getPathwayAnnotations(pathwayJson, selectedOntology) {
   const entitiesById = pathwayJson.entitiesById;
   const keys = Object.keys(entitiesById).filter(k => k.startsWith('http://identifiers.org'));
   const sentenceCases = {
@@ -238,12 +238,19 @@ function getPathwayAnnotations(pathwayJson) {
     'Disease'
     // 'Pathway Ontology' // maybe later
   ];
-  const pathwayAnnotationsList = ontologies.map(ontology => {
+  let selectedOntologies = ontologies;
+  if (selectedOntology) {
+    selectedOntologies = ontologies.find(
+      ontology => ontology.toLowerCase() === selectedOntology.toLowerCase()
+    );
+  }
+  const pathwayAnnotationsList = selectedOntologies.map(ontology => {
     const pwAnnotations = parsePwAnnotations(entitiesById, keys, ontology);
     const links = pwAnnotations.map(pwa => {
       const id = pwa.xrefIdentifier.replace(':', '_');
       const url = `https://purl.obolibrary.org/obo/${id}`;
-      return `<a href="${url}" target="_blank">${pwa.term}</a>`;
+      const cls = 'class="_ideoPathwayOntologyLink"';
+      return `<a href="${url}" target="_blank" ${cls}>${pwa.term}</a>`;
     }).join(', ');
 
     const refinedOntology = sentenceCases[ontology] ?? ontology;
@@ -281,9 +288,10 @@ export function getPathwayGenes() {
 }
 
 
-function addFooter(pathwayJson, pathwayContainer) {
+function addFooter(pathwayJson, pathwayContainer, showOntologies) {
   const description = getDescription(pathwayJson);
-  const pathwayAnnotations = getPathwayAnnotations(pathwayJson);
+  const pathwayAnnotations =
+    showOntologies ? getPathwayAnnotations(pathwayJson) : '';
   const footer =
     `<br/>` +
     `<div class="_ideoPathwayFooter">` +
@@ -303,6 +311,7 @@ export async function drawPathway(
   geneNodeHoverFn,
   pathwayNodeClickFn,
   showDescription,
+  showOntologies,
   showDefaultTooltips,
   retryAttempt=0
 ) {
@@ -394,7 +403,7 @@ export async function drawPathway(
   addHeader(pwId, pathwayJson, pathwayContainer, showClose);
 
   if (showDescription) {
-    addFooter(pathwayJson, pathwayContainer);
+    addFooter(pathwayJson, pathwayContainer, showOntologies);
   }
 
   // zoomToEntity(sourceEntityId);
