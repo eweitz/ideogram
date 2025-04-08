@@ -240,9 +240,9 @@ export function getPathwayAnnotations(pathwayJson, selectedOntology) {
   ];
   let selectedOntologies = ontologies;
   if (selectedOntology) {
-    selectedOntologies = ontologies.find(
+    selectedOntologies = [ontologies.find(
       ontology => ontology.toLowerCase() === selectedOntology.toLowerCase()
-    );
+    )];
   }
   const pathwayAnnotationsList = selectedOntologies.map(ontology => {
     const pwAnnotations = parsePwAnnotations(entitiesById, keys, ontology);
